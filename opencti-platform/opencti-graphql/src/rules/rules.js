@@ -46,6 +46,7 @@ export const RULE_MANAGER_USER = {
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
   organizations: [],
+  allowed_organizations: [],
   allowed_marking: [],
   all_marking: [],
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import ListItem from '@mui/material/ListItem';
@@ -17,6 +17,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import SwitchField from '../../../../components/SwitchField';
+import { CAPABILITY_INFORMATION } from '../../../../utils/Security';
 
 const roleMutationFieldPatch = graphql`
   mutation RoleEditionOverviewFieldPatchMutation(
@@ -225,17 +226,13 @@ const RoleEditionOverviewComponent = ({ t, role, context }) => {
                         );
                         const isDisabled = matchingCapabilities.length > 0;
                         const isChecked = isDisabled || roleCapability !== undefined;
+                        const capabilityDetail = CAPABILITY_INFORMATION[capability.name];
+                        const capabilityDetailText = capabilityDetail ? ` (${t(capabilityDetail)})` : '';
                         return (
-                          <ListItem
-                            key={capability.name}
-                            divider={true}
-                            style={{ paddingLeft }}
-                          >
-                            <ListItemText primary={capability.description} />
+                          <ListItem key={capability.name} divider={true} style={{ paddingLeft }}>
+                            <ListItemText primary={t(capability.description) + capabilityDetailText} />
                             <ListItemSecondaryAction>
-                              <Checkbox
-                                onChange={(event) => handleToggle(capability, event)
-                                }
+                              <Checkbox onChange={(event) => handleToggle(capability, event)}
                                 checked={isChecked}
                                 disabled={isDisabled}
                               />

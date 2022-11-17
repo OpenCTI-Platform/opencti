@@ -72,7 +72,12 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
           value: n?.node.id,
           color: n?.node.color,
         }));
-        setStatusTemplates([...statusTemplates, ...NewStatusTemplates]);
+        const templateValues = [...statusTemplates, ...NewStatusTemplates];
+        // Keep only the unique list of options
+        const uniqTemplates = templateValues.filter((item, index) => {
+          return templateValues.findIndex((e) => e.value === item.value) === index;
+        });
+        setStatusTemplates(uniqTemplates);
       });
   };
 

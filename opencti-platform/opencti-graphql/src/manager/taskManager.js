@@ -280,7 +280,7 @@ const executeRuleApply = async (context, user, actionContext, element) => {
   if (!instance) {
     throw FunctionalError('Cant find element to scan', { id: element.internal_id });
   }
-  const event = buildCreateEvent(user, instance, '-', {});
+  const event = buildCreateEvent(user, instance, '-');
   await rulesApplyHandler(context, user, [event], [rule]);
 };
 const executeRuleClean = async (context, user, actionContext, element) => {
@@ -320,7 +320,10 @@ const executeShare = async (context, user, actionContext, element) => {
   const { values } = actionContext;
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];
-    await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: RELATION_GRANTED_TO });
+    const currentGrants = element[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
+    if (!currentGrants.includes(target)) {
+      await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: RELATION_GRANTED_TO });
+    }
   }
 };
 const executeUnshare = async (context, user, actionContext, element) => {

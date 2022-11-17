@@ -596,8 +596,6 @@ const depsKeys = [
   // Relationship
   { src: 'fromId', dst: 'from' },
   { src: 'toId', dst: 'to' },
-  // Granted
-  { src: INPUT_GRANTED_REFS },
   // Other meta refs
   ...STIX_META_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
   ...STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
@@ -1275,7 +1273,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     // - TRANSACTION PART
     const mergeImpacts = await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
-    await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, mergeImpacts);
+    await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, mergeImpacts, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
@@ -2849,24 +2847,30 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
-  // For organizations management
-  if (!STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o))) {
-    if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-      relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
-    } else if (!user.inside_platform_organization) {
-      // If user is not part of the platform organization, put its own organizations
-      relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
+  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o));
+  const appendMetaRelationships = (inputField, relType) => {
+    if (input[inputField] || relType === RELATION_GRANTED_TO) {
+      // For organizations management
+      if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
+        if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]) {
+          relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
+        } else if (!user.inside_platform_organization) {
+          // If user is not part of the platform organization, put its own organizations
+          relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
+        }
+      } else if (input[inputField]) {
+        const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
+        relToCreate.push(...buildInnerRelation(data, instancesToCreate, relType));
+      }
     }
-  }
+  };
   // For meta stix core
   if (isStixCoreObject(type)) {
     const inputFields = STIX_META_RELATIONSHIPS_INPUTS;
     for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
       const inputField = inputFields[fieldIndex];
-      if (input[inputField]) {
-        const relType = FIELD_TO_META_RELATION[inputField];
-        relToCreate.push(...buildInnerRelation(data, input[inputField], relType));
-      }
+      const relType = FIELD_TO_META_RELATION[inputField];
+      appendMetaRelationships(inputField, relType);
     }
   }
   // For meta observables
@@ -2874,13 +2878,9 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     const inputFields = stixCyberObservableFieldsForType(type);
     for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
       const inputField = inputFields[fieldIndex];
-      if (input[inputField]) {
-        const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
-        const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
-        const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
-        const newRelations = buildInnerRelation(data, instancesToCreate, relType);
-        relToCreate.push(...newRelations);
-      }
+      const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
+      const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
+      appendMetaRelationships(inputField, relType);
     }
   }
   // Transaction succeed, complete the result to send it back

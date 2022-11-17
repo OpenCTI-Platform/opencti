@@ -57,6 +57,7 @@ export const SYSTEM_USER: AuthUser = {
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
   organizations: [],
+  allowed_organizations: [],
   allowed_marking: [],
   all_marking: [],
 };
@@ -71,6 +72,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
   organizations: [],
+  allowed_organizations: [],
   allowed_marking: [],
   all_marking: [],
 };
@@ -116,7 +118,7 @@ export const filterStoreElements = async (context: AuthContext, user: AuthUser, 
     }
     // Organizations
     const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-    const userOrganizations = user.organizations.map((o) => o.internal_id);
+    const userOrganizations = user.allowed_organizations.map((o) => o.internal_id);
     if (settings.platform_organization) {
       if (user.inside_platform_organization) {
         return true;
@@ -149,7 +151,7 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
   /// Organizations
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const elementOrganizations = instance.extensions[STIX_EXT_OCTI].granted_refs ?? [];
-  const userOrganizations = user.organizations.map((o) => o.standard_id);
+  const userOrganizations = user.allowed_organizations.map((o) => o.standard_id);
   if (settings.platform_organization) {
     if (user.inside_platform_organization) {
       return true;

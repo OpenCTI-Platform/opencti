@@ -19,7 +19,7 @@ import {
   isInferredIndex,
   waitInSec,
 } from './utils';
-import { isStixExportableData } from '../schema/stixCoreObject';
+import { INTERNAL_EXPORTABLE_TYPES, isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
 import RedisStore, { REDIS_PREFIX } from './sessionStore-redis';
@@ -31,8 +31,8 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type {
   CreateEventOpts,
   DeleteEvent,
-  DeleteEventOpts,
   Event,
+  EventOpts,
   MergeEvent,
   StreamEvent,
   UpdateEvent,
@@ -40,7 +40,6 @@ import type {
 } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
-import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { telemetry } from '../config/tracing';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
@@ -54,11 +53,10 @@ const CONTEXT_DATABASE = 1; // locks / user context
 const REDIS_EXPIRE_TIME = 90;
 const MAX_RETRY_COMMAND = 10;
 
-const allowedInternalEventTypes = [RELATION_PARTICIPATE_TO];
-const isStreamPublishable = (instance: StoreObject) => {
+const isStreamPublishable = (instance: StoreObject, opts: EventOpts) => {
   const isInferredInstance = isInferredIndex(instance._index);
   if (isInferredInstance && !INCLUDE_INFERENCES) return false;
-  return isStixExportableData(instance) || allowedInternalEventTypes.includes(instance.entity_type);
+  return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
 
 const redisOptions = (database: number): RedisOptions => ({
@@ -385,11 +383,8 @@ const mapJSToStream = (event: any) => {
   });
   return cmdArgs;
 };
-const isDataStreamable = (instance: StoreObject, opts: { publishStreamEvent?: boolean }) => {
-  return isStixExportableData(instance) && (opts.publishStreamEvent === undefined || opts.publishStreamEvent);
-};
-const pushToStream = async (context: AuthContext, user: AuthUser, client: Redis, instance: StoreObject, event: Event) => {
-  if (isStreamPublishable(instance)) {
+const pushToStream = async (context: AuthContext, user: AuthUser, client: Redis, instance: StoreObject, event: Event, opts: EventOpts) => {
+  if (isStreamPublishable(instance, opts)) {
     const pushToStreamFn = async () => {
       if (streamTrimming) {
         await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
@@ -404,7 +399,11 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Redis,
 };
 
 // Merge
-const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>, impacts: any): MergeEvent => {
+interface MergeImpacts {
+  updatedRelations: Array<string>;
+  dependencyDeletions: Array<StoreObject>;
+}
+const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>, impacts: MergeImpacts): MergeEvent => {
   const message = generateMergeMessage(instance, sourceEntities);
   const { updatedRelations, dependencyDeletions } = impacts;
   const previousStix = convertStoreToStix(previous) as StixCoreObject;
@@ -412,7 +411,7 @@ const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreO
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_MERGE,
-    scope: 'external',
+    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
     data: currentStix,
@@ -431,11 +430,12 @@ export const storeMergeEvent = async (
   initialInstance: StoreObject,
   mergedInstance: StoreObject,
   sourceEntities: Array<StoreObject>,
-  impacts: any
+  impacts: MergeImpacts,
+  opts: EventOpts,
 ) => {
   try {
     const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
-    await pushToStream(context, user, clientBase, mergedInstance, event);
+    await pushToStream(context, user, clientBase, mergedInstance, event, opts);
     return event;
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
@@ -457,7 +457,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_UPDATE,
-    scope: isDataStreamable(instance, opts) ? 'external' : 'internal',
+    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
     data: stix,
@@ -472,9 +472,7 @@ export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, pre
   try {
     if (isStixExportableData(instance)) {
       const event = buildUpdateEvent(user, previous, instance, message, opts);
-      if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
-        await pushToStream(context, user, clientBase, instance, event);
-      }
+      await pushToStream(context, user, clientBase, instance, event, opts);
       return event;
     }
     return undefined;
@@ -483,12 +481,12 @@ export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, pre
   }
 };
 // Create
-export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts): Event => {
+export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): Event => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_CREATE,
-    scope: isDataStreamable(instance, opts) ? 'external' : 'internal',
+    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
     data: stix,
@@ -499,8 +497,8 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
     if (isStixExportableData(instance)) {
       const { withoutMessage = false } = opts;
       const message = withoutMessage ? '-' : generateCreateMessage(instance);
-      const event = buildCreateEvent(user, instance, message, opts);
-      await pushToStream(context, user, clientBase, instance, event);
+      const event = buildCreateEvent(user, instance, message);
+      await pushToStream(context, user, clientBase, instance, event, opts);
       return event;
     }
     return undefined;
@@ -511,10 +509,8 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
 export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
-      const event = buildCreateEvent(user, instance, message, opts);
-      if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
-        await pushToStream(context, user, clientBase, instance, event);
-      }
+      const event = buildCreateEvent(user, instance, message);
+      await pushToStream(context, user, clientBase, instance, event, opts);
       return event;
     }
     return undefined;
@@ -529,13 +525,12 @@ const buildDeleteEvent = async (
   instance: StoreObject,
   message: string,
   deletions: Array<StoreObject>,
-  opts: DeleteEventOpts
 ): Promise<DeleteEvent> => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_DELETE,
-    scope: isDataStreamable(instance, opts) ? 'external' : 'internal',
+    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
     data: stix,
@@ -544,12 +539,12 @@ const buildDeleteEvent = async (
     }
   };
 };
-export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: DeleteEventOpts = {}) => {
+export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: EventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
       const message = generateDeleteMessage(instance);
-      const event = await buildDeleteEvent(user, instance, message, deletions, opts);
-      await pushToStream(context, user, clientBase, instance, event);
+      const event = await buildDeleteEvent(user, instance, message, deletions);
+      await pushToStream(context, user, clientBase, instance, event, opts);
       return event;
     }
     return undefined;

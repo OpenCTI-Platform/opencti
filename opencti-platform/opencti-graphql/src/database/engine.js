@@ -317,7 +317,8 @@ const buildDataRestrictions = async (context, user) => {
         // Data with Empty granted_refs are not visible
         // Data with granted_refs users that participate to at least one
         const should = [...excludedEntityMatches];
-        const shouldOrgs = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
+        const shouldOrgs = user.allowed_organizations
+          .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
         should.push(...shouldOrgs);
         // User individual or data created by this individual must be accessible
         if (user.individual_id) {
@@ -332,8 +333,9 @@ const buildDataRestrictions = async (context, user) => {
       const should = [...excludedEntityMatches];
       should.push({ bool: { must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GRANTED_TO) } }] } });
       // Data with granted_refs users that participate to at least one
-      if (user.organizations.length > 0) {
-        const shouldOrgs = user.organizations.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
+      if (user.allowed_organizations.length > 0) {
+        const shouldOrgs = user.allowed_organizations
+          .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
         should.push(...shouldOrgs);
       }
       // User individual or data created by this individual must be accessible

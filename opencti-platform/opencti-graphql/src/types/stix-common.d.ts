@@ -4,7 +4,6 @@ import type { StixRelation, StixSighting } from './stix-sro';
 import type { StixInternalExternalReference } from './stix-smo';
 
 type StixId = `${string}--${v4 | v5}`;
-type StixFieldExtension = `${string}--${string}`;
 
 export enum OrganizationReliability {
   A = 'A',
@@ -61,10 +60,6 @@ interface StixObject {
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtension;
   };
-}
-
-interface StixInternalObject extends StixObject {
-  sequence: string;
 }
 
 // --- STIX Core Objects

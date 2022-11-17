@@ -208,6 +208,7 @@ export const findCapabilities = (context, user, args) => {
 };
 
 export const roleDelete = async (context, user, roleId) => {
+  await roleSessionRefresh(context, user, roleId);
   await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
   logAudit.info(user, ROLE_DELETION, { id: roleId });
   return roleId;
@@ -215,17 +216,20 @@ export const roleDelete = async (context, user, roleId) => {
 
 export const roleCleanContext = async (context, user, roleId) => {
   await delEditContext(user, roleId);
-  return storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
+  return storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE).then((role) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
+  });
 };
 
 export const roleEditContext = async (context, user, roleId, input) => {
   await setEditContext(user, roleId, input);
-  return storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
+  return storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE).then((role) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
+  });
 };
 
 const assignRoleToUser = async (context, user, userId, roleName) => {
   const generateToId = generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
-  // TODO Check is valid role
   const assignInput = {
     fromId: userId,
     toId: generateToId,
@@ -235,9 +239,9 @@ const assignRoleToUser = async (context, user, userId, roleName) => {
 };
 
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
-  // TODO Check is valid organization
   const assignInput = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   await createRelation(context, user, assignInput);
+  await userSessionRefresh(userId);
   return user;
 };
 
@@ -248,7 +252,9 @@ const assignGroupToUser = async (context, user, userId, groupName) => {
     toId: generateToId,
     relationship_type: RELATION_MEMBER_OF,
   };
-  return createRelation(context, user, assignInput);
+  const rel = await createRelation(context, user, assignInput);
+  await userSessionRefresh(userId);
+  return rel;
 };
 
 export const addUser = async (context, user, newUser) => {
@@ -298,6 +304,7 @@ export const addUser = async (context, user, newUser) => {
 
 export const roleEditField = async (context, user, roleId, input) => {
   const { element } = await updateAttribute(context, user, roleId, ENTITY_TYPE_ROLE, input);
+  await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, element, user);
 };
 
@@ -452,6 +459,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
   const operation = convertRelationToAction(RELATION_PARTICIPATE_TO, false);
   logAudit.info(user, operation, { from: userId, to: toId, type: RELATION_PARTICIPATE_TO });
+  await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
@@ -584,6 +592,7 @@ const buildSessionUser = (origin, impersonate, provider) => {
     impersonate: impersonate !== undefined,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     organizations: user.organizations,
+    allowed_organizations: user.allowed_organizations,
     inside_platform_organization: user.inside_platform_organization,
     allowed_marking: user.allowed_marking.map((m) => ({
       id: m.id,
@@ -606,8 +615,10 @@ const buildCompleteUser = async (context, client) => {
     return undefined;
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const organizations = await batchOrganizations(context, SYSTEM_USER, client.id, { batched: false, paginate: false });
-  const userOrganizations = organizations.map((m) => m.internal_id);
+  const batchOpts = { batched: false, paginate: false };
+  const organizations = await batchOrganizations(context, SYSTEM_USER, client.id, { ...batchOpts, withInferences: false });
+  const allowed_organizations = await batchOrganizations(context, SYSTEM_USER, client.id, batchOpts);
+  const userOrganizations = allowed_organizations.map((m) => m.internal_id);
   const isUserPlatform = settings.platform_organization ? userOrganizations.includes(settings.platform_organization) : true;
   const capabilities = await getCapabilities(context, client.id, isUserPlatform);
   const marking = await getUserAndGlobalMarkings(context, client.id, capabilities);
@@ -618,6 +629,7 @@ const buildCompleteUser = async (context, client) => {
     ...client,
     capabilities,
     organizations,
+    allowed_organizations,
     individual_id: individualId,
     inside_platform_organization: isUserPlatform,
     allowed_marking: marking.user,

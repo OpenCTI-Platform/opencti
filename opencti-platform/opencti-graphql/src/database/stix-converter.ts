@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { v4 as uuidv4, version as uuidVersion } from 'uuid';
+import { version as uuidVersion } from 'uuid';
 import { isEmptyField, isInferredIndex } from './utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
@@ -338,15 +338,11 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
 };
 
 // INTERNAL
-const convertInternalToStix = (instance: StoreEntity, type: string): S.StixInternalObject => {
+const convertInternalToStix = (instance: StoreEntity, type: string): S.StixObject => {
   if (!isInternalObject(type)) {
     throw UnsupportedError(`${instance.entity_type} not compatible with internal`);
   }
-  const stixObject = buildStixObject(instance);
-  return {
-    ...stixObject,
-    sequence: uuidv4()
-  };
+  return buildStixObject(instance);
 };
 // SDO
 const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIdentity => {

@@ -28,5 +28,8 @@ export const convertRelationToAction = (name: string, isAdd = true): string => {
   if (name === 'member-of') {
     convertName = 'GROUP';
   }
+  if (name === 'participate-to') {
+    convertName = 'ORGANIZATION';
+  }
   return isAdd ? `${convertName}_ADD` : `${convertName}_REMOVE`;
 };
