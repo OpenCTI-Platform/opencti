@@ -8,18 +8,16 @@ interface CommitContext {
   references: Array<string>;
 }
 
-interface CreateEventOpts {
+interface EventOpts {
+  publishStreamEvent?: boolean;
+}
+
+interface CreateEventOpts extends EventOpts {
   withoutMessage?: boolean;
-  publishStreamEvent?: boolean;
 }
 
-interface UpdateEventOpts {
-  commit?: CommitContext | undefined,
-  publishStreamEvent?: boolean;
-}
-
-interface DeleteEventOpts {
-  publishStreamEvent?: boolean;
+interface UpdateEventOpts extends EventOpts {
+  commit?: CommitContext | undefined;
 }
 
 interface RuleEvent {

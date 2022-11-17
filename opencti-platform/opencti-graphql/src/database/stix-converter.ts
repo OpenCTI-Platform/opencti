@@ -338,15 +338,11 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
 };
 
 // INTERNAL
-const convertInternalToStix = (instance: StoreEntity, type: string): S.StixInternalObject => {
+const convertInternalToStix = (instance: StoreEntity, type: string): S.StixObject => {
   if (!isInternalObject(type)) {
     throw UnsupportedError(`${instance.entity_type} not compatible with internal`);
   }
-  const stixObject = buildStixObject(instance);
-  return {
-    ...stixObject,
-    sequence: uuidv4()
-  };
+  return buildStixObject(instance);
 };
 // SDO
 const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIdentity => {
