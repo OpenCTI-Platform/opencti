@@ -235,9 +235,7 @@ const assignRoleToUser = async (context, user, userId, roleName) => {
     toId: generateToId,
     relationship_type: RELATION_HAS_ROLE,
   };
-  const rel = await createRelation(context, user, assignInput);
-  await userSessionRefresh(userId);
-  return rel;
+  return createRelation(context, user, assignInput);
 };
 
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
