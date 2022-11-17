@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
-import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
+import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
 import {
   batchListThroughGetTo,
   createEntity,
@@ -208,9 +208,9 @@ export const findCapabilities = (context, user, args) => {
 };
 
 export const roleDelete = async (context, user, roleId) => {
-  const del = await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
+  await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
   logAudit.info(user, ROLE_DELETION, { id: roleId });
-  return del;
+  return roleId;
 };
 
 export const roleCleanContext = async (context, user, roleId) => {
@@ -597,6 +597,7 @@ const buildSessionUser = (origin, impersonate, provider) => {
       internal_id: m.internal_id,
       definition_type: m.definition_type,
     })),
+    session_version: PLATFORM_VERSION
   };
 };
 
@@ -717,7 +718,8 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       return authenticateUserFromRequest(context, req, res);
     }
     // If session is marked for refresh, reload the user data in the session
-    if (req.session.session_refresh) {
+    // If session is old by a past application version, make a refresh
+    if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
       const { provider: userProvider, token: userToken } = req.session.session_provider;
       return internalAuthenticateUser(context, req, auth, userProvider, userToken);
     }

@@ -1,28 +1,19 @@
-import * as R from 'ramda';
-import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { now } from '../utils/format';
 import { elIndex, elPaginate } from '../database/engine';
-import {
-  INDEX_INTERNAL_OBJECTS,
-  READ_DATA_INDICES,
-  READ_DATA_INDICES_WITHOUT_INFERRED,
-} from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
-import { deleteElementById, storeLoadById, patchAttribute } from '../database/middleware';
+import { deleteElementById, patchAttribute, storeLoadById } from '../database/middleware';
 import { buildFilters } from '../database/repository';
 import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
-import { ForbiddenAccess } from '../config/errors';
-import { BYPASS, SYSTEM_USER } from '../utils/access';
-import { RULE_PREFIX, KNOWLEDGE_DELETE } from '../schema/general';
+import { SYSTEM_USER } from '../utils/access';
+import { RULE_PREFIX } from '../schema/general';
 import { listEntities } from '../database/middleware-loader';
+import { checkActionValidity, createDefaultTask } from './task-common';
 
 export const MAX_TASK_ELEMENTS = 500;
 
 export const TASK_TYPE_QUERY = 'QUERY';
-export const TASK_TYPE_LIST = 'LIST';
 export const TASK_TYPE_RULE = 'RULE';
 
-export const ACTION_TYPE_DELETE = 'DELETE';
 export const ACTION_TYPE_ADD = 'ADD';
 export const ACTION_TYPE_REMOVE = 'REMOVE';
 export const ACTION_TYPE_REPLACE = 'REPLACE';
@@ -32,28 +23,6 @@ export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
 export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
 export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
-export const ACTION_TYPE_SHARE = 'SHARE';
-export const ACTION_TYPE_UNSHARE = 'UNSHARE';
-
-const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
-  const taskId = generateInternalId();
-  return {
-    id: taskId,
-    internal_id: taskId,
-    standard_id: generateStandardId(ENTITY_TYPE_TASK, input),
-    entity_type: ENTITY_TYPE_TASK,
-    initiator_id: user.internal_id,
-    created_at: now(),
-    completed: false,
-    // Task related
-    type: taskType,
-    last_execution_date: null,
-    task_position: null, // To mark the progress.
-    task_processed_number: 0, // Initial number of processed element
-    task_expected_number: taskExpectedNumber, // Expected number of element processed
-    errors: [], // To stock the errors
-  };
-};
 
 export const findById = async (context, user, taskId) => {
   return storeLoadById(context, user, taskId, ENTITY_TYPE_TASK);
@@ -99,18 +68,6 @@ export const executeTaskQuery = async (context, user, filters, search, start = n
   return elPaginate(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, options);
 };
 
-const checkActionValidity = (user, actions) => {
-  const askForDeletion = actions.filter((a) => a.type === ACTION_TYPE_DELETE).length > 0;
-  if (askForDeletion) {
-    // If deletion action available, user need to have the right capability
-    const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
-    const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_DELETE);
-    if (!isAuthorized) {
-      throw ForbiddenAccess();
-    }
-  }
-};
-
 export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const { rule, enable } = input;
   const { scan } = ruleDefinition;
@@ -132,15 +89,6 @@ export const createQueryTask = async (context, user, input) => {
   const queryTask = { ...task, actions, task_filters: filters, task_search: search, task_excluded_ids: excluded_ids };
   await elIndex(INDEX_INTERNAL_OBJECTS, queryTask);
   return queryTask;
-};
-
-export const createListTask = async (user, input) => {
-  const { actions, ids } = input;
-  checkActionValidity(user, actions);
-  const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length);
-  const listTask = { ...task, actions, task_ids: ids };
-  await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
-  return listTask;
 };
 
 export const deleteTask = async (context, user, taskId) => {

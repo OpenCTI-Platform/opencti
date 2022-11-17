@@ -128,6 +128,7 @@ import {
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_STATUS, isDatedInternalObject, isInternalObject, } from '../schema/internalObject';
@@ -158,6 +159,7 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
+  isStixDomainObjectShareableContainer,
   isStixObjectAliased,
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
@@ -215,6 +217,7 @@ import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listEntities, listRelations } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesFromCache } from './cache';
+import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -699,13 +702,64 @@ const inputResolveRefs = async (context, user, input, type) => {
   }
   return inputResolved;
 };
+const isRelationTargetGrants = (elementGrants, relation, type) => {
+  const isTargetType = relation.base_type === BASE_TYPE_RELATION && relation.entity_type === RELATION_OBJECT;
+  if (!isTargetType) return false;
+  const isUnrestricted = [relation.to.entity_type, ...relation.to.parent_types]
+    .some((r) => STIX_ORGANIZATIONS_UNRESTRICTED.includes(r));
+  if (isUnrestricted) return false;
+  return type === ACTION_TYPE_UNSHARE || !elementGrants.every((v) => (relation.to[RELATION_GRANTED_TO] ?? []).includes(v));
+};
+const createContainerSharingTask = (context, type, element, relations) => {
+  // If object_refs relations are newly created
+  // One side is a container, the other side must inherit from the granted_refs
+  const targetGrantIds = [];
+  let taskPromise = Promise.resolve();
+  const elementGrants = (relations ?? []).filter((e) => e.entity_type === RELATION_GRANTED_TO).map((r) => r.to.internal_id);
+  // If container is granted, we need to grant every new children.
+  if (element.base_type === BASE_TYPE_ENTITY && isStixDomainObjectShareableContainer(element.entity_type)) {
+    elementGrants.push(...(element[RELATION_GRANTED_TO] ?? []));
+    if (elementGrants.length > 0) {
+      // A container has created or modified (addition of some object_refs)
+      // We need to compute the granted_refs on the container and apply it on new child
+      // Apply will be done on a background task to not slow the main ingestion process.
+      const newChildrenIds = (relations ?? [])
+        .filter((e) => isRelationTargetGrants(elementGrants, e, type))
+        .map((r) => r.to.internal_id);
+      targetGrantIds.push(...newChildrenIds);
+    }
+  }
+  if (element.base_type === BASE_TYPE_RELATION && isStixDomainObjectShareableContainer(element.from.entity_type)) {
+    elementGrants.push(...(element.from[RELATION_GRANTED_TO] ?? []));
+    // A new object_ref relation was created between a shareable container and an element
+    // If this element is compatible we need to apply the granted_refs of the container on this new element
+    if (elementGrants.length > 0 && isRelationTargetGrants(elementGrants, element, type)) {
+      targetGrantIds.push(element.to.internal_id);
+    }
+  }
+  // If element needs to be updated, start a SHARE background task
+  if (targetGrantIds.length > 0) {
+    const input = { ids: targetGrantIds, actions: [{ type, context: { values: elementGrants } }] };
+    taskPromise = createListTask(context.user, input);
+  }
+  return taskPromise;
+};
 const indexCreatedElement = async (context, user, { type, element, update, relations }) => {
+  // Continue the creation of the element and the connected relations
   if (type === TRX_CREATION) {
-    await elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
-  } else if (update) { // Can be undefined in case of unneeded update on upsert
-    await elUpdateElement(update);
+    const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
+    const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
+    await Promise.all([taskPromise, indexPromise]);
+  }
+  if (type === TRX_UPDATE) {
+    const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
+    // update can be undefined in case of unneeded update on upsert on the element
+    // noinspection ES6MissingAwait
+    const updatePromise = update ? elUpdateElement(update) : Promise.resolve();
+    await Promise.all([taskPromise, updatePromise]);
     if (relations.length > 0) {
-      await elIndexElements(context, user, `${relations.length} Relation${relations.length > 1 ? 's' : ''}`, relations);
+      const message = `${relations.length} Relation${relations.length > 1 ? 's' : ''}`;
+      await elIndexElements(context, user, message, relations);
     }
   }
 };
@@ -1714,10 +1768,12 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
             const previous = currentValue ? [currentValue] : currentValue;
             updatedInputs.push({ key, value: [element], previous });
             updatedInstance[key] = element;
+            updatedInstance[relType] = updatedInstance[key].internal_id;
           } else if (currentValue) {
             // Just replace by nothing
             updatedInputs.push({ key, value: null, previous: [currentValue] });
             updatedInstance[key] = null;
+            updatedInstance[relType] = null;
           }
         }
       } else {
@@ -1749,6 +1805,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
             }
             updatedInputs.push({ key, value: newTargets, previous: updatedInstance[key] });
             updatedInstance[key] = newTargets;
+            updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
@@ -1764,6 +1821,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
             }
             updatedInputs.push({ key, value: newTargets, operation });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...newTargets];
+            updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
@@ -1776,6 +1834,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
             await deleteElements(context, user, relsToDelete, streamOpts);
             updatedInputs.push({ key, value: targets, operation });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
+            updatedInstance[relType] = updatedInstance[key].map((t) => t.internal_id);
           }
         }
       }
@@ -3053,8 +3112,11 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         // Generate the new version of the from
         instance[key] = withoutElementDeleted;
       }
-      await elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
-      event = await storeUpdateEvent(context, user, previous, instance, message, opts);
+      const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
+      const deletePromise = elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
+      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, opts);
+      const [,, updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
+      event = updateEvent;
     } else {
       // Start by deleting external files
       const importDeletePromise = deleteAllFiles(context, user, `import/${element.entity_type}/${element.internal_id}/`);
@@ -3079,13 +3141,10 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   return { element, event };
 };
 const deleteElements = async (context, user, elements, opts = {}) => {
-  const deletedIds = [];
   for (let index = 0; index < elements.length; index += 1) {
     const element = elements[index];
-    const deletedId = await deleteElementById(context, user, element.internal_id, element.entity_type, opts);
-    deletedIds.push(deletedId);
+    await deleteElementById(context, user, element.internal_id, element.entity_type, opts);
   }
-  return deletedIds;
 };
 export const deleteElementById = async (context, user, elementId, type, opts = {}) => {
   if (R.isNil(type)) {

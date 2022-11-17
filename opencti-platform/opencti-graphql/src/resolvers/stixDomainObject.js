@@ -89,8 +89,9 @@ const stixDomainObjectResolvers = {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         stixDomainObjectEditContext(context, context.user, id);
+        const bus = BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT];
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC),
+          () => pubsub.asyncIterator([bus.EDIT_TOPIC, bus.CONTEXT_TOPIC]),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

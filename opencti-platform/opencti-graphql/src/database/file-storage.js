@@ -153,6 +153,10 @@ export const loadFile = async (context, user, filename) => {
       Bucket: bucketName,
       Key: filename
     }));
+    const metaData = { ...object.Metadata, messages: [], errors: [] };
+    if (metaData.labels_text) {
+      metaData.labels = metaData.labels_text.split(';');
+    }
     return {
       id: filename,
       name: decodeURIComponent(object.Metadata.filename || 'unknown'),
@@ -160,7 +164,7 @@ export const loadFile = async (context, user, filename) => {
       information: '',
       lastModified: object.LastModified,
       lastModifiedSinceMin: sinceNowInMinutes(object.LastModified),
-      metaData: { ...object.Metadata, messages: [], errors: [] },
+      metaData,
       uploadStatus: 'complete'
     };
   } catch (err) {

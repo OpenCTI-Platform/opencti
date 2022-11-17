@@ -56,7 +56,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     name: String!
     aliases: [String]
     # Technical
-    creator: User
+    creator: Creator
     toStix: String
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection

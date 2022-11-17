@@ -5,7 +5,6 @@ import { Promise as BluePromise } from 'bluebird';
 import { buildCreateEvent, lockResource } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
-  ACTION_TYPE_DELETE,
   ACTION_TYPE_ENRICHMENT,
   ACTION_TYPE_MERGE,
   ACTION_TYPE_PROMOTE,
@@ -14,12 +13,9 @@ import {
   ACTION_TYPE_RULE_APPLY,
   ACTION_TYPE_RULE_CLEAR,
   ACTION_TYPE_RULE_ELEMENT_RESCAN,
-  ACTION_TYPE_SHARE,
-  ACTION_TYPE_UNSHARE,
   executeTaskQuery,
   findAll,
   MAX_TASK_ELEMENTS,
-  TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE,
   updateTask,
@@ -70,6 +66,7 @@ import { promoteIndicatorToObservable } from '../domain/indicator';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { creatorFromHistory } from '../domain/log';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST } from '../domain/task-common';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.

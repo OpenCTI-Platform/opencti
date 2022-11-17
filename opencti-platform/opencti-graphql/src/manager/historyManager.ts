@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
 import conf, { logApp } from '../config/conf';
-import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField } from '../database/utils';
+import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
@@ -17,8 +17,9 @@ import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-common';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getEntitiesFromCache } from '../database/cache';
+import { getEntitiesMapFromCache } from '../database/cache';
 import type { AuthContext } from '../types/user';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -32,6 +33,7 @@ interface HistoryContext {
   commit?: string | undefined;
   references?: Array<string>;
 }
+
 interface HistoryData extends BasicStoreEntity {
   event_type: string;
   timestamp: string;
@@ -45,16 +47,8 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
-  const markings = await getEntitiesFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const markingsById = new Map();
-  for (let i = 0; i < markings.length; i += 1) {
-    const marking = markings[i];
-    const ids = [marking.standard_id, ...(marking.x_opencti_stix_ids ?? [])];
-    for (let index = 0; index < ids.length; index += 1) {
-      const id = ids[index];
-      markingsById.set(id, marking.internal_id);
-    }
-  }
+  const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const organizationsById = await getEntitiesMapFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   const filteredEvents = events.filter((event) => {
     // Filter update events with only files modification
     if (event.event === EVENT_TYPE_UPDATE) {
@@ -70,7 +64,12 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const stix = event.data.data;
-    const eventMarkingRefs = (stix.object_marking_refs ?? []).map((stixId) => markingsById.get(stixId));
+    const eventMarkingRefs = (stix.object_marking_refs ?? [])
+      .map((stixId) => markingsById.get(stixId)?.internal_id)
+      .filter((o) => isNotEmptyField(o));
+    const eventGrantedRefs = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? [])
+      .map((stixId) => organizationsById.get(stixId)?.internal_id)
+      .filter((o) => isNotEmptyField(o));
     const contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,
@@ -97,7 +96,7 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    const data = {
+    return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
       standard_id: standardId,
@@ -110,9 +109,9 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
       applicant_id: event.data.origin?.applicant_id,
       timestamp: eventDate,
       context_data: contextData,
-      'rel_object-marking.internal_id': eventMarkingRefs
+      'rel_object-marking.internal_id': eventMarkingRefs,
+      'rel_granted.internal_id': eventGrantedRefs
     };
-    return data;
   });
   // Bulk the history data insertions
   await elIndexElements(context, SYSTEM_USER, `history (${historyElements.length})`, historyElements);
