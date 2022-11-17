@@ -1,11 +1,37 @@
 import React from 'react';
 import { isNil } from 'ramda';
-import { useField } from 'formik';
+import { getIn, useField } from 'formik';
 import MuiSelect from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
-import { fieldToSelect } from 'formik-mui';
+
+const fieldToSelect = ({
+  disabled,
+  field: { onBlur: _onBlur, onChange: fieldOnChange, ...field },
+  form: { isSubmitting, touched, errors, setTouched, setFieldValue },
+  onClose,
+  ...props
+}) => {
+  const fieldError = getIn(errors, field.name);
+  const showError = getIn(touched, field.name) && !!fieldError;
+  return {
+    disabled: disabled ?? isSubmitting,
+    error: showError,
+    formError: showError ? fieldError : undefined,
+    onBlur: () => {},
+    onChange: fieldOnChange ?? (() => {}),
+    onClose: onClose ?? (async (e) => {
+      const { dataset } = e.target;
+      if (dataset && dataset.value) {
+        await setFieldValue(field.name, dataset.value);
+      }
+      setTouched(true);
+    }),
+    ...field,
+    ...props,
+  };
+};
 
 const SelectField = (props) => {
   const {
