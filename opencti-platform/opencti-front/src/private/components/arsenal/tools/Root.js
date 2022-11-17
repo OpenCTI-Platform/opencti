@@ -166,7 +166,6 @@ class RootTool extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.tool}
                             PopoverComponent={<ToolPopover />}
-                            variant="noaliases"
                           />
                           <StixDomainObjectIndicators
                             {...routeProps}

@@ -30,7 +30,6 @@ class PositionKnowledgeComponent extends Component {
           disableSharing={true}
           stixDomainObject={position}
           PopoverComponent={<PositionPopover />}
-          variant="noaliases"
         />
         <Switch>
           <Route

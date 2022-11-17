@@ -29,7 +29,6 @@ class RegionKnowledgeComponent extends Component {
           disableSharing={true}
           stixDomainObject={region}
           PopoverComponent={<RegionPopover />}
-          variant="noaliases"
         />
         <Switch>
           <Route

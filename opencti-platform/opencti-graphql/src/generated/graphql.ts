@@ -6896,7 +6896,6 @@ export enum LocationType {
 }
 
 export enum LocationsFilter {
-  Aliases = 'aliases',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -6908,6 +6907,7 @@ export enum LocationsFilter {
   Name = 'name',
   Revoked = 'revoked',
   UpdatedAt = 'updated_at',
+  XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 

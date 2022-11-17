@@ -6,7 +6,12 @@ import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { Fire } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
-import { granted, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD, UserContext } from '../../../utils/Security';
+import {
+  granted,
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+  UserContext,
+} from '../../../utils/Security';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttonHome: {
@@ -37,26 +42,45 @@ const TopMenuIncident = () => {
   const { incidentId } = useParams() as { incidentId: string };
   const classes = useStyles();
   const { me } = useContext(UserContext);
-  const isUploaderOrExporter = granted(me, [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]);
+  const isUploaderOrExporter = granted(me, [
+    KNOWLEDGE_KNUPLOAD,
+    KNOWLEDGE_KNGETEXPORT,
+  ]);
   const computePath = (path?: string) => `/dashboard/events/incidents/${incidentId}${path ?? ''}`;
-  const computeVariant = (path?: string) => (location.pathname === computePath(path) ? 'contained' : 'text');
-  const computeColor = (path?: string) => (location.pathname === computePath(path) ? 'secondary' : 'primary');
+  const isCompatiblePath = (path?: string) => (path ? location.pathname.includes(computePath(path)) : location.pathname === computePath(path));
+  const computeVariant = (path?: string) => (isCompatiblePath(path) ? 'contained' : 'text');
+  const computeColor = (path?: string) => (isCompatiblePath(path) ? 'secondary' : 'primary');
   const computeLocatedButton = (title: string, basePath?: string) => {
-    return <Button component={Link} size="small" to={computePath(basePath)}
-                   variant={computeVariant(basePath)} color={computeColor(basePath)}
-                   classes={{ root: classes.button }}>
-      {t(title)}
-    </Button>;
+    return (
+      <Button
+        component={Link}
+        size="small"
+        to={computePath(basePath)}
+        variant={computeVariant(basePath)}
+        color={computeColor(basePath)}
+        classes={{ root: classes.button }}
+      >
+        {t(title)}
+      </Button>
+    );
   };
   return (
     <div>
-      <Button component={Link} to="/dashboard/events/incidents"
-              variant="contained" size="small" color="primary"
-              classes={{ root: classes.buttonHome }}>
+      <Button
+        component={Link}
+        to="/dashboard/events/incidents"
+        variant="contained"
+        size="small"
+        color="primary"
+        classes={{ root: classes.buttonHome }}
+      >
         <Fire className={classes.icon} fontSize="small" />
         {t('Incidents')}
       </Button>
-      <ArrowForwardIosOutlined color="primary" classes={{ root: classes.arrow }} />
+      <ArrowForwardIosOutlined
+        color="primary"
+        classes={{ root: classes.arrow }}
+      />
       {computeLocatedButton('Overview')}
       {computeLocatedButton('Knowledge', '/knowledge')}
       {computeLocatedButton('Content', '/content')}

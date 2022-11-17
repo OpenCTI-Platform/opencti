@@ -169,7 +169,6 @@ class RootAttackPattern extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.attackPattern}
                             PopoverComponent={<AttackPatternPopover />}
-                            variant="noaliases"
                           />
                           <StixDomainObjectIndicators
                             {...routeProps}

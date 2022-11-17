@@ -268,7 +268,6 @@ class StixDomainObjectHeader extends Component {
     const {
       t,
       classes,
-      variant,
       stixDomainObject,
       isOpenctiAlias,
       PopoverComponent,
@@ -322,124 +321,115 @@ class StixDomainObjectHeader extends Component {
             </FormControl>
           </div>
         )}
-        {variant !== 'noaliases' && (
-          <div
-            className={classes.aliases}
-            style={{ marginLeft: typeof onViewAs === 'function' ? 10 : 0 }}
-          >
-            {R.take(5, aliases).map(
-              (label) => label.length > 0 && (
-                  <Security
-                    needs={[KNOWLEDGE_KNUPDATE]}
-                    key={label}
-                    placeholder={
-                      <Chip classes={{ root: classes.alias }} label={label} />
+        <div
+          className={classes.aliases}
+          style={{ marginLeft: typeof onViewAs === 'function' ? 10 : 0 }}
+        >
+          {R.take(5, aliases).map(
+            (label) => label.length > 0 && (
+                <Security
+                  needs={[KNOWLEDGE_KNUPDATE]}
+                  key={label}
+                  placeholder={
+                    <Chip classes={{ root: classes.alias }} label={label} />
+                  }
+                >
+                  <Chip
+                    classes={{ root: classes.alias }}
+                    label={label}
+                    onDelete={
+                      enableReferences
+                        ? this.handleOpenCommitDelete.bind(this, label)
+                        : this.deleteAlias.bind(this, label)
                     }
-                  >
-                    <Chip
-                      classes={{ root: classes.alias }}
-                      label={label}
-                      onDelete={
-                        enableReferences
-                          ? this.handleOpenCommitDelete.bind(this, label)
-                          : this.deleteAlias.bind(this, label)
-                      }
-                    />
-                  </Security>
-              ),
-            )}
-          </div>
-        )}
-        {variant !== 'noaliases' && (
-          <Slide
-            direction="right"
-            in={this.state.openAlias}
-            mountOnEnter={true}
-            unmountOnExit={true}
-          >
-            <div style={{ float: 'left', marginTop: -5 }}>
-              <Formik
-                initialValues={{ new_alias: '' }}
-                onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
-                validationSchema={enableReferences ? aliasValidation(t) : null}
-              >
-                {({
-                  submitForm,
-                  isSubmitting,
-                  validateForm,
-                  setFieldValue,
-                  values,
-                }) => (
-                  <Form style={{ float: 'right' }}>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="new_alias"
-                      autoFocus={true}
-                      placeholder={t('New alias')}
-                      className={classes.aliasesInput}
-                      onChange={this.handleChangeNewAlias.bind(this)}
-                      value={this.state.newAlias}
-                      onKeyDown={(e) => {
-                        if (e.keyCode === 13) {
-                          if (
-                            enableReferences
-                            && !this.state.openCommitCreate
-                          ) {
-                            return this.handleOpenCommitCreate();
-                          }
-                          return submitForm();
+                  />
+                </Security>
+            ),
+          )}
+        </div>
+        <Slide
+          direction="right"
+          in={this.state.openAlias}
+          mountOnEnter={true}
+          unmountOnExit={true}
+        >
+          <div style={{ float: 'left', marginTop: -5 }}>
+            <Formik
+              initialValues={{ new_alias: '' }}
+              onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
+              validationSchema={enableReferences ? aliasValidation(t) : null}
+            >
+              {({
+                submitForm,
+                isSubmitting,
+                validateForm,
+                setFieldValue,
+                values,
+              }) => (
+                <Form style={{ float: 'right' }}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="new_alias"
+                    autoFocus={true}
+                    placeholder={t('New alias')}
+                    className={classes.aliasesInput}
+                    onChange={this.handleChangeNewAlias.bind(this)}
+                    value={this.state.newAlias}
+                    onKeyDown={(e) => {
+                      if (e.keyCode === 13) {
+                        if (enableReferences && !this.state.openCommitCreate) {
+                          return this.handleOpenCommitCreate();
                         }
-                        return true;
-                      }}
+                        return submitForm();
+                      }
+                      return true;
+                    }}
+                  />
+                  {enableReferences && (
+                    <CommitMessage
+                      handleClose={this.openCommitCreate.bind(this)}
+                      open={this.state.openCommitCreate}
+                      submitForm={submitForm}
+                      disabled={isSubmitting}
+                      validateForm={validateForm}
+                      setFieldValue={setFieldValue}
+                      values={values}
+                      id={stixDomainObject.id}
                     />
-                    {enableReferences && (
-                      <CommitMessage
-                        handleClose={this.openCommitCreate.bind(this)}
-                        open={this.state.openCommitCreate}
-                        submitForm={submitForm}
-                        disabled={isSubmitting}
-                        validateForm={validateForm}
-                        setFieldValue={setFieldValue}
-                        values={values}
-                        id={stixDomainObject.id}
-                      />
-                    )}
-                  </Form>
-                )}
-              </Formik>
-            </div>
-          </Slide>
-        )}
-        {variant !== 'noaliases' && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            {aliases.length > 5 ? (
-              <IconButton
-                style={{ float: 'left', marginTop: -8 }}
-                color="primary"
-                aria-label="More"
-                onClick={this.handleToggleOpenAliases.bind(this)}
-                size="large"
-              >
-                <DotsHorizontalCircleOutline fontSize="small" />
-              </IconButton>
-            ) : (
-              <IconButton
-                style={{ float: 'left', marginTop: -8 }}
-                color={this.state.openAlias ? 'primary' : 'secondary'}
-                aria-label="Alias"
-                onClick={this.handleToggleCreateAlias.bind(this)}
-                size="large"
-              >
-                {this.state.openAlias ? (
-                  <Close fontSize="small" color="primary" />
-                ) : (
-                  <Add fontSize="small" />
-                )}
-              </IconButton>
-            )}
-          </Security>
-        )}
+                  )}
+                </Form>
+              )}
+            </Formik>
+          </div>
+        </Slide>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          {aliases.length > 5 ? (
+            <IconButton
+              style={{ float: 'left', marginTop: -8 }}
+              color="primary"
+              aria-label="More"
+              onClick={this.handleToggleOpenAliases.bind(this)}
+              size="large"
+            >
+              <DotsHorizontalCircleOutline fontSize="small" />
+            </IconButton>
+          ) : (
+            <IconButton
+              style={{ float: 'left', marginTop: -8 }}
+              color={this.state.openAlias ? 'primary' : 'secondary'}
+              aria-label="Alias"
+              onClick={this.handleToggleCreateAlias.bind(this)}
+              size="large"
+            >
+              {this.state.openAlias ? (
+                <Close fontSize="small" color="primary" />
+              ) : (
+                <Add fontSize="small" />
+              )}
+            </IconButton>
+          )}
+        </Security>
         <div className={classes.actions}>
           <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
             {disableSharing !== true && (

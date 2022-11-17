@@ -11,7 +11,8 @@ import {
   MODULES,
   SETTINGS,
   TAXIIAPI_SETCOLLECTIONS,
-  UserContext, UserContextType,
+  UserContext,
+  UserContextType,
 } from '../../../utils/Security';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -37,55 +38,80 @@ const TopMenuData = () => {
   const isConnectorReader = granted(me, [MODULES]);
   const isSettingsManager = granted(me, [SETTINGS]);
   const isSharingManager = granted(me, [TAXIIAPI_SETCOLLECTIONS]);
-  const getVariant = (path: string) => (location.pathname === path ? 'contained' : 'text');
-  const getColor = (path: string) => (location.pathname === path ? 'secondary' : 'primary');
+  const isCompatiblePath = (path?: string) => (path ? location.pathname.includes(path) : location.pathname === path);
+  const getVariant = (path: string) => (isCompatiblePath(path) ? 'contained' : 'text');
+  const getColor = (path: string) => (isCompatiblePath(path) ? 'secondary' : 'primary');
   return (
     <div>
       {isKnowledgeReader && (
-        <Button component={Link} size="small" to="/dashboard/data/entities"
-                variant={getVariant('/dashboard/data/entities')}
-                color={getColor('/dashboard/data/entities')}
-                classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/data/entities"
+          variant={getVariant('/dashboard/data/entities')}
+          color={getColor('/dashboard/data/entities')}
+          classes={{ root: classes.button }}
+        >
           {t('Entities')}
         </Button>
       )}
       {isKnowledgeReader && (
-        <Button component={Link} size="small" to="/dashboard/data/relationships"
-                variant={getVariant('/dashboard/data/relationships')}
-                color={getColor('/dashboard/data/relationships')}
-                classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/data/relationships"
+          variant={getVariant('/dashboard/data/relationships')}
+          color={getColor('/dashboard/data/relationships')}
+          classes={{ root: classes.button }}
+        >
           {t('Relationships')}
         </Button>
       )}
       {isKnowledgeEditor && (
-        <Button component={Link} size="small" to="/dashboard/data/tasks"
-                variant={getVariant('/dashboard/data/tasks')}
-                color={getColor('/dashboard/data/tasks')}
-                classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/data/tasks"
+          variant={getVariant('/dashboard/data/tasks')}
+          color={getColor('/dashboard/data/tasks')}
+          classes={{ root: classes.button }}
+        >
           {t('Background tasks')}
         </Button>
       )}
       {isConnectorReader && (
-        <Button component={Link} size="small" to="/dashboard/data/connectors"
-                variant={getVariant('/dashboard/data/connectors')}
-                color={getColor('/dashboard/data/connectors')}
-                classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/data/connectors"
+          variant={getVariant('/dashboard/data/connectors')}
+          color={getColor('/dashboard/data/connectors')}
+          classes={{ root: classes.button }}
+        >
           {t('Connectors')}
         </Button>
       )}
       {isSettingsManager && (
-        <Button component={Link} size="small" to="/dashboard/data/sync"
-                variant={getVariant('/dashboard/data/sync')}
-                color={getColor('/dashboard/data/sync')}
-                classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/data/sync"
+          variant={getVariant('/dashboard/data/sync')}
+          color={getColor('/dashboard/data/sync')}
+          classes={{ root: classes.button }}
+        >
           {t('Synchronization')}
         </Button>
       )}
       {isSharingManager && (
-        <Button component={Link} size="small" to="/dashboard/data/sharing"
-                variant={getVariant('/dashboard/data/sharing')}
-                color={getColor('/dashboard/data/sharing')}
-                classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/data/sharing"
+          variant={getVariant('/dashboard/data/sharing')}
+          color={getColor('/dashboard/data/sharing')}
+          classes={{ root: classes.button }}
+        >
           {t('Data sharing')}
         </Button>
       )}

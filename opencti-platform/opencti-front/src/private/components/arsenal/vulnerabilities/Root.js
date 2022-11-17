@@ -172,7 +172,6 @@ class RootVulnerability extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.vulnerability}
                             PopoverComponent={<VulnerabilityPopover />}
-                            variant="noaliases"
                           />
                           <StixDomainObjectIndicators
                             {...routeProps}

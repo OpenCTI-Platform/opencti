@@ -149,6 +149,7 @@ class RootIncident extends Component {
                             enableReferences={props.settings.platform_enable_reference?.includes(
                               'Incident',
                             )}
+                            disableSharing={true}
                           />
                           <StixDomainObjectContent
                             {...routeProps}

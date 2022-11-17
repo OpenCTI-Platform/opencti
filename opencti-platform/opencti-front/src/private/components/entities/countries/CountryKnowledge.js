@@ -30,7 +30,6 @@ class CountryKnowledgeComponent extends Component {
           disableSharing={true}
           stixDomainObject={country}
           PopoverComponent={<CountryPopover />}
-          variant="noaliases"
         />
         <Switch>
           <Route

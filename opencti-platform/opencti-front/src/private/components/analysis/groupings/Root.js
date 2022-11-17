@@ -108,6 +108,7 @@ class RootGrouping extends Component {
                           <ContainerHeader
                             container={props.grouping}
                             PopoverComponent={<GroupingPopover />}
+                            marginRight={260}
                           />
                           <ContainerStixDomainObjects
                             {...routeProps}
@@ -124,6 +125,7 @@ class RootGrouping extends Component {
                           <ContainerHeader
                             container={props.grouping}
                             PopoverComponent={<GroupingPopover />}
+                            marginRight={260}
                           />
                           <ContainerStixCyberObservables
                             {...routeProps}

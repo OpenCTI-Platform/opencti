@@ -173,7 +173,6 @@ class RootCampaign extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.campaign}
                             PopoverComponent={<CampaignPopover />}
-                            variant="noaliases"
                           />
                           <StixDomainObjectIndicators
                             {...routeProps}

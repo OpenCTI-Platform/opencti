@@ -173,7 +173,6 @@ class RootChannel extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.channel}
                             PopoverComponent={<ChannelPopover />}
-                            variant="noaliases"
                           />
                           <StixDomainObjectIndicators
                             {...routeProps}

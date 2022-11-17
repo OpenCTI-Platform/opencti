@@ -79,23 +79,10 @@ const StixItemMarkings = (props) => {
   return (
     <div>
       {markings.map((markingDefinition) => {
-        let def = markingDefinition.name;
-        if (!def) {
-          if (markingDefinition.definition) {
-            const definition = R.toPairs(markingDefinition.definition);
-            if (definition[0]) {
-              if (definition[0][1].includes(':')) {
-                // eslint-disable-next-line prefer-destructuring
-                def = definition[0][1];
-              } else {
-                def = `${definition[0][0]}:${definition[0][1]}`;
-              }
-            } else {
-              def = 'Unknown';
-            }
-          }
-        }
-        const label = truncate(def, 20);
+        const label = truncate(
+          markingDefinition.name || markingDefinition.definition,
+          20,
+        );
         if (markingDefinition.x_opencti_color) {
           let backgroundColor = markingDefinition.x_opencti_color;
           let textColor = theme.palette.text.primary;
@@ -113,7 +100,7 @@ const StixItemMarkings = (props) => {
           }
           return (
             <Chip
-              key={label}
+              key={markingDefinition.name || markingDefinition.definition}
               className={className}
               style={{
                 backgroundColor,
@@ -128,7 +115,7 @@ const StixItemMarkings = (props) => {
         if (theme.palette.mode === 'light') {
           inlineStyles = inlineStylesLight;
         }
-        switch (def) {
+        switch (markingDefinition.name || markingDefinition.definition) {
           case 'CD':
           case 'CD-SF':
           case 'DR':
@@ -136,7 +123,7 @@ const StixItemMarkings = (props) => {
           case 'TLP:RED':
             return (
               <Chip
-                key={def}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.red}
                 label={label}
@@ -145,7 +132,7 @@ const StixItemMarkings = (props) => {
           case 'TLP:AMBER':
             return (
               <Chip
-                key={def}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.orange}
                 label={label}
@@ -155,7 +142,7 @@ const StixItemMarkings = (props) => {
           case 'TLP:GREEN':
             return (
               <Chip
-                key={def}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.green}
                 label={label}
@@ -164,7 +151,7 @@ const StixItemMarkings = (props) => {
           case 'SF':
             return (
               <Chip
-                key={def}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.blue}
                 label={label}
@@ -173,7 +160,7 @@ const StixItemMarkings = (props) => {
           default:
             return (
               <Chip
-                key={def}
+                key={markingDefinition.name || markingDefinition.definition}
                 className={className}
                 style={inlineStyles.white}
                 label={label}

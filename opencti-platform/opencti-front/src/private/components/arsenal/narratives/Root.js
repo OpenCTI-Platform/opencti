@@ -172,7 +172,6 @@ class RootNarrative extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.narrative}
                             PopoverComponent={<NarrativePopover />}
-                            variant="noaliases"
                           />
                           <StixDomainObjectIndicators
                             {...routeProps}

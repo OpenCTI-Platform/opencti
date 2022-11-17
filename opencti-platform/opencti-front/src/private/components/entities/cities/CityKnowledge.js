@@ -30,7 +30,6 @@ class CityKnowledgeComponent extends Component {
           disableSharing={true}
           stixDomainObject={city}
           PopoverComponent={<CityPopover />}
-          variant="noaliases"
         />
         <Switch>
           <Route

@@ -377,7 +377,11 @@ class WorkbenchFileContentComponent extends Component {
       'location',
     ].filter((n) => !typesContainers.includes(n));
     const scoTypes = observableTypes.edges.map((n) => convertToStixType(n.node.id));
-    const stixDomainObjects = objects.filter((n) => sdoTypes.includes(n.type));
+    const stixDomainObjects = objects
+      .filter((n) => sdoTypes.includes(n.type))
+      .map((n) => (typeof n.definition === 'object' && !n.name
+        ? { ...n, name: R.toPairs(n.definition)[0][1] }
+        : n));
     const stixCyberObservables = objects.filter((n) => scoTypes.includes(n.type));
     const stixCoreRelationships = objects.filter(
       (n) => n.type === 'relationship',
@@ -497,26 +501,8 @@ class WorkbenchFileContentComponent extends Component {
         .map((n) => {
           const marking = this.findEntityById(n);
           if (marking) {
-            let label = truncate(marking.name, 20);
-            if (!label) {
-              if (marking.definition) {
-                const definition = R.toPairs(marking.definition);
-                if (definition[0]) {
-                  if (definition[0][1].includes(':')) {
-                    label = truncate(definition[0][1], 20);
-                  } else {
-                    label = truncate(
-                      `${definition[0][0]}:${definition[0][1]}`,
-                      20,
-                    );
-                  }
-                } else {
-                  label = 'Unknown';
-                }
-              }
-            }
             return {
-              label,
+              label: marking.name || marking.definition,
               value: marking.id,
               entity: marking,
             };
@@ -542,6 +528,7 @@ class WorkbenchFileContentComponent extends Component {
       (n) => ({
         ...n,
         id: n.standard_id || n.id,
+        name: n.name || n.definition,
         type: 'marking-definition',
       }),
     );
@@ -1415,6 +1402,7 @@ class WorkbenchFileContentComponent extends Component {
       (n) => ({
         ...n,
         id: n.standard_id || n.id,
+        name: n.name || n.definition,
         type: 'marking-definition',
       }),
     );
@@ -1790,6 +1778,7 @@ class WorkbenchFileContentComponent extends Component {
       (n) => ({
         ...n,
         id: n.standard_id || n.id,
+        name: n.name || n.definition,
         type: 'marking-definition',
       }),
     );
@@ -2122,6 +2111,7 @@ class WorkbenchFileContentComponent extends Component {
       (n) => ({
         ...n,
         id: n.standard_id || n.id,
+        name: n.name || n.definition,
         type: 'marking-definition',
       }),
     );
@@ -2700,6 +2690,7 @@ class WorkbenchFileContentComponent extends Component {
       (n) => ({
         ...n,
         id: n.standard_id || n.id,
+        name: n.name || n.definition,
         type: 'marking-definition',
       }),
     );
