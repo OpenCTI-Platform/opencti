@@ -32,8 +32,7 @@ class ListLinesContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const diff = R.symmetricDifferenceWith(
-      (x, y) => x.node.id === y.node.id,
+    const diff = !R.equals(
       this.props.dataList,
       prevProps.dataList,
     );
@@ -58,7 +57,7 @@ class ListLinesContent extends Component {
     if (this.props.selectAll !== prevProps.selectAll) {
       selection = true;
     }
-    if (diff.length > 0 || diffBookmark.length > 0 || selection) {
+    if (diff || diffBookmark.length > 0 || selection) {
       this.listRef.forceUpdateGrid();
     }
   }

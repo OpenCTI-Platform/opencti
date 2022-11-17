@@ -33,9 +33,9 @@ const ArtifactField: FunctionComponent<ArtifactFieldProps> = ({ attributeName, a
     .filter((f) => Boolean(f)) as StixCyberObservablesFiltering[];
   const data = useLazyLoadQuery<ArtifactFieldGetQuery>(artifactQuery, { filters });
 
-  const options = (data.stixCyberObservables?.edges ?? []).map((node) => ({
-    label: node?.node.observable_value ?? node?.node.id,
-    value: node?.node.id,
+  const options = (data.stixCyberObservables?.edges ?? []).map(({ node }) => ({
+    label: node.observable_value ?? node.id,
+    value: node.id,
   }));
   return (
     <ReferenceField

@@ -21,7 +21,7 @@ import {
   convertCreatedBy,
   convertMarkings,
   convertStatus,
-} from '../../../../utils/Edition';
+} from '../../../../utils/edition';
 
 const threatActorMutationFieldPatch = graphql`
   mutation ThreatActorEditionOverviewFieldPatchMutation(

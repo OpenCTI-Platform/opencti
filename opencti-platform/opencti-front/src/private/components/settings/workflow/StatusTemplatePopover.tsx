@@ -18,7 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StatusTemplateEdition from './StatusTemplateEdition';
-import { deleteNode } from '../../../../utils/Store';
+import { deleteNode } from '../../../../utils/store';
 import { Theme } from '../../../../components/Theme';
 import { StatusTemplatePopoverEditionQuery$data } from './__generated__/StatusTemplatePopoverEditionQuery.graphql';
 

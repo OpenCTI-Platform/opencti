@@ -15,7 +15,7 @@ import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import { commitMutation } from '../../../../relay/environment';
-import { deleteNode, insertNode } from '../../../../utils/Store';
+import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`

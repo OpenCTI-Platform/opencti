@@ -23,7 +23,7 @@ export const convertOrganizations = (element) => R.pipe(
 )(element);
 
 export const convertCreatedBy = (element) => (R.pathOr(null, ['createdBy', 'name'], element) === null
-  ? ''
+  ? undefined
   : {
     label: element?.createdBy?.name ?? null,
     value: element?.createdBy?.id ?? null,
