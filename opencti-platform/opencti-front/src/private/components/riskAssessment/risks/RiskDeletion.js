@@ -117,11 +117,12 @@ class RiskDeletion extends Component {
   // }
 
   submitDelete() {
+    const riskIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
     commitMutation({
       mutation: RiskDeletionDarkLightMutation,
       variables: {
-        id: this.props.id,
+        id: riskIds[0],
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -217,7 +218,7 @@ class RiskDeletion extends Component {
 }
 
 RiskDeletion.propTypes = {
-  id: PropTypes.string,
+  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
