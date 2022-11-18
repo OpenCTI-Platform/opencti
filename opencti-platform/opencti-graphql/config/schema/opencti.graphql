@@ -3117,6 +3117,7 @@ enum IdentitiesFilter {
   identity_class
   name
   aliases
+  x_opencti_aliases
   confidence
   created
   modified
@@ -4268,6 +4269,7 @@ enum LocationsOrdering {
 enum LocationsFilter {
   entity_type
   name
+  aliases
   x_opencti_aliases
   confidence
   created
