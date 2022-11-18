@@ -303,6 +303,7 @@ class CyioListLines extends Component {
       OperationsComponent,
       message,
       handleClearSelectedElements,
+      location,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -654,7 +655,7 @@ class CyioListLines extends Component {
         </div>
         <div className={className}>
           <div className="clearfix" />
-          <TopBarMenu />
+          {!location.pathname.includes('/dashboard/workspaces/dashboards') && <TopBarMenu />}
           {message && (
             <div style={{ width: '100%' }}>
               <Alert
