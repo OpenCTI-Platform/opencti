@@ -3,10 +3,13 @@ import { withFilter } from 'graphql-subscriptions';
 import {
   addBookmark,
   addUser,
+  assignOrganizationToUser,
   authenticateUser,
   batchGroups,
+  batchOrganizations,
   batchRoleCapabilities,
   batchRoles,
+  batchUsers,
   bookmarks,
   deleteBookmark,
   findAll,
@@ -29,14 +32,12 @@ import {
   userAddRelation,
   userCleanContext,
   userDelete,
+  userDeleteOrganizationRelation,
   userEditContext,
   userEditField,
   userIdDeleteRelation,
   userRenewToken,
   userWithOrigin,
-  batchOrganizations,
-  assignOrganizationToUser,
-  userDeleteOrganizationRelation,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -55,6 +56,7 @@ const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);
 const rolesLoader = batchLoader(batchRoles);
 const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
+const usersLoader = batchLoader(batchUsers);
 
 const userResolvers = {
   Query: {
@@ -81,7 +83,7 @@ const userResolvers = {
     userSubscriptions: (current, _, context) => getUserSubscriptions(context, context.user, current.id),
   },
   UserSession: {
-    user: (session, _, context) => findById(context, context.user, session.user_id),
+    user: (session, _, context) => usersLoader.load(session.user_id, context, context.user),
   },
   SessionDetail: {
     ttl: (session) => fetchSessionTtl(session.id),
