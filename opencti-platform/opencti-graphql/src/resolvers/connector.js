@@ -1,37 +1,42 @@
 import {
+  batchConnectorForWork,
+  computeWorkStatus,
   connectorDelete,
   connectorForWork,
   connectorsForExport,
   findAllSync,
+  findSyncById,
   loadConnectorById,
   patchSync,
   pingConnector,
   registerConnector,
   registerSync,
   resetStateConnector,
-  testSync,
-  syncDelete,
   syncCleanContext,
+  syncDelete,
   syncEditContext,
   syncEditField,
-  findSyncById,
+  testSync,
 } from '../domain/connector';
 import {
   createWork,
   deleteWork,
-  reportExpectation,
-  updateProcessedTime,
-  updateReceivedTime,
-  worksForConnector,
+  deleteWorkForConnector,
   findAll,
   findById,
-  deleteWorkForConnector,
-  pingWork, updateExpectationsNumber,
+  pingWork,
+  reportExpectation,
+  updateExpectationsNumber,
+  updateProcessedTime,
+  updateReceivedTime,
 } from '../domain/work';
-import { findById as findUserById } from '../domain/user';
-import { redisGetWork } from '../database/redis';
+import { batchUsers } from '../domain/user';
 import { now } from '../utils/format';
 import { connectors, connectorsForImport, connectorsForWorker } from '../database/repository';
+import { batchLoader } from '../database/middleware';
+
+const usersLoader = batchLoader(batchUsers);
+const connectorWorkLoader = batchLoader(batchConnectorForWork);
 
 const connectorResolvers = {
   Query: {
@@ -46,27 +51,15 @@ const connectorResolvers = {
     synchronizers: (_, args, context) => findAllSync(context, context.user, args),
   },
   Connector: {
-    works: (connector, args, context) => worksForConnector(context, context.user, connector.id, args),
+    works: (connector, args, context) => connectorWorkLoader.load(connector.id, context, context.user),
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
-    user: (work, _, context) => findUserById(context, context.user, work.user_id),
-    tracking: async (work) => {
-      // If complete, redis key is deleted, database contains all information
-      if (work.status === 'complete') {
-        return { import_processed_number: work.completed_number, import_expected_number: work.import_expected_number };
-      }
-      // If running, information in redis.
-      const redisData = await redisGetWork(work.id);
-      // If data in redis not exist, just send default values
-      if (redisData === undefined) {
-        return { import_processed_number: null, import_expected_number: null };
-      }
-      return redisData;
-    },
+    user: (work, _, context) => usersLoader.load(work.user_id, context, context.user),
+    tracking: (work) => computeWorkStatus(work),
   },
   Synchronizer: {
-    user: (sync, _, context) => findUserById(context, context.user, sync.user_id),
+    user: (sync, _, context) => usersLoader.load(sync.user_id, context, context.user),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),

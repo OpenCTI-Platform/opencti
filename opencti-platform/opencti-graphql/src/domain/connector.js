@@ -12,11 +12,11 @@ import { registerConnectorQueues, unregisterConnector, unregisterExchanges } fro
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
-import { elLoadById } from '../database/engine';
+import { elFindByIds, elLoadById } from '../database/engine';
 import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { delEditContext, notify, setEditContext } from '../database/redis';
+import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { listEntities } from '../database/middleware-loader';
@@ -29,6 +29,21 @@ export const connectorForWork = async (context, user, id) => {
   const work = await elLoadById(context, user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   if (work) return loadConnectorById(context, user, work.connector_id);
   return null;
+};
+
+export const batchConnectorForWork = async (context, user, workIds) => {
+  const works = await elFindByIds(context, user, workIds, { toMap: true });
+  return workIds.map((id) => works[id]);
+};
+
+export const computeWorkStatus = async (work) => {
+  if (work.status === 'complete') {
+    return { import_processed_number: work.completed_number, import_expected_number: work.import_expected_number };
+  }
+  // If running, information in redis.
+  const redisData = await redisGetWork(work.id);
+  // If data in redis not exist, just send default values
+  return redisData ?? { import_processed_number: null, import_expected_number: null };
 };
 export const connectorsForExport = async (context, user, scope, onlyAlive = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
