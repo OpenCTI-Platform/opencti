@@ -117,11 +117,15 @@ class ContainerStixCoreObjectPopover extends Component {
         relationship_type: relationshipType,
       },
       updater: (store) => {
+        // ID is not valid pagination options, will be handled better when hooked
+        const options = { ...paginationOptions };
+        delete options.id;
+        delete options.count;
         if (toId) {
           const conn = ConnectionHandler.getConnection(
             store.get(containerId),
             paginationKey,
-            paginationOptions,
+            options,
           );
           ConnectionHandler.deleteNode(conn, toId);
         }
@@ -141,11 +145,15 @@ class ContainerStixCoreObjectPopover extends Component {
         id: toId,
       },
       updater: (store) => {
+        // ID is not valid pagination options, will be handled better when hooked
+        const options = { ...paginationOptions };
+        delete options.id;
+        delete options.count;
         if (toId) {
           const conn = ConnectionHandler.getConnection(
             store.get(containerId),
             paginationKey,
-            paginationOptions,
+            options,
           );
           ConnectionHandler.deleteNode(conn, toId);
         }

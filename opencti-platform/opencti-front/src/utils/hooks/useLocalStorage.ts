@@ -6,13 +6,14 @@ import { Filters, OrderMode, PaginationOptions } from '../../components/list_lin
 import { isUniqFilter } from '../filters/filtersUtils';
 
 export interface LocalStorage {
-  numberOfElements?: { number: number, symbol: string },
+  numberOfElements?: { number: number, symbol: string, original?: number },
   filters?: Filters,
   searchTerm?: string,
   sortBy?: string,
   orderAsc?: boolean,
   openExports?: boolean,
   count?: number,
+  types?: string[]
   zoom?: Record<string, unknown>,
 }
 
@@ -23,8 +24,11 @@ export const localStorageToPaginationOptions = <U>({
   orderAsc,
   ...props
 }: LocalStorage & Omit<U, 'filters'>): unknown extends U ? PaginationOptions : U => {
-  // OpenExports and NumberOfElements are only display options, not query linked
-  const { openExports: _, numberOfElements: __, ...localOptions } = props;
+  // Remove only display options, not query linked
+  const localOptions = { ...props };
+  delete localOptions.openExports;
+  delete localOptions.numberOfElements;
+
   return ({
     ...localOptions,
     search: searchTerm,
@@ -42,7 +46,7 @@ export type UseLocalStorage = [value: LocalStorage,
     handleSort: (field: string, order: boolean) => void
     handleAddFilter: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void
     handleToggleExports: () => void,
-    handleSetNumberOfElements: (value: { number?: number, symbol?: string }) => void,
+    handleSetNumberOfElements: (value: { number?: number, symbol?: string, original?: number }) => void,
   },
 ];
 
@@ -60,9 +64,9 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
   return removeEmptyFields({
     filters: filters ? JSON.parse(filters) : undefined,
     zoom: zoom ? JSON.parse(zoom) : undefined,
-    searchTerm: searchObject.get('searchTerm'),
+    searchTerm: searchObject.get('searchTerm') ? searchObject.get('searchTerm') : undefined,
     sortBy: searchObject.get('sortBy'),
-    orderAsc: searchObject.get('orderAsc') === 'true',
+    orderAsc: searchObject.get('orderAsc') ? searchObject.get('orderAsc') === 'true' : undefined,
   });
 };
 
@@ -103,7 +107,8 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
         const urlParams = buildParamsFromHistory(valueToStore);
-        if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
+        if (!R.equals(urlParams, buildParamsFromHistory(finalParams))
+          && Object.entries(urlParams).some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)) {
           setSearchParams(urlParams);
         }
       }
@@ -150,12 +155,13 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       }
     },
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
-    handleSetNumberOfElements: ({ number, symbol }: { number?: number, symbol?: string }) => setValue((c) => ({
+    handleSetNumberOfElements: ({ number, symbol, original }: { number?: number, symbol?: string, original?: number }) => setValue((c) => ({
       ...c,
       numberOfElements: {
         ...c.numberOfElements,
         ...(number ? { number } : { number: 0 }),
         ...(symbol ? { symbol } : { symbol: '' }),
+        ...(original ? { original } : { original: 0 }),
       },
     })),
   };

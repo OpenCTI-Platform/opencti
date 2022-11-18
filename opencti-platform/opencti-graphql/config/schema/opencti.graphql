@@ -1598,7 +1598,7 @@ input ExternalReferencesFiltering {
 }
 type ExternalReferenceConnection {
   pageInfo: PageInfo!
-  edges: [ExternalReferenceEdge]
+  edges: [ExternalReferenceEdge!]!
 }
 type ExternalReferenceEdge {
   cursor: String!

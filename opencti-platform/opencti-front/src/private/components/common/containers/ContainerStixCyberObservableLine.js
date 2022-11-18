@@ -84,8 +84,8 @@ const ContainerStixCyberObservableLineComponent = (props) => {
           checked={
             (selectAll
               && !isOnlyThroughInference
-              && !(node.id in (deSelectedElements || {})))
-            || node.id in (selectedElements || {})
+              && !(node.id in (deSelectedElements)))
+            || node.id in (selectedElements)
           }
           disableRipple={true}
         />

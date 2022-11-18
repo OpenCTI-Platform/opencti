@@ -1,16 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import {
-  map,
-  filter,
-  keys,
-  groupBy,
-  assoc,
-  compose,
-  append,
-  pipe,
-} from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
+import { append, assoc, compose, filter, groupBy, keys, map, pipe } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -20,7 +11,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { ExpandMore, CheckCircle } from '@mui/icons-material';
+import { CheckCircle, ExpandMore } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -30,8 +21,8 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import {
-  reportKnowledgeGraphtMutationRelationAddMutation,
   reportKnowledgeGraphMutationRelationDeleteMutation,
+  reportKnowledgeGraphtMutationRelationAddMutation,
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
 
 const styles = (theme) => ({
@@ -152,10 +143,15 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             relationship_type: 'object',
           },
           updater: (store) => {
+            // ID is not valid pagination options, will be handled better when hooked
+            const options = { ...paginationOptions };
+            delete options.id;
+            delete options.count;
+
             const conn = ConnectionHandler.getConnection(
               store.get(containerId),
               'Pagination_objects',
-              this.props.paginationOptions,
+              options,
             );
             ConnectionHandler.deleteNode(conn, stixCoreObject.id);
           },
@@ -201,6 +197,11 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             input,
           },
           updater: (store) => {
+            // ID is not valid pagination options, will be handled better when hooked
+            const options = { ...paginationOptions };
+            delete options.id;
+            delete options.count;
+
             const payload = store
               .getRootField('containerEdit')
               .getLinkedRecord('relationAdd', { input })
@@ -209,7 +210,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             const conn = ConnectionHandler.getConnection(
               store.get(containerId),
               'Pagination_objects',
-              paginationOptions,
+              options,
             );
             ConnectionHandler.insertEdgeBefore(conn, newEdge);
           },

@@ -4488,7 +4488,7 @@ export type ExternalReferenceAddInput = {
 
 export type ExternalReferenceConnection = {
   __typename?: 'ExternalReferenceConnection';
-  edges?: Maybe<Array<Maybe<ExternalReferenceEdge>>>;
+  edges: Array<ExternalReferenceEdge>;
   pageInfo: PageInfo;
 };
 
@@ -22156,7 +22156,7 @@ export type ResolversTypes = ResolversObject<{
   EventsOrdering: EventsOrdering;
   ExternalReference: ResolverTypeWrapper<Omit<ExternalReference, 'connectors' | 'exportFiles' | 'importFiles' | 'jobs' | 'pendingFiles'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, pendingFiles?: Maybe<ResolversTypes['FileConnection']> }>;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
-  ExternalReferenceConnection: ResolverTypeWrapper<Omit<ExternalReferenceConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ExternalReferenceEdge']>>> }>;
+  ExternalReferenceConnection: ResolverTypeWrapper<Omit<ExternalReferenceConnection, 'edges'> & { edges: Array<ResolversTypes['ExternalReferenceEdge']> }>;
   ExternalReferenceEdge: ResolverTypeWrapper<Omit<ExternalReferenceEdge, 'node'> & { node: ResolversTypes['ExternalReference'] }>;
   ExternalReferenceEditMutations: ResolverTypeWrapper<Omit<ExternalReferenceEditMutations, 'askEnrichment' | 'contextClean' | 'contextPatch' | 'fieldPatch' | 'importPush' | 'relationDelete'> & { askEnrichment?: Maybe<ResolversTypes['Work']>, contextClean?: Maybe<ResolversTypes['ExternalReference']>, contextPatch?: Maybe<ResolversTypes['ExternalReference']>, fieldPatch?: Maybe<ResolversTypes['ExternalReference']>, importPush?: Maybe<ResolversTypes['File']>, relationDelete?: Maybe<ResolversTypes['ExternalReference']> }>;
   ExternalReferencesFilter: ExternalReferencesFilter;
@@ -22780,7 +22780,7 @@ export type ResolversParentTypes = ResolversObject<{
   EventsFiltering: EventsFiltering;
   ExternalReference: Omit<ExternalReference, 'connectors' | 'exportFiles' | 'importFiles' | 'jobs' | 'pendingFiles'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']> };
   ExternalReferenceAddInput: ExternalReferenceAddInput;
-  ExternalReferenceConnection: Omit<ExternalReferenceConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ExternalReferenceEdge']>>> };
+  ExternalReferenceConnection: Omit<ExternalReferenceConnection, 'edges'> & { edges: Array<ResolversParentTypes['ExternalReferenceEdge']> };
   ExternalReferenceEdge: Omit<ExternalReferenceEdge, 'node'> & { node: ResolversParentTypes['ExternalReference'] };
   ExternalReferenceEditMutations: Omit<ExternalReferenceEditMutations, 'askEnrichment' | 'contextClean' | 'contextPatch' | 'fieldPatch' | 'importPush' | 'relationDelete'> & { askEnrichment?: Maybe<ResolversParentTypes['Work']>, contextClean?: Maybe<ResolversParentTypes['ExternalReference']>, contextPatch?: Maybe<ResolversParentTypes['ExternalReference']>, fieldPatch?: Maybe<ResolversParentTypes['ExternalReference']>, importPush?: Maybe<ResolversParentTypes['File']>, relationDelete?: Maybe<ResolversParentTypes['ExternalReference']> };
   ExternalReferencesFiltering: ExternalReferencesFiltering;
@@ -24466,7 +24466,7 @@ export type ExternalReferenceResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type ExternalReferenceConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalReferenceConnection'] = ResolversParentTypes['ExternalReferenceConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ExternalReferenceEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['ExternalReferenceEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

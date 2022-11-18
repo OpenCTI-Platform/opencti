@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import { graphql, createFragmentContainer } from 'react-relay';
-import { compose, pathOr, propOr } from 'ramda';
+import { compose } from 'ramda';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -63,8 +63,8 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
       </Typography>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ContainerAddStixCoreObjects
-          containerId={propOr(null, 'id', container)}
-          containerStixCoreObjects={pathOr([], ['objects', 'edges'], container)}
+          containerId={container?.id ?? null}
+          containerStixCoreObjects={container?.objects?.edges ?? []}
           paginationOptions={paginationOptions}
           simple={true}
           targetStixCoreObjectTypes={[

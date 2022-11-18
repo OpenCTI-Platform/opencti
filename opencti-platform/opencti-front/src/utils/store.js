@@ -15,6 +15,7 @@ export const insertNode = (store, key, filters, rootField) => {
   // Connections cannot use count as a filter because we NEED to update the count when we push new elements
   const params = { ...filters };
   delete params.count;
+  delete params.id;
 
   const conn = ConnectionHandler.getConnection(record, key, params);
   if (conn) {
@@ -26,7 +27,7 @@ export const insertNode = (store, key, filters, rootField) => {
       ConnectionHandler.insertEdgeBefore(conn, newEdge);
     }
   } else {
-    throw new Error(`Cant insert node on not found connection ${key}`);
+    throw new Error(`Cant insert node on not found connection ${{ key, params }}`);
   }
 };
 
@@ -36,12 +37,12 @@ export const deleteNode = (store, key, filters, id) => {
   // Connections cannot use count as a filter because we NEED to update the count when we remove new elements
   const params = { ...filters };
   delete params.count;
+  delete params.id;
 
   const conn = ConnectionHandler.getConnection(record, key, params);
   if (conn) {
     ConnectionHandler.deleteNode(conn, id);
   } else {
-    // eslint-disable-next-line no-console
-    console.error('Delete node connection not found', { key, filters, id });
+    throw new Error(`Delete node connection not found ${{ key, params, id }}`);
   }
 };
