@@ -240,24 +240,26 @@ const createApp = async (app) => {
 
   // -- Passport callback
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
-  app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
+  app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), async (req, res, next) => {
     const { referer } = req.session;
-    try {
-      const { provider } = req.params;
-      const context = executionContext(`${provider}_strategy`);
-      passport.authenticate(provider, {}, async (err, user) => {
+    const { provider } = req.params;
+    const callbackLogin = () => new Promise((accept, reject) => {
+      passport.authenticate(provider, {}, (err, user) => {
         if (err || !user) {
-          logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
-          setCookieError(res, err?.message);
-          res.redirect(referer ?? '/');
+          reject(err);
+        } else {
+          accept(user);
         }
-        // noinspection UnnecessaryLocalVariableJS
-        await authenticateUser(context, req, user, provider);
-        req.session.referer = null;
-        res.redirect(referer ?? '/');
       })(req, res, next);
-    } catch (e) {
-      setCookieError(res, e?.message);
+    });
+    try {
+      const context = executionContext(`${provider}_strategy`);
+      const logged = await callbackLogin();
+      await authenticateUser(context, req, logged, provider);
+    } catch (err) {
+      logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
+      setCookieError(res, 'Invalid authentication, please ask your administrator');
+    } finally {
       res.redirect(referer ?? '/');
     }
   });
