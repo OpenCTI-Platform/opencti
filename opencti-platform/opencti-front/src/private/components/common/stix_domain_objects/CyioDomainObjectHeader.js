@@ -108,36 +108,36 @@ class CyioDomainObjectAssetHeader extends Component {
         </Typography>
         <div className={classes.aliases}>
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-            {handleDisplayEdit && <Tooltip title={t('Edit')}>
-             <Button
-                variant="contained"
-                onClick={handleDisplayEdit?.bind(this)}
-                className={classes.iconButton}
-                disabled={Boolean(!cyioDomainObject?.id) || disabled}
-                color="primary"
-                size="large"
-              >
-                <Edit fontSize="inherit" />
-              </Button>
-            </Tooltip>}
-            <div style={{ display: 'inline-block' }}>
-              {OperationsComponent && React.cloneElement(OperationsComponent, {
-                id: cyioDomainObject?.id,
-                disabled: disablePopover,
-              })}
-            </div>
-            <Tooltip title={t('Create New')}>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
-                startIcon={<AddCircleOutline />}
-                disabled={disabled || !handleOpenNewCreation || false}
-                color='primary'
-              >
-                {t('New')}
-              </Button>
-            </Tooltip>
+          {handleDisplayEdit && <Tooltip title={t('Edit')}>
+            <Button
+              variant="contained"
+              onClick={handleDisplayEdit?.bind(this)}
+              className={classes.iconButton}
+              disabled={Boolean(!cyioDomainObject?.id) || disabled}
+              color="primary"
+              size="large"
+            >
+              <Edit fontSize="inherit" />
+            </Button>
+          </Tooltip>}
+          <div style={{ display: 'inline-block' }}>
+            {OperationsComponent && React.cloneElement(OperationsComponent, {
+              id: [cyioDomainObject?.id],
+              disabled: disablePopover,
+            })}
+          </div>
+          <Tooltip title={t('Create New')}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
+              startIcon={<AddCircleOutline />}
+              disabled={disabled || !handleOpenNewCreation || false}
+              color='primary'
+            >
+              {t('New')}
+            </Button>
+          </Tooltip>
           {/* </Security> */}
         </div>
       </div>
