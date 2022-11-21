@@ -1,9 +1,8 @@
 import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
 import { findById } from '../domain/user';
-import { RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { RETENTION_MANAGER_USER, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { RULE_MANAGER_USER } from '../rules/rules';
 
 const logResolvers = {
   Query: {

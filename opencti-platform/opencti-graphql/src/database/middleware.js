@@ -15,6 +15,7 @@ import {
 import {
   buildPagination,
   computeAverage,
+  EVENT_TYPE_DELETE_DEPENDENCIES,
   fillTimeSeries,
   generateCreateMessage,
   generateUpdateMessage,
@@ -124,6 +125,7 @@ import {
 } from '../schema/stixCyberObservableRelationship';
 import {
   FIELD_TO_META_RELATION,
+  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
@@ -197,9 +199,10 @@ import {
   isBypassUser,
   isUserCanAccessStoreElement,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  RULE_MANAGER_USER,
   SYSTEM_USER
 } from '../utils/access';
-import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
+import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
   FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION,
   instanceMetaRefsExtractor,
@@ -2437,6 +2440,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   data.internal_id = internalId;
   data.standard_id = standardId;
   data.entity_type = relationshipType;
+  data.relationship_type = relationshipType;
   data.creator_id = user.internal_id;
   data.created_at = today;
   data.updated_at = today;
@@ -2472,7 +2476,6 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   }
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
-    data.relationship_type = relationshipType;
     data.description = input.description ? input.description : '';
     data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
@@ -2488,7 +2491,6 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   if (isStixCyberObservableRelationship(relationshipType)) {
     // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
     data.spec_version = STIX_SPEC_VERSION;
-    data.relationship_type = relationshipType;
     data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
@@ -3154,8 +3156,8 @@ export const deleteElementById = async (context, user, elementId, type, opts = {
   const { element: deleted } = await internalDeleteElementById(context, user, elementId, opts);
   return deleted.internal_id;
 };
-export const deleteInferredRuleElement = async (rule, instance, deletedDependencies) => {
-  const context = executionContext(rule.name);
+export const deleteInferredRuleElement = async (rule, instance, deletedDependencies, opts = {}) => {
+  const context = executionContext(rule.name, RULE_MANAGER_USER);
   // Check if deletion is really targeting an inference
   const isInferred = isInferredIndex(instance._index);
   if (!isInferred) {
@@ -3187,9 +3189,21 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
         logApp.info('Delete inferred element', { rule, id: instance.id });
-        const { event } = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id);
+        // If inference is a meta relationship just delete and generate an internal event
+        if (isStixMetaRelationship(instance.entity_type)) {
+          // Delete the meta and start an unshare background task if needed
+          const deletionPromise = elDeleteElements(context, RULE_MANAGER_USER, [instance], storeLoadByIdWithRefs);
+          const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, instance);
+          await Promise.all([deletionPromise, taskPromise]);
+          // Deleting meta must be converted to a special dependency deletion
+          // This type of event will be handle by the stream to cleanup inferences.
+          const deleteEvent = { type: EVENT_TYPE_DELETE_DEPENDENCIES, data: { ids: [`${instance.to.internal_id}_ref`] } };
+          derivedEvents.push(deleteEvent);
+        } else {
+          const deletionData = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
+          derivedEvents.push(deletionData.event);
+        }
         logApp.info('Delete inferred element', { id: instance.id, type: instance.entity_type });
-        derivedEvents.push(event);
       } else {
         // If not we need to clean the rule and keep the element for other rules.
         logApp.info('Cleanup inferred element', { rule, id: instance.id });

@@ -34,7 +34,7 @@ import {
   RELATION_MEMBER_OF,
   RELATION_PARTICIPATE_TO,
 } from '../schema/internalRelationship';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID, OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
@@ -51,7 +51,14 @@ import {
   USER_DELETION,
 } from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  executionContext,
+  INTERNAL_USERS,
+  isBypassUser,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  SYSTEM_USER
+} from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntityFromCache } from '../database/cache';
@@ -638,9 +645,7 @@ const buildCompleteUser = async (context, client) => {
 };
 
 export const resolveUserById = async (context, id) => {
-  if (id === OPENCTI_SYSTEM_UUID) {
-    return SYSTEM_USER;
-  }
+  if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
   const client = await storeLoadById(context, SYSTEM_USER, id, ENTITY_TYPE_USER);
   return buildCompleteUser(context, client);
 };

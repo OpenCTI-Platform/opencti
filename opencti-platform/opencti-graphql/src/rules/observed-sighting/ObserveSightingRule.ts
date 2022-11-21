@@ -9,7 +9,7 @@ import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import def from './ObserveSightingDefinition';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
-import { createRuleContent, RULE_MANAGER_USER } from '../rules';
+import { createRuleContent } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
@@ -21,7 +21,7 @@ import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../../ty
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { Event, RelationCreation } from '../../types/event';
-import { executionContext } from '../../utils/access';
+import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
@@ -158,7 +158,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
     return handleIndicatorUpsert(context, baseOnIndicator);
   };
   const applyUpsert = async (data: StixObject): Promise<Array<Event>> => {
-    const context = executionContext(def.name);
+    const context = executionContext(def.name, RULE_MANAGER_USER);
     const events: Array<Event> = [];
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_INDICATOR) {

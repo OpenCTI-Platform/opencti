@@ -46,6 +46,7 @@ import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
+  RELATION_OBJECT,
   RELATION_OBJECT_MARKING
 } from '../schema/stixMetaRelationship';
 import type { PageInfo } from '../generated/graphql';
@@ -267,7 +268,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   i_relation: BasicStoreRelation; // internal related relation for refs
   // rels
   [RELATION_CREATED_BY]: string;
-  [RELATION_OBJECT_MARKING]: Array<string>;
+  [RELATION_OBJECT]: Array<string>;
   // Array
   x_mitre_permissions_required: Array<string>;
   x_mitre_platforms: Array<string>;

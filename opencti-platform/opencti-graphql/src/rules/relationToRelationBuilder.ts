@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
 import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
-import { createRuleContent, RULE_MANAGER_USER } from './rules';
+import { createRuleContent } from './rules';
 import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
 import type { RuleRuntime, RuleDefinition, RelationTypes } from '../types/rules';
@@ -10,14 +10,14 @@ import type { BasicStoreRelation, StoreObject } from '../types/store';
 import type { StixRelation } from '../types/stix-sro';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
-import { executionContext } from '../utils/access';
+import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 
 const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   // Execution
   const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
-    const context = executionContext(ruleDefinition.name);
+    const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const events: Array<Event> = [];
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;

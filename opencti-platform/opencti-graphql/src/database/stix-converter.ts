@@ -132,7 +132,7 @@ export const convertTypeToStixType = (type: string): string => {
   if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
     return 'file';
   }
-  if (isStixCoreRelationship(type)) {
+  if (isStixCoreRelationship(type) || isStixMetaRelationship(type)) {
     return 'relationship';
   }
   if (isStixSightingRelationship(type)) {
@@ -188,13 +188,13 @@ const cleanDate = (date: Date | string | undefined): string | undefined => {
   }
   return date;
 };
-const convertObjectReferences = (instance: StoreEntity, inferred: boolean) => {
+const convertObjectReferences = (instance: StoreEntity) => {
   const objectRefs = instance[INPUT_OBJECTS] ?? [];
   return objectRefs.filter((r) => {
     // If related relation not available, it's just a creation, so inferred false
-    if (!r.i_relation) return !inferred;
+    if (!r.i_relation) return true;
     // If related relation is available, select accordingly
-    return isInferredIndex(r.i_relation._index) === inferred;
+    return isInferredIndex(r.i_relation._index) === false;
   }).map((m) => m.standard_id);
 };
 
@@ -582,13 +582,7 @@ const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixRepor
     description: instance.description,
     report_types: instance.report_types,
     published: instance.published,
-    object_refs: convertObjectReferences(instance, false),
-    extensions: {
-      [STIX_EXT_OCTI]: cleanObject({
-        ...report.extensions[STIX_EXT_OCTI],
-        object_refs_inferred: convertObjectReferences(instance, true),
-      })
-    }
+    object_refs: convertObjectReferences(instance),
   };
 };
 const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote => {
@@ -599,13 +593,7 @@ const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote =>
     abstract: instance.attribute_abstract,
     content: instance.content,
     authors: instance.authors,
-    object_refs: convertObjectReferences(instance, false),
-    extensions: {
-      [STIX_EXT_OCTI]: cleanObject({
-        ...note.extensions[STIX_EXT_OCTI],
-        object_refs_inferred: convertObjectReferences(instance, true),
-      })
-    }
+    object_refs: convertObjectReferences(instance),
   };
 };
 const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
@@ -616,13 +604,7 @@ const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.Sti
     first_observed: instance.first_observed,
     last_observed: instance.last_observed,
     number_observed: instance.number_observed,
-    object_refs: convertObjectReferences(instance, false),
-    extensions: {
-      [STIX_EXT_OCTI]: cleanObject({
-        ...observedData.extensions[STIX_EXT_OCTI],
-        object_refs_inferred: convertObjectReferences(instance, true),
-      })
-    }
+    object_refs: convertObjectReferences(instance),
   };
 };
 const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpinion => {
@@ -633,13 +615,7 @@ const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpin
     explanation: instance.explanation,
     authors: instance.authors,
     opinion: instance.opinion,
-    object_refs: convertObjectReferences(instance, false),
-    extensions: {
-      [STIX_EXT_OCTI]: cleanObject({
-        ...opinion.extensions[STIX_EXT_OCTI],
-        object_refs_inferred: convertObjectReferences(instance, true),
-      })
-    }
+    object_refs: convertObjectReferences(instance),
   };
 };
 

@@ -746,7 +746,7 @@ const isOneOfThisIdsExists = async (ids) => {
       },
     },
   };
-  const looking = await elRawSearch(executionContext(), SYSTEM_USER, 'Relastionships', query);
+  const looking = await elRawSearch(executionContext('test'), SYSTEM_USER, 'Relastionships', query);
   const numberOfResult = looking.hits.total.value;
   return numberOfResult > 0;
 };

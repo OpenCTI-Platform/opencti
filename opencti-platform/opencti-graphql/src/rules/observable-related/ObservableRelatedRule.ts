@@ -3,7 +3,7 @@ import { createInferredRelation, deleteInferredRuleElement } from '../../databas
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import def from './ObservableRelatedDefinition';
-import { createRuleContent, RULE_MANAGER_USER } from '../rules';
+import { createRuleContent } from '../rules';
 import { computeAverage } from '../../database/utils';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { StixRelation } from '../../types/stix-sro';
@@ -11,12 +11,12 @@ import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
-import { executionContext } from '../../utils/access';
+import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
   const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
-    const context = executionContext(def.name);
+    const context = executionContext(def.name, RULE_MANAGER_USER);
     const events: Array<Event> = [];
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
