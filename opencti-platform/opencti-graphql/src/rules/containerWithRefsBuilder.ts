@@ -9,9 +9,9 @@ import {
   internalLoadById,
 } from '../database/middleware';
 
-import { RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { createRuleContent } from './rules';
-import { generateInternalType } from '../schema/schemaUtils';
+import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixId, StixObject } from '../types/stix-common';
 import type { StixReport } from '../types/stix-sdo';
@@ -20,12 +20,16 @@ import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations } from '../database/middleware-loader';
 import type { DependenciesDeleteEvent, Event, RelationCreation, RuleEvent, UpdateEvent } from '../types/event';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../database/utils';
+import {
+  EVENT_TYPE_DELETE_DEPENDENCIES,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+  UPDATE_OPERATION_REPLACE
+} from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { buildCreateEvent } from '../database/redis';
 
-const INFERRED_OBJECT_REF_PATH = `/extensions/${STIX_EXT_OCTI}/object_refs_inferred`;
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
   const identityRefFilter = (ref: string) => {
@@ -42,10 +46,10 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     ];
   };
   type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfTargetId: string }>;
-  const createObjectRefsInferences = async (context: AuthContext, reportId: string, refs: ArrayRefs) => {
-    const events = [];
+  const createObjectRefsInferences = async (context: AuthContext, reportId: string, refs: ArrayRefs): Promise<Array<Event>> => {
+    const events:Array<Event> = [];
     const report = await internalLoadById(context, RULE_MANAGER_USER, reportId) as unknown as BasicStoreEntity;
-    const reportObjectRefIds = report[RELATION_OBJECT_MARKING];
+    const reportObjectRefIds = report[RELATION_OBJECT] ?? [];
     const opts = { publishStreamEvent: false };
     for (let index = 0; index < refs.length; index += 1) {
       const { partOfFromId, partOfId, partOfTargetId } = refs[index];
@@ -74,7 +78,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     }
     return events;
   };
-  const handleReportCreation = async (context: AuthContext, report: StixReport, addedIdentityRefs: Array<string>) => {
+  const handleReportCreation = async (context: AuthContext, report: StixReport, addedIdentityRefs: Array<string>): Promise<Array<Event>> => {
     const objectRefsToCreate: ArrayRefs = [];
     const { id: reportId } = report.extensions[STIX_EXT_OCTI];
     const identities = await internalFindByIds(context, RULE_MANAGER_USER, addedIdentityRefs) as Array<StoreObject>;
@@ -108,7 +112,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   const handleObjectRelationCreation = async (context: AuthContext, objectRelation: StixRelation): Promise<Array<Event>> => {
     const events: Array<Event> = [];
     const { source_ref: reportId, target_type, target_ref: targetId } = objectRelation.extensions[STIX_EXT_OCTI];
-    if (target_type === relationTypes.leftType) { // If target is an indicator
+    if (target_type === relationTypes.leftType || getParentTypes(target_type).includes(relationTypes.leftType)) {
       const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
         // Get the list of interesting part-of
         for (let objectRefIndex = 0; objectRefIndex < relationships.length; objectRefIndex += 1) {
@@ -141,8 +145,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     if (relationType === relationTypes.creationType) {
       return handlePartOfRelationCreation(context, upsertRelation);
     }
-    if (relationType === RELATION_OBJECT) {
-      // This event can be generated internally
+    if (relationType === RELATION_OBJECT) { // This event can be generated internally
       return handleObjectRelationCreation(context, upsertRelation);
     }
     return events;
@@ -156,8 +159,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       const operations: Array<Operation> = event.context.patch;
       const previousPatch = event.context.reverse_patch;
       const previousData = jsonpatch.applyPatch<StixReport>(R.clone(report), previousPatch).newDocument;
-      const refOperations = operations.filter((o) => o.path.startsWith('/object_refs')
-          || o.path.startsWith(INFERRED_OBJECT_REF_PATH));
+      const refOperations = operations.filter((o) => o.path.startsWith('/object_refs'));
       const addedRefs: Array<StixId> = [];
       const removedRefs: Array<StixId> = [];
       // Replace operations behavior
@@ -170,9 +172,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const removeObjectIndex = R.last(opPath.split('/'));
         if (removeObjectIndex) {
           const replaceObjectRefIndex = parseInt(removeObjectIndex, 10);
-          const isExtension = replaceOperation.path.startsWith(INFERRED_OBJECT_REF_PATH);
-          const baseData = isExtension ? previousData.extensions[STIX_EXT_OCTI].object_refs_inferred : previousData.object_refs;
-          const removeRefId = baseData[replaceObjectRefIndex];
+          const removeRefId = (previousData.object_refs ?? [])[replaceObjectRefIndex];
           removedRefs.push(removeRefId);
         }
       }
@@ -188,16 +188,15 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       for (let removeIndex = 0; removeIndex < removeOperations.length; removeIndex += 1) {
         const removeOperation = removeOperations[removeIndex];
         // For remove op we need to look into the previous data, the deleted element
-        const isExtension = removeOperation.path.startsWith(INFERRED_OBJECT_REF_PATH);
-        const baseData = isExtension ? previousData.extensions[STIX_EXT_OCTI].object_refs_inferred : previousData.object_refs;
+        const previousObjectRefs = previousData.object_refs;
         const opPath = removeOperation.path.substring(removeOperation.path.indexOf('/object_refs'));
         const [,, index] = opPath.split('/');
         if (index) {
           const replaceObjectRefIndex = parseInt(index, 10);
-          const removeRefId = baseData[replaceObjectRefIndex];
+          const removeRefId = previousObjectRefs[replaceObjectRefIndex];
           removedRefs.push(removeRefId);
         } else {
-          const removeRefIds = baseData ?? [];
+          const removeRefIds = previousObjectRefs ?? [];
           removedRefs.push(...removeRefIds);
         }
       }
@@ -214,7 +213,10 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         // For meta deletion, generate deletion events
         const removedRefIdentities = await internalFindByIds(context, RULE_MANAGER_USER, removedIdentityRefs) as Array<StoreObject>;
         const removedIds = removedRefIdentities.map((i) => i.internal_id);
-        const deleteEvent: DependenciesDeleteEvent = { type: 'delete-dependencies', ids: removedIds.map((ref) => `${ref}_ref`) };
+        const deleteEvent: DependenciesDeleteEvent = {
+          type: EVENT_TYPE_DELETE_DEPENDENCIES,
+          data: { ids: removedIds.map((ref) => `${ref}_ref`) }
+        };
         events.push(deleteEvent);
       }
       return events;

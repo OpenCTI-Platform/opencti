@@ -226,7 +226,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       // In case of direct dependencies deletion (refs), call clean on every dependencies
       if (type === EVENT_TYPE_DELETE_DEPENDENCIES) {
         const deleteEvent = event as DependenciesDeleteEvent;
-        await applyCleanupOnDependencyIds(deleteEvent.ids);
+        await applyCleanupOnDependencyIds(deleteEvent.data.ids);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {

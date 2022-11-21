@@ -15,6 +15,7 @@ import {
 import {
   buildPagination,
   computeAverage,
+  EVENT_TYPE_DELETE_DEPENDENCIES,
   fillTimeSeries,
   generateCreateMessage,
   generateUpdateMessage,
@@ -78,7 +79,6 @@ import {
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import {
-  buildDeleteEvent,
   lockResource,
   notify,
   redisAddDeletions,
@@ -124,7 +124,8 @@ import {
   STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 } from '../schema/stixCyberObservableRelationship';
 import {
-  FIELD_TO_META_RELATION, isStixMetaRelationship,
+  FIELD_TO_META_RELATION,
+  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
@@ -197,7 +198,8 @@ import {
   filterStoreElements,
   isBypassUser,
   isUserCanAccessStoreElement,
-  KNOWLEDGE_ORGANIZATION_RESTRICT, RULE_MANAGER_USER,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  RULE_MANAGER_USER,
   SYSTEM_USER
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
@@ -2438,6 +2440,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   data.internal_id = internalId;
   data.standard_id = standardId;
   data.entity_type = relationshipType;
+  data.relationship_type = relationshipType;
   data.creator_id = user.internal_id;
   data.created_at = today;
   data.updated_at = today;
@@ -2473,7 +2476,6 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   }
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
-    data.relationship_type = relationshipType;
     data.description = input.description ? input.description : '';
     data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
@@ -2489,7 +2491,6 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   if (isStixCyberObservableRelationship(relationshipType)) {
     // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
     data.spec_version = STIX_SPEC_VERSION;
-    data.relationship_type = relationshipType;
     data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
@@ -3190,11 +3191,14 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
         logApp.info('Delete inferred element', { rule, id: instance.id });
         // If inference is a meta relationship just delete and generate an internal event
         if (isStixMetaRelationship(instance.entity_type)) {
-          const dependencyDeletions = await elDeleteElements(context, RULE_MANAGER_USER, [instance], storeLoadByIdWithRefs);
-          const metaEventPromise = buildDeleteEvent(RULE_MANAGER_USER, instance, '-', dependencyDeletions);
+          // Delete the meta and start an unshare background task if needed
+          const deletionPromise = elDeleteElements(context, RULE_MANAGER_USER, [instance], storeLoadByIdWithRefs);
           const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, instance);
-          const [metaDeleteEvent] = await Promise.all([metaEventPromise, taskPromise]);
-          derivedEvents.push(metaDeleteEvent);
+          await Promise.all([deletionPromise, taskPromise]);
+          // Deleting meta must be converted to a special dependency deletion
+          // This type of event will be handle by the stream to cleanup inferences.
+          const deleteEvent = { type: EVENT_TYPE_DELETE_DEPENDENCIES, data: { ids: [`${instance.to.internal_id}_ref`] } };
+          derivedEvents.push(deleteEvent);
         } else {
           const deletionData = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
           derivedEvents.push(deletionData.event);

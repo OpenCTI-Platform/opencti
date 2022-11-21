@@ -1,7 +1,8 @@
 import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
-import type { RuleDefinition, RuleBehavior, RuleFilters, RuleScope } from '../../types/rules';
+import type { RuleBehavior, RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
+import { RELATION_OBJECT } from '../../schema/stixMetaRelationship';
 
 const id = 'report_ref_identity_part_of';
 const name = 'Identities propagation in reports';
@@ -47,7 +48,7 @@ const display = {
 };
 
 // For rescan
-const scan: RuleFilters = { types: [RELATION_PART_OF], fromTypes: [ENTITY_TYPE_IDENTITY], toTypes: [ENTITY_TYPE_IDENTITY] };
+const scan: RuleFilters = { types: [RELATION_OBJECT], fromTypes: [ENTITY_TYPE_CONTAINER_REPORT], toTypes: [ENTITY_TYPE_IDENTITY] };
 
 // For live
 const scopes: Array<RuleScope> = [
@@ -57,6 +58,10 @@ const scopes: Array<RuleScope> = [
   },
   {
     filters: { types: [RELATION_PART_OF], fromTypes: [ENTITY_TYPE_IDENTITY], toTypes: [ENTITY_TYPE_IDENTITY] },
+    attributes: [],
+  },
+  {
+    filters: { types: [RELATION_OBJECT], fromTypes: [ENTITY_TYPE_CONTAINER_REPORT], toTypes: [ENTITY_TYPE_IDENTITY] },
     attributes: [],
   },
 ];

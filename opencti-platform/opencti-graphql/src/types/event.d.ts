@@ -27,7 +27,9 @@ interface RuleEvent {
 
 interface DependenciesDeleteEvent extends RuleEvent {
   type: 'delete-dependencies';
-  ids: Array<string>;
+  data: {
+    ids: Array<string>
+  };
 }
 
 // stream
