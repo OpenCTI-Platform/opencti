@@ -51,9 +51,8 @@ import {
   ENTITY_TYPE_CONTAINER,
   RULE_PREFIX
 } from '../schema/general';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
-import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
 import { listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
@@ -289,7 +288,7 @@ const executeRuleClean = async (context, user, actionContext, element) => {
 };
 const executeRuleElementRescan = async (context, user, actionContext, element) => {
   const { rules } = actionContext ?? {};
-  const activatedRules = await getActivatedRules(context);
+  const activatedRules = await getActivatedRules(context, SYSTEM_USER);
   // Filter activated rules by context specification
   const rulesToApply = rules ? activatedRules.filter((r) => rules.includes(r.id)) : activatedRules;
   if (rulesToApply.length > 0) {
@@ -302,17 +301,19 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
         await rulesApplyHandler(context, user, [event]);
       }
     } else if (isStixObject(element.entity_type)) {
-      const args = { connectionFormat: false, fromId: element.internal_id };
-      const relations = await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
-      for (let index = 0; index < relations.length; index += 1) {
-        const relation = relations[index];
-        const needRescan = ruleRescanTypes.includes(relation.entity_type);
-        if (needRescan) {
-          const data = await stixLoadById(context, user, relation.internal_id);
-          const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
-          await rulesApplyHandler(context, user, [event], rulesToApply);
+      const listCallback = async (relations) => {
+        for (let index = 0; index < relations.length; index += 1) {
+          const relation = relations[index];
+          const needRescan = ruleRescanTypes.includes(relation.entity_type);
+          if (needRescan) {
+            const data = await stixLoadById(context, user, relation.internal_id);
+            const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
+            await rulesApplyHandler(context, user, [event], rulesToApply);
+          }
         }
-      }
+      };
+      const args = { connectionFormat: false, fromId: element.internal_id, callback: listCallback };
+      await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, args);
     }
   }
 };
@@ -397,7 +398,7 @@ const taskHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
-    const context = executionContext('task_manager');
+    const context = executionContext('task_manager', SYSTEM_USER);
     const task = await findTaskToExecute(context);
     // region Task checking
     if (!task) {

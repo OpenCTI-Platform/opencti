@@ -33,4 +33,5 @@ interface AuthUser {
 interface AuthContext {
   source: string;
   tracing: TracingContext
+  user: AuthUser | undefined;
 }

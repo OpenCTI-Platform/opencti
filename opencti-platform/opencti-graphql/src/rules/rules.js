@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
-import { shortHash, isInternalId } from '../schema/schemaUtils';
+import { isInternalId, shortHash } from '../schema/schemaUtils';
 import { RULE_PREFIX } from '../schema/general';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
-import { BYPASS, ROLE_ADMINISTRATOR } from '../utils/access';
+import { RULE_MANAGER_USER_UUID } from '../utils/access';
 
 // region definition
 export const RULES_ATTRIBUTES_BEHAVIOR = {
@@ -34,21 +34,6 @@ export const RULES_ATTRIBUTES_BEHAVIOR = {
   supportedAttributes() {
     return Object.keys(this._attributes);
   },
-};
-const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
-export const RULE_MANAGER_USER = {
-  id: RULE_MANAGER_USER_UUID,
-  internal_id: RULE_MANAGER_USER_UUID,
-  name: 'RULE MANAGER',
-  user_email: 'RULE MANAGER',
-  inside_platform_organization: true,
-  origin: { user_id: RULE_MANAGER_USER_UUID },
-  roles: [{ name: ROLE_ADMINISTRATOR }],
-  capabilities: [{ name: BYPASS }],
-  organizations: [],
-  allowed_organizations: [],
-  allowed_marking: [],
-  all_marking: [],
 };
 // endregion
 

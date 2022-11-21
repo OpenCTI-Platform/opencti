@@ -127,6 +127,7 @@ import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
 import type { StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
 import {
+  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
@@ -1137,7 +1138,7 @@ export const checkStixCoreRelationshipMapping = (fromType: string, toType: strin
 };
 
 export const isRelationBuiltin = (instance: StoreRelation): boolean => {
-  if (isInternalRelationship(instance.entity_type)) {
+  if (isInternalRelationship(instance.entity_type) || isStixMetaRelationship(instance.entity_type)) {
     return false;
   }
   // Any <-> Any relationship type check

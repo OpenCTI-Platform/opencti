@@ -9,14 +9,14 @@ import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/form
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
 import { computeAverage } from '../../database/utils';
-import { createRuleContent, RULE_MANAGER_USER } from '../rules';
+import { createRuleContent } from '../rules';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { listAllRelations, RelationOptions } from '../../database/middleware-loader';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { RuleRuntime } from '../../types/rules';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import type { AuthContext } from '../../types/user';
-import { executionContext } from '../../utils/access';
+import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 
 /*
 'If **indicator A** is `sighted` in **identity/location B** and '
@@ -120,7 +120,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
     return events;
   };
   const applyUpsert = async (data: StixRelation | StixSighting): Promise<Array<Event>> => {
-    const context = executionContext(def.name);
+    const context = executionContext(def.name, RULE_MANAGER_USER);
     if (data.extensions[STIX_EXT_OCTI].type === STIX_SIGHTING_RELATIONSHIP) {
       const sighting: StixSighting = data as StixSighting;
       return applyFromStixSighting(context, sighting);

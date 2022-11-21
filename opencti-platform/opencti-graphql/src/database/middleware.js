@@ -78,6 +78,7 @@ import {
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import {
+  buildDeleteEvent,
   lockResource,
   notify,
   redisAddDeletions,
@@ -123,7 +124,7 @@ import {
   STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 } from '../schema/stixCyberObservableRelationship';
 import {
-  FIELD_TO_META_RELATION,
+  FIELD_TO_META_RELATION, isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
@@ -196,10 +197,10 @@ import {
   filterStoreElements,
   isBypassUser,
   isUserCanAccessStoreElement,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  KNOWLEDGE_ORGANIZATION_RESTRICT, RULE_MANAGER_USER,
   SYSTEM_USER
 } from '../utils/access';
-import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
+import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
   FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION,
   instanceMetaRefsExtractor,
@@ -3154,8 +3155,8 @@ export const deleteElementById = async (context, user, elementId, type, opts = {
   const { element: deleted } = await internalDeleteElementById(context, user, elementId, opts);
   return deleted.internal_id;
 };
-export const deleteInferredRuleElement = async (rule, instance, deletedDependencies) => {
-  const context = executionContext(rule.name);
+export const deleteInferredRuleElement = async (rule, instance, deletedDependencies, opts = {}) => {
+  const context = executionContext(rule.name, RULE_MANAGER_USER);
   // Check if deletion is really targeting an inference
   const isInferred = isInferredIndex(instance._index);
   if (!isInferred) {
@@ -3187,9 +3188,18 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
         logApp.info('Delete inferred element', { rule, id: instance.id });
-        const { event } = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id);
+        // If inference is a meta relationship just delete and generate an internal event
+        if (isStixMetaRelationship(instance.entity_type)) {
+          const dependencyDeletions = await elDeleteElements(context, RULE_MANAGER_USER, [instance], storeLoadByIdWithRefs);
+          const metaEventPromise = buildDeleteEvent(RULE_MANAGER_USER, instance, '-', dependencyDeletions);
+          const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, instance);
+          const [metaDeleteEvent] = await Promise.all([metaEventPromise, taskPromise]);
+          derivedEvents.push(metaDeleteEvent);
+        } else {
+          const deletionData = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
+          derivedEvents.push(deletionData.event);
+        }
         logApp.info('Delete inferred element', { id: instance.id, type: instance.entity_type });
-        derivedEvents.push(event);
       } else {
         // If not we need to clean the rule and keep the element for other rules.
         logApp.info('Cleanup inferred element', { rule, id: instance.id });

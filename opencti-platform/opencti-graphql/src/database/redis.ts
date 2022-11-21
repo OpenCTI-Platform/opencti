@@ -520,7 +520,7 @@ export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUse
 };
 
 // Delete
-const buildDeleteEvent = async (
+export const buildDeleteEvent = async (
   user: AuthUser,
   instance: StoreObject,
   message: string,

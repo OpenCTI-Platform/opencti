@@ -7,7 +7,7 @@ import {
 } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
-import { createRuleContent, RULE_MANAGER_USER } from '../rules';
+import { createRuleContent } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
@@ -18,7 +18,7 @@ import type { StixSighting } from '../../types/stix-sro';
 import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
-import { executionContext } from '../../utils/access';
+import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
@@ -87,7 +87,7 @@ const ruleSightingIncidentBuilder = () => {
     return handleIndicatorUpsert(context, sightingIndicator as StixIndicator);
   };
   const applyUpsert = async (data: StixIndicator | StixSighting): Promise<Array<Event>> => {
-    const context = executionContext(def.name);
+    const context = executionContext(def.name, RULE_MANAGER_USER);
     const events: Array<Event> = [];
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_INDICATOR) {

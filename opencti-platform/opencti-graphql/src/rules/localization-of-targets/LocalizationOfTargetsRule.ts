@@ -3,19 +3,19 @@ import { createInferredRelation, deleteInferredRuleElement, internalLoadById } f
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocalizationOfTargetsDefinition';
-import { createRuleContent, RULE_MANAGER_USER } from '../rules';
+import { createRuleContent } from '../rules';
 import { computeAverage } from '../../database/utils';
 import type { StixRelation } from '../../types/stix-sro';
 import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
-import { executionContext } from '../../utils/access';
+import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
   const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
-    const context = executionContext(def.name);
+    const context = executionContext(def.name, RULE_MANAGER_USER);
     const events: Array<Event> = [];
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;

@@ -195,10 +195,6 @@ interface StixMalwareAnalysis extends StixDomainObject {
   sample_ref: StixId; // optional
 }
 
-interface StixContainerExtension extends StixOpenctiExtension {
-  object_refs_inferred: Array<StixId>;
-}
-
 // Note Specific Properties
 // abstract, content, authors, object_refs
 interface StixNote extends StixDomainObject {

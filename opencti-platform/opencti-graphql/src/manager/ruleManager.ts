@@ -25,7 +25,7 @@ import {
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
+import { RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -47,7 +47,7 @@ import type {
   UpdateEvent
 } from '../types/event';
 import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
-import { executionContext } from '../utils/access';
+import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -189,7 +189,7 @@ const handleRuleError = async (event: RuleEvent, error: unknown) => {
 };
 
 const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
-  const context = executionContext('rule_cleaner');
+  const context = executionContext('rule_cleaner', RULE_MANAGER_USER);
   const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
   const callback = (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -293,7 +293,7 @@ export const rulesCleanHandler = async (
 };
 
 const ruleStreamHandler = async (streamEvents: Array<StreamEvent>, lastEventId: string) => {
-  const context = executionContext('rule_manager');
+  const context = executionContext('rule_manager', RULE_MANAGER_USER);
   // Create list of events to process
   // Events must be in a compatible version and not inferences events
   // Inferences directly handle recursively by the manager
@@ -316,7 +316,7 @@ const ruleStreamHandler = async (streamEvents: Array<StreamEvent>, lastEventId: 
 };
 
 const getInitRuleManager = async (): Promise<BasicStoreEntity> => {
-  const context = executionContext('rule_manager');
+  const context = executionContext('rule_manager', RULE_MANAGER_USER);
   const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
   const created = await createEntity(context, RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
   return created as BasicStoreEntity;
