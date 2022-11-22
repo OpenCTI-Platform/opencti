@@ -185,6 +185,7 @@ const TaxiiCollectionEditionContainer = (props) => {
                     'x_opencti_detection',
                     'revoked',
                     'confidence',
+                    'indicator_types',
                     'pattern_type',
                   ]}
                   handleAddFilter={handleAddFilter}

@@ -253,6 +253,7 @@ const StreamCollectionEditionContainer = (props) => {
                     'x_opencti_workflow_id',
                     'revoked',
                     'confidence',
+                    'indicator_types',
                     'pattern_type',
                   ]}
                   handleAddFilter={handleAddFilter}

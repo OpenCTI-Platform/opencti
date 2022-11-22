@@ -1695,6 +1695,7 @@ enum StixCoreObjectsFilter {
   valid_from
   valid_until
   pattern_type
+  indicator_types
   x_opencti_main_observable_type
   report_types
   context
@@ -1816,6 +1817,7 @@ enum StixDomainObjectsFilter {
   valid_from
   valid_until
   pattern_type
+  indicator_types
   x_opencti_main_observable_type
   report_types
   context
@@ -3830,6 +3832,7 @@ enum IndicatorsOrdering {
 enum IndicatorsFilter {
   name
   pattern_type
+  indicator_types
   pattern_version
   pattern
   x_opencti_main_observable_type

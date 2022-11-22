@@ -14,7 +14,10 @@ import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -28,6 +31,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -95,6 +99,7 @@ const indicatorMutation = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  indicator_types: Yup.array(),
   confidence: Yup.number(),
   description: Yup.string().nullable(),
   pattern: Yup.string().required(t('This field is required')),
@@ -221,6 +226,7 @@ class IndicatorCreation extends Component {
               initialValues={{
                 name: '',
                 confidence: 75,
+                indicator_types: [],
                 pattern: '',
                 pattern_type: '',
                 x_opencti_main_observable_type: '',
@@ -253,6 +259,13 @@ class IndicatorCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                  />
+                  <OpenVocabField
+                    label={t('Indicator types')}
+                    type="indicator-type-ov"
+                    name="indicator_types"
+                    multiple={true}
+                    containerStyle={fieldSpacingContainerStyle}
                   />
                   <ConfidenceField
                     name="confidence"
