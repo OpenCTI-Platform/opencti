@@ -75,6 +75,10 @@ const configurationMapping = {
   signature_algorithm: 'signatureAlgorithm',
   digest_algorithm: 'digestAlgorithm',
   want_assertions_signed: 'wantAssertionsSigned',
+  authn_context: 'authnContext',
+  disable_requested_authn_context: 'disableRequestedAuthnContext',
+  force_authn: 'forceAuthn',
+  disable_request_acs_url: 'disableRequestAcsUrl',
   // OpenID Client - everything is already in snake case
 };
 const configRemapping = (config) => {
