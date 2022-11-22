@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Slide from '@mui/material/Slide';
+import Tooltip from '@mui/material/Tooltip';
 import { Add, Close, Delete } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Dialog from '@mui/material/Dialog';
@@ -32,6 +33,7 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
+import { truncate } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -276,6 +278,7 @@ class StixDomainObjectHeader extends Component {
       disablePopover,
       enableReferences,
       disableSharing,
+      noAliases,
     } = this.props;
     const aliases = R.propOr(
       [],
@@ -284,13 +287,15 @@ class StixDomainObjectHeader extends Component {
     );
     return (
       <div>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
-          {stixDomainObject.name}
-        </Typography>
+        <Tooltip title={stixDomainObject.name}>
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            classes={{ root: classes.title }}
+          >
+            {truncate(stixDomainObject.name, 80)}
+          </Typography>
+        </Tooltip>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, {
@@ -321,115 +326,124 @@ class StixDomainObjectHeader extends Component {
             </FormControl>
           </div>
         )}
-        <div
-          className={classes.aliases}
-          style={{ marginLeft: typeof onViewAs === 'function' ? 10 : 0 }}
-        >
-          {R.take(5, aliases).map(
-            (label) => label.length > 0 && (
-                <Security
-                  needs={[KNOWLEDGE_KNUPDATE]}
-                  key={label}
-                  placeholder={
-                    <Chip classes={{ root: classes.alias }} label={label} />
-                  }
-                >
-                  <Chip
-                    classes={{ root: classes.alias }}
-                    label={label}
-                    onDelete={
-                      enableReferences
-                        ? this.handleOpenCommitDelete.bind(this, label)
-                        : this.deleteAlias.bind(this, label)
+        {!noAliases && (
+          <div
+            className={classes.aliases}
+            style={{ marginLeft: typeof onViewAs === 'function' ? 10 : 0 }}
+          >
+            {R.take(5, aliases).map(
+              (label) => label.length > 0 && (
+                  <Security
+                    needs={[KNOWLEDGE_KNUPDATE]}
+                    key={label}
+                    placeholder={
+                      <Chip classes={{ root: classes.alias }} label={label} />
                     }
-                  />
-                </Security>
-            ),
-          )}
-        </div>
-        <Slide
-          direction="right"
-          in={this.state.openAlias}
-          mountOnEnter={true}
-          unmountOnExit={true}
-        >
-          <div style={{ float: 'left', marginTop: -5 }}>
-            <Formik
-              initialValues={{ new_alias: '' }}
-              onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
-              validationSchema={enableReferences ? aliasValidation(t) : null}
-            >
-              {({
-                submitForm,
-                isSubmitting,
-                validateForm,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ float: 'right' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="new_alias"
-                    autoFocus={true}
-                    placeholder={t('New alias')}
-                    className={classes.aliasesInput}
-                    onChange={this.handleChangeNewAlias.bind(this)}
-                    value={this.state.newAlias}
-                    onKeyDown={(e) => {
-                      if (e.keyCode === 13) {
-                        if (enableReferences && !this.state.openCommitCreate) {
-                          return this.handleOpenCommitCreate();
-                        }
-                        return submitForm();
+                  >
+                    <Chip
+                      classes={{ root: classes.alias }}
+                      label={label}
+                      onDelete={
+                        enableReferences
+                          ? this.handleOpenCommitDelete.bind(this, label)
+                          : this.deleteAlias.bind(this, label)
                       }
-                      return true;
-                    }}
-                  />
-                  {enableReferences && (
-                    <CommitMessage
-                      handleClose={this.openCommitCreate.bind(this)}
-                      open={this.state.openCommitCreate}
-                      submitForm={submitForm}
-                      disabled={isSubmitting}
-                      validateForm={validateForm}
-                      setFieldValue={setFieldValue}
-                      values={values}
-                      id={stixDomainObject.id}
                     />
-                  )}
-                </Form>
-              )}
-            </Formik>
+                  </Security>
+              ),
+            )}
           </div>
-        </Slide>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          {aliases.length > 5 ? (
-            <IconButton
-              style={{ float: 'left', marginTop: -8 }}
-              color="primary"
-              aria-label="More"
-              onClick={this.handleToggleOpenAliases.bind(this)}
-              size="large"
-            >
-              <DotsHorizontalCircleOutline fontSize="small" />
-            </IconButton>
-          ) : (
-            <IconButton
-              style={{ float: 'left', marginTop: -8 }}
-              color={this.state.openAlias ? 'primary' : 'secondary'}
-              aria-label="Alias"
-              onClick={this.handleToggleCreateAlias.bind(this)}
-              size="large"
-            >
-              {this.state.openAlias ? (
-                <Close fontSize="small" color="primary" />
-              ) : (
-                <Add fontSize="small" />
-              )}
-            </IconButton>
-          )}
-        </Security>
+        )}
+        {!noAliases && (
+          <Slide
+            direction="right"
+            in={this.state.openAlias}
+            mountOnEnter={true}
+            unmountOnExit={true}
+          >
+            <div style={{ float: 'left', marginTop: -5 }}>
+              <Formik
+                initialValues={{ new_alias: '' }}
+                onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
+                validationSchema={enableReferences ? aliasValidation(t) : null}
+              >
+                {({
+                  submitForm,
+                  isSubmitting,
+                  validateForm,
+                  setFieldValue,
+                  values,
+                }) => (
+                  <Form style={{ float: 'right' }}>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="new_alias"
+                      autoFocus={true}
+                      placeholder={t('New alias')}
+                      className={classes.aliasesInput}
+                      onChange={this.handleChangeNewAlias.bind(this)}
+                      value={this.state.newAlias}
+                      onKeyDown={(e) => {
+                        if (e.keyCode === 13) {
+                          if (
+                            enableReferences
+                            && !this.state.openCommitCreate
+                          ) {
+                            return this.handleOpenCommitCreate();
+                          }
+                          return submitForm();
+                        }
+                        return true;
+                      }}
+                    />
+                    {enableReferences && (
+                      <CommitMessage
+                        handleClose={this.openCommitCreate.bind(this)}
+                        open={this.state.openCommitCreate}
+                        submitForm={submitForm}
+                        disabled={isSubmitting}
+                        validateForm={validateForm}
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        id={stixDomainObject.id}
+                      />
+                    )}
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </Slide>
+        )}
+        {!noAliases && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            {aliases.length > 5 ? (
+              <IconButton
+                style={{ float: 'left', marginTop: -8 }}
+                color="primary"
+                aria-label="More"
+                onClick={this.handleToggleOpenAliases.bind(this)}
+                size="large"
+              >
+                <DotsHorizontalCircleOutline fontSize="small" />
+              </IconButton>
+            ) : (
+              <IconButton
+                style={{ float: 'left', marginTop: -8 }}
+                color={this.state.openAlias ? 'primary' : 'secondary'}
+                aria-label="Alias"
+                onClick={this.handleToggleCreateAlias.bind(this)}
+                size="large"
+              >
+                {this.state.openAlias ? (
+                  <Close fontSize="small" color="primary" />
+                ) : (
+                  <Add fontSize="small" />
+                )}
+              </IconButton>
+            )}
+          </Security>
+        )}
         <div className={classes.actions}>
           <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
             {disableSharing !== true && (
@@ -442,96 +456,16 @@ class StixDomainObjectHeader extends Component {
           </ToggleButtonGroup>
         </div>
         <div className="clearfix" />
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={this.state.openAliases}
-          TransitionComponent={Transition}
-          onClose={this.handleToggleOpenAliases.bind(this)}
-          fullWidth={true}
-        >
-          <DialogTitle>
-            {t('Entity aliases')}
-            <Formik
-              initialValues={{ new_alias: '' }}
-              onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
-              validationSchema={enableReferences ? aliasValidation(t) : null}
-            >
-              {({
-                submitForm,
-                isSubmitting,
-                validateForm,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ float: 'right' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="new_alias"
-                    autoFocus={true}
-                    placeholder={t('New alias')}
-                    className={classes.aliasesInput}
-                    onChange={this.handleChangeNewAlias.bind(this)}
-                    value={this.state.newAlias}
-                    onKeyDown={(e) => {
-                      if (e.keyCode === 13) {
-                        if (enableReferences) {
-                          return this.handleOpenCommitCreate();
-                        }
-                        return submitForm();
-                      }
-                      return true;
-                    }}
-                  />
-                  {enableReferences && (
-                    <CommitMessage
-                      handleClose={this.handleCloseCommitCreate.bind(this)}
-                      open={this.state.openCommitCreate}
-                      submitForm={submitForm}
-                      disabled={isSubmitting}
-                      validateForm={validateForm}
-                      setFieldValue={setFieldValue}
-                      values={values}
-                      id={stixDomainObject.id}
-                    />
-                  )}
-                </Form>
-              )}
-            </Formik>
-          </DialogTitle>
-          <DialogContent dividers={true}>
-            <List>
-              {R.propOr(
-                [],
-                isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
-                stixDomainObject,
-              ).map(
-                (label) => label.length > 0 && (
-                    <ListItem key={label} disableGutters={true} dense={true}>
-                      <ListItemText primary={label} />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={
-                            enableReferences
-                              ? this.handleOpenCommitDelete.bind(this, label)
-                              : this.deleteAlias.bind(this, label)
-                          }
-                          size="large"
-                        >
-                          <Delete />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                ),
-              )}
-            </List>
-            <div
-              style={{
-                display: this.state.openAliasesCreate ? 'block' : 'none',
-              }}
-            >
+        {!noAliases && (
+          <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={this.state.openAliases}
+            TransitionComponent={Transition}
+            onClose={this.handleToggleOpenAliases.bind(this)}
+            fullWidth={true}
+          >
+            <DialogTitle>
+              {t('Entity aliases')}
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
@@ -544,23 +478,19 @@ class StixDomainObjectHeader extends Component {
                   setFieldValue,
                   values,
                 }) => (
-                  <Form>
+                  <Form style={{ float: 'right' }}>
                     <Field
                       component={TextField}
                       variant="standard"
                       name="new_alias"
                       autoFocus={true}
-                      fullWidth={true}
-                      placeholder={t('New aliases')}
+                      placeholder={t('New alias')}
                       className={classes.aliasesInput}
                       onChange={this.handleChangeNewAlias.bind(this)}
                       value={this.state.newAlias}
                       onKeyDown={(e) => {
                         if (e.keyCode === 13) {
-                          if (
-                            enableReferences
-                            && !this.state.openCommitCreate
-                          ) {
+                          if (enableReferences) {
                             return this.handleOpenCommitCreate();
                           }
                           return submitForm();
@@ -583,17 +513,105 @@ class StixDomainObjectHeader extends Component {
                   </Form>
                 )}
               </Formik>
-            </div>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleToggleOpenAliases.bind(this)}
-              color="primary"
-            >
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+            </DialogTitle>
+            <DialogContent dividers={true}>
+              <List>
+                {R.propOr(
+                  [],
+                  isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
+                  stixDomainObject,
+                ).map(
+                  (label) => label.length > 0 && (
+                      <ListItem key={label} disableGutters={true} dense={true}>
+                        <ListItemText primary={label} />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            edge="end"
+                            aria-label="delete"
+                            onClick={
+                              enableReferences
+                                ? this.handleOpenCommitDelete.bind(this, label)
+                                : this.deleteAlias.bind(this, label)
+                            }
+                            size="large"
+                          >
+                            <Delete />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                  ),
+                )}
+              </List>
+              <div
+                style={{
+                  display: this.state.openAliasesCreate ? 'block' : 'none',
+                }}
+              >
+                <Formik
+                  initialValues={{ new_alias: '' }}
+                  onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
+                  validationSchema={
+                    enableReferences ? aliasValidation(t) : null
+                  }
+                >
+                  {({
+                    submitForm,
+                    isSubmitting,
+                    validateForm,
+                    setFieldValue,
+                    values,
+                  }) => (
+                    <Form>
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        name="new_alias"
+                        autoFocus={true}
+                        fullWidth={true}
+                        placeholder={t('New aliases')}
+                        className={classes.aliasesInput}
+                        onChange={this.handleChangeNewAlias.bind(this)}
+                        value={this.state.newAlias}
+                        onKeyDown={(e) => {
+                          if (e.keyCode === 13) {
+                            if (
+                              enableReferences
+                              && !this.state.openCommitCreate
+                            ) {
+                              return this.handleOpenCommitCreate();
+                            }
+                            return submitForm();
+                          }
+                          return true;
+                        }}
+                      />
+                      {enableReferences && (
+                        <CommitMessage
+                          handleClose={this.handleCloseCommitCreate.bind(this)}
+                          open={this.state.openCommitCreate}
+                          submitForm={submitForm}
+                          disabled={isSubmitting}
+                          validateForm={validateForm}
+                          setFieldValue={setFieldValue}
+                          values={values}
+                          id={stixDomainObject.id}
+                        />
+                      )}
+                    </Form>
+                  )}
+                </Formik>
+              </div>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={this.handleToggleOpenAliases.bind(this)}
+                color="primary"
+              >
+                {t('Close')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
         {enableReferences && (
           <Formik
             initialValues={{}}
@@ -638,6 +656,7 @@ StixDomainObjectHeader.propTypes = {
   onViewAs: PropTypes.func,
   disablePopover: PropTypes.bool,
   isOpenctiAlias: PropTypes.bool,
+  noAliases: PropTypes.bool,
   enableReferences: PropTypes.bool,
 };
 

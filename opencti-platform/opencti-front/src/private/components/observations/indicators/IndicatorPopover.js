@@ -87,7 +87,7 @@ class IndicatorPopover extends Component {
     commitMutation({
       mutation: IndicatorPopoverDeletionMutation,
       variables: {
-        id: this.props.indicatorId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -107,7 +107,7 @@ class IndicatorPopover extends Component {
   }
 
   render() {
-    const { classes, t, indicatorId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -170,7 +170,7 @@ class IndicatorPopover extends Component {
         >
           <QueryRenderer
             query={indicatorEditionQuery}
-            variables={{ id: indicatorId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -190,7 +190,7 @@ class IndicatorPopover extends Component {
 }
 
 IndicatorPopover.propTypes = {
-  indicatorId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

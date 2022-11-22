@@ -13,8 +13,9 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import IndicatorHeader from './IndicatorHeader';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import IndicatorPopover from './IndicatorPopover';
 
 const styles = () => ({
   container: {
@@ -30,7 +31,11 @@ class IndicatorComponent extends Component {
     const { classes, indicator } = this.props;
     return (
       <div className={classes.container}>
-        <IndicatorHeader indicator={indicator} />
+        <StixDomainObjectHeader
+          stixDomainObject={indicator}
+          PopoverComponent={<IndicatorPopover />}
+          noAliases={true}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -39,7 +44,6 @@ class IndicatorComponent extends Component {
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview
               stixDomainObject={indicator}
-              withoutMarking={true}
               withPattern={true}
             />
           </Grid>

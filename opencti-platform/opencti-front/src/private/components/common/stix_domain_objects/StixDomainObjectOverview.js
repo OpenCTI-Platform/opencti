@@ -114,21 +114,9 @@ class StixDomainObjectOverview extends Component {
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              {withPattern && (
+              {stixDomainObject.objectMarking && (
                 <div>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Pattern type')}
-                  </Typography>
-                  <ItemPatternType label={stixDomainObject.pattern_type} />
-                </div>
-              )}
-              {!withoutMarking && stixDomainObject.objectMarking && (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: withPattern ? 20 : 0 }}
-                  >
                     {t('Marking')}
                   </Typography>
                   <ItemMarkings
@@ -181,7 +169,19 @@ class StixDomainObjectOverview extends Component {
               {fldt(stixDomainObject.modified)}
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              {withPattern && (
+                <div>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Pattern type')}
+                  </Typography>
+                  <ItemPatternType label={stixDomainObject.pattern_type} />
+                </div>
+              )}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: withPattern ? 20 : 0 }}
+              >
                 {t('Processing status')}
               </Typography>
               <ItemStatus
