@@ -3539,13 +3539,13 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
 
 input IndicatorAddInput {
   stix_id: StixId
-  x_opencti_stix_ids: [StixId]
+  x_opencti_stix_ids: [StixId!]
   pattern_type: String!
   pattern_version: String
   pattern: String!
   name: name_String_NotNull_minLength_2!
   description: String
-  indicator_types: [String]
+  indicator_types: [String!]
   valid_from: DateTime
   valid_until: DateTime
   confidence: Int
@@ -3554,13 +3554,13 @@ input IndicatorAddInput {
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
-  x_mitre_platforms: [String]
-  killChainPhases: [String]
+  x_mitre_platforms: [String!]
+  killChainPhases: [String!]
   createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  objectOrganization: [String]
-  externalReferences: [String]
+  objectMarking: [String!]
+  objectLabel: [String!]
+  objectOrganization: [String!]
+  externalReferences: [String!]
   created: DateTime
   modified: DateTime
   clientMutationId: String

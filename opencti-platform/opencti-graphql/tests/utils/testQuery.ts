@@ -6,6 +6,7 @@ import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/ac
 
 // region static graphql modules
 import '../../src/modules/index';
+import type { AuthUser } from '../../src/types/user';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -34,7 +35,7 @@ export const generateBasicAuth = () => {
   return `Basic ${buff.toString('base64')}`;
 };
 
-export const executeExternalQuery = async (uri, query, variables = {}) => {
+export const executeExternalQuery = async (uri: string, query: unknown, variables = {}) => {
   const response = await axios({
     url: uri,
     method: 'POST',
@@ -49,17 +50,19 @@ export const executeExternalQuery = async (uri, query, variables = {}) => {
   return data;
 };
 
-export const ADMIN_USER = {
+export const ADMIN_USER: AuthUser = {
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+  internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+  organizations: [],
   name: 'admin',
   user_email: 'admin@opencti.io',
-  otp_activated: false,
-  otp_validated: false,
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
-  groups: [],
+  all_marking: [],
+  allowed_organizations: [],
+  inside_platform_organization: true,
   allowed_marking: [],
-  origin: { source: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
+  origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' }
 };
 
 export const serverFromUser = (user = ADMIN_USER) => {
@@ -68,12 +71,10 @@ export const serverFromUser = (user = ADMIN_USER) => {
     introspection: true,
     persistedQueries: false,
     context: () => {
-      const executeContext = executionContext('test');
-      executeContext.user = user;
-      return executeContext;
+      return executionContext('test', user);
     },
   });
 };
 
 const adminApolloServer = serverFromUser();
-export const queryAsAdmin = (request) => adminApolloServer.executeOperation(request);
+export const queryAsAdmin = (request: any) => adminApolloServer.executeOperation(request);
