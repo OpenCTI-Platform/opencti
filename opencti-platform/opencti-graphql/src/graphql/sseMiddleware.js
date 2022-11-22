@@ -79,130 +79,6 @@ const filterCacheResolver = async (context, values, filterCache) => {
   return filterRefs;
 };
 
-const isInstanceAccessible = async (context, user, instance, filterCache, filters = {}) => {
-  // Check if user have correct access rights.
-  const isUserHaveAccessToElement = await isUserCanAccessStixElement(context, user, instance);
-  if (!isUserHaveAccessToElement) {
-    return false;
-  }
-  // When apply extra filters if needed.
-  if (isNotEmptyField(filters)) {
-    // Pre-filter transformation to handle specific frontend format
-    const adaptedFilters = adaptFiltersFrontendFormat(filters);
-    // User is granted, but we still need to apply filters if needed
-    const filterEntries = Object.entries(adaptedFilters);
-    for (let index = 0; index < filterEntries.length; index += 1) {
-      const [type, { operator, values }] = filterEntries[index];
-      // Markings filtering
-      if (type === MARKING_FILTER) {
-        if (values.length === 0) {
-          return true;
-        }
-        const markings = instance.object_marking_refs || [];
-        if (values.length > 0 && markings.length === 0) {
-          return false;
-        }
-        const filterMarkingRefs = await filterCacheResolver(values, filterCache);
-        const found = filterMarkingRefs.some((r) => markings.includes(r));
-        if (!found) {
-          return false;
-        }
-      }
-      // Entity type filtering
-      if (type === TYPE_FILTER) {
-        const instanceType = instance.extensions[STIX_EXT_OCTI].type;
-        const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
-        let found = false;
-        if (values.length === 0) {
-          found = true;
-        } else {
-          // eslint-disable-next-line no-restricted-syntax
-          for (const filter of values) {
-            if (instanceAllTypes.includes(filter.id)) {
-              found = true;
-            }
-          }
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // Workflow
-      if (type === WORKFLOW_FILTER) {
-        const workflowId = instance.extensions[STIX_EXT_OCTI].workflow_id;
-        const found = values.includes(workflowId);
-        if (!found) {
-          return false;
-        }
-      }
-      // Creator filtering
-      if (type === CREATOR_FILTER) {
-        if (values.length === 0) {
-          return true;
-        }
-        if (values.length > 0 && instance.created_by_ref === undefined) {
-          return false;
-        }
-        const filterCreationRefs = await filterCacheResolver(values, filterCache);
-        const found = filterCreationRefs.includes(instance.created_by_ref);
-        if (!found) {
-          return false;
-        }
-      }
-      // Labels filtering
-      if (type === LABEL_FILTER) {
-        const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
-        const found = values.map((v) => v.value).some((r) => labels.includes(r));
-        if (!found) {
-          return false;
-        }
-      }
-      // Boolean filtering
-      if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
-        const { id } = R.head(values);
-        const found = (id === 'true') === instance.revoked;
-        if (!found) {
-          return false;
-        }
-      }
-      // Numeric filtering
-      if (type === SCORE_FILTER || type === CONFIDENCE_FILTER) {
-        const { id } = R.head(values);
-        let found = false;
-        const numeric = parseInt(id, 10);
-        switch (operator) {
-          case 'lt':
-            found = instance[type] < numeric;
-            break;
-          case 'lte':
-            found = instance[type] <= numeric;
-            break;
-          case 'gt':
-            found = instance[type] > numeric;
-            break;
-          case 'gte':
-            found = instance[type] >= numeric;
-            break;
-          default:
-            found = instance[type] === numeric;
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // String filtering
-      if (type === PATTERN_FILTER) {
-        const { id } = R.head(values);
-        const found = id === instance[type];
-        if (!found) {
-          return false;
-        }
-      }
-    }
-  }
-  return true;
-};
-
 const createBroadcastClient = (channel) => {
   let lastHeartbeat;
   return {
@@ -363,12 +239,11 @@ const createSeeMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res);
-      const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       const processor = createStreamProcessor(sessionUser, sessionUser.user_email, false, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
-          const instanceAccessible = await isInstanceAccessible(context, sessionUser, data.data, filterCache);
+          const instanceAccessible = await isUserCanAccessStixElement(context, sessionUser, data.data);
           if (instanceAccessible) {
             client.sendEvent(eventId, event, data);
           }
