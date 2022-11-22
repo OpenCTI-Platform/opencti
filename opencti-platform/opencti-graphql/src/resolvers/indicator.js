@@ -62,7 +62,6 @@ const indicatorResolvers = {
   Indicator: {
     killChainPhases: (indicator, _, context) => killChainPhasesLoader.load(indicator.id, context, context.user),
     observables: (indicator, _, context) => batchObservablesLoader.load(indicator.id, context, context.user),
-    indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {
     indicatorEdit: (_, { id }, context) => ({

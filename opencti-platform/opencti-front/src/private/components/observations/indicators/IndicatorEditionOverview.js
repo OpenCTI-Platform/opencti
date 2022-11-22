@@ -100,8 +100,8 @@ const indicatorValidation = (t) => Yup.object().shape({
   x_opencti_score: Yup.number().nullable(),
   description: Yup.string().nullable(),
   x_opencti_detection: Yup.boolean(),
-  x_mitre_platforms: Yup.array(),
-  indicator_types: Yup.array(),
+  x_mitre_platforms: Yup.array().nullable(),
+  indicator_types: Yup.array().nullable(),
   references: Yup.array().required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
 });
@@ -338,6 +338,17 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
+            <OpenVocabField
+              label={t('Indicator types')}
+              type="indicator-type-ov"
+              name="indicator_types"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              containerStyle={fieldSpacingContainerStyle}
+              variant="edit"
+              multiple={true}
+              editContext={context}
+            />
             <ConfidenceField
               name="confidence"
               onFocus={this.handleChangeFocus.bind(this)}
@@ -395,17 +406,6 @@ class IndicatorEditionOverviewComponent extends Component {
                   />
                 ),
               }}
-            />
-            <OpenVocabField
-              label={t('Indicator types')}
-              type="indicator-type-ov"
-              name="indicator_types"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
             />
             <Field
               component={SelectField}
