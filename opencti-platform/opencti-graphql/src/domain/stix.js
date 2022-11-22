@@ -43,7 +43,7 @@ export const stixDelete = async (context, user, id) => {
 
 export const askListExport = async (context, user, format, entityType, listParams, type = 'simple', maxMarkingId = null) => {
   const connectors = await connectorsForExport(context, user, format, true);
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
+  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entityType}_${type}.${mime.extension(format)}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
@@ -81,7 +81,7 @@ export const askListExport = async (context, user, format, entityType, listParam
 
 export const askEntityExport = async (context, user, format, entity, type = 'simple', maxMarkingId = null) => {
   const connectors = await connectorsForExport(context, user, format, true);
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
+  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(
       format
