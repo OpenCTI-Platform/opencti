@@ -75,7 +75,7 @@ export const computeValidTTL = async (context: AuthContext, user: AuthUser, indi
   return DEFAULT_INDICATOR_TTL;
 };
 
-const computeValidFrom = (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput): Moment => {
+const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
   if (isNotEmptyField(indicator.valid_from)) {
     return utcDate(indicator.valid_from);
   }
@@ -94,7 +94,7 @@ const computeValidUntil = async (context: AuthContext, user: AuthUser, indicator
 };
 
 export const computeValidPeriod = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
-  const validFrom = computeValidFrom(context, user, indicator);
+  const validFrom = computeValidFrom(indicator);
   const validUntil = await computeValidUntil(context, user, indicator, validFrom);
   return { validFrom: validFrom.toISOString(), validUntil: validUntil.toISOString() };
 };
