@@ -15,6 +15,7 @@ import {
   Typography,
   Grid,
   Checkbox,
+  Button,
 } from '@material-ui/core';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -93,6 +94,33 @@ const styles = (theme) => ({
     opacity: 0,
   },
 });
+
+const colors = {
+  very_high: {
+    bg: 'rgba(243, 84, 38, 0.2)',
+    stroke: '#F35426',
+  },
+  high: {
+    bg: 'rgba(249, 180, 6, 0.2)',
+    stroke: '#F9B406',
+  },
+  moderate: {
+    bg: 'rgba(252, 218, 130, 0.2)',
+    stroke: '#FCDA82',
+  },
+  low: {
+    bg: 'rgba(254, 236, 193, 0.2)',
+    stroke: '#FEECC1',
+  },
+  very_low: {
+    bg: 'rgba(241, 241, 242, 0.25)',
+    stroke: '#F1F1F2',
+  },
+  unknown: {
+    bg: '#075AD333',
+    stroke: '#075AD3',
+  },
+};
 
 class RiskCardComponent extends Component {
   constructor(props) {
@@ -210,9 +238,17 @@ class RiskCardComponent extends Component {
                   gutterBottom={true}>
                   {t('Risk')}
                 </Typography>
-                <Typography>
+                <Button
+                  variant="outlined"
+                  color="default"
+                  size="small"
+                  style={{ backgroundColor: colors[node?.risk_level].bg, borderColor: colors[node?.risk_level].stroke, borderRadius: '4px' }}
+                >
                   {node?.risk_level && node?.risk_level}
-                </Typography>
+                </Button>
+                {/* <Typography>
+                  {node?.risk_level && node?.risk_level}
+                </Typography> */}
               </Grid>
             </Grid>
             <Grid container={true} >
