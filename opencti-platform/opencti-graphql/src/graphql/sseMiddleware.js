@@ -526,8 +526,8 @@ const createSeeMiddleware = () => {
       }
       // String filtering
       if (type === PATTERN_FILTER) {
-        const { id } = R.head(values);
-        const found = id === instance[type];
+        const currentPattern = instance[type];
+        const found = values.map((v) => v.id).includes(currentPattern);
         if (!found) {
           return false;
         }
