@@ -39,10 +39,10 @@ const styles = () => ({
 class CyioCoreObjectWidgetLineChart extends Component {
   renderLineChartQuery() {
     const { widget, t } = this.props;
-    switch (widget.config.queryType) {
+    switch (widget.config && widget.config.queryType) {
       case 'assetsTimeSeries':
         return this.renderAssetChart();
-      case 'risksTimSeries':
+      case 'risksTimeSeries':
         return this.renderRiskChart();
       default:
         return (

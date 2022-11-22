@@ -61,7 +61,7 @@ const styles = (theme) => ({
 class CyioCoreObjectWidgetRiskCount extends Component {
   renderCountChartQuery() {
     const { widget, t } = this.props;
-    switch (widget.config.queryType) {
+    switch (widget.config && widget.config.queryType) {
       case 'assetsCount':
         return this.renderAssetChart('asset');
       case 'risksCount':

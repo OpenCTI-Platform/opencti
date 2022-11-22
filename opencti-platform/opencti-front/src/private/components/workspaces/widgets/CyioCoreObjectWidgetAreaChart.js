@@ -38,7 +38,7 @@ const styles = () => ({
 class CyioCoreObjectWidgetAreaChart extends Component {
   renderAreaChartQuery() {
     const { widget, t } = this.props;
-    switch (widget.config.queryType) {
+    switch (widget.config && widget.config.queryType) {
       case 'assetsTimeSeries':
         return this.renderAssetChart();
       case 'risksTimeSeries':

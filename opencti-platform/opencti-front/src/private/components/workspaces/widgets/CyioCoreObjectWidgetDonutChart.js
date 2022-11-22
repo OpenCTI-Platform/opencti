@@ -95,7 +95,7 @@ class CyioCoreObjectWidgetDonutChart extends Component {
 
   renderDonutChartQuery() {
     const { widget, t } = this.props;
-    switch (widget.config.queryType) {
+    switch (widget.config && widget.config.queryType) {
       case 'risksDistribution':
         return this.renderRiskChart();
       default:
