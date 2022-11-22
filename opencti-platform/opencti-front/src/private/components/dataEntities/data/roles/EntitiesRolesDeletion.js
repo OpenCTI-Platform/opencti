@@ -105,11 +105,12 @@ class EntitiesRolesDeletion extends Component {
   }
 
   submitDelete() {
+    const roleIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
     commitMutation({
       mutation: EntitiesRolesDeletionDarkLightMutation,
       variables: {
-        id: this.props.id,
+        id: roleIds[0],
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -149,37 +150,37 @@ class EntitiesRolesDeletion extends Component {
     return (
       <div className={classes.container}>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
-          <Tooltip title={t('Delete')}>
-            <Button
-              variant="contained"
-              onClick={this.handleOpenDelete.bind(this)}
-              className={classes.iconButton}
-              disabled={(Boolean(!id) && Boolean(!isAllselected))}
-              color="primary"
-              size="large"
-            >
-              <DeleteIcon fontSize="inherit" />
-            </Button>
-          </Tooltip>
+        <Tooltip title={t('Delete')}>
+          <Button
+            variant="contained"
+            onClick={this.handleOpenDelete.bind(this)}
+            className={classes.iconButton}
+            disabled={(Boolean(!id) && Boolean(!isAllselected))}
+            color="primary"
+            size="large"
+          >
+            <DeleteIcon fontSize="inherit" />
+          </Button>
+        </Tooltip>
         {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
         >
-            <DialogContent>
-              <Typography style={{
-                fontSize: '18px',
-                lineHeight: '24px',
-                color: 'white',
-              }} >
-                {t('Are you sure you’d like to delete this Responsibility?')}
-              </Typography>
-              <DialogContentText>
-                {t('This action can’t be undone')}
-              </DialogContentText>
-            </DialogContent>
-          <DialogActions className={ classes.dialogActions }>
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to delete this Responsibility?')}
+            </Typography>
+            <DialogContentText>
+              {t('This action can’t be undone')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
@@ -207,7 +208,7 @@ class EntitiesRolesDeletion extends Component {
 }
 
 EntitiesRolesDeletion.propTypes = {
-  id: PropTypes.string,
+  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
