@@ -31,7 +31,23 @@ const styles = (theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
+  bodyContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
   bodyItem: {
+    height: 36,
+    fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    display: 'grid',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  dummyBodyItem: {
     height: 36,
     fontSize: 13,
     paddingLeft: 25,
@@ -60,8 +76,35 @@ const styles = (theme) => ({
     marginBottom: '5px',
     border: '1px solid #075AD3',
   },
+  chip: { borderRadius: '4px' },
 });
 
+const colors = {
+  very_high: {
+    bg: 'rgba(243, 84, 38, 0.2)',
+    stroke: '#F35426',
+  },
+  high: {
+    bg: 'rgba(249, 180, 6, 0.2)',
+    stroke: '#F9B406',
+  },
+  moderate: {
+    bg: 'rgba(252, 218, 130, 0.2)',
+    stroke: '#FCDA82',
+  },
+  low: {
+    bg: 'rgba(254, 236, 193, 0.2)',
+    stroke: '#FEECC1',
+  },
+  very_low: {
+    bg: 'rgba(241, 241, 242, 0.25)',
+    stroke: '#F1F1F2',
+  },
+  unknown: {
+    bg: '#075AD333',
+    stroke: '#075AD3',
+  },
+};
 class RiskLineComponent extends Component {
   render() {
     const {
@@ -73,6 +116,7 @@ class RiskLineComponent extends Component {
       selectAll,
       onToggleEntity,
       selectedElements,
+      dataColumns,
     } = this.props;
     const riskData = pipe(
       pathOr([], ['related_risks', 'edges']),
@@ -116,28 +160,35 @@ class RiskLineComponent extends Component {
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
+            <div className={classes.bodyContainer}>
               <div
                 className={classes.bodyItem}
-                style={{ width: '12.3%' }}
+                style={{ width: dataColumns.poam_id.width }}
               >
                 {node.poam_id && t(node.poam_id)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.3%' }}
+                style={{ width: dataColumns.name.width }}
               >
                 {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '6.8%' }}
+                style={{ width: dataColumns.risk_level.width, marginRight: '20px' }}
               >
-                {node?.risk_level && node?.risk_level}
+                <Button
+                  variant="outlined"
+                  color="default"
+                  size="small"
+                  style={{ backgroundColor: colors[node?.risk_level].bg, borderColor: colors[node?.risk_level].stroke, borderRadius: '4px' }}
+                >
+                  {node?.risk_level && node?.risk_level}
+                </Button>
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.3%' }}
+                style={{ width: dataColumns.risk_status.width }}
               >
                 <Button
                   variant="outlined"
@@ -150,7 +201,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '11.5%' }}
+                style={{ width: dataColumns.response_type.width }}
               >
                 <Button
                   variant="outlined"
@@ -163,7 +214,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '13.5%' }}
+                style={{ width: dataColumns.lifecycle.width, marginRight: '50px' }}
               >
                 <Button
                   variant="outlined"
@@ -176,13 +227,13 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '10.3%' }}
+                style={{ width: dataColumns.occurrences.width }}
               >
                 {node.occurrences && t(node.occurrences)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '10%' }}
+                style={{ width: dataColumns.deadline.width }}
               >
                 {node?.deadline && fd(node?.deadline)}
               </div>
@@ -257,7 +308,7 @@ class RiskLineDummyComponent extends Component {
           primary={
             <div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.poam_id.width }}
               >
                 <Skeleton
@@ -268,7 +319,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 <Skeleton
@@ -279,7 +330,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.risk_level.width }}
               >
                 <Skeleton
@@ -290,7 +341,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.risk_status.width }}
               >
                 <Skeleton
@@ -301,7 +352,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.response_type.width }}
               >
                 <Skeleton
@@ -312,7 +363,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.lifecycle.width }}
               >
                 <Skeleton
@@ -323,7 +374,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.occurrences.width }}
               >
                 <Skeleton
@@ -334,7 +385,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.deadline.width }}
               >
                 <Skeleton
