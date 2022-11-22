@@ -41,7 +41,6 @@ const indicatorQuery = graphql`
       standard_id
       name
       ...Indicator_indicator
-      ...IndicatorHeader_indicator
       ...IndicatorDetails_indicator
       ...FileImportViewer_entity
       ...FileExportViewer_entity
