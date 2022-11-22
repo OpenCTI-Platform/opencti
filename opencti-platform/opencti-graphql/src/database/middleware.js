@@ -2321,8 +2321,8 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
         patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
         createdTargets.push({ key: inputField, instances: instancesToCreate });
       }
-      // Handle full synchronization only for granted refs
-      if (inputField === INPUT_GRANTED_REFS) {
+      // Handle full synchronization for granted refs if specified
+      if (inputField === INPUT_GRANTED_REFS && updatePatch[inputField]) {
         const instancesToRemove = existingInstances.filter((m) => !patchInputData.map((u) => u.internal_id).includes(m));
         if (instancesToRemove.length > 0) {
           const currentRels = await listAllRelations(context, user, relType, {
@@ -2356,8 +2356,8 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
         patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
         createdTargets.push({ key: inputField, instances: instancesToCreate });
       }
-      // Handle full synchronization only for granted refs
-      if (inputField === INPUT_GRANTED_REFS) {
+      // Handle full synchronization for granted refs if specified
+      if (inputField === INPUT_GRANTED_REFS && updatePatch[inputField]) {
         const instancesToRemove = existingInstances.filter((m) => !patchInputData.map((u) => u.internal_id).includes(m));
         if (instancesToRemove.length > 0) {
           const currentRels = await listAllRelations(context, user, relType, {
