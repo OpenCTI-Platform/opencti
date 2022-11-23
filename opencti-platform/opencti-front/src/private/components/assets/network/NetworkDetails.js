@@ -11,9 +11,19 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Switch from '@material-ui/core/Switch';
+import LaunchIcon from '@material-ui/icons/Launch';
+import { Link } from '@material-ui/core';
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
+const arr = [
+  {name: '123.234'},
+  {name: '123.23412'},
+  {name: '123.23423'},
+  {name: '123.23445'},
+  {name: '123.23421345'},
+  {name: '123.234567'},
+]
 
 const styles = (theme) => ({
   paper: {
@@ -32,11 +42,43 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
+  scrollBg: {
+    background: theme.palette.header.background,
+    width: '100%',
+    color: 'white',
+    padding: '10px 5px 10px 15px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  scrollDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '78px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
+  scrollObj: {
+    color: theme.palette.header.text,
+    fontFamily: 'sans-serif',
+    padding: '0px',
+    textAlign: 'left',
+  },
+  link: {
+    textAlign: 'left',
+    fontSize: '16px',
+    display: 'flex',
+  },
+  launchIcon: {
+    marginRight: '5%',
+  },
+  linkTitle: {
+    color: '#fff',
+  }
 });
 
 class NetworkDetailsComponent extends Component {
   render() {
-    const { t, classes, network,fldt } = this.props;
+    const { t, classes, network,fldt, history } = this.props;
     const ntadr = network.network_address_range;
     const startingAddress = ntadr?.starting_ip_address && ntadr.starting_ip_address?.ip_address_value;
     const endingAddress = ntadr?.ending_ip_address && ntadr.ending_ip_address?.ip_address_value;
@@ -172,6 +214,64 @@ class NetworkDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {network.last_scanned && fldt(network.last_scanned)}
+              </Grid>             
+            </Grid>
+            <Grid container spacing={3}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Connected Devices')}
+                </Typography>
+                <div className="clearfix" />
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {arr && arr.map((arr, key) => (
+                        <Link
+                          key={key}
+                          component="button"
+                          variant="body2"
+                          className={classes.link}
+                          onClick={() => (history.push(`/defender HQ/assets/software/2fc46e04-9046-5c3e-b8ea-f8c905858d06`))}
+                        >
+                          <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Grid>       
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20  }}
+                >
+                  {t('Related Risks')}
+                </Typography>
+                <div className="clearfix" />
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {arr && arr.map((arr, key) => (
+                      <Link
+                        key={key}
+                        component="button"
+                        variant="body2"
+                        className={classes.link}
+                        onClick={() => (history.push(`/defender HQ/assets/software/2fc46e04-9046-5c3e-b8ea-f8c905858d06`))}
+                      >
+                        <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
+                      </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </Grid>             
             </Grid>
           </Grid>
