@@ -3,7 +3,7 @@ import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_IN
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute, storeLoadById } from '../database/middleware';
 import { buildFilters } from '../database/repository';
-import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
+import { convertFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { SYSTEM_USER } from '../utils/access';
 import { RULE_PREFIX } from '../schema/general';
 import { listEntities } from '../database/middleware-loader';
@@ -37,11 +37,9 @@ const buildQueryFilters = (rawFilters, search, taskPosition) => {
   const queryFilters = [];
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
   if (filters) {
-    const adaptedFilters = adaptFiltersFrontendFormat(filters);
-    const filterEntries = Object.entries(adaptedFilters);
-    for (let index = 0; index < filterEntries.length; index += 1) {
-      // eslint-disable-next-line prefer-const
-      let [key, { operator, values }] = filterEntries[index];
+    const adaptedFilters = convertFiltersFrontendFormat(filters);
+    for (let index = 0; index < adaptedFilters.length; index += 1) {
+      const { key, operator, values } = adaptedFilters[index];
       if (key === TYPE_FILTER) {
         types.push(...values.map((v) => v.id));
       } else {

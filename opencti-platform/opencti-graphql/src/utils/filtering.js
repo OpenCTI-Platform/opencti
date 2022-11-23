@@ -18,6 +18,28 @@ export const GlobalFilters = {
 };
 
 export const TYPE_FILTER = 'entity_type';
+export const convertFiltersFrontendFormat = (filters) => {
+  const adaptedFilters = [];
+  const filterEntries = Object.entries(filters);
+  for (let index = 0; index < filterEntries.length; index += 1) {
+    const [key, values] = filterEntries[index];
+    if (key.endsWith('start_date') || key.endsWith('_gt')) {
+      const workingKey = key.replace('_start_date', '').replace('_gt', '');
+      adaptedFilters.push({ key: workingKey, operator: 'gt', values });
+    } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
+      const workingKey = key.replace('_end_date', '').replace('_lt', '');
+      adaptedFilters.push({ key: workingKey, operator: 'lt', values });
+    } else if (key.endsWith('_lte')) {
+      const workingKey = key.replace('_lte', '');
+      adaptedFilters.push({ key: workingKey, operator: 'lte', values });
+    } else {
+      adaptedFilters.push({ key, operator: 'eq', values });
+    }
+  }
+  return adaptedFilters;
+};
+// @Deprecated
+// TODO Needs to be replaced with convertFiltersFrontendFormat @JRI
 export const adaptFiltersFrontendFormat = (filters) => {
   const adaptedFilters = {};
   const filterEntries = Object.entries(filters);
