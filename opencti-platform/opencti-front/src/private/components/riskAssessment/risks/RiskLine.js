@@ -46,6 +46,7 @@ const styles = (theme) => ({
     display: 'grid',
     justifyContent: 'flex-start',
     alignItems: 'center',
+    paddingLeft: '24px',
   },
   dummyBodyItem: {
     height: 36,
@@ -73,8 +74,8 @@ const styles = (theme) => ({
   statusButton: {
     cursor: 'default',
     background: '#075AD333',
-    marginBottom: '5px',
     border: '1px solid #075AD3',
+    minWidth: 'auto',
   },
   chip: { borderRadius: '4px' },
 });
@@ -181,7 +182,9 @@ class RiskLineComponent extends Component {
                   variant="outlined"
                   color="default"
                   size="small"
-                  style={{ backgroundColor: colors[node?.risk_level].bg, borderColor: colors[node?.risk_level].stroke, borderRadius: '4px' }}
+                  style={{
+                    backgroundColor: colors[node?.risk_level].bg, borderColor: colors[node?.risk_level].stroke, borderRadius: '4px', minWidth: 'auto',
+                  }}
                 >
                   {node?.risk_level && node?.risk_level}
                 </Button>
@@ -214,7 +217,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.lifecycle.width, marginRight: '50px' }}
+                style={{ width: dataColumns.lifecycle.width }}
               >
                 <Button
                   variant="outlined"
