@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import * as PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
-import TopBarBreadcrumbs from './components/nav/TopBarBreadcrumbs';
+import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Message from '../components/Message';
 import { getAccount } from '../services/account.service';
@@ -74,7 +74,7 @@ const Index = ({ me }) => {
   }, [clientId]);
   return (
     <div className={classes.root}>
-      <TopBarBreadcrumbs drawer={drawer} />
+      <TopBar drawer={drawer} me={me || null} />
       <LeftBar
         clientId={clientId}
         setClientId={setClientId}
@@ -86,7 +86,7 @@ const Index = ({ me }) => {
       >
         <Message />
         <div className={classes.toolbar} />
-        <IndexRoutePath me={me}/>
+        <IndexRoutePath me={me} />
       </main>
     </div>
   );

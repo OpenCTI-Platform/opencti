@@ -5,7 +5,6 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Risk from './Risk';
 import Loader from '../../../../components/Loader';
 import Remediations from './Remediations';
@@ -52,7 +51,6 @@ class RootRisk extends Component {
     const link = `/activities/risk assessment/risks/${riskId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/activities/risk assessment/risks/:riskId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

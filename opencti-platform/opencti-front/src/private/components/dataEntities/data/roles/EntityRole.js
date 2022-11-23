@@ -14,7 +14,6 @@ import EntitiesRolesPopover from './EntitiesRolesPopover';
 import EntitiesRolesDeletion from './EntitiesRolesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
-import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import RoleEntityEditionContainer from './RoleEntityEditionContainer';
@@ -67,7 +66,6 @@ class EntityRoleComponent extends Component {
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           />
-          <TopBarBreadcrumbs />
           <Grid
             container={true}
             spacing={3}

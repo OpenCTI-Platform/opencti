@@ -8,7 +8,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
-import TopBar from '../../../nav/TopBar';
 import Remediation from './Remediation';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -67,7 +66,6 @@ class RootRemediation extends Component {
     const link = `/activities/risk assessment/risks/${riskId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/activities/risk assessment/risks/:riskId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

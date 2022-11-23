@@ -41,7 +41,6 @@ import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
-import TopBarMenu from '../../private/components/nav/TopBarMenu';
 
 const styles = (theme) => ({
   container: {
@@ -654,7 +653,6 @@ class CyioListLines extends Component {
         </div>
         <div className={className}>
           <div className="clearfix" />
-          <TopBarMenu />
           {message && (
             <div style={{ width: '100%' }}>
               <Alert
