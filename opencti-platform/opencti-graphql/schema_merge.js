@@ -11,4 +11,4 @@ const uiFiles = loadFilesSync(join(__dirname, '../opencti-front/**/*.graphql'));
 const files = schemaFiles.concat(uiFiles);
 const mergedTypeDefs = mergeTypeDefs(files);
 const printed = print(mergedTypeDefs);
-fs.writeFileSync(join(__dirname, '../opencti-front/schema/compiled.graphql'), printed);
+fs.writeFileSync(join(__dirname, 'config/schema/compiled.graphql'), printed);

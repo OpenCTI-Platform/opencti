@@ -143,10 +143,10 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme: Yup.string(),
   platform_theme_dark_primary: Yup.string(),
   platform_theme_dark_secondary: Yup.string(),
-  platform_theme_dark_logo: Yup.string(),
+  platform_theme_dark_logo: Yup.string().url(t('The value must be an URL')).nullable(),
   platform_theme_light_primary: Yup.string(),
   platform_theme_light_secondary: Yup.string(),
-  platform_theme_light_logo: Yup.string(),
+  platform_theme_light_logo: Yup.string().url(t('The value must be an URL')).nullable(),
   platform_language: Yup.string(),
   platform_login_message: Yup.string(),
 });

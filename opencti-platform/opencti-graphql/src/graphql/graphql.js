@@ -189,7 +189,7 @@ const createApolloServer = async (app, httpServer) => {
       limit: requestSizeLimit,
     },
     onHealthCheck,
-      path: `${basePath}/graphql`,
+    path: `${basePath}/graphql`,
   })
 };
 

@@ -55,10 +55,8 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const SoftwareDeletionMutation = graphql`
-  mutation SoftwareDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
+  mutation SoftwareDeletionMutation($ids: [ID]!) {
+    deleteAssets(ids: $ids)
   }
 `;
 
@@ -127,19 +125,35 @@ class SoftwareDeletion extends Component {
   // }
 
   submitDelete() {
+    const softwareIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
-    commitMutation({
-      mutation: SoftwareDeletionDarkLightMutation,
-      variables: {
-        id: this.props.id,
-      },
-      onCompleted: (data) => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        this.props.history.push('/defender HQ/assets/software');
-      },
-      onError: (err) => console.log('SoftwareDeletionDarkLightMutationError', err),
-    });
+    if (softwareIds.length > 1) {
+      commitMutation({
+        mutation: SoftwareDeletionMutation,
+        variables: {
+          ids: softwareIds,
+        },
+        onCompleted: (data) => {
+          this.setState({ deleting: false });
+          this.handleClose();
+          this.props.history.push('/defender HQ/assets/software');
+        },
+        onError: (err) => console.log('SoftwareDeletionDarkLightMutationError', err),
+      });
+    } else {
+      commitMutation({
+        mutation: SoftwareDeletionDarkLightMutation,
+        variables: {
+          id: softwareIds[0],
+        },
+        onCompleted: (data) => {
+          this.setState({ deleting: false });
+          this.handleClose();
+          this.props.history.push('/defender HQ/assets/software');
+        },
+        onError: (err) => console.log('SoftwareDeletionDarkLightMutationError', err),
+      });
+    }
     // commitMutation({
     //   mutation: SoftwareDeletionDarkLightMutation,
     //   variables: {
@@ -169,7 +183,7 @@ class SoftwareDeletion extends Component {
     return (
       <div className={classes.container}>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
-          <Tooltip title={t('Delete')}>
+        <Tooltip title={t('Delete')}>
           <Button
             variant="contained"
             onClick={this.handleOpenDelete.bind(this)}
@@ -178,9 +192,9 @@ class SoftwareDeletion extends Component {
             color="primary"
             size="large"
           >
-              <DeleteIcon fontSize="inherit"/>
-            </Button>
-          </Tooltip>
+            <DeleteIcon fontSize="inherit" />
+          </Button>
+        </Tooltip>
         {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
@@ -189,18 +203,18 @@ class SoftwareDeletion extends Component {
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
-              <Typography style={{
-                fontSize: '18px',
-                lineHeight: '24px',
-                color: 'white',
-              }} >
-                {t('Are you sure you’d like to delete this Software?')}
-              </Typography>
-              <DialogContentText>
-                {t('This action can’t be undone')}
-              </DialogContentText>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to delete this Software?')}
+            </Typography>
+            <DialogContentText>
+              {t('This action can’t be undone')}
+            </DialogContentText>
           </DialogContent>
-          <DialogActions className={ classes.dialogActions }>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
@@ -228,7 +242,7 @@ class SoftwareDeletion extends Component {
 }
 
 SoftwareDeletion.propTypes = {
-  id: PropTypes.string,
+  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

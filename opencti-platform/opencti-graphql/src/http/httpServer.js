@@ -5,7 +5,7 @@ import http from 'http';
 // noinspection NodeCoreCodingAssistance
 import { readFileSync } from 'fs';
 import conf, { booleanConf, logApp } from '../config/conf';
-import createApp from './httpPlatform';
+import createApp, { applyWildcard } from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 
@@ -17,6 +17,8 @@ const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 const createHttpServer = async () => {
   const { app, seeMiddleware } = await createApp();
+  const apolloServer = createApolloServer(app);
+  applyWildcard(app); // Needed in order to register prometheus metrics
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     const key = readFileSync(CERT_KEY_PATH);
@@ -28,7 +30,7 @@ const createHttpServer = async () => {
     httpServer = http.createServer(app);
   }
   httpServer.setTimeout(REQ_TIMEOUT || 120000);
-  await createApolloServer(app, httpServer);
+  apolloServer.installSubscriptionHandlers(httpServer);
   return { httpServer, seeMiddleware };
 };
 

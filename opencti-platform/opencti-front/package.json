@@ -109,17 +109,17 @@
     "node": ">= 12.* <= 16.*"
   },
   "scripts": {
-    "start": "yarn schema-compile && yarn relay && react-scripts start",
-    "clean": "rm ../opencti-graphql/config/schema/compiled.graphql",
-    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=/ react-scripts build",
-    "build": "yarn schema-compile && yarn relay && yarn generate",
+    "start": "yarn clean && yarn relay && react-scripts start",
+    "clean": "rm ../opencti-graphql/config/schema/compiled.graphql && yarn schema-compile",
+    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% REACT_APP_API_URL=https://api-dev.darklight.ai react-scripts build",
+    "build": "yarn schema-compile && yarn relay && yarn generate && rm ../opencti-graphql/config/schema/compiled.graphql && node src/setupBuild.js",
     "lint": "eslint .",
     "cypress:open": "cypress open",
     "cypress": "cypress run",
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public",
     "control": "yarn audit --groups dependencies --summary",
-    "relay": "relay-compiler --watchman false --src ./src --schema ./schema/compiled.graphql --extensions js jsx",
+    "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/compiled.graphql --extensions js jsx",
     "schema-compile": "node ../opencti-graphql/schema_merge.js",
     "test": "react-scripts test --coverage --watchAll=false",
     "debug": "react-scripts --inspect start"

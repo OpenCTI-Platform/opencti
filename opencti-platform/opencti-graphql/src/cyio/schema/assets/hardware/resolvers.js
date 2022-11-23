@@ -76,7 +76,7 @@ const hardwareResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("HARDWARE-DEVICE");
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        let skipCount = 0, filterCount, resultCount, limit, offset, limitSize, offsetSize;
         limitSize = limit = (args.first === undefined ? response.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         filterCount = 0
@@ -93,6 +93,7 @@ const hardwareResolvers = {
         for (let hardware of hardwareList) {
           if (hardware.id === undefined) {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${hardware.iri} missing field 'id'; skipping`);
+            skipCount++;
             continue;
           }
 
@@ -126,7 +127,7 @@ const hardwareResolvers = {
         // check if there is data to be returned
         if (edges.length === 0 ) return null;
         let hasNextPage = false, hasPreviousPage = false;
-        resultCount = hardwareList.length;
+        resultCount = hardwareList.length - skipCount;
         if (edges.length < resultCount) {
           if (edges.length === limitSize && filterCount <= limitSize ) {
             hasNextPage = true;
