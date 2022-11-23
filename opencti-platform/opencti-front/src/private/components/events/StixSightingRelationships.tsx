@@ -8,7 +8,10 @@ import StixSightingRelationshipsLines, {
 import { convertFilters } from '../../../utils/ListParameters';
 import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
 import { isUniqFilter } from '../common/lists/Filters';
-import { Filters, PaginationOptions } from '../../../components/list_lines';
+import { Filters } from '../../../components/list_lines';
+import {
+  StixSightingRelationshipsLinesPaginationQuery$variables,
+} from './stix_sighting_relationships/__generated__/StixSightingRelationshipsLinesPaginationQuery.graphql';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -114,7 +117,7 @@ const StixSightingRelationships = () => {
     }
   };
 
-  const renderLines = (paginationOptions: PaginationOptions) => (
+  const renderLines = (paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables) => (
     <ListLines
       sortBy={sortBy}
       orderAsc={orderAsc}
@@ -144,7 +147,7 @@ const StixSightingRelationships = () => {
     >
       <QueryRenderer
         query={stixSightingRelationshipsLinesQuery}
-        variables={{ count: 25, ...paginationOptions }}
+        variables={paginationOptions}
         render={({ props }: { props: unknown }) => (
           <StixSightingRelationshipsLines
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -171,7 +174,12 @@ const StixSightingRelationships = () => {
     processedFilters = R.dissoc('toSightingId', processedFilters);
   }
   const finalFilters = convertFilters(processedFilters) as unknown as Filters;
-  const paginationOptions = localStorageToPaginationOptions({ ...viewStorage, toId: toSightingId, filters: finalFilters });
+  const paginationOptions = localStorageToPaginationOptions<StixSightingRelationshipsLinesPaginationQuery$variables>({
+    ...viewStorage,
+    toId: toSightingId,
+    filters: finalFilters,
+    count: 25,
+  });
   return (
     <div>{renderLines(paginationOptions)}</div>
   );

@@ -11,7 +11,12 @@ export const isNodeInConnection = (payload, conn) => {
 export const insertNode = (store, key, filters, rootField) => {
   // Build record ids
   const record = store.get(store.getRoot().getDataID());
-  const conn = ConnectionHandler.getConnection(record, key, filters);
+
+  // Connections cannot use count as a filter because we NEED to update the count when we push new elements
+  const params = { ...filters };
+  delete params.count;
+
+  const conn = ConnectionHandler.getConnection(record, key, params);
   if (conn) {
     // Build the payload to add
     const payload = store.getRootField(rootField);
@@ -27,7 +32,12 @@ export const insertNode = (store, key, filters, rootField) => {
 
 export const deleteNode = (store, key, filters, id) => {
   const record = store.get(store.getRoot().getDataID());
-  const conn = ConnectionHandler.getConnection(record, key, filters);
+
+  // Connections cannot use count as a filter because we NEED to update the count when we remove new elements
+  const params = { ...filters };
+  delete params.count;
+
+  const conn = ConnectionHandler.getConnection(record, key, params);
   if (conn) {
     ConnectionHandler.deleteNode(conn, id);
   } else {

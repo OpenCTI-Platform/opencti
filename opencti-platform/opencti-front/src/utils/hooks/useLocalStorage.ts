@@ -9,15 +9,27 @@ export interface LocalStorage {
   sortBy?: string,
   orderAsc?: boolean,
   openExports?: boolean,
+  count?: number
 }
 
-export const localStorageToPaginationOptions = <T extends LocalStorage>({ searchTerm, filters, sortBy, orderAsc, ...props }: T): PaginationOptions => ({
-  ...props,
-  search: searchTerm,
-  orderMode: orderAsc ? OrderMode.asc : OrderMode.desc,
-  orderBy: sortBy,
+export const localStorageToPaginationOptions = <U>({
+  searchTerm,
   filters,
-});
+  sortBy,
+  orderAsc,
+  ...props
+}: LocalStorage & Omit<U, 'filters'>): unknown extends U ? PaginationOptions : U => {
+  // OpenExports and NumberOfElements are only display options, not query linked
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { openExports: _, numberOfElements: __, ...localOptions } = props;
+  return ({
+    ...localOptions,
+    search: searchTerm,
+    orderMode: orderAsc ? OrderMode.asc : OrderMode.desc,
+    orderBy: sortBy,
+    filters,
+  }) as unknown extends U ? PaginationOptions : U;
+};
 
 const useLocalStorage = <T = LocalStorage>(key: string, initialValue: T): [value: T, setValue: Dispatch<SetStateAction<T>>] => {
   // State to store our value
