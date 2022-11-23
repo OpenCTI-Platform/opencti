@@ -55,6 +55,7 @@ import {
   workbenchAttributes,
 } from '../../../../../utils/Entity';
 import {
+  APP_BASE_PATH,
   commitMutation,
   MESSAGING$,
   QueryRenderer,
@@ -308,7 +309,7 @@ class WorkbenchFileContentComponent extends Component {
   // region control
   loadFileContent() {
     const { file } = this.props;
-    const url = `/storage/view/${encodeURIComponent(file.id)}`;
+    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(file.id)}`;
     Axios.get(url).then(async (res) => {
       this.setState(this.computeState(res.data.objects));
       return true;
