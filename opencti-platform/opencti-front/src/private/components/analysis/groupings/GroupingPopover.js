@@ -17,9 +17,8 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { groupingEditionQuery } from './GroupingEdition';
 import GroupingEditionContainer from './GroupingEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles((theme) => ({

@@ -15,7 +15,8 @@ import AddSubSector from './AddSubSector';
 import { addSubSectorsMutationRelationDelete } from './AddSubSectorsLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 class SectorSubSectorsComponent extends Component {
   removeSubSector(subSectorEdge) {

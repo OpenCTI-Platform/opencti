@@ -275,7 +275,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                   {attackPattern.to.coursesOfAction.edges.map(
                                     (courseOfActionEdge) => {
                                       const courseOfAction = courseOfActionEdge.node;
-                                      const courseOfActionLink = `/dashboard/arsenal/courses_of_action/${courseOfAction.id}`;
+                                      const courseOfActionLink = `/dashboard/techniques/courses_of_action/${courseOfAction.id}`;
                                       return (
                                         <ListItem
                                           key={courseOfAction.id}

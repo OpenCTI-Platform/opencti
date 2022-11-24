@@ -4,13 +4,6 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Sectors from './Sectors';
 import RootSector from './sectors/Root';
-import Countries from './Countries';
-import RootRegion from './regions/Root';
-import RootCountry from './countries/Root';
-import Cities from './Cities';
-import RootCity from './cities/Root';
-import Positions from './Positions';
-import RootPosition from './positions/Root';
 import Events from './Events';
 import RootEvent from './events/Root';
 import Organizations from './Organizations';
@@ -19,7 +12,7 @@ import Systems from './Systems';
 import RootSystem from './systems/Root';
 import Individuals from './Individuals';
 import RootIndividual from './individuals/Root';
-import { UserContext } from '../../../utils/Security';
+import { UserContext } from '../../../utils/hooks/useAuth';
 
 class Root extends Component {
   render() {
@@ -30,12 +23,6 @@ class Root extends Component {
           let redirect = null;
           if (!helper.isEntityTypeHidden('Sector')) {
             redirect = 'sectors';
-          } else if (!helper.isEntityTypeHidden('Country')) {
-            redirect = 'countries';
-          } else if (!helper.isEntityTypeHidden('City')) {
-            redirect = 'cities';
-          } else if (!helper.isEntityTypeHidden('Position')) {
-            redirect = 'positions';
           } else if (!helper.isEntityTypeHidden('Event')) {
             redirect = 'events';
           } else if (!helper.isEntityTypeHidden('Organization')) {
@@ -60,39 +47,6 @@ class Root extends Component {
               <BoundaryRoute
                 path="/dashboard/entities/sectors/:sectorId"
                 render={(routeProps) => <RootSector {...routeProps} me={me} />}
-              />
-              <BoundaryRoute
-                exact
-                path="/dashboard/entities/countries"
-                component={Countries}
-              />
-              <BoundaryRoute
-                path="/dashboard/entities/regions/:regionId"
-                render={(routeProps) => <RootRegion {...routeProps} me={me} />}
-              />
-              <BoundaryRoute
-                path="/dashboard/entities/countries/:countryId"
-                render={(routeProps) => <RootCountry {...routeProps} me={me} />}
-              />
-              <BoundaryRoute
-                exact
-                path="/dashboard/entities/cities"
-                component={Cities}
-              />
-              <BoundaryRoute
-                path="/dashboard/entities/cities/:cityId"
-                render={(routeProps) => <RootCity {...routeProps} me={me} />}
-              />
-              <BoundaryRoute
-                exact
-                path="/dashboard/entities/positions"
-                component={Positions}
-              />
-              <BoundaryRoute
-                path="/dashboard/entities/positions/:positionId"
-                render={(routeProps) => (
-                  <RootPosition {...routeProps} me={me} />
-                )}
               />
               <BoundaryRoute
                 exact

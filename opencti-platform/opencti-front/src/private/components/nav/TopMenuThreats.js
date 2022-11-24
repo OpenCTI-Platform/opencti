@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { PublicOutlined } from '@mui/icons-material';
 import { DiamondOutline, ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import { UserContext } from '../../../utils/Security';
+import { UserContext } from '../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   button: {

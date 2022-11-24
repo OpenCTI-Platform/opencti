@@ -272,6 +272,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // Array
   x_mitre_permissions_required: Array<string>;
   x_mitre_platforms: Array<string>;
+  collection_layers: Array<string>;
   received_lines: Array<string>;
   parent_types: Array<string>;
   report_types: Array<string>;

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, flatten, propOr, pluck, includes, uniq, pipe } from 'ramda';
+import { compose, flatten, propOr, pluck, uniq, pipe } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -9,7 +9,7 @@ import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../static/geo/countries.json';
 import inject18n from '../../../../components/i18n';
-import { UserContext } from '../../../../utils/Security';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import { fileUri } from '../../../../relay/environment';
 import CityDark from '../../../../static/images/leaflet/city_dark.png';
 import MarkerDark from '../../../../static/images/leaflet/marker_dark.png';
@@ -50,7 +50,7 @@ const LocationMiniMap = (props) => {
     uniq,
   )(propOr([], 'countries', props));
   const getStyle = (feature) => {
-    if (includes(feature.properties.ISO3, countriesAliases)) {
+    if (countriesAliases.includes(feature.properties.ISO3)) {
       return {
         color: props.theme.palette.primary.main,
         weight: 1,

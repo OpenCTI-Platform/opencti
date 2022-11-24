@@ -1,6 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
 import { withStyles, withTheme } from '@mui/styles';
 import Toolbar from '@mui/material/Toolbar';
@@ -11,32 +11,12 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Collapse from '@mui/material/Collapse';
-import {
-  DashboardOutlined,
-  AssignmentOutlined,
-  LayersOutlined,
-  ExpandLess,
-  ExpandMore,
-} from '@mui/icons-material';
-import {
-  CogOutline,
-  Database,
-  Binoculars,
-  FlaskOutline,
-  FolderTableOutline,
-  Timetable,
-  Brain,
-  GlobeModel,
-} from 'mdi-material-ui';
+import { AssignmentOutlined, BuildOutlined, DashboardOutlined, ExpandLess, ExpandMore, LayersOutlined, PlaceOutlined } from '@mui/icons-material';
+import { Binoculars, Brain, CogOutline, Database, FlaskOutline, FolderTableOutline, GlobeModel, Timetable } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE,
-  SETTINGS,
-  MODULES,
-  TAXIIAPI_SETCOLLECTIONS,
-  UserContext,
-  granted,
-} from '../../../utils/Security';
+import { UserContext } from '../../../utils/hooks/useAuth';
+import Security from '../../../utils/Security';
+import useGranted, { KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -84,12 +64,14 @@ const styles = (theme) => ({
 
 const LeftBar = ({ t, location, classes, theme }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
+  const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
+  const isGrantedToModules = useGranted([MODULES]);
+
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
-  const { me } = useContext(UserContext);
   let toData;
-  if (granted(me, [KNOWLEDGE])) {
+  if (isGrantedToKnowledge) {
     toData = '/dashboard/data/entities';
-  } else if (granted(me, [MODULES])) {
+  } else if (isGrantedToModules) {
     toData = '/dashboard/data/connectors';
   } else {
     toData = '/dashboard/data/taxii';
@@ -111,12 +93,23 @@ const LeftBar = ({ t, location, classes, theme }) => {
             && helper.isEntityTypeHidden('System')
             && helper.isEntityTypeHidden('Individual'));
         const hideArsenal = helper.isEntityTypeHidden('Arsenal')
-          || (helper.isEntityTypeHidden('Attack-Pattern')
-            && helper.isEntityTypeHidden('Channel')
+          || (helper.isEntityTypeHidden('Channel')
             && helper.isEntityTypeHidden('Narrative')
             && helper.isEntityTypeHidden('Course-Of-Action')
             && helper.isEntityTypeHidden('Tool')
             && helper.isEntityTypeHidden('Vulnerability'));
+        const hideTechniques = helper.isEntityTypeHidden('Techniques')
+          || (helper.isEntityTypeHidden('Attack-Patterns')
+            && helper.isEntityTypeHidden('Narratives')
+            && helper.isEntityTypeHidden('Courses Of Action')
+            && helper.isEntityTypeHidden('Data Component')
+            && helper.isEntityTypeHidden('Data Source'));
+        const hideLocations = helper.isEntityTypeHidden('Location')
+          || (helper.isEntityTypeHidden('Region')
+            && helper.isEntityTypeHidden('Countries')
+            && helper.isEntityTypeHidden('Areas')
+            && helper.isEntityTypeHidden('Cities')
+            && helper.isEntityTypeHidden('Positions'));
         return (
           <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
             <Toolbar />
@@ -283,6 +276,30 @@ const LeftBar = ({ t, location, classes, theme }) => {
                         />
                       </MenuItem>
                     )}
+                    {!hideTechniques && (
+                      <MenuItem
+                        component={Link}
+                        to="/dashboard/techniques"
+                        selected={location.pathname.includes(
+                          '/dashboard/techniques',
+                        )}
+                        dense={true}
+                        classes={{ root: classes.menuItemNested }}
+                      >
+                        <ListItemIcon
+                          style={{
+                            minWidth: 30,
+                            color: theme.palette.text.secondary,
+                          }}
+                        >
+                          <BuildOutlined fontSize="small" color="inherit" />
+                        </ListItemIcon>
+                        <ListItemText
+                          classes={{ primary: classes.menuItemNestedText }}
+                          primary={t('Techniques')}
+                        />
+                      </MenuItem>
+                    )}
                     {!hideEntities && (
                       <MenuItem
                         component={Link}
@@ -307,6 +324,33 @@ const LeftBar = ({ t, location, classes, theme }) => {
                         <ListItemText
                           classes={{ primary: classes.menuItemNestedText }}
                           primary={t('Entities')}
+                        />
+                      </MenuItem>
+                    )}
+                    {!hideLocations && (
+                      <MenuItem
+                        component={Link}
+                        to="/dashboard/locations"
+                        selected={location.pathname.includes(
+                          '/dashboard/locations',
+                        )}
+                        dense={true}
+                        classes={{ root: classes.menuItemNested }}
+                      >
+                        <ListItemIcon
+                          style={{
+                            minWidth: 30,
+                            color: theme.palette.text.secondary,
+                          }}
+                        >
+                          <PlaceOutlined
+                            fontSize="small"
+                            color="inherit"
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          classes={{ primary: classes.menuItemNestedText }}
+                          primary={t('Locations')}
                         />
                       </MenuItem>
                     )}

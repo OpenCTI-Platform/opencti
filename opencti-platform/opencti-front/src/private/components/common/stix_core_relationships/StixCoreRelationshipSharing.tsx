@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogActions from '@mui/material/DialogActions';
@@ -18,12 +18,8 @@ import ObjectOrganizationField from '../form/ObjectOrganizationField';
 import { StixCoreRelationshipSharingQuery$data } from './__generated__/StixCoreRelationshipSharingQuery.graphql';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  granted,
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  UserContext,
-} from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -115,9 +111,8 @@ ContainerHeaderSharedProps
 > = ({ elementId, variant }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const { me } = useContext(UserContext);
   const [displaySharing, setDisplaySharing] = useState(false);
-  const userIsOrganizationEditor = granted(me, [
+  const userIsOrganizationEditor = useGranted([
     KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   ]);
   // If user not an organization organizer, return empty div

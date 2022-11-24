@@ -14,7 +14,8 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import IndicatorAddObservables from './IndicatorAddObservables';
 import IndicatorObservablePopover from './IndicatorObservablePopover';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   itemHead: {

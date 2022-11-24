@@ -7,7 +7,7 @@ import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { UserContext } from '../../../../utils/Security';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import StixCoreObjectStixCyberObservablesLines, {
   stixCoreObjectStixCyberObservablesLinesQuery,
 } from './StixCoreObjectStixCyberObservablesLines';

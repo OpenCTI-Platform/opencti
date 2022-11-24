@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
-import AttackPatternsMatrix from '../../arsenal/attack_patterns/AttackPatternsMatrix';
+import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 
 const styles = () => ({
   container: {

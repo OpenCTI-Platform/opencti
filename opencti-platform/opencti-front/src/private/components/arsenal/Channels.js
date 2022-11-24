@@ -12,7 +12,8 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import ChannelsLines, { channelsLinesQuery } from './channels/ChannelsLines';
 import ChannelCreation from './channels/ChannelCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Channels extends Component {

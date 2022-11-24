@@ -7,10 +7,8 @@ import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { CityVariantOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -49,7 +47,7 @@ class TopMenuCity extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/entities/cities"
+          to="/dashboard/locations/cities"
           variant="contained"
           size="small"
           color="primary"
@@ -64,15 +62,15 @@ class TopMenuCity extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}`}
+          to={`/dashboard/locations/cities/${cityId}`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}`
+            location.pathname === `/dashboard/locations/cities/${cityId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}`
+            location.pathname === `/dashboard/locations/cities/${cityId}`
               ? 'secondary'
               : 'primary'
           }
@@ -82,10 +80,10 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/knowledge`}
+          to={`/dashboard/locations/cities/${cityId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/entities/cities/${cityId}/knowledge`,
+              `/dashboard/locations/cities/${cityId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -93,7 +91,7 @@ class TopMenuCity extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/entities/cities/${cityId}/knowledge`,
+              `/dashboard/locations/cities/${cityId}/knowledge`,
             )
               ? 'secondary'
               : 'primary'
@@ -104,17 +102,17 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/analysis`}
+          to={`/dashboard/locations/cities/${cityId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/cities/${cityId}/analysis`
+            === `/dashboard/locations/cities/${cityId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/cities/${cityId}/analysis`
+            === `/dashboard/locations/cities/${cityId}/analysis`
               ? 'secondary'
               : 'primary'
           }
@@ -124,17 +122,17 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/sightings`}
+          to={`/dashboard/locations/cities/${cityId}/sightings`}
           variant={
             location.pathname
-            === `/dashboard/entities/cities/${cityId}/sightings`
+            === `/dashboard/locations/cities/${cityId}/sightings`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/cities/${cityId}/sightings`
+            === `/dashboard/locations/cities/${cityId}/sightings`
               ? 'secondary'
               : 'primary'
           }
@@ -145,15 +143,15 @@ class TopMenuCity extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/entities/cities/${cityId}/files`}
+            to={`/dashboard/locations/cities/${cityId}/files`}
             variant={
-              location.pathname === `/dashboard/entities/cities/${cityId}/files`
+              location.pathname === `/dashboard/locations/cities/${cityId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname === `/dashboard/entities/cities/${cityId}/files`
+              location.pathname === `/dashboard/locations/cities/${cityId}/files`
                 ? 'secondary'
                 : 'primary'
             }
@@ -164,15 +162,15 @@ class TopMenuCity extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/history`}
+          to={`/dashboard/locations/cities/${cityId}/history`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}/history`
+            location.pathname === `/dashboard/locations/cities/${cityId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}/history`
+            location.pathname === `/dashboard/locations/cities/${cityId}/history`
               ? 'secondary'
               : 'primary'
           }

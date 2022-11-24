@@ -13,7 +13,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import i18n from '../utils/Localization';
-import { UserContext } from '../utils/Security';
+import { UserContext } from '../utils/hooks/useAuth';
 
 const localeMap = {
   'en-us': enLocale,

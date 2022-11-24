@@ -29,7 +29,8 @@ import * as Yup from 'yup';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
@@ -156,6 +157,12 @@ export const stixDomainObjectMutation = graphql`
         }
         ... on Vulnerability {
           x_opencti_aliases
+        }
+        ... on DataComponent {
+          aliases
+        }
+        ... on DataSource {
+          aliases
         }
       }
     }

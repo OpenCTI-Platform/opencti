@@ -24,7 +24,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreOb
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
-import { UserContext } from '../../../../utils/Security';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
 
 const VIEW_AS_KNOWLEDGE = 'knowledge';

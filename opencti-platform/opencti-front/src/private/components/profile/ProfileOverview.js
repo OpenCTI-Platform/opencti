@@ -33,7 +33,7 @@ import {
   MESSAGING$,
   QueryRenderer,
 } from '../../../relay/environment';
-import { OPENCTI_ADMIN_UUID } from '../../../utils/Security';
+import { OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
 import UserSubscriptionCreation from './UserSubscriptionCreation';
 import UserSubscriptionPopover from './UserSubscriptionPopover';
 import Loader from '../../../components/Loader';

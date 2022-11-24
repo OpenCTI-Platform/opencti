@@ -1,18 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import {
-  BugReportOutlined,
-  SurroundSoundOutlined,
-  WebAssetOutlined,
-  SpeakerNotesOutlined,
-} from '@mui/icons-material';
-import { LockPattern, ProgressWrench, Biohazard } from 'mdi-material-ui';
+import { BugReportOutlined, SurroundSoundOutlined, WebAssetOutlined } from '@mui/icons-material';
+import { Biohazard } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import { UserContext } from '../../../utils/Security';
+import { UserContext } from '../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   button: {
@@ -56,27 +51,6 @@ class TopMenuArsenal extends Component {
                   {t('Malwares')}
                 </Button>
             )}
-            {!helper.isEntityTypeHidden('Attack-Pattern') && (
-              <Button
-                component={Link}
-                to="/dashboard/arsenal/attack_patterns"
-                variant={
-                  location.pathname === '/dashboard/arsenal/attack_patterns'
-                    ? 'contained'
-                    : 'text'
-                }
-                size="small"
-                color={
-                  location.pathname === '/dashboard/arsenal/attack_patterns'
-                    ? 'secondary'
-                    : 'primary'
-                }
-                classes={{ root: classes.button }}
-              >
-                <LockPattern className={classes.icon} fontSize="small" />
-                {t('Attack patterns')}
-              </Button>
-            )}
             {!helper.isEntityTypeHidden('Channel') && (
               <Button
                 component={Link}
@@ -99,51 +73,6 @@ class TopMenuArsenal extends Component {
                   fontSize="small"
                 />
                 {t('Channels')}
-              </Button>
-            )}
-            {!helper.isEntityTypeHidden('Narrative') && (
-              <Button
-                component={Link}
-                to="/dashboard/arsenal/narratives"
-                variant={
-                  location.pathname === '/dashboard/arsenal/narratives'
-                    ? 'contained'
-                    : 'text'
-                }
-                size="small"
-                color={
-                  location.pathname === '/dashboard/arsenal/narratives'
-                    ? 'secondary'
-                    : 'primary'
-                }
-                classes={{ root: classes.button }}
-              >
-                <SpeakerNotesOutlined
-                  className={classes.icon}
-                  fontSize="small"
-                />
-                {t('Narratives')}
-              </Button>
-            )}
-            {!helper.isEntityTypeHidden('Course-Of-Action') && (
-              <Button
-                component={Link}
-                to="/dashboard/arsenal/courses_of_action"
-                variant={
-                  location.pathname === '/dashboard/arsenal/courses_of_action'
-                    ? 'contained'
-                    : 'text'
-                }
-                size="small"
-                color={
-                  location.pathname === '/dashboard/arsenal/courses_of_action'
-                    ? 'secondary'
-                    : 'primary'
-                }
-                classes={{ root: classes.button }}
-              >
-                <ProgressWrench className={classes.icon} fontSize="small" />
-                {t('Courses of action')}
               </Button>
             )}
             {!helper.isEntityTypeHidden('Tool') && (

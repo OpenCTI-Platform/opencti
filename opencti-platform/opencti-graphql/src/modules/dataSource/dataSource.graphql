@@ -1,0 +1,209 @@
+type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+    # Basic Object
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+
+    # Stix Object
+    x_opencti_stix_ids: [StixId]
+    is_inferred: Boolean!
+    spec_version: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    # inferences
+    x_opencti_inferences: [Inference]
+
+    # Stix Core Object
+    createdBy: Identity
+    objectMarking: MarkingDefinitionConnection
+    objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+    objectLabel: LabelConnection
+    externalReferences(first: Int): ExternalReferenceConnection
+    reports(first: Int): ReportConnection
+    notes(first: Int): NoteConnection
+    opinions(first: Int): OpinionConnection
+    observedData(first: Int): ObservedDataConnection
+    groupings(first: Int): GroupingConnection
+    stixCoreRelationships(
+        first: Int
+        after: ID
+        orderBy: StixCoreRelationshipsOrdering
+        orderMode: OrderingMode
+        fromId: StixRef
+        toId: StixRef
+        fromTypes: [String]
+        toTypes: [String]
+        relationship_type: String
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): StixCoreRelationshipConnection
+    stixCoreObjectsDistribution(
+        relationship_type: [String]
+        toTypes: [String]
+        field: String!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        operation: StatsOperation!
+        limit: Int
+        order: String
+        types: [String]
+        filters: [StixCoreObjectsFiltering]
+        filterMode: FilterMode
+        search: String
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    stixCoreRelationshipsDistribution(
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        isTo: Boolean
+        limit: Int
+        order: String
+        elementWithTargetTypes: [String]
+        fromId: [String]
+        fromRole: String
+        fromTypes: [String]
+        toId: [String]
+        toRole: String
+        toTypes: [String]
+        relationship_type: [String]
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+
+    # Stix Domain Object
+    revoked: Boolean!
+    confidence: Int
+    lang: String
+    created: DateTime
+    modified: DateTime
+    x_opencti_graph_data: String
+
+    # Technical
+    creator: Creator
+    toStix: String
+    importFiles(first: Int): FileConnection
+    pendingFiles(first: Int): FileConnection
+    exportFiles(first: Int): FileConnection
+    editContext: [EditUserContext]
+    connectors(onlyAlive: Boolean): [Connector]
+    jobs(first: Int): [Work]
+    status: Status
+    workflowEnabled: Boolean
+
+    # Data Source
+    name: String!
+    description: String
+    aliases: [String]
+    x_mitre_platforms: [String]
+    collection_layers: [String]
+    dataComponents: DataComponentConnection
+}
+
+# Ordering
+enum DataSourcesOrdering {
+    name
+    created
+    modified
+    created_at
+    updated_at
+    x_opencti_workflow_id
+}
+
+# Filtering
+enum DataSourcesFilter {
+    name
+    aliases
+    created
+    modified
+    created_at
+    updated_at
+    createdBy
+    markedBy
+    labelledBy
+    revoked
+    x_opencti_workflow_id
+}
+
+input DataSourcesFiltering {
+    key: [DataSourcesFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type DataSourceConnection {
+    pageInfo: PageInfo!
+    edges: [DataSourceEdge]
+}
+type DataSourceEdge {
+    cursor: String!
+    node: DataSource!
+}
+
+# Queries
+type Query {
+    dataSource(id: String!): DataSource @auth(for: [KNOWLEDGE])
+    dataSources(
+        first: Int
+        after: ID
+        orderBy: DataSourcesOrdering
+        orderMode: OrderingMode
+        filters: [DataSourcesFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): DataSourceConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input DataSourceAddInput {
+    stix_id: StixId
+    x_opencti_stix_ids: [StixId]
+    confidence: Int
+    revoked: Boolean
+    lang: String
+    createdBy: String
+    objectMarking: [String]
+    objectLabel: [String]
+    objectOrganization: [String]
+    externalReferences: [String]
+    created: DateTime
+    modified: DateTime
+    clientMutationId: String
+    update: Boolean
+
+    name: String! @constraint(minLength: 2)
+    description: String!
+    aliases: [String]
+    x_mitre_platforms: [String]
+    collection_layers: [String]
+    dataComponents: [String]
+}
+
+type Mutation {
+    dataSourceAdd(input: DataSourceAddInput!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataSourceDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    dataSourceFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataSourceContextPatch(id: ID!, input: EditContext!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataSourceContextClean(id: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataSourceRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataSourceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataSourceDataComponentAdd(id: ID!, dataComponentId: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    dataSourceDataComponentDelete(id: ID!, dataComponentId: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+}

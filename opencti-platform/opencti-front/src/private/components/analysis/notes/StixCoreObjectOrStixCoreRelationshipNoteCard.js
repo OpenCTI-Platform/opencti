@@ -28,7 +28,8 @@ import { commitMutation } from '../../../../relay/environment';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import NotePopover from './NotePopover';
 import { resolveLink } from '../../../../utils/Entity';
-import { CollaborativeSecurity, KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { CollaborativeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   card: {

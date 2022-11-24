@@ -21,7 +21,8 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
 import Loader from '../../../../components/Loader';
-import { CollaborativeSecurity, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import { CollaborativeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   container: {

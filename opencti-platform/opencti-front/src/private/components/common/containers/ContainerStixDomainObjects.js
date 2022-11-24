@@ -18,7 +18,7 @@ import {
 import inject18n from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 import ToolBar from '../../data/ToolBar';
-import { UserContext } from '../../../../utils/Security';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 
 const styles = () => ({

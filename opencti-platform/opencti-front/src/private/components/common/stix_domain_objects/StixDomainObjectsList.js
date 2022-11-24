@@ -15,6 +15,8 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Chip from '@mui/material/Chip';
 import ItemMarking from '../../../../components/ItemMarking';
+import Security from '../../../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -23,7 +25,6 @@ import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { truncate } from '../../../../utils/String';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 import Filters from '../lists/Filters';
 
 const styles = (theme) => ({

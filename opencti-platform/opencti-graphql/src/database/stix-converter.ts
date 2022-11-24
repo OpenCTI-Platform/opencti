@@ -199,7 +199,7 @@ const convertObjectReferences = (instance: StoreEntity) => {
 };
 
 // Extensions
-const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
+export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
   const octiExtensions: S.StixOpenctiExtension = {
     extension_type: 'property-extension',
     id: instance.internal_id,
@@ -221,13 +221,14 @@ const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
   };
   return cleanObject(octiExtensions);
 };
-const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
+export const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
   const mitreExtensions: S.StixMitreExtension = {
     extension_type: 'property-extension',
     id: instance.x_mitre_id,
     detection: instance.x_mitre_detection,
     permissions_required: instance.x_mitre_permissions_required,
     platforms: instance.x_mitre_platforms,
+    collection_layers: instance.collection_layers
   };
   return cleanObject(mitreExtensions);
 };

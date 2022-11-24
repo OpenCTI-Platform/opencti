@@ -6,17 +6,11 @@ import Malwares from './Malwares';
 import RootMalware from './malwares/Root';
 import Channels from './Channels';
 import RootChannel from './channels/Root';
-import Narratives from './Narratives';
-import RootNarrative from './narratives/Root';
-import AttackPatterns from './AttackPatterns';
-import RootAttackPattern from './attack_patterns/Root';
-import RootCourseOfAction from './courses_of_action/Root';
 import Tools from './Tools';
 import RootTool from './tools/Root';
 import Vulnerabilities from './Vulnerabilities';
 import RootVulnerabilities from './vulnerabilities/Root';
-import CoursesOfAction from './CoursesOfAction';
-import { UserContext } from '../../../utils/Security';
+import { UserContext } from '../../../utils/hooks/useAuth';
 
 class Root extends Component {
   render() {
@@ -27,12 +21,12 @@ class Root extends Component {
           let redirect = null;
           if (!helper.isEntityTypeHidden('Malware')) {
             redirect = 'malwares';
-          } else if (!helper.isEntityTypeHidden('Attack-Pattern')) {
-            redirect = 'attack_patterns';
           } else if (!helper.isEntityTypeHidden('Channel')) {
             redirect = 'channels';
-          } else if (!helper.isEntityTypeHidden('Narrative')) {
-            redirect = 'narratives';
+          } else if (!helper.isEntityTypeHidden('Tools')) {
+            redirect = 'tools';
+          } else if (!helper.isEntityTypeHidden('Vulnerabilities')) {
+            redirect = 'vulnerabilities';
           }
           return (
             <Switch>
@@ -60,39 +54,6 @@ class Root extends Component {
               <BoundaryRoute
                 path="/dashboard/arsenal/channels/:channelId"
                 render={(routeProps) => <RootChannel {...routeProps} me={me} />}
-              />
-              <BoundaryRoute
-                exact
-                path="/dashboard/arsenal/narratives"
-                component={Narratives}
-              />
-              <BoundaryRoute
-                path="/dashboard/arsenal/narratives/:narrativeId"
-                render={(routeProps) => (
-                  <RootNarrative {...routeProps} me={me} />
-                )}
-              />
-              <BoundaryRoute
-                exact
-                path="/dashboard/arsenal/attack_patterns"
-                component={AttackPatterns}
-              />
-              <BoundaryRoute
-                path="/dashboard/arsenal/attack_patterns/:attackPatternId"
-                render={(routeProps) => (
-                  <RootAttackPattern {...routeProps} me={me} />
-                )}
-              />
-              <BoundaryRoute
-                exact
-                path="/dashboard/arsenal/courses_of_action"
-                component={CoursesOfAction}
-              />
-              <BoundaryRoute
-                path="/dashboard/arsenal/courses_of_action/:courseOfActionId"
-                render={(routeProps) => (
-                  <RootCourseOfAction {...routeProps} me={me} />
-                )}
               />
               <BoundaryRoute
                 exact

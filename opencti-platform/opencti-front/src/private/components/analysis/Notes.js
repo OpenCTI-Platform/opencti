@@ -12,10 +12,9 @@ import ListLines from '../../../components/list_lines/ListLines';
 import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import inject18n from '../../../components/i18n';
 import NoteCreation from './notes/NoteCreation';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  UserContext,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Notes extends Component {

@@ -25,11 +25,11 @@ import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
-import Security, {
+import Security from '../../../../utils/Security';
+import {
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../../utils/Security';
+  KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import FileLine from '../../common/files/FileLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileUploader from '../../common/files/FileUploader';

@@ -12,7 +12,8 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableRelationCreationFromEntity from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreationFromEntity';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCyberObservableNestedEntitiesLines, {

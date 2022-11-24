@@ -7,10 +7,8 @@ import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -49,7 +47,7 @@ class TopMenuCourseOfAction extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/arsenal/courses_of_action"
+          to="/dashboard/techniques/courses_of_action"
           variant="contained"
           size="small"
           color="primary"
@@ -64,17 +62,17 @@ class TopMenuCourseOfAction extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}`}
+          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}`}
           variant={
             location.pathname
-            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}`
+            === `/dashboard/techniques/courses_of_action/${courseOfActionId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}`
+            === `/dashboard/techniques/courses_of_action/${courseOfActionId}`
               ? 'secondary'
               : 'primary'
           }
@@ -85,17 +83,17 @@ class TopMenuCourseOfAction extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`}
+            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/files`}
             variant={
               location.pathname
-              === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`
+              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`
+              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
                 ? 'secondary'
                 : 'primary'
             }
@@ -106,17 +104,17 @@ class TopMenuCourseOfAction extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`}
+          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/history`}
           variant={
             location.pathname
-            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`
+            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`
+            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/history`
               ? 'secondary'
               : 'primary'
           }

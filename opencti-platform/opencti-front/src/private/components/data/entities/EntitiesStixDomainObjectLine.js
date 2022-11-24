@@ -201,6 +201,16 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
           description
           x_opencti_aliases
         }
+        ... on DataComponent {
+          name
+          aliases
+          description
+        }
+        ... on DataSource {
+          name
+          aliases
+          description
+        }
         ... on Individual {
           name
           description

@@ -19,9 +19,8 @@ import { ConnectionHandler } from 'relay-runtime';
 import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, {
-  KNOWLEDGE_KNPARTICIPATE,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNPARTICIPATE } from '../../../../utils/hooks/useGranted';
 import AddNotes from './AddNotes';
 import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';

@@ -14,7 +14,7 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
-import { UserContext } from '../../../utils/Security';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import ToolBar from './ToolBar';
 
 class Relationships extends Component {

@@ -5,7 +5,7 @@ import { StyledEngineProvider } from '@mui/material/styles';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import Index from './Index';
-import { UserContext } from '../utils/Security';
+import { UserContext } from '../utils/hooks/useAuth';
 import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
 import platformModuleHelper from '../utils/platformModulesHelper';
 
@@ -49,6 +49,7 @@ const rootPrivateQuery = graphql`
 const Root = () => {
   const data = useLazyLoadQuery<RootPrivateQuery>(rootPrivateQuery, {});
   const { me, settings } = data;
+  // TODO : Use the hook useHelper when all project is pure function //
   const helper = platformModuleHelper(settings);
   return (
     <UserContext.Provider value={{ me, settings, helper }}>

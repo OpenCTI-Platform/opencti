@@ -15,7 +15,8 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   item: {

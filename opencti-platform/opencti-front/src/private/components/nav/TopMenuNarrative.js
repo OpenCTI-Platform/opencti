@@ -6,10 +6,8 @@ import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined, SpeakerNotesOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -48,7 +46,7 @@ class TopMenuNarrative extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/arsenal/narratives"
+          to="/dashboard/techniques/narratives"
           variant="contained"
           size="small"
           color="primary"
@@ -63,15 +61,15 @@ class TopMenuNarrative extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/arsenal/narratives/${narrativeId}`}
+          to={`/dashboard/techniques/narratives/${narrativeId}`}
           variant={
-            location.pathname === `/dashboard/arsenal/narratives/${narrativeId}`
+            location.pathname === `/dashboard/techniques/narratives/${narrativeId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/arsenal/narratives/${narrativeId}`
+            location.pathname === `/dashboard/techniques/narratives/${narrativeId}`
               ? 'secondary'
               : 'primary'
           }
@@ -81,10 +79,10 @@ class TopMenuNarrative extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/narratives/${narrativeId}/knowledge`}
+          to={`/dashboard/techniques/narratives/${narrativeId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/arsenal/narratives/${narrativeId}/knowledge`,
+              `/dashboard/techniques/narratives/${narrativeId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -92,7 +90,7 @@ class TopMenuNarrative extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/arsenal/narratives/${narrativeId}/knowledge`,
+              `/dashboard/techniques/narratives/${narrativeId}/knowledge`,
             )
               ? 'secondary'
               : 'primary'
@@ -103,17 +101,17 @@ class TopMenuNarrative extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/narratives/${narrativeId}/analysis`}
+          to={`/dashboard/techniques/narratives/${narrativeId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/arsenal/narratives/${narrativeId}/analysis`
+            === `/dashboard/techniques/narratives/${narrativeId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/arsenal/narratives/${narrativeId}/analysis`
+            === `/dashboard/techniques/narratives/${narrativeId}/analysis`
               ? 'secondary'
               : 'primary'
           }
@@ -123,10 +121,10 @@ class TopMenuNarrative extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/narratives/${narrativeId}/indicators`}
+          to={`/dashboard/techniques/narratives/${narrativeId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/arsenal/narratives/${narrativeId}/indicators`,
+              `/dashboard/techniques/narratives/${narrativeId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -134,7 +132,7 @@ class TopMenuNarrative extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/arsenal/narratives/${narrativeId}/indicators`,
+              `/dashboard/techniques/narratives/${narrativeId}/indicators`,
             )
               ? 'secondary'
               : 'primary'
@@ -146,17 +144,17 @@ class TopMenuNarrative extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/arsenal/narratives/${narrativeId}/files`}
+            to={`/dashboard/techniques/narratives/${narrativeId}/files`}
             variant={
               location.pathname
-              === `/dashboard/arsenal/narratives/${narrativeId}/files`
+              === `/dashboard/techniques/narratives/${narrativeId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/arsenal/narratives/${narrativeId}/files`
+              === `/dashboard/techniques/narratives/${narrativeId}/files`
                 ? 'secondary'
                 : 'primary'
             }
@@ -167,17 +165,17 @@ class TopMenuNarrative extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/narratives/${narrativeId}/history`}
+          to={`/dashboard/techniques/narratives/${narrativeId}/history`}
           variant={
             location.pathname
-            === `/dashboard/arsenal/narratives/${narrativeId}/history`
+            === `/dashboard/techniques/narratives/${narrativeId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/arsenal/narratives/${narrativeId}/history`
+            === `/dashboard/techniques/narratives/${narrativeId}/history`
               ? 'secondary'
               : 'primary'
           }

@@ -21,7 +21,8 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import {
   convertCreatedBy,

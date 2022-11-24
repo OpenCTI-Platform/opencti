@@ -24,7 +24,8 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCyberObservableAddIndicators from './StixCyberObservableAddIndicators';
 import StixCyberObservableIndicatorPopover from './StixCyberObservableIndicatorPopover';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({

@@ -14,7 +14,8 @@ import OrganizationsLines, {
   organizationsLinesQuery,
 } from './organizations/OrganizationsLines';
 import OrganizationCreation from './organizations/OrganizationCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Organizations extends Component {

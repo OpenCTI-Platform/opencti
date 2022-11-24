@@ -20,9 +20,8 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { threatActorEditionQuery } from './ThreatActorEdition';
 import ThreatActorEditionContainer from './ThreatActorEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   container: {

@@ -6,10 +6,8 @@ import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined, PlaceOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -48,7 +46,7 @@ class TopMenuPosition extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/entities/positions"
+          to="/dashboard/locations/positions"
           variant="contained"
           size="small"
           color="primary"
@@ -63,15 +61,15 @@ class TopMenuPosition extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/entities/positions/${positionId}`}
+          to={`/dashboard/locations/positions/${positionId}`}
           variant={
-            location.pathname === `/dashboard/entities/positions/${positionId}`
+            location.pathname === `/dashboard/locations/positions/${positionId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/positions/${positionId}`
+            location.pathname === `/dashboard/locations/positions/${positionId}`
               ? 'secondary'
               : 'primary'
           }
@@ -81,10 +79,10 @@ class TopMenuPosition extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/positions/${positionId}/knowledge`}
+          to={`/dashboard/locations/positions/${positionId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/entities/positions/${positionId}/knowledge`,
+              `/dashboard/locations/positions/${positionId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -92,7 +90,7 @@ class TopMenuPosition extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/entities/positions/${positionId}/knowledge`,
+              `/dashboard/locations/positions/${positionId}/knowledge`,
             )
               ? 'secondary'
               : 'primary'
@@ -103,17 +101,17 @@ class TopMenuPosition extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/positions/${positionId}/analysis`}
+          to={`/dashboard/locations/positions/${positionId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/positions/${positionId}/analysis`
+            === `/dashboard/locations/positions/${positionId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/positions/${positionId}/analysis`
+            === `/dashboard/locations/positions/${positionId}/analysis`
               ? 'secondary'
               : 'primary'
           }
@@ -123,17 +121,17 @@ class TopMenuPosition extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/positions/${positionId}/sightings`}
+          to={`/dashboard/locations/positions/${positionId}/sightings`}
           variant={
             location.pathname
-            === `/dashboard/entities/positions/${positionId}/sightings`
+            === `/dashboard/locations/positions/${positionId}/sightings`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/positions/${positionId}/sightings`
+            === `/dashboard/locations/positions/${positionId}/sightings`
               ? 'secondary'
               : 'primary'
           }
@@ -144,17 +142,17 @@ class TopMenuPosition extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/entities/positions/${positionId}/files`}
+            to={`/dashboard/locations/positions/${positionId}/files`}
             variant={
               location.pathname
-              === `/dashboard/entities/positions/${positionId}/files`
+              === `/dashboard/locations/positions/${positionId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/entities/positions/${positionId}/files`
+              === `/dashboard/locations/positions/${positionId}/files`
                 ? 'secondary'
                 : 'primary'
             }
@@ -165,17 +163,17 @@ class TopMenuPosition extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/entities/positions/${positionId}/history`}
+          to={`/dashboard/locations/positions/${positionId}/history`}
           variant={
             location.pathname
-            === `/dashboard/entities/positions/${positionId}/history`
+            === `/dashboard/locations/positions/${positionId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/positions/${positionId}/history`
+            === `/dashboard/locations/positions/${positionId}/history`
               ? 'secondary'
               : 'primary'
           }

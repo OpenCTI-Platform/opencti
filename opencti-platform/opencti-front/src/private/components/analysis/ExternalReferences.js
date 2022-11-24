@@ -14,7 +14,8 @@ import ExternalReferencesLines, {
   externalReferencesLinesQuery,
 } from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 export const externalReferencesSearchQuery = graphql`
   query ExternalReferencesSearchQuery(

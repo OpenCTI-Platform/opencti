@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import * as R from 'ramda';
 import Grid from '@mui/material/Grid';
@@ -29,12 +29,8 @@ import { useFormatter } from '../../components/i18n';
 import { defaultValue } from '../../utils/Graph';
 import { resolveLink } from '../../utils/Entity';
 import StixCoreObjectLabels from './common/stix_core_objects/StixCoreObjectLabels';
-import {
-  granted,
-  KNOWLEDGE_KNGETEXPORT,
-  UserContext,
-} from '../../utils/Security';
 import StixCoreObjectsExports from './common/stix_core_objects/StixCoreObjectsExports';
+import useGranted, { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -209,8 +205,7 @@ const inlineStyles = {
 
 const SearchBulk = () => {
   const { t, nsd, n } = useFormatter();
-  const { me } = useContext(UserContext);
-  const isGratedToExports = granted(me, [KNOWLEDGE_KNGETEXPORT]);
+  const isGratedToExports = useGranted([KNOWLEDGE_KNGETEXPORT]);
   const classes = useStyles();
   const [textFieldValue, setTextFieldValue] = useState('');
   const [resolvedEntities, setResolvedEntities] = useState([]);

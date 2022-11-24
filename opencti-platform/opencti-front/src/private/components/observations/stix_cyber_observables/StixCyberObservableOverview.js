@@ -28,7 +28,8 @@ import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObj
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemMarkings from '../../../../components/ItemMarkings';
 

@@ -6,7 +6,8 @@ import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = () => ({
   title: {

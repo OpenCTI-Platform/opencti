@@ -1,11 +1,12 @@
 import {
   addAttackPattern,
-  findAll,
-  findById,
   batchCoursesOfAction,
+  batchDataComponents,
+  batchIsSubAttackPattern,
   batchParentAttackPatterns,
   batchSubAttackPatterns,
-  batchIsSubAttackPattern,
+  findAll,
+  findById,
 } from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,
@@ -26,6 +27,7 @@ const coursesOfActionLoader = batchLoader(batchCoursesOfAction);
 const parentAttackPatternsLoader = batchLoader(batchParentAttackPatterns);
 const subAttackPatternsLoader = batchLoader(batchSubAttackPatterns);
 const isSubAttackPatternLoader = batchLoader(batchIsSubAttackPattern);
+const dataComponentsLoader = batchLoader(batchDataComponents);
 
 const attackPatternResolvers = {
   Query: {
@@ -38,6 +40,7 @@ const attackPatternResolvers = {
     parentAttackPatterns: (attackPattern, _, context) => parentAttackPatternsLoader.load(attackPattern.id, context, context.user),
     subAttackPatterns: (attackPattern, _, context) => subAttackPatternsLoader.load(attackPattern.id, context, context.user),
     isSubAttackPattern: (attackPattern, _, context) => isSubAttackPatternLoader.load(attackPattern.id, context, context.user),
+    dataComponents: (attackPattern, _, context) => dataComponentsLoader.load(attackPattern.id, context, context.user),
   },
   AttackPatternsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

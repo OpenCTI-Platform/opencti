@@ -57,13 +57,13 @@ export const STIX_META_RELATION_TO_FIELD: { [k: string]: string } = {
   [RELATION_GRANTED_TO]: INPUT_GRANTED_REFS,
 };
 
-export const FIELD_TO_META_RELATION = R.mergeAll(
+export const fieldToMetaRelation = () => R.mergeAll(
   Object.keys(STIX_META_RELATION_TO_FIELD).map((k) => ({
     [STIX_META_RELATION_TO_FIELD[k]]: k,
   }))
 );
 
-const STIX_EXTERNAL_META_RELATIONSHIPS = [
+export const STIX_EXTERNAL_META_RELATIONSHIPS = [
   RELATION_CREATED_BY,
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT,
@@ -74,12 +74,12 @@ const STIX_INTERNAL_META_RELATIONSHIPS = [
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
 ];
-export const STIX_META_RELATIONSHIPS = [...STIX_EXTERNAL_META_RELATIONSHIPS, ...STIX_INTERNAL_META_RELATIONSHIPS];
-schemaTypes.register(ABSTRACT_STIX_META_RELATIONSHIP, STIX_META_RELATIONSHIPS);
+export const stixMetaRelationships = () => [...STIX_EXTERNAL_META_RELATIONSHIPS, ...STIX_INTERNAL_META_RELATIONSHIPS];
+schemaTypes.register(ABSTRACT_STIX_META_RELATIONSHIP, stixMetaRelationships());
 export const isSingleStixMetaRelationship = (type: string): boolean => R.includes(type, [RELATION_CREATED_BY]);
 export const isSingleStixMetaRelationshipInput = (input: string): boolean => R.includes(input, [INPUT_CREATED_BY]);
 
-export const isStixMetaRelationship = (type: string) => R.includes(type, STIX_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
+export const isStixMetaRelationship = (type: string) => R.includes(type, stixMetaRelationships()) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 
 export const stixMetaRelationshipsAttributes = [
   'internal_id',
@@ -102,7 +102,7 @@ export const stixMetaRelationshipsAttributes = [
 ];
 R.map(
   (stixMetaRelationshipType) => schemaTypes.registerAttributes(stixMetaRelationshipType, stixMetaRelationshipsAttributes),
-  STIX_META_RELATIONSHIPS
+  stixMetaRelationships()
 );
 R.map(
   (stixInternalMetaRelationshipType) => schemaTypes.registerAttributes(stixInternalMetaRelationshipType, stixMetaRelationshipsAttributes),

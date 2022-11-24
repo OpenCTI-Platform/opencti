@@ -20,7 +20,8 @@ import { QueryRenderer, commitMutation } from '../../../relay/environment';
 import { workspaceEditionQuery } from './WorkspaceEdition';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Loader from '../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   container: {

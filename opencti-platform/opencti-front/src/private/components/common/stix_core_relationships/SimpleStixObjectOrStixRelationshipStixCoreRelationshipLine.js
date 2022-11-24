@@ -16,7 +16,8 @@ import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   item: {

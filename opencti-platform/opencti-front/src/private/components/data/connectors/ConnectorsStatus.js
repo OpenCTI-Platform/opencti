@@ -30,7 +30,8 @@ import { Link, withRouter } from 'react-router-dom';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import Security, { MODULES_MODMANAGE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import {
   connectorDeletionMutation,
   connectorResetStateMutation,

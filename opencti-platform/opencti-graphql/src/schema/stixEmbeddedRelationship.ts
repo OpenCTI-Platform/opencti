@@ -29,14 +29,18 @@ export const STIX_ATTRIBUTE_TO_META_FIELD: { [k: string]: string } = {
   ...STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD,
   ...STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD,
 };
-export const META_FIELD_ATTRIBUTES = Object.values(STIX_ATTRIBUTE_TO_META_FIELD);
-
-export const STIX_EMBEDDED_RELATION_TO_FIELD: { [k: string]: string } = {
-  ...STIX_META_RELATION_TO_FIELD,
-  ...STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD,
+export const metaFieldAttributes = () => {
+  return Object.values(STIX_ATTRIBUTE_TO_META_FIELD);
 };
-export const FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION = R.mergeAll(
-  Object.keys(STIX_EMBEDDED_RELATION_TO_FIELD).map((k) => ({ [STIX_EMBEDDED_RELATION_TO_FIELD[k]]: k }))
+
+export const stixEmbeddedRelationToField: () => { [k: string]: string } = () => {
+  return {
+    ...STIX_META_RELATION_TO_FIELD,
+    ...STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD,
+  };
+};
+export const fieldAttributeToEmbeddedRelation = () => R.mergeAll(
+  Object.keys(stixEmbeddedRelationToField()).map((k) => ({ [stixEmbeddedRelationToField()[k]]: k }))
 );
 
 export const isStixEmbeddedRelationship = (type: string): boolean => isStixMetaRelationship(type) || isStixCyberObservableRelationship(type);

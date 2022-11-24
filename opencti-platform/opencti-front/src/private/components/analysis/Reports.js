@@ -14,10 +14,9 @@ import inject18n from '../../../components/i18n';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  UserContext,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { UserContext } from '../../../utils/hooks/useAuth';
 
 class Reports extends Component {
   constructor(props) {

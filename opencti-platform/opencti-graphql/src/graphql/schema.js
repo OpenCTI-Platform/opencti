@@ -80,7 +80,7 @@ const validateStixId = (stixId) => {
     throw new UserInputError('Provided value is not a valid STIX ID');
   }
   const [type, uuid] = stixId.split('--');
-  if (!isSupportedStixType(type)) {
+  if (!isSupportedStixType(type.replace('x-mitre-', ''))) {
     throw new UserInputError('Provided value is not a valid STIX ID (type not supported)');
   }
   if (!uuidValidate(uuid)) {

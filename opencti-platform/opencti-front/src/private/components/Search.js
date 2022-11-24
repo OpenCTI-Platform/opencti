@@ -9,7 +9,7 @@ import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
 import { buildViewParamsFromUrlAndStorage, convertFilters, saveViewParameters } from '../../utils/ListParameters';
 import { isUniqFilter } from '../../utils/filters/filtersUtils';
-import { UserContext } from '../../utils/Security';
+import { UserContext } from '../../utils/hooks/useAuth';
 import ListLines from '../../components/list_lines/ListLines';
 import ToolBar from './data/ToolBar';
 import SearchStixCoreObjectsLines, { searchStixCoreObjectsLinesQuery } from './search/SearchStixCoreObjectsLines';

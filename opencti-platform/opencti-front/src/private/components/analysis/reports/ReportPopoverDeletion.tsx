@@ -5,13 +5,13 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { useHistory } from 'react-router-dom';
 import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { useTheme } from '@mui/styles';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
@@ -48,7 +48,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
 }) => {
   const { t } = useFormatter();
   const theme = useTheme<Theme>();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const submitDelete = () => {
@@ -59,7 +59,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        history.push('/dashboard/analysis/reports');
+        navigate('/dashboard/analysis/reports');
       },
       updater: undefined,
       optimisticUpdater: undefined,

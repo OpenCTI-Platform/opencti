@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { Link, useLocation, useParams } from 'react-router-dom';
@@ -6,12 +6,7 @@ import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { Fire } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
-import {
-  granted,
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-  UserContext,
-} from '../../../utils/Security';
+import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttonHome: {
@@ -41,8 +36,7 @@ const TopMenuIncident = () => {
   const { t } = useFormatter();
   const { incidentId } = useParams() as { incidentId: string };
   const classes = useStyles();
-  const { me } = useContext(UserContext);
-  const isUploaderOrExporter = granted(me, [
+  const isUploaderOrExporter = useGranted([
     KNOWLEDGE_KNUPLOAD,
     KNOWLEDGE_KNGETEXPORT,
   ]);

@@ -18,7 +18,8 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   avatar: {

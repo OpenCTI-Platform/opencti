@@ -17,7 +17,8 @@ import StixCyberObservableEntitiesLines, {
   stixCyberObservableEntitiesLinesQuery,
 } from './StixCyberObservableEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { TEN_SECONDS } from '../../../../utils/Time';
 

@@ -1,19 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Theme } from '@mui/material/styles/createTheme';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
-import {
-  granted,
-  KNOWLEDGE,
-  KNOWLEDGE_KNUPDATE,
-  MODULES,
-  SETTINGS,
-  TAXIIAPI_SETCOLLECTIONS,
-  UserContext,
-  UserContextType,
-} from '../../../utils/Security';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNUPDATE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -32,12 +23,11 @@ const TopMenuData = () => {
   const { t } = useFormatter();
   const classes = useStyles();
   const location = useLocation();
-  const { me } = useContext<UserContextType>(UserContext);
-  const isKnowledgeReader = granted(me, [KNOWLEDGE]);
-  const isKnowledgeEditor = granted(me, [KNOWLEDGE_KNUPDATE]);
-  const isConnectorReader = granted(me, [MODULES]);
-  const isSettingsManager = granted(me, [SETTINGS]);
-  const isSharingManager = granted(me, [TAXIIAPI_SETCOLLECTIONS]);
+  const isKnowledgeReader = useGranted([KNOWLEDGE]);
+  const isKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
+  const isConnectorReader = useGranted([MODULES]);
+  const isSettingsManager = useGranted([SETTINGS]);
+  const isSharingManager = useGranted([TAXIIAPI_SETCOLLECTIONS]);
   const isCompatiblePath = (path?: string) => (path ? location.pathname.includes(path) : location.pathname === path);
   const getVariant = (path: string) => (isCompatiblePath(path) ? 'contained' : 'text');
   const getColor = (path: string) => (isCompatiblePath(path) ? 'secondary' : 'primary');

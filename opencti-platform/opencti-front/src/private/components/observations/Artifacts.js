@@ -10,10 +10,9 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
-import Security, {
-  UserContext,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import ArtifactsLines, {
   artifactsLinesQuery,

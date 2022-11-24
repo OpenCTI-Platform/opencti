@@ -7,7 +7,8 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import EntityStixCoreRelationshipsLinesFrom, {
   entityStixCoreRelationshipsLinesFromQuery,
 } from './EntityStixCoreRelationshipsLinesFrom';

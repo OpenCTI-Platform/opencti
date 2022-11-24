@@ -1,8 +1,15 @@
-import { PaletteColorOptions, PaletteOptions, TypeBackground } from '@mui/material/styles/createPalette';
+import {
+  PaletteColorOptions,
+  PaletteOptions,
+  TypeBackground,
+  TypeText,
+} from '@mui/material/styles/createPalette';
 import { Theme as MuiTheme, ThemeOptions } from '@mui/material/styles/createTheme';
 
 interface ExtendedColor extends PaletteColorOptions {
   main: string
+  palette: ExtendedPaletteOptions
+  text: Partial<TypeText>
 }
 
 interface ExtendedBackground extends TypeBackground {
