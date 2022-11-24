@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "5.4.0",
+  "version": "5.4.1",
   "main": "src/back.js",
   "license": "Apache-2.0",
   "scripts": {

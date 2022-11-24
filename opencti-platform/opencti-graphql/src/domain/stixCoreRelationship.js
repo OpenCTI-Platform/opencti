@@ -130,33 +130,33 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
   let newArgsFiltersFilters = argsFilters.filters;
   const initialParams = {};
   if (argsFilters.filters && argsFilters.filters.length > 0) {
-    if (argsFilters.filters.filter((n) => n.key === 'relationship_type').length > 0) {
-      initialParams.relationship_type = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'relationship_type')).values);
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'relationship_type');
+    if (argsFilters.filters.filter((n) => n.key.includes('relationship_type')).length > 0) {
+      initialParams.relationship_type = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('relationship_type'))).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('relationship_type'));
     }
-    if (argsFilters.filters.filter((n) => n.key === 'elementId').length > 0) {
-      initialParams.elementId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'elementId')).values);
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'elementId');
+    if (argsFilters.filters.filter((n) => n.key.includes('elementId')).length > 0) {
+      initialParams.elementId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('elementId'))).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('elementId'));
     }
-    if (argsFilters.filters.filter((n) => n.key === 'fromId').length > 0) {
-      initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'fromId')).values);
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'fromId');
+    if (argsFilters.filters.filter((n) => n.key.includes('fromId')).length > 0) {
+      initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('fromId'))).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('fromId'));
     }
-    if (argsFilters.filters.filter((n) => n.key === 'toId').length > 0) {
-      initialParams.toId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'toId')).values);
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'toId');
+    if (argsFilters.filters.filter((n) => n.key.includes('toId')).length > 0) {
+      initialParams.toId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('toId'))).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('toId'));
     }
-    if (argsFilters.filters.filter((n) => n.key === 'elementWithTargetTypes').length > 0) {
-      initialParams.elementWithTargetTypes = R.head(argsFilters.filters.filter((n) => n.key === 'elementWithTargetTypes')).values;
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'elementWithTargetTypes');
+    if (argsFilters.filters.filter((n) => n.key.includes('elementWithTargetTypes')).length > 0) {
+      initialParams.elementWithTargetTypes = R.head(argsFilters.filters.filter((n) => n.key.includes('elementWithTargetTypes'))).values;
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('elementWithTargetTypes'));
     }
-    if (argsFilters.filters.filter((n) => n.key === 'fromTypes').length > 0) {
-      initialParams.fromTypes = R.head(argsFilters.filters.filter((n) => n.key === 'fromTypes')).values;
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'fromTypes');
+    if (argsFilters.filters.filter((n) => n.key.includes('fromTypes')).length > 0) {
+      initialParams.fromTypes = R.head(argsFilters.filters.filter((n) => n.key.includes('fromTypes'))).values;
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('fromTypes'));
     }
-    if (argsFilters.filters.filter((n) => n.key === 'toTypes').length > 0) {
-      initialParams.toTypes = R.head(argsFilters.filters.filter((n) => n.key === 'toTypes')).values;
-      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'toTypes');
+    if (argsFilters.filters.filter((n) => n.key.includes('toTypes')).length > 0) {
+      initialParams.toTypes = R.head(argsFilters.filters.filter((n) => n.key.includes('toTypes'))).values;
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('toTypes'));
     }
   }
   const finalArgsFilter = R.assoc('filters', newArgsFiltersFilters, argsFilters);
