@@ -21,10 +21,11 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
-import Filters, { isUniqFilter } from '../lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import { UserContext } from '../../../../utils/Security';
+import Filters from '../lists/Filters';
 
 const VIEW_AS_KNOWLEDGE = 'knowledge';
 

@@ -15,7 +15,7 @@ import IndividualsLines, {
 } from './individuals/IndividualsLines';
 import IndividualCreation from './individuals/IndividualCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Individuals extends Component {
   constructor(props) {

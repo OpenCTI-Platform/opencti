@@ -13,7 +13,7 @@ import {
 import StixDomainObjectAttackPatternsKillChain, {
   stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
 } from './StixDomainObjectAttackPatternsKillChain';
-import { isUniqFilter } from '../lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 
 const styles = () => ({
   container: {

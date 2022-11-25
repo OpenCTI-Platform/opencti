@@ -18,7 +18,7 @@ import Security, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/Security';
 import ToolBar from '../../data/ToolBar';
-import { isUniqFilter } from '../../common/lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 
 class StixDomainObjectIndicators extends Component {
   constructor(props) {

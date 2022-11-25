@@ -8,3 +8,10 @@ export const copyToClipboard = (t: (text: string) => string, text: string) => {
   navigator.clipboard.writeText(text);
   MESSAGING$.notifySuccess(t('Copied to clipboard'));
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const removeEmptyFields = (obj: Record<string, any | undefined>): Record<string, any> => {
+  const clone = { ...obj };
+  Object.keys(clone).forEach((key) => clone[key] == null && delete clone[key]);
+  return clone;
+};

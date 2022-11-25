@@ -21,9 +21,10 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
-import Filters, { isUniqFilter } from '../lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { truncate } from '../../../../utils/String';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
+import Filters from '../lists/Filters';
 
 const styles = (theme) => ({
   container: {

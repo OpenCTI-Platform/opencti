@@ -18,7 +18,7 @@ import Security, {
   UserContext,
   KNOWLEDGE_KNUPDATE,
 } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class ObservedDatas extends Component {
   constructor(props) {

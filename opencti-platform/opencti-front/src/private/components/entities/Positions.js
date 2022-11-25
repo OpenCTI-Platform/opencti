@@ -15,7 +15,7 @@ import PositionsLines, {
 } from './positions/PositionsLines';
 import PositionCreation from './positions/PositionCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Positions extends Component {
   constructor(props) {

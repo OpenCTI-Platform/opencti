@@ -13,7 +13,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import ToolsLines, { toolsLinesQuery } from './tools/ToolsLines';
 import ToolCreation from './tools/ToolCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Tools extends Component {
   constructor(props) {

@@ -15,7 +15,7 @@ import GroupingsLines, {
 import inject18n from '../../../components/i18n';
 import GroupingCreation from './groupings/GroupingCreation';
 import ToolBar from '../data/ToolBar';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import Security, {
   KNOWLEDGE_KNUPDATE,
   UserContext,

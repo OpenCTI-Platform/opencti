@@ -22,11 +22,12 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
-import Filters, { isUniqFilter } from '../common/lists/Filters';
+import Filters from '../common/lists/Filters';
 import { truncate } from '../../../utils/String';
 import StixDomainObjectsField from '../common/form/StixDomainObjectsField';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   drawerPaper: {

@@ -13,7 +13,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/Security';
 import ToolBar from './ToolBar';
 

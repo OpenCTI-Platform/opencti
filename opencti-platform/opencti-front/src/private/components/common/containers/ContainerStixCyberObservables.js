@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { append, compose, filter, propOr } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
+import { append, compose, filter, propOr } from 'ramda';
+import { createFragmentContainer, graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCyberObservablesLines, {
@@ -19,7 +19,7 @@ import StixCyberObservablesRightBar from '../../observations/stix_cyber_observab
 import ToolBar from '../../data/ToolBar';
 import { defaultValue } from '../../../../utils/Graph';
 import { UserContext } from '../../../../utils/Security';
-import { isUniqFilter } from '../lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 
 const styles = () => ({
   container: {

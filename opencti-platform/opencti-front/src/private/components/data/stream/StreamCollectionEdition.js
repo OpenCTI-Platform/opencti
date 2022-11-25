@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
@@ -13,9 +13,10 @@ import { difference, head, map, pathOr, pipe } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Filters, { isUniqFilter } from '../../common/lists/Filters';
+import Filters from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
 import GroupField from '../../common/form/GroupField';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   header: {

@@ -13,7 +13,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import EventsLines, { eventsLinesQuery } from './events/EventsLines';
 import EventCreation from './events/EventCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Events extends Component {
   constructor(props) {

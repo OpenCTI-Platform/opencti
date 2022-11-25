@@ -13,7 +13,7 @@ import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import inject18n from '../../../components/i18n';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import Security, {
   KNOWLEDGE_KNUPDATE,
   UserContext,
