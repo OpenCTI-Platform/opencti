@@ -35,6 +35,10 @@ WORKDIR /opt/opencti-build/opencti-front
 COPY opencti-front/package.json opencti-front/yarn.lock opencti-front/.yarnrc.yml ./
 COPY opencti-front/.yarn ./.yarn
 COPY opencti-front/patch ./patch
+RUN set -ex \
+    ; apk add --no-cache git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre \
+    && npm install -g node-gyp \
+&& yarn install
 
 RUN yarn install
 
