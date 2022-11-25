@@ -8,7 +8,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 
 const fieldToSelect = ({
   disabled,
-  field: { onBlur: _onBlur, onChange: fieldOnChange, ...field },
+  field: { onChange: fieldOnChange, ...field },
   form: { isSubmitting, touched, errors, setTouched, setFieldValue },
   onClose,
   ...props

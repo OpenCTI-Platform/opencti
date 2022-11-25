@@ -19,11 +19,14 @@ import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { insertNode } from '../../../../utils/Store';
+import { insertNode } from '../../../../utils/store';
 import { Theme } from '../../../../components/Theme';
 import {
   StatusTemplateCreationContextualMutation$data,
 } from './__generated__/StatusTemplateCreationContextualMutation.graphql';
+import {
+  StatusTemplatesLinesPaginationQuery$variables,
+} from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -99,7 +102,7 @@ interface StatusTemplateCreationProps {
   creationCallback: (data: StatusTemplateCreationContextualMutation$data) => void,
   handleCloseContextual: () => void,
   openContextual: boolean,
-  paginationOptions?: { search: string, orderMode: string, orderBy: string },
+  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables,
 }
 
 const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = ({

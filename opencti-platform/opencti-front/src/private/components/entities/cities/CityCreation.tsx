@@ -7,24 +7,21 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { isEmptyField } from '../../../../utils/utils';
+import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLinesPaginationQuery.graphql';
+import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -67,70 +64,73 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const IncidentMutation = graphql`
-  mutation IncidentCreationMutation($input: IncidentAddInput!) {
-    incidentAdd(input: $input) {
-      ...IncidentLine_node
+const cityMutation = graphql`
+  mutation CityCreationMutation($input: CityAddInput!) {
+    cityAdd(input: $input) {
+      ...CityLine_node
     }
   }
 `;
 
-const IncidentValidation = (t) => Yup.object().shape({
+const cityValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  incident_type: Yup.string(),
-  severity: Yup.string(),
-  source: Yup.string(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
+  description: Yup.string().nullable(),
+  latitude: Yup.number()
+    .typeError(t('This field must be a number'))
+    .nullable(),
+  longitude: Yup.number()
+    .typeError(t('This field must be a number'))
+    .nullable(),
 });
 
-const IncidentCreation = ({ paginationOptions }) => {
+interface CityAddInput {
+  name: string,
+  description: string,
+  latitude: string
+  longitude: string
+  createdBy?: { value: string, label?: string }
+  objectMarking: { value: string }[]
+  externalReferences: { value: string }[]
+}
+
+const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const cleanedValues = isEmptyField(values.severity) ? R.dissoc('severity', values) : values;
-    const adaptedValues = R.evolve(
-      {
-        confidence: () => parseInt(values.confidence, 10),
-        createdBy: R.path(['value']),
-        objectMarking: R.pluck('value'),
-        objectLabel: R.pluck('value'),
-        objectOrganization: R.pluck('value'),
-        externalReferences: R.pluck('value'),
-      },
-      cleanedValues,
-    );
-    commitMutation({
-      mutation: IncidentMutation,
+
+  const [open, setOpen] = useState<boolean>(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const [commit] = useMutation(cityMutation);
+
+  const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+    const finalValues: CityCreationMutation$variables['input'] = {
+      name: values.name,
+      latitude: parseFloat(values.latitude),
+      longitude: parseFloat(values.longitude),
+      objectMarking: values.objectMarking.map(({ value }) => value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      createdBy: values.createdBy?.value,
+    };
+    commit({
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_incidents',
-        paginationOptions,
-        'incidentAdd',
-      ),
-      onError: (error) => {
-        handleErrorInForm(error, setErrors);
-        setSubmitting(false);
+      updater: (store) => {
+        insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        setOpen(false);
+        handleClose();
       },
     });
   };
+
   return (
     <div>
       <Fab
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         color="secondary"
         aria-label="Add"
         className={classes.createButton}
@@ -143,67 +143,50 @@ const IncidentCreation = ({ paginationOptions }) => {
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={() => setOpen(false)}
+            onClick={handleClose}
             size="large"
             color="primary"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create an incident')}</Typography>
+          <Typography variant="h6">{t('Create a city')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik
+          <Formik<CityAddInput>
             initialValues={{
               name: '',
-              confidence: 75,
-              incident_type: '',
-              severity: '',
-              source: '',
               description: '',
-              createdBy: '',
+              latitude: '',
+              longitude: '',
+              createdBy: { value: '', label: '' },
               objectMarking: [],
-              objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={IncidentValidation(t)}
+            validationSchema={cityValidation(t)}
             onSubmit={onSubmit}
-            onReset={() => setOpen(false)}
+            onReset={handleClose}
           >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-              <Form style={{ margin: '0px 0 20px 0' }}>
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
                   variant="standard"
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
-                  detectDuplicate={['Incident']}
-                />
-                <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
-                  containerStyle={fieldSpacingContainerStyle}
-                />
-                <OpenVocabField
-                  label={t('Incident type')}
-                  type="incident-type-ov"
-                  name="incident_type"
-                  containerStyle={fieldSpacingContainerStyle}
-                  multiple={false}
-                />
-                <OpenVocabField
-                  label={t('Severity')}
-                  type="incident-severity-ov"
-                  name="severity"
-                  containerStyle={fieldSpacingContainerStyle}
-                  multiple={false}
+                  detectDuplicate={['City']}
                 />
                 <Field
                   component={MarkDownField}
@@ -211,14 +194,22 @@ const IncidentCreation = ({ paginationOptions }) => {
                   label={t('Description')}
                   fullWidth={true}
                   multiline={true}
-                  rows="4"
+                  rows={4}
                   style={{ marginTop: 20 }}
                 />
                 <Field
                   component={TextField}
                   variant="standard"
-                  name="source"
-                  label={t('Source')}
+                  name="latitude"
+                  label={t('Latitude')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="longitude"
+                  label={t('Longitude')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -226,12 +217,6 @@ const IncidentCreation = ({ paginationOptions }) => {
                   name="createdBy"
                   style={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
                 />
                 <ObjectMarkingField
                   name="objectMarking"
@@ -271,4 +256,4 @@ const IncidentCreation = ({ paginationOptions }) => {
   );
 };
 
-export default IncidentCreation;
+export default CityCreation;

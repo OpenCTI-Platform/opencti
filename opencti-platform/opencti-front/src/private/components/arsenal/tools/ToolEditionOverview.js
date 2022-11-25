@@ -30,7 +30,7 @@ import {
   convertCreatedBy,
   convertMarkings,
   convertStatus,
-} from '../../../../utils/Edition';
+} from '../../../../utils/edition';
 
 const styles = (theme) => ({
   drawerPaper: {

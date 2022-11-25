@@ -5,8 +5,11 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import WorkflowsStatusesMenu from './WorkflowsStatusesMenu';
 import StatusTemplateCreation from './StatusTemplateCreation';
 import StatusTemplatesLines, { statusTemplatesLinesQuery } from './StatusTemplatesLines';
-import useLocalStorage from '../../../../utils/hooks/useLocalStorage';
-import { StatusTemplatesLinesPaginationQuery$data } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import useLocalStorage, { localStorageToPaginationOptions } from '../../../../utils/hooks/useLocalStorage';
+import {
+  StatusTemplatesLinesPaginationQuery$data,
+  StatusTemplatesLinesPaginationQuery$variables,
+} from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -26,7 +29,7 @@ const StatusTemplates = () => {
     orderAsc: false,
   });
   const { sortBy, orderAsc, searchTerm } = viewStorage;
-  const queryVars = { search: searchTerm, orderMode: orderAsc ? 'asc' : 'desc', orderBy: sortBy };
+  const queryVars = localStorageToPaginationOptions<StatusTemplatesLinesPaginationQuery$variables>({ count: 25, ...viewStorage });
 
   const handleSearch = (value: string) => setViewStorage((c) => ({ ...c, searchTerm: value }));
 
@@ -61,7 +64,7 @@ const StatusTemplates = () => {
         keyword={searchTerm}>
         <QueryRenderer
           query={statusTemplatesLinesQuery}
-          variables={{ count: 25, ...queryVars }}
+          variables={queryVars}
           render={({ props }: { props: StatusTemplatesLinesPaginationQuery$data }) => (
             <StatusTemplatesLines
               data={props}

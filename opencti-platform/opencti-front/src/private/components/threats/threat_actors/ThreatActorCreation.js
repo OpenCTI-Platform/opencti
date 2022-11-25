@@ -24,7 +24,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { insertNode } from '../../../../utils/Store';
+import { insertNode } from '../../../../utils/store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({

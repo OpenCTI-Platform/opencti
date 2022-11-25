@@ -55,7 +55,7 @@ import ConfidenceField from '../form/ConfidenceField';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import ExternalReferencesField from '../form/ExternalReferencesField';
 import { defaultValue } from '../../../../utils/Graph';
-import { isNodeInConnection } from '../../../../utils/Store';
+import { isNodeInConnection } from '../../../../utils/store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 

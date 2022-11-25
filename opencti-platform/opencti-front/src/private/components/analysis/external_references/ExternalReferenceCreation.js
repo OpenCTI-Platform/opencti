@@ -23,7 +23,7 @@ import {
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { insertNode } from '../../../../utils/Store';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   drawerPaper: {

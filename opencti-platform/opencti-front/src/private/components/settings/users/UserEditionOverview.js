@@ -26,7 +26,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
-import { convertOrganizations } from '../../../../utils/Edition';
+import { convertOrganizations } from '../../../../utils/edition';
 
 const styles = () => ({
   icon: {

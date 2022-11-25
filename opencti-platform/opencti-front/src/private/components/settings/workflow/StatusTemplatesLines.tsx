@@ -1,15 +1,18 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, createPaginationContainer, RelayPaginationProp } from 'react-relay';
+import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import StatusTemplateLine, { DataColumnsType } from './StatusTemplateLine';
 import StatusTemplateLineDummy from './StatusTemplateLineDummy';
 import { StatusTemplatesLines_data$data } from './__generated__/StatusTemplatesLines_data.graphql';
+import {
+  StatusTemplatesLinesPaginationQuery$variables,
+} from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 
 const nbOfRowsToLoad = 50;
 
 interface StatusTemplatesLinesProps {
   relay: RelayPaginationProp,
-  paginationOptions: { search: string, orderMode: string, orderBy: string },
+  paginationOptions: StatusTemplatesLinesPaginationQuery$variables,
   dataColumns: DataColumnsType,
   data: StatusTemplatesLines_data$data,
   initialLoading: boolean,

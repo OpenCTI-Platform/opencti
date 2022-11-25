@@ -10,7 +10,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
-import { convertMarkings, convertStatus } from '../../../../utils/Edition';
+import { convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';

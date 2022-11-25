@@ -27,7 +27,7 @@ import {
   convertCreatedBy,
   convertMarkings,
   convertStatus,
-} from '../../../../utils/Edition';
+} from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 

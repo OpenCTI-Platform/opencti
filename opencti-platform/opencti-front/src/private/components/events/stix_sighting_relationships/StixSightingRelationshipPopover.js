@@ -16,7 +16,7 @@ import { MoreVertOutlined } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StixSightingRelationshipEdition from './StixSightingRelationshipEdition';
-import { deleteNode } from '../../../../utils/Store';
+import { deleteNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   container: {

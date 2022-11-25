@@ -298,7 +298,10 @@ class StixDomainObjectHeader extends Component {
         </Tooltip>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
-            {React.cloneElement(PopoverComponent, {
+            {/* TODO remove this when all components are pure function without compose() */}
+            {!React.isValidElement(PopoverComponent) ? (
+              <PopoverComponent disabled={disablePopover} id={stixDomainObject.id} />
+            ) : React.cloneElement(PopoverComponent, {
               id: stixDomainObject.id,
               disabled: disablePopover,
             })}

@@ -7,7 +7,6 @@ import StixSightingRelationshipsLines, {
 } from './stix_sighting_relationships/StixSightingRelationshipsLines';
 import { convertFilters } from '../../../utils/ListParameters';
 import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
-import { isUniqFilter } from '../common/lists/Filters';
 import { Filters } from '../../../components/list_lines';
 import {
   StixSightingRelationshipsLinesPaginationQuery$variables,
@@ -63,7 +62,7 @@ const dataColumns = {
 const LOCAL_STORAGE_KEY = 'view-stix-sighting-relationships';
 
 const StixSightingRelationships = () => {
-  const [viewStorage, setViewStorage] = useLocalStorage(LOCAL_STORAGE_KEY, {
+  const [viewStorage, _, storageHelpers] = useLocalStorage(LOCAL_STORAGE_KEY, {
     numberOfElements: { number: 0, symbol: '' },
     filters: {} as Filters,
     searchTerm: '',
@@ -81,52 +80,16 @@ const StixSightingRelationships = () => {
     openExports,
   } = viewStorage;
 
-  const handleRemoveFilter = (key: string) => setViewStorage((c) => ({ ...c, filters: R.dissoc(key, c.filters) }));
-
-  const handleSearch = (value: string) => setViewStorage((c) => ({ ...c, searchTerm: value }));
-
-  const handleSort = (field: string, order: boolean) => setViewStorage((c) => ({
-    ...c,
-    sortBy: field,
-    orderAsc: order,
-  }));
-
-  const handleAddFilter = (key: string, id: string, value: Record<string, unknown>, event: KeyboardEvent) => {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    if ((filters[key]?.length ?? 0) > 0) {
-      setViewStorage((c) => ({
-        ...c,
-        filters: {
-          ...c.filters,
-          [key]: isUniqFilter(key)
-            ? [{ id, value }]
-            : [
-              ...(c.filters[key].filter((f) => f.id !== id) ?? []),
-              {
-                id,
-                value,
-              },
-            ],
-        },
-      }));
-    } else {
-      setViewStorage((c) => ({ ...c, filters: R.assoc(key, [{ id, value }], c.filters) }));
-    }
-  };
-
   const renderLines = (paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables) => (
     <ListLines
       sortBy={sortBy}
       orderAsc={orderAsc}
       dataColumns={dataColumns}
-      handleSort={handleSort}
-      handleSearch={handleSearch}
-      handleAddFilter={handleAddFilter}
-      handleRemoveFilter={handleRemoveFilter}
-      handleToggleExports={() => setViewStorage((c) => ({ ...c, openExports: !c.openExports }))}
+      handleSort={storageHelpers.handleSort}
+      handleSearch={storageHelpers.handleSearch}
+      handleAddFilter={storageHelpers.handleAddFilter}
+      handleRemoveFilter={storageHelpers.handleRemoveFilter}
+      handleToggleExports={storageHelpers.handleToggleExports}
       openExports={openExports}
       exportEntityType="stix-sighting-relationship"
       keyword={searchTerm}
@@ -156,11 +119,8 @@ const StixSightingRelationships = () => {
             paginationOptions={paginationOptions}
             dataColumns={dataColumns}
             initialLoading={props === null}
-            onLabelClick={handleAddFilter}
-            setNumberOfElements={(value: { number: number, symbol: string }) => setViewStorage((c) => ({
-              ...c,
-              numberOfElements: value,
-            }))}
+            onLabelClick={storageHelpers.handleAddFilter}
+            setNumberOfElements={storageHelpers.handleSetNumberOfElements}
           />
         )}
       />
@@ -168,17 +128,17 @@ const StixSightingRelationships = () => {
   );
 
   let toSightingId = null;
-  let processedFilters = filters;
+  let processedFilters = filters as Filters;
   if (filters?.toSightingId) {
     toSightingId = R.head(filters.toSightingId)?.id;
-    processedFilters = R.dissoc('toSightingId', processedFilters);
+    processedFilters = R.dissoc<Filters, string>('toSightingId', processedFilters);
   }
   const finalFilters = convertFilters(processedFilters) as unknown as Filters;
   const paginationOptions = localStorageToPaginationOptions<StixSightingRelationshipsLinesPaginationQuery$variables>({
     ...viewStorage,
     toId: toSightingId,
     filters: finalFilters,
-    count: 25,
+    count: viewStorage.count ?? 25,
   });
   return (
     <div>{renderLines(paginationOptions)}</div>

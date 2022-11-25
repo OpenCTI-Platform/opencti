@@ -33,7 +33,7 @@ import {
   convertCreatedBy,
   convertMarkings,
   convertStatus,
-} from '../../../../utils/Edition';
+} from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 

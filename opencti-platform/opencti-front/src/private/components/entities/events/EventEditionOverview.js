@@ -19,7 +19,7 @@ import {
   convertCreatedBy,
   convertMarkings,
   convertStatus,
-} from '../../../../utils/Edition';
+} from '../../../../utils/edition';
 import { buildDate } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';

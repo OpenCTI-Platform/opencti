@@ -17,7 +17,7 @@ import {
   convertCreatedBy,
   convertMarkings,
   convertStatus,
-} from '../../../../utils/Edition';
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 

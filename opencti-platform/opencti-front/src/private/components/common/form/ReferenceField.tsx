@@ -19,8 +19,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 export interface Option {
-  value: unknown
-  label?: string
+  value: string
+  label: string
   color?: string
 }
 
