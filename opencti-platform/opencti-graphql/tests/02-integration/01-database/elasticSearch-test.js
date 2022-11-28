@@ -201,7 +201,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Malware')).toEqual(1); // Because of date filtering
   });
   it('should invalid time histogram fail', async () => {
-    const histogramCount = elHistogramCount(testContext, ADMIN_USER, 'Stix-Domain-Object', 'created_at', 'minute', null, null, []);
+    const histogramCount = elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
     // noinspection ES6MissingAwait.toEqual(36);
     expect(histogramCount).rejects.toThrow();
   });
@@ -209,13 +209,8 @@ describe('Elasticsearch computation', () => {
     const data = await elHistogramCount(
       testContext,
       ADMIN_USER,
-      'Stix-Domain-Object',
-      'created_at',
-      'day',
-      '2019-09-29T00:00:00.000Z',
-      new Date().toISOString(),
-      [],
-      []
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'day', startDate: '2019-09-29T00:00:00.000Z', endDate: new Date().toISOString() }
     );
     expect(data.length).toEqual(1);
     // noinspection JSUnresolvedVariable
@@ -227,13 +222,8 @@ describe('Elasticsearch computation', () => {
     const data = await elHistogramCount(
       testContext,
       ADMIN_USER,
-      'Stix-Domain-Object',
-      'created',
-      'month',
-      '2019-09-23T00:00:00.000Z',
-      '2020-03-02T00:00:00.000Z',
-      [],
-      []
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { types: ['Stix-Domain-Object'], field: 'created', interval: 'month', startDate: '2019-09-23T00:00:00.000Z', endDate: '2020-03-02T00:00:00.000Z' }
     );
     expect(data.length).toEqual(7);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));

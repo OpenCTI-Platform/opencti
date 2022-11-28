@@ -1359,19 +1359,21 @@ export const elAggregationCount = async (context, user, indexName, options = {})
 };
 // field can be "entity_type" or "internal_id"
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, elementId = null, elementWithTargetTypes = null, fromId = null, fromTypes = null, toId = null, toTypes = null } = options;
+  const { types = [], field = null, elementId = null, elementWithTargetTypes = null, fromId = null, fromTypes = null, toId = null, toTypes = null, isTo = false } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
-  const roleFilter = { query_string: { query: fromId ? '*_to' : '*_from', fields: ['connections.role'] } };
-  const typesFilters = [];
+  const roleFilter = { query_string: { query: fromId || !isTo ? '*_to' : '*_from', fields: ['connections.role'] } };
+  let typesFilters = null;
   if (fromTypes && fromTypes.length > 0) {
+    typesFilters = [];
     for (let index = 0; index < fromTypes.length; index += 1) {
       typesFilters.push({
         match_phrase: { 'connections.types': fromTypes[index] },
       });
     }
   } else if (toTypes && toTypes.length > 0) {
+    typesFilters = [];
     for (let index = 0; index < toTypes.length; index += 1) {
       typesFilters.push({
         match_phrase: { 'connections.types': toTypes[index] },
@@ -1389,7 +1391,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
         filtered: {
           filter: {
             bool: {
-              must: typesFilters.length > 0 && !elementId ? roleFilter : [],
+              must: typesFilters && !elementId ? roleFilter : [],
             },
           },
           aggs: {

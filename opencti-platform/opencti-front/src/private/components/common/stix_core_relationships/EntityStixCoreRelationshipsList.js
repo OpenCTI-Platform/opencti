@@ -44,6 +44,7 @@ const entityStixCoreRelationshipsListDistributionQuery = graphql`
     $limit: Int
     $startDate: DateTime
     $endDate: DateTime
+    $isTo: Boolean
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
@@ -56,6 +57,7 @@ const entityStixCoreRelationshipsListDistributionQuery = graphql`
       limit: $limit
       startDate: $startDate
       endDate: $endDate
+      isTo: $isTo
     ) {
       label
       value
@@ -183,6 +185,7 @@ class EntityStixCoreRelationshipsList extends Component {
       limit: 10,
       startDate,
       endDate,
+      isTo: isTo || false,
     };
     return (
       <QueryRenderer

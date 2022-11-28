@@ -37,17 +37,15 @@ import {
   stixCyberObservableOptions
 } from '../schema/stixCyberObservable';
 import {
-  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS
 } from '../schema/general';
-import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON, RELATION_HAS, RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import {
-  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_VULNERABILITY

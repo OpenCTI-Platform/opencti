@@ -36,6 +36,7 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
+    $isTo: Boolean
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
@@ -49,6 +50,7 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
+      isTo: $isTo
     ) {
       label
       value
@@ -164,6 +166,7 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
       dateAttribute,
       limit: 10,
       operation: 'count',
+      isTo: isTo || false,
     };
     return (
       <QueryRenderer

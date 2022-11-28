@@ -38,6 +38,7 @@ const entityStixCoreRelationshipsPolarAreaStixCoreRelationshipDistributionQuery 
     $field: String!
     $dateAttribute: String
     $operation: StatsOperation!
+    $isTo: Boolean
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
@@ -51,6 +52,7 @@ const entityStixCoreRelationshipsPolarAreaStixCoreRelationshipDistributionQuery 
       field: $field
       dateAttribute: $dateAttribute
       operation: $operation
+      isTo: $isTo
     ) {
       label
       value

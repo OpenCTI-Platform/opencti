@@ -12516,6 +12516,7 @@ export type QueryStixCoreRelationshipsDistributionArgs = {
   fromId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   fromRole?: InputMaybe<Scalars['String']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  isTo?: InputMaybe<Scalars['Boolean']>;
   limit?: InputMaybe<Scalars['Int']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;

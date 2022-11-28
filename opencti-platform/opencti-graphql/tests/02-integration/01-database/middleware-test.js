@@ -38,9 +38,14 @@ import {
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP
+  ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey
 } from '../../../src/schema/general';
-import { RELATION_MITIGATES, RELATION_RELATED_TO, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
+import {
+  RELATION_ATTRIBUTED_TO,
+  RELATION_MITIGATES,
+  RELATION_RELATED_TO,
+  RELATION_USES
+} from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { addLabel } from '../../../src/domain/label';
@@ -533,7 +538,7 @@ describe('Entities time series', () => {
       startDate: '2019-09-23T00:00:00.000+01:00',
       endDate: '2020-04-04T00:00:00.000+01:00',
     };
-    const series = await timeSeriesEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', [], options);
+    const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
     expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
@@ -541,7 +546,7 @@ describe('Entities time series', () => {
   it('should start time relation time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
     const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const filters = [{ isRelation: true, type: 'attributed-to', value: intrusionSet.internal_id }];
+    const filters = [{ key: [buildRefRelationKey(RELATION_ATTRIBUTED_TO)], values: [intrusionSet.internal_id] }];
     const options = {
       field: 'first_seen',
       operation: 'count',
@@ -549,14 +554,14 @@ describe('Entities time series', () => {
       startDate: '2020-01-01T00:00:00+01:00',
       endDate: '2021-01-01T00:00:00+01:00',
     };
-    const series = await timeSeriesEntities(testContext, ADMIN_USER, 'Campaign', filters, options);
+    const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Campaign'], { ...options, filters });
     expect(series.length).toEqual(13);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
   });
   it('should local filter time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
-    const filters = [{ type: 'name', value: 'A new campaign' }];
+    const filters = [{ key: ['name'], values: ['A new campaign'] }];
     const options = {
       field: 'first_seen',
       operation: 'count',
@@ -564,7 +569,7 @@ describe('Entities time series', () => {
       startDate: '2020-01-01T00:00:00+01:00',
       endDate: '2020-10-01T00:00:00+02:00',
     };
-    const series = await timeSeriesEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', filters, options);
+    const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, filters });
     expect(series.length).toEqual(10);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);

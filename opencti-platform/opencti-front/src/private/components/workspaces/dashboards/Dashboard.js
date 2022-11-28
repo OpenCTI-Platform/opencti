@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
-import { Subject, timer } from 'rxjs';
-import { debounce } from 'rxjs/operators';
 import {
   daysAgo,
   monthsAgo,
@@ -45,7 +43,6 @@ import GlobalActivityStixCoreRelationships from './GlobalActivityStixCoreRelatio
 import WidgetConfig from './WidgetConfig';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
-const SAVE$ = new Subject().pipe(debounce(() => timer(500)));
 
 const useStyles = makeStyles(() => ({
   container: {

@@ -10403,6 +10403,7 @@ type Query {
     startDate: DateTime
     endDate: DateTime
     dateAttribute: String
+    isTo: Boolean
     limit: Int
     order: String
     elementId: [String]
