@@ -140,17 +140,17 @@ describe('Attribute updater', () => {
   });
   it('should update numeric', async () => {
     const stixId = 'relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416';
-    let relation = await storeLoadById(testContext, ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    let relation = await storeLoadById(testContext, ADMIN_USER, stixId, 'stix-core-relationship');
     const relationId = relation.internal_id;
     // expect(relation.confidence).toEqual(1);
     let patch = { confidence: 5 };
     await patchAttribute(testContext, ADMIN_USER, relationId, RELATION_MITIGATES, patch);
-    relation = await storeLoadById(testContext, ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    relation = await storeLoadById(testContext, ADMIN_USER, stixId, 'stix-core-relationship');
     expect(relation.confidence).toEqual(5);
     // Value back to before
     patch = { confidence: 1 };
     await patchAttribute(testContext, ADMIN_USER, relationId, RELATION_MITIGATES, patch);
-    relation = await storeLoadById(testContext, ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    relation = await storeLoadById(testContext, ADMIN_USER, stixId, 'stix-core-relationship');
     expect(relation.confidence).toEqual(1);
   });
   it('should update multivalued attribute', async () => {
@@ -613,7 +613,7 @@ describe('Entities distribution', () => {
   it('should entity distribution', async () => {
     // const { startDate, endDate, operation, field, inferred } = options;
     const options = { field: 'entity_type', operation: 'count', limit: 20 };
-    const distribution = await distributionEntities(testContext, ADMIN_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], options);
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
     expect(distribution.length).toEqual(17);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
@@ -635,7 +635,7 @@ describe('Entities distribution', () => {
       end,
     };
     const filters = [relationFilter];
-    const distribution = await distributionEntities(testContext, ADMIN_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { ...options, filters });
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, filters });
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
@@ -649,7 +649,7 @@ describe('Entities distribution', () => {
       startDate: '2018-03-01T00:00:00+01:00',
       endDate: '2018-03-02T00:00:00+01:00',
     };
-    const distribution = await distributionEntities(testContext, ADMIN_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], options);
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
     expect(distribution.length).toEqual(0);
   });
 });
@@ -959,9 +959,9 @@ describe('Upsert and merge entities', () => {
     expect(loadedThreat['object-marking'].length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
     expect(loadedThreat['object-label'].length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
     // expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
-    const froms = await listAllRelations(testContext, ADMIN_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { fromId: loadedThreat.internal_id });
+    const froms = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { fromId: loadedThreat.internal_id });
     expect(froms.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
-    const tos = await listAllRelations(testContext, ADMIN_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { toId: loadedThreat.internal_id });
+    const tos = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { toId: loadedThreat.internal_id });
     expect(tos.length).toEqual(1); // [MALWARE_TEST_02]
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, malware01.id, ENTITY_TYPE_MALWARE);

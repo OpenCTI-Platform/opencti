@@ -44,7 +44,11 @@ const styles = () => ({
 
 const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
   query StixCoreObjectStixCoreRelationshipsCloudDistributionQuery(
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
     $fromId: [String]
+    $toId: [String]
+    $fromTypes: [String]
     $toTypes: [String]
     $relationship_type: [String]
     $startDate: DateTime
@@ -52,11 +56,13 @@ const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
     $field: String!
     $operation: StatsOperation!
     $limit: Int
-    $isTo: Boolean
-    $noDirection: Boolean
   ) {
     stixCoreRelationshipsDistribution(
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
+      toId: $toId
+      fromTypes: $fromTypes
       toTypes: $toTypes
       relationship_type: $relationship_type
       startDate: $startDate
@@ -64,8 +70,6 @@ const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
       field: $field
       operation: $operation
       limit: $limit
-      isTo: $isTo
-      noDirection: $noDirection
     ) {
       label
       value
@@ -89,11 +93,22 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
       noDirection,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      fromId: stixCoreObjectId,
-      toTypes: stixCoreObjectType ? [stixCoreObjectType] : null,
+      elementId: noDirection ? stixCoreObjectId : null,
+      elementWithTargetTypes:
+        noDirection && stixCoreObjectType ? [stixCoreObjectType] : null,
+      fromId: !isTo && !noDirection ? stixCoreObjectId : null,
+      toId: isTo && !noDirection ? stixCoreObjectId : null,
+      relationship_type: relationshipType,
+      toTypes:
+        !isTo && !noDirection && stixCoreObjectType
+          ? [stixCoreObjectType]
+          : null,
+      fromTypes:
+        isTo && !noDirection && stixCoreObjectType
+          ? [stixCoreObjectType]
+          : null,
       startDate: startDate || null,
       endDate: endDate || null,
-      relationship_type: relationshipType,
       field,
       operation: 'count',
       limit: 9,

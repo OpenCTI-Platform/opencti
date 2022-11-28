@@ -535,30 +535,21 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
     .map((n) => R.assoc('entity', resolveLabels[n.label], n));
 };
 export const timeSeriesEntities = async (context, user, types, args) => {
-  // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
-  //            { isRelation: false, type: report_class, value: string } ]
   const timeSeriesArgs = buildFilters({ types, ...args });
   const { startDate, endDate, interval } = args;
-  // Check if can be supported by ES
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesRelations = async (context, user, args) => {
-  // filters: [ { isRelation: true, type: stix_relation, value: uuid }
-  //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, relationship_type: relationshipTypes, interval, fromId = null } = args;
-  // Check if can be supported by ES
+  const { startDate, endDate, relationship_type: relationshipTypes, interval } = args;
   const types = relationshipTypes || ['stix-core-relationship'];
-  const filters = fromId ? [{ isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId }, ...(args.filters || [])] : args.filters;
-  const timeSeriesArgs = buildFilters({ types, ...args, filters });
+  const timeSeriesArgs = buildFilters({ types, ...args });
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const distributionEntities = async (context, user, types, args) => {
   const distributionArgs = buildFilters({ types, ...args });
-  // filters: { isRelation: true, type: stix_relation, start: date, end: date, value: uuid }
   const { limit = 10, order = 'desc', field } = args;
-  // Unsupported in cache: const { isRelation, value, from, to, start, end, type };
   if (field.includes('.') && !field.endsWith('internal_id')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }

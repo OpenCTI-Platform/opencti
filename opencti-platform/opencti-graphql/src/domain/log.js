@@ -30,7 +30,7 @@ export const creatorFromHistory = async (context, user, entityId) => {
 };
 
 export const logsTimeSeries = (context, user, args) => {
-  const filters = args.userId ? [{ isRelation: false, type: '*_id', value: args.userId }, ...(args.filters || [])] : args.filters;
+  const filters = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
   return timeSeriesEntities(context, user, [ENTITY_TYPE_HISTORY], { ...args, filters });
 };
 

@@ -26,9 +26,10 @@ const styles = () => ({
 const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   query EntityStixCoreRelationshipsHorizontalBarsDistributionQuery(
     $fromId: [String]
+    $toId: [String]
     $relationship_type: [String]
+    $fromTypes: [String]
     $toTypes: [String]
-    $isTo: Boolean
     $field: String!
     $operation: StatsOperation!
     $limit: Int
@@ -38,9 +39,10 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
+      toId: $toId
       relationship_type: $relationship_type
+      fromTypes: $fromTypes
       toTypes: $toTypes
-      isTo: $isTo
       field: $field
       operation: $operation
       limit: $limit
@@ -151,16 +153,17 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
       seriesName,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      fromId: stixCoreObjectId,
+      fromId: !isTo ? stixCoreObjectId : null,
+      toId: isTo ? stixCoreObjectId : null,
       relationship_type: relationshipType,
-      toTypes,
+      toTypes: !isTo ? toTypes : null,
+      fromTypes: isTo ? toTypes : null,
       field: field || 'entity_type',
       startDate: startDate || null,
       endDate: endDate || null,
       dateAttribute,
       limit: 10,
       operation: 'count',
-      isTo: isTo || false,
     };
     return (
       <QueryRenderer

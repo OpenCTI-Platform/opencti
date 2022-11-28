@@ -984,7 +984,7 @@ const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type'
   'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc' } = options;
+  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false } = options;
   const { types = null, filters = [], filterMode = 'and', search = null } = options;
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const dateFilter = [];
@@ -1008,12 +1008,31 @@ const elQueryBodyBuilder = async (context, user, options) => {
     }
     must = R.append({ bool: { should: idsTermsPerType, minimum_should_match: 1 } }, must);
   }
-  if (startDate) {
+  if (startDate && endDate) {
     dateFilter.push({
       range: {
         [dateAttribute || 'created_at']: {
+          format: 'strict_date_optional_time',
           gte: startDate,
-          lte: endDate || now(),
+          lte: endDate,
+        },
+      },
+    });
+  } else if (startDate) {
+    dateFilter.push({
+      range: {
+        [dateAttribute || 'created_at']: {
+          format: 'strict_date_optional_time',
+          gte: startDate,
+        },
+      },
+    });
+  } else if (endDate) {
+    dateFilter.push({
+      range: {
+        [dateAttribute || 'created_at']: {
+          format: 'strict_date_optional_time',
+          lte: endDate,
         },
       },
     });
@@ -1191,8 +1210,6 @@ const elQueryBodyBuilder = async (context, user, options) => {
   // Build query
   const querySize = first || 10;
   const body = {
-    size: querySize,
-    sort: ordering,
     query: {
       bool: {
         must,
@@ -1200,6 +1217,12 @@ const elQueryBodyBuilder = async (context, user, options) => {
       },
     },
   };
+  if (!noSize) {
+    body.size = querySize;
+  }
+  if (!noSort) {
+    body.sort = ordering;
+  }
   // Add extra configuration
   if (isNotEmptyField(runtimeMappings)) {
     const isRuntimeSortFeatureEnable = isRuntimeSortEnable();
@@ -1214,7 +1237,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   return body;
 };
 export const elCount = async (context, user, indexName, options = {}) => {
-  const body = await elQueryBodyBuilder(context, user, options);
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const query = {
     index: indexName,
     body,
@@ -1231,7 +1254,7 @@ export const elCount = async (context, user, indexName, options = {}) => {
     });
 };
 export const elQueryCount = async (context, user, indexName, options = {}) => {
-  const body = await elQueryBodyBuilder(context, user, options);
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const query = { index: indexName, body: { query: body.query } };
   logApp.debug('[SEARCH ENGINE] elQueryCount', { query });
   return engine.count(query)
@@ -1244,7 +1267,7 @@ export const elQueryCount = async (context, user, indexName, options = {}) => {
 };
 export const elHistogramCount = async (context, user, indexName, options = {}) => {
   const { interval, field, types = null } = options;
-  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field });
+  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true });
   let dateFormat;
   switch (interval) {
     case 'year':
@@ -1294,7 +1317,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
 export const elAggregationCount = async (context, user, indexName, options = {}) => {
   const { field, types = null } = options;
   const isIdFields = field.endsWith('internal_id');
-  const body = await elQueryBodyBuilder(context, user, options);
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = MAX_SEARCH_AGGREGATION_SIZE;
   body.aggs = {
     genres: {
@@ -1336,18 +1359,26 @@ export const elAggregationCount = async (context, user, indexName, options = {})
 };
 // field can be "entity_type" or "internal_id"
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, fromId = null, isTo = false, noDirection = false, toTypes = [] } = options;
+  const { types = [], field = null, elementId = null, elementWithTargetTypes = null, fromId = null, fromTypes = null, toId = null, toTypes = null } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
-  const roleFilter = { query_string: { query: !isTo ? '*_to' : '*_from', fields: ['connections.role'] } };
+  const roleFilter = { query_string: { query: fromId ? '*_to' : '*_from', fields: ['connections.role'] } };
   const typesFilters = [];
-  for (let index = 0; index < toTypes.length; index += 1) {
-    typesFilters.push({
-      match_phrase: { 'connections.types': toTypes[index] },
-    });
+  if (fromTypes && fromTypes.length > 0) {
+    for (let index = 0; index < fromTypes.length; index += 1) {
+      typesFilters.push({
+        match_phrase: { 'connections.types': fromTypes[index] },
+      });
+    }
+  } else if (toTypes && toTypes.length > 0) {
+    for (let index = 0; index < toTypes.length; index += 1) {
+      typesFilters.push({
+        match_phrase: { 'connections.types': toTypes[index] },
+      });
+    }
   }
-  const body = await elQueryBodyBuilder(context, user, options);
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = MAX_SEARCH_AGGREGATION_SIZE;
   body.aggs = {
     connections: {
@@ -1358,7 +1389,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
         filtered: {
           filter: {
             bool: {
-              must: typesFilters.length > 0 && !noDirection ? roleFilter : [],
+              must: typesFilters.length > 0 && !elementId ? roleFilter : [],
             },
           },
           aggs: {
@@ -1394,21 +1425,31 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   logApp.debug('[SEARCH ENGINE] aggregationRelationsCount', { query });
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
+      let targetId = null;
+      if (elementId) { targetId = elementId; } else if (fromId) { targetId = fromId; } else if (toId) { targetId = toId; }
+      let targetTypes = [];
+      if (elementWithTargetTypes) { targetTypes = elementWithTargetTypes; } else if (fromTypes) { targetTypes = fromTypes; } else if (toTypes) { targetTypes = toTypes; }
       if (field === 'internal_id') {
         const { buckets } = data.aggregations.connections.filtered.genres;
-        const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
+        const filteredBuckets = R.filter((b) => b.key !== targetId, buckets);
         return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
       }
-      let fromType = null;
-      if (fromId) {
+      let targetType = null;
+      if (elementId) {
+        const elementEntity = await elLoadById(context, user, elementId);
+        targetType = elementEntity.entity_type;
+      } else if (fromId) {
         const fromEntity = await elLoadById(context, user, fromId);
-        fromType = fromEntity.entity_type;
+        targetType = fromEntity.entity_type;
+      } else if (toId) {
+        const toEntity = await elLoadById(context, user, toId);
+        targetType = toEntity.entity_type;
       }
       const resultTypes = R.pipe(
         R.map((h) => h._source.connections),
         R.flatten(),
-        R.filter((c) => c.internal_id !== fromId && !R.includes(fromType, c.types)),
-        R.filter((c) => toTypes.length === 0 || R.includes(R.head(toTypes), c.types)),
+        R.filter((c) => c.internal_id !== targetId && !R.includes(targetType, c.types)),
+        R.filter((c) => targetTypes.length === 0 || R.includes(R.head(targetTypes), c.types)),
         R.map((e) => e.types),
         R.flatten(),
         R.uniq(),

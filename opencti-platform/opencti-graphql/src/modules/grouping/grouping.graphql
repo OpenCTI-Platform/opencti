@@ -164,8 +164,14 @@ type Query {
         filterMode: FilterMode
         search: String
     ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-    groupingsNumber(groupingContext: String, objectId: String, authorId: String, endDate: DateTime): Number
-    @auth(for: [KNOWLEDGE, EXPLORE])
+    groupingsNumber(
+        groupingContext: String
+        objectId: String
+        authorId: String
+        endDate: DateTime
+        filters: [GroupingsFiltering!]
+        filterMode: FilterMode
+    ): Number @auth(for: [KNOWLEDGE, EXPLORE])
     groupingsDistribution(
         objectId: String
         authorId: String

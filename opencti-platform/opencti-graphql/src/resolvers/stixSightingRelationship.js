@@ -49,7 +49,7 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationshipsDistribution: (_, args, context) => distributionRelations(
       context,
       context.user,
-      { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP], isTo: true }
+      { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP] }
     ),
     stixSightingRelationshipsNumber: (_, args, context) => stixSightingRelationshipsNumber(context, context.user, args),
   },

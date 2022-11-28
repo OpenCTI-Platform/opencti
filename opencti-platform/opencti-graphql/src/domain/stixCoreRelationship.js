@@ -49,6 +49,7 @@ import { listRelations } from '../database/middleware-loader';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { upload } from '../database/file-storage';
+import { buildFilters } from '../database/repository';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -60,7 +61,7 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 
 export const stixCoreRelationshipsNumber = (context, user, args) => {
   const { relationship_type = [STIX_CORE_RELATIONSHIPS] } = args;
-  const numberArgs = { ...args, types: relationship_type };
+  const numberArgs = buildFilters({ ...args, types: relationship_type });
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {
     count: elCount(context, user, indices, numberArgs),

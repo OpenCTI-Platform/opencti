@@ -34,9 +34,10 @@ import {
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { BASE_TYPE_RELATION, buildRefRelationKey } from '../../../src/schema/general';
+import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
-import { RELATION_OBJECT_LABEL } from '../../../src/schema/stixMetaRelationship';
+import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
+import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -115,14 +116,15 @@ describe('Elasticsearch computation', () => {
     expect(malwaresCount).toEqual(1);
   });
   it('should entity aggregation accurate', async () => {
-    // { "isRelation", "from", "to", "type", "value" }
-    // "from", "to" is not use in elastic
     // Aggregate all stix domain by entity type, no filtering
     const malwaresAggregation = await elAggregationCount(
       testContext,
       ADMIN_USER,
       READ_DATA_INDICES,
-      { types: ['Stix-Domain-Object'], field: 'entity_type' }
+      {
+        types: ['Stix-Domain-Object'],
+        field: 'entity_type'
+      }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
@@ -133,12 +135,13 @@ describe('Elasticsearch computation', () => {
     const malwaresAggregation = await elAggregationCount(
       testContext,
       ADMIN_USER,
-      ['Stix-Domain-Object'],
-      'entity_type',
+      READ_DATA_INDICES,
       {
+        types: ['Stix-Domain-Object'],
+        field: 'entity_type',
         startDate: '2019-01-01T00:00:00Z',
         endDate: new Date(mostRecentMalware.created_at).toISOString(),
-        filters: [{ type: 'name', value: 'Paradise Ransomware' }]
+        filters: [{ key: ['name'], values: ['Paradise Ransomware'] }]
       }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
@@ -155,7 +158,7 @@ describe('Elasticsearch computation', () => {
       {
         types: ['Stix-Domain-Object'],
         field: 'entity_type',
-        filters: [{ isRelation: true, type: 'object-marking', value: marking.internal_id }]
+        filters: [{ key: [buildRefRelationKey(RELATION_OBJECT_MARKING)], values: [marking.internal_id] }]
       }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
@@ -187,9 +190,8 @@ describe('Elasticsearch computation', () => {
     const opts = {
       start: '2020-02-29T00:00:00Z',
       end: new Date().getTime(),
-      toTypes: ['Stix-Domain-Object'],
-      fromId: intrusionSet.internal_id,
-      noDirection: true,
+      elementWithTargetTypes: ['Stix-Domain-Object'],
+      elementId: intrusionSet.internal_id,
     };
     const intrusionRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { ...opts, types: ['stix-core-relationship'] });
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
@@ -248,13 +250,14 @@ describe('Elasticsearch computation', () => {
     const data = await elHistogramCount(
       testContext,
       ADMIN_USER,
-      'Stix-Domain-Object',
-      'created',
-      'year',
-      '2019-09-23T00:00:00.000Z',
-      '2020-03-02T00:00:00.000Z',
-      [],
-      []
+      READ_DATA_INDICES,
+      {
+        types: ['Stix-Domain-Object'],
+        field: 'created',
+        interval: 'year',
+        startDate: '2019-09-23T00:00:00.000Z',
+        endDate: '2020-03-02T00:00:00.000Z',
+      }
     );
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -266,19 +269,15 @@ describe('Elasticsearch computation', () => {
     const data = await elHistogramCount(
       testContext,
       ADMIN_USER,
-      'Stix-Domain-Object',
-      'created',
-      'year',
-      '2019-09-23T00:00:00.000Z',
-      '2020-03-02T00:00:00.000Z',
-      [],
-      [
-        {
-          isRelation: true,
-          type: 'uses',
-          value: attackPattern.internal_id,
-        },
-      ]
+      READ_ENTITIES_INDICES,
+      {
+        types: ['Stix-Domain-Object'],
+        field: 'created',
+        interval: 'year',
+        startDate: '2019-09-23T00:00:00.000Z',
+        endDate: '2020-03-02T00:00:00.000Z',
+        filters: [{ key: [buildRefRelationKey(RELATION_USES)], values: [attackPattern.internal_id] }]
+      }
     );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -289,19 +288,15 @@ describe('Elasticsearch computation', () => {
     const data = await elHistogramCount(
       testContext,
       ADMIN_USER,
-      'Stix-Domain-Object',
-      'created',
-      'year',
-      '2019-09-23T00:00:00.000Z',
-      '2020-03-02T00:00:00.000Z',
-      [],
-      [
-        {
-          isRelation: true,
-          type: undefined,
-          value: attackPattern.internal_id,
-        },
-      ]
+      READ_ENTITIES_INDICES,
+      {
+        types: ['Stix-Domain-Object'],
+        field: 'created',
+        interval: 'year',
+        startDate: '2019-09-23T00:00:00.000Z',
+        endDate: '2020-03-02T00:00:00.000Z',
+        filters: [{ key: [buildRefRelationKey('*')], values: [attackPattern.internal_id] }]
+      }
     );
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -312,13 +307,13 @@ describe('Elasticsearch computation', () => {
     const data = await elHistogramCount(
       testContext,
       ADMIN_USER,
-      'Identity',
-      'created',
-      'year',
-      undefined, // No start
-      undefined, // No end
-      [],
-      [{ isRelation: false, type: 'name', value: 'ANSSI' }]
+      READ_ENTITIES_INDICES,
+      {
+        types: [ENTITY_TYPE_IDENTITY],
+        field: 'created',
+        interval: 'year',
+        filters: [{ key: ['name'], values: ['ANSSI'] }]
+      }
     );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));

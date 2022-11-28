@@ -11697,6 +11697,8 @@ export type QueryGroupingsDistributionArgs = {
 export type QueryGroupingsNumberArgs = {
   authorId?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<GroupingsFiltering>>;
   groupingContext?: InputMaybe<Scalars['String']>;
   objectId?: InputMaybe<Scalars['String']>;
 };
@@ -11815,10 +11817,11 @@ export type QueryIndicatorsNumberArgs = {
 export type QueryIndicatorsTimeSeriesArgs = {
   endDate: Scalars['DateTime'];
   field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<IndicatorsFiltering>>>;
   interval: Scalars['String'];
   objectId?: InputMaybe<Scalars['String']>;
   operation: StatsOperation;
-  pattern_type?: InputMaybe<Scalars['String']>;
   startDate: Scalars['DateTime'];
 };
 
@@ -12257,10 +12260,13 @@ export type QueryReportsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ReportsFiltering>>>;
   limit?: InputMaybe<Scalars['Int']>;
   objectId?: InputMaybe<Scalars['String']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
   startDate?: InputMaybe<Scalars['DateTime']>;
 };
 
@@ -12268,8 +12274,11 @@ export type QueryReportsDistributionArgs = {
 export type QueryReportsNumberArgs = {
   authorId?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ReportsFiltering>>>;
   objectId?: InputMaybe<Scalars['String']>;
   reportType?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -12277,10 +12286,13 @@ export type QueryReportsTimeSeriesArgs = {
   authorId?: InputMaybe<Scalars['String']>;
   endDate: Scalars['DateTime'];
   field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ReportsFiltering>>>;
   interval: Scalars['String'];
   objectId?: InputMaybe<Scalars['String']>;
   operation: StatsOperation;
   reportType?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
   startDate: Scalars['DateTime'];
 };
 
@@ -12504,9 +12516,7 @@ export type QueryStixCoreRelationshipsDistributionArgs = {
   fromId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   fromRole?: InputMaybe<Scalars['String']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  isTo?: InputMaybe<Scalars['Boolean']>;
   limit?: InputMaybe<Scalars['Int']>;
-  noDirection?: InputMaybe<Scalars['Boolean']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -12645,8 +12655,11 @@ export type QueryStixCyberObservablesArgs = {
 export type QueryStixCyberObservablesDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
   field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCyberObservablesFiltering>>>;
   objectId?: InputMaybe<Scalars['String']>;
   operation: Scalars['String'];
+  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -12659,11 +12672,17 @@ export type QueryStixCyberObservablesExportFilesArgs = {
 export type QueryStixCyberObservablesNumberArgs = {
   authorId?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCyberObservablesFiltering>>>;
+  search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
 export type QueryStixCyberObservablesTimeSeriesArgs = {
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCyberObservablesFiltering>>>;
+  search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 

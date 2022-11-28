@@ -27,6 +27,8 @@ const styles = () => ({
 const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = graphql`
   query EntityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery(
     $fromId: [String]
+    $toId: [String]
+    $fromTypes: [String]
     $toTypes: [String]
     $relationship_type: [String]
     $limit: Int
@@ -35,10 +37,11 @@ const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = gr
     $field: String!
     $dateAttribute: String
     $operation: StatsOperation!
-    $isTo: Boolean
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
+      toId: $toId
+      fromTypes: $fromTypes
       toTypes: $toTypes
       relationship_type: $relationship_type
       limit: $limit
@@ -47,7 +50,6 @@ const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = gr
       field: $field
       dateAttribute: $dateAttribute
       operation: $operation
-      isTo: $isTo
     ) {
       label
       value
@@ -152,11 +154,13 @@ class EntityStixCoreRelationshipsDonut extends Component {
       variant,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      fromId: entityId,
-      toTypes,
+      fromId: !isTo ? entityId : null,
+      toId: isTo ? entityId : null,
+      relationship_type: relationshipType,
+      toTypes: !isTo ? toTypes : null,
+      fromTypes: isTo ? toTypes : null,
       startDate: startDate || null,
       endDate: endDate || null,
-      relationship_type: relationshipType,
       field,
       dateAttribute,
       limit: 10,

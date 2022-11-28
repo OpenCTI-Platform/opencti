@@ -77,54 +77,39 @@ export const opinionsNumber = (context, user, args) => ({
 });
 
 export const opinionsTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }, ...(args.filters || [])];
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { ...args, filters });
 };
 
 export const opinionsTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId } = args;
-  const filters = [
-    {
-      isRelation: true,
-      from: `${RELATION_CREATED_BY}_from`,
-      to: `${RELATION_CREATED_BY}_to`,
-      type: RELATION_CREATED_BY,
-      value: authorId,
-    },
-    ...(args.filters || [])
-  ];
+  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { ...args, filters });
 };
 
-export const opinionsNumberByEntity = (context, user, args) => ({
-  count: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]),
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('fromId', args.objectId)
-    )(args)
-  ),
-  total: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(
-      assoc('isMetaRelationship', true),
-      assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]),
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('fromId', args.objectId),
-      dissoc('endDate')
-    )(args)
-  ),
-});
+export const opinionsNumberByEntity = (context, user, args) => {
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  return {
+    count: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...args, filters, types: [ENTITY_TYPE_CONTAINER_OPINION] },
+    ),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...args, filters, types: [ENTITY_TYPE_CONTAINER_OPINION] },
+    ),
+  };
+};
 
 export const opinionsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
   return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, { ...args, filters });
 };
 // endregion

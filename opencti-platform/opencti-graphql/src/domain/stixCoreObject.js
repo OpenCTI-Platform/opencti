@@ -7,7 +7,8 @@ import {
   createRelation,
   createRelations,
   deleteElementById,
-  deleteRelationsByFromAndTo, distributionEntities,
+  deleteRelationsByFromAndTo,
+  distributionEntities,
   internalLoadById,
   mergeEntities,
   storeLoadById,
@@ -22,7 +23,7 @@ import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } 
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey,
   ENTITY_TYPE_IDENTITY,
 } from '../schema/general';
 import {
@@ -188,7 +189,7 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
 
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
   const { authorId, types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
-  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }, ...(args.filters || [])];
+  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
   return timeSeriesEntities(context, user, types, { ...args, filters });
 };
 
@@ -198,9 +199,9 @@ export const stixCoreObjectsNumber = (context, user, args) => ({
 });
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
-  const { objectId, relationship_type: relationshipType } = args;
-  const filters = [{ isRelation: true, type: relationshipType, value: objectId }, ...(args.filters || [])];
-  return distributionEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
+  const { relationship_type, objectId, types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
+  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
+  return distributionEntities(context, user, types, { ...args, filters });
 };
 // endregion
 

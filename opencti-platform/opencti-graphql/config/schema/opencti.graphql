@@ -9955,9 +9955,19 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
+    filters: [ReportsFiltering]
+    filterMode: FilterMode
+    search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  reportsNumber(reportType: String, objectId: String, authorId: String, endDate: DateTime): Number
-    @auth(for: [KNOWLEDGE, EXPLORE])
+  reportsNumber(
+    reportType: String
+    objectId: String
+    authorId: String
+    endDate: DateTime
+    filters: [ReportsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   reportsDistribution(
     objectId: String
     authorId: String
@@ -9968,6 +9978,9 @@ type Query {
     startDate: DateTime
     endDate: DateTime
     dateAttribute: String
+    filters: [ReportsFiltering]
+    filterMode: FilterMode
+    search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])
@@ -10051,12 +10064,13 @@ type Query {
   ): IndicatorConnection @auth(for: [KNOWLEDGE])
   indicatorsTimeSeries(
     objectId: String
-    pattern_type: String
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
+    filters: [IndicatorsFiltering]
+    filterMode: FilterMode
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   indicatorsDistribution(
@@ -10227,14 +10241,28 @@ type Query {
     toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
   stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
-  stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime): Number
-    @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCyberObservablesTimeSeries(types: [String]): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCyberObservablesNumber(
+    types: [String]
+    authorId: String
+    endDate: DateTime
+    filters: [StixCyberObservablesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCyberObservablesTimeSeries(
+    types: [String]
+    filters: [StixCyberObservablesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesDistribution(
     objectId: String
     field: String!
     dateAttribute: String
     operation: String!
+    filters: [StixCyberObservablesFiltering]
+    filterMode: FilterMode
+    search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX META RELATIONSHIPS
@@ -10372,8 +10400,6 @@ type Query {
   stixCoreRelationshipsDistribution(
     field: String!
     operation: StatsOperation!
-    isTo: Boolean
-    noDirection: Boolean
     startDate: DateTime
     endDate: DateTime
     dateAttribute: String

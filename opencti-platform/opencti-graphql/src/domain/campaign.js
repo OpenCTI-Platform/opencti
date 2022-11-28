@@ -3,7 +3,7 @@ import { createEntity, storeLoadById, timeSeriesEntities } from '../database/mid
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { FROM_START, UNTIL_END } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
 
@@ -21,7 +21,8 @@ export const campaignsTimeSeries = (context, user, args) => {
 };
 
 export const campaignsTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: args.relationship_type, value: args.objectId }, ...(args.filters || [])];
+  const { relationship_type, objectId } = args;
+  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CAMPAIGN], { ...args, filters });
 };
 // endregion

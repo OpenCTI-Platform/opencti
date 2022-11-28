@@ -32,7 +32,6 @@ const styles = () => ({
 const stixCoreObjectReporstVerticalBarsTimeSeriesQuery = graphql`
   query StixCoreObjectIndicatorsVerticalBarsTimeSeriesQuery(
     $objectId: String
-    $pattern_type: String
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
@@ -41,7 +40,6 @@ const stixCoreObjectReporstVerticalBarsTimeSeriesQuery = graphql`
   ) {
     indicatorsTimeSeries(
       objectId: $objectId
-      pattern_type: $pattern_type
       field: $field
       operation: $operation
       startDate: $startDate

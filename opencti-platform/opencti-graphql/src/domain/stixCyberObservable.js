@@ -37,8 +37,9 @@ import {
   stixCyberObservableOptions
 } from '../schema/stixCyberObservable';
 import {
+  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS
@@ -79,11 +80,6 @@ export const stixCyberObservablesNumber = (context, user, args) => ({
 // endregion
 
 // region time series
-export const reportsTimeSeries = (context, user, stixCyberObservableId, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: stixCyberObservableId }, ...(args.filters || [])];
-  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
-};
-
 export const stixCyberObservablesTimeSeries = (context, user, args) => {
   const { types = [ABSTRACT_STIX_CYBER_OBSERVABLE] } = args;
   return timeSeriesEntities(context, user, types, args);
@@ -385,13 +381,14 @@ export const stixCyberObservableExportPush = async (context, user, entityId, fil
 
 // region mutation
 export const stixCyberObservableDistribution = async (context, user, args) => {
-  return distributionEntities(context, user, [ABSTRACT_STIX_CYBER_OBSERVABLE], args);
+  const { types = [ABSTRACT_STIX_CYBER_OBSERVABLE] } = args;
+  return distributionEntities(context, user, types, args);
 };
 
 export const stixCyberObservableDistributionByEntity = async (context, user, args) => {
-  const { objectId } = args;
-  const filters = [{ isRelation: true, type: args.relationship_type, value: objectId }, ...(args.filters || [])];
-  return distributionEntities(context, user, [ABSTRACT_STIX_CYBER_OBSERVABLE], { ...args, filters });
+  const { relationship_type, objectId, types = [ABSTRACT_STIX_CYBER_OBSERVABLE] } = args;
+  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
+  return distributionEntities(context, user, types, { ...args, filters });
 };
 
 const checksumFile = async (hashName, stream) => {
