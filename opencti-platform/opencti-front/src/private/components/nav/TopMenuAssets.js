@@ -12,7 +12,7 @@ import softwareIcon from '../../../resources/images/assets/softwareIcon.svg';
 
 const styles = (theme) => ({
   root: {
-    marginTop: -7,
+    marginTop: 0,
   },
   buttonHome: {
     marginRight: theme.spacing(2),
@@ -38,7 +38,30 @@ const styles = (theme) => ({
 });
 
 class TopMenuAssets extends Component {
+  handleChangeAssetName() {
+    const { location } = this.props;
+    if (location.pathname === '/defender HQ/assets/devices'
+      || location.pathname === '/defender HQ/assets/software'
+      || location.pathname === '/defender HQ/assets/network') {
+      return this.renderMenuAssets();
+    }
+    if (location.pathname.includes('/defender HQ/assets/devices/')) {
+      return this.renderMenuDevice();
+    }
+    if (location.pathname.includes('/defender HQ/assets/software/')) {
+      return this.renderMenuSoftware();
+    }
+    if (location.pathname.includes('/defender HQ/assets/network/')) {
+      return this.renderMenuNetwork();
+    }
+    return 'Default';
+  }
+
   render() {
+    return this.handleChangeAssetName();
+  }
+
+  renderMenuAssets() {
     const { t, location, classes } = this.props;
     return (
       <div className={classes.root}>
@@ -55,88 +78,156 @@ class TopMenuAssets extends Component {
           color="primary"
           classes={{ root: classes.arrow }}
         />
-        {
-          (location.pathname === '/defender HQ/assets/devices'
-            || location.pathname === '/defender HQ/assets/software'
-            || location.pathname === '/defender HQ/assets/network')
-            ? (
-              <>
-                <Button
-                  component={Link}
-                  to="/defender HQ/assets/devices"
-                  variant={
-                    location.pathname.includes('/defender HQ/assets/devices')
-                      ? 'contained'
-                      : 'text'
-                  }
-                  size="small"
-                  color={
-                    location.pathname.includes('/defender HQ/assets/devices')
-                      ? 'secondary'
-                      : 'default'
-                  }
-                  classes={{ root: classes.button }}
-                  data-cy='asset devices'
-                >
-                  <img src={deviceIcon} className={classes.icon} alt="" />
-                  {t('Devices')}
-                </Button>
-                <Button
-                  component={Link}
-                  to="/defender HQ/assets/network"
-                  variant={
-                    location.pathname.includes('/defender HQ/assets/network')
-                      ? 'contained'
-                      : 'text'
-                  }
-                  size="small"
-                  color={
-                    location.pathname.includes('/defender HQ/assets/network')
-                      ? 'secondary'
-                      : 'default'
-                  }
-                  classes={{ root: classes.button }}
-                  data-cy='asset networks'
-                >
-                  <img src={networkIcon} className={classes.icon} alt="" />
-                  {t('Network')}
-                </Button>
-                <Button
-                  component={Link}
-                  to="/defender HQ/assets/software"
-                  variant={
-                    location.pathname.includes('/defender HQ/assets/software')
-                      ? 'contained'
-                      : 'text'
-                  }
-                  size="small"
-                  color={
-                    location.pathname === '/defender HQ/assets/software'
-                      ? 'secondary'
-                      : 'default'
-                  }
-                  classes={{ root: classes.button }}
-                  data-cy='asset software'
-                >
-                  <img src={softwareIcon} className={classes.icon} alt="" />
-                  {t('Software')}
-                </Button>
-              </>
-            )
-            : (
-              <Button
-                component={Link}
-                to="/defender HQ/assets/software"
-                variant='contained'
-                size="small"
-                color='secondary'
-                classes={{ root: classes.button }}
-                data-cy='asset overview'
-              >
-                {t('Overview')}
-              </Button>
-            )
-        }
+        <Button
+          component={Link}
+          to="/defender HQ/assets/devices"
+          variant={
+            location.pathname.includes('/defender HQ/assets/devices')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/defender HQ/assets/devices')
+              ? 'secondary'
+              : 'default'
+          }
+          classes={{ root: classes.button }}
+          data-cy='asset devices'
+        >
+          <img src={deviceIcon} className={classes.icon} alt="" />
+          {t('Devices')}
+        </Button>
+        <Button
+          component={Link}
+          to="/defender HQ/assets/network"
+          variant={
+            location.pathname.includes('/defender HQ/assets/network')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/defender HQ/assets/network')
+              ? 'secondary'
+              : 'default'
+          }
+          classes={{ root: classes.button }}
+          data-cy='asset networks'
+        >
+          <img src={networkIcon} className={classes.icon} alt="" />
+          {t('Network')}
+        </Button>
+        <Button
+          component={Link}
+          to="/defender HQ/assets/software"
+          variant={
+            location.pathname.includes('/defender HQ/assets/software')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/defender HQ/assets/software'
+              ? 'secondary'
+              : 'default'
+          }
+          classes={{ root: classes.button }}
+          data-cy='asset software'
+        >
+          <img src={softwareIcon} className={classes.icon} alt="" />
+          {t('Software')}
+        </Button>
+      </div>
+    );
+  }
+
+  renderMenuDevice() {
+    const { t, classes } = this.props;
+    return (
+      <div className={classes.root}>
+        <Button
+          component={Link}
+          to="/defender HQ/assets/devices"
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
+        >
+          {t('Devices')}
+        </Button>
+        <ArrowForwardIosOutlined
+          color="primary"
+          classes={{ root: classes.arrow }}
+        />
+        <Button
+          variant='contained'
+          size="small"
+          color='secondary'
+          classes={{ root: classes.button }}
+          data-cy='asset overview'
+        >
+          {t('Overview')}
+        </Button>
+      </div>
+    );
+  }
+
+  renderMenuNetwork() {
+    const { t, classes } = this.props;
+    return (
+      <div className={classes.root}>
+        <Button
+          component={Link}
+          to="/defender HQ/assets/network"
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
+        >
+          {t('Network')}
+        </Button>
+        <ArrowForwardIosOutlined
+          color="primary"
+          classes={{ root: classes.arrow }}
+        />
+        <Button
+          variant='contained'
+          size="small"
+          color='secondary'
+          classes={{ root: classes.button }}
+          data-cy='asset overview'
+        >
+          {t('Overview')}
+        </Button>
+      </div>
+    );
+  }
+
+  renderMenuSoftware() {
+    const { t, classes } = this.props;
+    return (
+      <div className={classes.root}>
+        <Button
+          component={Link}
+          to="/defender HQ/assets/software"
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
+        >
+          {t('Software')}
+        </Button>
+        <ArrowForwardIosOutlined
+          color="primary"
+          classes={{ root: classes.arrow }}
+        />
+        <Button
+          variant='contained'
+          size="small"
+          color='secondary'
+          classes={{ root: classes.button }}
+          data-cy='asset overview'
+        >
+          {t('Overview')}
+        </Button>
       </div>
     );
   }

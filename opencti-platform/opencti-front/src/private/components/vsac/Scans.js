@@ -960,7 +960,7 @@ class Scans extends Component {
                               }
                             >
                               <MenuItem
-                                onClick={() => this.props.history.push(`/activities/vulnerability assessment/scans/explore results/${analysis.id}`)}
+                                onClick={() => this.props.history.push(`/activities/vulnerability_assessment/scans/explore results/${analysis.id}`)}
                               >
                                 <ListItemIcon>
                                   <ExploreIcon fontSize="small" />
@@ -969,7 +969,7 @@ class Scans extends Component {
                               </MenuItem>
                               <MenuItem
                                 onClick={() =>
-                                  handleLinkClink('/activities/vulnerability assessment/scans/view charts',
+                                  handleLinkClink('/activities/vulnerability_assessment/scans/view charts',
                                     {
                                       analysis_id: analysis.id,
                                       analyses,
@@ -983,7 +983,7 @@ class Scans extends Component {
                               </MenuItem>
                               <MenuItem
                                 onClick={() =>
-                                  handleLinkClink('/activities/vulnerability assessment/scans/compare analysis',
+                                  handleLinkClink('/activities/vulnerability_assessment/scans/compare analysis',
                                     {
                                       analyses,
                                       scatterPlotData: scatterPlotData
@@ -1189,7 +1189,7 @@ class Scans extends Component {
                           variant="contained"
                           color="primary"
                           startIcon={<CloudUploadIcon />}
-                          onClick={() => this.props.history.push(`/activities/vulnerability assessment/scans/explore results/${analysis.id}`)}
+                          onClick={() => this.props.history.push(`/activities/vulnerability_assessment/scans/explore results/${analysis.id}`)}
                         >
                           Explore Results
                         </Button>

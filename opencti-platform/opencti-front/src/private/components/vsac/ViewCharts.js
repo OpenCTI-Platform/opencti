@@ -148,7 +148,7 @@ class ViewCharts extends Component {
 
   render() {
 
-    if (this.props.location.state == undefined) return <Redirect to="/activities/vulnerability assessment/scans" />;
+    if (this.props.location.state == undefined) return <Redirect to="/activities/vulnerability_assessment/scans" />;
 
     const {
       tabValue,

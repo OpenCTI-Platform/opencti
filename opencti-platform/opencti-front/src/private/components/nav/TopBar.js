@@ -26,9 +26,6 @@ import TopMenuAnalysis from './TopMenuAnalysis';
 import TopMenuReport from './TopMenuReport';
 import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
-import TopMenuDevice from './TopMenuDevice';
-import TopMenuNetwork from './TopMenuNetwork';
-import TopMenuSoftware from './TopMenuSoftware';
 import TopMenuExternalReference from './TopMenuExternalReference';
 import TopMenuEvents from './TopMenuEvents';
 import TopMenuIncident from './TopMenuIncident';
@@ -59,6 +56,7 @@ import TopMenuEntities from './TopMenuEntities';
 import TopMenuSector from './TopMenuSector';
 import TopMenuSystem from './TopMenuSystem';
 import TopMenuOrganization from './TopMenuOrganization';
+import TopMenuVSAC from './TopMenuVSAC';
 import TopMenuIndividual from './TopMenuIndividual';
 import TopMenuRegion from './TopMenuRegion';
 import TopMenuCountry from './TopMenuCountry';
@@ -82,6 +80,8 @@ import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 import Export from '../../../components/Export';
 import ExportPoam from '../../../components/ExportPoam';
+import TopMenuRiskAssessment from './TopMenuRiskAssessment';
+import TopMenuRisk from './TopMenuRisk';
 
 const styles = (theme) => ({
   appBar: {
@@ -255,23 +255,31 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
           )}
-          {/* {(location.pathname === '/activities/vulnerability assessment/scans/explore result'
-            || location.pathname.match('/activities/vulnerability assessment/scans/explore result'))
+          {(location.pathname === '/activities/vulnerability_assessment'
+            || location.pathname.match('/activities/vulnerability_assessment/scans'))
+            && (
+              <TopMenuVSAC />
+            )}
+          {/* {(location.pathname === '/activities/vulnerability_assessment/scans/explore result'
+            || location.pathname.match('/activities/vulnerability_assessment/scans/explore result'))
             && (
               <TopMenuVsacExploreResults />
             )}
-          {(location.pathname === '/activities/vulnerability assessment/scans/view charts'
-            || location.pathname.match('/activities/vulnerability assessment/scans/view charts'))
+          {(location.pathname === '/activities/vulnerability_assessment/scans/view charts'
+            || location.pathname.match('/activities/vulnerability_assessment/scans/view charts'))
             && (
               <TopMenuVsacViewCharts />
             )}
-          {(location.pathname === '/activities/vulnerability assessment/scans/compare analysis'
-            || location.pathname.match('/activities/vulnerability assessment/scans/compare'))
+          {(location.pathname === '/activities/vulnerability_assessment/scans/compare analysis'
+            || location.pathname.match('/activities/vulnerability_assessment/scans/compare'))
             && (
               <TopMenuVsacCompare />
             )} */}
           {(location.pathname.includes('/defender HQ/assets')
             || location.pathname.match('/defender HQ/assets/[a-z_]+$')) && <TopMenuAssets />}
+          {(location.pathname === ('/activities/risk_assessment')
+            || location.pathname.match('/activities/risk_assessment/[a-z_]+$')) && <TopMenuRiskAssessment />}
+          {(location.pathname.includes('/activities/risk_assessment/risks/')) && <TopMenuRisk />}
           {/* Data Entities Section */}
           {(location.pathname === '/data/entities'
             || location.pathname === '/data/data source') && <TopMenuDataEntities />}
@@ -293,9 +301,6 @@ const TopBar = ({
             || location.pathname === '/data/data source/responsible_parties') && <TopMenuDataResponsiblePartiesEntities />}
           {(location.pathname === '/data/entities/external_references'
             || location.pathname === '/data/data source/external_references') && <TopMenuDataExternalReferenceEntities />}
-          {location.pathname.includes('/defender HQ/assets/devices/') && <TopMenuDevice />}
-          {location.pathname.includes('/defender HQ/assets/network/') && <TopMenuNetwork />}
-          {location.pathname.includes('/defender HQ/assets/software/') && <TopMenuSoftware />}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && <TopMenuArsenal />}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && <TopMenuMalware />}

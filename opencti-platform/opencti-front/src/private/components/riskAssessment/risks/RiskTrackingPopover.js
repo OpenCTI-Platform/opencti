@@ -170,7 +170,7 @@ class RiskTrackingPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      pathname: `/activities/risk assessment/risks/${this.props.riskId}/tracking`,
+      pathname: `/activities/risk_assessment/risks/${this.props.riskId}/tracking`,
       onCompleted: (data) => {
         setSubmitting(false);
         this.handleCloseEditUpdate();
