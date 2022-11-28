@@ -35,11 +35,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey
-} from '../../../src/schema/general';
+import { ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey } from '../../../src/schema/general';
 import {
   RELATION_ATTRIBUTED_TO,
   RELATION_MITIGATES,
