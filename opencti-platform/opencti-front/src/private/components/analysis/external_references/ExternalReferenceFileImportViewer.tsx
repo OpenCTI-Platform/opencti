@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes } from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
@@ -15,17 +14,23 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
+import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
+import { FragmentRefs } from 'relay-runtime';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import FileUploader from '../../common/files/FileUploader';
-import inject18n from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../../common/files/FileManager';
 import SelectField from '../../../../components/SelectField';
+import {
+  ExternalReferenceFileImportViewer_entity$data,
+} from './__generated__/ExternalReferenceFileImportViewer_entity.graphql';
 
 const interval$ = interval(TEN_SECONDS);
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -33,31 +38,66 @@ const styles = () => ({
     padding: '10px 15px 10px 15px',
     borderRadius: 6,
   },
-});
+}));
 
-const importValidation = (t) => Yup.object().shape({
+const importValidation = (t: (value: string) => string) => Yup.object().shape({
   connector_id: Yup.string().required(t('This field is required')),
 });
 
-const ExternalReferenceFileImportViewerBase = ({
+interface ExternalReferenceFileImportViewerBaseProps {
+  externalReference: ExternalReferenceFileImportViewer_entity$data,
+  disableImport: boolean,
+  connectors: Record<string, {
+    id: string,
+    name: string,
+    active: boolean,
+    connector_scope: string[],
+    updated_at: string,
+  }>,
+  relay: RelayRefetchProp,
+  connectorsImport: {
+    id: string,
+    name: string,
+    active: boolean,
+    connector_scope: string[],
+    updated_at: string,
+  }[],
+}
+const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReferenceFileImportViewerBaseProps> = ({
   externalReference,
   disableImport,
   connectors,
   relay,
-  t,
-  classes,
   connectorsImport,
 }) => {
-  const [fileToImport, setFileToImport] = useState(null);
+  const classes = useStyles();
+  const { t } = useFormatter();
+
+  const [fileToImport, setFileToImport] = useState<{
+    id: string;
+    metaData: {
+      mimetype: string | null;
+    } | null;
+    ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
+  } | null>(null);
+
   const { id, importFiles } = externalReference;
-  const { edges } = importFiles;
-  const handleOpenImport = (file) => setFileToImport(file);
+
+  const handleOpenImport = (file: {
+    id: string;
+    metaData: {
+      mimetype: string | null;
+    } | null;
+    ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
+  } | null) => setFileToImport(file);
+
   const handleCloseImport = () => setFileToImport(null);
-  const onSubmitImport = (values, { setSubmitting, resetForm }) => {
+
+  const onSubmitImport: FormikConfig<{ connector_id: string }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
-        fileName: fileToImport.id,
+        fileName: fileToImport?.id,
         connectorId: values.connector_id,
       },
       onCompleted: () => {
@@ -66,18 +106,33 @@ const ExternalReferenceFileImportViewerBase = ({
         handleCloseImport();
         MESSAGING$.notifySuccess('Import successfully asked');
       },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
     });
   };
 
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
-      relay.refetch({ id });
+      if (relay.refetch) {
+        relay.refetch({ id });
+      }
     });
     return function cleanup() {
       subscription.unsubscribe();
     };
   });
+
+  const fileToImportBoolean = () => {
+    if (fileToImport) {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <React.Fragment>
       <div style={{ height: '100%' }} className="break">
@@ -87,21 +142,34 @@ const ExternalReferenceFileImportViewerBase = ({
         <div style={{ float: 'left', marginTop: -17 }}>
           <FileUploader
             entityId={id}
-            onUploadSuccess={() => relay.refetch({ id })}
+            onUploadSuccess={() => {
+              if (relay.refetch) {
+                relay.refetch({ id });
+              }
+            }}
+            color={undefined}
+            size={undefined}
           />
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          {edges.length ? (
+          {importFiles?.edges?.length ? (
             <List>
-              {edges.map((file) => (
+              {importFiles?.edges?.map((file: ({
+                node: {
+                  id: string;
+                  metaData: {
+                    mimetype: string | null;
+                  } | null,
+                  ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
+                } } | null)) => (
                 <FileLine
-                  key={file.node.id}
+                  key={file?.node.id}
                   dense={true}
                   disableImport={disableImport}
-                  file={file.node}
+                  file={file?.node}
                   connectors={
-                    connectors && connectors[file.node.metaData.mimetype]
+                    (connectors && file?.node.metaData?.mimetype) ? connectors && connectors[file.node.metaData.mimetype] : []
                   }
                   handleOpenImport={handleOpenImport}
                 />
@@ -134,7 +202,7 @@ const ExternalReferenceFileImportViewerBase = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 PaperProps={{ elevation: 1 }}
-                open={fileToImport}
+                open={fileToImportBoolean()}
                 keepMounted={true}
                 onClose={handleCloseImport}
                 fullWidth={true}
@@ -149,11 +217,11 @@ const ExternalReferenceFileImportViewerBase = ({
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                   >
-                    {connectorsImport.map((connector, i) => {
+                    {connectorsImport.map((connector, i: number) => {
                       const disabled = !fileToImport
                         || (connector.connector_scope.length > 0
                           && !includes(
-                            fileToImport.metaData.mimetype,
+                            fileToImport.metaData?.mimetype,
                             connector.connector_scope,
                           ));
                       return (
@@ -189,10 +257,7 @@ const ExternalReferenceFileImportViewerBase = ({
   );
 };
 
-const ExternalReferenceFileImportViewerComponent = compose(
-  inject18n,
-  withStyles(styles),
-)(ExternalReferenceFileImportViewerBase);
+const ExternalReferenceFileImportViewerComponent = compose(inject18n)(ExternalReferenceFileImportViewerBase);
 
 const ExternalReferenceFileImportViewerRefetchQuery = graphql`
   query ExternalReferenceFileImportViewerRefetchQuery($id: String!) {

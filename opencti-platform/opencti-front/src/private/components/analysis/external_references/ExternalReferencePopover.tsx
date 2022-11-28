@@ -1,9 +1,6 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
-import withStyles from '@mui/styles/withStyles';
+import { Store } from 'relay-runtime';
 import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -13,15 +10,21 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
+import Slide, { SlideProps } from '@mui/material/Slide';
 import { MoreVertOutlined } from '@mui/icons-material';
-import { withRouter } from 'react-router-dom';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useHistory } from 'react-router-dom';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
+import { Theme } from '../../../../components/Theme';
+import {
+  ExternalReferencePopoverEditionQuery$data,
+} from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
+import { deleteNode } from '../../../../utils/store';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
   },
@@ -36,9 +39,9 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-});
+}));
 
-const Transition = React.forwardRef((props, ref) => (
+const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
@@ -59,78 +62,79 @@ const externalReferenceEditionQuery = graphql`
   }
 `;
 
-class ExternalReferencePopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayEdit: false,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
+interface ExternalReferencePopoverProps {
+  id: string,
+  handleRemove: (() => void) | undefined,
+  entityId: string,
+  paginationOptions?: { search: string, orderMode: string, orderBy: string },
+}
 
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
+const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, handleRemove, entityId, paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const history = useHistory();
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+  const [displayEdit, setDisplayEdit] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  handleOpenUpdate() {
-    this.setState({ displayEdit: true });
-    this.handleClose();
-  }
+  const handleOpen = (event: React.SyntheticEvent) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleCloseUpdate() {
-    this.setState({ displayEdit: false });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleOpenUpdate = () => {
+    setDisplayEdit(true);
+    handleClose();
+  };
 
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
+  const handleCloseUpdate = () => {
+    setDisplayEdit(false);
+  };
 
-  submitDelete() {
-    this.setState({ deleting: true });
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
+
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
+
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: externalReferencePopoverDeletionMutation,
       variables: {
-        id: this.props.id,
+        id,
       },
-      updater: (store) => {
-        if (this.props.entityId) {
-          const entity = store.get(this.props.entityId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
-            'Pagination_externalReferences',
-          );
-          ConnectionHandler.deleteNode(conn, this.props.id);
-        }
+      updater: (store: Store) => {
+        deleteNode(store, 'Pagination_externalReferences', paginationOptions, entityId);
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        if (this.props.handleRemove) {
-          this.handleCloseDelete();
+        setDeleting(false);
+        handleClose();
+        if (handleRemove) {
+          handleCloseDelete();
         } else {
-          this.props.history.push('/dashboard/analysis/external_references');
+          history.push('/dashboard/analysis/external_references');
         }
       },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
     });
-  }
+  };
 
-  render() {
-    const { classes, t, id, handleRemove } = this.props;
-    return (
-      <span className={classes.container}>
+  return (
+    <span className={classes.container}>
         <IconButton
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
           size="large"
@@ -138,57 +142,57 @@ class ExternalReferencePopover extends Component {
           <MoreVertOutlined />
         </IconButton>
         <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+          <MenuItem onClick={handleOpenUpdate}>
             {t('Update')}
           </MenuItem>
           {handleRemove && (
             <MenuItem
               onClick={() => {
                 handleRemove();
-                this.handleClose();
+                handleClose();
               }}
             >
               {t('Remove from this object')}
             </MenuItem>
           )}
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+          <MenuItem onClick={handleOpenDelete}>
             {t('Delete')}
           </MenuItem>
         </Menu>
         <Drawer
-          open={this.state.displayEdit}
+          open={displayEdit}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
+          onClose={handleCloseUpdate}
         >
           <QueryRenderer
             query={externalReferenceEditionQuery}
             variables={{ id }}
-            render={({ props }) => {
-              if (props) {
+            render={({ props }: { props: ExternalReferencePopoverEditionQuery$data }) => {
+              if (props && props.externalReference) {
                 return (
                   <ExternalReferenceEditionContainer
                     externalReference={props.externalReference}
-                    handleClose={this.handleCloseUpdate.bind(this)}
+                    handleClose={handleCloseUpdate}
                   />
                 );
               }
-              return <Loader variant="inElement" />;
+              return <Loader variant={LoaderVariant.inElement} />;
             }}
           />
         </Drawer>
         <Dialog
           PaperProps={{ elevation: 1 }}
-          open={this.state.displayDelete}
+          open={displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
+          onClose={handleCloseDelete}
         >
           <DialogContent>
             <DialogContentText>
@@ -197,36 +201,22 @@ class ExternalReferencePopover extends Component {
           </DialogContent>
           <DialogActions>
             <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
+              onClick={handleCloseDelete}
+              disabled={deleting}
             >
               {t('Cancel')}
             </Button>
             <Button
               color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
+              onClick={submitDelete}
+              disabled={deleting}
             >
               {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
       </span>
-    );
-  }
-}
-
-ExternalReferencePopover.propTypes = {
-  id: PropTypes.string,
-  entityId: PropTypes.string,
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  handleRemove: PropTypes.func,
+  );
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(ExternalReferencePopover);
+export default ExternalReferencePopover;

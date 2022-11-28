@@ -17,6 +17,7 @@ export interface LocalStorage {
   openExports?: boolean,
   count?: number,
   types?: string[]
+  view?: string,
   zoom?: Record<string, unknown>,
 }
 

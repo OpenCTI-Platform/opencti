@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import * as R from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
@@ -13,12 +11,13 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
+import makeStyles from '@mui/styles/makeStyles';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -26,80 +25,74 @@ const styles = () => ({
     padding: 0,
     borderRadius: 6,
   },
-});
+}));
 
-class ExternalReferenceStixCoreObjectsComponent extends Component {
-  render() {
-    const { t, fd, classes, externalReference } = this.props;
-    const stixCoreObjects = R.map(
-      (n) => n.node,
-      externalReference.references.edges,
-    );
-    return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Linked objects')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <List classes={{ root: classes.list }}>
-            {stixCoreObjects.map((stixCoreObject) => (
-              <ListItem
-                key={stixCoreObject.id}
-                classes={{ root: classes.menuItem }}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`${resolveLink(stixCoreObject.entity_type)}/${
-                  stixCoreObject.id
+const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
+  const classes = useStyles();
+  const { t, fd } = useFormatter();
+
+  const stixCoreObjects = R.map(
+    (n) => n?.node,
+    externalReference.references?.edges ?? [],
+  );
+
+  return (
+    <div style={{ height: '100%' }}>
+      <Typography variant="h4" gutterBottom={true}>
+        {t('Linked objects')}
+      </Typography>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <List classes={{ root: classes.list }}>
+          {stixCoreObjects.map((stixCoreObject) => (
+            <ListItem
+              key={stixCoreObject?.id}
+              classes={{ root: classes.menuItem }}
+              divider={true}
+              button={true}
+              component={Link}
+              to={`${resolveLink(stixCoreObject?.entity_type ?? '')}/${
+                stixCoreObject?.id
+              }`}
+            >
+              <ListItemIcon>
+                <ItemIcon type={stixCoreObject?.entity_type} />
+              </ListItemIcon>
+              <ListItemText
+                primary={`${
+                  stixCoreObject?.x_mitre_id
+                    ? `[${stixCoreObject?.x_mitre_id}] `
+                    : ''
+                }${
+                  stixCoreObject?.name
+                  || stixCoreObject?.observable_value
+                  || stixCoreObject?.attribute_abstract
+                  || stixCoreObject?.content
+                  || stixCoreObject?.opinion
+                  || `${fd(stixCoreObject?.first_observed)} - ${fd(
+                    stixCoreObject?.last_observed,
+                  )}`
                 }`}
-              >
-                <ListItemIcon>
-                  <ItemIcon type={stixCoreObject.entity_type} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={`${
-                    stixCoreObject.x_mitre_id
-                      ? `[${stixCoreObject.x_mitre_id}] `
-                      : ''
-                  }${
-                    stixCoreObject.name
-                    || stixCoreObject.observable_value
-                    || stixCoreObject.attribute_abstract
-                    || stixCoreObject.content
-                    || stixCoreObject.opinion
-                    || `${fd(stixCoreObject.first_observed)} - ${fd(
-                      stixCoreObject.last_observed,
-                    )}`
-                  }`}
-                  secondary={
-                    <Markdown
-                      remarkPlugins={[remarkGfm, remarkParse]}
-                      parserOptions={{ commonmark: true }}
-                      className="markdown"
-                    >
-                      {truncate(
-                        stixCoreObject.description
-                          || stixCoreObject.x_opencti_description
-                          || fd(stixCoreObject.created_at),
-                        200,
-                      )}
-                    </Markdown>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-      </div>
-    );
-  }
-}
-
-ExternalReferenceStixCoreObjectsComponent.propTypes = {
-  externalReference: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
+                secondary={
+                  <Markdown
+                    remarkPlugins={[remarkGfm, remarkParse]}
+                    parserOptions={{ commonmark: true }}
+                    className="markdown"
+                  >
+                    {truncate(
+                      stixCoreObject?.description
+                      || stixCoreObject?.x_opencti_description
+                      || fd(stixCoreObject?.created_at),
+                      200,
+                    )}
+                  </Markdown>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Paper>
+    </div>
+  );
 };
 
 const ExternalReferenceStixCoreObjects = createFragmentContainer(
@@ -241,7 +234,4 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(ExternalReferenceStixCoreObjects);
+export default ExternalReferenceStixCoreObjects;
