@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
