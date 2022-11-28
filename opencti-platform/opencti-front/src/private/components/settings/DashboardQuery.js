@@ -54,6 +54,76 @@ export const dashboardQueryRisksDistribution = graphql`
 `;
 
 // eslint-disable-next-line import/prefer-default-export
+export const dashboardQueryRisksBarDistribution = graphql`
+  query DashboardQueryRisksBarDistributionQuery(
+    $type: String
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+  ) {
+    risksDistribution(
+      type: $type
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      label
+      value
+      entity {
+        ... on Risk {
+          id
+          created
+          name
+          first_seen
+          last_seen
+          risk_level
+          occurrences
+          deadline
+        }
+      }
+    }
+  }
+`;
+
+// eslint-disable-next-line import/prefer-default-export
+export const dashboardQueryRisksListDistribution = graphql`
+  query DashboardQueryRisksListDistributionQuery(
+    $type: String
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $limit: Int
+  ) {
+    risksDistribution(
+      type: $type
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      limit: $limit
+    ) {
+      label
+      value
+      entity {
+        ... on Risk {
+          id
+          created
+          name
+          first_seen
+          last_seen
+          risk_level
+          occurrences
+          deadline
+        }
+      }
+    }
+  }
+`;
+
+// eslint-disable-next-line import/prefer-default-export
 export const dashboardQueryRisksCount = graphql`
   query DashboardQueryRisksCountQuery(
     $type: String

@@ -37,6 +37,7 @@ import CyioCoreObjectWidgetDonutChart from '../widgets/CyioCoreObjectWidgetDonut
 import CyioCoreObjectWidgetHorizontalBars from '../widgets/CyioCoreObjectWidgetHorizontalBars';
 import CyioCoreObjectWidgetLineChart from '../widgets/CyioCoreObjectWidgetLineChart';
 import CyioCoreObjectWidgetVerticalBars from '../widgets/CyioCoreObjectWidgetVerticalBars';
+import CyioCoreObjectWidgetListChart from '../widgets/CyioCoreObjectWidgetListChart';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -257,6 +258,14 @@ class DashboardComponent extends Component {
       case 'vertical-bar':
         return (
           <CyioCoreObjectWidgetVerticalBars
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'list':
+        return (
+          <CyioCoreObjectWidgetListChart
             startDate={startDate}
             endDate={endDate}
             widget={widget}
