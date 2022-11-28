@@ -21,6 +21,7 @@ import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
+  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
@@ -30,6 +31,7 @@ import {
   stixDomainObjectOptions,
 } from '../schema/stixDomainObject';
 import {
+  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
@@ -61,18 +63,19 @@ export const batchStixDomainObjects = async (context, user, objectsIds) => {
 
 // region time series
 export const reportsTimeSeries = (context, user, stixDomainObjectId, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: stixDomainObjectId }];
-  return timeSeriesEntities(context, user, 'Report', filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: stixDomainObjectId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
 export const stixDomainObjectsTimeSeries = (context, user, args) => {
-  return timeSeriesEntities(context, user, args.type ? escape(args.type) : ABSTRACT_STIX_DOMAIN_OBJECT, [], args);
+  const { types = [ABSTRACT_STIX_DOMAIN_OBJECT] } = args;
+  return timeSeriesEntities(context, user, types, args);
 };
 
 export const stixDomainObjectsTimeSeriesByAuthor = (context, user, args) => {
-  const { authorId } = args;
-  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
-  return timeSeriesEntities(context, user, args.type ? escape(args.type) : ABSTRACT_STIX_DOMAIN_OBJECT, filters, args);
+  const { authorId, types = [ABSTRACT_STIX_DOMAIN_OBJECT] } = args;
+  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, types, { ...args, filters });
 };
 
 export const stixDomainObjectsNumber = (context, user, args) => ({
@@ -82,8 +85,8 @@ export const stixDomainObjectsNumber = (context, user, args) => ({
 
 export const stixDomainObjectsDistributionByEntity = async (context, user, args) => {
   const { objectId, relationship_type: relationshipType } = args;
-  const filters = [{ isRelation: true, type: relationshipType, value: objectId }];
-  return distributionEntities(context, user, ABSTRACT_STIX_DOMAIN_OBJECT, filters, args);
+  const filters = [{ isRelation: true, type: relationshipType, value: objectId }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], { ...args, filters });
 };
 // endregion
 

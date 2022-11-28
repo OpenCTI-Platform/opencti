@@ -124,8 +124,8 @@ export const addIndicator = async (context, user, indicator) => {
 // region series
 export const indicatorsTimeSeries = (context, user, args) => {
   const { indicatorClass } = args;
-  const filters = indicatorClass ? [{ isRelation: false, type: 'pattern_type', value: args.pattern_type }] : [];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_INDICATOR, filters, args);
+  const filters = indicatorClass ? [{ isRelation: false, type: 'pattern_type', value: args.pattern_type }, ...(args.filters || [])] : args.filters;
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 
 export const indicatorsNumber = (context, user, args) => ({
@@ -139,8 +139,8 @@ export const indicatorsNumber = (context, user, args) => ({
 });
 
 export const indicatorsTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: RELATION_INDICATES, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_INDICATOR, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_INDICATES, value: args.objectId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 
 export const indicatorsNumberByEntity = (context, user, args) => ({
@@ -171,8 +171,8 @@ export const indicatorsNumberByEntity = (context, user, args) => ({
 
 export const indicatorsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ isRelation: true, type: RELATION_INDICATES, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_INDICATOR, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_INDICATES, value: objectId }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 // endregion
 

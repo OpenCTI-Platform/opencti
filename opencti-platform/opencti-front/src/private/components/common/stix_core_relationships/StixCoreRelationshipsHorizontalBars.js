@@ -25,7 +25,7 @@ const styles = () => ({
 
 const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixCoreRelationshipsHorizontalBarsDistributionQuery(
-    $relationship_type: String!
+    $relationship_type: [String]
     $toTypes: [String]
     $field: String!
     $operation: StatsOperation!

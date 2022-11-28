@@ -61,9 +61,9 @@ const renderCustomizedLabel = ({
 
 const entityStixCoreRelationshipsPieStixCoreRelationshipDistributionQuery = graphql`
   query EntityStixCoreRelationshipsPieStixCoreRelationshipDistributionQuery(
-    $fromId: StixRef!
+    $fromId: [String]
     $toTypes: [String]
-    $relationship_type: String
+    $relationship_type: [String]
     $startDate: DateTime
     $endDate: DateTime
     $field: String!

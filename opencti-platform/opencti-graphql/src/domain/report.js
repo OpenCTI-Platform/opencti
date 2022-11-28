@@ -49,8 +49,8 @@ export const reportContainsStixObjectOrStixRelationship = async (context, user, 
 // region series
 export const reportsTimeSeries = (context, user, args) => {
   const { reportClass } = args;
-  const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }] : [];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }, ...(args.filters || [])] : args.filters;
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
 export const reportsNumber = (context, user, args) => ({
@@ -64,15 +64,15 @@ export const reportsNumber = (context, user, args) => ({
 });
 
 export const reportsTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
 export const reportsTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId, reportClass } = args;
-  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
+  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }, ...(args.filters || [])];
   if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
 export const reportsNumberByEntity = (context, user, args) => ({
@@ -129,8 +129,8 @@ export const reportsNumberByAuthor = (context, user, args) => ({
 
 export const reportsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 // endregion
 

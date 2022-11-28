@@ -52,7 +52,7 @@ export const groupingContainsStixObjectOrStixRelationship = async (context: Auth
 
 // region series
 export const groupingsTimeSeries = (context: AuthContext, user: AuthUser, args: QueryGroupingsTimeSeriesArgs) => {
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, [], args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], args);
 };
 
 export const groupingsNumber = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
@@ -65,14 +65,14 @@ export const groupingsNumber = async (context: AuthContext, user: AuthUser, args
 };
 
 export const groupingsTimeSeriesByEntity = (context: AuthContext, user: AuthUser, args: QueryGroupingsTimeSeriesArgs) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 
 export const groupingsTimeSeriesByAuthor = async (context: AuthContext, user: AuthUser, args: QueryGroupingsTimeSeriesArgs) => {
   const { authorId } = args;
-  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 
 export const groupingsNumberByEntity = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
@@ -118,6 +118,6 @@ export const groupingsNumberByAuthor = async (context: AuthContext, user: AuthUs
 export const groupingsDistributionByEntity = async (context: AuthContext, user: AuthUser, args: QueryGroupingsDistributionArgs) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, filters, args);
+  return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 // endregion

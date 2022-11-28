@@ -3,13 +3,14 @@ import conf, { booleanConf } from '../config/conf';
 import { timeSeriesEntities } from '../database/middleware';
 import { EVENT_TYPE_CREATE, INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 
 export const findAll = (context, user, args) => {
   const finalArgs = {
     orderBy: 'timestamp',
     orderMode: 'desc',
     ...args,
-    types: ['history'],
+    types: [ENTITY_TYPE_HISTORY],
   };
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
@@ -29,11 +30,8 @@ export const creatorFromHistory = async (context, user, entityId) => {
 };
 
 export const logsTimeSeries = (context, user, args) => {
-  let filters = [];
-  if (args.userId) {
-    filters = [{ isRelation: false, type: '*_id', value: args.userId }];
-  }
-  return timeSeriesEntities(context, user, null, filters, args);
+  const filters = args.userId ? [{ isRelation: false, type: '*_id', value: args.userId }, ...(args.filters || [])] : args.filters;
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_HISTORY], { ...args, filters });
 };
 
 export const logsWorkerConfig = () => {

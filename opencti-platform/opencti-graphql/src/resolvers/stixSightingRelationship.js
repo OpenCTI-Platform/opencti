@@ -50,7 +50,7 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationshipsDistribution: (_, args, context) => distributionRelations(
       context,
       context.user,
-      R.pipe(R.assoc('relationship_type', 'stix-sighting-relationship'), R.assoc('isTo', true))(args)
+      { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP], isTo: true }
     ),
     stixSightingRelationshipsNumber: (_, args, context) => stixSightingRelationshipsNumber(context, context.user, args),
   },

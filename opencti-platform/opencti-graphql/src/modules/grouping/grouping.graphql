@@ -160,6 +160,9 @@ type Query {
         startDate: DateTime!
         endDate: DateTime!
         interval: String!
+        filters: [GroupingsFiltering!]
+        filterMode: FilterMode
+        search: String
     ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
     groupingsNumber(groupingContext: String, objectId: String, authorId: String, endDate: DateTime): Number
     @auth(for: [KNOWLEDGE, EXPLORE])
@@ -173,6 +176,9 @@ type Query {
         startDate: DateTime
         endDate: DateTime
         dateAttribute: String
+        filters: [GroupingsFiltering!]
+        filterMode: FilterMode
+        search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])

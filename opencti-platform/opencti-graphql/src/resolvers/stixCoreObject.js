@@ -24,7 +24,11 @@ import {
   stixCoreObjectsExportAsk,
   stixCoreObjectsExportPush,
   stixCoreObjectCleanContext,
-  stixCoreObjectEditContext
+  stixCoreObjectEditContext,
+  stixCoreObjectsDistributionByEntity,
+  stixCoreObjectsNumber,
+  stixCoreObjectsTimeSeries,
+  stixCoreObjectsTimeSeriesByAuthor
 } from '../domain/stixCoreObject';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
@@ -53,6 +57,19 @@ const stixCoreObjectResolvers = {
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreObjectsTimeSeries: (_, args, context) => {
+      if (args.authorId && args.authorId.length > 0) {
+        return stixCoreObjectsTimeSeriesByAuthor(context, context.user, args);
+      }
+      return stixCoreObjectsTimeSeries(context, context.user, args);
+    },
+    stixCoreObjectsNumber: (_, args, context) => stixCoreObjectsNumber(context, context.user, args),
+    stixCoreObjectsDistribution: (_, args, context) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return stixCoreObjectsDistributionByEntity(context, context.user, args);
+      }
+      return [];
+    },
     stixCoreObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
   },
   StixCoreObject: {

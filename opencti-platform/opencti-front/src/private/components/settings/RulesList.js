@@ -730,7 +730,7 @@ export default createRefetchContainer(
         }
         stixDomainObjectsTimeSeries(
           field: "created_at"
-          type: "Stix-Object"
+          types: ["Stix-Object"]
           operation: count
           startDate: $startDate
           interval: "month"
@@ -741,7 +741,7 @@ export default createRefetchContainer(
         }
         stixCoreRelationshipsTimeSeries(
           field: "created_at"
-          relationship_type: "stix-relationship"
+          relationship_type: ["stix-relationship"]
           operation: count
           startDate: $startDate
           interval: "month"
@@ -754,7 +754,7 @@ export default createRefetchContainer(
           total
           count
         }
-        stixCoreRelationshipsNumber(type: "stix-relationship", onlyInferred: true) {
+        stixCoreRelationshipsNumber(relationship_type: ["stix-relationship"], onlyInferred: true) {
           total
           count
         }

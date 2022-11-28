@@ -23,7 +23,7 @@ const styles = () => ({
 
 const stixCoreRelationshipsDonutsDistributionQuery = graphql`
   query StixCoreRelationshipsDonutDistributionQuery(
-    $relationship_type: String!
+    $relationship_type: [String]
     $toTypes: [String]
     $field: String!
     $operation: StatsOperation!

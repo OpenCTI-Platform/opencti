@@ -63,7 +63,7 @@ export const opinionContainsStixObjectOrStixRelationship = async (context, user,
 
 // region series
 export const opinionsTimeSeries = (context, user, args) => {
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, [], args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], args);
 };
 
 export const opinionsNumber = (context, user, args) => ({
@@ -77,8 +77,8 @@ export const opinionsNumber = (context, user, args) => ({
 });
 
 export const opinionsTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { ...args, filters });
 };
 
 export const opinionsTimeSeriesByAuthor = async (context, user, args) => {
@@ -91,8 +91,9 @@ export const opinionsTimeSeriesByAuthor = async (context, user, args) => {
       type: RELATION_CREATED_BY,
       value: authorId,
     },
+    ...(args.filters || [])
   ];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { ...args, filters });
 };
 
 export const opinionsNumberByEntity = (context, user, args) => ({
@@ -124,7 +125,7 @@ export const opinionsNumberByEntity = (context, user, args) => ({
 export const opinionsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, filters, args);
+  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, { ...args, filters });
 };
 // endregion
 

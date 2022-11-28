@@ -17,7 +17,6 @@ import {
   pascalize,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
-  READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
@@ -205,9 +204,9 @@ const oebp = (queryResult) => {
   return queryResult.body;
 };
 
-export const elRawSearch = (context, user, type, query) => {
+export const elRawSearch = (context, user, types, query) => {
   const elRawSearchFn = () => engine.search(query).then((r) => oebp(r));
-  return telemetry(context, user, `SELECT ${type}`, {
+  return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
     [SemanticAttributes.DB_NAME]: 'search_engine',
     [SemanticAttributes.DB_OPERATION]: 'read',
     [SemanticAttributes.DB_STATEMENT]: JSON.stringify(query),
@@ -621,233 +620,6 @@ export const RUNTIME_ATTRIBUTES = {
   },
 };
 
-export const elCount = async (context, user, indexName, options = {}) => {
-  const {
-    endDate = null,
-    types = null,
-    relationshipType = null,
-    authorId = null,
-    fromId = null,
-    toTypes = null,
-    isMetaRelationship = false,
-  } = options;
-  let must = [];
-  const markingRestrictions = await buildDataRestrictions(context, user);
-  must.push(...markingRestrictions.must);
-  if (endDate !== null) {
-    must = R.append(
-      {
-        range: {
-          created_at: {
-            format: 'strict_date_optional_time',
-            lt: endDate,
-          },
-        },
-      },
-      must
-    );
-  }
-  if (types !== null && types.length > 0) {
-    const should = types.map((typeValue) => {
-      return {
-        bool: {
-          should: [
-            { match_phrase: { 'entity_type.keyword': typeValue } },
-            { match_phrase: { 'parent_types.keyword': typeValue } },
-          ],
-          minimum_should_match: 1,
-        },
-      };
-    });
-    must = R.append(
-      {
-        bool: {
-          should,
-          minimum_should_match: 1,
-        },
-      },
-      must
-    );
-  }
-  if (relationshipType !== null && !isMetaRelationship) {
-    must = R.append(
-      {
-        bool: {
-          should: {
-            match_phrase: { 'relationship_type.keyword': relationshipType },
-          },
-        },
-      },
-      must
-    );
-  }
-  if (authorId !== null && !isMetaRelationship) {
-    must = R.append(
-      {
-        bool: {
-          should: {
-            match_phrase: { [buildRefRelationSearchKey(RELATION_CREATED_BY)]: authorId },
-          },
-        },
-      },
-      must
-    );
-  }
-  if (fromId !== null) {
-    if (isMetaRelationship) {
-      must = R.append(
-        {
-          bool: {
-            should: {
-              match_phrase: { [buildRefRelationSearchKey(relationshipType)]: fromId },
-            },
-          },
-        },
-        must
-      );
-    } else {
-      must = R.append(
-        {
-          nested: {
-            path: 'connections',
-            query: {
-              bool: {
-                must: [{ match_phrase: { 'connections.internal_id.keyword': fromId } }],
-              },
-            },
-          },
-        },
-        must
-      );
-    }
-  }
-  if (toTypes !== null) {
-    const filters = [];
-    for (let index = 0; index < toTypes.length; index += 1) {
-      filters.push({
-        match_phrase: { 'connections.types.keyword': toTypes[index] },
-      });
-    }
-    must = R.append(
-      {
-        nested: {
-          path: 'connections',
-          query: {
-            bool: {
-              should: filters,
-              minimum_should_match: 1,
-            },
-          },
-        },
-      },
-      must
-    );
-  }
-  const query = {
-    index: indexName,
-    body: {
-      query: {
-        bool: {
-          must,
-          must_not: markingRestrictions.must_not,
-        },
-      },
-    },
-  };
-  logApp.debug('[SEARCH ENGINE] countEntities', { query });
-  return engine.count(query)
-    .then((data) => {
-      return oebp(data).count;
-    })
-    .catch(async () => {
-      // In some case count can fail, so we can search instead
-      const searchFallback = await elRawSearch(query);
-      return searchFallback.hits.total.value;
-    });
-};
-export const elAggregationCount = async (context, user, type, aggregationField, start, end, filters = []) => {
-  const isIdFields = aggregationField.endsWith('internal_id');
-  const haveRange = start && end;
-  const dateFilter = [];
-  if (haveRange) {
-    dateFilter.push({
-      range: {
-        created_at: {
-          gte: start,
-          lte: end,
-        },
-      },
-    });
-  }
-  const histoFilters = R.map((f) => {
-    let key = `${f.type}.keyword`;
-    if (f.isRelation) {
-      key = buildRefRelationSearchKey(f.type ?? '*', '*');
-    } else if (booleanAttributes.includes(f.type)) {
-      key = f.type;
-    }
-    return {
-      multi_match: {
-        fields: [key],
-        type: 'phrase',
-        query: f.value,
-      },
-    };
-  }, filters);
-  const must = R.concat(dateFilter, histoFilters);
-  const markingRestrictions = await buildDataRestrictions(context, user);
-  must.push(...markingRestrictions.must);
-  const query = {
-    index: READ_PLATFORM_INDICES,
-    body: {
-      size: MAX_SEARCH_AGGREGATION_SIZE,
-      query: {
-        bool: {
-          must,
-          must_not: markingRestrictions.must_not,
-          should: [
-            { match_phrase: { 'entity_type.keyword': type } },
-            { match_phrase: { 'parent_types.keyword': type } },
-          ],
-          minimum_should_match: 1,
-        },
-      },
-      aggs: {
-        genres: {
-          terms: {
-            field: booleanAttributes.includes(aggregationField) ? aggregationField : `${aggregationField}.keyword`,
-            size: MAX_AGGREGATION_SIZE,
-          },
-          aggs: {
-            weight: {
-              sum: {
-                field: 'i_inference_weight',
-                missing: 1,
-              },
-            },
-          },
-        },
-      },
-    },
-  };
-  logApp.debug('[SEARCH ENGINE] aggregationCount', { query });
-  return elRawSearch(context, user, type, query)
-    .then((data) => {
-      const { buckets } = data.aggregations.genres;
-      return R.map((b) => {
-        let label = b.key;
-        if (typeof label === 'number') {
-          label = b.key_as_string;
-        } else if (!isIdFields) {
-          label = pascalize(b.key);
-        }
-        return { label, value: b.weight.value };
-      }, buckets);
-    })
-    .catch((err) => {
-      throw DatabaseError('Aggregation fail', { error: err, query });
-    });
-};
 // region relation reconstruction
 const elBuildRelation = (type, connection) => {
   return {
@@ -1096,283 +868,6 @@ export const elBatchIds = async (context, user, ids) => {
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 
-// field can be "entity_type" or "internal_id"
-export const elAggregationRelationsCount = async (context, user, type, opts) => {
-  const { startDate: start, endDate: end = now(), toTypes = [], dateAttribute = 'created_at' } = opts;
-  const { fromId = null, field = null, isTo = false, noDirection = false } = opts;
-  if (!R.includes(field, ['entity_type', 'internal_id', null])) {
-    throw FunctionalError('Unsupported field', field);
-  }
-  const roleFilter = { query_string: { query: !isTo ? '*_to' : '*_from', fields: ['connections.role'] } };
-  const haveRange = start && end;
-  const filters = [];
-  if (haveRange) {
-    filters.push({ range: { [dateAttribute]: { gte: start, lte: end } } });
-  } else if (start) {
-    filters.push({ range: { [dateAttribute]: { gte: start } } });
-  } else if (end) {
-    filters.push({ range: { [dateAttribute]: { lte: end } } });
-  }
-  if (fromId) {
-    filters.push({
-      nested: {
-        path: 'connections',
-        query: {
-          bool: {
-            must: [{ match_phrase: { 'connections.internal_id': fromId } }],
-          },
-        },
-      },
-    });
-  }
-  const typesFilters = [];
-  for (let index = 0; index < toTypes.length; index += 1) {
-    typesFilters.push({
-      match_phrase: { 'connections.types': toTypes[index] },
-    });
-  }
-  if (typesFilters.length > 0) {
-    filters.push({
-      nested: {
-        path: 'connections',
-        query: {
-          bool: {
-            should: typesFilters,
-            minimum_should_match: 1,
-          },
-        },
-      },
-    });
-  }
-  const must = R.concat(
-    [
-      {
-        bool: {
-          should: [
-            { match_phrase: { 'entity_type.keyword': type } },
-            { match_phrase: { 'parent_types.keyword': type } },
-          ],
-          minimum_should_match: 1,
-        },
-      },
-    ],
-    filters
-  );
-  const markingRestrictions = await buildDataRestrictions(context, user);
-  must.push(...markingRestrictions.must);
-  const query = {
-    index: READ_RELATIONSHIPS_INDICES,
-    ignore_throttled: ES_IGNORE_THROTTLED,
-    body: {
-      size: MAX_SEARCH_AGGREGATION_SIZE,
-      query: {
-        bool: {
-          must,
-          must_not: markingRestrictions.must_not,
-        },
-      },
-      aggs: {
-        connections: {
-          nested: {
-            path: 'connections',
-          },
-          aggs: {
-            filtered: {
-              filter: {
-                bool: {
-                  must: typesFilters.length > 0 && !noDirection ? roleFilter : [],
-                },
-              },
-              aggs: {
-                genres: {
-                  terms: {
-                    size: MAX_AGGREGATION_SIZE,
-                    field: field === 'internal_id' ? 'connections.internal_id.keyword' : 'connections.types.keyword',
-                  },
-                  aggs: {
-                    parent: {
-                      reverse_nested: {},
-                      aggs: {
-                        weight: {
-                          sum: {
-                            field: 'i_inference_weight',
-                            missing: 1,
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
-  logApp.debug('[SEARCH ENGINE] aggregationRelationsCount', { query });
-  return elRawSearch(context, user, type, query)
-    .then(async (data) => {
-      if (field === 'internal_id') {
-        const { buckets } = data.aggregations.connections.filtered.genres;
-        const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
-        return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
-      }
-      let fromType = null;
-      if (fromId) {
-        const fromEntity = await elLoadById(context, user, fromId);
-        fromType = fromEntity.entity_type;
-      }
-      const types = R.pipe(
-        R.map((h) => h._source.connections),
-        R.flatten(),
-        R.filter((c) => c.internal_id !== fromId && !R.includes(fromType, c.types)),
-        R.filter((c) => toTypes.length === 0 || R.includes(R.head(toTypes), c.types)),
-        R.map((e) => e.types),
-        R.flatten(),
-        R.uniq(),
-        R.filter((f) => !isAbstract(f)),
-        R.map((u) => u.toLowerCase())
-      )(data.hits.hits);
-      const { buckets } = data.aggregations.connections.filtered.genres;
-      const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
-      return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
-    })
-    .catch((e) => {
-      throw DatabaseError('Fail processing AggregationRelationsCount', { error: e });
-    });
-};
-export const elHistogramCount = async (context, user, type, field, interval, start, end, toTypes, filters, onlyInferred = false) => {
-  const histogramFilters = R.map((f) => {
-    const { isRelation = false, isNested = false, type: filterType, value, operator = 'eq' } = f;
-    if (isNested) {
-      const [path] = filterType.split('.');
-      return {
-        nested: {
-          path,
-          query: {
-            bool: {
-              must: [{ match_phrase: { [filterType]: value } }],
-            },
-          },
-        },
-      };
-    }
-    let key = `${filterType}.keyword`;
-    if (operator === 'wilcard') {
-      key = `${filterType}`;
-    }
-    if (isRelation) {
-      key = buildRefRelationSearchKey(filterType ?? '*', '*');
-    }
-    return {
-      multi_match: {
-        fields: [key],
-        type: 'phrase',
-        query: value,
-      },
-    };
-  }, filters);
-  let dateFormat;
-  switch (interval) {
-    case 'year':
-      dateFormat = 'yyyy';
-      break;
-    case 'month':
-      dateFormat = 'yyyy-MM';
-      break;
-    case 'day':
-      dateFormat = 'yyyy-MM-dd';
-      break;
-    default:
-      throw FunctionalError('Unsupported interval, please choose between year, month or day', interval);
-  }
-  let baseFilters = [
-    {
-      range: {
-        [field]: {
-          gte: start,
-          lte: end ?? now(),
-        },
-      },
-    },
-  ];
-  if (type) {
-    baseFilters = R.append(
-      {
-        bool: {
-          should: [
-            { match_phrase: { 'entity_type.keyword': type } },
-            { match_phrase: { 'parent_types.keyword': type } },
-          ],
-          minimum_should_match: 1,
-        },
-      },
-      baseFilters
-    );
-  }
-  const typesFilters = [];
-  for (let index = 0; index < toTypes.length; index += 1) {
-    typesFilters.push({
-      match_phrase: { 'connections.types.keyword': toTypes[index] },
-    });
-  }
-  if (typesFilters.length > 0) {
-    baseFilters.push({
-      nested: {
-        path: 'connections',
-        query: {
-          bool: {
-            should: typesFilters,
-            minimum_should_match: 1,
-          },
-        },
-      },
-    });
-  }
-  const must = R.concat(baseFilters, histogramFilters);
-  const markingRestrictions = await buildDataRestrictions(context, user);
-  must.push(...markingRestrictions.must);
-  const query = {
-    index: onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_PLATFORM_INDICES,
-    ignore_throttled: ES_IGNORE_THROTTLED,
-    _source_excludes: '*', // Dont need to get anything
-    body: {
-      query: {
-        bool: {
-          must,
-          must_not: markingRestrictions.must_not,
-        },
-      },
-      aggs: {
-        count_over_time: {
-          date_histogram: {
-            field,
-            calendar_interval: interval,
-            // time_zone: tzStart,
-            format: dateFormat,
-            keyed: true,
-          },
-          aggs: {
-            weight: {
-              sum: {
-                field: 'i_inference_weight',
-                missing: 1,
-              },
-            },
-          },
-        },
-      },
-    },
-  };
-  logApp.debug('[SEARCH ENGINE] histogramCount', { query });
-  return elRawSearch(context, user, type, query).then((data) => {
-    const { buckets } = data.aggregations.count_over_time;
-    const dataToPairs = R.toPairs(buckets);
-    return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
-  });
-};
-
 // region elastic common loader.
 export const specialElasticCharsEscape = (query) => {
   return query.replace(/([/+|\-*()~={}[\]:?\\])/g, '\\$1');
@@ -1491,6 +986,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc' } = options;
   const { types = null, filters = [], filterMode = 'and', search = null } = options;
+  const { startDate = null, endDate = null, dateAttribute = null } = options;
+  const dateFilter = [];
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
   let mustnot = [];
@@ -1511,6 +1008,17 @@ const elQueryBodyBuilder = async (context, user, options) => {
     }
     must = R.append({ bool: { should: idsTermsPerType, minimum_should_match: 1 } }, must);
   }
+  if (startDate) {
+    dateFilter.push({
+      range: {
+        [dateAttribute || 'created_at']: {
+          gte: startDate,
+          lte: endDate || now(),
+        },
+      },
+    });
+  }
+  must = R.concat(dateFilter, must);
   if (types !== null && types.length > 0) {
     const should = R.flatten(
       types.map((typeValue) => {
@@ -1705,6 +1213,23 @@ const elQueryBodyBuilder = async (context, user, options) => {
   }
   return body;
 };
+export const elCount = async (context, user, indexName, options = {}) => {
+  const body = await elQueryBodyBuilder(context, user, options);
+  const query = {
+    index: indexName,
+    body,
+  };
+  logApp.debug('[SEARCH ENGINE] countEntities', { query });
+  return engine.count(query)
+    .then((data) => {
+      return oebp(data).count;
+    })
+    .catch(async () => {
+      // In some case count can fail, so we can search instead
+      const searchFallback = await elRawSearch(query);
+      return searchFallback.hits.total.value;
+    });
+};
 export const elQueryCount = async (context, user, indexName, options = {}) => {
   const body = await elQueryBodyBuilder(context, user, options);
   const query = { index: indexName, body: { query: body.query } };
@@ -1715,6 +1240,187 @@ export const elQueryCount = async (context, user, indexName, options = {}) => {
     })
     .catch((err) => {
       throw DatabaseError('Count data fail', { error: err, query });
+    });
+};
+export const elHistogramCount = async (context, user, indexName, options = {}) => {
+  const { interval, field, types = null } = options;
+  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field });
+  let dateFormat;
+  switch (interval) {
+    case 'year':
+      dateFormat = 'yyyy';
+      break;
+    case 'month':
+      dateFormat = 'yyyy-MM';
+      break;
+    case 'day':
+      dateFormat = 'yyyy-MM-dd';
+      break;
+    default:
+      throw FunctionalError('Unsupported interval, please choose between year, month or day', interval);
+  }
+  body.aggs = {
+    count_over_time: {
+      date_histogram: {
+        field,
+        calendar_interval: interval,
+        // time_zone: tzStart,
+        format: dateFormat,
+        keyed: true,
+      },
+      aggs: {
+        weight: {
+          sum: {
+            field: 'i_inference_weight',
+            missing: 1,
+          },
+        },
+      },
+    },
+  };
+  const query = {
+    index: indexName,
+    ignore_throttled: ES_IGNORE_THROTTLED,
+    _source_excludes: '*', // Dont need to get anything
+    body,
+  };
+  logApp.debug('[SEARCH ENGINE] histogramCount', { query });
+  return elRawSearch(context, user, types, query).then((data) => {
+    const { buckets } = data.aggregations.count_over_time;
+    const dataToPairs = R.toPairs(buckets);
+    return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
+  });
+};
+export const elAggregationCount = async (context, user, indexName, options = {}) => {
+  const { field, types = null } = options;
+  const isIdFields = field.endsWith('internal_id');
+  const body = await elQueryBodyBuilder(context, user, options);
+  body.size = MAX_SEARCH_AGGREGATION_SIZE;
+  body.aggs = {
+    genres: {
+      terms: {
+        field: booleanAttributes.includes(field) ? field : `${field}.keyword`,
+        size: MAX_AGGREGATION_SIZE,
+      },
+      aggs: {
+        weight: {
+          sum: {
+            field: 'i_inference_weight',
+            missing: 1,
+          },
+        },
+      },
+    },
+  };
+  const query = {
+    index: indexName,
+    body,
+  };
+  logApp.debug('[SEARCH ENGINE] aggregationCount', { query });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const { buckets } = data.aggregations.genres;
+      return R.map((b) => {
+        let label = b.key;
+        if (typeof label === 'number') {
+          label = b.key_as_string;
+        } else if (!isIdFields) {
+          label = pascalize(b.key);
+        }
+        return { label, value: b.weight.value };
+      }, buckets);
+    })
+    .catch((err) => {
+      throw DatabaseError('Aggregation fail', { error: err, query });
+    });
+};
+// field can be "entity_type" or "internal_id"
+export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
+  const { types = [], field = null, fromId = null, isTo = false, noDirection = false, toTypes = [] } = options;
+  if (!R.includes(field, ['entity_type', 'internal_id', null])) {
+    throw FunctionalError('Unsupported field', field);
+  }
+  const roleFilter = { query_string: { query: !isTo ? '*_to' : '*_from', fields: ['connections.role'] } };
+  const typesFilters = [];
+  for (let index = 0; index < toTypes.length; index += 1) {
+    typesFilters.push({
+      match_phrase: { 'connections.types': toTypes[index] },
+    });
+  }
+  const body = await elQueryBodyBuilder(context, user, options);
+  body.size = MAX_SEARCH_AGGREGATION_SIZE;
+  body.aggs = {
+    connections: {
+      nested: {
+        path: 'connections',
+      },
+      aggs: {
+        filtered: {
+          filter: {
+            bool: {
+              must: typesFilters.length > 0 && !noDirection ? roleFilter : [],
+            },
+          },
+          aggs: {
+            genres: {
+              terms: {
+                size: MAX_AGGREGATION_SIZE,
+                field: field === 'internal_id' ? 'connections.internal_id.keyword' : 'connections.types.keyword',
+              },
+              aggs: {
+                parent: {
+                  reverse_nested: {},
+                  aggs: {
+                    weight: {
+                      sum: {
+                        field: 'i_inference_weight',
+                        missing: 1,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  const query = {
+    index: indexName,
+    ignore_throttled: ES_IGNORE_THROTTLED,
+    body,
+  };
+  logApp.debug('[SEARCH ENGINE] aggregationRelationsCount', { query });
+  return elRawSearch(context, user, types, query)
+    .then(async (data) => {
+      if (field === 'internal_id') {
+        const { buckets } = data.aggregations.connections.filtered.genres;
+        const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
+        return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
+      }
+      let fromType = null;
+      if (fromId) {
+        const fromEntity = await elLoadById(context, user, fromId);
+        fromType = fromEntity.entity_type;
+      }
+      const resultTypes = R.pipe(
+        R.map((h) => h._source.connections),
+        R.flatten(),
+        R.filter((c) => c.internal_id !== fromId && !R.includes(fromType, c.types)),
+        R.filter((c) => toTypes.length === 0 || R.includes(R.head(toTypes), c.types)),
+        R.map((e) => e.types),
+        R.flatten(),
+        R.uniq(),
+        R.filter((f) => !isAbstract(f)),
+        R.map((u) => u.toLowerCase())
+      )(data.hits.hits);
+      const { buckets } = data.aggregations.connections.filtered.genres;
+      const filteredBuckets = R.filter((b) => R.includes(b.key, resultTypes), buckets);
+      return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
+    })
+    .catch((e) => {
+      throw DatabaseError('Fail processing AggregationRelationsCount', { error: e });
     });
 };
 export const elPaginate = async (context, user, indexName, options = {}) => {

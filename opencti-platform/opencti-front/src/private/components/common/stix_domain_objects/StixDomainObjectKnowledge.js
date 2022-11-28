@@ -73,13 +73,13 @@ const stixDomainObjectKnowledgeReportsNumberQuery = graphql`
 
 const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   query StixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery(
-    $type: String
-    $fromId: StixRef
+    $relationship_type: [String]
+    $fromId: [String]
     $toTypes: [String]
     $endDate: DateTime
   ) {
     stixCoreRelationshipsNumber(
-      type: $type
+      relationship_type: $relationship_type
       fromId: $fromId
       toTypes: $toTypes
       endDate: $endDate

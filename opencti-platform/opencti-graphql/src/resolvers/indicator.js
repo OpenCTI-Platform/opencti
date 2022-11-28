@@ -48,7 +48,7 @@ const indicatorResolvers = {
       if (args.objectId && args.objectId.length > 0) {
         return indicatorsDistributionByEntity(context, context.user, args);
       }
-      return distributionEntities(context, context.user, ENTITY_TYPE_INDICATOR, [], args);
+      return distributionEntities(context, context.user, [ENTITY_TYPE_INDICATOR], args);
     },
   },
   IndicatorsFilter: {

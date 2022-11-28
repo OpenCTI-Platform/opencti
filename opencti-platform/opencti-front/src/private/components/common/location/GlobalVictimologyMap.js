@@ -14,7 +14,7 @@ export const globalVictimologyMapStixCoreRelationshipsDistributionQuery = graphq
   query GlobalVictimologyMapStixCoreRelationshipsDistributionQuery(
     $field: String!
     $operation: StatsOperation!
-    $relationship_type: String
+    $relationship_type: [String]
     $toTypes: [String]
     $startDate: DateTime
     $endDate: DateTime

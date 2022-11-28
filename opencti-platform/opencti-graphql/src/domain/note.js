@@ -38,7 +38,7 @@ export const noteContainsStixObjectOrStixRelationship = async (context, user, no
 
 // region series
 export const notesTimeSeries = (context, user, args) => {
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_NOTE, [], args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], args);
 };
 
 export const notesNumber = (context, user, args) => ({
@@ -52,8 +52,8 @@ export const notesNumber = (context, user, args) => ({
 });
 
 export const notesTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], { ...args, filters });
 };
 
 export const notesTimeSeriesByAuthor = async (context, user, args) => {
@@ -66,8 +66,9 @@ export const notesTimeSeriesByAuthor = async (context, user, args) => {
       type: RELATION_CREATED_BY,
       value: authorId,
     },
+    ...(args.filters || [])
   ];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], { ...args, filters });
 };
 
 export const notesNumberByEntity = (context, user, args) => ({
@@ -98,8 +99,8 @@ export const notesNumberByEntity = (context, user, args) => ({
 
 export const notesDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], { ...args, filters });
 };
 // endregion
 

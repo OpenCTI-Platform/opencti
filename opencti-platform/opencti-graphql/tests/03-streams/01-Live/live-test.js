@@ -9,6 +9,7 @@ import { convertStoreToStix } from '../../../src/database/stix-converter';
 import { utcDate } from '../../../src/utils/format';
 import { PORT } from '../../../src/config/conf';
 import httpServer from '../../../src/http/httpServer';
+import { READ_DATA_INDICES } from '../../../src/database/utils';
 
 describe('Live streams tests', () => {
   beforeAll(async () => {
@@ -20,7 +21,7 @@ describe('Live streams tests', () => {
 
   const getElementsCounting = async () => {
     const data = {};
-    const stixCoreAgg = await elAggregationCount(testContext, ADMIN_USER, 'Stix-Object', 'entity_type');
+    const stixCoreAgg = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
     for (let index = 0; index < stixCoreAgg.length; index += 1) {
       const { label, value } = stixCoreAgg[index];
       const key = convertEntityTypeToStixType(label);
@@ -30,9 +31,9 @@ describe('Live streams tests', () => {
         data[key] = value;
       }
     }
-    const stixCoreRelAgg = await elAggregationCount(testContext, ADMIN_USER, 'stix-core-relationship', 'entity_type');
+    const stixCoreRelAgg = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-core-relationship'], field: 'entity_type' });
     data.relationship = R.sum(stixCoreRelAgg.map((r) => r.value));
-    const stixSightingRelAgg = await elAggregationCount(testContext, ADMIN_USER, 'stix-sighting-relationship', 'entity_type');
+    const stixSightingRelAgg = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-sighting-relationship'], field: 'entity_type' });
     data.sighting = R.sum(stixSightingRelAgg.map((r) => r.value));
     return data;
   };

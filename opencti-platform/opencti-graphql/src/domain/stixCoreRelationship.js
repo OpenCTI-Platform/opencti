@@ -15,7 +15,11 @@ import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
-import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
+import {
+  isStixCoreRelationship,
+  STIX_CORE_RELATIONSHIPS,
+  stixCoreRelationshipOptions
+} from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
@@ -55,18 +59,12 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 };
 
 export const stixCoreRelationshipsNumber = (context, user, args) => {
-  const types = [];
-  if (args.type) {
-    types.push(args.type);
-  }
-  if (types.length === 0) {
-    types.push(ABSTRACT_STIX_CORE_RELATIONSHIP);
-  }
-  const finalArgs = R.assoc('types', types, args);
+  const { relationship_type = [STIX_CORE_RELATIONSHIPS] } = args;
+  const numberArgs = { ...args, types: relationship_type };
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {
-    count: elCount(context, user, indices, finalArgs),
-    total: elCount(context, user, indices, R.dissoc('endDate', finalArgs)),
+    count: elCount(context, user, indices, numberArgs),
+    total: elCount(context, user, indices, R.dissoc('endDate', numberArgs)),
   };
 };
 

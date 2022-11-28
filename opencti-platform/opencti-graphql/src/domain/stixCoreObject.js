@@ -7,11 +7,12 @@ import {
   createRelation,
   createRelations,
   deleteElementById,
-  deleteRelationsByFromAndTo,
+  deleteRelationsByFromAndTo, distributionEntities,
   internalLoadById,
   mergeEntities,
   storeLoadById,
   storeLoadByIdWithRefs,
+  timeSeriesEntities,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
@@ -48,12 +49,13 @@ import {
 import { isStixRelationship } from '../schema/stixRelationship';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { now } from '../utils/format';
+import { escape, now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
-import { elUpdateElement } from '../database/engine';
+import { elCount, elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
+import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -177,6 +179,30 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
   await pushToConnector(context, connector, message);
   return work;
 };
+
+// region stats
+export const stixCoreObjectsTimeSeries = (context, user, args) => {
+  const { types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
+  return timeSeriesEntities(context, user, types, args);
+};
+
+export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
+  const { authorId, types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
+  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, types, { ...args, filters });
+};
+
+export const stixCoreObjectsNumber = (context, user, args) => ({
+  count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, args),
+  total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', args)),
+});
+
+export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
+  const { objectId, relationship_type: relationshipType } = args;
+  const filters = [{ isRelation: true, type: relationshipType, value: objectId }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
+};
+// endregion
 
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {

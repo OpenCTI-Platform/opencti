@@ -57,7 +57,7 @@ const reportResolvers = {
       if (args.objectId && args.objectId.length > 0) {
         return reportsDistributionByEntity(context, context.user, args);
       }
-      return distributionEntities(context, context.user, ENTITY_TYPE_CONTAINER_REPORT, [], args);
+      return distributionEntities(context, context.user, [ENTITY_TYPE_CONTAINER_REPORT], args);
     },
     reportContainsStixObjectOrStixRelationship: (_, args, context) => {
       return reportContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);

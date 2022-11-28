@@ -19,7 +19,7 @@ import {
   searchEngineInit,
 } from '../../../src/database/engine';
 import {
-  ES_INDEX_PREFIX,
+  ES_INDEX_PREFIX, READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_INTERNAL_RELATIONSHIPS,
@@ -121,11 +121,8 @@ describe('Elasticsearch computation', () => {
     const malwaresAggregation = await elAggregationCount(
       testContext,
       ADMIN_USER,
-      'Stix-Domain-Object',
-      'entity_type',
-      undefined,
-      undefined,
-      []
+      READ_DATA_INDICES,
+      { types: ['Stix-Domain-Object'], field: 'entity_type' }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
@@ -136,16 +133,13 @@ describe('Elasticsearch computation', () => {
     const malwaresAggregation = await elAggregationCount(
       testContext,
       ADMIN_USER,
-      'Stix-Domain-Object',
+      ['Stix-Domain-Object'],
       'entity_type',
-      '2019-01-01T00:00:00Z',
-      new Date(mostRecentMalware.created_at).toISOString(),
-      [
-        {
-          type: 'name',
-          value: 'Paradise Ransomware',
-        },
-      ]
+      {
+        startDate: '2019-01-01T00:00:00Z',
+        endDate: new Date(mostRecentMalware.created_at).toISOString(),
+        filters: [{ type: 'name', value: 'Paradise Ransomware' }]
+      }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.size).toEqual(1);
@@ -157,17 +151,12 @@ describe('Elasticsearch computation', () => {
     const malwaresAggregation = await elAggregationCount(
       testContext,
       ADMIN_USER,
-      'Stix-Domain-Object',
-      'entity_type',
-      undefined,
-      undefined,
-      [
-        {
-          isRelation: true,
-          type: 'object-marking',
-          value: marking.internal_id,
-        },
-      ]
+      READ_DATA_INDICES,
+      {
+        types: ['Stix-Domain-Object'],
+        field: 'entity_type',
+        filters: [{ isRelation: true, type: 'object-marking', value: marking.internal_id }]
+      }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(1);
@@ -179,7 +168,7 @@ describe('Elasticsearch computation', () => {
       toTypes: ['Stix-Domain-Object'],
       fromId: testingReport.internal_id,
     };
-    const reportRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, 'stix-meta-relationship', opts);
+    const reportRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { ...opts, types: ['stix-meta-relationship'] });
     const aggregationMap = new Map(reportRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Indicator')).toEqual(3);
     expect(aggregationMap.get('Organization')).toEqual(3);
@@ -202,7 +191,7 @@ describe('Elasticsearch computation', () => {
       fromId: intrusionSet.internal_id,
       noDirection: true,
     };
-    const intrusionRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, 'stix-core-relationship', opts);
+    const intrusionRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { ...opts, types: ['stix-core-relationship'] });
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('City')).toEqual(1);
     expect(aggregationMap.get('Indicator')).toEqual(1);

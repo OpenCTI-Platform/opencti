@@ -197,10 +197,10 @@ const TotalRelationshipsCard = ({ title, options, Icon }) => {
   const { t, n } = useFormatter();
   const dashboardStixCoreRelationshipsNumberQuery = graphql`
     query DashboardStixCoreRelationshipsNumberQuery(
-      $type: String
+      $relationship_type: [String]
       $endDate: DateTime
     ) {
-      stixCoreRelationshipsNumber(type: $type, endDate: $endDate) {
+      stixCoreRelationshipsNumber(relationship_type: $relationship_type, endDate: $endDate) {
         total
         count
       }
@@ -266,7 +266,7 @@ const TopLabelsCard = ({ classes }) => {
     query DashboardStixMetaRelationshipsDistributionQuery(
       $field: String!
       $operation: StatsOperation!
-      $relationship_type: String
+      $relationship_type: [String]
       $toTypes: [String]
       $startDate: DateTime
       $endDate: DateTime
@@ -403,7 +403,7 @@ const TargetedCountries = ({ timeField }) => {
     query DashboardStixCoreRelationshipsDistributionQuery(
       $field: String!
       $operation: StatsOperation!
-      $relationship_type: String
+      $relationship_type: [String]
       $toTypes: [String]
       $startDate: DateTime
       $endDate: DateTime
@@ -692,7 +692,7 @@ const DefaultDashboard = ({ timeField }) => {
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalRelationshipsCard
                 title={'Total relationships'}
-                options={{ type: 'stix-core-relationship', endDate: dayAgo() }}
+                options={{ relationship_type: ['stix-core-relationship'], endDate: dayAgo() }}
                 Icon={GraphOutline}
                 classes={classes}
               />

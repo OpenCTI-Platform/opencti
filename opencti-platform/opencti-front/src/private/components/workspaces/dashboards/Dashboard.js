@@ -1,30 +1,20 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import Drawer from '@mui/material/Drawer';
-import Grid from '@mui/material/Grid';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
+import makeStyles from '@mui/styles/makeStyles';
+import { Subject, timer } from 'rxjs';
+import { debounce } from 'rxjs/operators';
 import {
   daysAgo,
   monthsAgo,
-  parse,
   yearsAgo,
   dayStartDate,
 } from '../../../../utils/Time';
-import inject18n from '../../../../components/i18n';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import WidgetCreation from './WidgetCreation';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 import ThreatVictimologyAll from './ThreatVictimologyAll';
 import ThreatVictimologySectors from './ThreatVictimologySectors';
@@ -52,10 +42,12 @@ import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
 import ThreatVulnerabilities from './ThreatVulnerabilities';
 import { fromB64, toB64 } from '../../../../utils/String';
 import GlobalActivityStixCoreRelationships from './GlobalActivityStixCoreRelationships';
+import WidgetConfig from './WidgetConfig';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
+const SAVE$ = new Subject().pipe(debounce(() => timer(500)));
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: '0 -20px 0 -20px',
   },
@@ -74,42 +66,33 @@ const styles = () => ({
     display: 'relative',
     overflow: 'hidden',
   },
-});
+}));
 
-class DashboardComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { openConfig: false, currentWidget: {}, mapReload: false };
-  }
-
-  saveManifest(manifest) {
-    const { workspace } = this.props;
-    const newManifest = toB64(JSON.stringify(manifest));
-    if (workspace.manifest !== newManifest) {
+const DashboardComponent = ({ workspace, noToolbar }) => {
+  const classes = useStyles();
+  const [manifest, setManifest] = useState(
+    workspace.manifest && workspace.manifest.length > 0
+      ? JSON.parse(fromB64(workspace.manifest))
+      : { widgets: {}, config: {} },
+  );
+  const [deleting, setDeleting] = useState(false);
+  const saveManifest = (newManifest) => {
+    setManifest(newManifest);
+    const newManifestEncoded = toB64(JSON.stringify(newManifest));
+    if (workspace.manifest !== newManifestEncoded) {
       commitMutation({
         mutation: workspaceMutationFieldPatch,
         variables: {
-          id: this.props.workspace.id,
+          id: workspace.id,
           input: {
             key: 'manifest',
-            value: newManifest,
+            value: newManifestEncoded,
           },
         },
       });
     }
-  }
-
-  decodeManifest() {
-    const { workspace } = this.props;
-    let manifest = { widgets: {}, config: {} };
-    if (workspace.manifest && workspace.manifest.length > 0) {
-      manifest = JSON.parse(fromB64(workspace.manifest));
-    }
-    return manifest;
-  }
-
-  handleAddWidget(widgetManifest) {
-    const manifest = this.decodeManifest();
+  };
+  const handleAddWidget = (widgetManifest) => {
     const newManifest = R.assoc(
       'widgets',
       R.assoc(
@@ -131,102 +114,61 @@ class DashboardComponent extends Component {
       ),
       manifest,
     );
-    this.saveManifest(newManifest);
-  }
-
-  handleDeleteWidget(widgetId) {
-    const manifest = this.decodeManifest();
+    saveManifest(newManifest);
+  };
+  const handleDeleteWidget = (widgetId) => {
+    setDeleting(true);
     const newManifest = R.assoc(
       'widgets',
       R.dissoc(widgetId, manifest.widgets),
       manifest,
     );
-    this.saveManifest(newManifest);
-  }
-
-  handleTimeFieldChange(event) {
-    const newValue = event.target.value;
-    const manifest = this.decodeManifest();
-    const newManifest = R.assoc(
-      'config',
-      R.assoc(
-        'timeField',
-        newValue === 'none' ? null : newValue,
-        manifest.config,
-      ),
-      manifest,
-    );
-    this.saveManifest(newManifest);
-  }
-
-  handleDateChange(type, value) {
-    // eslint-disable-next-line no-nested-ternary
-    const newValue = value && value.target
-      ? value.target.value
-      : value
-        ? parse(value).format()
-        : null;
-    const manifest = this.decodeManifest();
-    let newManifest = R.assoc(
-      'config',
-      R.assoc(type, newValue === 'none' ? null : newValue, manifest.config),
-      manifest,
-    );
-    if (type === 'relativeDate' && newValue !== 'none') {
-      newManifest = R.assoc(
-        'config',
-        R.assoc('startDate', null, newManifest.config),
-        newManifest,
+    saveManifest(newManifest);
+  };
+  const onLayoutChange = (layouts) => {
+    if (!deleting) {
+      const layoutsObject = R.indexBy(R.prop('i'), layouts);
+      const newManifest = R.assoc(
+        'widgets',
+        R.map(
+          (n) => R.assoc('layout', layoutsObject[n.id], n),
+          manifest.widgets,
+        ),
+        manifest,
       );
-      newManifest = R.assoc(
-        'config',
-        R.assoc('endDate', null, newManifest.config),
-        newManifest,
-      );
+      saveManifest(newManifest);
     }
-    this.saveManifest(newManifest);
-  }
-
-  onLayoutChange(layouts) {
-    const manifest = this.decodeManifest();
-    const layoutsObject = R.indexBy(R.prop('i'), layouts);
-    const newManifest = R.assoc(
-      'widgets',
-      R.map((n) => R.assoc('layout', layoutsObject[n.id], n), manifest.widgets),
-      manifest,
-    );
-    this.setState({ mapReload: true }, () => this.setState({ mapReload: false }));
-    this.saveManifest(newManifest);
-  }
-
-  onConfigChange(config) {
-    const manifest = this.decodeManifest();
+  };
+  const onConfigChange = (config) => {
     const newManifest = R.assoc(
       'widgets',
       R.map((n) => R.assoc('config', config, n), manifest.widgets),
       manifest,
     );
-    this.setState({ mapReload: true }, () => this.setState({ mapReload: false }));
-    this.saveManifest(newManifest);
-  }
-
-  static getDayStartDate() {
+    saveManifest(newManifest);
+  };
+  const getDayStartDate = () => {
     return dayStartDate(null, false);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderGlobalVisualization(widget, config) {
-    const { relativeDate } = config;
-    let { timeField = 'technical' } = config;
-    if (this.props.timeField) {
-      timeField = this.props.timeField;
+  };
+  const computerRelativeDate = (relativeDate) => {
+    if (relativeDate.includes('days')) {
+      return daysAgo(relativeDate.split('-')[1], null, false);
     }
+    if (relativeDate.includes('months')) {
+      return monthsAgo(relativeDate.split('-')[1]);
+    }
+    if (relativeDate.includes('years')) {
+      return yearsAgo(relativeDate.split('-')[1]);
+    }
+    return null;
+  };
+  const renderGlobalVisualization = (widget, config) => {
+    const { relativeDate } = config;
+    const { timeField = 'technical' } = config;
     const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
+      ? computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -253,7 +195,6 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            mapReload={this.state.mapReload}
           />
         );
       case 'countries':
@@ -263,7 +204,6 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            mapReload={this.state.mapReload}
           />
         );
       case 'intrusion-sets':
@@ -300,7 +240,7 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            onConfigChange={this.onConfigChange.bind(this)}
+            onConfigChange={onConfigChange}
           />
         );
       case 'indicators':
@@ -339,27 +279,20 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            onConfigChange={this.onConfigChange.bind(this)}
+            onConfigChange={onConfigChange}
           />
         );
       default:
         return 'Go away!';
     }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderThreatVisualization(widget, config) {
+  };
+  const renderThreatVisualization = (widget, config) => {
     const { relativeDate } = config;
-    let { timeField = 'technical' } = config;
-    if (this.props.timeField) {
-      timeField = this.props.timeField;
-    }
+    const { timeField = 'technical' } = config;
     const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
+      ? computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -386,7 +319,6 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            mapReload={this.state.mapReload}
           />
         );
       case 'countries':
@@ -396,7 +328,6 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            mapReload={this.state.mapReload}
           />
         );
       case 'campaigns':
@@ -438,35 +369,14 @@ class DashboardComponent extends Component {
       default:
         return 'Go away!';
     }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  computerRelativeDate(relativeDate) {
-    if (relativeDate.includes('days')) {
-      return daysAgo(relativeDate.split('-')[1], null, false);
-    }
-    if (relativeDate.includes('months')) {
-      return monthsAgo(relativeDate.split('-')[1]);
-    }
-    if (relativeDate.includes('years')) {
-      return yearsAgo(relativeDate.split('-')[1]);
-    }
-    return null;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderEntityVisualization(widget, config) {
+  };
+  const renderEntityVisualization = (widget, config) => {
     const { relativeDate } = config;
-    let { timeField = 'technical' } = config;
-    if (this.props.timeField) {
-      timeField = this.props.timeField;
-    }
+    const { timeField = 'technical' } = config;
     const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
+      ? computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -525,255 +435,22 @@ class DashboardComponent extends Component {
       default:
         return 'Go away!';
     }
-  }
-
-  render() {
-    const { t, classes, workspace, noToolbar } = this.props;
-    const manifest = this.decodeManifest();
-    const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
-    let timeField = R.propOr('technical', 'timeField', manifest.config);
-    if (this.props.timeField) {
-      timeField = this.props.timeField;
-    }
-    return (
-      <div
-        className={classes.container}
-        id="container"
-        style={{
-          paddingBottom: noToolbar ? 0 : 50,
-          marginTop: noToolbar ? -20 : 0,
-        }}
-      >
-        {!noToolbar && (
-          <WorkspaceHeader workspace={workspace} variant="dashboard" />
-        )}
-        {!noToolbar && (
-          <Drawer
-            anchor="bottom"
-            variant="permanent"
-            classes={{ paper: classes.bottomNav }}
-            PaperProps={{ variant: 'elevation', elevation: 1 }}
-          >
-            <Security
-              needs={[EXPLORE_EXUPDATE]}
-              placeholder={
-                <Grid container={true} spacing={1}>
-                  <Grid item={true} xs="auto">
-                    <FormControl style={{ width: 194, marginRight: 20 }}>
-                      <InputLabel id="timeField" variant="standard">
-                        {t('Date reference')}
-                      </InputLabel>
-                      <Select
-                        variant="standard"
-                        labelId="timeField"
-                        value={timeField === null ? '' : timeField}
-                        onChange={this.handleTimeFieldChange.bind(this)}
-                        disabled={true}
-                      >
-                        <MenuItem value="technical">
-                          {t('Technical date')}
-                        </MenuItem>
-                        <MenuItem value="functional">
-                          {t('Functional date')}
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item={true} xs="auto">
-                    <FormControl style={{ width: 194, marginRight: 20 }}>
-                      <InputLabel id="relative" variant="standard">
-                        {t('Relative time')}
-                      </InputLabel>
-                      <Select
-                        variant="standard"
-                        labelId="relative"
-                        value={relativeDate === null ? '' : relativeDate}
-                        onChange={this.handleDateChange.bind(
-                          this,
-                          'relativeDate',
-                        )}
-                        disabled={true}
-                      >
-                        <MenuItem value="none">{t('None')}</MenuItem>
-                        <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                        <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                        <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                        <MenuItem value="months-6">
-                          {t('Last 6 months')}
-                        </MenuItem>
-                        <MenuItem value="years-1">{t('Last year')}</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item={true} xs="auto">
-                    <DatePicker
-                      value={R.propOr(null, 'startDate', manifest.config)}
-                      disableToolbar={true}
-                      autoOk={true}
-                      label={t('Start date')}
-                      clearable={true}
-                      disableFuture={true}
-                      disabled={true}
-                      onChange={this.handleDateChange.bind(this, 'startDate')}
-                      renderInput={(params) => (
-                        <TextField
-                          style={{ marginRight: 20 }}
-                          variant="standard"
-                          size="small"
-                          {...params}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid item={true} xs="auto">
-                    <DatePicker
-                      value={R.propOr(null, 'endDate', manifest.config)}
-                      disableToolbar={true}
-                      autoOk={true}
-                      label={t('End date')}
-                      clearable={true}
-                      disabled={true}
-                      disableFuture={true}
-                      onChange={this.handleDateChange.bind(this, 'endDate')}
-                      renderInput={(params) => (
-                        <TextField
-                          style={{ marginRight: 20 }}
-                          variant="standard"
-                          size="small"
-                          {...params}
-                        />
-                      )}
-                    />
-                  </Grid>
-                </Grid>
-              }
-            >
-              <Grid container={true} spacing={1}>
-                <Grid item={true} xs="auto">
-                  <FormControl style={{ width: 194, marginRight: 20 }}>
-                    <InputLabel id="timeField" variant="standard">
-                      {t('Date reference')}
-                    </InputLabel>
-                    <Select
-                      variant="standard"
-                      labelId="timeField"
-                      size="small"
-                      value={timeField === null ? '' : timeField}
-                      onChange={this.handleTimeFieldChange.bind(this)}
-                    >
-                      <MenuItem value="technical">
-                        {t('Technical date')}
-                      </MenuItem>
-                      <MenuItem value="functional">
-                        {t('Functional date')}
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item={true} xs="auto">
-                  <FormControl style={{ width: 194, marginRight: 20 }}>
-                    <InputLabel id="relative" variant="standard">
-                      {t('Relative time')}
-                    </InputLabel>
-                    <Select
-                      variant="standard"
-                      labelId="relative"
-                      size="small"
-                      value={relativeDate === null ? '' : relativeDate}
-                      onChange={this.handleDateChange.bind(
-                        this,
-                        'relativeDate',
-                      )}
-                    >
-                      <MenuItem value="none">{t('None')}</MenuItem>
-                      <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                      <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                      <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                      <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
-                      <MenuItem value="years-1">{t('Last year')}</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item={true} xs="auto">
-                  <DatePicker
-                    value={R.propOr(null, 'startDate', manifest.config)}
-                    disableToolbar={true}
-                    autoOk={true}
-                    label={t('Start date')}
-                    clearable={true}
-                    disableFuture={true}
-                    disabled={relativeDate !== null}
-                    onChange={this.handleDateChange.bind(this, 'startDate')}
-                    renderInput={(params) => (
-                      <TextField
-                        style={{ marginRight: 20 }}
-                        variant="standard"
-                        size="small"
-                        {...params}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item={true} xs="auto">
-                  <DatePicker
-                    value={R.propOr(null, 'endDate', manifest.config)}
-                    autoOk={true}
-                    label={t('End date')}
-                    clearable={true}
-                    disabled={relativeDate !== null}
-                    disableFuture={true}
-                    onChange={this.handleDateChange.bind(this, 'endDate')}
-                    renderInput={(params) => (
-                      <TextField variant="standard" size="small" {...params} />
-                    )}
-                  />
-                </Grid>
-              </Grid>
-            </Security>
-          </Drawer>
-        )}
-        <Security
-          needs={[EXPLORE_EXUPDATE]}
-          placeholder={
-            <ResponsiveGridLayout
-              className="layout"
-              margin={[20, 20]}
-              rowHeight={50}
-              breakpoints={{
-                lg: 1200,
-                md: 1200,
-                sm: 1200,
-                xs: 1200,
-                xxs: 1200,
-              }}
-              cols={{
-                lg: 30,
-                md: 30,
-                sm: 30,
-                xs: 30,
-                xxs: 30,
-              }}
-              isDraggable={false}
-              isResizable={false}
-            >
-              {R.values(manifest.widgets).map((widget) => (
-                <Paper
-                  key={widget.id}
-                  data-grid={widget.layout}
-                  classes={{ root: classes.paper }}
-                  variant="outlined"
-                >
-                  {widget.perspective === 'global'
-                    && this.renderGlobalVisualization(widget, manifest.config)}
-                  {widget.perspective === 'threat'
-                    && this.renderThreatVisualization(widget, manifest.config)}
-                  {widget.perspective === 'entity'
-                    && this.renderEntityVisualization(widget, manifest.config)}
-                </Paper>
-              ))}
-            </ResponsiveGridLayout>
-          }
-        >
+  };
+  return (
+    <div
+      className={classes.container}
+      id="container"
+      style={{
+        paddingBottom: noToolbar ? 0 : 50,
+        marginTop: noToolbar ? -20 : 0,
+      }}
+    >
+      {!noToolbar && (
+        <WorkspaceHeader workspace={workspace} variant="dashboard" />
+      )}
+      <Security
+        needs={[EXPLORE_EXUPDATE]}
+        placeholder={
           <ResponsiveGridLayout
             className="layout"
             margin={[20, 20]}
@@ -792,11 +469,8 @@ class DashboardComponent extends Component {
               xs: 30,
               xxs: 30,
             }}
-            isDraggable={!noToolbar}
-            isResizable={!noToolbar}
-            onLayoutChange={
-              noToolbar ? () => true : this.onLayoutChange.bind(this)
-            }
+            isDraggable={false}
+            isResizable={false}
           >
             {R.values(manifest.widgets).map((widget) => (
               <Paper
@@ -805,38 +479,65 @@ class DashboardComponent extends Component {
                 classes={{ root: classes.paper }}
                 variant="outlined"
               >
-                {!noToolbar && (
-                  <WidgetPopover
-                    onDelete={this.handleDeleteWidget.bind(this, widget.id)}
-                  />
-                )}
                 {widget.perspective === 'global'
-                  && this.renderGlobalVisualization(widget, manifest.config)}
+                  && renderGlobalVisualization(widget, manifest.config)}
                 {widget.perspective === 'threat'
-                  && this.renderThreatVisualization(widget, manifest.config)}
+                  && renderThreatVisualization(widget, manifest.config)}
                 {widget.perspective === 'entity'
-                  && this.renderEntityVisualization(widget, manifest.config)}
+                  && renderEntityVisualization(widget, manifest.config)}
               </Paper>
             ))}
           </ResponsiveGridLayout>
-          {!noToolbar && (
-            <WidgetCreation onComplete={this.handleAddWidget.bind(this)} />
-          )}
-        </Security>
-      </div>
-    );
-  }
-}
-
-DashboardComponent.propTypes = {
-  workspace: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  noToolbar: PropTypes.bool,
-  timeField: PropTypes.string,
+        }
+      >
+        <ResponsiveGridLayout
+          className="layout"
+          margin={[20, 20]}
+          rowHeight={50}
+          breakpoints={{
+            lg: 1200,
+            md: 1200,
+            sm: 1200,
+            xs: 1200,
+            xxs: 1200,
+          }}
+          cols={{
+            lg: 30,
+            md: 30,
+            sm: 30,
+            xs: 30,
+            xxs: 30,
+          }}
+          isDraggable={!noToolbar}
+          isResizable={!noToolbar}
+          onLayoutChange={noToolbar ? () => true : onLayoutChange}
+        >
+          {R.values(manifest.widgets).map((widget) => (
+            <Paper
+              key={widget.id}
+              data-grid={widget.layout}
+              classes={{ root: classes.paper }}
+              variant="outlined"
+            >
+              {!noToolbar && (
+                <WidgetPopover onDelete={() => handleDeleteWidget(widget.id)} />
+              )}
+              {widget.perspective === 'global'
+                && renderGlobalVisualization(widget, manifest.config)}
+              {widget.perspective === 'threat'
+                && renderThreatVisualization(widget, manifest.config)}
+              {widget.perspective === 'entity'
+                && renderEntityVisualization(widget, manifest.config)}
+            </Paper>
+          ))}
+        </ResponsiveGridLayout>
+        {!noToolbar && <WidgetConfig onComplete={handleAddWidget} />}
+      </Security>
+    </div>
+  );
 };
 
-const Dashboard = createFragmentContainer(DashboardComponent, {
+export default createFragmentContainer(DashboardComponent, {
   workspace: graphql`
     fragment Dashboard_workspace on Workspace {
       id
@@ -852,5 +553,3 @@ const Dashboard = createFragmentContainer(DashboardComponent, {
     }
   `,
 });
-
-export default R.compose(inject18n, withStyles(styles))(Dashboard);

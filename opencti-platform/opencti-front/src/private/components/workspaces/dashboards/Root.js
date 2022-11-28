@@ -1,15 +1,15 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
-import { graphql } from 'react-relay';
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import { Route, withRouter } from "react-router-dom";
+import { graphql } from "react-relay";
 import {
   QueryRenderer,
   requestSubscription,
-} from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
-import Dashboard from './Dashboard';
-import Loader from '../../../../components/Loader';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
+} from "../../../../relay/environment";
+import TopBar from "../../nav/TopBar";
+import Dashboard from "./Dashboard";
+import Loader from "../../../../components/Loader";
+import ErrorNotFound from "../../../../components/ErrorNotFound";
 
 const subscription = graphql`
   subscription RootDashboardSubscription($id: ID!) {

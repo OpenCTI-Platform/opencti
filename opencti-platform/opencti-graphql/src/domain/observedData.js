@@ -55,7 +55,7 @@ export const observedDataContainsStixObjectOrStixRelationship = async (context, 
 
 // region series
 export const observedDatasTimeSeries = (context, user, args) => {
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, [], args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
 };
 
 export const observedDatasNumber = (context, user, args) => ({
@@ -69,8 +69,8 @@ export const observedDatasNumber = (context, user, args) => ({
 });
 
 export const observedDatasTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], { ...args, filters });
 };
 
 export const observedDatasTimeSeriesByAuthor = async (context, user, args) => {
@@ -83,8 +83,9 @@ export const observedDatasTimeSeriesByAuthor = async (context, user, args) => {
       type: RELATION_CREATED_BY,
       value: authorId,
     },
+    ...(args.filters || [])
   ];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], { ...args, filters });
 };
 
 export const observedDatasNumberByEntity = (context, user, args) => ({
@@ -115,8 +116,8 @@ export const observedDatasNumberByEntity = (context, user, args) => ({
 
 export const observedDatasDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], { ...args, filters });
 };
 // endregion
 

@@ -17,12 +17,12 @@ export const findAll = (context, user, args) => {
 
 // region time series
 export const campaignsTimeSeries = (context, user, args) => {
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CAMPAIGN, [], args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CAMPAIGN], args);
 };
 
 export const campaignsTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: args.relationship_type, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CAMPAIGN, filters, args);
+  const filters = [{ isRelation: true, type: args.relationship_type, value: args.objectId }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CAMPAIGN], { ...args, filters });
 };
 // endregion
 

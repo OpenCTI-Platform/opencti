@@ -35,7 +35,11 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP
+} from '../../../src/schema/general';
 import { RELATION_MITIGATES, RELATION_RELATED_TO, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
@@ -575,7 +579,7 @@ describe('Relations time series', () => {
     // relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de > 2020-02-29T23:00:00.000Z
     // relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3 > 2020-02-28T23:00:00.000Z
     const options = {
-      relationship_type: 'uses',
+      relationship_type: ['uses'],
       field: 'start_time',
       operation: 'count',
       interval: 'month',
@@ -590,8 +594,8 @@ describe('Relations time series', () => {
   it('should relations with fromId time series', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: malware.internal_id,
-      relationship_type: 'uses',
+      fromId: [malware.internal_id],
+      relationship_type: ['uses'],
       field: 'start_time',
       operation: 'count',
       interval: 'year',
@@ -609,7 +613,7 @@ describe('Entities distribution', () => {
   it('should entity distribution', async () => {
     // const { startDate, endDate, operation, field, inferred } = options;
     const options = { field: 'entity_type', operation: 'count', limit: 20 };
-    const distribution = await distributionEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', [], options);
+    const distribution = await distributionEntities(testContext, ADMIN_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], options);
     expect(distribution.length).toEqual(17);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
@@ -631,7 +635,7 @@ describe('Entities distribution', () => {
       end,
     };
     const filters = [relationFilter];
-    const distribution = await distributionEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', filters, options);
+    const distribution = await distributionEntities(testContext, ADMIN_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { ...options, filters });
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
@@ -645,7 +649,7 @@ describe('Entities distribution', () => {
       startDate: '2018-03-01T00:00:00+01:00',
       endDate: '2018-03-02T00:00:00+01:00',
     };
-    const distribution = await distributionEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', [], options);
+    const distribution = await distributionEntities(testContext, ADMIN_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], options);
     expect(distribution.length).toEqual(0);
   });
 });
@@ -664,8 +668,8 @@ describe('Relations distribution', () => {
     // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: malware.internal_id,
-      relationship_type: 'uses',
+      fromId: [malware.internal_id],
+      relationship_type: ['uses'],
       field: 'entity_type',
       operation: 'count',
     };
@@ -678,7 +682,7 @@ describe('Relations distribution', () => {
   it('should relation distribution dates filtered', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: malware.internal_id,
+      fromId: [malware.internal_id],
       field: 'entity_type',
       operation: 'count',
       startDate: '2020-02-28T22:59:00.000Z',
@@ -692,7 +696,7 @@ describe('Relations distribution', () => {
   it('should relation distribution filtered by to', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: malware.internal_id,
+      fromId: [malware.internal_id],
       field: 'entity_type',
       operation: 'count',
       toTypes: ['Attack-Pattern'],

@@ -18,13 +18,17 @@ import {
   EVENT_TYPE_DELETE_DEPENDENCIES,
   fillTimeSeries,
   generateCreateMessage,
-  generateUpdateMessage,
+  generateUpdateMessage, INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
   READ_DATA_INDICES,
+  READ_DATA_INDICES_INFERRED,
+  READ_DATA_INDICES_WITHOUT_INFERRED,
+  READ_ENTITIES_INDICES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -177,7 +181,6 @@ import {
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import {
   dayFormat,
-  escape,
   FROM_START,
   FROM_START_STR,
   mergeDeepRightAll,
@@ -534,29 +537,30 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
     .filter((n) => isNotEmptyField(resolveLabels[n.label]))
     .map((n) => R.assoc('entity', resolveLabels[n.label], n));
 };
-export const timeSeriesEntities = async (context, user, entityType, filters, options) => {
+export const timeSeriesEntities = async (context, user, types, args) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, field, interval, toTypes = [], onlyInferred = false } = options;
+  const timeSeriesArgs = buildFilters({ types, ...args });
+  const { startDate, endDate, interval } = args;
   // Check if can be supported by ES
-  const histogramData = await elHistogramCount(context, user, entityType, field, interval, startDate, endDate, toTypes, filters, onlyInferred);
+  const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const timeSeriesRelations = async (context, user, options) => {
+export const timeSeriesRelations = async (context, user, args) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid }
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, relationship_type: relationshipType, field, interval, toTypes = [], onlyInferred = false } = options;
-  const { fromId } = options;
+  const { startDate, endDate, relationship_type: relationshipTypes, interval, fromId = null } = args;
   // Check if can be supported by ES
-  const entityType = relationshipType ? escape(relationshipType) : 'stix-core-relationship';
-  const filters = fromId ? [{ isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId }] : [];
-  const histogramData = await elHistogramCount(context, user, entityType, field, interval, startDate, endDate, toTypes, filters, onlyInferred);
+  const types = relationshipTypes || ['stix-core-relationship'];
+  const filters = fromId ? [{ isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId }, ...(args.filters || [])] : args.filters;
+  const timeSeriesArgs = buildFilters({ types, ...args, filters });
+  const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const distributionEntities = async (context, user, entityType, filters, options = {}) => {
+export const distributionEntities = async (context, user, types, args) => {
+  const distributionArgs = buildFilters({ types, ...args });
   // filters: { isRelation: true, type: stix_relation, start: date, end: date, value: uuid }
-  const { limit = 10, order = 'desc' } = options;
-  const { startDate, endDate, field } = options;
+  const { limit = 10, order = 'desc', field } = args;
   // Unsupported in cache: const { isRelation, value, from, to, start, end, type };
   if (field.includes('.') && !field.endsWith('internal_id')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
@@ -565,7 +569,7 @@ export const distributionEntities = async (context, user, entityType, filters, o
   if (field.includes('.')) {
     finalField = REL_INDEX_PREFIX + field;
   }
-  const distributionData = await elAggregationCount(context, user, entityType, finalField, startDate, endDate, filters);
+  const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, { ...distributionArgs, field: finalField });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field.includes(ID_INTERNAL)) {
@@ -573,15 +577,16 @@ export const distributionEntities = async (context, user, entityType, filters, o
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
-export const distributionRelations = async (context, user, options) => {
-  const { field } = options; // Mandatory fields
-  const { limit = 50, order } = options;
-  const { relationship_type: relationshipType, dateAttribute = 'created_at' } = options;
-  const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
-  const distDateAttribute = dateAttribute || 'created_at';
+export const distributionRelations = async (context, user, args) => {
+  const { field } = args; // Mandatory fields
+  const { limit = 50, order } = args;
+  const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
+  const types = relationshipTypes || [ABSTRACT_STIX_CORE_RELATIONSHIP];
+  const distributionDateAttribute = dateAttribute || 'created_at';
   // Using elastic can only be done if the distribution is a count on types
-  const opts = { ...options, dateAttribute: distDateAttribute };
-  const distributionData = await elAggregationRelationsCount(context, user, entityType, opts);
+  const opts = { ...args, dateAttribute: distributionDateAttribute };
+  const distributionArgs = buildFilters({ types, ...opts });
+  const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field === ID_INTERNAL) {

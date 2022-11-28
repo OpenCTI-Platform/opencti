@@ -34,8 +34,8 @@ const styles = () => ({
 
 const entityStixCoreRelationshipsListDistributionQuery = graphql`
   query EntityStixCoreRelationshipsListDistributionQuery(
-    $fromId: StixRef
-    $relationship_type: String!
+    $fromId: [String]
+    $relationship_type: [String]
     $toTypes: [String]
     $isTo: Boolean
     $field: String!
