@@ -40,6 +40,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { batchUsers } from '../domain/user';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
+import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -72,6 +73,8 @@ const stixCoreObjectResolvers = {
     },
     stixCoreObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
   },
+  StixCoreObjectsFilter: stixCoreObjectOptions.StixCoreObjectsFilter,
+  StixCoreObjectsOrdering: stixCoreObjectOptions.StixCoreObjectsOrdering,
   StixCoreObject: {
     // eslint-disable-next-line
     __resolveType(obj) {

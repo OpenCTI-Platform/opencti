@@ -43,7 +43,8 @@ const i18n = {
       'Global keyword': 'Palabra clave global',
       'Search for a threat...': 'Investigar una amenaza...',
       'Affected software': 'Aplicaciones afectadas',
-      'Do you want to delete this status template?': '¿Desea eliminar esta plantilla de estado?',
+      'Do you want to delete this status template?':
+        '¿Desea eliminar esta plantilla de estado?',
       'Create a status template': 'Crear una plantilla de estado',
       'Update a status template': 'Actualizar una plantilla de estado',
       'Do you want to delete this entity?': '¿Quieres borrar esta entidad?',
@@ -650,14 +651,10 @@ const i18n = {
       Groups: 'Grupos',
       Global: 'Global',
       'Knowledge graph': 'Grafo de conocimiento',
-      'Display global data without selecting a specific entity.':
-        'Mostrar datos globales sin seleccionar una entidad en concreto.',
-      'Threat or arsenal item': 'Objeto de amenaza o arsenal',
-      'Display data about intrusion sets, malwares, tools, etc.':
-        'Mostrar datos sobre sets de intrusión, muestras de aplicaciones maliciosos, herramientas, etc.',
-      'Identity or location': 'Identidad o localización',
-      'Display data about organizations, sectors, countries, etc.':
-        'Mostrar datos sobre organizaciones, sectores, países, etc.',
+      'Display global knowledge with filters and criteria.':
+        'Muestra conocimiento global con filtros y criterios.',
+      'Display specific knowledge using relationships and filters.':
+        'Muestre conocimientos específicos utilizando relaciones y filtros.',
       Objective: 'Objetivo',
       Configuration: 'Configuración',
       Victimology: 'Victimología',
@@ -1645,7 +1642,8 @@ const i18n = {
       'Global keyword': 'Mot-clé global',
       'Search for a threat...': 'Rechercher une menace...',
       'Affected software': 'Logiciels affectés',
-      'Do you want to delete this status template?': 'Souhaitez-vous supprimer ce template de statut ?',
+      'Do you want to delete this status template?':
+        'Souhaitez-vous supprimer ce template de statut ?',
       'Create a status template': 'Créer un template de statut',
       'Update a status template': 'Modifier un template de statut',
       'Do you want to delete this entity?':
@@ -2258,14 +2256,10 @@ const i18n = {
       Groups: 'Groupes',
       Global: 'Global',
       'Knowledge graph': 'Graph de connaissance',
-      'Display global data without selecting a specific entity.':
-        'Afficher des données globales sans sélectionner une entité spécifique.',
-      'Threat or arsenal item': 'Menace ou arsenal',
-      'Display data about intrusion sets, malwares, tools, etc.':
-        'Afficher des données à propos de MOA, codes malveillants, outils, etc.',
-      'Identity or location': 'Identité ou emplacement',
-      'Display data about organizations, sectors, countries, etc.':
-        'Afficher des données à propos de secteurs, de pays, etc.',
+      'Display global knowledge with filters and criteria.':
+        'Afficher la connaissance globale avec des filtres et des critères.',
+      'Display specific knowledge using relationships and filters.':
+        'Afficher des connaissances spécifiques en utilisant des relations et des filtres.',
       Objective: 'Objectif',
       Configuration: 'Configuration',
       Victimology: 'Victimologie',
@@ -3236,7 +3230,8 @@ const i18n = {
       'Global keyword': 'グローバルキーワード',
       'Search for a threat...': '脅威の検索...',
       'Affected software': '影響を受けるソフトウェア',
-      'Do you want to delete this status template?': 'このステータステンプレートを削除しますか?',
+      'Do you want to delete this status template?':
+        'このステータステンプレートを削除しますか?',
       'Create a status template': '状態テンプレートを作成する',
       'Update a status template': '状態テンプレートを更新する',
       'Do you want to delete this entity?': 'このエンティティを削除しますか？',
@@ -3822,14 +3817,10 @@ const i18n = {
       Groups: 'グループ',
       Global: '全体',
       'Knowledge graph': 'ナレッジグラフ',
-      'Display global data without selecting a specific entity.':
-        '特定のエンティティを選択せず、全体のデータを表示します。',
-      'Threat or arsenal item': '脅威または武器庫のアイテム',
-      'Display data about intrusion sets, malwares, tools, etc.':
-        '侵入セット、マルウェア、ツールなどに関するデータを表示します。',
-      'Identity or location': 'アイデンティティまたはロケーション',
-      'Display data about organizations, sectors, countries, etc.':
-        '組織、セクター、国などに関するデータを表示します。',
+      'Display global knowledge with filters and criteria.':
+        'フィルターと条件を使用してグローバルな知識を表示します。',
+      'Display specific knowledge using relationships and filters.':
+        '関係とフィルターを使用して特定の知識を表示します。',
       Objective: '目的',
       Configuration: '配置',
       Victimology: '被害者学',
@@ -5323,14 +5314,10 @@ const i18n = {
       Groups: '组',
       Global: '全局',
       'Knowledge graph': '知识图谱',
-      'Display global data without selecting a specific entity.':
-        '在不选择特定实体的情况下显示全局数据。',
-      'Threat or arsenal item': '威胁或军火库项目',
-      'Display data about intrusion sets, malwares, tools, etc.':
-        '显示有关入侵集、恶意软件、工具等的数据。',
-      'Identity or location': '身份或位置',
-      'Display data about organizations, sectors, countries, etc.':
-        '显示有关组织、部门、国家等的数据。',
+      'Display global knowledge with filters and criteria.':
+        '使用过滤器和标准显示全球知识。',
+      'Display specific knowledge using relationships and filters.':
+        '使用关系和过滤器显示特定知识。',
       Objective: '目标',
       Configuration: '配置',
       Victimology: '受害者研究',

@@ -113,6 +113,14 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     );
     saveManifest(newManifest);
   };
+  const handleUpdateWidget = (widgetManifest) => {
+    const newManifest = R.assoc(
+      'widgets',
+      R.assoc(widgetManifest.id, widgetManifest, manifest.widgets),
+      manifest,
+    );
+    saveManifest(newManifest);
+  };
   const handleDeleteWidget = (widgetId) => {
     setDeleting(true);
     const newManifest = R.assoc(
@@ -517,7 +525,11 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               variant="outlined"
             >
               {!noToolbar && (
-                <WidgetPopover onDelete={() => handleDeleteWidget(widget.id)} />
+                <WidgetPopover
+                  widget={widget}
+                  onUpdate={handleUpdateWidget}
+                  onDelete={() => handleDeleteWidget(widget.id)}
+                />
               )}
               {widget.perspective === 'global'
                 && renderGlobalVisualization(widget, manifest.config)}
