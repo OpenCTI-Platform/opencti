@@ -440,7 +440,7 @@ class DeviceEditionContainer extends Component {
             </Button>
             <Button
               onClick={() => this.props.history.goBack()}
-              color="primary"
+              color="secondary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
               size="small"
