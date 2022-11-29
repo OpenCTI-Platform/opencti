@@ -606,7 +606,7 @@ describe('Relations time series', () => {
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(3);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2019-12-31T23:00:00.000Z')).toEqual(3);
+    expect(aggregationMap.get('2019-12-31T23:00:00.000Z')).toEqual(2);
   });
 });
 
@@ -669,7 +669,7 @@ describe('Relations distribution', () => {
     // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: [malware.internal_id],
+      elementId: [malware.internal_id],
       relationship_type: ['uses'],
       field: 'entity_type',
       operation: 'count',

@@ -38,6 +38,7 @@ import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '.
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
+import { buildFilters } from '../../../src/database/repository';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -168,10 +169,12 @@ describe('Elasticsearch computation', () => {
   it('should relation aggregation accurate', async () => {
     const testingReport = await elLoadById(testContext, ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const opts = {
+      types: ['stix-meta-relationship'],
       toTypes: ['Stix-Domain-Object'],
       fromId: testingReport.internal_id,
     };
-    const reportRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { ...opts, types: ['stix-meta-relationship'] });
+    const distributionArgs = buildFilters(opts);
+    const reportRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, distributionArgs);
     const aggregationMap = new Map(reportRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Indicator')).toEqual(3);
     expect(aggregationMap.get('Organization')).toEqual(3);
@@ -188,12 +191,14 @@ describe('Elasticsearch computation', () => {
     const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     // "target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b", organization -> Allied Universal
     const opts = {
+      types: ['stix-core-relationship'],
       start: '2020-02-29T00:00:00Z',
       end: new Date().getTime(),
       elementWithTargetTypes: ['Stix-Domain-Object'],
       elementId: intrusionSet.internal_id,
     };
-    const intrusionRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { ...opts, types: ['stix-core-relationship'] });
+    const distributionArgs = buildFilters(opts);
+    const intrusionRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, distributionArgs);
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('City')).toEqual(1);
     expect(aggregationMap.get('Indicator')).toEqual(1);

@@ -8,7 +8,6 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
-import Slide from '@mui/material/Slide';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -29,11 +28,7 @@ import {
 } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -181,11 +176,9 @@ const WidgetConfig = ({ variant, onComplete }) => {
        <div>
          <div className={classes.add}>
            <Button
-               disabled={!areAttributesValid()}
                variant="contained"
                color="secondary"
                size="small"
-               onClick={() => handleAddAttribute()}
                classes={{ root: classes.buttonAdd }}
            >
              <AddOutlined fontSize="small" />

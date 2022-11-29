@@ -110,7 +110,7 @@ export const opinionsNumberByEntity = (context, user, args) => {
 export const opinionsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
   const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
-  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_OPINION, { ...args, filters });
+  return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { ...args, filters });
 };
 // endregion
 

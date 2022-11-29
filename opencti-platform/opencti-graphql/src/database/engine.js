@@ -984,7 +984,7 @@ const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type'
   'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false } = options;
+  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const { types = null, filters = [], filterMode = 'and', search = null } = options;
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const dateFilter = [];
@@ -1013,8 +1013,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
       range: {
         [dateAttribute || 'created_at']: {
           format: 'strict_date_optional_time',
-          gte: startDate,
-          lte: endDate,
+          [intervalInclude ? 'gte' : 'gt']: startDate,
+          [intervalInclude ? 'lte' : 'lt']: endDate,
         },
       },
     });
@@ -1023,7 +1023,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       range: {
         [dateAttribute || 'created_at']: {
           format: 'strict_date_optional_time',
-          gte: startDate,
+          [intervalInclude ? 'gte' : 'gt']: startDate,
         },
       },
     });
@@ -1032,7 +1032,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       range: {
         [dateAttribute || 'created_at']: {
           format: 'strict_date_optional_time',
-          lte: endDate,
+          [intervalInclude ? 'lte' : 'lt']: endDate,
         },
       },
     });
@@ -1267,7 +1267,7 @@ export const elQueryCount = async (context, user, indexName, options = {}) => {
 };
 export const elHistogramCount = async (context, user, indexName, options = {}) => {
   const { interval, field, types = null } = options;
-  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true });
+  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
   let dateFormat;
   switch (interval) {
     case 'year':
@@ -1363,6 +1363,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const roleFilter = { query_string: { query: fromId || !isTo ? '*_to' : '*_from', fields: ['connections.role'] } };
   let typesFilters = null;
   if (fromTypes && fromTypes.length > 0) {
@@ -1380,7 +1381,6 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       });
     }
   }
-  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = MAX_SEARCH_AGGREGATION_SIZE;
   body.aggs = {
     connections: {

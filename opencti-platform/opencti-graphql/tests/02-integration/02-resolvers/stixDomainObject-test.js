@@ -169,7 +169,7 @@ describe('StixDomainObject resolver standard behavior', () => {
   it('should timeseries stixDomainObjects to be accurate', async () => {
     const TIMESERIES_QUERY = gql`
       query stixDomainObjectsTimeSeries(
-        $type: String
+        $types: [String]
         $field: String!
         $operation: StatsOperation!
         $startDate: DateTime!
@@ -177,7 +177,7 @@ describe('StixDomainObject resolver standard behavior', () => {
         $interval: String!
       ) {
         stixDomainObjectsTimeSeries(
-          type: $type
+          types: $types
           field: $field
           operation: $operation
           startDate: $startDate
