@@ -163,8 +163,6 @@ const RiskAnalysisContainerFragment = createFragmentContainer(
     risk: graphql`
       fragment RiskAnalysisContainer_risk on Risk {
         __typename
-        id
-        name
         characterizations {
           __typename
           id

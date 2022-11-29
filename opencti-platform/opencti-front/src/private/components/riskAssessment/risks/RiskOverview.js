@@ -305,40 +305,11 @@ const RiskOverview = createFragmentContainer(
       fragment RiskOverview_risk on Risk {
         __typename
         id
-        name
         created
         modified
         description
-        statement
-        risk_status
         risk_level
-        deadline
-        accepted
-        risk_adjusted
         priority
-        vendor_dependency
-        impacted_control_id
-        origins {
-          origin_actors {
-            actor_type
-            actor_ref {
-              ... on AssessmentPlatform {
-                id
-                name
-              }
-              ... on Component {
-                id
-                component_type
-                name
-              }
-              ... on OscalParty {
-                id
-                party_type
-                name
-              }
-            }
-          }
-        }
         labels {
           __typename
           id
