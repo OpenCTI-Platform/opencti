@@ -648,7 +648,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             </Step>
           </Stepper>
         </DialogTitle>
-        <DialogContent>{getStepContent(stepIndex)}</DialogContent>
+        <DialogContent>{getStepContent()}</DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>{t('Cancel')}</Button>
           <Button
