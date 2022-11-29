@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ShieldPlus, TextSearch } from 'mdi-material-ui';
 import NoteRoundedIcon from '@material-ui/icons/NoteRounded';
-import ArrowForwardIosOutlined from '@material-ui/icons/ArrowForwardIosOutlined';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import HistoryIcon from '@material-ui/icons/History';
 import inject18n from '../../../components/i18n';
 
@@ -55,8 +55,7 @@ class TopMenuRisk extends Component {
         >
           {t('Risks')}
         </Button>
-        <ArrowForwardIosOutlined
-          color="primary"
+        <ChevronRightIcon
           classes={{ root: classes.arrow }}
         />
         <Button

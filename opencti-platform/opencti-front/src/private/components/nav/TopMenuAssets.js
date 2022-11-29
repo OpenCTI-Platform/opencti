@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import ArrowForwardIosOutlined from '@material-ui/icons/ArrowForwardIosOutlined';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import inject18n from '../../../components/i18n';
 import deviceIcon from '../../../resources/images/assets/deviceIcon.svg';
 import networkIcon from '../../../resources/images/assets/networkIcon.svg';
@@ -74,8 +74,7 @@ class TopMenuAssets extends Component {
         >
           {t('Asset')}
         </Button>
-        <ArrowForwardIosOutlined
-          color="primary"
+        <ChevronRightIcon
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -155,8 +154,7 @@ class TopMenuAssets extends Component {
         >
           {t('Devices')}
         </Button>
-        <ArrowForwardIosOutlined
-          color="primary"
+        <ChevronRightIcon
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -185,8 +183,7 @@ class TopMenuAssets extends Component {
         >
           {t('Network')}
         </Button>
-        <ArrowForwardIosOutlined
-          color="primary"
+        <ChevronRightIcon
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -215,8 +212,7 @@ class TopMenuAssets extends Component {
         >
           {t('Software')}
         </Button>
-        <ArrowForwardIosOutlined
-          color="primary"
+        <ChevronRightIcon
           classes={{ root: classes.arrow }}
         />
         <Button

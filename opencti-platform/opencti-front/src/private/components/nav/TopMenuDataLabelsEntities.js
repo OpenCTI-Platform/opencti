@@ -6,7 +6,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import ArrowForwardIosOutlined from '@material-ui/icons/ArrowForwardIosOutlined';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import inject18n from '../../../components/i18n';
 
@@ -48,8 +48,7 @@ class TopMenuDataLabelsEntities extends Component {
         >
           {t('Labels')}
         </Button>
-        <ArrowForwardIosOutlined
-          color="primary"
+        <ChevronRightIcon
           classes={{ root: classes.arrow }}
         />
         <Button
