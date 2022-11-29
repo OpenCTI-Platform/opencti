@@ -23,7 +23,6 @@ const styles = (theme) => ({
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
-    color: '#fff',
   },
   arrow: {
     verticalAlign: 'middle',

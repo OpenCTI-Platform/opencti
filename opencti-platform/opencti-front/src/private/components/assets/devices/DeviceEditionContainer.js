@@ -16,7 +16,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
-import { Close, CheckCircleOutline } from '@material-ui/icons';
+import { Close } from '@material-ui/icons';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { createFragmentContainer } from 'react-relay';
 import { adaptFieldValue } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -47,7 +48,6 @@ const styles = (theme) => ({
     minWidth: '0px',
     marginRight: 15,
     marginTop: -35,
-    padding: '8px 16px 8px 8px',
   },
   title: {
     float: 'left',
@@ -333,9 +333,7 @@ class DeviceEditionContainer extends Component {
                   <Tooltip title={t('Cancel')}>
                     <Button
                       variant="outlined"
-                      size="small"
                       startIcon={<Close />}
-                      color='primary'
                       onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
@@ -346,7 +344,7 @@ class DeviceEditionContainer extends Component {
                     <Button
                       variant="contained"
                       color="primary"
-                      startIcon={<CheckCircleOutline />}
+                      startIcon={<CheckCircleIcon />}
                       onClick={() => this.setState({ totalInitial: initialValues }, submitForm)}
                       disabled={isSubmitting}
                       classes={{ root: classes.iconButton }}

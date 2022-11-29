@@ -37,7 +37,7 @@ export default (logo = null, primary = null, secondary = null) => ({
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#00bcd4',
+      color: primary || '#fff',
       fontWeight: 400,
       fontSize: 22,
     },
