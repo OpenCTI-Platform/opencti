@@ -1,46 +1,42 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
+import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
-  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import CyioListCards from '../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../components/list_lines/CyioListLines';
-import NetworkCards, {
-  networkCardsQuery,
-} from './network/NetworkCards';
-import NetworkLines, {
-  networkLinesQuery,
-} from './network/NetworkLines';
-import NetworkCreation from './network/NetworkCreation';
-import NetworkDeletion from './network/NetworkDeletion';
-import { isUniqFilter } from '../common/lists/Filters';
+import CyioListCards from '../../../components/list_cards/CyioListCards';
+import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
+import WorkspacesCards, { workspacesCardsQuery } from './WorkspacesCards';
+import WorkspaceCreation from './WorkspaceCreation';
+import CyioWorkspaceEdition from './CyioWorkspaceEdition';
+import WorkspaceDelete from './WorkspaceDelete';
 import { toastGenericError } from '../../../utils/bakedToast';
 
-class Network extends Component {
+class Dashboards extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-network',
+      'view-workspaces',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
-      filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
-      openNetworkCreation: false,
+      displayEdit: false,
+      openDashboard: false,
+      selectedWorkspaceId: '',
     };
   }
 
@@ -49,36 +45,17 @@ class Network extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-network',
+      'view-workspaces',
       this.state,
     );
   }
 
-  componentWillUnmount() {
-    const {
-      sortBy,
-      orderAsc,
-      openNetworkCreation,
-    } = this.state;
-    const paginationOptions = {
-      sortBy,
-      orderAsc,
-      filters: [],
-      openNetworkCreation,
-    };
-    if (this.props.history.location.pathname !== '/defender HQ/assets/network'
-      && convertFilters(this.state.filters).length) {
-      saveViewParameters(
-        this.props.history,
-        this.props.location,
-        'view-network',
-        paginationOptions,
-      );
-    }
-  }
-
   handleChangeView(mode) {
     this.setState({ view: mode }, () => this.saveView());
+  }
+
+  handleCreateDashboard() {
+    this.setState({ openDashboard: !this.state.openDashboard });
   }
 
   handleSearch(value) {
@@ -93,27 +70,26 @@ class Network extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  handleClearSelectedElements() {
-    this.setState({ selectAll: false, selectedElements: null });
-  }
-
   handleToggleSelectAll() {
     this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
   }
 
-  handleNetworkCreation() {
-    this.setState({ openNetworkCreation: true });
+  handleClearSelectedElements() {
+    this.setState({ selectAll: false, selectedElements: null });
   }
 
   handleRefresh() {
-    this.props.history.push('/defender HQ/assets/network');
+    this.props.history.push('/dashboard/workspaces/dashboards');
   }
 
   handleDisplayEdit(selectedElements) {
-    const networkId = Object.entries(selectedElements)[0][1].id;
-    this.props.history.push({
-      pathname: `/defender HQ/assets/network/${networkId}`,
-      openEdit: true,
+    let WorkspaceId = '';
+    if (selectedElements) {
+      WorkspaceId = (Object.entries(selectedElements)[0][1])?.id;
+    }
+    this.setState({
+      displayEdit: !this.state.displayEdit,
+      selectedWorkspaceId: WorkspaceId,
     });
   }
 
@@ -140,39 +116,6 @@ class Network extends Component {
     }
   }
 
-  handleAddFilter(key, id, value, event = null) {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    if (this.state.filters[key] && this.state.filters[key].length > 0) {
-      this.setState(
-        {
-          filters: R.assoc(
-            key,
-            isUniqFilter(key)
-              ? [{ id, value }]
-              : R.uniqBy(R.prop('id'), [
-                { id, value },
-                ...this.state.filters[key],
-              ]),
-            this.state.filters,
-          ),
-        }, () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        {
-          filters: R.assoc(key, [{ id, value }], this.state.filters),
-        }, () => this.saveView(),
-      );
-    }
-  }
-
-  handleRemoveFilter(key) {
-    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
-  }
-
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
   }
@@ -182,27 +125,31 @@ class Network extends Component {
       sortBy,
       orderAsc,
       searchTerm,
-      filters,
       openExports,
-      selectAll,
-      selectedElements,
       numberOfElements,
+      selectedElements,
+      selectAll,
     } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
+        width: '35%',
+        isSortable: true,
       },
-      asset_type: {
-        label: 'Type',
+      tags: {
+        label: 'Tags',
+        width: '25%',
+        isSortable: false,
       },
-      asset_id: {
-        label: 'Asset ID',
+      created_at: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
       },
-      network_id: {
-        label: 'Network ID',
-      },
-      label_name: {
-        label: 'Labels',
+      updated_at: {
+        label: 'Modification date',
+        width: '15%',
+        isSortable: true,
       },
     };
     return (
@@ -213,46 +160,35 @@ class Network extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleNetworkCreation.bind(this)}
-        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
+        handleNewCreation={this.handleCreateDashboard.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        OperationsComponent={<NetworkDeletion />}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
+        OperationsComponent={<WorkspaceDelete />}
         openExports={openExports}
-        filterEntityType="Network"
         keyword={searchTerm}
-        filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'name_m',
-          'asset_type_or',
-          'created_start_date',
-          'created_end_date',
-          'label_name',
-        ]}
       >
         <QueryRenderer
-          query={networkCardsQuery}
-          variables={{ first: 50, offset: 0, ...paginationOptions }}
+          query={workspacesCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
               toastGenericError('Request Failed');
             }
             return (
-              <NetworkCards
+              <WorkspacesCards
                 data={props}
+                extra={props}
                 selectAll={selectAll}
                 paginationOptions={paginationOptions}
                 initialLoading={props === null}
                 selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               />
             );
           }}
@@ -264,7 +200,6 @@ class Network extends Component {
   renderLines(paginationOptions) {
     const {
       sortBy,
-      filters,
       orderAsc,
       selectAll,
       searchTerm,
@@ -272,39 +207,25 @@ class Network extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
-    // let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    // if (selectAll) {
-    //   numberOfSelectedElements = numberOfElements.original;
-    // }
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '15%',
+        width: '35%',
         isSortable: true,
       },
-      asset_type: {
-        label: 'Type',
-        width: '8%',
-        isSortable: true,
-      },
-      asset_id: {
-        label: 'Asset ID',
-        width: '19%',
-        isSortable: true,
-      },
-      network_id: {
-        label: 'Network ID',
-        width: '15%',
-        isSortable: true,
-      },
-      network_range: {
-        label: 'Network Range',
-        width: '17%',
+      tags: {
+        label: 'Tags',
+        width: '25%',
         isSortable: false,
       },
-      label_name: {
-        label: 'Labels',
-        width: '23%',
+      created_at: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+      updated_at: {
+        label: 'Modification date',
+        width: '15%',
         isSortable: true,
       },
     };
@@ -316,46 +237,34 @@ class Network extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
-        handleNewCreation={this.handleNetworkCreation.bind(this)}
+        handleNewCreation={this.handleCreateDashboard.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        selectAll={selectAll}
-        OperationsComponent={<NetworkDeletion />}
+        OperationsComponent={<WorkspaceDelete />}
         openExports={openExports}
-        filterEntityType="Network"
+        selectAll={selectAll}
         keyword={searchTerm}
-        filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'name_m',
-          'asset_type_or',
-          'created_start_date',
-          'created_end_date',
-          'label_name',
-        ]}
       >
         <QueryRenderer
-          query={networkLinesQuery}
-          variables={{ first: 50, offset: 0, ...paginationOptions }}
+          query={workspacesLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
               toastGenericError('Request Failed');
             }
             return (
-              <NetworkLines
+              <WorkspacesLines
                 data={props}
                 selectAll={selectAll}
-                paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
                 selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
+                paginationOptions={paginationOptions}
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
@@ -372,35 +281,42 @@ class Network extends Component {
       sortBy,
       orderAsc,
       searchTerm,
-      filters,
-      openNetworkCreation,
     } = this.state;
-    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderedBy: sortBy,
+      orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: finalFilters,
-      filterMode: 'and',
+      filters: [{ key: 'type', values: ['dashboard'] }],
     };
-    const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && (!openNetworkCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' && (!openNetworkCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
-        {(openNetworkCreation || location.openNewCreation) && (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <NetworkCreation paginationOptions={paginationOptions} history={this.props.history} />
-          // </Security>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        {view === 'cards' ? this.renderCards(paginationOptions) : ''}
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
+        <WorkspaceCreation
+          open={this.state.openDashboard}
+          history={this.props.history}
+          handleCreateDashboard={this.handleCreateDashboard.bind(this)}
+          paginationOptions={paginationOptions}
+          type="dashboard"
+        />
+        {this.state.selectedWorkspaceId && (
+          <CyioWorkspaceEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            workspaceId={this.state.selectedWorkspaceId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
         )}
       </div>
     );
   }
 }
 
-Network.propTypes = {
+Dashboards.propTypes = {
+  t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(Network);
+export default R.compose(inject18n, withRouter)(Dashboards);

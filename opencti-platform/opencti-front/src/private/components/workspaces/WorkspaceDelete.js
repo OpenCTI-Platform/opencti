@@ -1,28 +1,32 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
-import MoreVert from '@material-ui/icons/MoreVert';
+import Typography from '@material-ui/core/Typography';
+import DeleteIcon from '@material-ui/icons/Delete';
+import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../relay/environment';
-import { workspaceEditionQuery } from './WorkspaceEdition';
-import CyioWorkspaceEditionContainer from './CyioWorkspaceEditionContainer';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/Security';
+import { commitMutation } from '../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
     margin: 0,
+  },
+  iconButton: {
+    float: 'left',
+    minWidth: '0px',
+    marginRight: 15,
+    padding: '7px',
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -36,6 +40,13 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -43,15 +54,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const WorkspacePopoverDeletionMutation = graphql`
-  mutation WorkspacePopoverDeletionMutation($id: ID!) {
-    workspaceEdit(id: $id) {
-      delete
-    }
+const WorkspaceDeleteDarkLightMutation = graphql`
+  mutation WorkspaceDeleteDarkLightMutation($id: ID!) {
+  workspaceEdit(id: $id) {
+    delete
   }
+}
 `;
 
-class WorkspacePopover extends Component {
+class WorkspaceDelete extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -79,54 +90,55 @@ class WorkspacePopover extends Component {
     this.setState({ displayDelete: false });
   }
 
+  handleOpenEdit() {
+    this.setState({ displayEdit: true });
+    this.handleClose();
+  }
+
+  handleCloseEdit() {
+    this.setState({ displayEdit: false });
+  }
+
   submitDelete() {
+    const workspaceIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
     commitMutation({
-      mutation: WorkspacePopoverDeletionMutation,
+      mutation: WorkspaceDeleteDarkLightMutation,
       variables: {
-        id: this.props.id,
+        id: workspaceIds[0],
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push(`/dashboard/workspaces/${this.props.type}s`);
+        this.props.history.push('/dashboard/workspaces/dashboards');
       },
+      onError: (err) => console.log('WorkspaceDeleteDarkLightMutationError', err),
     });
-  }
-
-  handleDisplayEdit() {
-    this.setState({ displayEdit: !this.state.displayEdit });
-    this.handleClose();
   }
 
   render() {
     const {
-      classes, t, id, disabled, history,
+      classes,
+      t,
+      id,
+      isAllselected,
     } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton
-          disabled={disabled}
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
-          <MenuItem onClick={this.handleDisplayEdit.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
-        </Menu>
+        {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
+        <Tooltip title={t('Delete')}>
+          <Button
+            variant="contained"
+            onClick={this.handleOpenDelete.bind(this)}
+            className={classes.iconButton}
+            disabled={Boolean(!id) && Boolean(!isAllselected)}
+            color="primary"
+            size="large"
+          >
+            <DeleteIcon fontSize="inherit" />
+          </Button>
+        </Tooltip>
+        {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
@@ -134,14 +146,24 @@ class WorkspacePopover extends Component {
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to delete this Workspace?')}
+            </Typography>
             <DialogContentText>
-              {t('Do you want to delete this workspace?')}
+              {t('This action can’t be undone')}
             </DialogContentText>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
             >
               {t('Cancel')}
             </Button>
@@ -149,46 +171,29 @@ class WorkspacePopover extends Component {
               onClick={this.submitDelete.bind(this)}
               color="primary"
               disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
             >
               {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
-        {this.state.displayEdit && (
-          <QueryRenderer
-            query={workspaceEditionQuery}
-            variables={{ id }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <CyioWorkspaceEditionContainer
-                    history={history}
-                    workspace={props.workspace}
-                    displayEdit={this.state.displayEdit}
-                    handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-                  />
-                );
-              }
-              return <></>;
-            }}
-          />
-        )}
       </div>
     );
   }
 }
 
-WorkspacePopover.propTypes = {
-  id: PropTypes.string,
+WorkspaceDelete.propTypes = {
+  id: PropTypes.array,
+  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
-  disabled: PropTypes.bool,
-  type: PropTypes.string,
 };
 
 export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(WorkspacePopover);
+)(WorkspaceDelete);

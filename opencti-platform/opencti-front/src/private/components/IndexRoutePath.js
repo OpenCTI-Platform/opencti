@@ -55,16 +55,16 @@ const IndexRoutePath = (me) => (
     <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
     <BoundaryRoute path="/defender HQ/assets" component={RootAssets} />
     <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
+    <BoundaryRoute
+      path="/dashboard/workspaces"
+      component={RootWorkspaces}
+    />
     <FeatureFlag tag={'RISK_ASSESSMENT'}>
       <BoundaryRoute path="/activities/risk assessment" component={RootRiskAssessment} />
     </FeatureFlag>
     <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
     <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
     <BoundaryRoute path="/dashboard/data" render={RootData} />
-    <BoundaryRoute
-      path="/dashboard/workspaces"
-      component={RootWorkspaces}
-    />
     <BoundaryRoute
       exact
       path="/dashboard/profile"
@@ -86,4 +86,4 @@ IndexRoutePath.propTypes = {
   me: PropTypes.object,
 };
 
-export default React.memo(IndexRoutePath);
+export default IndexRoutePath;

@@ -37,9 +37,9 @@ const styles = (theme) => ({
   },
   header: {
     display: 'flex',
-    height: '64px',
-    marginBottom: '20px',
-    padding: '23px 0 24px 12px',
+    height: '70px',
+    margin: '0 -1.5rem 1rem -1.5rem',
+    padding: '1rem 1.5rem',
     justifyContent: 'space-between',
     backgroundColor: theme.palette.background.paper,
   },
@@ -65,6 +65,7 @@ const styles = (theme) => ({
   leftContainer: {
     display: 'flex',
     alignItems: 'center',
+    marginTop: '0.5rem',
   },
   editButton: {
     position: 'fixed',
@@ -375,7 +376,7 @@ class DeviceCreation extends Component {
             <Button
               onClick={() => this.props.history.push('/defender HQ/assets/devices')}
               // onClick={() => this.props.history.goBack()}
-              color="primary"
+              color="secondary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
               size="small"

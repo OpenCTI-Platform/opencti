@@ -75,7 +75,7 @@ import { withTheme, withStyles } from '@material-ui/core/styles';
 
 const styles = (theme) => ({
   root: {
-    flexGrow: 1,
+    marginTop: '1rem',
   },
   card: {
     width: "100%",
@@ -611,7 +611,7 @@ class Scans extends Component {
     };
 
     return (
-      <div>
+      <div className={classes.root}>
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={4}>
             <Typography variant="h4" gutterBottom={true}>

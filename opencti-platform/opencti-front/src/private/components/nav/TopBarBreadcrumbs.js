@@ -38,6 +38,7 @@ import Filters from '../common/lists/Filters';
 import ExportPoam from '../../../components/ExportPoam';
 import Export from '../../../components/Export';
 import AboutModal from '../../../components/AboutModal';
+import DashboardSettings from '../DashboardSettings';
 
 const styles = (theme) => ({
   appBar: {
@@ -65,6 +66,8 @@ const styles = (theme) => ({
   },
   menuContainer: {
     float: 'left',
+    display: 'flex',
+    alignItems: 'center',
     marginLeft: '17rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
@@ -73,6 +76,8 @@ const styles = (theme) => ({
   },
   menuContainerClose: {
     float: 'left',
+    display: 'flex',
+    alignItems: 'center',
     marginLeft: '5.55rem',
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
@@ -86,7 +91,7 @@ const styles = (theme) => ({
     height: '100%',
   },
   barContainer: {
-    display: 'table-cell',
+    display: 'flex',
     float: 'left',
     paddingTop: 10,
   },
@@ -123,6 +128,8 @@ const TopBarBreadcrumbs = ({
   theme,
   risk,
   remediation,
+  handleChangeDashboard,
+  dashboard,
   riskId,
   drawer,
 }) => {
@@ -174,8 +181,8 @@ const TopBarBreadcrumbs = ({
       elevation={1}
       style={{ backgroundColor: theme.palette.header.background }}
     >
-      <Toolbar>        
-        <div className={drawer ? classes.menuContainerClose : classes.menuContainer }>
+      <Toolbar>
+        <div className={drawer ? classes.menuContainerClose : classes.menuContainer}>
           <Breadcrumbs aria-label="breadcrumb">
             {breadCrumbs.map((crumb, i, array) => {
               if (crumb.label === riskId) {
@@ -199,6 +206,12 @@ const TopBarBreadcrumbs = ({
               </Link>);
             })}
           </Breadcrumbs>
+          {(location.pathname === '/dashboard') && (
+            <DashboardSettings
+              dashboard={dashboard}
+              handleChangeDashboard={handleChangeDashboard}
+            />
+          )}
         </div>
         <div className={classes.barRight}>
           <div className={classes.barContainer}>
@@ -229,29 +242,6 @@ const TopBarBreadcrumbs = ({
           <Divider className={classes.divider} orientation="vertical" />
           <div className={classes.barContainer}>
             <Security needs={[EXPLORE]}>
-              <Tooltip title={t('Custom dashboards')}>
-                <IconButton
-                  component={Link}
-                  to="/dashboard/workspaces/dashboards"
-                  variant={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'contained'
-                      : 'text'
-                  }
-                  color={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'secondary'
-                      : 'inherit'
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  <InsertChartOutlined fontSize="medium" />
-                </IconButton>
-              </Tooltip>
               <Tooltip title={t('Investigations')}>
                 <IconButton
                   component={Link}
@@ -293,6 +283,17 @@ const TopBarBreadcrumbs = ({
                   history={history}
                   location={location}
                 />
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <Tooltip title={t('Custom dashboards')}>
+                  <IconButton
+                    component={Link}
+                    to="/dashboard/workspaces/dashboards"
+                    classes={{ root: classes.button }}
+                  >
+                    <InsertChartOutlined fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
               </Grid>
               <Grid item={true} xs='auto'>
                 <Tooltip title={t('Find in Page')}>
@@ -352,6 +353,8 @@ TopBarBreadcrumbs.propTypes = {
   riskId: PropTypes.string,
   risk: PropTypes.string,
   remediation: PropTypes.object,
+  dashboard: PropTypes.string,
+  handleChangeDashboard: PropTypes.func,
   keyword: PropTypes.string,
   theme: PropTypes.object,
   classes: PropTypes.object,

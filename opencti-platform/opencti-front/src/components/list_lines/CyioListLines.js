@@ -67,7 +67,7 @@ const styles = (theme) => ({
     padding: '0 310px 50px 0',
   },
   toolBar: {
-    margin: '0 0 30px 0',
+    margin: '0 -1.2rem 2rem -1.2rem',
     height: '100%',
     display: 'flex',
     '@media (max-width: 1400px)': {
@@ -303,6 +303,7 @@ class CyioListLines extends Component {
       OperationsComponent,
       message,
       handleClearSelectedElements,
+      location,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -654,7 +655,7 @@ class CyioListLines extends Component {
         </div>
         <div className={className}>
           <div className="clearfix" />
-          <TopBarMenu />
+          {!location.pathname.includes('/dashboard/workspaces/dashboards') && <TopBarMenu />}
           {message && (
             <div style={{ width: '100%' }}>
               <Alert
