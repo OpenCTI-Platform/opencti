@@ -5,8 +5,8 @@ export default (logo = null, primary = null, secondary = null) => ({
   palette: {
     type: 'dark',
     text: { secondary: 'rgba(255, 255, 255, 0.5)' },
-    primary: { main: primary || '#00bcd4' },
-    secondary: { main: secondary || '#E28120' },
+    primary: { main: primary || '#075AD3' },
+    secondary: { main: secondary || '#F9B406' },
     header: { background: '#06102D', text: '#ffffff' },
     navAlt: {
       background: '#075AD3',
@@ -75,6 +75,14 @@ export default (logo = null, primary = null, secondary = null) => ({
     },
   },
   overrides: {
+    MuiButton: {
+      containedPrimary: {
+        color: '#fff',
+      },
+      containedSecondary: {
+        color: '#06102D',
+      },
+    },
     MuiCssBaseline: {
       '@global': {
         '*': {
