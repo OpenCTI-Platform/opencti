@@ -168,7 +168,7 @@ nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
 
 const etcdHosts = process.env.OPENCTI_ETCD_HOSTS || 'https://etcd.aws.darklight.ai:2379';
-// if (process.env.OPENCTI_ETCD_CA_CRT) {
+if (process.env.OPENCTI_ETCD_CA_CRT) {
   let etcdCaCert = process.env.OPENCTI_ETCD_CA_CRT;
   if (etcdCaCert === undefined || etcdCaCert === null ) {
     for (const cert of LINUX_CERTFILES) {
@@ -185,7 +185,7 @@ const etcdHosts = process.env.OPENCTI_ETCD_HOSTS || 'https://etcd.aws.darklight.
           throw err;
         }
       }
-    }  
+    }
   }
 
   var etcdOptions = {
@@ -196,8 +196,8 @@ const etcdHosts = process.env.OPENCTI_ETCD_HOSTS || 'https://etcd.aws.darklight.
   } catch(e) {
     console.error(e);
     throw e;
-  }  
-// }
+  }
+}
 
 // START TEST CODE
 // var etcdValue = nconf.get('foo:bar');

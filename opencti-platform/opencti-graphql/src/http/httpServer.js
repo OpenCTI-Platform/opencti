@@ -17,7 +17,6 @@ const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 const createHttpServer = async () => {
   const { app, seeMiddleware } = await createApp();
-  const apolloServer = createApolloServer(app);
   applyWildcard(app); // Needed in order to register prometheus metrics
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
@@ -30,7 +29,7 @@ const createHttpServer = async () => {
     httpServer = http.createServer(app);
   }
   httpServer.setTimeout(REQ_TIMEOUT || 120000);
-  apolloServer.installSubscriptionHandlers(httpServer);
+  const apolloServer = createApolloServer(app, httpServer);
   return { httpServer, seeMiddleware };
 };
 
