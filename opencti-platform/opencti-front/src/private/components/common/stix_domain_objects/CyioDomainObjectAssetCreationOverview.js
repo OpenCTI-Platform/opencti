@@ -72,6 +72,16 @@ const styles = (theme) => ({
     top: 30,
     right: 30,
   },
+  disabledFields: {    
+    "& .MuiOutlinedInput-input.Mui-disabled": {
+      backgroundColor: 'rgba(241, 241, 242, 0.25)',
+    },
+
+    "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+      borderColor: 'rgba(255, 255, 255, 0.23)',
+      borderRadius: 'inherit',
+    }
+  },
 });
 
 class CyioDomainObjectAssetCreationOverviewComponent extends Component {
@@ -152,6 +162,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   name="id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
+                  classes={{ root: classes.disabledFields }}
                 // helperText={
                 //   <SubscriptionFocus fieldName="name" />
                 // }
@@ -331,7 +342,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   name="responsible_parties"
                   size='small'
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
+                  style={{ height: '38.09px', backgroundColor: 'rgba(241, 241, 242, 0.25)' }}
                   containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                 />
                 <Field
@@ -341,7 +352,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   name="responsible_parties"
                   size='small'
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
+                  style={{ height: '38.09px', backgroundColor: 'rgba(241, 241, 242, 0.25)' }}
                   containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                 />
               </div>
@@ -356,7 +367,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                 <ObjectLabelField
                   variant='outlined'
                   name="labels"
-                  style={{ marginTop: 10, width: '100%', pointerEvents: 'none', opacity: '0.4' }}
+                  style={{ marginTop: 10, width: '100%', pointerEvents: 'none', backgroundColor: 'rgba(241, 241, 242, 0.25)' }}
                   setFieldValue={setFieldValue}
                   values={values.objectLabel}
                 />
