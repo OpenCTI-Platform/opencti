@@ -70,7 +70,7 @@ bundles_bad_gateway_error_counter = meter.create_counter(
 )
 bundles_processing_time_gauge = meter.create_histogram(
     name="opencti_bundles_processing_time_gauge",
-    description="number of bundles in bad gateway error",
+    description="processing time of bundles",
 )
 
 
