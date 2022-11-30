@@ -193,15 +193,43 @@ export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
   return timeSeriesEntities(context, user, types, { ...args, filters });
 };
 
+export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
+  return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter) => {
+    const { types = [ABSTRACT_STIX_CORE_OBJECT] } = timeSeriesParameter;
+    return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
+  }));
+};
+
 export const stixCoreObjectsNumber = (context, user, args) => ({
   count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, args),
   total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', args)),
 });
 
+export const stixCoreObjectsMultiNumber = (context, user, args) => {
+  return Promise.all(args.numberParameters.map((numberParameter) => {
+    return {
+      count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...args, ...numberParameter }),
+      total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter }))
+    };
+  }));
+};
+
+export const stixCoreObjectsDistribution = async (context, user, args) => {
+  const { types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
+  return distributionEntities(context, user, types, args);
+};
+
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
   const { relationship_type, objectId, types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
   const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
   return distributionEntities(context, user, types, { ...args, filters });
+};
+
+export const stixCoreObjectsMultiDistribution = (context, user, args) => {
+  return Promise.all(args.distributionParameters.map((distributionParameter) => {
+    const { types = [ABSTRACT_STIX_CORE_OBJECT] } = distributionParameter;
+    return { data: distributionEntities(context, user, types, { ...args, ...distributionParameter }) };
+  }));
 };
 // endregion
 

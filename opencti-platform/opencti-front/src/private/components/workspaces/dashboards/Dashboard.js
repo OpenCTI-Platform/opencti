@@ -9,6 +9,7 @@ import {
   monthsAgo,
   yearsAgo,
   dayStartDate,
+  parse,
 } from '../../../../utils/Time';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
@@ -41,6 +42,7 @@ import ThreatVulnerabilities from './ThreatVulnerabilities';
 import { fromB64, toB64 } from '../../../../utils/String';
 import GlobalActivityStixCoreRelationships from './GlobalActivityStixCoreRelationships';
 import WidgetConfig from './WidgetConfig';
+import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -88,6 +90,32 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         },
       });
     }
+  };
+  const handleDateChange = (type, value) => {
+    // eslint-disable-next-line no-nested-ternary
+    const newValue = value && value.target
+      ? value.target.value
+      : value
+        ? parse(value).format()
+        : null;
+    let newManifest = R.assoc(
+      'config',
+      R.assoc(type, newValue === 'none' ? null : newValue, manifest.config),
+      manifest,
+    );
+    if (type === 'relativeDate' && newValue !== 'none') {
+      newManifest = R.assoc(
+        'config',
+        R.assoc('startDate', null, newManifest.config),
+        newManifest,
+      );
+      newManifest = R.assoc(
+        'config',
+        R.assoc('endDate', null, newManifest.config),
+        newManifest,
+      );
+    }
+    saveManifest(newManifest);
   };
   const handleAddWidget = (widgetManifest) => {
     const newManifest = R.assoc(
@@ -441,6 +469,50 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         return 'Go away!';
     }
   };
+  const renderEntitiesVisualization = (widget, config) => {
+    const { relativeDate } = config;
+    const startDate = relativeDate
+      ? computerRelativeDate(relativeDate)
+      : config.startDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
+    switch (widget.type) {
+      case 'vertical-bar':
+        return (
+          <StixCoreObjectsMultiVerticalBars
+            title={widget.label}
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      default:
+        return 'Go away!';
+    }
+  };
+  const renderRelationshipsVisualization = (widget, config) => {
+    const { relativeDate } = config;
+    const startDate = relativeDate
+      ? computerRelativeDate(relativeDate)
+      : config.startDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
+    switch (widget.type) {
+      case 'vertical-bar':
+        return (
+          <StixCoreObjectsMultiVerticalBars
+            title={widget.label}
+            startDate={startDate}
+            endDate={endDate}
+            filters={widget.dataSelection[0].filters}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      default:
+        return 'Go away!';
+    }
+  };
   return (
     <div
       className={classes.container}
@@ -451,7 +523,12 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       }}
     >
       {!noToolbar && (
-        <WorkspaceHeader workspace={workspace} variant="dashboard" />
+        <WorkspaceHeader
+          workspace={workspace}
+          config={manifest.config}
+          handleDateChange={handleDateChange}
+          variant="dashboard"
+        />
       )}
       <Security
         needs={[EXPLORE_EXUPDATE]}
@@ -490,6 +567,10 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                   && renderThreatVisualization(widget, manifest.config)}
                 {widget.perspective === 'entity'
                   && renderEntityVisualization(widget, manifest.config)}
+                {widget.perspective === 'entities'
+                  && renderEntitiesVisualization(widget, manifest.config)}
+                {widget.perspective === 'relationships'
+                  && renderRelationshipsVisualization(widget, manifest.config)}
               </Paper>
             ))}
           </ResponsiveGridLayout>
@@ -537,6 +618,10 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 && renderThreatVisualization(widget, manifest.config)}
               {widget.perspective === 'entity'
                 && renderEntityVisualization(widget, manifest.config)}
+              {widget.perspective === 'entities'
+                && renderEntitiesVisualization(widget, manifest.config)}
+              {widget.perspective === 'relationships'
+                && renderRelationshipsVisualization(widget, manifest.config)}
             </Paper>
           ))}
         </ResponsiveGridLayout>

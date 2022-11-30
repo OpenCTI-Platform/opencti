@@ -42,6 +42,9 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import Filters, { isUniqFilter } from '../../common/lists/Filters';
@@ -124,35 +127,83 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const visualizationTypes = [
-  { key: 'number', name: 'Number', dataSelectionLimit: 1, hasAttribute: false },
-  { key: 'list', name: 'List', dataSelectionLimit: 1, hasAttribute: false },
+  {
+    key: 'number',
+    name: 'Number',
+    dataSelectionLimit: 1,
+    isTimeSeries: true,
+    availableParameters: [],
+  },
+  {
+    key: 'list',
+    name: 'List',
+    dataSelectionLimit: 1,
+    isTimeSeries: false,
+    availableParameters: [],
+  },
   {
     key: 'vertical-bar',
     name: 'Vertical Bar',
-    dataSelectionLimit: 2,
-    hasAttribute: false,
+    dataSelectionLimit: 5,
+    isTimeSeries: true,
+    availableParameters: ['stacked', 'legend'],
   },
-  { key: 'area', name: 'Area', dataSelectionLimit: 2, hasAttribute: false },
-  { key: 'donut', name: 'Donut', dataSelectionLimit: 1, hasAttribute: true },
+  {
+    key: 'line',
+    name: 'Line',
+    dataSelectionLimit: 5,
+    isTimeSeries: true,
+    availableParameters: ['legend'],
+  },
+  {
+    key: 'area',
+    name: 'Area',
+    dataSelectionLimit: 5,
+    isTimeSeries: true,
+    availableParameters: ['stacked', 'legend'],
+  },
+  {
+    key: 'donut',
+    name: 'Donut',
+    dataSelectionLimit: 1,
+    isTimeSeries: false,
+    availableParameters: [],
+  },
   {
     key: 'horizontal-bar',
     name: 'Horizontal Bar',
     dataSelectionLimit: 1,
-    hasAttribute: true,
+    isTimeSeries: false,
+    availableParameters: [],
+  },
+  {
+    key: 'radar',
+    name: 'radar',
+    dataSelectionLimit: 1,
+    isTimeSeries: false,
+    availableParameters: [],
   },
   {
     key: 'timeline',
     name: 'Timeline',
     dataSelectionLimit: 1,
-    hasAttribute: false,
+    isTimeSeries: true,
+    availableParameters: [],
   },
   {
     key: 'heatmap',
     name: 'Heatmap',
     dataSelectionLimit: 1,
-    hasAttribute: false,
+    isTimeSeries: true,
+    availableParameters: [],
   },
-  { key: 'map', name: 'Map', dataSelectionLimit: 1, hasAttribute: false },
+  {
+    key: 'map',
+    name: 'Map',
+    dataSelectionLimit: 1,
+    isTimeSeries: false,
+    availableParameters: [],
+  },
 ];
 const indexedVisualizationTypes = R.indexBy(R.prop('key'), visualizationTypes);
 
@@ -160,7 +211,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [stepIndex, setStepIndex] = useState(widget ? 2 : 0);
+  const [stepIndex, setStepIndex] = useState(widget?.dataSelection ? 2 : 0);
   const [type, setType] = useState(widget?.type ?? null);
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
   const [dataSelection, setDataSelection] = useState(
@@ -168,6 +219,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       { label: '', attribute: '', isTo: false, filters: {} },
     ],
   );
+  const [parameters, setParameters] = useState(widget?.parameters ?? {});
   const handleClose = () => {
     if (!widget) {
       setStepIndex(0);
@@ -188,14 +240,18 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       type,
       perspective,
       dataSelection,
+      parameters,
     });
     handleClose();
   };
   const getCurrentDataSelectionLimit = () => {
     return indexedVisualizationTypes[type]?.dataSelectionLimit ?? 0;
   };
-  const getCurrentHasAttribute = () => {
-    return indexedVisualizationTypes[type]?.hasAttribute ?? true;
+  const getCurrentIsTimeSeries = () => {
+    return indexedVisualizationTypes[type]?.isTimeSeries ?? false;
+  };
+  const getCurrentAvailableParameters = () => {
+    return indexedVisualizationTypes[type]?.availableParameters ?? [];
   };
   const handleSelectType = (selectedType) => {
     setType(selectedType);
@@ -212,7 +268,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     ]);
   };
   const handleRemoveDataSelection = (i) => {
-    setDataSelection(dataSelection.splice(i, 1));
+    const newDataSelection = Array.from(dataSelection);
+    newDataSelection.splice(i, 1);
+    setDataSelection(newDataSelection);
   };
   const isDataSelectionFiltersValid = () => {
     for (const n of dataSelection) {
@@ -299,6 +357,12 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     });
     setDataSelection(newDataSelection);
   };
+  const handleToggleParameter = (parameter) => {
+    setParameters({ ...parameters, [parameter]: !parameters[parameter] });
+  };
+  const handleChangeParameter = (parameter, value) => {
+    setParameters({ ...parameters, [parameter]: value });
+  };
   const renderIcon = (key) => {
     switch (key) {
       case 'map':
@@ -364,7 +428,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         <Grid item={true} xs="6">
           <Card variant="outlined" className={classes.card}>
             <CardActionArea
-              onClick={() => handleSelectPerspective('entity')}
+              onClick={() => handleSelectPerspective('entities')}
               style={{ height: '100%' }}
             >
               <CardContent>
@@ -383,7 +447,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         <Grid item={true} xs="6">
           <Card variant="outlined" className={classes.card}>
             <CardActionArea
-              onClick={() => handleSelectPerspective('relationship')}
+              onClick={() => handleSelectPerspective('relationships')}
               style={{ height: '100%' }}
             >
               <CardContent>
@@ -437,6 +501,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       >
                         <Filters
                           availableFilterKeys={[
+                            'entity_type',
                             'markedBy',
                             'labelledBy',
                             'createdBy',
@@ -445,6 +510,10 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             'revoked',
                             'confidence',
                             'pattern_type',
+                          ]}
+                          availableEntityTypes={[
+                            'Stix-Domain-Object',
+                            'Stix-Cyber-Observable',
                           ]}
                           handleAddFilter={(key, id, value) => handleAddDataValidationFilter(i, key, id, value)
                           }
@@ -519,52 +588,130 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             <AddOutlined fontSize="small" />
           </Button>
         </div>
-        {getCurrentHasAttribute() && (
-          <div className={classes.buttons}>
-            <Button
-              disabled={!isDataSelectionFiltersValid()}
-              variant="contained"
-              color="primary"
-              classes={{ root: classes.button }}
-              onClick={() => setStepIndex(3)}
-            >
-              {t('Validate')}
-            </Button>
-          </div>
-        )}
+        <div className={classes.buttons}>
+          <Button
+            disabled={!isDataSelectionFiltersValid()}
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.button }}
+            onClick={() => setStepIndex(3)}
+          >
+            {t('Validate')}
+          </Button>
+        </div>
       </div>
     );
   };
-  const renderAttributes = () => {
+  const renderParameters = () => {
     return (
       <div style={{ marginTop: 20 }}>
         {Array(dataSelection.length)
           .fill(0)
           .map((_, i) => (
             <div key={i} className={classes.step}>
-              <div style={{ display: 'flex', width: '100%' }}>
-                <TextField
-                  style={{ flex: 1 }}
-                  variant="standard"
-                  label={dataSelection[i].label}
-                  fullWidth={true}
-                  value={dataSelection[i].attribute}
-                  placeholder={t('Series attribute')}
-                  onChange={(event) => handleChangeDataValidationAttribute(i, event.target.value)
-                  }
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      onChange={() => handleToggleDataValidationIsTo(i)}
-                      checked={dataSelection[i].isTo}
-                    />
-                  }
-                  label={t('In relationship target')}
-                />
-              </div>
+              {getCurrentIsTimeSeries() ? (
+                <div style={{ display: 'flex', width: '100%' }}>
+                  <FormControl fullWidth={true} style={{ flex: 1 }}>
+                    <InputLabel id="relative" variant="standard" size="small">
+                      {dataSelection[i].label}
+                    </InputLabel>
+                    <Select
+                      variant="standard"
+                      labelId="relative"
+                      size="small"
+                      fullWidth={true}
+                      value={dataSelection[i].attribute ?? 'created_at'}
+                      onChange={(event) => handleChangeDataValidationAttribute(
+                        i,
+                        event.target.value,
+                      )
+                      }
+                    >
+                      <MenuItem value="created_at">
+                        created_at ({t('Technical date')})
+                      </MenuItem>
+                      <MenuItem value="updated_at">
+                        updated_at ({t('Technical date')})
+                      </MenuItem>
+                      <MenuItem value="created">
+                        created ({t('Functional date')})
+                      </MenuItem>
+                      <MenuItem value="modified">
+                        modified ({t('Functional date')})
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', width: '100%' }}>
+                  <TextField
+                    style={{ flex: 1 }}
+                    variant="standard"
+                    label={dataSelection[i].label}
+                    fullWidth={true}
+                    value={dataSelection[i].attribute}
+                    placeholder={t('Series attribute')}
+                    onChange={(event) => handleChangeDataValidationAttribute(i, event.target.value)
+                    }
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        onChange={() => handleToggleDataValidationIsTo(i)}
+                        checked={dataSelection[i].isTo}
+                      />
+                    }
+                    label={t('In relationship target')}
+                  />
+                </div>
+              )}
             </div>
           ))}
+        <div style={{ display: 'flex', width: '100%' }}>
+          {getCurrentIsTimeSeries() && (
+            <FormControl fullWidth={true} style={{ flex: 1, marginRight: 20 }}>
+              <InputLabel id="relative" variant="standard" size="small">
+                {t('Interval')}
+              </InputLabel>
+              <Select
+                variant="standard"
+                labelId="relative"
+                size="small"
+                fullWidth={true}
+                value={parameters.interval ?? 'day'}
+                onChange={(event) => handleChangeParameter('interval', event.target.value)
+                }
+              >
+                <MenuItem value="day">{t('Day')}</MenuItem>
+                <MenuItem value="week">{t('Week')}</MenuItem>
+                <MenuItem value="month">{t('Month')}</MenuItem>
+                <MenuItem value="year">{t('Year')}</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+          {getCurrentAvailableParameters().includes('stacked') && (
+            <FormControlLabel
+              control={
+                <Switch
+                  onChange={() => handleToggleParameter('stacked')}
+                  checked={parameters.stacked}
+                />
+              }
+              label={t('Stacked')}
+            />
+          )}
+          {getCurrentAvailableParameters().includes('legend') && (
+            <FormControlLabel
+              control={
+                <Switch
+                  onChange={() => handleToggleParameter('legend')}
+                  checked={parameters.legend}
+                />
+              }
+              label={t('Display legend')}
+            />
+          )}
+        </div>
       </div>
     );
   };
@@ -577,7 +724,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       case 2:
         return renderDataSelection();
       case 3:
-        return renderAttributes();
+        return renderParameters();
       default:
         return 'Go away!';
     }
@@ -643,7 +790,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                 onClick={() => setStepIndex(3)}
                 disabled={stepIndex <= 3}
               >
-                <StepLabel>{t('Attribute')}</StepLabel>
+                <StepLabel>{t('Parameters')}</StepLabel>
               </StepButton>
             </Step>
           </Stepper>
@@ -654,11 +801,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           <Button
             color="secondary"
             onClick={completeSetup}
-            disabled={
-              !isDataSelectionFiltersValid()
-              || (getCurrentHasAttribute()
-                && (!isDataSelectionAttributesValid() || stepIndex !== 3))
-            }
+            disabled={stepIndex !== 3 || !isDataSelectionAttributesValid()}
           >
             {widget ? t('Update') : t('Create')}
           </Button>

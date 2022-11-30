@@ -269,15 +269,48 @@ type TimeSeries {
   value: Int!
 }
 
+type MultiTimeSeries {
+  data: [TimeSeries]
+}
+
+input TimeSeriesParameters {
+  field: String!
+  types: [String]
+  filters: [StixCoreObjectsFiltering]
+  filterMode: FilterMode
+  search: String
+}
+
 type Distribution {
   label: String!
   entity: StixObjectOrStixRelationship
   value: Int
 }
 
+type MultiDistribution {
+  data: [Distribution]
+}
+
+input DistributionParameters {
+  objectId: String
+  relationship_type: [String]
+  toTypes: [String]
+  types: [String]
+  filters: [StixCoreObjectsFiltering]
+  filterMode: FilterMode
+  search: String
+}
+
 type Number {
   total: Int!
   count: Int!
+}
+
+input NumberParameters {
+  types: [String]
+  filters: [StixCoreObjectsFiltering]
+  filterMode: FilterMode
+  search: String
 }
 
 type LogsWorkerConfig {
@@ -7227,8 +7260,11 @@ type Query {
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): StixCoreObjectConnection
   stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
+  stixCoreObjectsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [TimeSeriesParameters]): [MultiTimeSeries]
   stixCoreObjectsNumber(types: [String], endDate: DateTime, onlyInferred: Boolean, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): Number
+  stixCoreObjectsMultiNumber(endDate: DateTime, onlyInferred: Boolean, numberParameters: [NumberParameters]): [Number]
   stixCoreObjectsDistribution(objectId: String, relationship_type: [String], toTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreObjectsMultiDistribution(field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: DistributionParameters): [MultiDistribution]
   stixDomainObject(id: String!): StixDomainObject
   stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): StixDomainObjectConnection
   bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection

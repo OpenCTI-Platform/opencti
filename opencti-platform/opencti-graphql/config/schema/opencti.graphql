@@ -269,14 +269,42 @@ type TimeSeries {
   date: DateTime!
   value: Int!
 }
+type MultiTimeSeries {
+  data: [TimeSeries]
+}
+input TimeSeriesParameters {
+  field: String!
+  types: [String]
+  filters: [StixCoreObjectsFiltering]
+  filterMode: FilterMode
+  search: String
+}
 type Distribution {
   label: String!
   entity: StixObjectOrStixRelationship
   value: Int
 }
+type MultiDistribution {
+  data: [Distribution]
+}
+input DistributionParameters {
+  objectId: String
+  relationship_type: [String]
+  toTypes: [String]
+  types: [String]
+  filters: [StixCoreObjectsFiltering]
+  filterMode: FilterMode
+  search: String
+}
 type Number {
   total: Int!
   count: Int!
+}
+input NumberParameters {
+  types: [String]
+  filters: [StixCoreObjectsFiltering]
+  filterMode: FilterMode
+  search: String
 }
 
 ### INTERFACES & TYPES
@@ -9719,6 +9747,14 @@ type Query {
     filterMode: FilterMode
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreObjectsMultiTimeSeries(
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    timeSeriesParameters: [TimeSeriesParameters]
+  ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsNumber(
     types: [String]
     endDate: DateTime
@@ -9727,6 +9763,11 @@ type Query {
     filterMode: FilterMode
     search: String
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreObjectsMultiNumber(
+    endDate: DateTime
+    onlyInferred: Boolean
+    numberParameters: [NumberParameters]
+  ): [Number] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsDistribution(
     objectId: String
     relationship_type: [String]
@@ -9741,6 +9782,14 @@ type Query {
     filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreObjectsMultiDistribution(
+    field: String!
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    distributionParameters: DistributionParameters
+  ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 

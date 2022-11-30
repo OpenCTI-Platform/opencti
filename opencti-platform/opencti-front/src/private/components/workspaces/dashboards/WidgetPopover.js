@@ -59,13 +59,11 @@ const StixCyberObservablePopover = ({ onUpdate, widget, onDelete }) => {
         onClose={() => setAnchorEl(null)}
       >
         <Security needs={[EXPLORE_EXUPDATE]}>
-          {widget.perspective && (
-            <WidgetConfig
-              closeMenu={() => setAnchorEl(null)}
-              onComplete={onUpdate}
-              widget={widget}
-            />
-          )}
+          <WidgetConfig
+            closeMenu={() => setAnchorEl(null)}
+            onComplete={onUpdate}
+            widget={widget}
+          />
           <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>

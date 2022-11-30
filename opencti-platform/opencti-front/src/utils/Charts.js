@@ -2,24 +2,24 @@ import * as C from '@mui/material/colors';
 
 const colors = (temp) => [
   C.red[temp],
-  C.pink[temp],
   C.purple[temp],
+  C.pink[temp],
   C.deepPurple[temp],
   C.indigo[temp],
   C.blue[temp],
-  C.lightBlue[temp],
   C.cyan[temp],
-  C.teal[temp],
+  C.blueGrey[temp],
+  C.lightBlue[temp],
   C.green[temp],
+  C.teal[temp],
   C.lightGreen[temp],
+  C.amber[temp],
+  C.deepOrange[temp],
   C.lime[temp],
   C.yellow[temp],
-  C.amber[temp],
-  C.orange[temp],
-  C.deepOrange[temp],
   C.brown[temp],
+  C.orange[temp],
   C.grey[temp],
-  C.blueGrey[temp],
 ];
 
 export const areaChartOptions = (
@@ -28,7 +28,6 @@ export const areaChartOptions = (
   xFormatter = null,
   yFormatter = null,
   tickAmount = undefined,
-  distributed = false,
 ) => ({
   chart: {
     type: 'area',
@@ -48,9 +47,7 @@ export const areaChartOptions = (
     curve: 'smooth',
     width: 2,
   },
-  colors: distributed
-    ? colors(theme.palette.mode === 'dark' ? 400 : 600)
-    : [theme.palette.primary.main],
+  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
   states: {
     hover: {
       filter: {
@@ -120,6 +117,8 @@ export const verticalBarsChartOptions = (
   yFormatter = null,
   distributed = false,
   isTimeSeries = false,
+  isStacked = false,
+  legend = false,
 ) => ({
   chart: {
     type: 'bar',
@@ -128,6 +127,7 @@ export const verticalBarsChartOptions = (
       show: false,
     },
     foreColor: theme.palette.text.secondary,
+    stacked: isStacked,
   },
   theme: {
     mode: theme.palette.mode,
@@ -135,9 +135,7 @@ export const verticalBarsChartOptions = (
   dataLabels: {
     enabled: false,
   },
-  colors: distributed
-    ? colors(theme.palette.mode === 'dark' ? 400 : 600)
-    : [theme.palette.primary.main],
+  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
   states: {
     hover: {
       filter: {
@@ -154,7 +152,7 @@ export const verticalBarsChartOptions = (
     strokeDashArray: 3,
   },
   legend: {
-    show: false,
+    show: legend,
   },
   tooltip: {
     theme: theme.palette.mode,

@@ -2726,7 +2726,7 @@ const i18n = {
       Donut: 'Donut',
       Map: 'Carte',
       Area: 'Zone',
-      Heatmap: 'Carte de chalheur',
+      Heatmap: 'Carte de chaleur',
       Renew: 'Renouveler',
       Authentication: 'Authentification',
       'Total pending inserts': "Nombre d'insertions en attente",
