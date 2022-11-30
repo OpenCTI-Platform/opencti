@@ -72,7 +72,7 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('OVERVIEW')}
+          {t('Overview')}
         </Button>
         {/* <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}> */}
         <Button
@@ -93,7 +93,7 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('ANALYSIS')}
+          {t('Analysis')}
         </Button>
         {/* </Security> */}
         <Button
@@ -112,7 +112,7 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('REMEDIATION')}
+          {t('Remediation')}
         </Button>
         <Button
           component={Link}
@@ -134,7 +134,7 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('TRACKING')}
+          {t('Tracking')}
         </Button>
       </div>
     );
