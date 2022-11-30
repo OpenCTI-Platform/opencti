@@ -2,12 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/dialogTitle';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
 import { compose, assoc } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -19,15 +17,9 @@ import MarkDownField from '../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
-    minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
+    padding: '10px 35px 20px 35px',
   },
   createButton: {
     position: 'fixed',
@@ -40,6 +32,9 @@ const styles = (theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  dialogTitle: {
+    padding: '16px 0 0 0',
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
@@ -56,9 +51,6 @@ const styles = (theme) => ({
     position: 'absolute',
     top: 15,
     right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 });
 
@@ -89,21 +81,6 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 };
 
 class WorkspaceCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-    };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
   onSubmit(values, { setSubmitting, resetForm }) {
     commitMutation({
       mutation: workspaceMutation,
@@ -124,106 +101,98 @@ class WorkspaceCreation extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
+        this.props.history.push('/dashboard/workspaces/dashboards');
+        this.props.handleCreateDashboard();
         resetForm();
-        this.handleClose();
       },
     });
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleCreateDashboard();
   }
 
   render() {
-    const { t, classes } = this.props;
+    const {
+      t, classes, open,
+    } = this.props;
     return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
+      <>
+        <Dialog
+          open={open}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a workspace')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                description: '',
-              }}
-              validationSchema={workspaceValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </div>
+          <DialogTitle classes={{ root: classes.dialogTitle }}>
+            {t('Create a Dashboard')}
+            <Typography>
+              {t('Add a custom dashboard to your organization')}
+            </Typography>
+          </DialogTitle>
+          <Formik
+            initialValues={{
+              name: '',
+              description: '',
+            }}
+            validationSchema={workspaceValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  name="name"
+                  label={t('Name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={MarkDownField}
+                  name="description"
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 20 }}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    size='small'
+                    variant="outlined"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Close')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size='small'
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Add')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </Dialog>
+      </>
     );
   }
 }
 
 WorkspaceCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
+  open: PropTypes.bool,
   type: PropTypes.string,
+  theme: PropTypes.object,
+  classes: PropTypes.object,
+  history: PropTypes.object,
+  paginationOptions: PropTypes.object,
+  handleCreateDashboard: PropTypes.func,
 };
 
 export default compose(

@@ -33,11 +33,11 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    height: '64px',
+    height: '70px',
     display: 'flex',
-    marginBottom: '20px',
-    backgroundColor: '#1F2842',
-    padding: '23px 0 24px 12px',
+    margin: '0 -1.5rem 1rem -1.5rem',
+    padding: '1rem 1.5rem',
+    backgroundColor: theme.palette.background.paper,
     justifyContent: 'space-between',
   },
   gridContainer: {
@@ -59,6 +59,7 @@ const styles = (theme) => ({
   leftContainer: {
     display: 'flex',
     alignItems: 'center',
+    marginTop: '0.5rem',
   },
   editButton: {
     position: 'fixed',
@@ -352,7 +353,7 @@ class NetworkCreation extends Component {
             <Button
               onClick={() => this.props.history.push('/defender HQ/assets/network')}
               // onClick={() => history.goBack()}
-              color="primary"
+              color="secondary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
               size="small"
