@@ -43,6 +43,9 @@ import { fromB64, toB64 } from '../../../../utils/String';
 import GlobalActivityStixCoreRelationships from './GlobalActivityStixCoreRelationships';
 import WidgetConfig from './WidgetConfig';
 import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
+import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
+import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
+import StixCoreObjectsMultiLines from '../../common/stix_core_objects/StixCoreObjectsMultiLines';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -476,10 +479,38 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       : config.startDate;
     const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.type) {
+      case 'number':
+        return (
+          <StixCoreObjectsNumber
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <StixCoreObjectsList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       case 'vertical-bar':
         return (
           <StixCoreObjectsMultiVerticalBars
-            title={widget.label}
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'line':
+        return (
+          <StixCoreObjectsMultiLines
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -501,7 +532,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'vertical-bar':
         return (
           <StixCoreObjectsMultiVerticalBars
-            title={widget.label}
             startDate={startDate}
             endDate={endDate}
             filters={widget.dataSelection[0].filters}

@@ -9757,6 +9757,7 @@ type Query {
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsNumber(
     types: [String]
+    startDate: DateTime
     endDate: DateTime
     onlyInferred: Boolean
     filters: [StixCoreObjectsFiltering]
@@ -9764,6 +9765,7 @@ type Query {
     search: String
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiNumber(
+    startDate: DateTime
     endDate: DateTime
     onlyInferred: Boolean
     numberParameters: [NumberParameters]

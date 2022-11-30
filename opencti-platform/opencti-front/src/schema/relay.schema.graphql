@@ -7261,8 +7261,8 @@ type Query {
   stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   stixCoreObjectsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [TimeSeriesParameters]): [MultiTimeSeries]
-  stixCoreObjectsNumber(types: [String], endDate: DateTime, onlyInferred: Boolean, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): Number
-  stixCoreObjectsMultiNumber(endDate: DateTime, onlyInferred: Boolean, numberParameters: [NumberParameters]): [Number]
+  stixCoreObjectsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): Number
+  stixCoreObjectsMultiNumber(startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [NumberParameters]): [Number]
   stixCoreObjectsDistribution(objectId: String, relationship_type: [String], toTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
   stixCoreObjectsMultiDistribution(field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: DistributionParameters): [MultiDistribution]
   stixDomainObject(id: String!): StixDomainObject

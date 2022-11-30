@@ -12486,6 +12486,7 @@ export type QueryStixCoreObjectsMultiNumberArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   numberParameters?: InputMaybe<Array<InputMaybe<NumberParameters>>>;
   onlyInferred?: InputMaybe<Scalars['Boolean']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
 };
 
 
@@ -12505,6 +12506,7 @@ export type QueryStixCoreObjectsNumberArgs = {
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   onlyInferred?: InputMaybe<Scalars['Boolean']>;
   search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 

@@ -22,15 +22,17 @@ const colors = (temp) => [
   C.grey[temp],
 ];
 
-export const areaChartOptions = (
+export const lineChartOptions = (
   theme,
   isTimeSeries = false,
   xFormatter = null,
   yFormatter = null,
   tickAmount = undefined,
+  dataLabels = false,
+  legend = false,
 ) => ({
   chart: {
-    type: 'area',
+    type: 'line',
     background: 'transparent',
     toolbar: {
       show: false,
@@ -41,13 +43,12 @@ export const areaChartOptions = (
     mode: theme.palette.mode,
   },
   dataLabels: {
-    enabled: false,
+    enabled: dataLabels,
   },
-  stroke: {
-    curve: 'smooth',
-    width: 2,
-  },
-  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
+  colors: [
+    theme.palette.primary.main,
+    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+  ],
   states: {
     hover: {
       filter: {
@@ -64,7 +65,101 @@ export const areaChartOptions = (
     strokeDashArray: 3,
   },
   legend: {
-    show: false,
+    show: legend,
+    itemMargin: {
+      horizontal: 5,
+      vertical: 20,
+    },
+  },
+  stroke: {
+    curve: 'smooth',
+    width: 2,
+  },
+  tooltip: {
+    theme: theme.palette.mode,
+  },
+  xaxis: {
+    type: isTimeSeries ? 'datetime' : 'category',
+    tickAmount,
+    tickPlacement: 'on',
+    labels: {
+      formatter: (value) => (xFormatter ? xFormatter(value) : value),
+      style: {
+        fontSize: '12px',
+        fontFamily: '"IBM Plex Sans", sans-serif',
+      },
+    },
+    axisBorder: {
+      show: false,
+    },
+  },
+  yaxis: {
+    labels: {
+      formatter: (value) => (yFormatter ? yFormatter(value) : value),
+      style: {
+        fontSize: '14px',
+        fontFamily: '"IBM Plex Sans", sans-serif',
+      },
+    },
+    axisBorder: {
+      show: false,
+    },
+  },
+});
+
+export const areaChartOptions = (
+  theme,
+  isTimeSeries = false,
+  xFormatter = null,
+  yFormatter = null,
+  tickAmount = undefined,
+  isStacked = false,
+  legend = false,
+) => ({
+  chart: {
+    type: 'area',
+    background: 'transparent',
+    toolbar: {
+      show: false,
+    },
+    foreColor: theme.palette.text.secondary,
+    stacked: isStacked,
+  },
+  theme: {
+    mode: theme.palette.mode,
+  },
+  dataLabels: {
+    enabled: false,
+  },
+  stroke: {
+    curve: 'smooth',
+    width: 2,
+  },
+  colors: [
+    theme.palette.primary.main,
+    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+  ],
+  states: {
+    hover: {
+      filter: {
+        type: 'lighten',
+        value: 0.05,
+      },
+    },
+  },
+  grid: {
+    borderColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, .1)'
+        : 'rgba(0, 0, 0, .1)',
+    strokeDashArray: 3,
+  },
+  legend: {
+    show: legend,
+    itemMargin: {
+      horizontal: 5,
+      vertical: 20,
+    },
   },
   tooltip: {
     theme: theme.palette.mode,
@@ -135,7 +230,10 @@ export const verticalBarsChartOptions = (
   dataLabels: {
     enabled: false,
   },
-  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
+  colors: [
+    theme.palette.primary.main,
+    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+  ],
   states: {
     hover: {
       filter: {
@@ -153,6 +251,10 @@ export const verticalBarsChartOptions = (
   },
   legend: {
     show: legend,
+    itemMargin: {
+      horizontal: 5,
+      vertical: 20,
+    },
   },
   tooltip: {
     theme: theme.palette.mode,
@@ -233,6 +335,10 @@ export const horizontalBarsChartOptions = (
   },
   legend: {
     show: false,
+    itemMargin: {
+      horizontal: 5,
+      vertical: 20,
+    },
   },
   tooltip: {
     theme: theme.palette.mode,
@@ -293,6 +399,10 @@ export const radarChartOptions = (theme, labels, chartColors = []) => ({
   },
   legend: {
     show: false,
+    itemMargin: {
+      horizontal: 5,
+      vertical: 20,
+    },
   },
   tooltip: {
     theme: theme.palette.mode,

@@ -10,7 +10,7 @@ import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { verticalBarsChartOptions } from '../../../../utils/Charts';
+import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
 
@@ -29,8 +29,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreObjectsMultiVerticalBarsTimeSeriesQuery = graphql`
-  query StixCoreObjectsMultiVerticalBarsTimeSeriesQuery(
+const stixCoreObjectsMultiAreaChartTimeSeriesQuery = graphql`
+  query StixCoreObjectsMultiAreaChartTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
@@ -52,7 +52,7 @@ const stixCoreObjectsMultiVerticalBarsTimeSeriesQuery = graphql`
   }
 `;
 
-const StixCoreObjectsMultiVerticalBars = ({
+const StixCoreObjectsMultiAreaChart = ({
   variant,
   height,
   startDate,
@@ -91,7 +91,7 @@ const StixCoreObjectsMultiVerticalBars = ({
     });
     return (
       <QueryRenderer
-        query={stixCoreObjectsMultiVerticalBarsTimeSeriesQuery}
+        query={stixCoreObjectsMultiAreaChartTimeSeriesQuery}
         variables={{
           operation: 'count',
           startDate: startDate ?? monthsAgo(12),
@@ -103,12 +103,12 @@ const StixCoreObjectsMultiVerticalBars = ({
           if (props && props.stixCoreObjectsMultiTimeSeries) {
             return (
               <Chart
-                options={verticalBarsChartOptions(
+                options={areaChartOptions(
                   theme,
+                  true,
                   fsd,
                   simpleNumberFormat,
-                  false,
-                  true,
+                  undefined,
                   parameters.stacked,
                   parameters.legend,
                 )}
@@ -181,4 +181,4 @@ const StixCoreObjectsMultiVerticalBars = ({
   );
 };
 
-export default StixCoreObjectsMultiVerticalBars;
+export default StixCoreObjectsMultiAreaChart;

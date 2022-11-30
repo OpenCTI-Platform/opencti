@@ -431,7 +431,6 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                   md,
                   simpleNumberFormat,
                   'dataPoints',
-                  true,
                 )}
                 series={[
                   {

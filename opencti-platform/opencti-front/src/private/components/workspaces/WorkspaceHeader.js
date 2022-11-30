@@ -163,14 +163,14 @@ class WorkspaceHeader extends Component {
                   float: 'left',
                 }}
               >
-                <FormControl style={{ width: 194, marginRight: 20 }}>
-                  <InputLabel id="relative" variant="outlined" size="small">
-                    {t('Relative time')}
-                  </InputLabel>
+                <FormControl
+                  variant="outlined"
+                  size="small"
+                  style={{ width: 194, marginRight: 20 }}
+                >
+                  <InputLabel id="relative">{t('Relative time')}</InputLabel>
                   <Select
-                    variant="outlined"
                     labelId="relative"
-                    size="small"
                     value={relativeDate === null ? '' : relativeDate}
                     onChange={handleDateChange.bind(this, 'relativeDate')}
                     disabled={true}
@@ -230,14 +230,14 @@ class WorkspaceHeader extends Component {
                 float: 'left',
               }}
             >
-              <FormControl style={{ width: 194, marginRight: 20 }}>
-                <InputLabel id="relative" variant="outlined" size="small">
-                  {t('Relative time')}
-                </InputLabel>
+              <FormControl
+                variant="outlined"
+                size="small"
+                style={{ width: 194, marginRight: 20 }}
+              >
+                <InputLabel id="relative">{t('Relative time')}</InputLabel>
                 <Select
-                  variant="outlined"
                   labelId="relative"
-                  size="small"
                   value={relativeDate === null ? '' : relativeDate}
                   onChange={handleDateChange.bind(this, 'relativeDate')}
                 >

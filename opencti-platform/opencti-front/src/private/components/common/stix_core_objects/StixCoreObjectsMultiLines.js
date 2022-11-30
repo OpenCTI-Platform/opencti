@@ -10,7 +10,7 @@ import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { verticalBarsChartOptions } from '../../../../utils/Charts';
+import { lineChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
 
@@ -29,8 +29,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreObjectsMultiVerticalBarsTimeSeriesQuery = graphql`
-  query StixCoreObjectsMultiVerticalBarsTimeSeriesQuery(
+const stixCoreObjectsMultiLinesTimeSeriesQuery = graphql`
+  query StixCoreObjectsMultiLinesTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
@@ -52,7 +52,7 @@ const stixCoreObjectsMultiVerticalBarsTimeSeriesQuery = graphql`
   }
 `;
 
-const StixCoreObjectsMultiVerticalBars = ({
+const StixCoreObjectsMultiLines = ({
   variant,
   height,
   startDate,
@@ -91,7 +91,7 @@ const StixCoreObjectsMultiVerticalBars = ({
     });
     return (
       <QueryRenderer
-        query={stixCoreObjectsMultiVerticalBarsTimeSeriesQuery}
+        query={stixCoreObjectsMultiLinesTimeSeriesQuery}
         variables={{
           operation: 'count',
           startDate: startDate ?? monthsAgo(12),
@@ -103,13 +103,13 @@ const StixCoreObjectsMultiVerticalBars = ({
           if (props && props.stixCoreObjectsMultiTimeSeries) {
             return (
               <Chart
-                options={verticalBarsChartOptions(
+                options={lineChartOptions(
                   theme,
+                  true,
                   fsd,
                   simpleNumberFormat,
+                  undefined,
                   false,
-                  true,
-                  parameters.stacked,
                   parameters.legend,
                 )}
                 series={dataSelection.map((selection, i) => ({
@@ -121,7 +121,7 @@ const StixCoreObjectsMultiVerticalBars = ({
                     }),
                   ),
                 }))}
-                type="bar"
+                type="line"
                 width="100%"
                 height="100%"
               />
@@ -181,4 +181,4 @@ const StixCoreObjectsMultiVerticalBars = ({
   );
 };
 
-export default StixCoreObjectsMultiVerticalBars;
+export default StixCoreObjectsMultiLines;

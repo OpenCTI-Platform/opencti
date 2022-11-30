@@ -28,6 +28,7 @@ import {
 import {
   ChartTimeline,
   ChartAreasplineVariant,
+  ChartLine,
   ChartBar,
   ChartDonut,
   ChartBubble,
@@ -36,6 +37,8 @@ import {
   Counter,
   DatabaseOutline,
   FlaskOutline,
+  Radar,
+  ChartTree,
 } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -131,14 +134,14 @@ const visualizationTypes = [
     key: 'number',
     name: 'Number',
     dataSelectionLimit: 1,
-    isTimeSeries: true,
+    isTimeSeries: false,
     availableParameters: [],
   },
   {
     key: 'list',
     name: 'List',
     dataSelectionLimit: 1,
-    isTimeSeries: false,
+    isTimeSeries: true,
     availableParameters: [],
   },
   {
@@ -167,21 +170,21 @@ const visualizationTypes = [
     name: 'Donut',
     dataSelectionLimit: 1,
     isTimeSeries: false,
-    availableParameters: [],
+    availableParameters: ['attribute'],
   },
   {
     key: 'horizontal-bar',
     name: 'Horizontal Bar',
     dataSelectionLimit: 1,
     isTimeSeries: false,
-    availableParameters: [],
+    availableParameters: ['attribute'],
   },
   {
     key: 'radar',
-    name: 'radar',
+    name: 'Radar',
     dataSelectionLimit: 1,
     isTimeSeries: false,
-    availableParameters: [],
+    availableParameters: ['attribute'],
   },
   {
     key: 'timeline',
@@ -193,6 +196,13 @@ const visualizationTypes = [
   {
     key: 'heatmap',
     name: 'Heatmap',
+    dataSelectionLimit: 1,
+    isTimeSeries: true,
+    availableParameters: [],
+  },
+  {
+    key: 'tree',
+    name: 'Tree',
     dataSelectionLimit: 1,
     isTimeSeries: true,
     availableParameters: [],
@@ -228,6 +238,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       setDataSelection([
         { label: '', attribute: '', isTo: false, filters: {} },
       ]);
+      setParameters({});
     } else {
       setStepIndex(2);
     }
@@ -383,6 +394,12 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         return <Counter fontSize="large" color="primary" />;
       case 'heatmap':
         return <ChartBubble fontSize="large" color="primary" />;
+      case 'line':
+        return <ChartLine fontSize="large" color="primary" />;
+      case 'radar':
+        return <Radar fontSize="large" color="primary" />;
+      case 'tree':
+        return <ChartTree fontSize="large" color="primary" />;
       default:
         return 'Go away';
     }
@@ -605,11 +622,39 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   const renderParameters = () => {
     return (
       <div style={{ marginTop: 20 }}>
-        {Array(dataSelection.length)
-          .fill(0)
-          .map((_, i) => (
-            <div key={i} className={classes.step}>
-              {getCurrentIsTimeSeries() ? (
+        <TextField
+          variant="standard"
+          label={t('Title')}
+          fullWidth={true}
+          value={parameters.title}
+          onChange={(event) => handleChangeParameter('title', event.target.value)
+          }
+        />
+        {getCurrentIsTimeSeries() && (
+          <FormControl
+            fullWidth={true}
+            variant="standard"
+            style={{ marginTop: 20 }}
+          >
+            <InputLabel id="relative">{t('Interval')}</InputLabel>
+            <Select
+              labelId="relative"
+              fullWidth={true}
+              value={parameters.interval ?? 'day'}
+              onChange={(event) => handleChangeParameter('interval', event.target.value)
+              }
+            >
+              <MenuItem value="day">{t('Day')}</MenuItem>
+              <MenuItem value="month">{t('Month')}</MenuItem>
+              <MenuItem value="year">{t('Year')}</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+        <div style={{ marginTop: 20 }}>
+          {Array(dataSelection.length)
+            .fill(0)
+            .map((_, i) => (
+              <div key={i} className={classes.step}>
                 <div style={{ display: 'flex', width: '100%' }}>
                   <FormControl fullWidth={true} style={{ flex: 1 }}>
                     <InputLabel id="relative" variant="standard" size="small">
@@ -642,53 +687,36 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     </Select>
                   </FormControl>
                 </div>
-              ) : (
-                <div style={{ display: 'flex', width: '100%' }}>
-                  <TextField
-                    style={{ flex: 1 }}
-                    variant="standard"
-                    label={dataSelection[i].label}
-                    fullWidth={true}
-                    value={dataSelection[i].attribute}
-                    placeholder={t('Series attribute')}
-                    onChange={(event) => handleChangeDataValidationAttribute(i, event.target.value)
-                    }
-                  />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        onChange={() => handleToggleDataValidationIsTo(i)}
-                        checked={dataSelection[i].isTo}
-                      />
-                    }
-                    label={t('In relationship target')}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+                {getCurrentAvailableParameters().includes('attribute') && (
+                  <div style={{ display: 'flex', width: '100%' }}>
+                    <TextField
+                      style={{ flex: 1 }}
+                      variant="standard"
+                      label={dataSelection[i].label}
+                      fullWidth={true}
+                      value={dataSelection[i].attribute}
+                      placeholder={t('Series attribute')}
+                      onChange={(event) => handleChangeDataValidationAttribute(
+                        i,
+                        event.target.value,
+                      )
+                      }
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          onChange={() => handleToggleDataValidationIsTo(i)}
+                          checked={dataSelection[i].isTo}
+                        />
+                      }
+                      label={t('In relationship target')}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+        </div>
         <div style={{ display: 'flex', width: '100%' }}>
-          {getCurrentIsTimeSeries() && (
-            <FormControl fullWidth={true} style={{ flex: 1, marginRight: 20 }}>
-              <InputLabel id="relative" variant="standard" size="small">
-                {t('Interval')}
-              </InputLabel>
-              <Select
-                variant="standard"
-                labelId="relative"
-                size="small"
-                fullWidth={true}
-                value={parameters.interval ?? 'day'}
-                onChange={(event) => handleChangeParameter('interval', event.target.value)
-                }
-              >
-                <MenuItem value="day">{t('Day')}</MenuItem>
-                <MenuItem value="week">{t('Week')}</MenuItem>
-                <MenuItem value="month">{t('Month')}</MenuItem>
-                <MenuItem value="year">{t('Year')}</MenuItem>
-              </Select>
-            </FormControl>
-          )}
           {getCurrentAvailableParameters().includes('stacked') && (
             <FormControlLabel
               control={
@@ -801,7 +829,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           <Button
             color="secondary"
             onClick={completeSetup}
-            disabled={stepIndex !== 3 || !isDataSelectionAttributesValid()}
+            disabled={
+              stepIndex !== 3
+              || (getCurrentAvailableParameters().includes('attribute')
+                && !isDataSelectionAttributesValid())
+            }
           >
             {widget ? t('Update') : t('Create')}
           </Button>
