@@ -46,6 +46,8 @@ import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/Sti
 import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
 import StixCoreObjectsMultiLines from '../../common/stix_core_objects/StixCoreObjectsMultiLines';
+import StixCoreObjectsMultiAreaChart from '../../common/stix_core_objects/StixCoreObjectsMultiAreaChart';
+import StixCoreObjectsTimeline from '../../common/stix_core_objects/StixCoreObjectsTimeline';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -511,6 +513,26 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'line':
         return (
           <StixCoreObjectsMultiLines
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <StixCoreObjectsMultiAreaChart
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'timeline':
+        return (
+          <StixCoreObjectsTimeline
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}

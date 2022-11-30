@@ -166,6 +166,13 @@ const visualizationTypes = [
     availableParameters: ['stacked', 'legend'],
   },
   {
+    key: 'timeline',
+    name: 'Timeline',
+    dataSelectionLimit: 1,
+    isTimeSeries: false,
+    availableParameters: [],
+  },
+  {
     key: 'donut',
     name: 'Donut',
     dataSelectionLimit: 1,
@@ -185,13 +192,6 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     isTimeSeries: false,
     availableParameters: ['attribute'],
-  },
-  {
-    key: 'timeline',
-    name: 'Timeline',
-    dataSelectionLimit: 1,
-    isTimeSeries: true,
-    availableParameters: [],
   },
   {
     key: 'heatmap',

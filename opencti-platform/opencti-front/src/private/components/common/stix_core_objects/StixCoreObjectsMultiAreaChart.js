@@ -121,7 +121,7 @@ const StixCoreObjectsMultiAreaChart = ({
                     }),
                   ),
                 }))}
-                type="bar"
+                type="area"
                 width="100%"
                 height="100%"
               />
