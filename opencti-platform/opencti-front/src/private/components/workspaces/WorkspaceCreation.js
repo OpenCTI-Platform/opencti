@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/dialogTitle';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { compose, assoc } from 'ramda';
