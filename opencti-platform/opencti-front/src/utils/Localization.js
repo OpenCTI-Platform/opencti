@@ -3458,7 +3458,7 @@ const i18n = {
       'The value must be a datetime with seconds (yyyy-MM-dd hh:mm:ss (a|p)m)':
         '日時(yyyy-MM-dd hh:mm:ss (a|p)m)を入力してください',
       'The values do not match': '値が一致しません',
-      'No available options': '利用可能なオブションはありません',
+      'No available options': '利用可能なオプションはありません',
       'No description of this usage': 'この使用方法についての説明はありません',
       'No description of this targeting': 'この標的についての説明はありません',
       'No history about this relationship.':
@@ -4583,7 +4583,7 @@ const i18n = {
       relationship_parent: '親',
       'relationship_parent-directory': '親ディレクトリ',
       'relationship_raw-email': 'メールデータ',
-      'relationship_src-payload': '送信元のペイロード',
+      'relationship_src-payload': '送信元ペイロード',
       confidence_0: '極めて低い',
       confidence_15: '低',
       confidence_50: '中',
