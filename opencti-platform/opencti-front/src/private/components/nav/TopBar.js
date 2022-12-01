@@ -75,7 +75,6 @@ import Security, {
 } from '../../../utils/Security';
 import AboutModal from '../../../components/AboutModal';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
-import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 import Export from '../../../components/Export';
@@ -135,7 +134,7 @@ const styles = (theme) => ({
     height: '100%',
   },
   barContainer: {
-    display: 'table-cell',
+    display: 'flex',
     float: 'left',
     paddingTop: 10,
   },
@@ -164,7 +163,7 @@ const logoutMutation = graphql`
 `;
 
 const TopBar = ({
-  t, classes, location, history, theme, drawer,
+  t, classes, location, history, theme, drawer, dashboard, handleChangeDashboard,
 }) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
   const handleOpenMenu = (event) => {
@@ -199,7 +198,11 @@ const TopBar = ({
         </div> */}
         <div className={drawer ? classes.menuContainerClose : classes.menuContainer}>
           {(location.pathname === '/dashboard'
-            || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
+            || location.pathname === '/dashboard/import')
+            && <TopMenuDashboard
+              dashboard={dashboard}
+              handleChangeDashboard={handleChangeDashboard}
+            />}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$'))
@@ -344,9 +347,9 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
           )}
-          {location.pathname.includes('/dashboard/workspaces/dashboards') && (
+          {/* {location.pathname.includes('/dashboard/workspaces/dashboards') && (
             <TopMenuWorkspacesDashboards />
-          )}
+          )} */}
           {location.pathname.includes(
             '/dashboard/workspaces/investigations',
           ) && <TopMenuWorkspacesInvestigations />}
@@ -381,29 +384,6 @@ const TopBar = ({
           <Divider className={classes.divider} orientation="vertical" />
           <div className={classes.barContainer}>
             <Security needs={[EXPLORE]}>
-              <Tooltip title={t('Custom dashboards')}>
-                <IconButton
-                  component={Link}
-                  to="/dashboard/workspaces/dashboards"
-                  variant={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'contained'
-                      : 'text'
-                  }
-                  color={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'secondary'
-                      : 'inherit'
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  <InsertChartOutlined fontSize="medium" />
-                </IconButton>
-              </Tooltip>
               <Tooltip title={t('Investigations')}>
                 <IconButton
                   component={Link}
@@ -445,6 +425,17 @@ const TopBar = ({
                   history={history}
                   location={location}
                 />
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <Tooltip title={t('Custom dashboards')}>
+                  <IconButton
+                    component={Link}
+                    to="/dashboard/workspaces/dashboards"
+                    classes={{ root: classes.button }}
+                  >
+                    <InsertChartOutlined fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
               </Grid>
               <Grid item={true} xs='auto'>
                 <Tooltip title={t('Find in Page')}>
@@ -501,6 +492,7 @@ const TopBar = ({
 };
 
 TopBar.propTypes = {
+  dashboard: PropTypes.string,
   drawer: PropTypes.bool,
   keyword: PropTypes.string,
   theme: PropTypes.object,
@@ -508,6 +500,7 @@ TopBar.propTypes = {
   location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  handleChangeDashboard: PropTypes.func,
 };
 
 export default compose(

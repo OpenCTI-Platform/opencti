@@ -3,13 +3,13 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
-import ListLinesContent from '../../../components/list_lines/ListLinesContent';
-import { WorkspaceLine, WorkspaceLineDummy } from './WorkspaceLine';
+import CyioListCardsContent from '../../../components/list_cards/CyioListCardsContent';
+import { WorkspaceCard, WorkspaceCardDummy } from './WorkspaceCard';
 import { setNumberOfElements } from '../../../utils/Number';
 
-const nbOfRowsToLoad = 50;
+const nbOfCardsToLoad = 50;
 
-class WorkspacesLines extends Component {
+class WorkspacesCards extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -21,40 +21,39 @@ class WorkspacesLines extends Component {
 
   render() {
     const {
+      initialLoading,
       relay,
       selectAll,
-      dataColumns,
-      initialLoading,
       onToggleEntity,
       selectedElements,
       paginationOptions,
     } = this.props;
     return (
-      <ListLinesContent
+      <CyioListCardsContent
         initialLoading={initialLoading}
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
         dataList={pathOr([], ['workspaces', 'edges'], this.props.data)}
         globalCount={pathOr(
-          nbOfRowsToLoad,
+          nbOfCardsToLoad,
           ['workspaces', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<WorkspaceLine />}
-        DummyLineComponent={<WorkspaceLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
+        CardComponent={<WorkspaceCard />}
+        DummyCardComponent={<WorkspaceCardDummy />}
         selectAll={selectAll}
-        paginationOptions={paginationOptions}
         selectedElements={selectedElements}
+        nbOfCardsToLoad={nbOfCardsToLoad}
+        paginationOptions={paginationOptions}
         onToggleEntity={onToggleEntity.bind(this)}
+
       />
     );
   }
 }
 
-WorkspacesLines.propTypes = {
+WorkspacesCards.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -65,8 +64,8 @@ WorkspacesLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const workspacesLinesQuery = graphql`
-  query WorkspacesLinesPaginationQuery(
+export const workspacesCardsQuery = graphql`
+  query WorkspacesCardsPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
@@ -74,7 +73,7 @@ export const workspacesLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: [WorkspacesFiltering]
   ) {
-    ...WorkspacesLines_data
+    ...WorkspacesCards_data
       @arguments(
         search: $search
         count: $count
@@ -87,10 +86,10 @@ export const workspacesLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  WorkspacesLines,
+  WorkspacesCards,
   {
     data: graphql`
-      fragment WorkspacesLines_data on Query
+      fragment WorkspacesCards_data on Query
       @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
@@ -110,7 +109,7 @@ export default createPaginationContainer(
           edges {
             node {
               id
-              ...WorkspaceLine_node
+              ...WorkspaceCard_node
             }
           }
           pageInfo {
@@ -142,6 +141,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: workspacesLinesQuery,
+    query: workspacesCardsQuery,
   },
 );

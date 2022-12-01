@@ -387,7 +387,7 @@ class ViewCharts extends Component {
     const { trendingName, trendingData } = this.state;
 
     return (
-      <div>
+      <div style={{ marginTop: '1rem' }}>
         <Button
           aria-controls="simple-menu"
           aria-haspopup="true"
