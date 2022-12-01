@@ -10,7 +10,7 @@ import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { areaChartOptions } from '../../../../utils/Charts';
+import { verticalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
 
@@ -29,15 +29,15 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreObjectsMultiAreaChartTimeSeriesQuery = graphql`
-  query StixCoreObjectsMultiAreaChartTimeSeriesQuery(
+const stixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
+  query StixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
+    $timeSeriesParameters: [StixCoreRelationshipsTimeSeriesParameters]
   ) {
-    stixCoreObjectsMultiTimeSeries(
+    stixCoreRelationshipsMultiTimeSeries(
       operation: $operation
       startDate: $startDate
       endDate: $endDate
@@ -52,7 +52,7 @@ const stixCoreObjectsMultiAreaChartTimeSeriesQuery = graphql`
   }
 `;
 
-const StixCoreObjectsMultiAreaChart = ({
+const StixCoreRelationshipsMultiVerticalBars = ({
   variant,
   height,
   startDate,
@@ -65,33 +65,32 @@ const StixCoreObjectsMultiAreaChart = ({
   const { t, fsd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      let types = ['Stix-Core-Object'];
-      if (
-        selection.filters.entity_type
-        && selection.filters.entity_type.length > 0
-      ) {
-        if (
-          selection.filters.entity_type.filter((n) => n.id === 'all').length
-          === 0
-        ) {
-          types = selection.filters.entity_type.map((o) => o.id);
-        }
-      }
-      const filters = convertFilters(
-        R.dissoc('entity_type', selection.filters),
+      const filters = convertFilters(selection.filters);
+      const dataSelectionRelationshipType = R.head(filters.filter((n) => n.key === 'relationship_type'))?.values
+        || null;
+      const dataSelectionFromId = R.head(filters.filter((n) => n.key === 'fromId'))?.values || null;
+      const dataSelectionToId = R.head(filters.filter((n) => n.key === 'toId'))?.values || null;
+      const dataSelectionFromTypes = R.head(filters.filter((n) => n.key === 'fromTypes'))?.values || null;
+      const dataSelectionToTypes = R.head(filters.filter((n) => n.key === 'toTypes'))?.values || null;
+      const finalFilters = filters.filter(
+        (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
       );
       return {
+        fromId: dataSelectionFromId,
+        toId: dataSelectionToId,
+        relationship_type: dataSelectionRelationshipType,
+        fromTypes: dataSelectionFromTypes,
+        toTypes: dataSelectionToTypes,
         field:
           selection.date_attribute && selection.date_attribute.length > 0
             ? selection.date_attribute
             : 'created_at',
-        types,
-        filters,
+        filters: finalFilters,
       };
     });
     return (
       <QueryRenderer
-        query={stixCoreObjectsMultiAreaChartTimeSeriesQuery}
+        query={stixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery}
         variables={{
           operation: 'count',
           startDate: startDate ?? monthsAgo(12),
@@ -100,28 +99,28 @@ const StixCoreObjectsMultiAreaChart = ({
           timeSeriesParameters,
         }}
         render={({ props }) => {
-          if (props && props.stixCoreObjectsMultiTimeSeries) {
+          if (props && props.stixCoreRelationshipsMultiTimeSeries) {
             return (
               <Chart
-                options={areaChartOptions(
+                options={verticalBarsChartOptions(
                   theme,
-                  true,
                   fsd,
                   simpleNumberFormat,
-                  undefined,
+                  false,
+                  true,
                   parameters.stacked,
                   parameters.legend,
                 )}
                 series={dataSelection.map((selection, i) => ({
                   name: selection.label ?? t('Number of entities'),
-                  data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
+                  data: props.stixCoreRelationshipsMultiTimeSeries[i].data.map(
                     (entry) => ({
                       x: new Date(entry.date),
                       y: entry.value,
                     }),
                   ),
                 }))}
-                type="area"
+                type="bar"
                 width="100%"
                 height="100%"
               />
@@ -181,4 +180,4 @@ const StixCoreObjectsMultiAreaChart = ({
   );
 };
 
-export default StixCoreObjectsMultiAreaChart;
+export default StixCoreRelationshipsMultiVerticalBars;

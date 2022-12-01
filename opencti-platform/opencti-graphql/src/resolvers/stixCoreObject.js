@@ -35,7 +35,7 @@ import {
   stixCoreObjectsDistributionByEntity,
 } from '../domain/stixCoreObject';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
+import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { filesListing } from '../database/file-storage';
 import { BUS_TOPICS } from '../config/conf';
@@ -95,6 +95,7 @@ const stixCoreObjectResolvers = {
     creator: (stixCoreObject, _, context) => creatorsLoader.load(stixCoreObject.creator_id, context, context.user),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
+    stixCoreRelationshipsDistribution: (stixCoreObject, args, context) => distributionRelations(context, context.user, { ...args, elementId: stixCoreObject.id }),
     createdBy: (stixCoreObject, _, context) => createdByLoader.load(stixCoreObject.id, context, context.user),
     objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject.id, context, context.user),
     objectLabel: (stixCoreObject, _, context) => labelsLoader.load(stixCoreObject.id, context, context.user),

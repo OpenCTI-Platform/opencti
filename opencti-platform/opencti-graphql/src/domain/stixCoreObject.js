@@ -8,7 +8,7 @@ import {
   createRelations,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  distributionEntities,
+  distributionEntities, distributionRelations,
   internalLoadById,
   mergeEntities,
   storeLoadById,

@@ -210,7 +210,7 @@ const visualizationTypes = [
   {
     key: 'horizontal-bar',
     name: 'Horizontal Bar',
-    dataSelectionLimit: 1,
+    dataSelectionLimit: 2,
     isTimeSeries: false,
     availableParameters: ['attribute'],
   },
@@ -734,7 +734,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     <TextField
                       style={{ flex: 1 }}
                       variant="standard"
-                      label={dataSelection[i].label}
+                      label={t('Field')}
                       fullWidth={true}
                       value={dataSelection[i].attribute}
                       placeholder={t('Series attribute')}

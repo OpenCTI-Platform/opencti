@@ -35,7 +35,7 @@ const stixCoreObjectsMultiLinesTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $timeSeriesParameters: [TimeSeriesParameters]
+    $timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ) {
     stixCoreObjectsMultiTimeSeries(
       operation: $operation
@@ -52,7 +52,7 @@ const stixCoreObjectsMultiLinesTimeSeriesQuery = graphql`
   }
 `;
 
-const StixCoreObjectsMultiLines = ({
+const StixCoreObjectsMultiLineChart = ({
   variant,
   height,
   startDate,
@@ -181,4 +181,4 @@ const StixCoreObjectsMultiLines = ({
   );
 };
 
-export default StixCoreObjectsMultiLines;
+export default StixCoreObjectsMultiLineChart;

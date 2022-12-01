@@ -35,7 +35,7 @@ const stixCoreObjectsMultiVerticalBarsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $timeSeriesParameters: [TimeSeriesParameters]
+    $timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ) {
     stixCoreObjectsMultiTimeSeries(
       operation: $operation

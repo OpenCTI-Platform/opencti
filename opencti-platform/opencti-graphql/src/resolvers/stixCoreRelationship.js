@@ -21,7 +21,8 @@ import {
   stixCoreRelationshipEditField,
   stixCoreRelationshipsExportAsk,
   stixCoreRelationshipsExportPush,
-  stixCoreRelationshipsNumber
+  stixCoreRelationshipsNumber,
+  stixCoreRelationshipsMultiTimeSeries,
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -51,6 +52,7 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationship: (_, { id }, context) => findById(context, context.user, id),
     stixCoreRelationships: (_, args, context) => findAll(context, context.user, args),
     stixCoreRelationshipsTimeSeries: (_, args, context) => timeSeriesRelations(context, context.user, args),
+    stixCoreRelationshipsMultiTimeSeries: (_, args, context) => stixCoreRelationshipsMultiTimeSeries(context, context.user, args),
     stixCoreRelationshipsDistribution: (_, args, context) => distributionRelations(context, context.user, args),
     stixCoreRelationshipsNumber: (_, args, context) => stixCoreRelationshipsNumber(context, context.user, args),
     stixCoreRelationshipsExportFiles: (_, { type, first }, context) => {

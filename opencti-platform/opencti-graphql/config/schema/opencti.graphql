@@ -272,12 +272,28 @@ type TimeSeries {
 type MultiTimeSeries {
   data: [TimeSeries]
 }
-input TimeSeriesParameters {
+input StixCoreObjectsTimeSeriesParameters {
   field: String!
   types: [String]
   filters: [StixCoreObjectsFiltering]
   filterMode: FilterMode
   search: String
+}
+input StixCoreRelationshipsTimeSeriesParameters {
+  field: String!
+  elementId: [String]
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromRole: String
+  fromTypes: [String]
+  toId: [String]
+  toRole: String
+  toTypes: [String]
+  relationship_type: [String]
+  confidences: [Int]
+  search: String
+  filters: [StixCoreRelationshipsFiltering]
+  filterMode: FilterMode
 }
 type Distribution {
   label: String!
@@ -287,7 +303,7 @@ type Distribution {
 type MultiDistribution {
   data: [Distribution]
 }
-input DistributionParameters {
+input StixCoreObjectsDistributionParameters {
   objectId: String
   relationship_type: [String]
   toTypes: [String]
@@ -296,11 +312,27 @@ input DistributionParameters {
   filterMode: FilterMode
   search: String
 }
+input StixCoreRelationshipsDistributionParameters {
+  field: String!
+  elementId: [String]
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromRole: String
+  fromTypes: [String]
+  toId: [String]
+  toRole: String
+  toTypes: [String]
+  relationship_type: [String]
+  confidences: [Int]
+  search: String
+  filters: [StixCoreRelationshipsFiltering]
+  filterMode: FilterMode
+}
 type Number {
   total: Int!
   count: Int!
 }
-input NumberParameters {
+input StixCoreObjectsNumberParameters {
   types: [String]
   filters: [StixCoreObjectsFiltering]
   filterMode: FilterMode
@@ -1797,6 +1829,28 @@ interface StixCoreObject {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Technical
   creator: Creator
   toStix: String
@@ -1915,6 +1969,28 @@ interface StixDomainObject {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2043,6 +2119,28 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2186,6 +2284,28 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2325,6 +2445,28 @@ interface Container {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2447,6 +2589,28 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2621,6 +2785,28 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2776,6 +2962,28 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -2932,6 +3140,28 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3087,6 +3317,28 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3226,6 +3478,28 @@ interface Identity {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3362,6 +3636,28 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3526,6 +3822,28 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3667,6 +3985,28 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3803,6 +4143,28 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -3960,6 +4322,28 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4114,6 +4498,28 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4248,6 +4654,28 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4396,6 +4824,28 @@ interface Location {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4530,6 +4980,28 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4671,6 +5143,28 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4803,6 +5297,28 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -4935,6 +5451,28 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5079,6 +5617,28 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5220,6 +5780,28 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5366,6 +5948,28 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5501,6 +6105,28 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5652,6 +6278,28 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
   confidence: Int
@@ -5799,6 +6447,28 @@ interface StixCyberObservable {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -5884,6 +6554,28 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -5978,6 +6670,28 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -6076,6 +6790,28 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   observable_value: String!
   x_opencti_score: Int
@@ -6194,6 +6930,28 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # EmailAddr
   value: String
   display_name: String
@@ -6286,6 +7044,28 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # EmailMessage
   is_multipart: Boolean
   attribute_date: DateTime
@@ -6360,6 +7140,28 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -6470,6 +7272,28 @@ interface HashedObservable {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -6557,6 +7381,28 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -6660,6 +7506,28 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -6772,6 +7640,28 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -6919,6 +7809,28 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7012,6 +7924,28 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7103,6 +8037,28 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7193,6 +8149,28 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7283,6 +8261,28 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7392,6 +8392,28 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7528,6 +8550,28 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7629,6 +8673,28 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7747,6 +8813,28 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # UserAccount
   extensions: String
   user_id: String
@@ -7836,6 +8924,28 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -7958,6 +9068,28 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # WindowsRegistryKey
   name: String
   data: String
@@ -8052,6 +9184,28 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # CryptographicKey
   value: String
   # Technical
@@ -8114,6 +9268,28 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8232,6 +9408,28 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Hostname
   value: String
   # Technical
@@ -8294,6 +9492,28 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8384,6 +9604,28 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8474,6 +9716,29 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementId: [String]
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8568,6 +9833,28 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8658,6 +9945,28 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -8754,6 +10063,28 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixCyberObservable
   x_opencti_score: Int
   x_opencti_description: String
@@ -9754,7 +11085,7 @@ type Query {
     endDate: DateTime
     interval: String!
     onlyInferred: Boolean
-    timeSeriesParameters: [TimeSeriesParameters]
+    timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsNumber(
     types: [String]
@@ -9769,7 +11100,7 @@ type Query {
     startDate: DateTime
     endDate: DateTime
     onlyInferred: Boolean
-    numberParameters: [NumberParameters]
+    numberParameters: [StixCoreObjectsNumberParameters]
   ): [Number] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsDistribution(
     objectId: String
@@ -9795,7 +11126,7 @@ type Query {
     operation: StatsOperation!
     limit: Int
     order: String
-    distributionParameters: DistributionParameters
+    distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX DOMAIN OBJECT ENTITIES
@@ -10453,6 +11784,14 @@ type Query {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsMultiTimeSeries(
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    timeSeriesParameters: [StixCoreRelationshipsTimeSeriesParameters]
+  ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
     field: String!
     operation: StatsOperation!

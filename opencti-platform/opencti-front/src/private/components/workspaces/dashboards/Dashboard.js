@@ -45,10 +45,12 @@ import WidgetConfig from './WidgetConfig';
 import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
-import StixCoreObjectsMultiLines from '../../common/stix_core_objects/StixCoreObjectsMultiLines';
+import StixCoreObjectsMultiLineChart from '../../common/stix_core_objects/StixCoreObjectsMultiLineChart';
 import StixCoreObjectsMultiAreaChart from '../../common/stix_core_objects/StixCoreObjectsMultiAreaChart';
 import StixCoreObjectsTimeline from '../../common/stix_core_objects/StixCoreObjectsTimeline';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
+import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
+import StixCoreRelationshipsMultiVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiVerticalBars';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -514,7 +516,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'line':
         return (
-          <StixCoreObjectsMultiLines
+          <StixCoreObjectsMultiLineChart
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -553,7 +555,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           />
         );
       default:
-        return 'Go away!';
+        return 'Not implemented yet';
     }
   };
   const renderRelationshipsVisualization = (widget, config) => {
@@ -565,16 +567,26 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     switch (widget.type) {
       case 'vertical-bar':
         return (
-          <StixCoreObjectsMultiVerticalBars
+          <StixCoreRelationshipsMultiVerticalBars
             startDate={startDate}
             endDate={endDate}
-            filters={widget.dataSelection[0].filters}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'horizontal-bar':
+        return (
+          <StixCoreRelationshipsHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
           />
         );
       default:
-        return 'Go away!';
+        return 'Not implemented yet';
     }
   };
   return (

@@ -9,6 +9,7 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   storeLoadById,
+  timeSeriesRelations,
   updateAttribute
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
@@ -21,6 +22,7 @@ import {
   stixCoreRelationshipOptions
 } from '../schema/stixCoreRelationship';
 import {
+  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_IDENTITY
@@ -59,6 +61,7 @@ export const findById = (context, user, stixCoreRelationshipId) => {
   return storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
+// region stats
 export const stixCoreRelationshipsNumber = (context, user, args) => {
   const { relationship_type = [STIX_CORE_RELATIONSHIPS] } = args;
   const numberArgs = buildFilters({ ...args, types: relationship_type });
@@ -68,6 +71,12 @@ export const stixCoreRelationshipsNumber = (context, user, args) => {
     total: elCount(context, user, indices, R.dissoc('endDate', numberArgs)),
   };
 };
+export const stixCoreRelationshipsMultiTimeSeries = (context, user, args) => {
+  return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter) => {
+    return { data: timeSeriesRelations(context, user, { ...args, ...timeSeriesParameter }) };
+  }));
+};
+// endregion
 
 export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => {
   const batchCreators = await batchListThroughGetTo(

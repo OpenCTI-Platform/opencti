@@ -1,48 +1,72 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
+import React from 'react';
 import { graphql } from 'react-relay';
 import Chart from 'react-apexcharts';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
+import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import { convertFilters } from '../../../../utils/ListParameters';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
-});
+}));
 
 const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixCoreRelationshipsHorizontalBarsDistributionQuery(
-    $relationship_type: [String]
-    $toTypes: [String]
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
+    $isTo: Boolean
     $limit: Int
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
+    $fromId: [String]
+    $fromRole: String
+    $fromTypes: [String]
+    $toId: [String]
+    $toRole: String
+    $toTypes: [String]
+    $relationship_type: [String]
+    $confidences: [Int]
+    $search: String
+    $filters: [StixCoreRelationshipsFiltering]
+    $filterMode: FilterMode
   ) {
     stixCoreRelationshipsDistribution(
-      relationship_type: $relationship_type
-      toTypes: $toTypes
       field: $field
       operation: $operation
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
+      isTo: $isTo
       limit: $limit
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
+      fromId: $fromId
+      fromRole: $fromRole
+      fromTypes: $fromTypes
+      toId: $toId
+      toRole: $toRole
+      toTypes: $toTypes
+      relationship_type: $relationship_type
+      confidences: $confidences
+      search: $search
+      filters: $filters
+      filterMode: $filterMode
     ) {
       label
       value
@@ -129,34 +153,82 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
           name
           description
         }
+        ... on Event {
+          name
+          description
+        }
+        ... on Channel {
+          name
+          description
+        }
+        ... on Narrative {
+          name
+          description
+        }
+        ... on Language {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
       }
     }
   }
 `;
 
-class StixCoreRelationshipsHorizontalBars extends Component {
-  renderContent() {
-    const {
-      t,
-      stixCoreObjectId,
-      relationshipType,
-      toTypes,
-      field,
-      startDate,
-      endDate,
-      dateAttribute,
-      theme,
-    } = this.props;
+const StixCoreRelationshipsHorizontalBars = ({
+  title,
+  variant,
+  height,
+  stixCoreObjectId,
+  relationshipType,
+  toTypes,
+  field,
+  startDate,
+  endDate,
+  dateAttribute,
+  dataSelection,
+  parameters = {},
+}) => {
+  const classes = useStyles();
+  const theme = useTheme();
+  const { t } = useFormatter();
+  const renderContent = () => {
+    let finalFilters = [];
+    let selection = {};
+    let dataSelectionRelationshipType = null;
+    let dataSelectionFromId = null;
+    let dataSelectionToId = null;
+    let dataSelectionFromTypes = null;
+    let dataSelectionToTypes = null;
+    if (dataSelection) {
+      // eslint-disable-next-line prefer-destructuring
+      selection = dataSelection[0];
+      finalFilters = convertFilters(selection.filters);
+      dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+        ?.values || null;
+      dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
+      dataSelectionToId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
+      dataSelectionFromTypes = R.head(finalFilters.filter((n) => n.key === 'fromTypes'))?.values
+        || null;
+      dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
+      finalFilters = finalFilters.filter(
+        (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
+      );
+    }
     const stixDomainObjectsDistributionVariables = {
-      fromId: stixCoreObjectId,
-      relationship_type: relationshipType,
-      toTypes,
-      field: field || 'entity_type',
+      fromId: dataSelectionFromId || stixCoreObjectId,
+      toId: dataSelectionToId,
+      relationship_type: dataSelectionRelationshipType || relationshipType,
+      fromTypes: dataSelectionFromTypes,
+      toTypes: dataSelectionToTypes || toTypes,
+      field: selection.attribute || field || 'entity_type',
       operation: 'count',
       startDate,
       endDate,
       dateAttribute,
       limit: 10,
+      filters: finalFilters,
     };
     return (
       <QueryRenderer
@@ -219,50 +291,27 @@ class StixCoreRelationshipsHorizontalBars extends Component {
         }}
       />
     );
-  }
-
-  render() {
-    const { t, classes, title, variant, height } = this.props;
-    return (
-      <div style={{ height: height || '100%' }}>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          style={{
-            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
-          }}
-        >
-          {title || t('StixCoreRelationships distribution')}
-        </Typography>
-        {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            {this.renderContent()}
-          </Paper>
-        ) : (
-          this.renderContent()
-        )}
-      </div>
-    );
-  }
-}
-
-StixCoreRelationshipsHorizontalBars.propTypes = {
-  relationshipType: PropTypes.string,
-  toTypes: PropTypes.array,
-  title: PropTypes.string,
-  field: PropTypes.string,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  height: PropTypes.number,
-  startDate: PropTypes.string,
-  endDate: PropTypes.string,
-  dateAttribute: PropTypes.string,
-  variant: PropTypes.string,
+  };
+  return (
+    <div style={{ height: height || '100%' }}>
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
+        }}
+      >
+        {parameters.title || title || t('Relationships DISTRIBUTION')}
+      </Typography>
+      {variant !== 'inLine' ? (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          {renderContent()}
+        </Paper>
+      ) : (
+        renderContent()
+      )}
+    </div>
+  );
 };
 
-export default R.compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixCoreRelationshipsHorizontalBars);
+export default StixCoreRelationshipsHorizontalBars;
