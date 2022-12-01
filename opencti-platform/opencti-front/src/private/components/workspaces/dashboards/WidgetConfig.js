@@ -50,7 +50,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
-import Filters, { isUniqFilter } from '../../common/lists/Filters';
+import Filters from '../../common/lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { truncate } from '../../../../utils/String';
 
 const useStyles = makeStyles((theme) => ({
@@ -134,6 +135,7 @@ const entitiesFilters = [
   'markedBy',
   'labelledBy',
   'createdBy',
+  'objectContains',
   'x_opencti_score',
   'x_opencti_detection',
   'revoked',

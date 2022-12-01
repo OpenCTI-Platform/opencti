@@ -7,13 +7,9 @@ import {
   identitySearchCreatorsSearchQuery,
   identitySearchIdentitiesSearchQuery,
 } from '../../private/components/common/identities/IdentitySearch';
-import {
-  stixDomainObjectsLinesSearchQuery,
-} from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
+import { stixDomainObjectsLinesSearchQuery } from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue } from '../Graph';
-import {
-  markingDefinitionsLinesSearchQuery,
-} from '../../private/components/settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/marking_definitions/MarkingDefinitionsLines';
 import { labelsSearchQuery } from '../../private/components/settings/LabelsQuery';
 import { attributesSearchQuery } from '../../private/components/settings/AttributesQuery';
 import { statusFieldStatusesSearchQuery } from '../../private/components/common/form/StatusField';
@@ -211,12 +207,26 @@ const useSearchEntities = ({
 
   const unionSetEntities = (key, newEntities) => setEntities((c) => ({
     ...c,
-    [key]: [...newEntities, ...(c[key] ?? [])].filter(({ value }, index, arr) => arr.findIndex((v) => v.value === value) === index),
+    [key]: [...newEntities, ...(c[key] ?? [])].filter(
+      ({ value }, index, arr) => arr.findIndex((v) => v.value === value) === index,
+    ),
   }));
 
   const searchEntities = (filterKey, event) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    const scores = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'];
+    const scores = [
+      '0',
+      '10',
+      '20',
+      '30',
+      '40',
+      '50',
+      '60',
+      '70',
+      '80',
+      '90',
+      '100',
+    ];
     const confidences = ['0', '15', '50', '75', '85'];
     if (!event) {
       return;
@@ -348,6 +358,25 @@ const useSearchEntities = ({
             unionSetEntities('toId', toIdEntities);
           });
         break;
+      case 'objectContains':
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: (searchScope && searchScope.objectContains) || ['Stix-Core-Object'],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 50,
+        })
+          .toPromise()
+          .then((data) => {
+            const objectContainsEntities = R.pipe(
+              R.pathOr([], ['stixCoreObjects', 'edges']),
+              R.map((n) => ({
+                label: defaultValue(n.node),
+                value: n.node.id,
+                type: n.node.entity_type,
+              })),
+            )(data);
+            unionSetEntities('objectContains', objectContainsEntities);
+          });
+        break;
       case 'markedBy':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
@@ -383,13 +412,14 @@ const useSearchEntities = ({
                 color: n.node.color,
               })),
             )(data);
-            unionSetEntities('labelledBy', [{
-              label: t('No label'),
-              value: null,
-              type: 'Label',
-              color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-            },
-            ...labelledByEntities,
+            unionSetEntities('labelledBy', [
+              {
+                label: t('No label'),
+                value: null,
+                type: 'Label',
+                color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+              },
+              ...labelledByEntities,
             ]);
           });
         break;
@@ -594,7 +624,10 @@ const useSearchEntities = ({
                 type: 'attribute',
               })),
             )(data);
-            unionSetEntities('x_opencti_organization_type', organizationTypeEntities);
+            unionSetEntities(
+              'x_opencti_organization_type',
+              organizationTypeEntities,
+            );
           });
         break;
       case 'indicator_types':
