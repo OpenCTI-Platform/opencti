@@ -3239,7 +3239,7 @@ const i18n = {
       'Do you want to delete this incident?':
         'このインシデントを削除しますか？',
       'Do you want to browse this external link?':
-        'この外部リンクを削除しますか？',
+        'この外部リンクを閲覧しますか？',
       'Browse the link': 'リンクを閲覧する',
       'Do you want to delete this malware?': 'このマルウェアを削除しますか？',
       'Do you want to delete this marking definition?':
