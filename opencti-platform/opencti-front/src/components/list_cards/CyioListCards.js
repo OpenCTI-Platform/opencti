@@ -32,7 +32,6 @@ import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
-import TopBarMenu from '../../private/components/nav/TopBarMenu';
 
 const styles = (theme) => ({
   container: {
@@ -528,7 +527,6 @@ class CyioListCards extends Component {
           </div>
         </div>
         <div className="clearfix" />
-        <TopBarMenu />
         <div className={classes.cardsContainer}>{children}</div>
       </div>
     );

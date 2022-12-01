@@ -84,7 +84,7 @@ class CyioCoreObjectVulnerableInventoryItemList extends Component {
           query={dashboardQueryRisksListDistribution}
           variables={ListChartVariables}
           render={({ props }) => {
-            if (props) {
+            if (props && props.risksDistribution) {
               return (
                 <div id="container" className={classes.container}>
                   <TableContainer style={{ overflow: 'hidden' }}>

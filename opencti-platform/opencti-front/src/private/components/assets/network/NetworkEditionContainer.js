@@ -18,7 +18,8 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import { Close, CheckCircleOutline } from '@material-ui/icons';
+import { Close } from '@material-ui/icons';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import inject18n from '../../../../components/i18n';
 import { adaptFieldValue } from '../../../../utils/String';
 import { dateFormat, parse } from '../../../../utils/Time';
@@ -48,7 +49,6 @@ const styles = (theme) => ({
     minWidth: '0px',
     marginRight: 15,
     marginTop: -35,
-    padding: '8px 16px 8px 8px',
   },
   title: {
     float: 'left',
@@ -301,9 +301,7 @@ class NetworkEditionContainer extends Component {
                   <Tooltip title={t('Cancel')}>
                     <Button
                       variant="outlined"
-                      size="small"
                       startIcon={<Close />}
-                      color='primary'
                       onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
@@ -314,7 +312,7 @@ class NetworkEditionContainer extends Component {
                     <Button
                       variant="contained"
                       color="primary"
-                      startIcon={<CheckCircleOutline />}
+                      startIcon={<CheckCircleIcon />}
                       onClick={() => this.setState({ totalInitial: initialValues }, submitForm)}
                       disabled={isSubmitting}
                       classes={{ root: classes.iconButton }}

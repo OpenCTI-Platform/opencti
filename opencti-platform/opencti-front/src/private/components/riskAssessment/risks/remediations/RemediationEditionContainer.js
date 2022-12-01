@@ -154,7 +154,7 @@ class RemediationEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/activities/risk assessment/risks');
+        this.props.history.push('/activities/risk_assessment/risks');
       },
       onError: (err) => console.error(err),
     });
@@ -373,7 +373,7 @@ class RemediationEditionContainer extends Component {
                   <Button
                     // onClick={this.submitDelete.bind(this)}
                     // disabled={this.state.deleting}
-                    onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+                    onClick={() => this.props.history.push(`/activities/risk_assessment/risks/${this.props.riskId}/remediation`)}
                     color="primary"
                     classes={{ root: classes.buttonPopover }}
                     variant="contained"
