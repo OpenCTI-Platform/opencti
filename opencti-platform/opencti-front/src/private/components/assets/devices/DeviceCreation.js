@@ -9,9 +9,9 @@ import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import {
-  Close,
-  CheckCircleOutline,
+  Close
 } from '@material-ui/icons';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
@@ -50,7 +50,6 @@ const styles = (theme) => ({
     float: 'left',
     minWidth: '0px',
     marginRight: 15,
-    padding: '8px 16px 8px 8px',
   },
   title: {
     float: 'left',
@@ -277,9 +276,7 @@ class DeviceCreation extends Component {
                   <Tooltip title={t('Cancel')}>
                     <Button
                       variant="outlined"
-                      size="small"
                       startIcon={<Close />}
-                      color='primary'
                       onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
@@ -290,7 +287,7 @@ class DeviceCreation extends Component {
                     <Button
                       variant="contained"
                       color="primary"
-                      startIcon={<CheckCircleOutline />}
+                      startIcon={<CheckCircleIcon />}
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.iconButton }}

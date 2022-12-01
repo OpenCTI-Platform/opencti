@@ -4,10 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ShieldPlus, TextSearch } from 'mdi-material-ui';
-import NoteRoundedIcon from '@material-ui/icons/NoteRounded';
-import ArrowForwardIosOutlined from '@material-ui/icons/ArrowForwardIosOutlined';
-import HistoryIcon from '@material-ui/icons/History';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -27,7 +24,6 @@ const styles = (theme) => ({
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
-    color: '#fff',
   },
   icon: {
     marginRight: theme.spacing(1),
@@ -55,8 +51,7 @@ class TopMenuRisk extends Component {
         >
           {t('Risks')}
         </Button>
-        <ArrowForwardIosOutlined
-          color="primary"
+        <ChevronRightIcon
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -77,8 +72,7 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <NoteRoundedIcon className={classes.icon} />
-          {t('OVERVIEW')}
+          {t('Overview')}
         </Button>
         {/* <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}> */}
         <Button
@@ -99,9 +93,7 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {/* <ManageSearchIcon className={classes.icon} /> */}
-          <TextSearch className={classes.icon} />
-          {t('ANALYSIS')}
+          {t('Analysis')}
         </Button>
         {/* </Security> */}
         <Button
@@ -120,9 +112,7 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {/* <AddModeratorIcon className={classes.icon} /> */}
-          <ShieldPlus className={classes.icon} />
-          {t('REMEDIATION')}
+          {t('Remediation')}
         </Button>
         <Button
           component={Link}
@@ -144,8 +134,7 @@ class TopMenuRisk extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <HistoryIcon className={classes.icon} />
-          {t('TRACKING')}
+          {t('Tracking')}
         </Button>
       </div>
     );
