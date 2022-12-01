@@ -295,8 +295,8 @@ const StixCoreObjectsList = ({
         operator: 'lt',
       });
     }
-    const dateAttribute = selection.attribute && selection.attribute.length > 0
-      ? selection.attribute
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
       : 'created_at';
     return (
       <QueryRenderer

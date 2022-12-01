@@ -12452,6 +12452,7 @@ export type QueryStixCoreObjectsArgs = {
 
 export type QueryStixCoreObjectsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
@@ -12461,6 +12462,7 @@ export type QueryStixCoreObjectsDistributionArgs = {
   order?: InputMaybe<Scalars['String']>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -12475,10 +12477,12 @@ export type QueryStixCoreObjectsExportFilesArgs = {
 export type QueryStixCoreObjectsMultiDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
   distributionParameters?: InputMaybe<DistributionParameters>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
   limit?: InputMaybe<Scalars['Int']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
 };
 
 
@@ -14680,6 +14684,7 @@ export enum StixCoreObjectsFilter {
   Value = 'value',
   XMitreId = 'x_mitre_id',
   XOpenctiAliases = 'x_opencti_aliases',
+  XOpenctiDetection = 'x_opencti_detection',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'

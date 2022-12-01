@@ -129,6 +129,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const entitiesFilters = [
+  'entity_type',
+  'markedBy',
+  'labelledBy',
+  'createdBy',
+  'x_opencti_score',
+  'x_opencti_detection',
+  'revoked',
+  'confidence',
+  'pattern_type',
+  'creator',
+];
+
+const relationshipsFilters = [
+  'fromId',
+  'toId',
+  'fromTypes',
+  'toTypes',
+  'relationship_type',
+  'markedBy',
+  'labelledBy',
+  'createdBy',
+  'confidence',
+  'creator',
+];
+
 const visualizationTypes = [
   {
     key: 'number',
@@ -226,7 +252,13 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
   const [dataSelection, setDataSelection] = useState(
     widget?.dataSelection ?? [
-      { label: '', attribute: '', isTo: false, filters: {} },
+      {
+        label: '',
+        attribute: 'entity_type',
+        date_attribute: 'created_at',
+        isTo: false,
+        filters: {},
+      },
     ],
   );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
@@ -236,7 +268,13 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       setType(null);
       setPerspective(null);
       setDataSelection([
-        { label: '', attribute: '', isTo: false, filters: {} },
+        {
+          label: '',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          isTo: false,
+          filters: {},
+        },
       ]);
       setParameters({});
     } else {
@@ -275,7 +313,12 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   const handleAddDataSelection = () => {
     setDataSelection([
       ...dataSelection,
-      { label: '', attribute: '', filters: {} },
+      {
+        label: '',
+        attribute: 'entity_type',
+        date_attribute: 'created_at',
+        filters: {},
+      },
     ]);
   };
   const handleRemoveDataSelection = (i) => {
@@ -350,10 +393,10 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     });
     setDataSelection(newDataSelection);
   };
-  const handleChangeDataValidationAttribute = (i, value) => {
+  const handleChangeDataValidationParameter = (i, key, value) => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
-        return { ...dataSelection[i], attribute: value };
+        return { ...dataSelection[i], [key]: value };
       }
       return data;
     });
@@ -517,17 +560,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                         style={{ position: 'absolute', right: 5 }}
                       >
                         <Filters
-                          availableFilterKeys={[
-                            'entity_type',
-                            'markedBy',
-                            'labelledBy',
-                            'createdBy',
-                            'x_opencti_score',
-                            'x_opencti_detection',
-                            'revoked',
-                            'confidence',
-                            'pattern_type',
-                          ]}
+                          availableFilterKeys={
+                            perspective === 'entities'
+                              ? entitiesFilters
+                              : relationshipsFilters
+                          }
                           availableEntityTypes={[
                             'Stix-Domain-Object',
                             'Stix-Cyber-Observable',
@@ -665,9 +702,10 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       labelId="relative"
                       size="small"
                       fullWidth={true}
-                      value={dataSelection[i].attribute ?? 'created_at'}
-                      onChange={(event) => handleChangeDataValidationAttribute(
+                      value={dataSelection[i].date_attribute ?? 'created_at'}
+                      onChange={(event) => handleChangeDataValidationParameter(
                         i,
+                        'date_attribute',
                         event.target.value,
                       )
                       }
@@ -688,7 +726,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   </FormControl>
                 </div>
                 {getCurrentAvailableParameters().includes('attribute') && (
-                  <div style={{ display: 'flex', width: '100%' }}>
+                  <div
+                    style={{ display: 'flex', width: '100%', marginTop: 20 }}
+                  >
                     <TextField
                       style={{ flex: 1 }}
                       variant="standard"
@@ -696,8 +736,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       fullWidth={true}
                       value={dataSelection[i].attribute}
                       placeholder={t('Series attribute')}
-                      onChange={(event) => handleChangeDataValidationAttribute(
+                      onChange={(event) => handleChangeDataValidationParameter(
                         i,
+                        'attribute',
                         event.target.value,
                       )
                       }
@@ -716,7 +757,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
               </div>
             ))}
         </div>
-        <div style={{ display: 'flex', width: '100%' }}>
+        <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
           {getCurrentAvailableParameters().includes('stacked') && (
             <FormControlLabel
               control={

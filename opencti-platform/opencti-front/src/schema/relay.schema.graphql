@@ -1795,6 +1795,7 @@ enum StixCoreObjectsFilter {
   published
   creator
   x_opencti_workflow_id
+  x_opencti_detection
   subject
   value
   abstract
@@ -7263,8 +7264,8 @@ type Query {
   stixCoreObjectsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [TimeSeriesParameters]): [MultiTimeSeries]
   stixCoreObjectsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): Number
   stixCoreObjectsMultiNumber(startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [NumberParameters]): [Number]
-  stixCoreObjectsDistribution(objectId: String, relationship_type: [String], toTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixCoreObjectsMultiDistribution(field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: DistributionParameters): [MultiDistribution]
+  stixCoreObjectsDistribution(objectId: String, relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreObjectsMultiDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: DistributionParameters): [MultiDistribution]
   stixDomainObject(id: String!): StixDomainObject
   stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): StixDomainObjectConnection
   bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection

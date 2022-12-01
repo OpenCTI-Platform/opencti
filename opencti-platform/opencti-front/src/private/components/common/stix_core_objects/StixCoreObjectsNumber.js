@@ -46,6 +46,7 @@ const useStyles = makeStyles((theme) => ({
 const stixCoreObjectsNumberNumberQuery = graphql`
   query StixCoreObjectsNumberNumberSeriesQuery(
     $types: [String]
+    $startDate: DateTime
     $endDate: DateTime
     $onlyInferred: Boolean
     $filters: [StixCoreObjectsFiltering]
@@ -54,6 +55,7 @@ const stixCoreObjectsNumberNumberQuery = graphql`
   ) {
     stixCoreObjectsNumber(
       types: $types
+      startDate: $startDate
       endDate: $endDate
       onlyInferred: $onlyInferred
       filters: $filters

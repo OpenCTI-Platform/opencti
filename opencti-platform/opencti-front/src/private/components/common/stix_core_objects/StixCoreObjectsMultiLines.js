@@ -82,8 +82,8 @@ const StixCoreObjectsMultiLines = ({
       );
       return {
         field:
-          selection.attribute && selection.attribute.length > 0
-            ? selection.attribute
+          selection.date_attribute && selection.date_attribute.length > 0
+            ? selection.date_attribute
             : 'created_at',
         types,
         filters,

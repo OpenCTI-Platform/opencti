@@ -1732,6 +1732,7 @@ enum StixCoreObjectsFilter {
   published
   creator
   x_opencti_workflow_id
+  x_opencti_detection
   subject
   value
   abstract
@@ -9775,6 +9776,8 @@ type Query {
     relationship_type: [String]
     toTypes: [String]
     field: String!
+    startDate: DateTime
+    endDate: DateTime
     dateAttribute: String
     operation: StatsOperation!
     limit: Int
@@ -9786,6 +9789,8 @@ type Query {
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiDistribution(
     field: String!
+    startDate: DateTime
+    endDate: DateTime
     dateAttribute: String
     operation: StatsOperation!
     limit: Int
