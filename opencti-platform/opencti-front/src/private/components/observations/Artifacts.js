@@ -19,7 +19,7 @@ import ArtifactsLines, {
   artifactsLinesQuery,
 } from './artifacts/ArtifactsLines';
 import ArtifactCreation from './artifacts/ArtifactCreation';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class StixCyberObservables extends Component {
   constructor(props) {

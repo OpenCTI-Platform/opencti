@@ -11,7 +11,7 @@ import EntityStixSightingRelationshipsLines, {
 } from './EntityStixSightingRelationshipsLines';
 import StixSightingRelationshipCreationFromEntity from './StixSightingRelationshipCreationFromEntity';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import { isUniqFilter } from '../../common/lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,

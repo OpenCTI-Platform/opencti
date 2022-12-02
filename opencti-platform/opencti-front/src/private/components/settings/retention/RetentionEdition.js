@@ -14,8 +14,9 @@ import { assoc, pipe } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Filters, { isUniqFilter } from '../../common/lists/Filters';
+import Filters from '../../common/lists/Filters';
 import { adaptFieldValue, truncate } from '../../../../utils/String';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   header: {

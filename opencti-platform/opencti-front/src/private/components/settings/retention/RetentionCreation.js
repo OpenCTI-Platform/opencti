@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -17,8 +17,9 @@ import { assoc, pipe } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Filters, { isUniqFilter } from '../../common/lists/Filters';
+import Filters from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   drawerPaper: {

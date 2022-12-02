@@ -27,9 +27,9 @@ import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/S
 import StixDomainObjectAttackPatternsKillChainMatrix from './StixDomainObjectAttackPatternsKillChainMatrix';
 import StixDomainObjectAttackPatternsKillChainLines from './StixDomainObjectAttackPatternsKillChainLines';
 import ExportButtons from '../../../../components/ExportButtons';
-import Filters from '../lists/Filters';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
+import Filters from '../lists/Filters';
 
 const styles = (theme) => ({
   container: {

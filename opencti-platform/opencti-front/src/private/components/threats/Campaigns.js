@@ -19,7 +19,7 @@ import CampaignsLines, {
 } from './campaigns/CampaignsLines';
 import CampaignCreation from './campaigns/CampaignCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Campaigns extends Component {
   constructor(props) {

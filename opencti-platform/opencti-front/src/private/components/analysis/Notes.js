@@ -16,7 +16,7 @@ import Security, {
   KNOWLEDGE_KNUPDATE,
   UserContext,
 } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Notes extends Component {
   constructor(props) {

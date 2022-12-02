@@ -18,7 +18,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
-import { isUniqFilter } from '../../common/lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import StixCoreObjectStixCyberObservablesEntities, {
   stixCoreObjectStixCyberObservablesEntitiesQuery,
 } from './StixCoreObjectStixCyberObservablesEntities';

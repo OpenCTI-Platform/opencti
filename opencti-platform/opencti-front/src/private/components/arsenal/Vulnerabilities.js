@@ -15,7 +15,7 @@ import VulnerabilitiesLines, {
 } from './vulnerabilities/VulnerabilitiesLines';
 import VulnerabilityCreation from './vulnerabilities/VulnerabilityCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Vulnerabilities extends Component {
   constructor(props) {

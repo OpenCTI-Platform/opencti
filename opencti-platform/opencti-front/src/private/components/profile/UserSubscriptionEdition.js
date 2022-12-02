@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
@@ -19,11 +19,12 @@ import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import Filters, { isUniqFilter } from '../common/lists/Filters';
+import Filters from '../common/lists/Filters';
 import { truncate } from '../../../utils/String';
 import SelectField from '../../../components/SelectField';
 import StixDomainObjectsField from '../common/form/StixDomainObjectsField';
 import { defaultValue } from '../../../utils/Graph';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   header: {

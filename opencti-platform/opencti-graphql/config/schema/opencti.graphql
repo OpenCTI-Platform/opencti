@@ -5702,7 +5702,7 @@ input StixCyberObservablesFiltering {
 }
 type StixCyberObservableConnection {
   pageInfo: PageInfo!
-  edges: [StixCyberObservableEdge!]
+  edges: [StixCyberObservableEdge!]!
 }
 type StixCyberObservableEdge {
   cursor: String!

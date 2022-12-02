@@ -7,18 +7,12 @@ import * as R from 'ramda';
 import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../utils/ListParameters';
-import { isUniqFilter } from './common/lists/Filters';
+import { buildViewParamsFromUrlAndStorage, convertFilters, saveViewParameters } from '../../utils/ListParameters';
+import { isUniqFilter } from '../../utils/filters/filtersUtils';
 import { UserContext } from '../../utils/Security';
 import ListLines from '../../components/list_lines/ListLines';
 import ToolBar from './data/ToolBar';
-import SearchStixCoreObjectsLines, {
-  searchStixCoreObjectsLinesQuery,
-} from './search/SearchStixCoreObjectsLines';
+import SearchStixCoreObjectsLines, { searchStixCoreObjectsLinesQuery } from './search/SearchStixCoreObjectsLines';
 
 const styles = () => ({
   container: {

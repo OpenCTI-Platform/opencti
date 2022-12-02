@@ -22,7 +22,7 @@ import {
 import EntityStixCoreRelationshipsLinesAll, {
   entityStixCoreRelationshipsLinesAllQuery,
 } from './EntityStixCoreRelationshipsLinesAll';
-import { isUniqFilter } from '../lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   bottomNav: {

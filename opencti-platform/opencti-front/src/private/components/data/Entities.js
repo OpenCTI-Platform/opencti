@@ -16,7 +16,7 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/Security';
 
 const styles = () => ({

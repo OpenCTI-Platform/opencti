@@ -13,7 +13,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import ChannelsLines, { channelsLinesQuery } from './channels/ChannelsLines';
 import ChannelCreation from './channels/ChannelCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
+import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Channels extends Component {
   constructor(props) {

@@ -1,8 +1,9 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import * as R from 'ramda';
-import { isEmptyField } from '../utils';
+import { useSearchParams } from 'react-router-dom-v5-compat';
+import { isEmptyField, removeEmptyFields } from '../utils';
 import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
-import { isUniqFilter } from '../../private/components/common/lists/Filters';
+import { isUniqFilter } from '../filters/filtersUtils';
 
 export interface LocalStorage {
   numberOfElements?: { number: number, symbol: string },
@@ -11,7 +12,8 @@ export interface LocalStorage {
   sortBy?: string,
   orderAsc?: boolean,
   openExports?: boolean,
-  count?: number
+  count?: number,
+  zoom?: Record<string, unknown>,
 }
 
 export const localStorageToPaginationOptions = <U>({
@@ -44,12 +46,39 @@ export type UseLocalStorage = [value: LocalStorage,
   },
 ];
 
+const buildParamsFromHistory = (params: LocalStorage) => removeEmptyFields({
+  filters: (params.filters && Object.keys(params.filters).length > 0) ? JSON.stringify(params.filters) : undefined,
+  zoom: JSON.stringify(params.zoom),
+  searchTerm: params.searchTerm,
+  sortBy: params.sortBy,
+  orderAsc: params.orderAsc,
+});
+
+const searchParamsToStorage = (searchObject: URLSearchParams) => {
+  const zoom = searchObject.get('zoom');
+  const filters = searchObject.get('filters');
+  return removeEmptyFields({
+    filters: filters ? JSON.parse(filters) : undefined,
+    zoom: zoom ? JSON.parse(zoom) : undefined,
+    searchTerm: searchObject.get('searchTerm'),
+    sortBy: searchObject.get('sortBy'),
+    orderAsc: searchObject.get('orderAsc') === 'true',
+  });
+};
+
 const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStorage => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const finalParams = searchParamsToStorage(searchParams);
+
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<LocalStorage>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
+    }
+    if (Array.from(searchParams.values()).length > 0) {
+      return finalParams;
     }
     try {
       // Get from local storage by key
@@ -73,6 +102,10 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       // Save to local storage
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        const urlParams = buildParamsFromHistory(valueToStore);
+        if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
+          setSearchParams(urlParams);
+        }
       }
     } catch (error) {
       // A more advanced implementation would handle the error case
@@ -82,7 +115,10 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
 
   const helpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
-    handleRemoveFilter: (value: string) => setValue((c) => ({ ...c, filters: R.dissoc<Filters, string>(value, c.filters as Filters) })),
+    handleRemoveFilter: (value: string) => setValue((c) => ({
+      ...c,
+      filters: R.dissoc<Filters, string>(value, c.filters as Filters),
+    })),
     handleSort: (field: string, order: boolean) => setValue((c) => ({
       ...c,
       sortBy: field,
