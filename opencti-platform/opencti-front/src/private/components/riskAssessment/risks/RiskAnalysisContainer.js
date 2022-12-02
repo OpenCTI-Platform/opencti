@@ -21,7 +21,6 @@ import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainO
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import RiskAnalysisCharacterization from './RiskAnalysisCharacterization';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
-import TopMenuRisk from '../../nav/TopMenuRisk';
 
 const styles = () => ({
   container: {
@@ -53,7 +52,7 @@ class RiskAnalysisContainerComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/activities/risk assessment/risks',
+      pathname: '/activities/risk_assessment/risks',
       openNewCreation: true,
     });
   }
@@ -81,11 +80,10 @@ class RiskAnalysisContainerComponent extends Component {
               cyioDomainObject={risk}
               PopoverComponent={<RiskPopover />}
               OperationsComponent={<RiskDeletion />}
-              goBack='/activities/risk assessment/risks'
+              goBack='/activities/risk_assessment/risks'
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+            // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             />
-            <TopMenuRisk risk={risk.name} />
             <Grid
               container={true}
               spacing={3}

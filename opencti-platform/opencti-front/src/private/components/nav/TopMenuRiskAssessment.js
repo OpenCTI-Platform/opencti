@@ -4,44 +4,29 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
-  button: {
+  buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '4px 5px',
     minHeight: 20,
-    minWidth: 20,
     textTransform: 'none',
-  },
-  icon: {
-    marginRight: theme.spacing(1),
   },
 });
 
 class TopMenuRiskAssessment extends Component {
   render() {
-    const { t, location, classes } = this.props;
+    const { t, classes } = this.props;
     return (
       <div>
         <Button
           component={Link}
-          to="/activities/risk assessment/risks"
-          variant={
-            location.pathname.includes('/activities/risk assessment/risks')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/activities/risk assessment/risks')
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
+          to="/activities/risk_assessment/risks"
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
         >
-          <PublicOutlined className={classes.icon} fontSize="small" />
           {t('Risks')}
         </Button>
       </div>

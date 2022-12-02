@@ -14,7 +14,6 @@ import EntitiesAssessmentPlatformsPopover from './EntitiesAssessmentPlatformsPop
 import EntitiesAssessmentPlatformsDeletion from './EntitiesAssessmentPlatformsDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
-import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import AssessmentPlatformEntityEditionContainer from './AssessmentPlatformEntityEditionContainer';
@@ -67,7 +66,6 @@ class EntityAssessmentPlatformComponent extends Component {
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
             OperationsComponent={<EntitiesAssessmentPlatformsDeletion />}
           />
-          <TopBarBreadcrumbs />
           <Grid
             container={true}
             spacing={3}

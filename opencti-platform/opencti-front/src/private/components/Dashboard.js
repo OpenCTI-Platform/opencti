@@ -52,7 +52,7 @@ import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import { computeLevel } from '../../utils/Number';
 import ItemMarkings from '../../components/ItemMarkings';
 import ImportFreshdeskScript from '../../utils/freshdesk';
-import TopBarBreadcrumbs from './nav/TopBarBreadcrumbs';
+import TopBar from './nav/TopBar';
 import { toastGenericError } from '../../utils/bakedToast';
 import { saveViewParameters, buildViewParamsFromUrlAndStorage } from '../../utils/ListParameters';
 
@@ -1049,7 +1049,7 @@ class Dashboard extends Component {
   render() {
     return (
       <>
-        <TopBarBreadcrumbs
+        <TopBar
           dashboard={this.state.dashboard}
           handleChangeDashboard={this.handleChangeDashboard.bind(this)}
         />

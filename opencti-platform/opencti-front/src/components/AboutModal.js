@@ -60,24 +60,24 @@ class AboutModal extends Component {
     if (location.pathname.includes('/defender HQ/assets/software')) {
       AboutLocationPath = '/static/docs/pages/defender_hq/assets/software/index.md.html';
     }
-    if (location.pathname.includes('/activities/vulnerability assessment')) {
+    if (location.pathname.includes('/activities/vulnerability_assessment')) {
       AboutLocationPath = '/static/docs/pages/activities/index.md.html';
     }
-    if (location.pathname === '/activities/risk assessment/risks') {
+    if (location.pathname === '/activities/risk_assessment/risks') {
       AboutLocationPath = '/static/docs/pages/activities/risk_assessment/index.md.html';
     }
-    if (location.pathname.includes('/activities/risk assessment/risks/')) {
+    if (location.pathname.includes('/activities/risk_assessment/risks/')) {
       AboutLocationPath = '/static/docs/pages/activities/risk_assessment/overview/index.md.html';
     }
-    if (location.pathname.includes('/activities/risk assessment/risks/')
+    if (location.pathname.includes('/activities/risk_assessment/risks/')
       && location.pathname.includes('/analysis')) {
       AboutLocationPath = '/static/docs/pages/activities/risk_assessment/analysis/index.md.html';
     }
-    if (location.pathname.includes('/activities/risk assessment/risks/')
+    if (location.pathname.includes('/activities/risk_assessment/risks/')
       && location.pathname.includes('/remediation')) {
       AboutLocationPath = '/static/docs/pages/activities/risk_assessment/remediation/index.md.html';
     }
-    if (location.pathname.includes('/activities/risk assessment/risks/')
+    if (location.pathname.includes('/activities/risk_assessment/risks/')
       && location.pathname.includes('/tracking')) {
       AboutLocationPath = '/static/docs/pages/activities/risk_assessment/tracking/index.md.html';
     }

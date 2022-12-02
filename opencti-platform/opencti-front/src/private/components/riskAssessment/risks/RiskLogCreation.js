@@ -175,7 +175,7 @@ class RiskLogCreation extends Component {
         input: adaptedValues,
       },
       setSubmitting,
-      pathname: `/activities/risk assessment/risks/${this.props.riskId}/tracking`,
+      pathname: `/activities/risk_assessment/risks/${this.props.riskId}/tracking`,
       onCompleted: (response) => {
         setSubmitting(false);
         this.handleClose();

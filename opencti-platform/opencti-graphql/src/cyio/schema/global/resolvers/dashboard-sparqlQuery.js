@@ -182,7 +182,7 @@ export const entitiesTimeSeriesQuery = (args) => {
     startDate = args.startDate.toISOString();
   } else {
     // use Epoch time
-    startDate = '1970-01-01-01T00:00:00Z';
+    startDate = '1970-01-01T00:00:00Z';
   }
   if (('endDate' in args) && (args.endDate instanceof Date)) {
     // convert end date to string, if specified 
@@ -280,7 +280,7 @@ export const entitiesDistributionQuery = (args) => {
     startDate = args.startDate.toISOString();
   } else {
     // use Epoch time
-    startDate = '1970-01-01-01T00:00:00Z';
+    startDate = '1970-01-01T00:00:00Z';
   }
   if (('endDate' in args) && (args.endDate instanceof Date)) {
     // convert end date to string, if specified 

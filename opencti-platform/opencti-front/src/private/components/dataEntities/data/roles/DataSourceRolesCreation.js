@@ -144,7 +144,7 @@ class DataSourceRolesCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
+        // this.props.history.push('/activities/risk_assessment/risks');
       },
       onError: (err) => {
         console.error(err);
