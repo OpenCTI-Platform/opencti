@@ -528,7 +528,7 @@ const riskResolvers = {
             sparqlQuery: parentQuery,
             queryId: "Select Find Parent",
             singularizeSchema
-          })
+          });
           if (results.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
           for (let result of results) {
@@ -546,12 +546,12 @@ const riskResolvers = {
             newInput,
             predicateMap
           );
-          response = await dataSources.Stardog.edit({
+          results = await dataSources.Stardog.edit({
             dbName,
             sparqlQuery: query,
             queryId: "Update OSCAL Risk"
           });
-          if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
+          if (results === undefined || results.length === 0) throw new CyioError(`Unable to update entity with ID ${id}`);
         }
       }
 
