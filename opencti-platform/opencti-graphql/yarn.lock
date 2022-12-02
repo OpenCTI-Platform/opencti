@@ -2747,7 +2747,7 @@ __metadata:
     jwt-decode: ^3.1.2
     lodash: ^4.17.21
     url-join: ^4.0.1
-  checksum: 9ecd90c6a00f646be926813b8cafb5ce7a6bbf6d851da884a41d97ff970718a744260e5b113f542e588ac807da5ade3882d5f7f0ac846637b365a6cf35a4af64
+  checksum: 986ceaaba04a5f78d23c30b64bf1139c7cabff1540be35403b9280c3a005dbc860e383da1ee8192461c387a90e1e67be80081c4cb9374eecf0eedd756c1c2b67
   languageName: node
   linkType: hard
 

@@ -1,43 +1,57 @@
-@Library('utils') _
+@Library('utils@dev') _
 
 node {
-  checkout scm
+  try {
+    stage('Checkout') {
+      gitInfo = checkout scm
+      notify.notifyBuild('STARTED');
+    }
 
-  String app = 'graphql'
-  String branch = "${env.BRANCH_NAME}"
-  String commitId = utils.getCommitId()
-  String commitMessage = utils.getCommitMessage()
-  String version = 'undefined'
+    String app = 'graphql'
 
-  dir('opencti-platform/opencti-graphql') {
-    stage('Setup') {
-      docker.image('node:16-alpine').inside {
-        sh 'yarn install' 
+    String branch = "${env.BRANCH_NAME}"
+    String commitId = utils.getCommitId()
+    String commitMessage = utils.getCommitMessage()
+    String version = 'undefined'
+    def gitInfo
+
+    dir('opencti-platform/opencti-graphql') {
+      stage('Setup') {
+        // Jenkins project setup
+        utils.setCommonBuildStepsAndProperties(true, false) // conccurancy: true; cancelPreviousBuild: false
+        
+        // Install app dependencies
+        docker.image('node:16-alpine').inside {
+          sh 'yarn install'
+        }
+
+        // Set the version
+        version = readJSON(file: 'package.json')['version'] + "-${commitId}"[0..7]
+        echo "Version: ${version}"
       }
-      version = readJSON(file: 'package.json')['version'] + "-5781"
-    }
 
-    // stage('Test') {
-    //   sh 'yarn test'
-    // }
+      // stage('Test') {
+      //   docker.image('node:16-alpine').inside {
+      //     sh 'yarn test'
+      //   }
+      // }
 
-    stage('Build') {
-      utils.buildDockerImage(name: app, version: version)
-    }
-
-    stage('Upload & Archive') {
-      parallel upload: {
-        utils.pushDockerImage(name: app, version: version)
-      }, archive: {
-        utils.archiveDockerImage(name: app, version: version)
+      stage('Build') {
+        utils.buildDockerImage(name: app, version: version)
       }
-      teams.sendDLBuildsMessage(
-        message: 'Job complete!', color: teams.COLOR_GREEN, factDefinitions: [
-          [name: "Commit Message", template: "${commitMessage}"],
-          [name: "Commit", template: "[${commitId[0..7]}](https://github.com/champtc/opencti/commit/${commitId})"],
-          [name: "Image", template: "docker.darklight.ai/${app}:${version}"]
-        ]
-      )
+
+      stage('Upload & Archive') {
+        parallel upload: {
+          utils.pushDockerImage(name: app, version: version)
+        }, archive: {
+          utils.archiveDockerImage(name: app, version: version)
+        }
+      }
     }
+  } catch (Exception e) {
+    currentBuild.result = "FAILED"
+		throw ex
+  } finally {
+    notify.notifyBuild(currentBuild.result);
   }
 }
