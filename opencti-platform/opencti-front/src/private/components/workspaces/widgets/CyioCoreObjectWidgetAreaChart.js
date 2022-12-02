@@ -41,6 +41,7 @@ class CyioCoreObjectWidgetAreaChart extends Component {
     switch (widget.config && widget.config.queryType) {
       case 'assetsTimeSeries':
         return this.renderAssetChart();
+      case 'risksTimSeries':
       case 'risksTimeSeries':
         return this.renderRiskChart();
       default:
