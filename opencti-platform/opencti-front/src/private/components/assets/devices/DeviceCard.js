@@ -27,8 +27,7 @@ const styles = (theme) => ({
     width: '100%',
     height: '319px',
     borderRadius: 9,
-    // background: theme.palette.navAlt.background,
-
+    border: '1.5px solid #1F2842',
   },
   cardDummy: {
     width: '100%',
@@ -102,11 +101,18 @@ class DeviceCardComponent extends Component {
     } = this.props;
     const operatingSystem = node.installed_operating_system?.vendor_name?.toLowerCase();
     return (
-      <Card classes={{ root: classes.card }} raised={true} elevation={3}>
+      <Card 
+        classes={{ root: classes.card }}
+        raised={true}
+        elevation={3}
+        style={{
+          background: (selectAll || node.id in (selectedElements || {})) && 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #075AD3',
+          border: (selectAll || node.id in (selectedElements || {})) && '1.5px solid #075AD3',
+        }}
+      >
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           to={`/defender HQ/assets/devices/${node.id}`}
           data-cy='device card'
         >

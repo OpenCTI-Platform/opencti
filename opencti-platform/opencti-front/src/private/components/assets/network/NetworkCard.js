@@ -23,6 +23,7 @@ const styles = (theme) => ({
     width: '100%',
     height: '319px',
     borderRadius: 9,
+    border: '1.5px solid #1F2842',
   },
   cardDummy: {
     width: '100%',
@@ -100,11 +101,18 @@ class NetworkCardComponent extends Component {
       selectedElements,
     } = this.props;
     return (
-      <Card classes={{ root: classes.card }} raised={true} elevation={3}>
+      <Card
+        classes={{ root: classes.card }}
+        raised={true}
+        elevation={3}
+        style={{
+          background: (selectAll || node.id in (selectedElements || {})) && 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #075AD3',
+          border: (selectAll || node.id in (selectedElements || {})) && '1.5px solid #075AD3',
+        }}
+      >
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           to={`/defender HQ/assets/network/${node.id}`}
           data-cy='network card'
         >
