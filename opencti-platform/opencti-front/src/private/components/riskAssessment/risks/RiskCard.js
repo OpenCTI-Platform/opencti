@@ -22,7 +22,6 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
 
 const styles = (theme) => ({
@@ -128,10 +127,6 @@ class RiskCardComponent extends Component {
       pathOr([]),
       mergeAll,
     )(node);
-    const riskRemediation = pipe(
-      pathOr([], ['remediations']),
-      mergeAll,
-    )(node);
     return (
       <Card
         classes={{ root: classes.card }}
@@ -175,7 +170,7 @@ class RiskCardComponent extends Component {
               item={true}
               className={classes.header}
             >
-              <div>
+              <div style={{ marginTop: '1%' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"

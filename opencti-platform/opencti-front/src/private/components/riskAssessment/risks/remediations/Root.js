@@ -57,7 +57,6 @@ class RootRemediation extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { riskId, remediationId },
       },
