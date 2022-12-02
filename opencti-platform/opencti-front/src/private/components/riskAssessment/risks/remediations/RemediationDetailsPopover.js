@@ -154,14 +154,14 @@ class RemediationDetailsPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      pathname: `/activities/risk assessment/risks/${this.props.riskId}/remediation`,
+      pathname: `/activities/risk_assessment/risks/${this.props.riskId}/remediation`,
       onCompleted: (data, error) => {
         if (error) {
           this.setState({ error });
         } else {
           setSubmitting(false);
           this.handleClose();
-          this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
+          this.props.history.push(`/activities/risk_assessment/risks/${this.props.riskId}/remediation`);
         }
       },
       onError: (err) => {
@@ -476,7 +476,7 @@ class RemediationDetailsPopover extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              //onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+              //onClick={() => this.props.history.push(`/activities/risk_assessment/risks/${this.props.riskId}/remediation`)}
               onClick={() => {
                 this.setState({ close: false });
                 this.props.handleCloseEdit();

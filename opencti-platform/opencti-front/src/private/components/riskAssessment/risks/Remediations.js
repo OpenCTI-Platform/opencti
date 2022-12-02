@@ -5,7 +5,6 @@ import { withStyles } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
 import RemediationEntities from './remediations/RemediationEntities';
-import TopMenuRisk from '../../nav/TopMenuRisk';
 // import StixCyberObservableLinks, {
 //   riskLinksQuery,
 // } from './StixCyberObservableLinks';
@@ -36,7 +35,7 @@ const Remediations = (props) => {
 
   // const handleOpenNewCreation = () => {
   //   props.history.push({
-  //     pathname: '/activities/risk assessment/risks',
+  //     pathname: '/activities/risk_assessment/risks',
   //     openNewCreation: true,
   //   });
   // };
@@ -45,25 +44,24 @@ const Remediations = (props) => {
       {/* {!openCreation ? (
         <>
         </>) : ( */}
-          <CyioDomainObjectHeader
-            disabled={true}
-            history={history}
-            name={remediation.name}
-            cyioDomainObject={remediation}
-            handleOpenCreation={handleOpenCreation}
-            goBack='/activities/risk assessment/risks'
-            // PopoverComponent={<DevicePopover />}
-            // handleOpenNewCreation={handleOpenNewCreation.bind(this)}
-            // OperationsComponent={<RiskDeletion />}
-          />
-          <TopMenuRisk risk={remediation.name}/>
-          <RemediationEntities
-            history={history}
-            location={location}
-            entityId={remediation.id}
-            riskId={riskId.id}
-            openCreation={openCreation}
-          />
+      <CyioDomainObjectHeader
+        disabled={true}
+        history={history}
+        name={remediation.name}
+        cyioDomainObject={remediation}
+        handleOpenCreation={handleOpenCreation}
+        goBack='/activities/risk_assessment/risks'
+      // PopoverComponent={<DevicePopover />}
+      // handleOpenNewCreation={handleOpenNewCreation.bind(this)}
+      // OperationsComponent={<RiskDeletion />}
+      />
+      <RemediationEntities
+        history={history}
+        location={location}
+        entityId={remediation.id}
+        riskId={riskId.id}
+        openCreation={openCreation}
+      />
     </div>
   );
 };

@@ -111,22 +111,23 @@ class RiskDeletion extends Component {
   //     onCompleted: () => {
   //       this.setState({ deleting: false });
   //       this.handleClose();
-  //       this.props.history.push('/activities/risk assessment/risks');
+  //       this.props.history.push('/activities/risk_assessment/risks');
   //     },
   //   });
   // }
 
   submitDelete() {
+    const riskIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
     commitMutation({
       mutation: RiskDeletionDarkLightMutation,
       variables: {
-        id: this.props.id,
+        id: riskIds[0],
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/activities/risk assessment/risks');
+        this.props.history.push('/activities/risk_assessment/risks');
       },
       onError: () => {},
     });
@@ -144,7 +145,7 @@ class RiskDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/activities/risk assessment/risks');
+    //     this.props.history.push('/activities/risk_assessment/risks');
     //   },
     // });
   }
@@ -217,7 +218,7 @@ class RiskDeletion extends Component {
 }
 
 RiskDeletion.propTypes = {
-  id: PropTypes.string,
+  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

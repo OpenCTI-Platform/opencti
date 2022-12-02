@@ -13,20 +13,20 @@ class Root extends Component {
       <Switch>
         <BoundaryRoute
           exact
-          path="/activities/risk assessment"
-          render={() => <Redirect to="/activities/risk assessment/risks" />}
+          path="/activities/risk_assessment"
+          render={() => <Redirect to="/activities/risk_assessment/risks" />}
         />
         <BoundaryRoute
           exact
-          path="/activities/risk assessment/risks"
+          path="/activities/risk_assessment/risks"
           component={Risks}
         />
         <BoundaryRoute
-          path="/activities/risk assessment/risks/:riskId"
+          path="/activities/risk_assessment/risks/:riskId"
           render={(routeProps) => <RootRisk {...routeProps} me={me} />}
         />
         <BoundaryRoute
-          path="/activities/risk assessment/risks/:riskId/remediation"
+          path="/activities/risk_assessment/risks/:riskId/remediation"
           render={(routeProps) => <Remediation {...routeProps} me={me} />}
         />
       </Switch>

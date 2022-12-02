@@ -348,9 +348,6 @@ class NetworkLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
       </ListItem>
     );
   }

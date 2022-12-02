@@ -2,7 +2,7 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, map } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
 import Button from '@material-ui/core/Button';
@@ -55,10 +55,8 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const DeviceDeletionMutation = graphql`
-  mutation DeviceDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
+  mutation DeviceDeletionMutation($ids: [ID]!) {
+    deleteAssets(ids: $ids)
   }
 `;
 
@@ -127,19 +125,35 @@ class DeviceDeletion extends Component {
   // }
 
   submitDelete() {
+    const deviceIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
-    commitMutation({
-      mutation: DeviceDeletionDarkLightMutation,
-      variables: {
-        id: this.props.id,
-      },
-      onCompleted: (data) => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        this.props.history.push('/defender HQ/assets/devices');
-      },
-      onError: (err) => console.log('DeviceDeletionDarkLightMutationError', err),
-    });
+    if (deviceIds.length > 1) {
+      commitMutation({
+        mutation: DeviceDeletionMutation,
+        variables: {
+          ids: deviceIds,
+        },
+        onCompleted: (data) => {
+          this.setState({ deleting: false });
+          this.handleClose();
+          this.props.history.push('/defender HQ/assets/devices');
+        },
+        onError: (err) => console.log('DeviceDeletionDarkLightMutationError', err),
+      });
+    } else {
+      commitMutation({
+        mutation: DeviceDeletionDarkLightMutation,
+        variables: {
+          id: deviceIds[0],
+        },
+        onCompleted: (data) => {
+          this.setState({ deleting: false });
+          this.handleClose();
+          this.props.history.push('/defender HQ/assets/devices');
+        },
+        onError: (err) => console.log('DeviceDeletionDarkLightMutationError', err),
+      });
+    }
     // commitMutation({
     //   mutation: DeviceDeletionDarkLightMutation,
     //   variables: {
@@ -169,18 +183,18 @@ class DeviceDeletion extends Component {
     return (
       <div className={classes.container}>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
-          <Tooltip title={t('Delete')}>
-            <Button
-              variant="contained"
-              onClick={this.handleOpenDelete.bind(this)}
-              className={classes.iconButton}
-              disabled={Boolean(!id) && Boolean(!isAllselected)}
-              color="primary"
-              size="large"
-            >
-              <DeleteIcon fontSize="inherit" />
-            </Button>
-          </Tooltip>
+        <Tooltip title={t('Delete')}>
+          <Button
+            variant="contained"
+            onClick={this.handleOpenDelete.bind(this)}
+            className={classes.iconButton}
+            disabled={Boolean(!id) && Boolean(!isAllselected)}
+            color="primary"
+            size="large"
+          >
+            <DeleteIcon fontSize="inherit" />
+          </Button>
+        </Tooltip>
         {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
@@ -188,19 +202,19 @@ class DeviceDeletion extends Component {
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
-            <DialogContent>
-              <Typography style={{
-                fontSize: '18px',
-                lineHeight: '24px',
-                color: 'white',
-              }} >
-                {t('Are you sure you’d like to delete this Device?')}
-              </Typography>
-              <DialogContentText>
-                {t('This action can’t be undone')}
-              </DialogContentText>
-            </DialogContent>
-          <DialogActions className={ classes.dialogActions }>
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to delete this Device?')}
+            </Typography>
+            <DialogContentText>
+              {t('This action can’t be undone')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
@@ -228,7 +242,7 @@ class DeviceDeletion extends Component {
 }
 
 DeviceDeletion.propTypes = {
-  id: PropTypes.string,
+  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

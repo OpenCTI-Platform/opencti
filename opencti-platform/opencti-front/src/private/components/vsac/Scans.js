@@ -75,7 +75,7 @@ import { withTheme, withStyles } from '@material-ui/core/styles';
 
 const styles = (theme) => ({
   root: {
-    flexGrow: 1,
+    marginTop: '1rem',
   },
   card: {
     width: "100%",
@@ -611,7 +611,7 @@ class Scans extends Component {
     };
 
     return (
-      <div>
+      <div className={classes.root}>
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={4}>
             <Typography variant="h4" gutterBottom={true}>
@@ -960,7 +960,7 @@ class Scans extends Component {
                               }
                             >
                               <MenuItem
-                                onClick={() => this.props.history.push(`/activities/vulnerability assessment/scans/explore results/${analysis.id}`)}
+                                onClick={() => this.props.history.push(`/activities/vulnerability_assessment/scans/explore results/${analysis.id}`)}
                               >
                                 <ListItemIcon>
                                   <ExploreIcon fontSize="small" />
@@ -969,7 +969,7 @@ class Scans extends Component {
                               </MenuItem>
                               <MenuItem
                                 onClick={() =>
-                                  handleLinkClink('/activities/vulnerability assessment/scans/view charts',
+                                  handleLinkClink('/activities/vulnerability_assessment/scans/view charts',
                                     {
                                       analysis_id: analysis.id,
                                       analyses,
@@ -983,7 +983,7 @@ class Scans extends Component {
                               </MenuItem>
                               <MenuItem
                                 onClick={() =>
-                                  handleLinkClink('/activities/vulnerability assessment/scans/compare analysis',
+                                  handleLinkClink('/activities/vulnerability_assessment/scans/compare analysis',
                                     {
                                       analyses,
                                       scatterPlotData: scatterPlotData
@@ -1189,7 +1189,7 @@ class Scans extends Component {
                           variant="contained"
                           color="primary"
                           startIcon={<CloudUploadIcon />}
-                          onClick={() => this.props.history.push(`/activities/vulnerability assessment/scans/explore results/${analysis.id}`)}
+                          onClick={() => this.props.history.push(`/activities/vulnerability_assessment/scans/explore results/${analysis.id}`)}
                         >
                           Explore Results
                         </Button>

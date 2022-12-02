@@ -10,7 +10,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
-import TopBar from '../../../nav/TopBar';
 import EntityParty from './EntityParty';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -69,7 +68,6 @@ class RootParty extends Component {
     const link = `/data/entities/parties/${partyId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/data/entities/parties/:partyId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

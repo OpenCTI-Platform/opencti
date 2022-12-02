@@ -82,7 +82,7 @@ class TasksDataSource extends Component {
   handleDisplayEdit(selectedElements) {
     const riskId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/activities/risk assessment/risks/${riskId}`,
+      pathname: `/activities/risk_assessment/risks/${riskId}`,
       openEdit: true,
     });
   }

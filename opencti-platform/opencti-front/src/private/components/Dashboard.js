@@ -1,8 +1,9 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import {
-  compose, head, pathOr, assoc, map, pluck, last,
+  compose, head, pathOr, assoc, map, pluck, last, propOr,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withTheme, withStyles } from '@material-ui/core/styles';
@@ -44,12 +45,16 @@ import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../../utils/Colors';
+import CyioDashboard from './workspaces/dashboards/CyioDashboard';
 import { truncate } from '../../utils/String';
 import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import { computeLevel } from '../../utils/Number';
 import ItemMarkings from '../../components/ItemMarkings';
 import ImportFreshdeskScript from '../../utils/freshdesk';
+import TopBar from './nav/TopBar';
+import { toastGenericError } from '../../utils/bakedToast';
+import { saveViewParameters, buildViewParamsFromUrlAndStorage } from '../../utils/ListParameters';
 
 const styles = (theme) => ({
   root: {
@@ -346,12 +351,44 @@ const dashboardStixCyberObservablesNumberQuery = graphql`
   }
 `;
 
+const dashboardCustomDashboardQuery = graphql`
+query DashboardCustomDashboardQuery($id: String!) {
+  workspace(id: $id) {
+    id
+    name
+    ...CyioDashboard_workspace
+  }
+}
+`;
+
 class Dashboard extends Component {
+  constructor(props) {
+    super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'view-dashboard',
+    );
+    this.state = {
+      dashboard: propOr('default', 'dashboard', params),
+    };
+  }
+
+  saveView() {
+    this.props.history.push('/dashboard');
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'view-dashboard',
+      this.state,
+    );
+  }
+
   tickFormatter(title) {
     return truncate(this.props.t(`entity_${title}`), 10);
   }
 
-  render() {
+  renderDefaultDashboard() {
     const {
       t, n, fsd, mtd, classes, theme,
     } = this.props;
@@ -979,6 +1016,51 @@ class Dashboard extends Component {
       </div>
     );
   }
+
+  renderCustomDashboard() {
+    return (
+      <>
+        <QueryRenderer
+          query={dashboardCustomDashboardQuery}
+          variables={{ id: this.state.dashboard }}
+          render={({ error, props }) => {
+            if (error) {
+              toastGenericError('Request Failed');
+            }
+            if (props) {
+              return (
+                <CyioDashboard
+                  workspace={props.workspace}
+                  noToolbar={true}
+                />
+              );
+            }
+            return <Loader />;
+          }}
+        />
+      </>
+    );
+  }
+
+  handleChangeDashboard = (event) => {
+    this.setState({ dashboard: event.target.value }, () => this.saveView());
+  }
+
+  render() {
+    return (
+      <>
+        <TopBar
+          dashboard={this.state.dashboard}
+          handleChangeDashboard={this.handleChangeDashboard.bind(this)}
+        />
+        {this.state.dashboard === 'default' ? (
+          this.renderDefaultDashboard()
+        ) : (
+          this.renderCustomDashboard()
+        )}
+      </>
+    );
+  }
 }
 
 Dashboard.propTypes = {
@@ -989,6 +1071,7 @@ Dashboard.propTypes = {
   fsd: PropTypes.func,
   mtd: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default compose(inject18n, withTheme, withStyles(styles))(Dashboard);
