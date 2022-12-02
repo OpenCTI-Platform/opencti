@@ -32,7 +32,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.34.0",
     "@bmatei/apollo-prometheus-exporter": "^2.1.1",
-    "@darklight/keycloak-admin-client": "file:./lib/darklight-keycloak-admin-client-v1.0.1.tgz",
+    "@darklight/keycloak-admin-client": "file:./lib/darklight-keycloak-admin-client-v1.1.1.tgz",
     "@elastic/elasticsearch": "7.13.0",
     "@graphql-tools/graphql-file-loader": "^7.3.1",
     "@graphql-tools/load": "^7.4.0",

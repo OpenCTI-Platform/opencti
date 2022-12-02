@@ -2736,9 +2736,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@darklight/keycloak-admin-client@file:./lib/darklight-keycloak-admin-client-v1.0.1.tgz::locator=opencti-graphql%40workspace%3A.":
-  version: 1.0.1
-  resolution: "@darklight/keycloak-admin-client@file:./lib/darklight-keycloak-admin-client-v1.0.1.tgz::locator=opencti-graphql%40workspace%3A."
+"@darklight/keycloak-admin-client@file:./lib/darklight-keycloak-admin-client-v1.1.1.tgz::locator=opencti-graphql%40workspace%3A.":
+  version: 1.1.1
+  resolution: "@darklight/keycloak-admin-client@file:./lib/darklight-keycloak-admin-client-v1.1.1.tgz::locator=opencti-graphql%40workspace%3A."
   dependencies:
     "@types/jwt-decode": ^3.1.0
     axios: ^1.1.0
@@ -2747,7 +2747,7 @@ __metadata:
     jwt-decode: ^3.1.2
     lodash: ^4.17.21
     url-join: ^4.0.1
-  checksum: 986ceaaba04a5f78d23c30b64bf1139c7cabff1540be35403b9280c3a005dbc860e383da1ee8192461c387a90e1e67be80081c4cb9374eecf0eedd756c1c2b67
+  checksum: b2d32c90dba39739976aada819743956f86b284557d937bb38a7ede99ff6fbc0ee0a382a1ca64a21e32c054a14e1f28198e66ffdf0bce7c02b7f4f123c173120
   languageName: node
   linkType: hard
 
@@ -5235,13 +5235,13 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.1.0":
-  version: 1.1.3
-  resolution: "axios@npm:1.1.3"
+  version: 1.2.0
+  resolution: "axios@npm:1.2.0"
   dependencies:
     follow-redirects: ^1.15.0
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
-  checksum: cab3b17bf6092c9387f7023d699db093cfa23650b56c4422cd474d124b78b2e3b5a520f932c330664a58ab85b867b1c25a95cace475ef72d236888c852b84e6d
+  checksum: f08ce214e957dfde45b837f8d3c7861424608fb7df32faa638835e338782a9f4c0b05074e92e0e8dcca3a1e6250112fbbe1b15a6b21104da633d84745bbb79cc
   languageName: node
   linkType: hard
 
@@ -11427,7 +11427,7 @@ chromedriver@latest:
     "@babel/preset-env": 7.15.0
     "@babel/runtime": 7.14.8
     "@bmatei/apollo-prometheus-exporter": ^2.1.1
-    "@darklight/keycloak-admin-client": "file:./lib/darklight-keycloak-admin-client-v1.0.1.tgz"
+    "@darklight/keycloak-admin-client": "file:./lib/darklight-keycloak-admin-client-v1.1.1.tgz"
     "@elastic/elasticsearch": 7.13.0
     "@graphql-tools/graphql-file-loader": ^7.3.1
     "@graphql-tools/load": ^7.4.0
