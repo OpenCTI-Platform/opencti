@@ -81,6 +81,7 @@ const userResolvers = {
   },
   MeUser: {
     userSubscriptions: (current, _, context) => getUserSubscriptions(context, context.user, current.id),
+    objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
   },
   UserSession: {
     user: (session, _, context) => usersLoader.load(session.user_id, context, context.user),

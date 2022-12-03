@@ -37,6 +37,8 @@ import { OPENCTI_ADMIN_UUID } from '../../../utils/Security';
 import UserSubscriptionCreation from './UserSubscriptionCreation';
 import UserSubscriptionPopover from './UserSubscriptionPopover';
 import Loader from '../../../components/Loader';
+import { convertOrganizations } from '../../../utils/edition';
+import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 
 const styles = () => ({
   panel: {
@@ -242,6 +244,7 @@ const OtpComponent = ({ closeFunction }) => (
 const ProfileOverviewComponent = (props) => {
   const { t, me, classes, fldt, subscriptionStatus, about } = props;
   const { external, otp_activated: useOtp } = me;
+  const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
   const subscriptionEdges = me.userSubscriptions?.edges ?? [];
   const fieldNames = [
@@ -254,7 +257,7 @@ const ProfileOverviewComponent = (props) => {
     'language',
     'otp_activated',
   ];
-  const initialValues = pick(fieldNames, me);
+  const initialValues = { ...pick(fieldNames, me), objectOrganization };
 
   const disableOtp = () => {
     commitMutation({
@@ -343,6 +346,13 @@ const ProfileOverviewComponent = (props) => {
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                     onSubmit={handleSubmitField}
+                  />
+                  <ObjectOrganizationField
+                    name="objectOrganization"
+                    label="Organizations"
+                    disabled={true}
+                    style={{ marginTop: 20, width: '100%' }}
+                    outlined={false}
                   />
                   <Field
                     component={TextField}
@@ -657,6 +667,13 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       otp_activated
       otp_qr
       description
+      objectOrganization {
+        edges {
+          node {
+            name
+          }
+        }
+      }
       userSubscriptions(first: 200)
         @connection(key: "Pagination_userSubscriptions") {
         edges {

@@ -70,6 +70,7 @@ const AUTH_BASIC = 'BasicAuth';
 export const STREAMAPI = 'STREAMAPI';
 export const TAXIIAPI = 'TAXIIAPI';
 export const ROLE_DEFAULT = 'Default';
+const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 
 const roleSessionRefresh = async (context, user, roleId) => {
   const members = await listThroughGetFrom(context, user, [roleId], RELATION_HAS_ROLE, ENTITY_TYPE_USER);
@@ -250,6 +251,12 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
   await createRelation(context, user, assignInput);
   await userSessionRefresh(userId);
   return user;
+};
+
+export const assignOrganizationNameToUser = async (context, user, userId, organizationName) => {
+  const organization = { name: organizationName, identity_class: 'organization' };
+  const generateToId = generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, organization);
+  return assignOrganizationToUser(context, user, userId, generateToId);
 };
 
 const assignGroupToUser = async (context, user, userId, groupName) => {
@@ -470,8 +477,11 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
-export const loginFromProvider = async (userInfo, providerRoles = [], providerGroups = []) => {
+export const loginFromProvider = async (userInfo, opts = {}) => {
+  const { providerRoles = [], providerGroups = [], providerOrganizations = [] } = opts;
   const context = executionContext('login_provider');
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const listOpts = { paginate: false };
   const { email, name: providedName, firstname, lastname } = userInfo;
   if (isEmptyField(email)) {
     throw Error('User email not provided');
@@ -483,40 +493,71 @@ export const loginFromProvider = async (userInfo, providerRoles = [], providerGr
     const newUser = { name, firstname, lastname, user_email: email.toLowerCase(), external: true };
     return addUser(context, SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
-      return loginFromProvider(userInfo, providerRoles, providerGroups);
+      return loginFromProvider(userInfo, opts);
     });
   }
   // Update the basic information
   const patch = { name, firstname, lastname, external: true };
   await patchAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
-  // Update the roles
+  // region Update the roles
   // If roles are specified here, that overwrite the default assignation
   if (providerRoles.length > 0) {
     // 01 - Delete all roles from the user
-    const opts = { paginate: false };
-    const userRoles = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, opts);
-    for (let index = 0; index < userRoles.length; index += 1) {
+    const userRoles = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, listOpts);
+    const deleteRoles = userRoles.filter((o) => !providerRoles.includes(o.name));
+    for (let index = 0; index < deleteRoles.length; index += 1) {
       const userRole = userRoles[index];
       await userDeleteRelation(context, SYSTEM_USER, user, userRole.id, RELATION_HAS_ROLE);
     }
     // 02 - Create roles from providers
-    const rolesCreation = R.map((role) => assignRoleToUser(context, SYSTEM_USER, user.id, role), providerRoles);
-    await Promise.all(rolesCreation);
+    const createRoles = providerRoles.filter((n) => !userRoles.map((o) => o.name).includes(n));
+    if (createRoles.length > 0) {
+      const rolesCreation = createRoles.map((role) => assignRoleToUser(context, SYSTEM_USER, user.id, role));
+      await Promise.all(rolesCreation);
+    }
   }
-  // Update the groups
+  // endregion
+  // region Update the groups
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
     // 01 - Delete all groups from the user
-    const opts = { paginate: false };
-    const userGroups = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
-    for (let index = 0; index < userGroups.length; index += 1) {
+    const userGroups = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, listOpts);
+    const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
+    for (let index = 0; index < deleteGroups.length; index += 1) {
       const userGroup = userGroups[index];
       await userDeleteRelation(context, SYSTEM_USER, user, userGroup.id, RELATION_MEMBER_OF);
     }
     // 02 - Create groups from providers
-    const groupsCreation = R.map((group) => assignGroupToUser(context, SYSTEM_USER, user.id, group), providerGroups);
-    await Promise.all(groupsCreation);
+    const createGroups = providerGroups.filter((n) => !userGroups.map((o) => o.name).includes(n));
+    if (createGroups.length > 0) {
+      const groupsCreation = createGroups.map((group) => assignGroupToUser(context, SYSTEM_USER, user.id, group));
+      await Promise.all(groupsCreation);
+    }
   }
+  // endregion
+  // region Update the organizations
+  // If organizations are specified here, that overwrite the default assignation
+  if (providerOrganizations.length > 0) {
+    // 01 - Delete all organizations no longer assign to the user
+    const userOrganizations = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, listOpts);
+    const deleteOrganizations = userOrganizations.filter((o) => !providerOrganizations.includes(o.name));
+    for (let index = 0; index < deleteOrganizations.length; index += 1) {
+      const userOrganization = deleteOrganizations[index];
+      await userDeleteRelation(context, SYSTEM_USER, user, userOrganization.id, RELATION_PARTICIPATE_TO);
+    }
+    // 02 - Create organizations if needed
+    const createOrganizations = providerOrganizations.filter((n) => !userOrganizations.map((o) => o.name).includes(n));
+    if (createOrganizations.length > 0) {
+      const organizationsCreation = createOrganizations.map((orga) => {
+        if (orga === PLATFORM_ORGANIZATION && settings.platform_organization) {
+          return assignOrganizationToUser(context, SYSTEM_USER, user.id, settings.platform_organization);
+        }
+        return assignOrganizationNameToUser(context, SYSTEM_USER, user.id, orga);
+      });
+      await Promise.all(organizationsCreation);
+    }
+  }
+  // endregion
   return user;
 };
 

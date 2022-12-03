@@ -7471,6 +7471,24 @@ export enum MarkingDefinitionsOrdering {
   XOpenctiOrder = 'x_opencti_order'
 }
 
+export type MeOrganization = {
+  __typename?: 'MeOrganization';
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
+export type MeOrganizationConnection = {
+  __typename?: 'MeOrganizationConnection';
+  edges: Array<MeOrganizationEdge>;
+  pageInfo: PageInfo;
+};
+
+export type MeOrganizationEdge = {
+  __typename?: 'MeOrganizationEdge';
+  cursor: Scalars['String'];
+  node: MeOrganization;
+};
+
 export type MeUser = BasicObject & InternalObject & {
   __typename?: 'MeUser';
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
@@ -7485,6 +7503,7 @@ export type MeUser = BasicObject & InternalObject & {
   language?: Maybe<Scalars['String']>;
   lastname?: Maybe<Scalars['String']>;
   name: Scalars['String'];
+  objectOrganization?: Maybe<MeOrganizationConnection>;
   otp_activated?: Maybe<Scalars['Boolean']>;
   otp_qr?: Maybe<Scalars['String']>;
   parent_types: Array<Scalars['String']>;
@@ -19286,6 +19305,9 @@ export type ResolversTypes = ResolversObject<{
   MarkingDefinitionsFilter: MarkingDefinitionsFilter;
   MarkingDefinitionsFiltering: MarkingDefinitionsFiltering;
   MarkingDefinitionsOrdering: MarkingDefinitionsOrdering;
+  MeOrganization: ResolverTypeWrapper<MeOrganization>;
+  MeOrganizationConnection: ResolverTypeWrapper<MeOrganizationConnection>;
+  MeOrganizationEdge: ResolverTypeWrapper<MeOrganizationEdge>;
   MeUser: ResolverTypeWrapper<Omit<MeUser, 'userSubscriptions'> & { userSubscriptions?: Maybe<ResolversTypes['UserSubscriptionConnection']> }>;
   MediaContent: ResolverTypeWrapper<Omit<MediaContent, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
   MediaContentAddInput: MediaContentAddInput;
@@ -19864,6 +19886,9 @@ export type ResolversParentTypes = ResolversObject<{
   MarkingDefinitionEdge: MarkingDefinitionEdge;
   MarkingDefinitionEditMutations: MarkingDefinitionEditMutations;
   MarkingDefinitionsFiltering: MarkingDefinitionsFiltering;
+  MeOrganization: MeOrganization;
+  MeOrganizationConnection: MeOrganizationConnection;
+  MeOrganizationEdge: MeOrganizationEdge;
   MeUser: Omit<MeUser, 'userSubscriptions'> & { userSubscriptions?: Maybe<ResolversParentTypes['UserSubscriptionConnection']> };
   MediaContent: Omit<MediaContent, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
   MediaContentAddInput: MediaContentAddInput;
@@ -22628,6 +22653,24 @@ export type MarkingDefinitionEditMutationsResolvers<ContextType = any, ParentTyp
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MeOrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeOrganization'] = ResolversParentTypes['MeOrganization']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MeOrganizationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeOrganizationConnection'] = ResolversParentTypes['MeOrganizationConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['MeOrganizationEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MeOrganizationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeOrganizationEdge'] = ResolversParentTypes['MeOrganizationEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['MeOrganization'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MeUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeUser'] = ResolversParentTypes['MeUser']> = ResolversObject<{
   allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -22641,6 +22684,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectOrganization?: Resolver<Maybe<ResolversTypes['MeOrganizationConnection']>, ParentType, ContextType>;
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -26024,6 +26068,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MarkingDefinitionConnection?: MarkingDefinitionConnectionResolvers<ContextType>;
   MarkingDefinitionEdge?: MarkingDefinitionEdgeResolvers<ContextType>;
   MarkingDefinitionEditMutations?: MarkingDefinitionEditMutationsResolvers<ContextType>;
+  MeOrganization?: MeOrganizationResolvers<ContextType>;
+  MeOrganizationConnection?: MeOrganizationConnectionResolvers<ContextType>;
+  MeOrganizationEdge?: MeOrganizationEdgeResolvers<ContextType>;
   MeUser?: MeUserResolvers<ContextType>;
   MediaContent?: MediaContentResolvers<ContextType>;
   MessagesStats?: MessagesStatsResolvers<ContextType>;

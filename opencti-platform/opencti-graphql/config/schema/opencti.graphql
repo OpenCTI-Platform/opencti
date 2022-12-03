@@ -1143,6 +1143,7 @@ type MeUser implements BasicObject & InternalObject {
   external: Boolean
   individual_id: String
   api_token: String!
+  objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
   allowed_marking: [MarkingDefinition!]
   userSubscriptions(first: Int): UserSubscriptionConnection
@@ -3425,6 +3426,22 @@ type OrganizationEdge {
   cursor: String!
   node: Organization!
 }
+
+type MeOrganization {
+  id: ID! # internal_id
+  name: String!
+}
+
+type MeOrganizationEdge {
+  cursor: String!
+  node: MeOrganization!
+}
+
+type MeOrganizationConnection {
+  pageInfo: PageInfo!
+  edges: [MeOrganizationEdge!]!
+}
+
 enum OrganizationReliability {
   A
   B

@@ -108,8 +108,8 @@ const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
-const providerLoginHandler = (userInfo, roles, groups, done) => {
-  loginFromProvider(userInfo, roles, groups)
+const providerLoginHandler = (userInfo, done, opts = {}) => {
+  loginFromProvider(userInfo, opts)
     .then((user) => {
       done(null, user);
     })
@@ -127,6 +127,7 @@ const genConfigMapper = (elements) => {
     })
   );
 };
+
 const confProviders = conf.get('providers');
 const providerKeys = Object.keys(confProviders);
 for (let i = 0; i < providerKeys.length; i += 1) {
@@ -185,19 +186,26 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         };
         const groupsToAssociate = computeGroupsMapping();
         // endregion
+        // region organizations mapping
+        const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+        const computeOrganizationsMapping = () => {
+          const orgaDefault = mappedConfig.organizations_default ?? [];
+          const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+          const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+          const availableOrgas = R.flatten(orgaPath.map((path) => R.path(path.split('.'), user) || []));
+          const orgasMapper = genConfigMapper(orgasMapping);
+          return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+        };
+        const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+        // endregion
         if (!userMail) {
           logApp.warn('[LDAP] Configuration error, cant map mail and username', { user, userMail, userName });
           done({ message: 'Configuration error, ask your administrator' });
         } else if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
           logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
           const userInfo = { email: userMail, name: userName, firstname, lastname };
-          loginFromProvider(userInfo, rolesToAssociate, groupsToAssociate)
-            .then((info) => {
-              done(null, info);
-            })
-            .catch((err) => {
-              done(err);
-            });
+          const opts = { providerRoles: rolesToAssociate, providerGroups: groupsToAssociate, providerOrganizations: organizationsToAssociate };
+          providerLoginHandler(userInfo, done, opts);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -215,19 +223,33 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const userName = profile[mappedConfig.account_attribute] || '';
         const firstname = profile[mappedConfig.firstname_attribute] || '';
         const lastname = profile[mappedConfig.lastname_attribute] || '';
+        // region roles mapping
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
         const computeRolesMapping = () => {
-          const samlRoles = R.flatten(
-            roleAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]))
-          ).filter((v) => isNotEmptyField(v));
+          const attrRoles = roleAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]));
+          const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
           const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
           const rolesMapper = genConfigMapper(rolesMapping);
           return samlRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
         };
         const rolesToAssociate = computeRolesMapping();
+        // endregion
+        // region organizations mapping
+        const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+        const computeOrganizationsMapping = () => {
+          const orgaDefault = mappedConfig.organizations_default ?? [];
+          const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+          const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+          const availableOrgas = R.flatten(orgaPath.map((path) => R.path(path.split('.'), profile) || []));
+          const orgasMapper = genConfigMapper(orgasMapping);
+          return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+        };
+        const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+        // endregion
         if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
           const { nameID: email } = profile;
-          providerLoginHandler({ email, name: userName, firstname, lastname }, rolesToAssociate, [], done);
+          const opts = { providerRoles: rolesToAssociate, providerOrganizations: organizationsToAssociate };
+          providerLoginHandler({ email, name: userName, firstname, lastname }, done, opts);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -287,6 +309,20 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           };
           const groupsToAssociate = isGroupMapping ? computeGroupsMapping() : [];
           // endregion
+          // region organizations mapping
+          const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+          const computeOrganizationsMapping = () => {
+            const orgaDefault = mappedConfig.organizations_default ?? [];
+            const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+            const token = mappedConfig.organizations_management?.token_reference || 'access_token';
+            const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+            const decodedUser = jwtDecode(tokenset[token]);
+            const availableOrgas = R.flatten(orgaPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const orgasMapper = genConfigMapper(orgasMapping);
+            return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+          };
+          const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+          // endregion
           if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
             const nameAttribute = mappedConfig.name_attribute ?? 'name';
             const emailAttribute = mappedConfig.email_attribute ?? 'email';
@@ -296,7 +332,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const email = userinfo[emailAttribute];
             const firstname = userinfo[firstnameAttribute];
             const lastname = userinfo[lastnameAttribute];
-            providerLoginHandler({ email, name, firstname, lastname }, rolesToAssociate, groupsToAssociate, done);
+            const opts = { providerRoles: rolesToAssociate, providerGroups: groupsToAssociate, providerOrganizations: organizationsToAssociate };
+            providerLoginHandler({ email, name, firstname, lastname }, done, opts);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
@@ -315,7 +352,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const data = profile._json;
           logApp.debug('[FACEBOOK] Successfully logged', { profile: data });
           const { email } = data;
-          providerLoginHandler({ email, name: data.first_name }, [], [], done);
+          providerLoginHandler({ email, name: data.first_name }, done);
         }
       );
       passport.use(providerRef, facebookStrategy);
@@ -336,7 +373,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           authorized = domains.includes(domain);
         }
         if (authorized) {
-          providerLoginHandler({ email, name }, [], [], done);
+          providerLoginHandler({ email, name }, done);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
@@ -365,7 +402,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done({ message: 'You need a public email in your github account' });
           } else {
             const email = R.head(profile.emails).value;
-            providerLoginHandler({ email, name: displayName }, [], [], done);
+            providerLoginHandler({ email, name: displayName }, done);
           }
         } else {
           done({ message: 'Restricted access, ask your administrator' });
@@ -383,7 +420,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           logApp.debug('[AUTH0] Successfully logged', { profile });
           const email = R.head(profile.emails).value;
           const name = profile.displayName;
-          providerLoginHandler({ email, name }, [], [], done);
+          providerLoginHandler({ email, name }, done);
         }
       );
       passport.use(providerRef, auth0Strategy);
