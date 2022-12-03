@@ -26,8 +26,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const searchObjectOrganizationFieldQuery = graphql`
-  query ObjectOrganizationFieldQuery {
-    organizations {
+  query ObjectOrganizationFieldQuery($search: String) {
+    organizations(orderBy: name, search: $search) {
       edges {
         node {
           id
@@ -56,8 +56,10 @@ const ObjectOrganizationField = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const searchOrganizations = () => {
-    fetchQuery(searchObjectOrganizationFieldQuery)
+  const searchOrganizations = (event) => {
+    fetchQuery(searchObjectOrganizationFieldQuery, {
+      search: (event && event.target && event.target.value) ?? '',
+    })
       .toPromise()
       .then((data) => {
         const searchResults = data.organizations.edges.map((n) => ({ label: n.node.name, value: n.node.id }));
@@ -70,12 +72,12 @@ const ObjectOrganizationField = (props) => {
       <Field
         component={AutocompleteField}
         name={name}
-        multiple={true}
+        multiple={multiple}
         disabled={disabled}
         style={style}
         textfieldprops={{
           variant: 'standard',
-          label: t(label ?? 'Organizations restriction'),
+          label: label ? t(label) : '',
           helperText: helpertext,
           fullWidth: true,
           onFocus: searchOrganizations,

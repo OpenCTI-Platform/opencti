@@ -29,8 +29,7 @@ import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
-import AutocompleteField from '../../../components/AutocompleteField';
-import ItemIcon from '../../../components/ItemIcon';
+import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -120,14 +119,6 @@ const settingsQuery = graphql`
       editContext {
         name
         focusOn
-      }
-    }
-    organizations(orderBy: name, first: 5000) {
-      edges {
-        node {
-          id
-          name
-        }
       }
     }
   }
@@ -316,7 +307,7 @@ const Settings = () => {
         query={settingsQuery}
         render={({ props }) => {
           if (props && props.settings) {
-            const { settings, organizations } = props;
+            const { settings } = props;
             const { id, editContext } = settings;
             const initialValues = R.pipe(
               R.assoc(
@@ -422,38 +413,12 @@ const Settings = () => {
                                   }}
                                 />
                               </Tooltip>
-                              <Field
-                                component={AutocompleteField}
-                                onChange={(name, value) => handleSubmitField(id, name, value)
-                                }
-                                style={{ width: '100%' }}
+                              <ObjectOrganizationField
                                 name="platform_organization"
+                                onChange={(name, value) => handleSubmitField(id, name, value)}
+                                style={{ width: '100%' }}
                                 multiple={false}
-                                createLabel={t('Add')}
-                                textfieldprops={{
-                                  variant: 'standard',
-                                  helperText: (
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_organization"
-                                    />
-                                  ),
-                                }}
-                                options={organizations.edges.map((n) => ({
-                                  id: n.node.id,
-                                  value: n.node.id,
-                                  label: n.node.name,
-                                }))}
-                                renderOption={(optionProps, option) => (
-                                  <li {...optionProps}>
-                                    <div className={classes.icon}>
-                                      <ItemIcon type="Organization" />
-                                    </div>
-                                    <div className={classes.text}>
-                                      {option.label}
-                                    </div>
-                                  </li>
-                                )}
+                                outlined={false}
                               />
                             </Alert>
                             <Field
@@ -501,8 +466,7 @@ const Settings = () => {
                                 width: '100%',
                               }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)
-                              }
+                              onChange={(name, value) => handleSubmitField(id, name, value)}
                               helpertext={
                                 <SubscriptionFocus
                                   context={editContext}
@@ -524,8 +488,7 @@ const Settings = () => {
                                 width: '100%',
                               }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)
-                              }
+                              onChange={(name, value) => handleSubmitField(id, name, value)}
                               helpertext={
                                 <SubscriptionFocus
                                   context={editContext}
@@ -554,8 +517,7 @@ const Settings = () => {
                                 width: '100%',
                               }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)
-                              }
+                              onChange={(name, value) => handleSubmitField(id, name, value)}
                               helpertext={
                                 <SubscriptionFocus
                                   context={editContext}
