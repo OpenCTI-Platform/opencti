@@ -63,6 +63,8 @@ const networkAssetReducer = (item) => {
 	  ...(item.labels && {labels_iri: item.labels}),
     ...(item.notes && {notes_iri: item.notes}),
     ...(item.network_address_range && {netaddr_range_iri: item.network_address_range}),
+    ...(item.connected_assets && {connected_assets: item.connected_assets}),
+    ...(item.related_risks && {related_risks: item.related_risks}),
   }
 }
 const ipAddrRangeReducer = (item) => {
@@ -254,7 +256,22 @@ export const selectNetworkQuery = (id, select) => {
 export const selectNetworkByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
+
+  // build list of selection variables and predicates
   const { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
+
+  // define related risks clause to restrict to only Risk since it available in other objects
+  let relatedRiskClause = '';
+  if (select.includes('related_risks')) {
+    relatedRiskClause = `
+    OPTIONAL {
+      SELECT DISTINCT ?related_risks
+      WHERE {
+        FILTER regex(str(?related_risks), "#Risk", "i")
+      }
+    }`
+  }
+  
   return `
   SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
@@ -262,6 +279,7 @@ export const selectNetworkByIriQuery = (iri, select) => {
     BIND(${iri} AS ?iri)
     ?iri a <http://scap.nist.gov/ns/asset-identification#Network> .
     ${predicates}
+    ${relatedRiskClause}
     {
       SELECT DISTINCT ?iri
       WHERE {
@@ -290,13 +308,28 @@ export const selectAllNetworks = (select, args) => {
     }
   }
 
+  // define related risks clause to restrict to only Risk since it available in other objects
+  let relatedRiskClause = '';
+  if (select.includes('related_risks')) {
+    relatedRiskClause = `
+    OPTIONAL {
+      SELECT DISTINCT ?related_risks
+      WHERE {
+        FILTER regex(str(?related_risks), "#Risk", "i")
+      }
+    }`
+  }  
+
+  // Build select clause and predicates
   const { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Network> . 
     ${predicates}
+    ${relatedRiskClause}
     {
       SELECT DISTINCT ?iri
       WHERE {
@@ -514,6 +547,16 @@ export const networkPredicateMap = {
   last_scanned: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#last_scanned>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "last_scanned");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  connected_assets: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#connected_to_network>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "connected_assets");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  related_risks: {
+    predicate: "^<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/^<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/^<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "related_risks");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }

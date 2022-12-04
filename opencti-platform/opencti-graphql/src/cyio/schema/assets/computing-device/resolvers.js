@@ -11,11 +11,11 @@ import {
   attachToComputingDeviceQuery
 } from './sparql-query.js';
 import {
-  getSelectSparqlQuery as getSoftwareQuery,
+  selectSoftwareByIriQuery,
   getReducer as getSoftwareReducer
 } from '../software/sparql-query.js';
 import {
-  getSelectSparqlQuery as getNetworkQuery,
+  selectNetworkByIriQuery,
   getReducer as getNetworkReducer
 } from '../network/sparql-query.js';
 import {
@@ -510,8 +510,7 @@ const computingDeviceResolvers = {
       let iriArray = parent.installed_sw_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        var reducer = getSoftwareReducer('SOFTWARE-IRI');
-        let selectList = selectMap.getNode('installed_software');
+        let reducer = getSoftwareReducer('SOFTWARE-IRI');
         for (let iri of iriArray) {
           // check if this is an Software object
           if (iri === undefined || !iri.includes('Software')) {
@@ -519,7 +518,7 @@ const computingDeviceResolvers = {
           }
 
           // query for the Software based on its IRI
-          var sparqlQuery = getSoftwareQuery('SOFTWARE-IRI', selectList, iri);
+          let sparqlQuery = selectSoftwareByIriQuery(iri, selectMap.getNode('installed_software'))
           const response = await dataSources.Stardog.queryById({
             dbName,
             sparqlQuery,
@@ -558,7 +557,7 @@ const computingDeviceResolvers = {
         iri = parent.installed_os_iri;
       }
 
-      var sparqlQuery = getSoftwareQuery('OS-IRI', selectMap.getNode('installed_operating_system'), iri);
+      let sparqlQuery = selectSoftwareByIriQuery(iri, selectMap.getNode('installed_operating_system'));
       var reducer = getSoftwareReducer('OS-IRI');
       let response;
       try {
@@ -762,8 +761,7 @@ const computingDeviceResolvers = {
         iri = parent.conn_network_iri;
       }
 
-      let selectList = selectMap.getNode('connected_to_network');
-      var sparqlQuery = getNetworkQuery('CONN-NET-IRI', selectList, iri);
+      let sparqlQuery = selectNetworkByIriQuery(iri, selectMap.getNode('connected_to_network'));
       var reducer = getNetworkReducer('NETWORK');
       const response = await dataSources.Stardog.queryById({
         dbName,

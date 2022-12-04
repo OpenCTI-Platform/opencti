@@ -202,6 +202,7 @@ export const riskSingularizeSchema = {
     "subject_id": true,
     "subject_name": true,
     "subject_type": true,
+    "subject_ref": true,
     "subject_version": true,
     "system_id": true,
     "system_identifier_type": true,
