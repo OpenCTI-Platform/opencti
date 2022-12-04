@@ -320,6 +320,25 @@ const useSearchEntities = ({
             unionSetEntities('sightedBy', sightedByEntities);
           });
         break;
+      case 'elementId':
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: (searchScope && searchScope.fromId) || ['Stix-Core-Object'],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 50,
+        })
+          .toPromise()
+          .then((data) => {
+            const elementIdEntities = R.pipe(
+              R.pathOr([], ['stixCoreObjects', 'edges']),
+              R.map((n) => ({
+                label: defaultValue(n.node),
+                value: n.node.id,
+                type: n.node.entity_type,
+              })),
+            )(data);
+            unionSetEntities('elementId', elementIdEntities);
+          });
+        break;
       case 'fromId':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
           types: (searchScope && searchScope.fromId) || ['Stix-Core-Object'],
@@ -360,7 +379,9 @@ const useSearchEntities = ({
         break;
       case 'objectContains':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
-          types: (searchScope && searchScope.objectContains) || ['Stix-Core-Object'],
+          types: (searchScope && searchScope.objectContains) || [
+            'Stix-Core-Object',
+          ],
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
         })

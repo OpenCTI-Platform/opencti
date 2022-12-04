@@ -1038,6 +1038,12 @@ export const ignoredAttributesInFeeds = [
   'importFiles',
 ];
 
+export const ignoredAttributesInDashboards = [
+  'spec_version',
+  'extensions',
+  'importFiles',
+];
+
 export const dateAttributes = [
   'ctime',
   'mtime',

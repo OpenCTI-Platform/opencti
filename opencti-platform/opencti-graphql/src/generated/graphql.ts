@@ -112,6 +112,7 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -183,6 +184,23 @@ export type ArtifactPendingFilesArgs = {
 
 export type ArtifactReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ArtifactStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -308,6 +326,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   subAttackPatterns?: Maybe<AttackPatternConnection>;
@@ -376,6 +395,23 @@ export type AttackPatternPendingFilesArgs = {
 
 export type AttackPatternReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type AttackPatternStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -595,6 +631,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   rir?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -664,6 +701,23 @@ export type AutonomousSystemPendingFilesArgs = {
 
 export type AutonomousSystemReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type AutonomousSystemStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -777,6 +831,7 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -846,6 +901,23 @@ export type BankAccountPendingFilesArgs = {
 
 export type BankAccountReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type BankAccountStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -986,6 +1058,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -1049,6 +1122,23 @@ export type CampaignPendingFilesArgs = {
 
 export type CampaignReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CampaignStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -1287,6 +1377,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -1350,6 +1441,23 @@ export type ChannelPendingFilesArgs = {
 
 export type ChannelReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ChannelStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -1539,6 +1647,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -1603,6 +1712,23 @@ export type CityPendingFilesArgs = {
 
 export type CityReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CityStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -1792,6 +1918,7 @@ export type Container = {
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   updated_at: Scalars['DateTime'];
@@ -1854,6 +1981,23 @@ export type ContainerRelatedContainersArgs = {
 
 export type ContainerReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ContainerStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -2067,6 +2211,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -2131,6 +2276,23 @@ export type CountryPendingFilesArgs = {
 
 export type CountryReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CountryStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -2284,6 +2446,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -2351,6 +2514,23 @@ export type CourseOfActionPendingFilesArgs = {
 
 export type CourseOfActionReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CourseOfActionStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -2547,6 +2727,7 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -2617,6 +2798,23 @@ export type CryptocurrencyWalletPendingFilesArgs = {
 
 export type CryptocurrencyWalletReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -2725,6 +2923,7 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -2795,6 +2994,23 @@ export type CryptographicKeyPendingFilesArgs = {
 
 export type CryptographicKeyReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -2926,6 +3142,7 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -2995,6 +3212,23 @@ export type DirectoryPendingFilesArgs = {
 
 export type DirectoryReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type DirectoryStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -3137,6 +3371,7 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -3207,6 +3442,23 @@ export type DomainNamePendingFilesArgs = {
 
 export type DomainNameReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type DomainNameStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -3346,6 +3598,7 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -3416,6 +3669,23 @@ export type EmailAddrPendingFilesArgs = {
 
 export type EmailAddrReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailAddrStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -3531,6 +3801,7 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -3601,6 +3872,23 @@ export type EmailMessagePendingFilesArgs = {
 
 export type EmailMessageReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailMessageStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -3718,6 +4006,7 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -3787,6 +4076,23 @@ export type EmailMimePartTypePendingFilesArgs = {
 
 export type EmailMimePartTypeReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailMimePartTypeStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -3906,6 +4212,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   standard_id: Scalars['String'];
   start_time?: Maybe<Scalars['DateTime']>;
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stop_time?: Maybe<Scalars['DateTime']>;
@@ -3970,6 +4277,23 @@ export type EventPendingFilesArgs = {
 
 export type EventReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EventStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -4460,6 +4784,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -4550,6 +4875,23 @@ export type GroupingRelatedContainersArgs = {
 
 export type GroupingReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type GroupingStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -4716,6 +5058,7 @@ export type HashedObservable = {
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -4784,6 +5127,23 @@ export type HashedObservablePendingFilesArgs = {
 
 export type HashedObservableReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HashedObservableStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -4888,6 +5248,7 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -4958,6 +5319,23 @@ export type HostnamePendingFilesArgs = {
 
 export type HostnameReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -5067,6 +5445,7 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -5137,6 +5516,23 @@ export type IPv4AddrPendingFilesArgs = {
 
 export type IPv4AddrReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IPv4AddrStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -5248,6 +5644,7 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -5318,6 +5715,23 @@ export type IPv6AddrPendingFilesArgs = {
 
 export type IPv6AddrReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IPv6AddrStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -5468,6 +5882,7 @@ export type Identity = {
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -5531,6 +5946,23 @@ export type IdentityPendingFilesArgs = {
 
 export type IdentityReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IdentityStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -5697,6 +6129,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -5760,6 +6193,23 @@ export type IncidentPendingFilesArgs = {
 
 export type IncidentReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IncidentStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -5972,6 +6422,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -6046,6 +6497,23 @@ export type IndicatorPendingFilesArgs = {
 
 export type IndicatorReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IndicatorStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -6262,6 +6730,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -6328,6 +6797,23 @@ export type IndividualPendingFilesArgs = {
 
 export type IndividualReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IndividualStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -6534,6 +7020,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -6597,6 +7084,23 @@ export type InfrastructurePendingFilesArgs = {
 
 export type InfrastructureReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type InfrastructureStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -6821,6 +7325,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -6884,6 +7389,23 @@ export type IntrusionSetPendingFilesArgs = {
 
 export type IntrusionSetReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IntrusionSetStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -7251,6 +7773,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -7314,6 +7837,23 @@ export type LanguagePendingFilesArgs = {
 
 export type LanguageReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type LanguageStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -7484,6 +8024,7 @@ export type Location = {
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -7547,6 +8088,23 @@ export type LocationPendingFilesArgs = {
 
 export type LocationReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type LocationStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -7789,6 +8347,7 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -7859,6 +8418,23 @@ export type MacAddrPendingFilesArgs = {
 
 export type MacAddrReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MacAddrStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -7982,6 +8558,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -8045,6 +8622,23 @@ export type MalwarePendingFilesArgs = {
 
 export type MalwareReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MalwareStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -8376,6 +8970,7 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -8447,6 +9042,23 @@ export type MediaContentPendingFilesArgs = {
 
 export type MediaContentReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MediaContentStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -9792,6 +10404,7 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -9861,6 +10474,23 @@ export type MutexPendingFilesArgs = {
 
 export type MutexReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MutexStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -9979,6 +10609,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   subNarratives?: Maybe<NarrativeConnection>;
@@ -10043,6 +10674,23 @@ export type NarrativePendingFilesArgs = {
 
 export type NarrativeReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type NarrativeStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -10199,6 +10847,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   src_port?: Maybe<Scalars['Int']>;
   standard_id: Scalars['String'];
   start?: Maybe<Scalars['DateTime']>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -10268,6 +10917,23 @@ export type NetworkTrafficPendingFilesArgs = {
 
 export type NetworkTrafficReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type NetworkTrafficStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -10394,6 +11060,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -10483,6 +11150,23 @@ export type NoteRelatedContainersArgs = {
 
 export type NoteReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type NoteStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -10704,6 +11388,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -10793,6 +11478,23 @@ export type ObservedDataRelatedContainersArgs = {
 
 export type ObservedDataReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ObservedDataStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -10983,6 +11685,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -11072,6 +11775,23 @@ export type OpinionRelatedContainersArgs = {
 
 export type OpinionReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type OpinionStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -11266,6 +11986,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -11332,6 +12053,23 @@ export type OrganizationPendingFilesArgs = {
 
 export type OrganizationReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type OrganizationStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -11551,6 +12289,7 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -11620,6 +12359,23 @@ export type PaymentCardPendingFilesArgs = {
 
 export type PaymentCardReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type PaymentCardStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -11731,6 +12487,7 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -11801,6 +12558,23 @@ export type PhoneNumberPendingFilesArgs = {
 
 export type PhoneNumberReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type PhoneNumberStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -11920,6 +12694,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   street_address?: Maybe<Scalars['String']>;
@@ -11985,6 +12760,23 @@ export type PositionPendingFilesArgs = {
 
 export type PositionReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type PositionStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -12186,6 +12978,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   standard_id: Scalars['String'];
   start_type?: Maybe<Scalars['String']>;
   startup_info?: Maybe<Array<Maybe<Dictionary>>>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -12256,6 +13049,23 @@ export type ProcessPendingFilesArgs = {
 
 export type ProcessReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ProcessStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -13477,7 +14287,7 @@ export type QueryRuntimeAttributesArgs = {
 
 
 export type QuerySchemaAttributesArgs = {
-  elementType: Scalars['String'];
+  elementType: Array<InputMaybe<Scalars['String']>>;
 };
 
 
@@ -14418,6 +15228,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   subRegions?: Maybe<RegionConnection>;
@@ -14483,6 +15294,23 @@ export type RegionPendingFilesArgs = {
 
 export type RegionReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type RegionStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -14678,6 +15506,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -14767,6 +15596,23 @@ export type ReportRelatedContainersArgs = {
 
 export type ReportReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ReportStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -15124,6 +15970,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   subSectors?: Maybe<SectorConnection>;
@@ -15190,6 +16037,23 @@ export type SectorPendingFilesArgs = {
 
 export type SectorReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type SectorStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -15440,6 +16304,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -15513,6 +16378,23 @@ export type SoftwarePendingFilesArgs = {
 
 export type SoftwareReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type SoftwareStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -15707,6 +16589,7 @@ export type StixCoreObject = {
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -15767,6 +16650,23 @@ export type StixCoreObjectPendingFilesArgs = {
 
 export type StixCoreObjectReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixCoreObjectStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -16278,6 +17178,7 @@ export type StixCyberObservable = {
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -16346,6 +17247,23 @@ export type StixCyberObservablePendingFilesArgs = {
 
 export type StixCyberObservableReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixCyberObservableStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -16691,6 +17609,7 @@ export type StixDomainObject = {
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -16753,6 +17672,23 @@ export type StixDomainObjectPendingFilesArgs = {
 
 export type StixDomainObjectReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixDomainObjectStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -17004,6 +17940,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   size?: Maybe<Scalars['Int']>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -17074,6 +18011,23 @@ export type StixFilePendingFilesArgs = {
 
 export type StixFileReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixFileStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -17888,6 +18842,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -17954,6 +18909,23 @@ export type SystemPendingFilesArgs = {
 
 export type SystemReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type SystemStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -18276,6 +19248,7 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -18346,6 +19319,23 @@ export type TextPendingFilesArgs = {
 
 export type TextReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -18472,6 +19462,7 @@ export type ThreatActor = BasicObject & StixCoreObject & StixDomainObject & Stix
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   threat_actor_types?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -18536,6 +19527,23 @@ export type ThreatActorPendingFilesArgs = {
 
 export type ThreatActorReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -18733,6 +19741,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -18798,6 +19807,23 @@ export type ToolPendingFilesArgs = {
 
 export type ToolReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ToolStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -18972,6 +19998,7 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -19042,6 +20069,23 @@ export type UrlPendingFilesArgs = {
 
 export type UrlReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UrlStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -19200,6 +20244,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -19270,6 +20315,23 @@ export type UserAccountPendingFilesArgs = {
 
 export type UserAccountReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAccountStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -19404,6 +20466,7 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -19474,6 +20537,23 @@ export type UserAgentPendingFilesArgs = {
 
 export type UserAgentReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -19772,6 +20852,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']>;
@@ -19842,6 +20923,23 @@ export type VulnerabilityPendingFilesArgs = {
 
 export type VulnerabilityReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type VulnerabilityStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -20001,6 +21099,7 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -20070,6 +21169,23 @@ export type WindowsRegistryKeyPendingFilesArgs = {
 
 export type WindowsRegistryKeyReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type WindowsRegistryKeyStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -20183,6 +21299,7 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -20252,6 +21369,23 @@ export type WindowsRegistryValueTypePendingFilesArgs = {
 
 export type WindowsRegistryValueTypeReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type WindowsRegistryValueTypeStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -20617,6 +21751,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   signature_algorithm?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
@@ -20696,6 +21831,23 @@ export type X509CertificatePendingFilesArgs = {
 
 export type X509CertificateReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type X509CertificateStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -22130,6 +23282,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ArtifactReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ArtifactStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ArtifactStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ArtifactStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<ArtifactStixCyberObservableRelationshipsArgs>>;
@@ -22182,6 +23335,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AttackPatternStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<AttackPatternStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AttackPatternStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType>;
@@ -22275,6 +23429,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   rir?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AutonomousSystemStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<AutonomousSystemStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AutonomousSystemStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<AutonomousSystemStixCyberObservableRelationshipsArgs>>;
@@ -22317,6 +23472,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<BankAccountReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<BankAccountStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<BankAccountStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<BankAccountStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<BankAccountStixCyberObservableRelationshipsArgs>>;
@@ -22387,6 +23543,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CampaignStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CampaignStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CampaignStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -22481,6 +23638,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ChannelStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ChannelStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ChannelStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -22541,6 +23699,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CityStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CityStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CityStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -22642,6 +23801,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ContainerStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ContainerStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ContainerStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -22720,6 +23880,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CountryStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CountryStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CountryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -22788,6 +23949,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CourseOfActionStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CourseOfActionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CourseOfActionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -22871,6 +24033,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptocurrencyWalletStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptocurrencyWalletStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletStixCyberObservableRelationshipsArgs>>;
@@ -22911,6 +24074,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CryptographicKeyReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptographicKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CryptographicKeyStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptographicKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<CryptographicKeyStixCyberObservableRelationshipsArgs>>;
@@ -22972,6 +24136,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DirectoryReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DirectoryStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<DirectoryStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DirectoryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<DirectoryStixCyberObservableRelationshipsArgs>>;
@@ -23041,6 +24206,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<DomainNameReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DomainNameStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<DomainNameStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DomainNameStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<DomainNameStixCyberObservableRelationshipsArgs>>;
@@ -23096,6 +24262,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EmailAddrReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailAddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailAddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailAddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<EmailAddrStixCyberObservableRelationshipsArgs>>;
@@ -23142,6 +24309,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EmailMessageReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMessageStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailMessageStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMessageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<EmailMessageStixCyberObservableRelationshipsArgs>>;
@@ -23185,6 +24353,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMimePartTypeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMimePartTypeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeStixCyberObservableRelationshipsArgs>>;
@@ -23233,6 +24402,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EventStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EventStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EventStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stop_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -23467,6 +24637,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<GroupingStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<GroupingStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<GroupingStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -23526,6 +24697,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<HashedObservableReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HashedObservableStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HashedObservableStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HashedObservableStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<HashedObservableStixCyberObservableRelationshipsArgs>>;
@@ -23563,6 +24735,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<HostnameReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HostnameStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HostnameStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HostnameStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<HostnameStixCyberObservableRelationshipsArgs>>;
@@ -23604,6 +24777,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IPv4AddrReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv4AddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IPv4AddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv4AddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<IPv4AddrStixCyberObservableRelationshipsArgs>>;
@@ -23645,6 +24819,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IPv6AddrReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv6AddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IPv6AddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv6AddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<IPv6AddrStixCyberObservableRelationshipsArgs>>;
@@ -23695,6 +24870,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IdentityStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IdentityStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IdentityStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -23767,6 +24943,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IncidentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IncidentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IncidentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -23845,6 +25022,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IndicatorStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IndicatorStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IndicatorStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -23921,6 +25099,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IndividualStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IndividualStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IndividualStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -24008,6 +25187,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<InfrastructureStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<InfrastructureStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<InfrastructureStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -24103,6 +25283,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IntrusionSetStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IntrusionSetStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IntrusionSetStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -24253,6 +25434,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<LanguageStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<LanguageStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<LanguageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -24328,6 +25510,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<LocationStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<LocationStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<LocationStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -24420,6 +25603,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MacAddrReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MacAddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MacAddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MacAddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<MacAddrStixCyberObservableRelationshipsArgs>>;
@@ -24475,6 +25659,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MalwareStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MalwareStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MalwareStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -24624,6 +25809,7 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MediaContentReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MediaContentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MediaContentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MediaContentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<MediaContentStixCyberObservableRelationshipsArgs>>;
@@ -24871,6 +26057,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<MutexReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MutexStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MutexStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MutexStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<MutexStixCyberObservableRelationshipsArgs>>;
@@ -24920,6 +26107,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NarrativeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NarrativeStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NarrativeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subNarratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType>;
@@ -24982,6 +26170,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   src_port?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NetworkTrafficStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NetworkTrafficStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NetworkTrafficStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<NetworkTrafficStixCyberObservableRelationshipsArgs>>;
@@ -25030,6 +26219,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NoteStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NoteStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NoteStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -25113,6 +26303,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ObservedDataStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ObservedDataStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ObservedDataStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -25182,6 +26373,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OpinionStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<OpinionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OpinionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -25252,6 +26444,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OrganizationStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<OrganizationStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OrganizationStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -25346,6 +26539,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PaymentCardReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PaymentCardStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PaymentCardStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PaymentCardStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<PaymentCardStixCyberObservableRelationshipsArgs>>;
@@ -25385,6 +26579,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<PhoneNumberReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PhoneNumberStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PhoneNumberStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PhoneNumberStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<PhoneNumberStixCyberObservableRelationshipsArgs>>;
@@ -25436,6 +26631,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PositionStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PositionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PositionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   street_address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -25519,6 +26715,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   startup_info?: Resolver<Maybe<Array<Maybe<ResolversTypes['Dictionary']>>>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ProcessStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ProcessStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ProcessStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<ProcessStixCyberObservableRelationshipsArgs>>;
@@ -25843,6 +27040,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<RegionStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<RegionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<RegionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subRegions?: Resolver<Maybe<ResolversTypes['RegionConnection']>, ParentType, ContextType>;
@@ -25916,6 +27114,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ReportStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ReportStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ReportStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -26101,6 +27300,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SectorStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SectorStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SectorStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subSectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType>;
@@ -26224,6 +27424,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SoftwareReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SoftwareStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SoftwareStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SoftwareStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<SoftwareStixCyberObservableRelationshipsArgs>>;
@@ -26308,6 +27509,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCoreObjectReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCoreObjectStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixCoreObjectStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCoreObjectStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -26441,6 +27643,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCyberObservableReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCyberObservableStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixCyberObservableStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCyberObservableStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<StixCyberObservableStixCyberObservableRelationshipsArgs>>;
@@ -26559,6 +27762,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixDomainObjectStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixDomainObjectStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixDomainObjectStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -26638,6 +27842,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixFileStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixFileStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixFileStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<StixFileStixCyberObservableRelationshipsArgs>>;
@@ -27003,6 +28208,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SystemStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SystemStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SystemStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27138,6 +28344,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TextReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TextStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<TextStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TextStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<TextStixCyberObservableRelationshipsArgs>>;
@@ -27196,6 +28403,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -27271,6 +28479,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ToolStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ToolStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ToolStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27337,6 +28546,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UrlReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UrlStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UrlStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UrlStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<UrlStixCyberObservableRelationshipsArgs>>;
@@ -27422,6 +28632,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UserAccountReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAccountStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UserAccountStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAccountStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<UserAccountStixCyberObservableRelationshipsArgs>>;
@@ -27462,6 +28673,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UserAgentReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAgentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UserAgentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAgentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<UserAgentStixCyberObservableRelationshipsArgs>>;
@@ -27572,6 +28784,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<VulnerabilityStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<VulnerabilityStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<VulnerabilityStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27642,6 +28855,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyStixCyberObservableRelationshipsArgs>>;
@@ -27684,6 +28898,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryValueTypeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryValueTypeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeStixCyberObservableRelationshipsArgs>>;
@@ -27836,6 +29051,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   signature_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<X509CertificateStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<X509CertificateStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<X509CertificateStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<X509CertificateStixCyberObservableRelationshipsArgs>>;

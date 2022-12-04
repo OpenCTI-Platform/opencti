@@ -29,8 +29,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreObjectsMultiLinesTimeSeriesQuery = graphql`
-  query StixCoreObjectsMultiLinesTimeSeriesQuery(
+const stixCoreObjectsMultiLineChartTimeSeriesQuery = graphql`
+  query StixCoreObjectsMultiLineChartTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
@@ -91,7 +91,7 @@ const StixCoreObjectsMultiLineChart = ({
     });
     return (
       <QueryRenderer
-        query={stixCoreObjectsMultiLinesTimeSeriesQuery}
+        query={stixCoreObjectsMultiLineChartTimeSeriesQuery}
         variables={{
           operation: 'count',
           startDate: startDate ?? monthsAgo(12),

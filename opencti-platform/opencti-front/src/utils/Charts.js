@@ -289,6 +289,8 @@ export const verticalBarsChartOptions = (
       horizontal: false,
       barHeight: '30%',
       borderRadius: 5,
+      borderRadiusApplication: 'end',
+      borderRadiusWhenStacked: 'last',
       distributed,
     },
   },
@@ -300,6 +302,10 @@ export const horizontalBarsChartOptions = (
   xFormatter = null,
   yFormatter = null,
   distributed = false,
+  stacked = false,
+  total = false,
+  categories = null,
+  legend = false,
 ) => ({
   chart: {
     type: 'bar',
@@ -308,6 +314,7 @@ export const horizontalBarsChartOptions = (
       show: false,
     },
     foreColor: theme.palette.text.secondary,
+    stacked,
   },
   theme: {
     mode: theme.palette.mode,
@@ -315,9 +322,10 @@ export const horizontalBarsChartOptions = (
   dataLabels: {
     enabled: false,
   },
-  colors: distributed
-    ? colors(theme.palette.mode === 'dark' ? 400 : 600)
-    : [theme.palette.primary.main],
+  colors: [
+    theme.palette.primary.main,
+    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+  ],
   states: {
     hover: {
       filter: {
@@ -334,16 +342,16 @@ export const horizontalBarsChartOptions = (
     strokeDashArray: 3,
   },
   legend: {
-    show: false,
+    show: legend,
     itemMargin: {
       horizontal: 5,
-      vertical: 20,
     },
   },
   tooltip: {
     theme: theme.palette.mode,
   },
   xaxis: {
+    categories: categories ?? [],
     labels: {
       formatter: (value) => (xFormatter ? xFormatter(value) : value),
       style: {
@@ -371,7 +379,20 @@ export const horizontalBarsChartOptions = (
       horizontal: true,
       barHeight: '30%',
       borderRadius: 5,
+      borderRadiusApplication: 'end',
+      borderRadiusWhenStacked: 'last',
       distributed,
+      dataLabels: {
+        total: {
+          enabled: total,
+          offsetX: 0,
+          style: {
+            fontSize: '13px',
+            fontWeight: 900,
+            fontFamily: '"IBM Plex Sans", sans-serif',
+          },
+        },
+      },
     },
   },
 });

@@ -45,6 +45,21 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
         filters: [StixCoreRelationshipsFiltering]
         filterMode: FilterMode
     ): StixCoreRelationshipConnection
+    stixCoreObjectsDistribution(
+        relationship_type: [String]
+        toTypes: [String]
+        field: String!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        operation: StatsOperation!
+        limit: Int
+        order: String
+        types: [String]
+        filters: [StixCoreObjectsFiltering]
+        filterMode: FilterMode
+        search: String
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
         field: String!
         operation: StatsOperation!

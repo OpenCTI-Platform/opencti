@@ -57,6 +57,7 @@ import { elCount, elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -183,20 +184,20 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
 
 // region stats
 export const stixCoreObjectsTimeSeries = (context, user, args) => {
-  const { types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
-  return timeSeriesEntities(context, user, types, args);
+  const { types } = args;
+  return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], args);
 };
 
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
-  const { authorId, types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
+  const { authorId, types } = args;
   const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
-  return timeSeriesEntities(context, user, types, { ...args, filters });
+  return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
 };
 
 export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter) => {
-    const { types = [ABSTRACT_STIX_CORE_OBJECT] } = timeSeriesParameter;
-    return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
+    const { types } = timeSeriesParameter;
+    return { data: timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, ...timeSeriesParameter }) };
   }));
 };
 
@@ -215,20 +216,20 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {
-  const { types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
-  return distributionEntities(context, user, types, args);
+  const { types } = args;
+  return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], args);
 };
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
-  const { relationship_type, objectId, types = [ABSTRACT_STIX_CORE_OBJECT] } = args;
-  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
-  return distributionEntities(context, user, types, { ...args, filters });
+  const { relationship_type, objectId, types } = args;
+  const filters = [{ key: (relationship_type ?? [RELATION_RELATED_TO]).map((n) => buildRefRelationKey(n, '*')), values: [objectId] }, ...(args.filters || [])];
+  return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
 };
 
 export const stixCoreObjectsMultiDistribution = (context, user, args) => {
   return Promise.all(args.distributionParameters.map((distributionParameter) => {
-    const { types = [ABSTRACT_STIX_CORE_OBJECT] } = distributionParameter;
-    return { data: distributionEntities(context, user, types, { ...args, ...distributionParameter }) };
+    const { types } = distributionParameter;
+    return { data: distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, ...distributionParameter }) };
   }));
 };
 // endregion

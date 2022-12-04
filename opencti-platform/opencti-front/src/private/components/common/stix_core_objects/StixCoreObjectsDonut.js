@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreObjectsDonutsDistributionQuery = graphql`
+const stixCoreObjectsDonutDistributionQuery = graphql`
   query StixCoreObjectsDonutDistributionQuery(
     $objectId: String
     $relationship_type: [String]
@@ -175,23 +175,27 @@ const StixCoreObjectsDonut = ({
   const { t } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let types = ['Stix-Core-Object'];
-    if (
-      selection.filters.entity_type
-      && selection.filters.entity_type.length > 0
-    ) {
-      if (
-        selection.filters.entity_type.filter((o) => o.id === 'all').length === 0
-      ) {
-        types = selection.filters.entity_type.map((o) => o.id);
-      }
-    }
-    const filters = convertFilters(R.dissoc('entity_type', selection.filters));
+    let finalFilters = convertFilters(selection.filters);
+    const dataSelectionTypes = R.head(
+      finalFilters.filter((n) => n.key === 'entity_type'),
+    )?.values || ['Stix-Core-Object'];
+    const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
+    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+      ?.values || null;
+    const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
+    finalFilters = finalFilters.filter(
+      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
+        n.key,
+      ),
+    );
     return (
       <QueryRenderer
-        query={stixCoreObjectsDonutsDistributionQuery}
+        query={stixCoreObjectsDonutDistributionQuery}
         variables={{
-          types,
+          objectId: dataSelectionObjectId,
+          relationship_type: dataSelectionRelationshipType,
+          toTypes: dataSelectionToTypes,
+          types: dataSelectionTypes,
           field: selection.attribute,
           operation: 'count',
           startDate,
@@ -200,7 +204,7 @@ const StixCoreObjectsDonut = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'created_at',
-          filters,
+          filters: finalFilters,
           limit: 10,
         }}
         render={({ props }) => {

@@ -273,12 +273,12 @@ export const querySubTypes = async ({ type = null }) => {
   )(types);
   return buildPagination(0, null, finalResult, finalResult.length);
 };
-export const queryAttributes = async (type) => {
-  const attributes = schemaTypes.getAttributes(type);
+export const queryAttributes = async (types) => {
+  const attributes = R.uniq(types.map((type) => schemaTypes.getAttributes(type)).flat());
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
-    R.map((n) => ({ node: { id: n, key: type, value: n } }))
+    R.map((n) => ({ node: { id: n, key: types[0], value: n } }))
   )(attributes);
   return buildPagination(0, null, finalResult, finalResult.length);
 };

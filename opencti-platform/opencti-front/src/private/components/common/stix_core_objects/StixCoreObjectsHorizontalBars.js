@@ -1,18 +1,19 @@
 import React from 'react';
+import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import Chart from 'react-apexcharts';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { itemColor } from '../../../../utils/Colors';
+import { simpleNumberFormat } from '../../../../utils/Number';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -23,50 +24,38 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
-  query StixCoreRelationshipsHorizontalBarsDistributionQuery(
+const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
+  query StixCoreObjectsHorizontalBarsDistributionQuery(
+    $objectId: String
+    $relationship_type: [String]
+    $toTypes: [String]
     $field: String!
-    $operation: StatsOperation!
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
-    $isTo: Boolean
+    $operation: StatsOperation!
     $limit: Int
-    $elementId: [String]
-    $elementWithTargetTypes: [String]
-    $fromId: [String]
-    $fromRole: String
-    $fromTypes: [String]
-    $toId: [String]
-    $toRole: String
-    $toTypes: [String]
-    $relationship_type: [String]
-    $confidences: [Int]
-    $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $order: String
+    $types: [String]
+    $filters: [StixCoreObjectsFiltering]
     $filterMode: FilterMode
+    $search: String
   ) {
-    stixCoreRelationshipsDistribution(
+    stixCoreObjectsDistribution(
+      objectId: $objectId
+      relationship_type: $relationship_type
+      toTypes: $toTypes
       field: $field
-      operation: $operation
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
-      isTo: $isTo
+      operation: $operation
       limit: $limit
-      elementId: $elementId
-      elementWithTargetTypes: $elementWithTargetTypes
-      fromId: $fromId
-      fromRole: $fromRole
-      fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      toTypes: $toTypes
-      relationship_type: $relationship_type
-      confidences: $confidences
-      search: $search
+      order: $order
+      types: $types
       filters: $filters
       filterMode: $filterMode
+      search: $search
     ) {
       label
       value
@@ -176,17 +165,11 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsHorizontalBars = ({
-  title,
+const StixCoreObjectsHorizontalBars = ({
   variant,
   height,
-  stixCoreObjectId,
-  relationshipType,
-  toTypes,
-  field,
   startDate,
   endDate,
-  dateAttribute,
   dataSelection,
   parameters = {},
 }) => {
@@ -194,65 +177,73 @@ const StixCoreRelationshipsHorizontalBars = ({
   const theme = useTheme();
   const { t } = useFormatter();
   const renderContent = () => {
-    let finalFilters = [];
-    let selection = {};
-    let dataSelectionRelationshipType = null;
-    let dataSelectionFromId = null;
-    let dataSelectionToId = null;
-    let dataSelectionFromTypes = null;
-    let dataSelectionToTypes = null;
-    if (dataSelection) {
-      // eslint-disable-next-line prefer-destructuring
-      selection = dataSelection[0];
-      finalFilters = convertFilters(selection.filters);
-      dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
-        ?.values || null;
-      dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
-      dataSelectionToId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
-      dataSelectionFromTypes = R.head(finalFilters.filter((n) => n.key === 'fromTypes'))?.values
-        || null;
-      dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
-      finalFilters = finalFilters.filter(
-        (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
-      );
-    }
-    const finalField = selection.attribute || field || 'entity_type';
-    const variables = {
-      fromId: dataSelectionFromId || stixCoreObjectId,
-      toId: dataSelectionToId,
-      relationship_type: dataSelectionRelationshipType || relationshipType,
-      fromTypes: dataSelectionFromTypes,
-      toTypes: dataSelectionToTypes || toTypes,
-      field: finalField,
-      operation: 'count',
-      startDate,
-      endDate,
-      dateAttribute,
-      limit: 10,
-      filters: finalFilters,
-    };
+    const selection = dataSelection[0];
+    let finalFilters = convertFilters(selection.filters);
+    const dataSelectionTypes = R.head(
+      finalFilters.filter((n) => n.key === 'entity_type'),
+    )?.values || ['Stix-Core-Object'];
+    const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
+    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+      ?.values || null;
+    const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
+    finalFilters = finalFilters.filter(
+      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
+        n.key,
+      ),
+    );
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsHorizontalBarsDistributionQuery}
-        variables={variables}
+        query={stixCoreObjectsHorizontalBarsDistributionQuery}
+        variables={{
+          objectId: dataSelectionObjectId,
+          relationship_type: dataSelectionRelationshipType,
+          toTypes: dataSelectionToTypes,
+          types: dataSelectionTypes,
+          field: selection.attribute,
+          operation: 'count',
+          startDate,
+          endDate,
+          dateAttribute:
+            selection.date_attribute && selection.date_attribute.length > 0
+              ? selection.date_attribute
+              : 'created_at',
+          filters: finalFilters,
+          limit: 10,
+        }}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.stixCoreObjectsDistribution
+            && props.stixCoreObjectsDistribution.length > 0
           ) {
-            const data = props.stixCoreRelationshipsDistribution.map((n) => ({
-              x: finalField === 'internal_id' ? n.entity.name : n.label,
+            const data = props.stixCoreObjectsDistribution.map((n) => ({
+              x:
+                // eslint-disable-next-line no-nested-ternary
+                selection.attribute.endsWith('internal_id')
+                  ? defaultValue(n.entity)
+                  : selection.attribute === 'entity_type'
+                    ? t(`entity_${n.label}`)
+                    : n.label,
               y: n.value,
-              fillColor: itemColor(finalField === 'internal_id' ? n.entity.entity_type : n.label),
+              fillColor:
+                selection.attribute === 'internal_id'
+                  ? itemColor(n.entity.entity_type)
+                  : itemColor(n.label),
             }));
-            const chartData = [{ name: t('Number of relationships'), data }];
+            const chartData = [
+              {
+                name: selection.label || t('Number of relationships'),
+                data,
+              },
+            ];
             return (
               <Chart
                 options={horizontalBarsChartOptions(
                   theme,
                   true,
                   simpleNumberFormat,
+                  null,
+                  parameters.distributed,
                 )}
                 series={chartData}
                 type="bar"
@@ -299,20 +290,20 @@ const StixCoreRelationshipsHorizontalBars = ({
         variant="h4"
         gutterBottom={true}
         style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
         }}
       >
-        {parameters.title || title || t('Relationships DISTRIBUTION')}
+        {parameters.title || t('Distribution of entities')}
       </Typography>
-      {variant !== 'inLine' ? (
+      {variant === 'inLine' ? (
+        renderContent()
+      ) : (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {renderContent()}
         </Paper>
-      ) : (
-        renderContent()
       )}
     </div>
   );
 };
 
-export default StixCoreRelationshipsHorizontalBars;
+export default StixCoreObjectsHorizontalBars;

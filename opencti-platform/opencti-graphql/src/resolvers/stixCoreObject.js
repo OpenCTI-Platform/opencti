@@ -94,6 +94,7 @@ const stixCoreObjectResolvers = {
     toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
     creator: (stixCoreObject, _, context) => creatorsLoader.load(stixCoreObject.creator_id, context, context.user),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
+    stixCoreObjectsDistribution: (stixCoreObject, args, context) => stixCoreObjectsDistributionByEntity(context, context.user, { ...args, objectId: stixCoreObject.id }),
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
     stixCoreRelationshipsDistribution: (stixCoreObject, args, context) => distributionRelations(context, context.user, { ...args, elementId: stixCoreObject.id }),
     createdBy: (stixCoreObject, _, context) => createdByLoader.load(stixCoreObject.id, context, context.user),

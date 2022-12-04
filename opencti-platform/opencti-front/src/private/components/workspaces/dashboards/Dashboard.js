@@ -51,6 +51,8 @@ import StixCoreObjectsTimeline from '../../common/stix_core_objects/StixCoreObje
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
 import StixCoreRelationshipsMultiVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiVerticalBars';
+import StixCoreObjectsHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsHorizontalBars';
+import StixCoreRelationshipsMultiHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHorizontalBars';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -554,6 +556,16 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             variant="inLine"
           />
         );
+      case 'horizontal-bar':
+        return (
+          <StixCoreObjectsHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       default:
         return 'Not implemented yet';
     }
@@ -576,6 +588,17 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           />
         );
       case 'horizontal-bar':
+        if (widget.dataSelection.length > 1) {
+          return (
+            <StixCoreRelationshipsMultiHorizontalBars
+              startDate={startDate}
+              endDate={endDate}
+              dataSelection={widget.dataSelection}
+              parameters={widget.parameters}
+              variant="inLine"
+            />
+          );
+        }
         return (
           <StixCoreRelationshipsHorizontalBars
             startDate={startDate}

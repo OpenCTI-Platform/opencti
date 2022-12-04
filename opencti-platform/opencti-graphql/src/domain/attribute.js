@@ -6,8 +6,8 @@ export const getRuntimeAttributeValues = (context, user, opts = {}) => {
   return elAttributeValues(context, user, attributeName, opts);
 };
 
-export const getSchemaAttributeValues = (elementType) => {
-  return queryAttributes(elementType);
+export const getSchemaAttributeValues = (elementTypes) => {
+  return queryAttributes(elementTypes);
 };
 
 export const attributeEditField = async (context, { id, previous, current }) => {

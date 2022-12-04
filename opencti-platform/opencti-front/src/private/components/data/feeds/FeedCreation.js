@@ -552,7 +552,7 @@ const FeedCreation = (props) => {
                                             stixCyberObservablesLinesAttributesQuery
                                           }
                                           variables={{
-                                            elementType: selectedType,
+                                            elementType: [selectedType],
                                           }}
                                           render={({ props: resultProps }) => {
                                             if (

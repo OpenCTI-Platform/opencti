@@ -103,7 +103,7 @@ const ListFilters = ({
           availableFilterKeys,
         ).map((filterKey) => {
           let options = [];
-          if (['fromId', 'toId', 'objectContains'].includes(filterKey)) {
+          if (['elementId', 'fromId', 'toId', 'objectContains'].includes(filterKey)) {
             if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
               options = (entities[filterKey] || [])
                 .filter((n) => (searchScope[filterKey] || []).includes(n.type))
@@ -130,7 +130,7 @@ const ListFilters = ({
               isOptionEqualToValue={(option, value) => option.value === value}
               inputValue={inputValues[filterKey] || ''}
               groupBy={
-                ['fromId', 'toId', 'objectContains'].includes(filterKey)
+                ['elementId', 'fromId', 'toId', 'objectContains'].includes(filterKey)
                   ? (option) => option.type
                   : null
               }
@@ -144,7 +144,7 @@ const ListFilters = ({
                   onFocus={(event) => searchEntities(filterKey, event)}
                   InputProps={{
                     ...params.InputProps,
-                    endAdornment: ['fromId', 'toId', 'objectContains'].includes(filterKey)
+                    endAdornment: ['elementId', 'fromId', 'toId', 'objectContains'].includes(filterKey)
                       ? renderSearchScopeSelection(filterKey)
                       : params.InputProps.endAdornment,
                   }}
