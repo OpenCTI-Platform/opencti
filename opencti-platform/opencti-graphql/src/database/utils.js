@@ -133,11 +133,11 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment.parseZone(startDate);
   const endDateParsed = moment.parseZone(endDate ?? now());
   let dateFormat;
-
   switch (interval) {
     case 'year':
       dateFormat = 'YYYY';
       break;
+    case 'quarter':
     case 'month':
       dateFormat = 'YYYY-MM';
       break;

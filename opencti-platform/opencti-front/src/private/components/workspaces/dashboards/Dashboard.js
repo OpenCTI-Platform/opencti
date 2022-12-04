@@ -58,6 +58,12 @@ import StixCoreRelationshipsList from '../../common/stix_core_relationships/Stix
 import StixCoreRelationshipsNumber from '../../common/stix_core_relationships/StixCoreRelationshipsNumber';
 import StixCoreRelationshipsMultiLineChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiLineChart';
 import StixCoreRelationshipsMultiAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiAreaChart';
+import StixCoreRelationshipsTimeline from '../../common/stix_core_relationships/StixCoreRelationshipsTimeline';
+import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
+import StixCoreRelationshipsRadar from '../../common/stix_core_relationships/StixCoreRelationshipsRadar';
+import StixCoreObjectsMultiHeatMap from '../../common/stix_core_objects/StixCoreObjectsMultiHeatMap';
+import StixCoreRelationshipsMultiHeatMap from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHeatMap';
+import StixCoreObjectsTreeMap from '../../common/stix_core_objects/StixCoreObjectsTreeMap';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -210,6 +216,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     }
     return null;
   };
+  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
   const renderGlobalVisualization = (widget, config) => {
     const { relativeDate } = config;
     const { timeField = 'technical' } = config;
@@ -334,6 +341,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         return 'Go away!';
     }
   };
+  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
   const renderThreatVisualization = (widget, config) => {
     const { relativeDate } = config;
     const { timeField = 'technical' } = config;
@@ -418,6 +426,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         return 'Go away!';
     }
   };
+  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
   const renderEntityVisualization = (widget, config) => {
     const { relativeDate } = config;
     const { timeField = 'technical' } = config;
@@ -581,6 +590,26 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             variant="inLine"
           />
         );
+      case 'heatmap':
+        return (
+          <StixCoreObjectsMultiHeatMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'tree':
+        return (
+          <StixCoreObjectsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       default:
         return 'Not implemented yet';
     }
@@ -642,6 +671,26 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             variant="inLine"
           />
         );
+      case 'timeline':
+        return (
+          <StixCoreRelationshipsTimeline
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'donut':
+        return (
+          <StixCoreRelationshipsDonut
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       case 'horizontal-bar':
         if (widget.dataSelection.length > 1) {
           return (
@@ -656,6 +705,26 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         }
         return (
           <StixCoreRelationshipsHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'radar':
+        return (
+          <StixCoreRelationshipsRadar
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'heatmap':
+        return (
+          <StixCoreRelationshipsMultiHeatMap
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}

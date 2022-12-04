@@ -235,16 +235,16 @@ const visualizationTypes = [
   {
     key: 'heatmap',
     name: 'Heatmap',
-    dataSelectionLimit: 1,
+    dataSelectionLimit: 5,
     category: 'timeseries',
-    availableParameters: [],
+    availableParameters: ['stacked', 'legend'],
   },
   {
     key: 'tree',
     name: 'Tree',
     dataSelectionLimit: 1,
-    category: 'timeseries',
-    availableParameters: [],
+    category: 'distribution',
+    availableParameters: ['attribute', 'distributed'],
   },
   {
     key: 'map',
@@ -971,6 +971,17 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
               label={t('Stacked')}
             />
           )}
+          {getCurrentAvailableParameters().includes('distributed') && (
+            <FormControlLabel
+              control={
+                <Switch
+                  onChange={() => handleToggleParameter('distributed')}
+                  checked={parameters.distributed}
+                />
+              }
+              label={t('Distributed')}
+            />
+          )}
           {getCurrentAvailableParameters().includes('legend') && (
             <FormControlLabel
               control={
@@ -1029,7 +1040,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         onClose={handleClose}
         fullWidth={true}
         maxWidth="md"
-        className='noDrag'
+        className="noDrag"
       >
         <DialogTitle>
           <Stepper linear={false} activeStep={stepIndex}>

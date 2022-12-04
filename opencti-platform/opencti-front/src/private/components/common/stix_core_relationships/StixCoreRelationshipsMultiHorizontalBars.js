@@ -12,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -657,7 +658,13 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
         || null;
       dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
       finalFilters = finalFilters.filter(
-        (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
+        (n) => ![
+          'relationship_type',
+          'fromId',
+          'toId',
+          'fromTypes',
+          'toTypes',
+        ].includes(n.key),
       );
       if (dataSelection.length > 1) {
         // eslint-disable-next-line prefer-destructuring
@@ -769,18 +776,18 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
             const categories = props.stixCoreRelationshipsDistribution.map(
-              (n) => n.entity.name,
+              (n) => defaultValue(n.entity),
             );
             const entitiesMapping = {};
             for (const distrib of props.stixCoreRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[key]) {
                 entitiesMapping[
                   finalSubDistributionField === 'internal_id'
-                    ? subDistrib.entity.name
+                    ? defaultValue(subDistrib.entity)
                     : subDistrib.label
                 ] = (entitiesMapping[
                   finalSubDistributionField === 'internal_id'
-                    ? subDistrib.entity.name
+                    ? defaultValue(subDistrib.entity)
                     : subDistrib.label
                 ] || 0) + subDistrib.value;
               }
@@ -795,7 +802,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                 const entityData = R.head(
                   distrib.entity[key].filter(
                     (n) => (finalSubDistributionField === 'internal_id'
-                      ? n.entity.name
+                      ? defaultValue(n.entity)
                       : n.label) === sortedEntity[0],
                   ),
                 );
@@ -803,20 +810,23 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                 if (entityData) {
                   value = entityData.value;
                 }
-                if (categoriesValues[distrib.entity.name]) {
-                  categoriesValues[distrib.entity.name].push(value);
+                if (categoriesValues[defaultValue(distrib.entity)]) {
+                  categoriesValues[defaultValue(distrib.entity)].push(value);
                 } else {
-                  categoriesValues[distrib.entity.name] = [value];
+                  categoriesValues[defaultValue(distrib.entity)] = [value];
                 }
               }
-              const sum = (categoriesValues[distrib.entity.name] || []).reduce(
-                (partialSum, a) => partialSum + a,
-                0,
-              );
-              if (categoriesValues[distrib.entity.name]) {
-                categoriesValues[distrib.entity.name].push(distrib.value - sum);
+              const sum = (
+                categoriesValues[defaultValue(distrib.entity)] || []
+              ).reduce((partialSum, a) => partialSum + a, 0);
+              if (categoriesValues[defaultValue(distrib.entity)]) {
+                categoriesValues[defaultValue(distrib.entity)].push(
+                  distrib.value - sum,
+                );
               } else {
-                categoriesValues[distrib.entity.name] = [distrib.value - sum];
+                categoriesValues[defaultValue(distrib.entity)] = [
+                  distrib.value - sum,
+                ];
               }
             }
             sortedEntityMapping.push(['Others', 0]);

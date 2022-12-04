@@ -234,7 +234,7 @@ class WorkspaceHeader extends Component {
                 <InputLabel id="relative">{t('Relative time')}</InputLabel>
                 <Select
                   labelId="relative"
-                  value={relativeDate ? '' : relativeDate}
+                  value={relativeDate ?? relativeDate}
                   onChange={handleDateChange.bind(this, 'relativeDate')}
                   label={t('Relative time')}
                 >

@@ -10,8 +10,7 @@ import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { verticalBarsChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
+import { heatMapOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
 
 const useStyles = makeStyles(() => ({
@@ -29,8 +28,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
-  query StixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery(
+const stixCoreRelationshipsMultiHeatMapTimeSeriesQuery = graphql`
+  query StixCoreRelationshipsMultiHeatMapTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
@@ -52,7 +51,7 @@ const stixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsMultiVerticalBars = ({
+const StixCoreRelationshipsMultiHeatMap = ({
   variant,
   height,
   startDate,
@@ -96,7 +95,7 @@ const StixCoreRelationshipsMultiVerticalBars = ({
     });
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery}
+        query={stixCoreRelationshipsMultiHeatMapTimeSeriesQuery}
         variables={{
           operation: 'count',
           startDate: startDate ?? monthsAgo(12),
@@ -108,12 +107,12 @@ const StixCoreRelationshipsMultiVerticalBars = ({
           if (props && props.stixCoreRelationshipsMultiTimeSeries) {
             return (
               <Chart
-                options={verticalBarsChartOptions(
+                options={heatMapOptions(
                   theme,
-                  fsd,
-                  simpleNumberFormat,
-                  false,
                   true,
+                  fsd,
+                  undefined,
+                  undefined,
                   parameters.stacked,
                   parameters.legend,
                 )}
@@ -126,7 +125,7 @@ const StixCoreRelationshipsMultiVerticalBars = ({
                     }),
                   ),
                 }))}
-                type="bar"
+                type="area"
                 width="100%"
                 height="100%"
               />
@@ -186,4 +185,4 @@ const StixCoreRelationshipsMultiVerticalBars = ({
   );
 };
 
-export default StixCoreRelationshipsMultiVerticalBars;
+export default StixCoreRelationshipsMultiHeatMap;

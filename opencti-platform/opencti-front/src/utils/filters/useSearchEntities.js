@@ -976,6 +976,11 @@ const useSearchEntities = ({
                   value: n.node.label,
                   type: n.node.label,
                 })),
+                R.append({
+                  label: t('relationship_stix-sighting-relationship'),
+                  value: 'stix-sighting-relationship',
+                  type: 'stix-sighting-relationship',
+                }),
                 R.sortWith([R.ascend(R.prop('label'))]),
               )(data);
               unionSetEntities('relationship_type', relationshipsTypes);

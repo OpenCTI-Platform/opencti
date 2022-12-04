@@ -1273,14 +1273,19 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
     case 'year':
       dateFormat = 'yyyy';
       break;
+    case 'quarter':
     case 'month':
       dateFormat = 'yyyy-MM';
       break;
+    case 'week':
     case 'day':
       dateFormat = 'yyyy-MM-dd';
       break;
+    case 'hour':
+      dateFormat = 'yyyy-MM-dd hh:ii:ss';
+      break;
     default:
-      throw FunctionalError('Unsupported interval, please choose between year, month or day', interval);
+      throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', interval);
   }
   body.aggs = {
     count_over_time: {

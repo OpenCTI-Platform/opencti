@@ -9,7 +9,7 @@ import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { donutChartOptions } from '../../../../utils/Charts';
+import { radarChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 
@@ -22,8 +22,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreRelationshipsDonutsDistributionQuery = graphql`
-  query StixCoreRelationshipsDonutDistributionQuery(
+const stixCoreRelationshipsRadarsDistributionQuery = graphql`
+  query StixCoreRelationshipsRadarDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -175,7 +175,7 @@ const stixCoreRelationshipsDonutsDistributionQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsDonut = ({
+const StixCoreRelationshipsRadar = ({
   title,
   variant,
   height,
@@ -239,7 +239,7 @@ const StixCoreRelationshipsDonut = ({
     };
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsDonutsDistributionQuery}
+        query={stixCoreRelationshipsRadarsDistributionQuery}
         variables={variables}
         render={({ props }) => {
           if (
@@ -264,13 +264,19 @@ const StixCoreRelationshipsDonut = ({
                 props.stixCoreRelationshipsDistribution,
               );
             }
-            const chartData = data.map((n) => n.value);
+            const valueData = data.map((n) => n.value);
+            const chartData = [
+              {
+                name: selection.label || t('Number of relationships'),
+                data: valueData,
+              },
+            ];
             const labels = data.map((n) => n.label);
             return (
               <Chart
-                options={donutChartOptions(theme, labels)}
+                options={radarChartOptions(theme, labels)}
                 series={chartData}
-                type="donut"
+                type="radar"
                 width="100%"
                 height="100%"
               />
@@ -330,4 +336,4 @@ const StixCoreRelationshipsDonut = ({
   );
 };
 
-export default StixCoreRelationshipsDonut;
+export default StixCoreRelationshipsRadar;

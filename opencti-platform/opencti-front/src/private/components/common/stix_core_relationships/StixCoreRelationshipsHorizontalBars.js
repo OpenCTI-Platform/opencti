@@ -13,6 +13,7 @@ import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -213,7 +214,13 @@ const StixCoreRelationshipsHorizontalBars = ({
         || null;
       dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
       finalFilters = finalFilters.filter(
-        (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
+        (n) => ![
+          'relationship_type',
+          'fromId',
+          'toId',
+          'fromTypes',
+          'toTypes',
+        ].includes(n.key),
       );
     }
     const finalField = selection.attribute || field || 'entity_type';
@@ -242,9 +249,12 @@ const StixCoreRelationshipsHorizontalBars = ({
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
             const data = props.stixCoreRelationshipsDistribution.map((n) => ({
-              x: finalField === 'internal_id' ? n.entity.name : n.label,
+              x:
+                finalField === 'internal_id' ? defaultValue(n.entity) : n.label,
               y: n.value,
-              fillColor: itemColor(finalField === 'internal_id' ? n.entity.entity_type : n.label),
+              fillColor: itemColor(
+                finalField === 'internal_id' ? n.entity.entity_type : n.label,
+              ),
             }));
             const chartData = [{ name: t('Number of relationships'), data }];
             return (
@@ -302,7 +312,7 @@ const StixCoreRelationshipsHorizontalBars = ({
           margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
         }}
       >
-        {parameters.title || title || t('Relationships DISTRIBUTION')}
+        {parameters.title || title || t('Relationships distribution')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

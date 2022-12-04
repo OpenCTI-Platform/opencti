@@ -73,7 +73,13 @@ const StixCoreRelationshipsMultiAreaChart = ({
       const dataSelectionFromTypes = R.head(filters.filter((n) => n.key === 'fromTypes'))?.values || null;
       const dataSelectionToTypes = R.head(filters.filter((n) => n.key === 'toTypes'))?.values || null;
       const finalFilters = filters.filter(
-        (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(n.key),
+        (n) => ![
+          'relationship_type',
+          'fromId',
+          'toId',
+          'fromTypes',
+          'toTypes',
+        ].includes(n.key),
       );
       return {
         fromId: dataSelectionFromId,

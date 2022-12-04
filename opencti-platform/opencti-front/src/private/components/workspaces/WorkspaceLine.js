@@ -98,7 +98,7 @@ const WorkspaceLineComponent = ({ dataColumns, node }) => {
         }
       />
       <ListItemSecondaryAction>
-        <WorkspacePopover id={node.id} />
+        <WorkspacePopover id={node.id} type={node.type} />
       </ListItemSecondaryAction>
     </ListItem>
   );
