@@ -400,7 +400,7 @@
     "Storage Array"
     storage_array
     "Network Switch"
-    switch
+    network_switch
     "VoIP Device"
     voip_device
     "VoIP Handset"

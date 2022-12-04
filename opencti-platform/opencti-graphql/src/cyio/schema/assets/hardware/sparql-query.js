@@ -102,6 +102,7 @@ const hardwareAssetReducer = (item) => {
     ...(item.mac_address && {mac_addr_iri: item.mac_address}),
     ...(item.ports && {ports_iri: item.ports}),
     ...(item.connected_to_network && {conn_network_iri: item.connected_to_network}),
+    ...(item.related_risks && {related_risks: item.related_risks}),
   }
 }
 
@@ -173,7 +174,22 @@ export const selectHardwareByIriQuery = (iri, select) => {
     select = select.filter(i => i !== 'ipv6_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
+  
+  // build list of selection variables and predicates
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
+
+  // define related risks clause to restrict to only Risk since it available in other objects
+  let relatedRiskClause = '';
+  if (select.includes('related_risks')) {
+    relatedRiskClause = `
+    OPTIONAL {
+      SELECT DISTINCT ?related_risks
+      WHERE {
+        FILTER regex(str(?related_risks), "#Risk", "i")
+      }
+    }`
+  }
+  
   return `
   SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
@@ -181,6 +197,7 @@ export const selectHardwareByIriQuery = (iri, select) => {
     BIND(${iri} AS ?iri)
     ?iri a <http://scap.nist.gov/ns/asset-identification#Hardware> .
     ${predicates}
+    ${relatedRiskClause}
     {
       SELECT DISTINCT ?iri
       WHERE {
@@ -213,13 +230,28 @@ export const selectAllHardware = (select, args) => {
     }
   }
 
+  // define related risks clause to restrict to only Risk since it available in other objects
+  let relatedRiskClause = '';
+  if (select.includes('related_risks')) {
+    relatedRiskClause = `
+    OPTIONAL {
+      SELECT DISTINCT ?related_risks
+      WHERE {
+        FILTER regex(str(?related_risks), "#Risk", "i")
+      }
+    }`
+  }  
+
+  // Build select clause and predicates
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Hardware> . 
     ${predicates}
+    ${relatedRiskClause}
     {
       SELECT DISTINCT ?iri
       WHERE {
@@ -294,54 +326,58 @@ export const detachFromHardwareQuery = (id, field, itemIris) => {
 
 // DeviceMap that maps asset_type values to class
 const deviceMap = {
-  "account": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Account"
-  },
+  // "account": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Account"
+  // },
   "appliance": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Appliance",
     parent: "network-device",
   },
-  "application-software": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ApplicationSoftware",
-    parent: "software",
-  },
-  "circuit": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Circuit",
-  },
-  "computer-account": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ComputerAccount",
-    parent: "account"
-  },
+  // "application-software": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ApplicationSoftware",
+  //   parent: "software",
+  // },
+  // "circuit": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Circuit",
+  // },
+  // "computer-account": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ComputerAccount",
+  //   parent: "account"
+  // },
   "computing-device": {
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#ComputingDevice",
     parent: "hardware",
   },
-  "database": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Database",
-  },
-  "directory-server": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#DirectoryServer",
-    parent: "system",
-  },
-  "dns-server": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#DnsServer",
-    parent: "system",
-  },
-  "documentary-asset": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#DocumentaryAsset",
-  },
-  "email-server": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#EmailServer",
-    parent: "system",
+  // "database": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Database",
+  // },
+  // "directory-server": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#DirectoryServer",
+  //   parent: "system",
+  // },
+  // "dns-server": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#DnsServer",
+  //   parent: "system",
+  // },
+  // "documentary-asset": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#DocumentaryAsset",
+  // },
+  // "email-server": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#EmailServer",
+  //   parent: "system",
+  // },
+  "embedded": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Embedded",
+    parent: "computing-device",
   },
   "firewall": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Firewall",
     parent: "network-device",
   },
-  "guidance": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Guidance",
-    parent: "documentary-asset",
-  },
+  // "guidance": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Guidance",
+  //   parent: "documentary-asset",
+  // },
   "hardware": {
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Hardware",
   },
@@ -353,37 +389,41 @@ const deviceMap = {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#MobileDevice",
     parent: "network-device",
   },
-  "network": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Network",
-  },
+  // "network": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Network",
+  // },
   "network-device": {
-    iriTemplate:"http://scap.nist.gov/ns/asset-identification#ComputingDevice",
+    iriTemplate:"http://scap.nist.gov/ns/asset-identification#NetworkDevice",
     parent: "hardware",
   },
   "network-switch": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#NetworkSwitch",
     parent: "network-device",
   },
-  "operating-system": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem",
-    parent: "software",
+  // "operating-system": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem",
+  //   parent: "software",
+  // },
+  "pbx": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#PBX",
+    parent: "hardware",
   },
   "physical-device": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#PhysicalDevice",
     parent: "hardware",
   },
-  "plan": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Plan",
-    parent: "documentary-asset",
-  },
-  "policy": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Policy",
-    parent: "policy",
-  },
-  "procedure": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Procedure",
-    parent: "procedure"
-  },
+  // "plan": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Plan",
+  //   parent: "documentary-asset",
+  // },
+  // "policy": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Policy",
+  //   parent: "policy",
+  // },
+  // "procedure": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Procedure",
+  //   parent: "procedure"
+  // },
   "router": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Router",
     parent: "network-device",
@@ -392,31 +432,31 @@ const deviceMap = {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Server",
     parent: "computing-device",
   },
-  "service": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Service",
-  },
-  "software": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software",
-  },
-  "standard": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Standard",
-    parent: "documentary-asset",
-  },
+  // "service": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Service",
+  // },
+  // "software": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software",
+  // },
+  // "standard": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Standard",
+  //   parent: "documentary-asset",
+  // },
   "storage-array": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#StorageArray",
     parent: "network-device",
   },
-  "system": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#System",
-  },
-  "user-account": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#UserAccount",
-    parent: "computer-account",
-  },
-  "validation": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Validation",
-    parent: "documentary-asset",
-  },
+  // "system": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#System",
+  // },
+  // "user-account": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#UserAccount",
+  //   parent: "computer-account",
+  // },
+  // "validation": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Validation",
+  //   parent: "documentary-asset",
+  // },
   "voip-device": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#VoIPDevice",
     parent: "network-device",
@@ -429,13 +469,13 @@ const deviceMap = {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#VoIPRouter",
     parent: "voip-device",      
   },
-  "web-server": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#WebServer",
-    parent: "system",
-  },
-  "web-site": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Website",
-  },
+  // "web-server": {
+  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#WebServer",
+  //   parent: "system",
+  // },
+  // "web-site": {
+  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Website",
+  // },
   "workstation": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Workstation",
     parent: "computing-device",
@@ -703,6 +743,11 @@ export const hardwarePredicateMap = {
     predicate: "<http://scap.nist.gov/ns/asset-identification#baseline_configuration_name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "baseline_configuration_name")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  }
+  },
+  related_risks: {
+    predicate: "^<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/^<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/^<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "related_risks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
 }
 

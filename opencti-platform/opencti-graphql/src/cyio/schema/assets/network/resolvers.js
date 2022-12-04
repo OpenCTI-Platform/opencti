@@ -6,11 +6,16 @@ import {
   getReducer,
   insertQuery,
   deleteNetworkAssetQuery,
+  insertNetworkQuery,
   selectAllNetworks,
   selectNetworkQuery,
   detachFromNetworkQuery,
   networkPredicateMap,
 } from './sparql-query.js';
+import {
+  selectHardwareByIriQuery,
+  getReducer as getHardwareReducer,
+} from '../hardware/sparql-query.js';
 import {
   deleteIpAddressRange,
   deleteIpQuery,
@@ -25,6 +30,10 @@ import {
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
 } from '../../global/resolvers/sparql-query.js';
+import {
+  selectRiskByIriQuery,
+  getReducer as getAssessmentReducer,
+} from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
 
 const networkResolvers = {
   Query: {
@@ -52,7 +61,7 @@ const networkResolvers = {
           singularizeSchema,
         });
 
-      if (response === undefined) return null;
+      if (response === undefined || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -556,49 +565,6 @@ const networkResolvers = {
   },
   // Map enum GraphQL values to data model required values
   NetworkAsset: {
-    network_address_range: async (parent, _, {dbName, dataSources},) => {
-      let item = parent.netaddr_range_iri;
-      if (item === undefined) return null;
-      let sparqlQuery = selectIPAddressRange(`<${item}>`);
-      let reducer = getReducer('NETADDR-RANGE');
-      const response = await dataSources.Stardog.queryById({
-        dbName,
-        sparqlQuery,
-        queryId: "Select IP Range for Network Asset",
-        singularizeSchema
-      });
-      if (response === undefined) return null;
-
-      if (Array.isArray(response) && response.length > 0) {
-        let results = reducer(response[0])
-        if (results.hasOwnProperty('start_addr')) {
-          return {
-            id: results.id,
-            starting_ip_address: {
-              id: generateId({ "value": results.start_addr }, DARKLIGHT_NS),
-              entity_type: (results.start_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
-              ip_address_value: results.start_addr
-            },
-            ending_ip_address: {
-              id: generateId({ "value": results.ending_addr }, DARKLIGHT_NS),
-              entity_type: (results.ending_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
-              ip_address_value: results.ending_addr
-            }
-          }
-        }
-        if (results.hasOwnProperty('start_addr_iri')) {
-          return results;
-        }
-      }
-
-      // Handle reporting Stardog Error
-      if (typeof (response) === 'object' && 'body' in response) {
-        throw new UserInputError(response.statusText, {
-          error_details: (response.body.message ? response.body.message : response.body),
-          error_code: (response.body.code ? response.body.code : 'N/A')
-        });
-      }
-    },
     labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.labels_iri;
       const results = [];
@@ -691,6 +657,131 @@ const networkResolvers = {
               dbName,
               sparqlQuery,
               queryId: "Select Note",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+    network_address_range: async (parent, _, {dbName, dataSources},) => {
+      let item = parent.netaddr_range_iri;
+      if (item === undefined) return null;
+      let sparqlQuery = selectIPAddressRange(`<${item}>`);
+      let reducer = getReducer('NETADDR-RANGE');
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select IP Range for Network Asset",
+        singularizeSchema
+      });
+      if (response === undefined) return null;
+
+      if (Array.isArray(response) && response.length > 0) {
+        let results = reducer(response[0])
+        if (results.hasOwnProperty('start_addr')) {
+          return {
+            id: results.id,
+            starting_ip_address: {
+              id: generateId({ "value": results.start_addr }, DARKLIGHT_NS),
+              entity_type: (results.start_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+              ip_address_value: results.start_addr
+            },
+            ending_ip_address: {
+              id: generateId({ "value": results.ending_addr }, DARKLIGHT_NS),
+              entity_type: (results.ending_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+              ip_address_value: results.ending_addr
+            }
+          }
+        }
+        if (results.hasOwnProperty('start_addr_iri')) {
+          return results;
+        }
+      }
+
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+    },
+    connected_assets: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.connected_assets === undefined ) return [];
+      let iriArray = parent.connected_assets;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getHardwareReducer("HARDWARE-DEVICE");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Hardware')) continue;
+          let select = selectMap.getNode("connected_assets");
+          const sparqlQuery = selectHardwareByIriQuery(iri, select);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Hardware",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+    related_risks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.related_risks === undefined) return [];
+      let iriArray = parent.related_risks;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getAssessmentReducer("RISK");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Risk')) continue;
+          let select = selectMap.getNode("related_risks");
+          const sparqlQuery = selectRiskByIriQuery(iri, select);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Risk",
               singularizeSchema
             });
           } catch (e) {
