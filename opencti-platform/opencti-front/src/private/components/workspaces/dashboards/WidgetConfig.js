@@ -1029,6 +1029,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         onClose={handleClose}
         fullWidth={true}
         maxWidth="md"
+        className='noDrag'
       >
         <DialogTitle>
           <Stepper linear={false} activeStep={stepIndex}>

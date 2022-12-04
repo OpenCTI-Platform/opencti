@@ -397,7 +397,7 @@ export const horizontalBarsChartOptions = (
   },
 });
 
-export const radarChartOptions = (theme, labels, chartColors = []) => ({
+export const radarChartOptions = (theme, labels, chartColors = [], legend = false) => ({
   chart: {
     type: 'radar',
     background: 'transparent',
@@ -419,7 +419,7 @@ export const radarChartOptions = (theme, labels, chartColors = []) => ({
     },
   },
   legend: {
-    show: false,
+    show: legend,
     itemMargin: {
       horizontal: 5,
       vertical: 20,

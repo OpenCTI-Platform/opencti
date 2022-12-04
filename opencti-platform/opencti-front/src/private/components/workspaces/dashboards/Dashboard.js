@@ -53,6 +53,11 @@ import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relation
 import StixCoreRelationshipsMultiVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiVerticalBars';
 import StixCoreObjectsHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsHorizontalBars';
 import StixCoreRelationshipsMultiHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHorizontalBars';
+import StixCoreObjectsRadar from '../../common/stix_core_objects/StixCoreObjectsRadar';
+import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
+import StixCoreRelationshipsNumber from '../../common/stix_core_relationships/StixCoreRelationshipsNumber';
+import StixCoreRelationshipsMultiLineChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiLineChart';
+import StixCoreRelationshipsMultiAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiAreaChart';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -566,6 +571,16 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             variant="inLine"
           />
         );
+      case 'radar':
+        return (
+          <StixCoreObjectsRadar
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       default:
         return 'Not implemented yet';
     }
@@ -577,9 +592,49 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       : config.startDate;
     const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.type) {
+      case 'number':
+        return (
+          <StixCoreRelationshipsNumber
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <StixCoreRelationshipsList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       case 'vertical-bar':
         return (
           <StixCoreRelationshipsMultiVerticalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'line':
+        return (
+          <StixCoreRelationshipsMultiLineChart
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <StixCoreRelationshipsMultiAreaChart
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -696,6 +751,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           isDraggable={!noToolbar}
           isResizable={!noToolbar}
           onLayoutChange={noToolbar ? () => true : onLayoutChange}
+          draggableCancel=".noDrag"
         >
           {R.values(manifest.widgets).map((widget) => (
             <Paper

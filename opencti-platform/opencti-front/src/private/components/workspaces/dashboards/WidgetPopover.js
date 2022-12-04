@@ -46,7 +46,11 @@ const StixCyberObservablePopover = ({ onUpdate, widget, onDelete }) => {
   return (
     <div className={classes.container}>
       <IconButton
-        onClick={(event) => setAnchorEl(event.currentTarget)}
+        onClick={(event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          setAnchorEl(event.currentTarget);
+        }}
         aria-haspopup="true"
         size="small"
       >
@@ -57,6 +61,7 @@ const StixCyberObservablePopover = ({ onUpdate, widget, onDelete }) => {
         open={Boolean(anchorEl)}
         keepMounted={true}
         onClose={() => setAnchorEl(null)}
+        className="noDrag"
       >
         <Security needs={[EXPLORE_EXUPDATE]}>
           <WidgetConfig
@@ -73,6 +78,7 @@ const StixCyberObservablePopover = ({ onUpdate, widget, onDelete }) => {
         keepMounted={true}
         TransitionComponent={Transition}
         onClose={() => setDisplayDelete(false)}
+        className="noDrag"
       >
         <DialogContent>
           <DialogContentText>

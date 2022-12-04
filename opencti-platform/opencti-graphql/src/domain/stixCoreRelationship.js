@@ -22,7 +22,6 @@ import {
   stixCoreRelationshipOptions
 } from '../schema/stixCoreRelationship';
 import {
-  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_IDENTITY

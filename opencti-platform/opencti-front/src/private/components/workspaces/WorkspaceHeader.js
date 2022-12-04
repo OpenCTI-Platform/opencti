@@ -171,7 +171,7 @@ class WorkspaceHeader extends Component {
                   <InputLabel id="relative">{t('Relative time')}</InputLabel>
                   <Select
                     labelId="relative"
-                    value={relativeDate === null ? '' : relativeDate}
+                    value={relativeDate ?? ''}
                     onChange={handleDateChange.bind(this, 'relativeDate')}
                     disabled={true}
                   >
@@ -230,16 +230,13 @@ class WorkspaceHeader extends Component {
                 float: 'left',
               }}
             >
-              <FormControl
-                variant="outlined"
-                size="small"
-                style={{ width: 194, marginRight: 20 }}
-              >
+              <FormControl size="small" style={{ width: 194, marginRight: 20 }}>
                 <InputLabel id="relative">{t('Relative time')}</InputLabel>
                 <Select
                   labelId="relative"
-                  value={relativeDate === null ? '' : relativeDate}
+                  value={relativeDate ? '' : relativeDate}
                   onChange={handleDateChange.bind(this, 'relativeDate')}
+                  label={t('Relative time')}
                 >
                   <MenuItem value="none">{t('None')}</MenuItem>
                   <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
@@ -257,7 +254,7 @@ class WorkspaceHeader extends Component {
                 label={t('Start date')}
                 clearable={true}
                 disableFuture={true}
-                disabled={relativeDate !== null}
+                disabled={!!relativeDate}
                 onChange={handleDateChange.bind(this, 'startDate')}
                 renderInput={(params) => (
                   <MUITextField
@@ -273,7 +270,7 @@ class WorkspaceHeader extends Component {
                 autoOk={true}
                 label={t('End date')}
                 clearable={true}
-                disabled={relativeDate !== null}
+                disabled={!!relativeDate}
                 disableFuture={true}
                 onChange={handleDateChange.bind(this, 'endDate')}
                 renderInput={(params) => (
