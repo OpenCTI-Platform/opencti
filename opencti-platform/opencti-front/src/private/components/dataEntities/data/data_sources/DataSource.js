@@ -14,7 +14,6 @@ import DataSourcesPopover from './DataSourcesPopover';
 import DataSourcesDeletion from './DataSourcesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
-import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import DataSourceEditionContainer from './DataSourceEditionContainer';
 import DataSourcesCreation from './DataSourcesCreation';
 
@@ -64,7 +63,6 @@ class DataSourceComponent extends Component {
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleDataSourceCreation.bind(this)}
           />
-          <TopBarBreadcrumbs />
           <Grid
             container={true}
             spacing={3}
