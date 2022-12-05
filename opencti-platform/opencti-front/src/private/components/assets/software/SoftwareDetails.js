@@ -63,7 +63,7 @@ const styles = (theme) => ({
 class SoftwareDetailsComponent extends Component {
   render() {
     const {
-       t, classes, software,fldt
+       t, classes, software,fldt, history
     } = this.props;
     return (
       <div style={{ height: '100%' }}>

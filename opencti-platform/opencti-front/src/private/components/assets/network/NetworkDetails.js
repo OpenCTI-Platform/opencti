@@ -71,7 +71,7 @@ const styles = (theme) => ({
 
 class NetworkDetailsComponent extends Component {
   render() {
-    const { t, classes, network,fldt } = this.props;
+    const { t, classes, network,fldt, history } = this.props;
     const ntadr = network.network_address_range;
     const startingAddress = ntadr?.starting_ip_address && ntadr.starting_ip_address?.ip_address_value;
     const endingAddress = ntadr?.ending_ip_address && ntadr.ending_ip_address?.ip_address_value;

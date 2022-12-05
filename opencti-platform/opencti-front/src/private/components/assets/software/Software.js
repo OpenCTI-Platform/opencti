@@ -77,7 +77,7 @@ class SoftwareComponent extends Component {
                 <CyioDomainObjectAssetOverview refreshQuery={refreshQuery} cyioDomainObject={software} />
               </Grid>
               <Grid item={true} xs={6}>
-                <SoftwareDetails software={software}/>
+                <SoftwareDetails software={software} history={history}/>
               </Grid>
             </Grid>
             <Grid
