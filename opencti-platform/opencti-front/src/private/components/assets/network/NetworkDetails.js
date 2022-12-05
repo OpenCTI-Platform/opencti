@@ -11,6 +11,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Switch from '@material-ui/core/Switch';
+import Link from '@material-ui/core/Link';
+import LaunchIcon from '@material-ui/icons/Launch';
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
@@ -31,6 +33,40 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
+  scrollBg: {
+    background: theme.palette.header.background,
+    width: '100%',
+    color: 'white',
+    padding: '10px 5px 10px 15px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  scrollDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '78px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
+  scrollObj: {
+    color: theme.palette.header.text,
+    fontFamily: 'sans-serif',
+    padding: '0px',
+    textAlign: 'left',
+  },
+  link: {
+    textAlign: 'left',
+    fontSize: '1rem',
+    display: 'flex',
+    minWidth: '50px',
+    width: '100%',
+  },
+  launchIcon: {
+    marginRight: '5%',
+  },
+  linkTitle: {
+    color: '#fff',
+  }
 });
 
 class NetworkDetailsComponent extends Component {
@@ -173,6 +209,64 @@ class NetworkDetailsComponent extends Component {
                 {network.last_scanned && fldt(network.last_scanned)}
               </Grid>             
             </Grid>
+            <Grid container spacing={3}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Connected Devices')}
+                </Typography>
+                <div className="clearfix" />
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {network.connected_assets && network.connected_assets.map((asset, key) => (
+                        <Link
+                          key={key}
+                          component="button"
+                          variant="body2"
+                          className={classes.link}
+                          onClick={() => (history.push(`/defender HQ/assets/devices/${asset.id}`))}
+                        >
+                          <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(asset.name)}</div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Grid>       
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20  }}
+                >
+                  {t('Related Risks')}
+                </Typography>
+                <div className="clearfix" />
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {network.related_risks && network.related_risks.map((risk, key) => (
+                      <Link
+                        key={key}
+                        component="button"
+                        variant="body2"
+                        className={classes.link}
+                        onClick={() => (history.push(`/activities/risk_assessment/risks/${risk.id}`))}
+                      >
+                        <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(risk.name)}</div>
+                      </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Grid>             
+            </Grid>
           </Grid>
         </Paper>
       </div>
@@ -197,6 +291,17 @@ const NetworkDetails = createFragmentContainer(
         is_scanned
         last_scanned
         implementation_point
+        connected_assets {
+          id
+          entity_type
+          vendor_name
+          name
+          version
+        }
+        related_risks {
+          id
+          name
+        }
         network_address_range {
           ending_ip_address{
             ... on IpV4Address {
