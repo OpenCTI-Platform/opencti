@@ -18,7 +18,8 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import { Close, CheckCircleOutline } from '@material-ui/icons';
+import { Close } from '@material-ui/icons';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import inject18n from '../../../../components/i18n';
 import { adaptFieldValue } from '../../../../utils/String';
 import { dateFormat, parse } from '../../../../utils/Time';
@@ -35,10 +36,10 @@ const styles = (theme) => ({
     margin: 0,
   },
   header: {
-    margin: '-25px -24px 20px -24px',
-    padding: '25px 30px 50px 50px',
-    height: '64px',
-    backgroundColor: '#1F2842',
+    margin: '0 -1.5rem 1rem -1.5rem',
+    padding: '1rem 1.5rem',
+    height: '70px',
+    backgroundColor: theme.palette.background.paper,
   },
   gridContainer: {
     marginBottom: 20,
@@ -48,7 +49,6 @@ const styles = (theme) => ({
     minWidth: '0px',
     marginRight: 15,
     marginTop: -35,
-    padding: '8px 16px 8px 8px',
   },
   title: {
     float: 'left',
@@ -301,9 +301,7 @@ class NetworkEditionContainer extends Component {
                   <Tooltip title={t('Cancel')}>
                     <Button
                       variant="outlined"
-                      size="small"
                       startIcon={<Close />}
-                      color='primary'
                       onClick={this.handleOpenCancelButton.bind(this)}
                       className={classes.iconButton}
                     >
@@ -314,7 +312,7 @@ class NetworkEditionContainer extends Component {
                     <Button
                       variant="contained"
                       color="primary"
-                      startIcon={<CheckCircleOutline />}
+                      startIcon={<CheckCircleIcon />}
                       onClick={() => this.setState({ totalInitial: initialValues }, submitForm)}
                       disabled={isSubmitting}
                       classes={{ root: classes.iconButton }}
@@ -407,7 +405,7 @@ class NetworkEditionContainer extends Component {
             </Button>
             <Button
               onClick={() => this.props.history.goBack()}
-              color="primary"
+              color="secondary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
               size="small"

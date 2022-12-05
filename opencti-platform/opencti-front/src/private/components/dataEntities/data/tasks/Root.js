@@ -10,7 +10,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
-import TopBar from '../../../nav/TopBar';
 import EntityTask from './EntityTask';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -70,7 +69,6 @@ class RootTask extends Component {
     const link = `/data/entities/tasks/${taskId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/data/entities/tasks/:taskId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

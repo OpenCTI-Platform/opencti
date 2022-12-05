@@ -16,7 +16,6 @@ import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainO
 import RiskTrackingLines, {
   RiskTrackingLinesQuery,
 } from './RiskTrackingLines';
-import TopMenuRisk from '../../nav/TopMenuRisk';
 import { QueryRenderer } from '../../../../relay/environment';
 import { toastGenericError } from '../../../../utils/bakedToast';
 
@@ -47,7 +46,7 @@ const styles = (theme) => ({
 class RiskTracking extends Component {
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/activities/risk assessment/risks',
+      pathname: '/activities/risk_assessment/risks',
       openNewCreation: true,
     });
   }
@@ -68,12 +67,11 @@ class RiskTracking extends Component {
           history={history}
           cyioDomainObject={risk}
           PopoverComponent={<RiskPopover />}
-          goBack='/activities/risk assessment/risks'
+          goBack='/activities/risk_assessment/risks'
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
         // OperationsComponent={<RiskDeletion />}
         // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
-        <TopMenuRisk risk={risk.name} />
         <QueryRenderer
           query={RiskTrackingLinesQuery}
           variables={{ id: riskId }}

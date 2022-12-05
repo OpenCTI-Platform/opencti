@@ -154,8 +154,8 @@ const UserPreferencesModal = (props) => {
 
       localStorage.setItem('client_id', currentClient_id);
       props.setClientId(currentClient_id);
-      if(location.pathname === '/activities/vulnerability assessment/scans/explore results'){
-       props.history.push('/activities/vulnerability assessment/scans');
+      if(location.pathname === '/activities/vulnerability_assessment/scans/explore results'){
+       props.history.push('/activities/vulnerability_assessment/scans');
       } else {
         props.history.push('/dashboard');
       }

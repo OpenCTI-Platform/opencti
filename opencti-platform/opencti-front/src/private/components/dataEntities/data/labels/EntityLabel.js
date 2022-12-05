@@ -14,7 +14,6 @@ import EntitiesLabelsPopover from './EntitiesLabelsPopover';
 import EntitiesLabelsDeletion from './EntitiesLabelsDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
-import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import LabelEntityEditionContainer from './LabelEntityEditionContainer';
@@ -67,7 +66,6 @@ class EntityLabelComponent extends Component {
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           />
-          <TopBarBreadcrumbs />
           <Grid
             container={true}
             spacing={3}

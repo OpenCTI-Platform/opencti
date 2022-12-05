@@ -27,7 +27,7 @@ const styles = () => ({
 class RiskRemediationComponent extends Component {
   render() {
     const { classes, risk } = this.props;
-    const link = `/activities/risk assessment/risks/${risk.id}/knowledge`;
+    const link = `/activities/risk_assessment/risks/${risk.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -36,7 +36,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/relations/:relationId"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
               entityId={risk.id}
@@ -47,7 +47,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/sightings/:sightingId"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/sightings/:sightingId"
           render={(routeProps) => (
             <StixSightingRelationship
               entityId={risk.id}
@@ -58,7 +58,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/overview"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/overview"
           render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={risk.id}
@@ -69,7 +69,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/related"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/related"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -98,7 +98,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/victimology"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/victimology"
           render={(routeProps) => (
             <StixDomainObjectVictimology
               stixDomainObjectId={risk.id}
@@ -109,7 +109,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/risks"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/risks"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -123,7 +123,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/network"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/network"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -137,7 +137,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/software"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/software"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -151,7 +151,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/attack_patterns"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/attack_patterns"
           render={(routeProps) => (
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={risk.id}
@@ -162,7 +162,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/malwares"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -175,7 +175,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/tools"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -188,7 +188,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/vulnerabilities"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -201,7 +201,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/incidents"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/incidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -215,7 +215,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/observables"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/observables"
           render={(routeProps) => (
             <StixCoreObjectStixCyberObservables
               cyioCoreObjectId={risk.id}
@@ -227,7 +227,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/infrastructures"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/infrastructures"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={risk.id}
@@ -241,7 +241,7 @@ class RiskRemediationComponent extends Component {
         />
         <Route
           exact
-          path="/activities/risk assessment/risks/:riskId/knowledge/sightings"
+          path="/activities/risk_assessment/risks/:riskId/knowledge/sightings"
           render={(routeProps) => (
             <EntityStixSightingRelationships
               entityId={risk.id}
