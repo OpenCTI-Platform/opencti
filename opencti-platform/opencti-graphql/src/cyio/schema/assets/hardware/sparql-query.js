@@ -172,6 +172,10 @@ export const selectHardwareByIriQuery = (iri, select) => {
     select = select.filter(i => i !== 'ipv6_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
+
+  // retrieve required fields if not already on the list of fields to be selected
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type')
   
   // build list of selection variables and predicates
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
@@ -213,8 +217,12 @@ export const selectAllHardware = (select, args) => {
     select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
-  if (!select.includes('id')) select.push('id');
 
+  // retrieve required fields if not already on the list of fields to be selected
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type')
+  
+  
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {

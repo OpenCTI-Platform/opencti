@@ -131,8 +131,13 @@ export const selectNetworkQuery = (id, select) => {
 }
 export const selectNetworkByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
+
   if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
 
+  // retrieve required fields if not already on the list of fields to be selected
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type')
+    
   // build list of selection variables and predicates
   const { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
 
@@ -168,7 +173,11 @@ export const selectNetworkByIriQuery = (iri, select) => {
 }
 export const selectAllNetworks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
+
+  // retrieve required fields if not already on the list of fields to be selected
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type')
+
   if (!select.includes('network_id')) select.push('network_id');
 
   if (args !== undefined ) {
