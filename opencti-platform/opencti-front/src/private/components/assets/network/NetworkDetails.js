@@ -16,15 +16,6 @@ import { Link } from '@material-ui/core';
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
-const arr = [
-  {name: '123.234'},
-  {name: '123.23412'},
-  {name: '123.23423'},
-  {name: '123.23445'},
-  {name: '123.23421345'},
-  {name: '123.234567'},
-]
-
 const styles = (theme) => ({
   paper: {
     height: '100%',
@@ -230,15 +221,15 @@ class NetworkDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {arr && arr.map((arr, key) => (
+                      {network.connected_assets && network.connected_assets.map((asset, key) => (
                         <Link
                           key={key}
                           component="button"
                           variant="body2"
                           className={classes.link}
-                          onClick={() => (history.push(`/defender HQ/assets/software/2fc46e04-9046-5c3e-b8ea-f8c905858d06`))}
+                          onClick={() => (history.push(`/defender HQ/assets/devices/${asset.id}`))}
                         >
-                          <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
+                          <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(asset.name)}</div>
                         </Link>
                       ))}
                     </div>
@@ -258,15 +249,15 @@ class NetworkDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {arr && arr.map((arr, key) => (
+                      {network.related_risks && network.related_risks.map((risk, key) => (
                       <Link
                         key={key}
                         component="button"
                         variant="body2"
                         className={classes.link}
-                        onClick={() => (history.push(`/defender HQ/assets/software/2fc46e04-9046-5c3e-b8ea-f8c905858d06`))}
+                        onClick={() => (history.push(`/defender HQ/assets/software/${risk.id}`))}
                       >
-                        <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
+                        <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(risk.name)}</div>
                       </Link>
                       ))}
                     </div>
@@ -298,6 +289,17 @@ const NetworkDetails = createFragmentContainer(
         is_scanned
         last_scanned
         implementation_point
+        connected_assets {
+          id
+          entity_type
+          vendor_name
+          name
+          version
+        }
+        related_risks {
+          id
+          name
+        }
         network_address_range {
           ending_ip_address{
             ... on IpV4Address {
