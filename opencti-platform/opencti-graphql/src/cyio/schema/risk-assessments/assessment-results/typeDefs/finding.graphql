@@ -1,4 +1,25 @@
-"Defines identifying information about an individual finding."
+# declares the query entry-points for this type
+extend type Query {
+  finding(id: ID!): Finding  @hasPermission(resources: "AssessmentResults:view")
+  findings(
+    first: Int
+    offset: Int
+    orderedBy: FindingOrdering
+    orderMode: OrderingMode
+    filters: [FindingFiltering]
+    filterMode: FilterMode
+    search: String @constraint(minLength: 2)
+  ): FindingConnection @hasPermission(resources: "AssessmentResults:view")
+}
+
+# declares the mutation entry-points for this type
+# extend type Mutation {
+
+# }
+
+"""
+Defines identifying information about an individual finding.
+"""
 type Finding implements BasicObject & LifecycleObject & OscalObject {
   # BasicObject
   "Uniquely identifies this object."
@@ -46,4 +67,27 @@ type Finding implements BasicObject & LifecycleObject & OscalObject {
   related_observations(first: Int, offset: Int): ObservationConnection
   "Relates the finding to a set of referenced risks that were used to determine the finding."
   related_risks(first: Int, offset: Int): RiskConnection
+}
+
+enum FindingOrdering {
+  created
+  modified
+  name
+}
+enum FindingFilter {
+  name
+}
+input FindingFiltering {
+  key: [FindingFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type FindingConnection {
+  pageInfo: PageInfo!
+  edges: [FindingEdge]
+}
+type FindingEdge {
+  cursor: String!
+  node: Finding!
 }
