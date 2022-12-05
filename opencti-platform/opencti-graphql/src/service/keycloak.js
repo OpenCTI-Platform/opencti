@@ -1,16 +1,15 @@
 // Keycloak Admin Client
-import conf, {logApp} from '../config/conf';
-import Keycloak from 'keycloak-connect'
-
+import Keycloak from 'keycloak-connect';
 import { defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-import {auth, hasPermission, hasRole, KeycloakContext} from 'keycloak-connect-graphql';
-import KeycloakAdminClient, {AuthError} from "@darklight/keycloak-admin-client";
+import { auth, hasPermission, hasRole, KeycloakContext } from 'keycloak-connect-graphql';
+import KeycloakAdminClient, { AuthError } from '@darklight/keycloak-admin-client';
+import conf, { logApp } from '../config/conf';
 
 export const authDirectiveTransformer = (schema, directiveName = 'auth') => {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
-      if(keycloakEnabled()){
+      if (keycloakEnabled()) {
         const authDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
         if (authDirective) {
           const { resolve = defaultFieldResolver } = fieldConfig;
@@ -18,17 +17,17 @@ export const authDirectiveTransformer = (schema, directiveName = 'auth') => {
         }
       }
       return fieldConfig;
-    }
+    },
   });
 };
 
 export const permissionDirectiveTransformer = (schema, directiveName = 'hasPermission') => {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
-      if(keycloakEnabled()) {
+      if (keycloakEnabled()) {
         const permissionDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
         if (permissionDirective) {
-          const {resolve = defaultFieldResolver} = fieldConfig;
+          const { resolve = defaultFieldResolver } = fieldConfig;
           const keys = Object.keys(permissionDirective);
           let resources;
           if (keys.length === 1 && keys[0] === 'resources') {
@@ -46,17 +45,17 @@ export const permissionDirectiveTransformer = (schema, directiveName = 'hasPermi
         }
       }
       return fieldConfig;
-    }
+    },
   });
 };
 
 export const roleDirectiveTransformer = (schema, directiveName = 'hasRole') => {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
-      if(keycloakEnabled()) {
+      if (keycloakEnabled()) {
         const roleDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
         if (roleDirective) {
-          const {resolve = defaultFieldResolver} = fieldConfig;
+          const { resolve = defaultFieldResolver } = fieldConfig;
           const keys = Object.keys(roleDirective);
           let role;
           if (keys.length === 1 && keys[0] === 'role') {
@@ -74,7 +73,7 @@ export const roleDirectiveTransformer = (schema, directiveName = 'hasRole') => {
         }
       }
       return fieldConfig;
-    }
+    },
   });
 };
 
@@ -84,61 +83,64 @@ const clientId = conf.get('keycloak:client_id');
 const secret = conf.get('keycloak:client_secret');
 const enabled = process.env.POLICY_ENFORCEMENT ? process.env.POLICY_ENFORCEMENT === '1' : false;
 
-let keycloakInstance
+let keycloakInstance;
 
 export const keycloakEnabled = () => {
   return enabled;
-}
+};
 
 export const keycloakAlive = async () => {
   try {
-    logApp.info('[INIT] Authentication Keycloak admin client')
-    await keycloakAdminClient.auth()
+    logApp.info('[INIT] Authentication Keycloak admin client');
+    await keycloakAdminClient.auth();
   } catch (e) {
-    logApp.error(`[INIT] Keycloak admin client failed to authenticate`, error)
+    logApp.error(`[INIT] Keycloak admin client failed to authenticate`, e);
     throw e;
   }
-  if(!keycloakEnabled()) return false;
+
+  if (!keycloakEnabled()) return false;
   try {
-    keycloakInstance = new Keycloak({},{
-      "auth-server-url": keycloakServer,
-      resource: clientId,
-      realm,
-      credentials: {
-        secret
+    keycloakInstance = new Keycloak(
+      {},
+      {
+        'auth-server-url': keycloakServer,
+        resource: clientId,
+        realm,
+        credentials: {
+          secret,
+        },
       }
-    });
+    );
     return true;
   } catch (e) {
-    logApp.error(`[INIT] Failed to establish Keycloak Connect`, e)
+    logApp.error(`[INIT] Failed to establish Keycloak Connect`, e);
     return false;
   }
 };
 
 export const configureKeycloakMiddleware = (route, expressApp) => {
-  if(keycloakEnabled()){
+  if (keycloakEnabled()) {
     expressApp.use(route, getKeycloak().middleware());
   }
-}
+};
 
 export const applyKeycloakContext = (context, req) => {
-  if(keycloakEnabled()){
-    context.kauth = new KeycloakContext({req}, getKeycloak());
+  if (keycloakEnabled()) {
+    context.kauth = new KeycloakContext({ req }, getKeycloak());
   }
-}
+};
 
 const getKeycloak = () => {
   return keycloakInstance;
-}
+};
 
 const keycloakAdminClient = new KeycloakAdminClient({
   serverUrl: keycloakServer,
   clientId,
   realm,
   credentials: {
-    secret
-  }
-})
+    secret,
+  },
+});
 
-
-export {keycloakAdminClient}
+export { keycloakAdminClient };
