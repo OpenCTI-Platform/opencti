@@ -101,9 +101,7 @@ class RiskOverviewComponent extends Component {
               </div>
               <div className="clearfix" />
               {risk.id && t(risk.id)}
-            </Grid>
-          </Grid>
-          <Grid style={{ marginTop: '10px' }} container={true} spacing={3}>
+            </Grid>         
             <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
@@ -145,10 +143,8 @@ class RiskOverviewComponent extends Component {
               </div>
               <div className="clearfix" />
               {risk.modified && fldt(risk.modified)}
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid style={{ marginTop: '10px' }} item={true} xs={12}>
+            </Grid>         
+            <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -181,9 +177,7 @@ class RiskOverviewComponent extends Component {
                   </div>
                 </div>
               </div>
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
+            </Grid>          
             <Grid item={true} xs={6}>
               <div>
                 <Typography
@@ -206,7 +200,32 @@ class RiskOverviewComponent extends Component {
                 <div className="clearfix" />
                 {risk.risk_level && t(risk.risk_level)}
               </div>
-              <div style={{ marginTop: '25px' }}>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 10 }}
+                >
+                  {t('Priority')}
+                </Typography>
+                <div style={{ float: 'left', margin: '11px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                     "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority.",
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {risk.priority && t(risk.priority)}
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -234,27 +253,6 @@ class RiskOverviewComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 10 }}
-                >
-                  {t('Priority')}
-                </Typography>
-                <div style={{ float: 'left', margin: '11px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                     "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority.",
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.priority && t(risk.priority)}
-              </div>
-              <div style={{ marginBottom: '20px', marginTop: '25px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
                   style={{ float: 'left' }}
                 >
                   {t('Likelihood')}
@@ -271,9 +269,7 @@ class RiskOverviewComponent extends Component {
                 <div className="clearfix" />
                 {/* {risk.likelihood && t(risk.likelihood)} */}
               </div>
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
+            </Grid>     
             <Grid item={true} xs={12}>
               <CyioCoreObjectLabelsView
                 labels={risk.labels}
@@ -318,6 +314,8 @@ const RiskOverview = createFragmentContainer(
         priority
         vendor_dependency
         impacted_control_id
+        first_seen
+        last_seen
         origins {
           origin_actors {
             actor_type
