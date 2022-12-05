@@ -56,8 +56,10 @@ const styles = (theme) => ({
   },
   link: {
     textAlign: 'left',
-    fontSize: '16px',
+    fontSize: '1rem',
     display: 'flex',
+    minWidth: '50px',
+    width: '100%',
   },
   launchIcon: {
     marginRight: '5%',
@@ -239,15 +241,15 @@ class SoftwareDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {arr && arr.map((arr, key) => (
+                      {software.installed_on && software.installed_on.map((asset, key) => (
                         <Link
                           key={key}
                           component="button"
                           variant="body2"
                           className={classes.link}
-                          onClick={() => (history.push(`/defender HQ/assets/devices/fedaa013-efb4-5f58-8a53-4e6d38315f8e`))}
+                          onClick={() => (history.push(`/defender HQ/assets/devices/${asset.id}`))}
                         >
-                          <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
+                          <LaunchIcon fontSize='small' className={classes.launchIcon}/><div className={classes.linkTitle}>{t(asset.name)}</div>
                         </Link>
                       ))}
                     </div>
@@ -267,15 +269,15 @@ class SoftwareDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {arr && arr.map((arr, key) => (
+                      {software.related_risks && software.related_risks.map((risk, key) => (
                       <Link
                         key={key}
                         component="button"
                         variant="body2"
                         className={classes.link}
-                        onClick={() => (history.push(`/activities/risk assessment/risks/fca03e13-e617-5d76-a0cb-88665ede26f7`))}
+                        onClick={() => (history.push(`/activities/risk_assessment/risks/${risk.id}`))}
                       >
-                        <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
+                        <LaunchIcon fontSize='small' className={classes.launchIcon}/><div className={classes.linkTitle}>{t(risk.name)}</div>
                       </Link>
                       ))}
                     </div>
@@ -309,6 +311,17 @@ const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
       implementation_point
       last_scanned
       is_scanned
+      installed_on {
+        id
+        entity_type
+        vendor_name
+        name
+        version
+      }
+      related_risks {
+        id
+        name
+      }
     }
   `,
 });
