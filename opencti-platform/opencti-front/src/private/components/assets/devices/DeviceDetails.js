@@ -71,8 +71,10 @@ const styles = (theme) => ({
   },
   link: {
     textAlign: 'left',
-    fontSize: '16px',
+    fontSize: '1rem',
     display: 'flex',
+    minWidth: '50px',
+    width: '100%',
   },
   launchIcon: {
     marginRight: '5%',
