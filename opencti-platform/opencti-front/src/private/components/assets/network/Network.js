@@ -78,7 +78,7 @@ class NetworkComponent extends Component {
                   <CyioDomainObjectAssetOverview refreshQuery={refreshQuery} cyioDomainObject={network} />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <NetworkDetails network={network} history={history}/>
+                  <NetworkDetails network={network} />
                 </Grid>
               </>
             </Grid>

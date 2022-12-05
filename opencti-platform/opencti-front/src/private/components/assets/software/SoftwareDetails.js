@@ -11,19 +11,8 @@ import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import LaunchIcon from '@material-ui/icons/Launch';
-import { Link } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import Switch from '@material-ui/core/Switch';
-
-const arr = [
-  {name: '123.1'},
-  {name: '123.123'},
-  {name: '123.142'},
-  {name: '123.1256'},
-  {name: '123.167'},
-  {name: '123.13'},
-]
 
 const styles = (theme) => ({
   paper: {
@@ -33,44 +22,12 @@ const styles = (theme) => ({
     padding: '24px 24px 32px 24px',
     borderRadius: 6,
   },
-  scrollBg: {
-    background: theme.palette.header.background,
-    width: '100%',
-    color: 'white',
-    padding: '10px 5px 10px 15px',
-    borderRadius: '5px',
-    lineHeight: '20px',
-  },
-  scrollDiv: {
-    width: '100%',
-    background: theme.palette.header.background,
-    height: '78px',
-    overflow: 'hidden',
-    overflowY: 'scroll',
-  },
-  scrollObj: {
-    color: theme.palette.header.text,
-    fontFamily: 'sans-serif',
-    padding: '0px',
-    textAlign: 'left',
-  },
-  link: {
-    textAlign: 'left',
-    fontSize: '16px',
-    display: 'flex',
-  },
-  launchIcon: {
-    marginRight: '5%',
-  },
-  linkTitle: {
-    color: '#fff',
-  }
 });
 
 class SoftwareDetailsComponent extends Component {
   render() {
     const {
-       t, classes, software,fldt, history
+       t, classes, software,fldt
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -224,64 +181,6 @@ class SoftwareDetailsComponent extends Component {
                 <div className="clearfix" />
                 {software.last_scanned && fldt(software.last_scanned)}
               </Grid>
-            </Grid>
-            <Grid container spacing={3}>
-              <Grid item={true} xs={6}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Installed on Devices')}
-                </Typography>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {arr && arr.map((arr, key) => (
-                        <Link
-                          key={key}
-                          component="button"
-                          variant="body2"
-                          className={classes.link}
-                          onClick={() => (history.push(`/defender HQ/assets/devices/fedaa013-efb4-5f58-8a53-4e6d38315f8e`))}
-                        >
-                          <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Grid>       
-              <Grid item={true} xs={6}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20  }}
-                >
-                  {t('Related Risks')}
-                </Typography>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {arr && arr.map((arr, key) => (
-                      <Link
-                        key={key}
-                        component="button"
-                        variant="body2"
-                        className={classes.link}
-                        onClick={() => (history.push(`/activities/risk assessment/risks/fca03e13-e617-5d76-a0cb-88665ede26f7`))}
-                      >
-                        <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
-                      </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Grid>             
             </Grid>
           </Grid>
         </Paper>

@@ -16,15 +16,6 @@ import Launch from '@material-ui/icons/Launch';
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
-const arr = [
-  {name: '123.1'},
-  {name: '123.123'},
-  {name: '123.142'},
-  {name: '123.1256'},
-  {name: '123.167'},
-  {name: '123.13'},
-]
-
 const styles = (theme) => ({
   paper: {
     height: '100%',
@@ -225,15 +216,15 @@ class DeviceDetailsComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {arr && arr.map((arr, key) => (
+                      {device?.related_risks && device.related_risks.map((risk, key) => (
                         <Link
                           key={key}
                           component="button"
                           variant="body2"
                           className={classes.link}
-                          onClick={() => (history.push(`/activities/risk assessment/risks/fca03e13-e617-5d76-a0cb-88665ede26f7`))}
+                          onClick={() => (history.push(`/activities/risk_assessment/risks/${risk.id}`))}
                         >
-                          <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(arr.name)}</div>
+                          <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(risk.name)}</div>
                         </Link>
                       ))}
                     </div>
@@ -809,6 +800,10 @@ const DeviceDetails = createFragmentContainer(
           id
           name
           uri
+        }
+        related_risks {
+          id
+          name
         }
       }
     `,
