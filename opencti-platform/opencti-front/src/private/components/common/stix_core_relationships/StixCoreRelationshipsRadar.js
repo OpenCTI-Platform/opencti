@@ -238,6 +238,7 @@ const StixCoreRelationshipsRadar = ({
       dateAttribute,
       limit: 10,
       filters: finalFilters,
+      isTo: dataSelection.isTo,
     };
     return (
       <QueryRenderer

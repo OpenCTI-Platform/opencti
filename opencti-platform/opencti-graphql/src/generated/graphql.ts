@@ -17087,6 +17087,7 @@ export enum StixCoreRelationshipsFilter {
   Creator = 'creator',
   ElementId = 'elementId',
   ElementWithTargetTypes = 'elementWithTargetTypes',
+  EntityType = 'entity_type',
   FromId = 'fromId',
   FromName = 'fromName',
   FromTypes = 'fromTypes',

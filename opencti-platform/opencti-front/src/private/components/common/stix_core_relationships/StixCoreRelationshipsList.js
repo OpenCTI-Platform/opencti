@@ -3440,6 +3440,9 @@ const StixCoreRelationshipsList = ({
   const classes = useStyles();
   const { t, fsd } = useFormatter();
   const renderContent = () => {
+    if (!dataSelection) {
+      return 'No data selection';
+    }
     const selection = dataSelection[0];
     let finalFilters = convertFilters(selection.filters);
     const relationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))

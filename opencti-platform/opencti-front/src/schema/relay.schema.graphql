@@ -6978,6 +6978,7 @@ enum StixCoreRelationshipsOrdering {
 }
 
 enum StixCoreRelationshipsFilter {
+  entity_type
   elementId
   fromId
   toId
