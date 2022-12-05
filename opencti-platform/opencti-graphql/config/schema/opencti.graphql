@@ -422,6 +422,7 @@ input WorkErrorInput {
 enum WorkspacesOrdering {
   name
   created_at
+  updated_at
   ownedBy
 }
 enum WorkspacesFilter {

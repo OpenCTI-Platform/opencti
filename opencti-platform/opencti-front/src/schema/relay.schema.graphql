@@ -434,6 +434,7 @@ input WorkErrorInput {
 enum WorkspacesOrdering {
   name
   created_at
+  updated_at
   ownedBy
 }
 
@@ -7000,6 +7001,7 @@ enum StixCoreRelationshipsFilter {
   elementWithTargetTypes
   fromTypes
   toTypes
+  entity_type
 }
 
 input StixCoreRelationshipsFiltering {
