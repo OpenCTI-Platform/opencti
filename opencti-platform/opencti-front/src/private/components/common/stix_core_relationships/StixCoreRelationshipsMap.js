@@ -150,6 +150,7 @@ const StixCoreRelationshipsMap = ({
       dateAttribute,
       limit: 10,
       filters: finalFilters,
+      isTo: selection.isTo,
     };
     return (
       <QueryRenderer

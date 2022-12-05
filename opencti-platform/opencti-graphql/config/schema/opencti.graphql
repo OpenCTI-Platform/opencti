@@ -11354,6 +11354,7 @@ enum StixCoreRelationshipsFilter {
   elementWithTargetTypes
   fromTypes
   toTypes
+  entity_type
 }
 input StixCoreRelationshipsFiltering {
   key: [StixCoreRelationshipsFilter!]!

@@ -694,7 +694,10 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           />
         );
       case 'horizontal-bar':
-        if (widget.dataSelection.length > 1) {
+        if (
+          widget.dataSelection.length > 1
+          && widget.dataSelection[0].attribute === 'entity_id'
+        ) {
           return (
             <StixCoreRelationshipsMultiHorizontalBars
               startDate={startDate}

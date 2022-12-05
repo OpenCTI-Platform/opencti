@@ -719,6 +719,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
       dateAttribute,
       limit: 10,
       filters: finalFilters,
+      isTo: selection.isTo,
     };
     const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
     if (subSelection.perspective === 'entities') {
