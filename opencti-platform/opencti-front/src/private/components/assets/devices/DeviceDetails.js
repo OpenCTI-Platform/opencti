@@ -124,7 +124,7 @@ class DeviceDetailsComponent extends Component {
                     className={classes.link}
                     onClick={() => (history.push(`/defender HQ/assets/software/${device.installed_operating_system.id}`))}
                   >
-                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.installed_operating_system.name)} {t(device.installed_operating_system.version || " ")}
+                    <LaunchIcon fontSize="small"  className={classes.launchIcon} /> <div className={classes.linkTitle}>{t(device.installed_operating_system.name)} {t(device.installed_operating_system.version || " ")}</div> 
                   </Link>}
               </div>
             </Grid>
@@ -144,20 +144,24 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {device?.installed_hardware && device.installed_hardware.map((data, key) => (
-                  <div key={key}>
-                    <div className="clearfix" />
-                    <Link
-                      key={key}
-                      component="button"
-                      variant="body2"
-                      className={classes.link}
-                      onClick={() => (history.push(`/defender HQ/assets/devices/${data.id}`))}
-                    >
-                      <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data?.name && t(data.name)}
-                    </Link>
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {device?.installed_hardware && device.installed_hardware.map((data, key) => (
+                          <Link
+                            key={key}
+                            component="button"
+                            variant="body2"
+                            className={classes.link}
+                            onClick={() => (history.push(`/defender HQ/assets/devices/${data.id}`))}
+                          >
+                            <LaunchIcon fontSize="inherit" className={classes.launchIcon} /> <div className={classes.linkTitle}>{data?.name && t(data.name)}</div>
+                          </Link>                        
+                      ))}
+                    </div>
                   </div>
-                ))}
+                </div>
+                
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -336,7 +340,7 @@ class DeviceDetailsComponent extends Component {
                       device.connected_to_network.id && history.push(`/defender HQ/assets/network/${device.connected_to_network.id}`)
                     )}
                   >
-                    <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.connected_to_network.name)}
+                    <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(device.connected_to_network.name)}</div>
                   </Link>}
               </div>
             </Grid>
