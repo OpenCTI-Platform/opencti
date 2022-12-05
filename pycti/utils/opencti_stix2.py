@@ -83,7 +83,7 @@ class OpenCTIStix2:
             date_value = datetime.datetime.utcnow()
 
         if not date_value.tzinfo:
-            self.opencti.log("No timezone found. Setting to UTC", "info")
+            self.opencti.log("info", "No timezone found. Setting to UTC")
             date_value = date_value.replace(tzinfo=datetime.timezone.utc)
 
         return date_value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
