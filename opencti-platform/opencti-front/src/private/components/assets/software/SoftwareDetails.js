@@ -16,15 +16,6 @@ import { Link } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import Switch from '@material-ui/core/Switch';
 
-const arr = [
-  {name: '123.1'},
-  {name: '123.123'},
-  {name: '123.142'},
-  {name: '123.1256'},
-  {name: '123.167'},
-  {name: '123.13'},
-]
-
 const styles = (theme) => ({
   paper: {
     height: '100%',
