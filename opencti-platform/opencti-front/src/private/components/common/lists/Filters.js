@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
-import { FiltersVariant, isUniqFilter, onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
+import {
+  FiltersVariant,
+  isUniqFilter,
+  onlyGroupOrganization,
+} from '../../../../utils/filters/filtersUtils';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
@@ -51,25 +55,23 @@ const Filters = ({
     setAnchorEl(null);
   };
 
-  const defaultHandleAddFilter = handleAddFilter || ((key, id, value, event = null) => {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    if ((filters[key] ?? []).length > 0) {
-      setFilters((c) => ({
-        ...c,
-        [key]: isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [
-            { id, value },
-            ...c[key],
-          ]),
-      }));
-    } else {
-      setFilters((c) => ({ ...c, [key]: [{ id, value }] }));
-    }
-  });
+  const defaultHandleAddFilter = handleAddFilter
+    || ((key, id, value, event = null) => {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      if ((filters[key] ?? []).length > 0) {
+        setFilters((c) => ({
+          ...c,
+          [key]: isUniqFilter(key)
+            ? [{ id, value }]
+            : R.uniqBy(R.prop('id'), [{ id, value }, ...c[key]]),
+        }));
+      } else {
+        setFilters((c) => ({ ...c, [key]: [{ id, value }] }));
+      }
+    });
   const handleRemoveFilter = (key) => setFilters((c) => R.dissoc(key, c));
 
   const handleSearch = () => {
@@ -84,7 +86,9 @@ const Filters = ({
 
   const handleChange = (filterKey, event, value) => {
     if (value) {
-      const group = !onlyGroupOrganization.includes(filterKey) ? value.group : undefined;
+      const group = !onlyGroupOrganization.includes(filterKey)
+        ? value.group
+        : undefined;
       const filterAdd = `${filterKey}${group ? `_${group}` : ''}`;
       defaultHandleAddFilter(filterAdd, value.value, value.label, event);
     }
@@ -105,10 +109,7 @@ const Filters = ({
   const handleValidateDate = (filterKey, event) => {
     if (event.key === 'Enter') {
       if (inputValues[filterKey].toString() !== 'Invalid Date') {
-        return handleAcceptDate(
-          filterKey,
-          inputValues[filterKey],
-        );
+        return handleAcceptDate(filterKey, inputValues[filterKey]);
       }
     }
     return null;

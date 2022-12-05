@@ -117,14 +117,22 @@ const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`
 
 const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
-    $type: String
-    $fromId: StixRef
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
+    $relationship_type: [String]
+    $fromId: [String]
+    $fromTypes: [String]
+    $toId: [String]
     $toTypes: [String]
     $endDate: DateTime
   ) {
     stixCoreRelationshipsNumber(
-      type: $type
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
+      relationship_type: $relationship_type
       fromId: $fromId
+      fromTypes: $fromTypes
+      toId: $toId
       toTypes: $toTypes
       endDate: $endDate
     ) {
@@ -342,8 +350,8 @@ class StixDomainObjectThreatKnowledge extends Component {
                   stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
                 }
                 variables={{
-                  fromId: stixDomainObjectId,
-                  toTypes: displayObservablesStats
+                  toId: stixDomainObjectId,
+                  fromTypes: displayObservablesStats
                     ? ['Stix-Cyber-Observable']
                     : 'Indicator',
                   endDate: monthsAgo(1),
@@ -397,7 +405,7 @@ class StixDomainObjectThreatKnowledge extends Component {
                   stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
                 }
                 variables={{
-                  fromId: stixDomainObjectId,
+                  elementId: stixDomainObjectId,
                   endDate: monthsAgo(1),
                 }}
                 render={({ props }) => {

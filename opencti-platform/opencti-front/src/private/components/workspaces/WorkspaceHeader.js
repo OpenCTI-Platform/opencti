@@ -1,12 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
-import { compose, propOr, filter, append, take } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
+import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
+import MUITextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
 import { Add, Close } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
@@ -102,7 +108,7 @@ class WorkspaceHeader extends Component {
           id: this.props.workspace.id,
           input: {
             key: 'tags',
-            value: append(data.new_tag, currentTags),
+            value: R.append(data.new_tag, currentTags),
           },
         },
         onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The tag has been added')),
@@ -114,7 +120,7 @@ class WorkspaceHeader extends Component {
 
   deleteTag(tag) {
     const currentTags = this.getCurrentTags();
-    const tags = filter((a) => a !== tag, currentTags);
+    const tags = R.filter((a) => a !== tag, currentTags);
     commitMutation({
       mutation: workspaceMutation,
       variables: {
@@ -129,8 +135,9 @@ class WorkspaceHeader extends Component {
   }
 
   render() {
-    const { t, classes, workspace, variant, adjust } = this.props;
-    const tags = propOr([], 'tags', workspace);
+    const { t, classes, workspace, config, variant, adjust, handleDateChange } = this.props;
+    const tags = R.propOr([], 'tags', workspace);
+    const { relativeDate } = config ?? {};
     return (
       <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
         <Typography
@@ -145,6 +152,134 @@ class WorkspaceHeader extends Component {
             <WorkspacePopover id={workspace.id} type={workspace.type} />
           </div>
         </Security>
+        {variant === 'dashboard' && (
+          <Security
+            needs={[EXPLORE_EXUPDATE]}
+            placeholder={
+              <div
+                style={{
+                  display: 'flex',
+                  margin: '-3px 0 0 5px',
+                  float: 'left',
+                }}
+              >
+                <FormControl
+                  variant="outlined"
+                  size="small"
+                  style={{ width: 194, marginRight: 20 }}
+                >
+                  <InputLabel id="relative">{t('Relative time')}</InputLabel>
+                  <Select
+                    labelId="relative"
+                    value={relativeDate ?? ''}
+                    onChange={handleDateChange.bind(this, 'relativeDate')}
+                    disabled={true}
+                  >
+                    <MenuItem value="none">{t('None')}</MenuItem>
+                    <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
+                    <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
+                    <MenuItem value="months-1">{t('Last month')}</MenuItem>
+                    <MenuItem value="months-3">{t('Last 3 months')}</MenuItem>
+                    <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
+                    <MenuItem value="years-1">{t('Last year')}</MenuItem>
+                  </Select>
+                </FormControl>
+                <DatePicker
+                  value={R.propOr(null, 'startDate', config)}
+                  disableToolbar={true}
+                  autoOk={true}
+                  label={t('Start date')}
+                  clearable={true}
+                  disableFuture={true}
+                  disabled={true}
+                  onChange={handleDateChange.bind(this, 'startDate')}
+                  renderInput={(params) => (
+                    <MUITextField
+                      style={{ marginRight: 20 }}
+                      variant="outlined"
+                      size="small"
+                      {...params}
+                    />
+                  )}
+                />
+                <DatePicker
+                  value={R.propOr(null, 'endDate', config)}
+                  disableToolbar={true}
+                  autoOk={true}
+                  label={t('End date')}
+                  clearable={true}
+                  disabled={true}
+                  disableFuture={true}
+                  onChange={handleDateChange.bind(this, 'endDate')}
+                  renderInput={(params) => (
+                    <MUITextField
+                      style={{ marginRight: 20 }}
+                      variant="outlined"
+                      size="small"
+                      {...params}
+                    />
+                  )}
+                />
+              </div>
+            }
+          >
+            <div
+              style={{
+                display: 'flex',
+                margin: '-3px 0 0 5px',
+                float: 'left',
+              }}
+            >
+              <FormControl size="small" style={{ width: 194, marginRight: 20 }}>
+                <InputLabel id="relative">{t('Relative time')}</InputLabel>
+                <Select
+                  labelId="relative"
+                  value={relativeDate ?? relativeDate}
+                  onChange={handleDateChange.bind(this, 'relativeDate')}
+                  label={t('Relative time')}
+                >
+                  <MenuItem value="none">{t('None')}</MenuItem>
+                  <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
+                  <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
+                  <MenuItem value="months-1">{t('Last month')}</MenuItem>
+                  <MenuItem value="months-3">{t('Last 3 months')}</MenuItem>
+                  <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
+                  <MenuItem value="years-1">{t('Last year')}</MenuItem>
+                </Select>
+              </FormControl>
+              <DatePicker
+                value={R.propOr(null, 'startDate', config)}
+                disableToolbar={true}
+                autoOk={true}
+                label={t('Start date')}
+                clearable={true}
+                disableFuture={true}
+                disabled={!!relativeDate}
+                onChange={handleDateChange.bind(this, 'startDate')}
+                renderInput={(params) => (
+                  <MUITextField
+                    style={{ marginRight: 20 }}
+                    variant="outlined"
+                    size="small"
+                    {...params}
+                  />
+                )}
+              />
+              <DatePicker
+                value={R.propOr(null, 'endDate', config)}
+                autoOk={true}
+                label={t('End date')}
+                clearable={true}
+                disabled={!!relativeDate}
+                disableFuture={true}
+                onChange={handleDateChange.bind(this, 'endDate')}
+                renderInput={(params) => (
+                  <MUITextField variant="outlined" size="small" {...params} />
+                )}
+              />
+            </div>
+          </Security>
+        )}
         <div className={classes.export}>
           <ExportButtons
             domElementId="container"
@@ -153,7 +288,7 @@ class WorkspaceHeader extends Component {
           />
         </div>
         <div className={classes.tags}>
-          {take(5, tags).map(
+          {R.take(5, tags).map(
             (tag) => tag.length > 0 && (
                 <Chip
                   key={tag}
@@ -177,13 +312,13 @@ class WorkspaceHeader extends Component {
             ) : (
               <IconButton
                 style={{ float: 'left', marginTop: -5 }}
-                color="secondary"
+                color={this.state.openTag ? 'primary' : 'secondary'}
                 aria-tag="Tag"
                 onClick={this.handleToggleCreateTag.bind(this)}
                 size="large"
               >
                 {this.state.openTag ? (
-                  <Close fontSize="small" color="primary" />
+                  <Close fontSize="small" />
                 ) : (
                   <Add fontSize="small" />
                 )}
@@ -230,4 +365,4 @@ WorkspaceHeader.propTypes = {
   adjust: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(WorkspaceHeader);
+export default R.compose(inject18n, withStyles(styles))(WorkspaceHeader);

@@ -15,6 +15,7 @@ import { PROVIDERS } from '../config/providers';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
 import { findById } from '../domain/organization';
+import { READ_DATA_INDICES } from '../database/utils';
 
 const settingsResolvers = {
   Query: {
@@ -22,8 +23,8 @@ const settingsResolvers = {
     settings: (_, __, context) => getSettings(context),
   },
   AppDebugStatistics: {
-    objects: (_, __, context) => elAggregationCount(context, context.user, 'Stix-Object', 'entity_type'),
-    relationships: (_, __, context) => elAggregationCount(context, context.user, 'stix-relationship', 'entity_type'),
+    objects: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' }),
+    relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
   },
   Settings: {
     platform_providers: () => PROVIDERS,

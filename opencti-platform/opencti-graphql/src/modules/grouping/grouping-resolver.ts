@@ -56,7 +56,7 @@ const groupingResolvers: Resolvers = {
       if (args.objectId && args.objectId.length > 0) {
         return groupingsDistributionByEntity(context, context.user, args);
       }
-      return distributionEntities(context, context.user, ENTITY_TYPE_CONTAINER_GROUPING, [], args);
+      return distributionEntities(context, context.user, [ENTITY_TYPE_CONTAINER_GROUPING], args);
     },
     groupingContainsStixObjectOrStixRelationship: (_, args, context) => {
       return groupingContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);

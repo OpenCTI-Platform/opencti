@@ -433,7 +433,7 @@ class StixCyberObservableCreation extends Component {
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesAttributesQuery}
-        variables={{ elementType: type }}
+        variables={{ elementType: [type] }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
             const initialValues = {

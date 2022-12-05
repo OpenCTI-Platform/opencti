@@ -38,12 +38,12 @@ import {
 } from '../schema/stixCyberObservable';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS
 } from '../schema/general';
-import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON, RELATION_HAS, RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_INDICATOR,
@@ -52,7 +52,7 @@ import {
 } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { escape, now, observableValue } from '../utils/format';
+import { now, observableValue } from '../utils/format';
 import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixCyberObservableRelationship';
 
 export const findById = (context, user, stixCyberObservableId) => {
@@ -78,13 +78,9 @@ export const stixCyberObservablesNumber = (context, user, args) => ({
 // endregion
 
 // region time series
-export const reportsTimeSeries = (context, user, stixCyberObservableId, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: stixCyberObservableId }];
-  return timeSeriesEntities(context, user, 'Report', filters, args);
-};
-
 export const stixCyberObservablesTimeSeries = (context, user, args) => {
-  return timeSeriesEntities(context, user, args.type ? escape(args.type) : ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
+  const { types = [ABSTRACT_STIX_CYBER_OBSERVABLE] } = args;
+  return timeSeriesEntities(context, user, types, args);
 };
 // endregion
 
@@ -383,13 +379,14 @@ export const stixCyberObservableExportPush = async (context, user, entityId, fil
 
 // region mutation
 export const stixCyberObservableDistribution = async (context, user, args) => {
-  return distributionEntities(context, user, ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
+  const { types = [ABSTRACT_STIX_CYBER_OBSERVABLE] } = args;
+  return distributionEntities(context, user, types, args);
 };
 
 export const stixCyberObservableDistributionByEntity = async (context, user, args) => {
-  const { objectId } = args;
-  const filters = [{ isRelation: true, type: args.relationship_type, value: objectId }];
-  return distributionEntities(context, user, ABSTRACT_STIX_CYBER_OBSERVABLE, filters, args);
+  const { relationship_type, objectId, types = [ABSTRACT_STIX_CYBER_OBSERVABLE] } = args;
+  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
+  return distributionEntities(context, user, types, { ...args, filters });
 };
 
 const checksumFile = async (hashName, stream) => {

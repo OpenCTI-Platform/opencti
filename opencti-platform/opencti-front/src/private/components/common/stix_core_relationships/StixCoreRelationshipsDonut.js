@@ -1,46 +1,71 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chart from 'react-apexcharts';
+import { useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
+import { convertFilters } from '../../../../utils/ListParameters';
+import { defaultValue } from '../../../../utils/Graph';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
-});
+}));
 
 const stixCoreRelationshipsDonutsDistributionQuery = graphql`
   query StixCoreRelationshipsDonutDistributionQuery(
-    $relationship_type: String!
-    $toTypes: [String]
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
+    $isTo: Boolean
     $limit: Int
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
+    $fromId: [String]
+    $fromRole: String
+    $fromTypes: [String]
+    $toId: [String]
+    $toRole: String
+    $toTypes: [String]
+    $relationship_type: [String]
+    $confidences: [Int]
+    $search: String
+    $filters: [StixCoreRelationshipsFiltering]
+    $filterMode: FilterMode
   ) {
     stixCoreRelationshipsDistribution(
-      relationship_type: $relationship_type
-      toTypes: $toTypes
       field: $field
       operation: $operation
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
+      isTo: $isTo
       limit: $limit
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
+      fromId: $fromId
+      fromRole: $fromRole
+      fromTypes: $fromTypes
+      toId: $toId
+      toRole: $toRole
+      toTypes: $toTypes
+      relationship_type: $relationship_type
+      confidences: $confidences
+      search: $search
+      filters: $filters
+      filterMode: $filterMode
     ) {
       label
       value
@@ -127,37 +152,95 @@ const stixCoreRelationshipsDonutsDistributionQuery = graphql`
           name
           description
         }
+        ... on Event {
+          name
+          description
+        }
+        ... on Channel {
+          name
+          description
+        }
+        ... on Narrative {
+          name
+          description
+        }
+        ... on Language {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
       }
     }
   }
 `;
 
-class StixCoreRelationshipsDonut extends Component {
-  renderContent() {
-    const {
-      t,
-      relationshipType,
-      toTypes,
-      field,
-      startDate,
-      endDate,
-      dateAttribute,
-      theme,
-    } = this.props;
-    const stixDomainObjectsDistributionVariables = {
-      relationship_type: relationshipType,
-      toTypes,
-      field: field || 'entity_type',
+const StixCoreRelationshipsDonut = ({
+  title,
+  variant,
+  height,
+  stixCoreObjectId,
+  relationshipType,
+  toTypes,
+  field,
+  startDate,
+  endDate,
+  dateAttribute,
+  dataSelection,
+  parameters = {},
+}) => {
+  const classes = useStyles();
+  const theme = useTheme();
+  const { t } = useFormatter();
+  const renderContent = () => {
+    let finalFilters = [];
+    let selection = {};
+    let dataSelectionRelationshipType = null;
+    let dataSelectionFromId = null;
+    let dataSelectionToId = null;
+    let dataSelectionFromTypes = null;
+    let dataSelectionToTypes = null;
+    if (dataSelection) {
+      // eslint-disable-next-line prefer-destructuring
+      selection = dataSelection[0];
+      finalFilters = convertFilters(selection.filters);
+      dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+        ?.values || null;
+      dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
+      dataSelectionToId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
+      dataSelectionFromTypes = R.head(finalFilters.filter((n) => n.key === 'fromTypes'))?.values
+        || null;
+      dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
+      finalFilters = finalFilters.filter(
+        (n) => ![
+          'relationship_type',
+          'fromId',
+          'toId',
+          'fromTypes',
+          'toTypes',
+        ].includes(n.key),
+      );
+    }
+    const finalField = selection.attribute || field || 'entity_type';
+    const finalToTypes = dataSelectionToTypes || toTypes;
+    const variables = {
+      fromId: dataSelectionFromId || stixCoreObjectId,
+      toId: dataSelectionToId,
+      relationship_type: dataSelectionRelationshipType || relationshipType,
+      fromTypes: dataSelectionFromTypes,
+      toTypes: finalToTypes,
+      field: finalField,
       operation: 'count',
       startDate,
       endDate,
       dateAttribute,
-      limit: 8,
+      limit: 10,
+      filters: finalFilters,
     };
     return (
       <QueryRenderer
         query={stixCoreRelationshipsDonutsDistributionQuery}
-        variables={stixDomainObjectsDistributionVariables}
+        variables={variables}
         render={({ props }) => {
           if (
             props
@@ -165,16 +248,16 @@ class StixCoreRelationshipsDonut extends Component {
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
             let data = props.stixCoreRelationshipsDistribution;
-            if (field === 'internal_id') {
+            if (finalField === 'internal_id') {
               data = R.map(
                 (n) => R.assoc(
                   'label',
                   `${
-                    toTypes.length > 1
-                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${
-                        n.entity.name
-                      }`
-                      : `${n.entity.name}`
+                    finalToTypes && finalToTypes.length > 1
+                      ? `[${t(
+                        `entity_${n.entity.entity_type}`,
+                      )}] ${defaultValue(n.entity)}`
+                      : `${defaultValue(n.entity)}`
                   }`,
                   n,
                 ),
@@ -224,50 +307,27 @@ class StixCoreRelationshipsDonut extends Component {
         }}
       />
     );
-  }
-
-  render() {
-    const { t, classes, title, variant, height } = this.props;
-    return (
-      <div style={{ height: height || '100%' }}>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          style={{
-            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          }}
-        >
-          {title || t('Distribution of entities')}
-        </Typography>
-        {variant === 'inLine' ? (
-          this.renderContent()
-        ) : (
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            {this.renderContent()}
-          </Paper>
-        )}
-      </div>
-    );
-  }
-}
-
-StixCoreRelationshipsDonut.propTypes = {
-  relationshipType: PropTypes.string,
-  toTypes: PropTypes.array,
-  title: PropTypes.string,
-  field: PropTypes.string,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  height: PropTypes.number,
-  startDate: PropTypes.object,
-  endDate: PropTypes.object,
-  dateAttribute: PropTypes.string,
-  variant: PropTypes.string,
+  };
+  return (
+    <div style={{ height: height || '100%' }}>
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
+        }}
+      >
+        {parameters.title || title || t('Relationships distribution')}
+      </Typography>
+      {variant !== 'inLine' ? (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          {renderContent()}
+        </Paper>
+      ) : (
+        renderContent()
+      )}
+    </div>
+  );
 };
 
-export default R.compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixCoreRelationshipsDonut);
+export default StixCoreRelationshipsDonut;

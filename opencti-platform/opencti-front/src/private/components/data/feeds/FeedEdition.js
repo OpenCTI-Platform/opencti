@@ -471,7 +471,7 @@ const FeedEditionContainer = (props) => {
                                           stixCyberObservablesLinesAttributesQuery
                                         }
                                         variables={{
-                                          elementType: selectedType,
+                                          elementType: [selectedType],
                                         }}
                                         render={({ props: resultProps }) => {
                                           if (

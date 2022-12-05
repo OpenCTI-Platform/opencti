@@ -25,7 +25,7 @@ import { FROM_START, now } from '../../src/utils/format';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
 import { convertStoreToStix } from '../../src/database/stix-converter';
-import { wait } from '../../src/database/utils';
+import { READ_DATA_INDICES, wait } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 
 const STAT_QUERY = `query stats {
@@ -84,13 +84,13 @@ const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
 
 describe('Database sync testing', () => {
   const checkPreSyncContent = async () => {
-    const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, 'Stix-Object', 'entity_type');
+    const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
     const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
     expect(objectMap.get('Indicator')).toEqual(28);
     expect(objectMap.get('Malware')).toEqual(27);
     expect(objectMap.get('Label')).toEqual(13);
     // Relations
-    const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, 'stix-relationship', 'entity_type');
+    const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' });
     const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
     expect(relMap.get('Object')).toEqual(191);
     expect(relMap.get('Indicates')).toEqual(59);

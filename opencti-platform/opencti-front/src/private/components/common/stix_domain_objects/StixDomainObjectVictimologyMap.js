@@ -36,10 +36,10 @@ const styles = () => ({
 
 const stixDomainObjectVictimologyMapQuery = graphql`
   query StixDomainObjectVictimologyMapQuery(
-    $fromId: StixRef
+    $fromId: [String]
     $field: String!
     $operation: StatsOperation!
-    $relationship_type: String
+    $relationship_type: [String]
     $toTypes: [String]
     $startDate: DateTime
     $endDate: DateTime

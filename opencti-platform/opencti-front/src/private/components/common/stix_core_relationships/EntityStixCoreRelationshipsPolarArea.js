@@ -27,9 +27,11 @@ const styles = () => ({
 
 const entityStixCoreRelationshipsPolarAreaStixCoreRelationshipDistributionQuery = graphql`
   query EntityStixCoreRelationshipsPolarAreaStixCoreRelationshipDistributionQuery(
-    $fromId: StixRef
+    $fromId: [String]
+    $toId: [String]
+    $fromTypes: [String]
     $toTypes: [String]
-    $relationship_type: String
+    $relationship_type: [String]
     $limit: Int
     $startDate: DateTime
     $endDate: DateTime
@@ -40,6 +42,8 @@ const entityStixCoreRelationshipsPolarAreaStixCoreRelationshipDistributionQuery 
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
+      toId: $toId
+      fromTypes: $fromTypes
       toTypes: $toTypes
       relationship_type: $relationship_type
       limit: $limit
@@ -153,9 +157,11 @@ class EntityStixCoreRelationshipsPolarArea extends Component {
       variant,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      fromId: entityId,
-      toTypes,
+      fromId: !isTo ? entityId : null,
+      toId: isTo ? entityId : null,
       relationship_type: relationshipType,
+      toTypes: !isTo ? toTypes : null,
+      fromTypes: isTo ? toTypes : null,
       startDate: startDate || null,
       endDate: endDate || null,
       field: field || 'entity_type',

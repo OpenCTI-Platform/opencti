@@ -219,7 +219,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesAttributesQuery}
-        variables={{ elementType: stixCyberObservable.entity_type }}
+        variables={{ elementType: [stixCyberObservable.entity_type] }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
             const createdBy = pathOr(null, ['createdBy', 'name'], stixCyberObservable) === null

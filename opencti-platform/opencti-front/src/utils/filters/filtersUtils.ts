@@ -14,6 +14,7 @@ export const directFilters = [
   'x_opencti_negative',
   'fromId',
   'toId',
+  'elementId',
 ];
 const uniqFilters = [
   'revoked',

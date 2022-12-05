@@ -35,8 +35,13 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
-import { RELATION_MITIGATES, RELATION_RELATED_TO, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
+import { ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey } from '../../../src/schema/general';
+import {
+  RELATION_ATTRIBUTED_TO,
+  RELATION_MITIGATES,
+  RELATION_RELATED_TO,
+  RELATION_USES
+} from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { addLabel } from '../../../src/domain/label';
@@ -136,17 +141,17 @@ describe('Attribute updater', () => {
   });
   it('should update numeric', async () => {
     const stixId = 'relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416';
-    let relation = await storeLoadById(testContext, ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    let relation = await storeLoadById(testContext, ADMIN_USER, stixId, 'stix-core-relationship');
     const relationId = relation.internal_id;
     // expect(relation.confidence).toEqual(1);
     let patch = { confidence: 5 };
     await patchAttribute(testContext, ADMIN_USER, relationId, RELATION_MITIGATES, patch);
-    relation = await storeLoadById(testContext, ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    relation = await storeLoadById(testContext, ADMIN_USER, stixId, 'stix-core-relationship');
     expect(relation.confidence).toEqual(5);
     // Value back to before
     patch = { confidence: 1 };
     await patchAttribute(testContext, ADMIN_USER, relationId, RELATION_MITIGATES, patch);
-    relation = await storeLoadById(testContext, ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    relation = await storeLoadById(testContext, ADMIN_USER, stixId, 'stix-core-relationship');
     expect(relation.confidence).toEqual(1);
   });
   it('should update multivalued attribute', async () => {
@@ -529,7 +534,7 @@ describe('Entities time series', () => {
       startDate: '2019-09-23T00:00:00.000+01:00',
       endDate: '2020-04-04T00:00:00.000+01:00',
     };
-    const series = await timeSeriesEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', [], options);
+    const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
     expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
@@ -537,7 +542,7 @@ describe('Entities time series', () => {
   it('should start time relation time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
     const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const filters = [{ isRelation: true, type: 'attributed-to', value: intrusionSet.internal_id }];
+    const filters = [{ key: [buildRefRelationKey(RELATION_ATTRIBUTED_TO)], values: [intrusionSet.internal_id] }];
     const options = {
       field: 'first_seen',
       operation: 'count',
@@ -545,14 +550,14 @@ describe('Entities time series', () => {
       startDate: '2020-01-01T00:00:00+01:00',
       endDate: '2021-01-01T00:00:00+01:00',
     };
-    const series = await timeSeriesEntities(testContext, ADMIN_USER, 'Campaign', filters, options);
+    const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Campaign'], { ...options, filters });
     expect(series.length).toEqual(13);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
   });
   it('should local filter time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
-    const filters = [{ type: 'name', value: 'A new campaign' }];
+    const filters = [{ key: ['name'], values: ['A new campaign'] }];
     const options = {
       field: 'first_seen',
       operation: 'count',
@@ -560,7 +565,7 @@ describe('Entities time series', () => {
       startDate: '2020-01-01T00:00:00+01:00',
       endDate: '2020-10-01T00:00:00+02:00',
     };
-    const series = await timeSeriesEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', filters, options);
+    const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, filters });
     expect(series.length).toEqual(10);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
@@ -575,7 +580,7 @@ describe('Relations time series', () => {
     // relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de > 2020-02-29T23:00:00.000Z
     // relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3 > 2020-02-28T23:00:00.000Z
     const options = {
-      relationship_type: 'uses',
+      relationship_type: ['uses'],
       field: 'start_time',
       operation: 'count',
       interval: 'month',
@@ -590,8 +595,8 @@ describe('Relations time series', () => {
   it('should relations with fromId time series', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: malware.internal_id,
-      relationship_type: 'uses',
+      fromId: [malware.internal_id],
+      relationship_type: ['uses'],
       field: 'start_time',
       operation: 'count',
       interval: 'year',
@@ -601,7 +606,7 @@ describe('Relations time series', () => {
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(3);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2019-12-31T23:00:00.000Z')).toEqual(3);
+    expect(aggregationMap.get('2019-12-31T23:00:00.000Z')).toEqual(2);
   });
 });
 
@@ -609,7 +614,7 @@ describe('Entities distribution', () => {
   it('should entity distribution', async () => {
     // const { startDate, endDate, operation, field, inferred } = options;
     const options = { field: 'entity_type', operation: 'count', limit: 20 };
-    const distribution = await distributionEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', [], options);
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
     expect(distribution.length).toEqual(17);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
@@ -631,7 +636,7 @@ describe('Entities distribution', () => {
       end,
     };
     const filters = [relationFilter];
-    const distribution = await distributionEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', filters, options);
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, filters });
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
@@ -645,7 +650,7 @@ describe('Entities distribution', () => {
       startDate: '2018-03-01T00:00:00+01:00',
       endDate: '2018-03-02T00:00:00+01:00',
     };
-    const distribution = await distributionEntities(testContext, ADMIN_USER, 'Stix-Domain-Object', [], options);
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
     expect(distribution.length).toEqual(0);
   });
 });
@@ -664,8 +669,8 @@ describe('Relations distribution', () => {
     // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: malware.internal_id,
-      relationship_type: 'uses',
+      elementId: [malware.internal_id],
+      relationship_type: ['uses'],
       field: 'entity_type',
       operation: 'count',
     };
@@ -678,7 +683,7 @@ describe('Relations distribution', () => {
   it('should relation distribution dates filtered', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: malware.internal_id,
+      fromId: [malware.internal_id],
       field: 'entity_type',
       operation: 'count',
       startDate: '2020-02-28T22:59:00.000Z',
@@ -692,7 +697,7 @@ describe('Relations distribution', () => {
   it('should relation distribution filtered by to', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: malware.internal_id,
+      fromId: [malware.internal_id],
       field: 'entity_type',
       operation: 'count',
       toTypes: ['Attack-Pattern'],
@@ -955,9 +960,9 @@ describe('Upsert and merge entities', () => {
     expect(loadedThreat['object-marking'].length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
     expect(loadedThreat['object-label'].length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
     // expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
-    const froms = await listAllRelations(testContext, ADMIN_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { fromId: loadedThreat.internal_id });
+    const froms = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { fromId: loadedThreat.internal_id });
     expect(froms.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
-    const tos = await listAllRelations(testContext, ADMIN_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, { toId: loadedThreat.internal_id });
+    const tos = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { toId: loadedThreat.internal_id });
     expect(tos.length).toEqual(1); // [MALWARE_TEST_02]
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, malware01.id, ENTITY_TYPE_MALWARE);

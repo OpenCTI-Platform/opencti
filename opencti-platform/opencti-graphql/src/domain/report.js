@@ -49,88 +49,76 @@ export const reportContainsStixObjectOrStixRelationship = async (context, user, 
 // region series
 export const reportsTimeSeries = (context, user, args) => {
   const { reportClass } = args;
-  const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }] : [];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  const filters = reportClass ? [{ key: ['report_class'], values: [args.reportClass] }, ...(args.filters || [])] : args.filters;
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
-export const reportsNumber = (context, user, args) => ({
-  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
-  total: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), R.dissoc('endDate'))(args)
-  ),
-});
+export const reportsNumber = (context, user, args) => {
+  return {
+    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_CONTAINER_REPORT] }),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER_REPORT] }
+    ),
+  };
+};
 
 export const reportsTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
 export const reportsTimeSeriesByAuthor = async (context, user, args) => {
-  const { authorId, reportClass } = args;
-  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
-  if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  const { authorId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
-export const reportsNumberByEntity = (context, user, args) => ({
-  count: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(
-      R.assoc('isMetaRelationship', true),
-      R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
-      R.assoc('relationshipType', RELATION_OBJECT),
-      R.assoc('fromId', args.objectId)
-    )(args)
-  ),
-  total: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(
-      R.assoc('isMetaRelationship', true),
-      R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
-      R.assoc('relationshipType', RELATION_OBJECT),
-      R.assoc('fromId', args.objectId),
-      R.dissoc('endDate')
-    )(args)
-  ),
-});
+export const reportsNumberByEntity = (context, user, args) => {
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  return {
+    count: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...args, filters, types: [ENTITY_TYPE_CONTAINER_REPORT] },
+    ),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER_REPORT] },
+    ),
+  };
+};
 
-export const reportsNumberByAuthor = (context, user, args) => ({
-  count: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(
-      R.assoc('isMetaRelationship', true),
-      R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
-      R.assoc('relationshipType', RELATION_CREATED_BY),
-      R.assoc('fromId', args.authorId)
-    )(args)
-  ),
-  total: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(
-      R.assoc('isMetaRelationship', true),
-      R.assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
-      R.assoc('relationshipType', RELATION_CREATED_BY),
-      R.assoc('fromId', args.authorId),
-      R.dissoc('endDate')
-    )(args)
-  ),
-});
+export const reportsNumberByAuthor = (context, user, args) => {
+  const { authorId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  return {
+    count: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...args, filters, types: [ENTITY_TYPE_CONTAINER_REPORT] },
+    ),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER_REPORT] },
+    ),
+  };
+};
 
 export const reportsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 // endregion
 

@@ -244,7 +244,7 @@ const inlineStyles = {
 };
 
 export const workbenchFileContentAttributesQuery = graphql`
-  query WorkbenchFileContentAttributesQuery($elementType: String!) {
+  query WorkbenchFileContentAttributesQuery($elementType: [String]!) {
     schemaAttributes(elementType: $elementType) {
       edges {
         node {
@@ -958,7 +958,7 @@ class WorkbenchFileContentComponent extends Component {
     return (
       <QueryRenderer
         query={workbenchFileContentAttributesQuery}
-        variables={{ elementType: type }}
+        variables={{ elementType: [type] }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
             const initialValues = {
@@ -1606,7 +1606,7 @@ class WorkbenchFileContentComponent extends Component {
     return (
       <QueryRenderer
         query={workbenchFileContentAttributesQuery}
-        variables={{ elementType: 'stix-core-relationship' }}
+        variables={{ elementType: ['stix-core-relationship'] }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
             const initialValues = {
@@ -1891,7 +1891,7 @@ class WorkbenchFileContentComponent extends Component {
     return (
       <QueryRenderer
         query={workbenchFileContentAttributesQuery}
-        variables={{ elementType: observableType }}
+        variables={{ elementType: [observableType] }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
             const initialValues = {
@@ -2224,7 +2224,7 @@ class WorkbenchFileContentComponent extends Component {
     return (
       <QueryRenderer
         query={workbenchFileContentAttributesQuery}
-        variables={{ elementType: containerType }}
+        variables={{ elementType: [containerType] }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
             const initialValues = {

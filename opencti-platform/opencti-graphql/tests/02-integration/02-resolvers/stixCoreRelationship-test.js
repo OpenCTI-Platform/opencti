@@ -64,18 +64,18 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   it('should stixCoreRelationship number to be accurate', async () => {
     const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const NUMBER_QUERY = gql`
-        query StixCoreRelationshipsNumber($type: String, $fromId: StixRef) {
-            stixCoreRelationshipsNumber(type: $type, fromId: $fromId) {
+        query StixCoreRelationshipsNumber($relationship_type: [String], $fromId: [String]) {
+            stixCoreRelationshipsNumber(relationship_type: $relationship_type, fromId: $fromId) {
                 total
             }
         }
     `;
     const queryResult = await queryAsAdmin({
       query: NUMBER_QUERY,
-      variables: { type: 'uses', fromId: campaign.internal_id },
+      variables: { relationship_type: ['uses'], fromId: [campaign.internal_id] },
     });
     expect(queryResult.data.stixCoreRelationshipsNumber.total).toEqual(1);
-    const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'stix-relationship' } });
+    const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { relationship_type: 'stix-relationship' } });
     expect(queryResult2.data.stixCoreRelationshipsNumber.total).toEqual(22);
   });
   it('should update stixCoreRelationship', async () => {

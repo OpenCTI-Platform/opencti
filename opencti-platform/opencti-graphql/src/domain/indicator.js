@@ -19,7 +19,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey,
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
   INPUT_LABELS,
@@ -123,56 +123,48 @@ export const addIndicator = async (context, user, indicator) => {
 
 // region series
 export const indicatorsTimeSeries = (context, user, args) => {
-  const { indicatorClass } = args;
-  const filters = indicatorClass ? [{ isRelation: false, type: 'pattern_type', value: args.pattern_type }] : [];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_INDICATOR, filters, args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
 export const indicatorsNumber = (context, user, args) => ({
-  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, R.assoc('types', [ENTITY_TYPE_INDICATOR], args)),
+  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_INDICATOR] }),
   total: elCount(
     context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(R.assoc('types', [ENTITY_TYPE_INDICATOR]), R.dissoc('endDate'))(args)
+    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR] }
   ),
 });
 
 export const indicatorsTimeSeriesByEntity = (context, user, args) => {
-  const filters = [{ isRelation: true, type: RELATION_INDICATES, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_INDICATOR, filters, args);
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_INDICATES, '*')], values: [objectId] }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 
-export const indicatorsNumberByEntity = (context, user, args) => ({
-  count: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(
-      R.assoc('isMetaRelationship', true),
-      R.assoc('types', [ENTITY_TYPE_INDICATOR]),
-      R.assoc('relationshipType', RELATION_INDICATES),
-      R.assoc('fromId', args.objectId)
-    )(args)
-  ),
-  total: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(
-      R.assoc('isMetaRelationship', true),
-      R.assoc('types', [ENTITY_TYPE_INDICATOR]),
-      R.assoc('relationshipType', RELATION_INDICATES),
-      R.assoc('fromId', args.objectId),
-      R.dissoc('endDate')
-    )(args)
-  ),
-});
+export const indicatorsNumberByEntity = (context, user, args) => {
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_INDICATES, '*')], values: [objectId] }, ...(args.filters || [])];
+  return {
+    count: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...args, types: [ENTITY_TYPE_INDICATOR], filters }
+    ),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR], filters }
+    ),
+  };
+};
 
 export const indicatorsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ isRelation: true, type: RELATION_INDICATES, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_INDICATOR, filters, args);
+  const filters = [{ key: [buildRefRelationKey(RELATION_INDICATES, '*')], values: [objectId] }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 // endregion
 

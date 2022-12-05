@@ -24,10 +24,18 @@ import {
   stixCoreObjectsExportAsk,
   stixCoreObjectsExportPush,
   stixCoreObjectCleanContext,
-  stixCoreObjectEditContext
+  stixCoreObjectEditContext,
+  stixCoreObjectsNumber,
+  stixCoreObjectsMultiNumber,
+  stixCoreObjectsTimeSeries,
+  stixCoreObjectsMultiTimeSeries,
+  stixCoreObjectsTimeSeriesByAuthor,
+  stixCoreObjectsDistribution,
+  stixCoreObjectsMultiDistribution,
+  stixCoreObjectsDistributionByEntity,
 } from '../domain/stixCoreObject';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
+import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { filesListing } from '../database/file-storage';
 import { BUS_TOPICS } from '../config/conf';
@@ -36,6 +44,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { batchUsers } from '../domain/user';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
+import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -53,8 +62,26 @@ const stixCoreObjectResolvers = {
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreObjectsTimeSeries: (_, args, context) => {
+      if (args.authorId && args.authorId.length > 0) {
+        return stixCoreObjectsTimeSeriesByAuthor(context, context.user, args);
+      }
+      return stixCoreObjectsTimeSeries(context, context.user, args);
+    },
+    stixCoreObjectsMultiTimeSeries: (_, args, context) => stixCoreObjectsMultiTimeSeries(context, context.user, args),
+    stixCoreObjectsNumber: (_, args, context) => stixCoreObjectsNumber(context, context.user, args),
+    stixCoreObjectsMultiNumber: (_, args, context) => stixCoreObjectsMultiNumber(context, context.user, args),
+    stixCoreObjectsDistribution: (_, args, context) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return stixCoreObjectsDistributionByEntity(context, context.user, args);
+      }
+      return stixCoreObjectsDistribution(context, context.user, args);
+    },
+    stixCoreObjectsMultiDistribution: (_, args, context) => stixCoreObjectsMultiDistribution(context, context.user, args),
     stixCoreObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
   },
+  StixCoreObjectsFilter: stixCoreObjectOptions.StixCoreObjectsFilter,
+  StixCoreObjectsOrdering: stixCoreObjectOptions.StixCoreObjectsOrdering,
   StixCoreObject: {
     // eslint-disable-next-line
     __resolveType(obj) {
@@ -67,7 +94,9 @@ const stixCoreObjectResolvers = {
     toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
     creator: (stixCoreObject, _, context) => creatorsLoader.load(stixCoreObject.creator_id, context, context.user),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
+    stixCoreObjectsDistribution: (stixCoreObject, args, context) => stixCoreObjectsDistributionByEntity(context, context.user, { ...args, objectId: stixCoreObject.id }),
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
+    stixCoreRelationshipsDistribution: (stixCoreObject, args, context) => distributionRelations(context, context.user, { ...args, elementId: stixCoreObject.id }),
     createdBy: (stixCoreObject, _, context) => createdByLoader.load(stixCoreObject.id, context, context.user),
     objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject.id, context, context.user),
     objectLabel: (stixCoreObject, _, context) => labelsLoader.load(stixCoreObject.id, context, context.user),

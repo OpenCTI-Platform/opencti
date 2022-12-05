@@ -52,72 +52,49 @@ export const groupingContainsStixObjectOrStixRelationship = async (context: Auth
 
 // region series
 export const groupingsTimeSeries = (context: AuthContext, user: AuthUser, args: QueryGroupingsTimeSeriesArgs) => {
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, [], args);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], args);
 };
 
 export const groupingsNumber = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
-  const countOptions = R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING], args);
-  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, countOptions) as Promise<number>;
-  const totalOptions = R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING]), R.dissoc('endDate'))(args);
-  const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, totalOptions) as Promise<number>;
+  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_CONTAINER_GROUPING] }) as Promise<number>;
+  const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER_GROUPING] }) as Promise<number>;
   const [count, total] = await Promise.all([countPromise, totalPromise]);
   return { count, total };
 };
 
 export const groupingsTimeSeriesByEntity = (context: AuthContext, user: AuthUser, args: QueryGroupingsTimeSeriesArgs) => {
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, filters, args);
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 
 export const groupingsTimeSeriesByAuthor = async (context: AuthContext, user: AuthUser, args: QueryGroupingsTimeSeriesArgs) => {
   const { authorId } = args;
-  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
-  return timeSeriesEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, filters, args);
+  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 
 export const groupingsNumberByEntity = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
-  const countOptions = R.pipe(
-    R.assoc('isMetaRelationship', true),
-    R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING]),
-    R.assoc('relationshipType', RELATION_OBJECT),
-    R.assoc('fromId', args.objectId)
-  )(args);
-  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, countOptions) as Promise<number>;
-  const totalOptions = R.pipe(
-    R.assoc('isMetaRelationship', true),
-    R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING]),
-    R.assoc('relationshipType', RELATION_OBJECT),
-    R.assoc('fromId', args.objectId),
-    R.dissoc('endDate')
-  )(args);
-  const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, totalOptions) as Promise<number>;
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_CONTAINER_GROUPING], filters }) as Promise<number>;
+  const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER_GROUPING], filters }) as Promise<number>;
   const [count, total] = await Promise.all([countPromise, totalPromise]);
   return { count, total };
 };
 
 export const groupingsNumberByAuthor = async (context: AuthContext, user: AuthUser, args: QueryGroupingsNumberArgs): Promise<GroupingNumberResult> => {
-  const countOptions = R.pipe(
-    R.assoc('isMetaRelationship', true),
-    R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING]),
-    R.assoc('relationshipType', RELATION_CREATED_BY),
-    R.assoc('fromId', args.authorId)
-  )(args);
-  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, countOptions) as Promise<number>;
-  const totalOptions = R.pipe(
-    R.assoc('isMetaRelationship', true),
-    R.assoc('types', [ENTITY_TYPE_CONTAINER_GROUPING]),
-    R.assoc('relationshipType', RELATION_CREATED_BY),
-    R.assoc('fromId', args.authorId),
-    R.dissoc('endDate')
-  )(args);
-  const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, totalOptions) as Promise<number>;
+  const { authorId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_CONTAINER_GROUPING], filters }) as Promise<number>;
+  const totalPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER_GROUPING], filters }) as Promise<number>;
   const [count, total] = await Promise.all([countPromise, totalPromise]);
   return { count, total };
 };
 
 export const groupingsDistributionByEntity = async (context: AuthContext, user: AuthUser, args: QueryGroupingsDistributionArgs) => {
   const { objectId } = args;
-  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(context, user, ENTITY_TYPE_CONTAINER_GROUPING, filters, args);
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
 };
 // endregion

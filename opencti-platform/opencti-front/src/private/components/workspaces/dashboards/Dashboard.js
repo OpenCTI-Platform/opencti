@@ -1,30 +1,19 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import Drawer from '@mui/material/Drawer';
-import Grid from '@mui/material/Grid';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   daysAgo,
   monthsAgo,
-  parse,
   yearsAgo,
   dayStartDate,
+  parse,
 } from '../../../../utils/Time';
-import inject18n from '../../../../components/i18n';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import WidgetCreation from './WidgetCreation';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 import ThreatVictimologyAll from './ThreatVictimologyAll';
 import ThreatVictimologySectors from './ThreatVictimologySectors';
@@ -52,10 +41,35 @@ import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
 import ThreatVulnerabilities from './ThreatVulnerabilities';
 import { fromB64, toB64 } from '../../../../utils/String';
 import GlobalActivityStixCoreRelationships from './GlobalActivityStixCoreRelationships';
+import WidgetConfig from './WidgetConfig';
+import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
+import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
+import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
+import StixCoreObjectsMultiLineChart from '../../common/stix_core_objects/StixCoreObjectsMultiLineChart';
+import StixCoreObjectsMultiAreaChart from '../../common/stix_core_objects/StixCoreObjectsMultiAreaChart';
+import StixCoreObjectsTimeline from '../../common/stix_core_objects/StixCoreObjectsTimeline';
+import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
+import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
+import StixCoreRelationshipsMultiVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiVerticalBars';
+import StixCoreObjectsHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsHorizontalBars';
+import StixCoreRelationshipsMultiHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHorizontalBars';
+import StixCoreObjectsRadar from '../../common/stix_core_objects/StixCoreObjectsRadar';
+import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
+import StixCoreRelationshipsNumber from '../../common/stix_core_relationships/StixCoreRelationshipsNumber';
+import StixCoreRelationshipsMultiLineChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiLineChart';
+import StixCoreRelationshipsMultiAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiAreaChart';
+import StixCoreRelationshipsTimeline from '../../common/stix_core_relationships/StixCoreRelationshipsTimeline';
+import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
+import StixCoreRelationshipsRadar from '../../common/stix_core_relationships/StixCoreRelationshipsRadar';
+import StixCoreObjectsMultiHeatMap from '../../common/stix_core_objects/StixCoreObjectsMultiHeatMap';
+import StixCoreRelationshipsMultiHeatMap from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHeatMap';
+import StixCoreObjectsTreeMap from '../../common/stix_core_objects/StixCoreObjectsTreeMap';
+import StixCoreRelationshipsTreeMap from '../../common/stix_core_relationships/StixCoreRelationshipsTreeMap';
+import StixCoreRelationshipsMap from '../../common/stix_core_relationships/StixCoreRelationshipsMap';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: '0 -20px 0 -20px',
   },
@@ -74,42 +88,59 @@ const styles = () => ({
     display: 'relative',
     overflow: 'hidden',
   },
-});
+}));
 
-class DashboardComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { openConfig: false, currentWidget: {}, mapReload: false };
-  }
-
-  saveManifest(manifest) {
-    const { workspace } = this.props;
-    const newManifest = toB64(JSON.stringify(manifest));
-    if (workspace.manifest !== newManifest) {
+const DashboardComponent = ({ workspace, noToolbar }) => {
+  const classes = useStyles();
+  const [manifest, setManifest] = useState(
+    workspace.manifest && workspace.manifest.length > 0
+      ? JSON.parse(fromB64(workspace.manifest))
+      : { widgets: {}, config: {} },
+  );
+  const [deleting, setDeleting] = useState(false);
+  const saveManifest = (newManifest) => {
+    setManifest(newManifest);
+    const newManifestEncoded = toB64(JSON.stringify(newManifest));
+    if (workspace.manifest !== newManifestEncoded) {
       commitMutation({
         mutation: workspaceMutationFieldPatch,
         variables: {
-          id: this.props.workspace.id,
+          id: workspace.id,
           input: {
             key: 'manifest',
-            value: newManifest,
+            value: newManifestEncoded,
           },
         },
       });
     }
-  }
-
-  decodeManifest() {
-    const { workspace } = this.props;
-    let manifest = { widgets: {}, config: {} };
-    if (workspace.manifest && workspace.manifest.length > 0) {
-      manifest = JSON.parse(fromB64(workspace.manifest));
+  };
+  const handleDateChange = (type, value) => {
+    // eslint-disable-next-line no-nested-ternary
+    const newValue = value && value.target
+      ? value.target.value
+      : value
+        ? parse(value).format()
+        : null;
+    let newManifest = R.assoc(
+      'config',
+      R.assoc(type, newValue === 'none' ? null : newValue, manifest.config),
+      manifest,
+    );
+    if (type === 'relativeDate' && newValue !== 'none') {
+      newManifest = R.assoc(
+        'config',
+        R.assoc('startDate', null, newManifest.config),
+        newManifest,
+      );
+      newManifest = R.assoc(
+        'config',
+        R.assoc('endDate', null, newManifest.config),
+        newManifest,
+      );
     }
-    return manifest;
-  }
-
-  handleAddWidget(widgetManifest) {
-    const manifest = this.decodeManifest();
+    saveManifest(newManifest);
+  };
+  const handleAddWidget = (widgetManifest) => {
     const newManifest = R.assoc(
       'widgets',
       R.assoc(
@@ -131,102 +162,70 @@ class DashboardComponent extends Component {
       ),
       manifest,
     );
-    this.saveManifest(newManifest);
-  }
-
-  handleDeleteWidget(widgetId) {
-    const manifest = this.decodeManifest();
+    saveManifest(newManifest);
+  };
+  const handleUpdateWidget = (widgetManifest) => {
+    const newManifest = R.assoc(
+      'widgets',
+      R.assoc(widgetManifest.id, widgetManifest, manifest.widgets),
+      manifest,
+    );
+    saveManifest(newManifest);
+  };
+  const handleDeleteWidget = (widgetId) => {
+    setDeleting(true);
     const newManifest = R.assoc(
       'widgets',
       R.dissoc(widgetId, manifest.widgets),
       manifest,
     );
-    this.saveManifest(newManifest);
-  }
-
-  handleTimeFieldChange(event) {
-    const newValue = event.target.value;
-    const manifest = this.decodeManifest();
-    const newManifest = R.assoc(
-      'config',
-      R.assoc(
-        'timeField',
-        newValue === 'none' ? null : newValue,
-        manifest.config,
-      ),
-      manifest,
-    );
-    this.saveManifest(newManifest);
-  }
-
-  handleDateChange(type, value) {
-    // eslint-disable-next-line no-nested-ternary
-    const newValue = value && value.target
-      ? value.target.value
-      : value
-        ? parse(value).format()
-        : null;
-    const manifest = this.decodeManifest();
-    let newManifest = R.assoc(
-      'config',
-      R.assoc(type, newValue === 'none' ? null : newValue, manifest.config),
-      manifest,
-    );
-    if (type === 'relativeDate' && newValue !== 'none') {
-      newManifest = R.assoc(
-        'config',
-        R.assoc('startDate', null, newManifest.config),
-        newManifest,
+    saveManifest(newManifest);
+  };
+  const onLayoutChange = (layouts) => {
+    if (!deleting) {
+      const layoutsObject = R.indexBy(R.prop('i'), layouts);
+      const newManifest = R.assoc(
+        'widgets',
+        R.map(
+          (n) => R.assoc('layout', layoutsObject[n.id], n),
+          manifest.widgets,
+        ),
+        manifest,
       );
-      newManifest = R.assoc(
-        'config',
-        R.assoc('endDate', null, newManifest.config),
-        newManifest,
-      );
+      saveManifest(newManifest);
     }
-    this.saveManifest(newManifest);
-  }
-
-  onLayoutChange(layouts) {
-    const manifest = this.decodeManifest();
-    const layoutsObject = R.indexBy(R.prop('i'), layouts);
-    const newManifest = R.assoc(
-      'widgets',
-      R.map((n) => R.assoc('layout', layoutsObject[n.id], n), manifest.widgets),
-      manifest,
-    );
-    this.setState({ mapReload: true }, () => this.setState({ mapReload: false }));
-    this.saveManifest(newManifest);
-  }
-
-  onConfigChange(config) {
-    const manifest = this.decodeManifest();
+  };
+  const onConfigChange = (config) => {
     const newManifest = R.assoc(
       'widgets',
       R.map((n) => R.assoc('config', config, n), manifest.widgets),
       manifest,
     );
-    this.setState({ mapReload: true }, () => this.setState({ mapReload: false }));
-    this.saveManifest(newManifest);
-  }
-
-  static getDayStartDate() {
+    saveManifest(newManifest);
+  };
+  const getDayStartDate = () => {
     return dayStartDate(null, false);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderGlobalVisualization(widget, config) {
-    const { relativeDate } = config;
-    let { timeField = 'technical' } = config;
-    if (this.props.timeField) {
-      timeField = this.props.timeField;
+  };
+  const computerRelativeDate = (relativeDate) => {
+    if (relativeDate.includes('days')) {
+      return daysAgo(relativeDate.split('-')[1], null, false);
     }
+    if (relativeDate.includes('months')) {
+      return monthsAgo(relativeDate.split('-')[1]);
+    }
+    if (relativeDate.includes('years')) {
+      return yearsAgo(relativeDate.split('-')[1]);
+    }
+    return null;
+  };
+  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
+  const renderGlobalVisualization = (widget, config) => {
+    const { relativeDate } = config;
+    const { timeField = 'technical' } = config;
     const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
+      ? computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -253,7 +252,6 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            mapReload={this.state.mapReload}
           />
         );
       case 'countries':
@@ -263,7 +261,6 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            mapReload={this.state.mapReload}
           />
         );
       case 'intrusion-sets':
@@ -300,7 +297,7 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            onConfigChange={this.onConfigChange.bind(this)}
+            onConfigChange={onConfigChange}
           />
         );
       case 'indicators':
@@ -339,27 +336,21 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            onConfigChange={this.onConfigChange.bind(this)}
+            onConfigChange={onConfigChange}
           />
         );
       default:
         return 'Go away!';
     }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderThreatVisualization(widget, config) {
+  };
+  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
+  const renderThreatVisualization = (widget, config) => {
     const { relativeDate } = config;
-    let { timeField = 'technical' } = config;
-    if (this.props.timeField) {
-      timeField = this.props.timeField;
-    }
+    const { timeField = 'technical' } = config;
     const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
+      ? computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -386,7 +377,6 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            mapReload={this.state.mapReload}
           />
         );
       case 'countries':
@@ -396,7 +386,6 @@ class DashboardComponent extends Component {
             endDate={endDate}
             timeField={timeField}
             widget={widget}
-            mapReload={this.state.mapReload}
           />
         );
       case 'campaigns':
@@ -438,35 +427,15 @@ class DashboardComponent extends Component {
       default:
         return 'Go away!';
     }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  computerRelativeDate(relativeDate) {
-    if (relativeDate.includes('days')) {
-      return daysAgo(relativeDate.split('-')[1], null, false);
-    }
-    if (relativeDate.includes('months')) {
-      return monthsAgo(relativeDate.split('-')[1]);
-    }
-    if (relativeDate.includes('years')) {
-      return yearsAgo(relativeDate.split('-')[1]);
-    }
-    return null;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderEntityVisualization(widget, config) {
+  };
+  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
+  const renderEntityVisualization = (widget, config) => {
     const { relativeDate } = config;
-    let { timeField = 'technical' } = config;
-    if (this.props.timeField) {
-      timeField = this.props.timeField;
-    }
+    const { timeField = 'technical' } = config;
     const startDate = relativeDate
-      ? this.computerRelativeDate(relativeDate)
+      ? computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate
-      ? DashboardComponent.getDayStartDate()
-      : config.endDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -525,255 +494,290 @@ class DashboardComponent extends Component {
       default:
         return 'Go away!';
     }
-  }
-
-  render() {
-    const { t, classes, workspace, noToolbar } = this.props;
-    const manifest = this.decodeManifest();
-    const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
-    let timeField = R.propOr('technical', 'timeField', manifest.config);
-    if (this.props.timeField) {
-      timeField = this.props.timeField;
+  };
+  const renderEntitiesVisualization = (widget, config) => {
+    const { relativeDate } = config;
+    const startDate = relativeDate
+      ? computerRelativeDate(relativeDate)
+      : config.startDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
+    switch (widget.type) {
+      case 'number':
+        return (
+          <StixCoreObjectsNumber
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <StixCoreObjectsList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <StixCoreObjectsMultiVerticalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'line':
+        return (
+          <StixCoreObjectsMultiLineChart
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <StixCoreObjectsMultiAreaChart
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'timeline':
+        return (
+          <StixCoreObjectsTimeline
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'donut':
+        return (
+          <StixCoreObjectsDonut
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'horizontal-bar':
+        return (
+          <StixCoreObjectsHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'radar':
+        return (
+          <StixCoreObjectsRadar
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'heatmap':
+        return (
+          <StixCoreObjectsMultiHeatMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'tree':
+        return (
+          <StixCoreObjectsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      default:
+        return 'Not implemented yet';
     }
-    return (
-      <div
-        className={classes.container}
-        id="container"
-        style={{
-          paddingBottom: noToolbar ? 0 : 50,
-          marginTop: noToolbar ? -20 : 0,
-        }}
-      >
-        {!noToolbar && (
-          <WorkspaceHeader workspace={workspace} variant="dashboard" />
-        )}
-        {!noToolbar && (
-          <Drawer
-            anchor="bottom"
-            variant="permanent"
-            classes={{ paper: classes.bottomNav }}
-            PaperProps={{ variant: 'elevation', elevation: 1 }}
-          >
-            <Security
-              needs={[EXPLORE_EXUPDATE]}
-              placeholder={
-                <Grid container={true} spacing={1}>
-                  <Grid item={true} xs="auto">
-                    <FormControl style={{ width: 194, marginRight: 20 }}>
-                      <InputLabel id="timeField" variant="standard">
-                        {t('Date reference')}
-                      </InputLabel>
-                      <Select
-                        variant="standard"
-                        labelId="timeField"
-                        value={timeField === null ? '' : timeField}
-                        onChange={this.handleTimeFieldChange.bind(this)}
-                        disabled={true}
-                      >
-                        <MenuItem value="technical">
-                          {t('Technical date')}
-                        </MenuItem>
-                        <MenuItem value="functional">
-                          {t('Functional date')}
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item={true} xs="auto">
-                    <FormControl style={{ width: 194, marginRight: 20 }}>
-                      <InputLabel id="relative" variant="standard">
-                        {t('Relative time')}
-                      </InputLabel>
-                      <Select
-                        variant="standard"
-                        labelId="relative"
-                        value={relativeDate === null ? '' : relativeDate}
-                        onChange={this.handleDateChange.bind(
-                          this,
-                          'relativeDate',
-                        )}
-                        disabled={true}
-                      >
-                        <MenuItem value="none">{t('None')}</MenuItem>
-                        <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                        <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                        <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                        <MenuItem value="months-6">
-                          {t('Last 6 months')}
-                        </MenuItem>
-                        <MenuItem value="years-1">{t('Last year')}</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item={true} xs="auto">
-                    <DatePicker
-                      value={R.propOr(null, 'startDate', manifest.config)}
-                      disableToolbar={true}
-                      autoOk={true}
-                      label={t('Start date')}
-                      clearable={true}
-                      disableFuture={true}
-                      disabled={true}
-                      onChange={this.handleDateChange.bind(this, 'startDate')}
-                      renderInput={(params) => (
-                        <TextField
-                          style={{ marginRight: 20 }}
-                          variant="standard"
-                          size="small"
-                          {...params}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid item={true} xs="auto">
-                    <DatePicker
-                      value={R.propOr(null, 'endDate', manifest.config)}
-                      disableToolbar={true}
-                      autoOk={true}
-                      label={t('End date')}
-                      clearable={true}
-                      disabled={true}
-                      disableFuture={true}
-                      onChange={this.handleDateChange.bind(this, 'endDate')}
-                      renderInput={(params) => (
-                        <TextField
-                          style={{ marginRight: 20 }}
-                          variant="standard"
-                          size="small"
-                          {...params}
-                        />
-                      )}
-                    />
-                  </Grid>
-                </Grid>
-              }
-            >
-              <Grid container={true} spacing={1}>
-                <Grid item={true} xs="auto">
-                  <FormControl style={{ width: 194, marginRight: 20 }}>
-                    <InputLabel id="timeField" variant="standard">
-                      {t('Date reference')}
-                    </InputLabel>
-                    <Select
-                      variant="standard"
-                      labelId="timeField"
-                      size="small"
-                      value={timeField === null ? '' : timeField}
-                      onChange={this.handleTimeFieldChange.bind(this)}
-                    >
-                      <MenuItem value="technical">
-                        {t('Technical date')}
-                      </MenuItem>
-                      <MenuItem value="functional">
-                        {t('Functional date')}
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item={true} xs="auto">
-                  <FormControl style={{ width: 194, marginRight: 20 }}>
-                    <InputLabel id="relative" variant="standard">
-                      {t('Relative time')}
-                    </InputLabel>
-                    <Select
-                      variant="standard"
-                      labelId="relative"
-                      size="small"
-                      value={relativeDate === null ? '' : relativeDate}
-                      onChange={this.handleDateChange.bind(
-                        this,
-                        'relativeDate',
-                      )}
-                    >
-                      <MenuItem value="none">{t('None')}</MenuItem>
-                      <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                      <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                      <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                      <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
-                      <MenuItem value="years-1">{t('Last year')}</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item={true} xs="auto">
-                  <DatePicker
-                    value={R.propOr(null, 'startDate', manifest.config)}
-                    disableToolbar={true}
-                    autoOk={true}
-                    label={t('Start date')}
-                    clearable={true}
-                    disableFuture={true}
-                    disabled={relativeDate !== null}
-                    onChange={this.handleDateChange.bind(this, 'startDate')}
-                    renderInput={(params) => (
-                      <TextField
-                        style={{ marginRight: 20 }}
-                        variant="standard"
-                        size="small"
-                        {...params}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item={true} xs="auto">
-                  <DatePicker
-                    value={R.propOr(null, 'endDate', manifest.config)}
-                    autoOk={true}
-                    label={t('End date')}
-                    clearable={true}
-                    disabled={relativeDate !== null}
-                    disableFuture={true}
-                    onChange={this.handleDateChange.bind(this, 'endDate')}
-                    renderInput={(params) => (
-                      <TextField variant="standard" size="small" {...params} />
-                    )}
-                  />
-                </Grid>
-              </Grid>
-            </Security>
-          </Drawer>
-        )}
-        <Security
-          needs={[EXPLORE_EXUPDATE]}
-          placeholder={
-            <ResponsiveGridLayout
-              className="layout"
-              margin={[20, 20]}
-              rowHeight={50}
-              breakpoints={{
-                lg: 1200,
-                md: 1200,
-                sm: 1200,
-                xs: 1200,
-                xxs: 1200,
-              }}
-              cols={{
-                lg: 30,
-                md: 30,
-                sm: 30,
-                xs: 30,
-                xxs: 30,
-              }}
-              isDraggable={false}
-              isResizable={false}
-            >
-              {R.values(manifest.widgets).map((widget) => (
-                <Paper
-                  key={widget.id}
-                  data-grid={widget.layout}
-                  classes={{ root: classes.paper }}
-                  variant="outlined"
-                >
-                  {widget.perspective === 'global'
-                    && this.renderGlobalVisualization(widget, manifest.config)}
-                  {widget.perspective === 'threat'
-                    && this.renderThreatVisualization(widget, manifest.config)}
-                  {widget.perspective === 'entity'
-                    && this.renderEntityVisualization(widget, manifest.config)}
-                </Paper>
-              ))}
-            </ResponsiveGridLayout>
-          }
-        >
+  };
+  const renderRelationshipsVisualization = (widget, config) => {
+    const { relativeDate } = config;
+    const startDate = relativeDate
+      ? computerRelativeDate(relativeDate)
+      : config.startDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
+    switch (widget.type) {
+      case 'number':
+        return (
+          <StixCoreRelationshipsNumber
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <StixCoreRelationshipsList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <StixCoreRelationshipsMultiVerticalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'line':
+        return (
+          <StixCoreRelationshipsMultiLineChart
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <StixCoreRelationshipsMultiAreaChart
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'timeline':
+        return (
+          <StixCoreRelationshipsTimeline
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'donut':
+        return (
+          <StixCoreRelationshipsDonut
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'horizontal-bar':
+        if (widget.dataSelection.length > 1) {
+          return (
+            <StixCoreRelationshipsMultiHorizontalBars
+              startDate={startDate}
+              endDate={endDate}
+              dataSelection={widget.dataSelection}
+              parameters={widget.parameters}
+              variant="inLine"
+            />
+          );
+        }
+        return (
+          <StixCoreRelationshipsHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'radar':
+        return (
+          <StixCoreRelationshipsRadar
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'heatmap':
+        return (
+          <StixCoreRelationshipsMultiHeatMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'tree':
+        return (
+          <StixCoreRelationshipsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'map':
+        return (
+          <StixCoreRelationshipsMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      default:
+        return 'Not implemented yet';
+    }
+  };
+  return (
+    <div
+      className={classes.container}
+      id="container"
+      style={{
+        paddingBottom: noToolbar ? 0 : 50,
+        marginTop: noToolbar ? -20 : 0,
+      }}
+    >
+      {!noToolbar && (
+        <WorkspaceHeader
+          workspace={workspace}
+          config={manifest.config}
+          handleDateChange={handleDateChange}
+          variant="dashboard"
+        />
+      )}
+      <Security
+        needs={[EXPLORE_EXUPDATE]}
+        placeholder={
           <ResponsiveGridLayout
             className="layout"
             margin={[20, 20]}
@@ -792,11 +796,8 @@ class DashboardComponent extends Component {
               xs: 30,
               xxs: 30,
             }}
-            isDraggable={!noToolbar}
-            isResizable={!noToolbar}
-            onLayoutChange={
-              noToolbar ? () => true : this.onLayoutChange.bind(this)
-            }
+            isDraggable={false}
+            isResizable={false}
           >
             {R.values(manifest.widgets).map((widget) => (
               <Paper
@@ -805,38 +806,78 @@ class DashboardComponent extends Component {
                 classes={{ root: classes.paper }}
                 variant="outlined"
               >
-                {!noToolbar && (
-                  <WidgetPopover
-                    onDelete={this.handleDeleteWidget.bind(this, widget.id)}
-                  />
-                )}
                 {widget.perspective === 'global'
-                  && this.renderGlobalVisualization(widget, manifest.config)}
+                  && renderGlobalVisualization(widget, manifest.config)}
                 {widget.perspective === 'threat'
-                  && this.renderThreatVisualization(widget, manifest.config)}
+                  && renderThreatVisualization(widget, manifest.config)}
                 {widget.perspective === 'entity'
-                  && this.renderEntityVisualization(widget, manifest.config)}
+                  && renderEntityVisualization(widget, manifest.config)}
+                {widget.perspective === 'entities'
+                  && renderEntitiesVisualization(widget, manifest.config)}
+                {widget.perspective === 'relationships'
+                  && renderRelationshipsVisualization(widget, manifest.config)}
               </Paper>
             ))}
           </ResponsiveGridLayout>
-          {!noToolbar && (
-            <WidgetCreation onComplete={this.handleAddWidget.bind(this)} />
-          )}
-        </Security>
-      </div>
-    );
-  }
-}
-
-DashboardComponent.propTypes = {
-  workspace: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  noToolbar: PropTypes.bool,
-  timeField: PropTypes.string,
+        }
+      >
+        <ResponsiveGridLayout
+          className="layout"
+          margin={[20, 20]}
+          rowHeight={50}
+          breakpoints={{
+            lg: 1200,
+            md: 1200,
+            sm: 1200,
+            xs: 1200,
+            xxs: 1200,
+          }}
+          cols={{
+            lg: 30,
+            md: 30,
+            sm: 30,
+            xs: 30,
+            xxs: 30,
+          }}
+          isDraggable={!noToolbar}
+          isResizable={!noToolbar}
+          onLayoutChange={noToolbar ? () => true : onLayoutChange}
+          draggableCancel=".noDrag"
+        >
+          {R.values(manifest.widgets).map((widget) => (
+            <Paper
+              key={widget.id}
+              data-grid={widget.layout}
+              classes={{ root: classes.paper }}
+              variant="outlined"
+            >
+              {!noToolbar && (
+                <WidgetPopover
+                  widget={widget}
+                  onUpdate={handleUpdateWidget}
+                  onDelete={() => handleDeleteWidget(widget.id)}
+                />
+              )}
+              {widget.perspective === 'global'
+                && renderGlobalVisualization(widget, manifest.config)}
+              {widget.perspective === 'threat'
+                && renderThreatVisualization(widget, manifest.config)}
+              {widget.perspective === 'entity'
+                && renderEntityVisualization(widget, manifest.config)}
+              {widget.perspective === 'entities'
+                && renderEntitiesVisualization(widget, manifest.config)}
+              {widget.perspective === 'relationships'
+                && renderRelationshipsVisualization(widget, manifest.config)}
+            </Paper>
+          ))}
+        </ResponsiveGridLayout>
+        {!noToolbar && <WidgetConfig onComplete={handleAddWidget} />}
+      </Security>
+    </div>
+  );
 };
 
-const Dashboard = createFragmentContainer(DashboardComponent, {
+export default createFragmentContainer(DashboardComponent, {
   workspace: graphql`
     fragment Dashboard_workspace on Workspace {
       id
@@ -852,5 +893,3 @@ const Dashboard = createFragmentContainer(DashboardComponent, {
     }
   `,
 });
-
-export default R.compose(inject18n, withStyles(styles))(Dashboard);

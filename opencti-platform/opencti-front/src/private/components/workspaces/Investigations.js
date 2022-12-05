@@ -84,6 +84,7 @@ class Investigations extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         keyword={searchTerm}
+        secondaryAction={true}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
       >
