@@ -11,6 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { radarChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { truncate } from '../../../../utils/String';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -66,6 +67,7 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
         ... on AttackPattern {
           name
           description
+          x_mitre_id
         }
         ... on Campaign {
           name
@@ -220,9 +222,7 @@ const StixCoreObjectsRadar = ({
                 data,
               },
             ];
-            const labels = props.stixCoreObjectsDistribution.map(
-              (n) => n.label,
-            );
+            const labels = props.stixCoreObjectsDistribution.map((n) => truncate(n.label, 20));
             return (
               <Chart
                 options={radarChartOptions(theme, labels, [], true, false)}

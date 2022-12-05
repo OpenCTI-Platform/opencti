@@ -12,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { radarChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
+import { truncate } from '../../../../utils/String';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -79,6 +80,7 @@ const stixCoreRelationshipsRadarsDistributionQuery = graphql`
         ... on AttackPattern {
           name
           description
+          x_mitre_id
         }
         ... on Campaign {
           name
@@ -254,10 +256,11 @@ const StixCoreRelationshipsRadar = ({
                   'label',
                   `${
                     finalToTypes && finalToTypes.length > 1
-                      ? `[${t(
-                        `entity_${n.entity.entity_type}`,
-                      )}] ${defaultValue(n.entity)}`
-                      : `${defaultValue(n.entity)}`
+                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${truncate(
+                        defaultValue(n.entity),
+                        20,
+                      )}`
+                      : `${truncate(defaultValue(n.entity), 20)}`
                   }`,
                   n,
                 ),
