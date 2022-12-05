@@ -51,6 +51,32 @@ const stixCoreRelationshipsMultiHeatMapTimeSeriesQuery = graphql`
   }
 `;
 
+const darkColors = [
+  '#001e3c',
+  '#023362',
+  '#02407a',
+  '#045198',
+  '#0561b4',
+  '#0b75d9',
+  '#2986e7',
+  '#3a95f3',
+  '#4da3ff',
+  '#76bbff',
+];
+
+const lightColors = [
+  '#f3f6f9',
+  '#76bbff',
+  '#4da3ff',
+  '#3a95f3',
+  '#2986e7',
+  '#0b75d9',
+  '#0561b4',
+  '#02407a',
+  '#023362',
+  '#001e3c',
+];
+
 const StixCoreRelationshipsMultiHeatMap = ({
   variant,
   height,
@@ -105,6 +131,31 @@ const StixCoreRelationshipsMultiHeatMap = ({
         }}
         render={({ props }) => {
           if (props && props.stixCoreRelationshipsMultiTimeSeries) {
+            const chartdata = dataSelection.map((selection, i) => ({
+              name: selection.label ?? t('Number of relationships'),
+              data: props.stixCoreRelationshipsMultiTimeSeries[i].data.map(
+                (entry) => ({
+                  x: new Date(entry.date),
+                  y: entry.value,
+                }),
+              ),
+            }));
+            const allValues = props.stixCoreRelationshipsMultiTimeSeries
+              .map((n) => n.data.map((o) => o.value))
+              .flat();
+            const maxValue = Math.max(...allValues);
+            const minValue = Math.min(...allValues);
+            const interval = Math.trunc((maxValue - minValue) / 9);
+            const colorRanges = Array(10)
+              .fill(0)
+              .map((_, i) => ({
+                from: minValue + (i + 1) * interval - interval,
+                to: minValue + (i + 1) * interval,
+                color:
+                  theme.palette.mode === 'dark'
+                    ? darkColors[i]
+                    : lightColors[i],
+              }));
             return (
               <Chart
                 options={heatMapOptions(
@@ -114,18 +165,10 @@ const StixCoreRelationshipsMultiHeatMap = ({
                   undefined,
                   undefined,
                   parameters.stacked,
-                  parameters.legend,
+                  colorRanges,
                 )}
-                series={dataSelection.map((selection, i) => ({
-                  name: selection.label ?? t('Number of entities'),
-                  data: props.stixCoreRelationshipsMultiTimeSeries[i].data.map(
-                    (entry) => ({
-                      x: new Date(entry.date),
-                      y: entry.value,
-                    }),
-                  ),
-                }))}
-                type="area"
+                series={chartdata}
+                type="heatmap"
                 width="100%"
                 height="100%"
               />

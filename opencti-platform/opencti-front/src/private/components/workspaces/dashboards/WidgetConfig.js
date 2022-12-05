@@ -245,13 +245,15 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'distribution',
     availableParameters: ['attribute', 'distributed'],
+    onlyRelationships: false,
   },
   {
     key: 'map',
     name: 'Map',
     dataSelectionLimit: 1,
     category: 'distribution',
-    availableParameters: [],
+    availableParameters: ['attribute'],
+    onlyRelationships: true,
   },
 ];
 const indexedVisualizationTypes = R.indexBy(R.prop('key'), visualizationTypes);
@@ -308,6 +310,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     });
     handleClose();
   };
+  const getCurrentIsOnlyRelationships = () => {
+    return indexedVisualizationTypes[type]?.onlyRelationships ?? false;
+  };
   const getCurrentDataSelectionLimit = () => {
     return indexedVisualizationTypes[type]?.dataSelectionLimit ?? 0;
   };
@@ -349,7 +354,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         label: '',
         attribute: 'entity_type',
         date_attribute: 'created_at',
-        perspective: subPerspective ?? perspective,
+        perspective: subPerspective,
         filters: {},
       },
     ]);
@@ -518,26 +523,32 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         spacing={3}
         style={{ marginTop: 20, marginBottom: 20 }}
       >
-        <Grid item={true} xs="6">
-          <Card variant="outlined" className={classes.card}>
-            <CardActionArea
-              onClick={() => handleSelectPerspective('entities')}
-              style={{ height: '100%' }}
-            >
-              <CardContent>
-                <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
-                <Typography gutterBottom variant="h2" style={{ marginTop: 20 }}>
-                  {t('Entities')}
-                </Typography>
-                <br />
-                <Typography variant="body1">
-                  {t('Display global knowledge with filters and criteria.')}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        </Grid>
-        <Grid item={true} xs="6">
+        {!getCurrentIsOnlyRelationships() && (
+          <Grid item={true} xs="6">
+            <Card variant="outlined" className={classes.card}>
+              <CardActionArea
+                onClick={() => handleSelectPerspective('entities')}
+                style={{ height: '100%' }}
+              >
+                <CardContent>
+                  <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
+                  <Typography
+                    gutterBottom
+                    variant="h2"
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Entities')}
+                  </Typography>
+                  <br />
+                  <Typography variant="body1">
+                    {t('Display global knowledge with filters and criteria.')}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        )}
+        <Grid item={true} xs={getCurrentIsOnlyRelationships() ? '12' : '6'}>
           <Card variant="outlined" className={classes.card}>
             <CardActionArea
               onClick={() => handleSelectPerspective('relationships')}
@@ -673,7 +684,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
               }
               color="secondary"
               size="small"
-              onClick={handleAddDataSelection}
+              onClick={() => handleAddDataSelection('entities')}
               classes={{ root: classes.buttonAdd }}
             >
               <AddOutlined fontSize="small" />

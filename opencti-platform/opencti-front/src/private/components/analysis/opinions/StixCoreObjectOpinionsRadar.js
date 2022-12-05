@@ -188,13 +188,13 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
       ];
       return (
         <Chart
-          options={radarChartOptions(theme, labels, [
-            '#ff5722',
-            '#ffc107',
-            '#cddc39',
-            '#8bc34a',
-            '#4caf50',
-          ])}
+          options={radarChartOptions(
+            theme,
+            labels,
+            ['#ff5722', '#ffc107', '#cddc39', '#8bc34a', '#4caf50'],
+            true,
+            true,
+          )}
           series={chartData}
           type="radar"
           width="100%"

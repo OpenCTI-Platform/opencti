@@ -64,6 +64,8 @@ import StixCoreRelationshipsRadar from '../../common/stix_core_relationships/Sti
 import StixCoreObjectsMultiHeatMap from '../../common/stix_core_objects/StixCoreObjectsMultiHeatMap';
 import StixCoreRelationshipsMultiHeatMap from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHeatMap';
 import StixCoreObjectsTreeMap from '../../common/stix_core_objects/StixCoreObjectsTreeMap';
+import StixCoreRelationshipsTreeMap from '../../common/stix_core_relationships/StixCoreRelationshipsTreeMap';
+import StixCoreRelationshipsMap from '../../common/stix_core_relationships/StixCoreRelationshipsMap';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -725,6 +727,26 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'heatmap':
         return (
           <StixCoreRelationshipsMultiHeatMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'tree':
+        return (
+          <StixCoreRelationshipsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'map':
+        return (
+          <StixCoreRelationshipsMap
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}

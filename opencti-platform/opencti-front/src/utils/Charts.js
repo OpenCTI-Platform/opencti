@@ -402,6 +402,7 @@ export const radarChartOptions = (
   labels,
   chartColors = [],
   legend = false,
+  offset = false,
 ) => ({
   chart: {
     type: 'radar',
@@ -409,7 +410,7 @@ export const radarChartOptions = (
     toolbar: {
       show: false,
     },
-    offsetY: -20,
+    offsetY: offset ? -20 : 0,
   },
   theme: {
     mode: theme.palette.mode,
@@ -427,7 +428,7 @@ export const radarChartOptions = (
     show: legend,
     itemMargin: {
       horizontal: 5,
-      vertical: 20,
+      vertical: 5,
     },
   },
   tooltip: {
@@ -450,6 +451,7 @@ export const radarChartOptions = (
   },
   xaxis: {
     labels: {
+      show: legend,
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
         colors: chartColors,
@@ -650,7 +652,10 @@ export const treeMapOptions = (
     theme: {
       mode: theme.palette.mode,
     },
-    colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
+    colors: [
+      theme.palette.primary.main,
+      ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+    ],
     fill: {
       opacity: 1,
     },
@@ -704,7 +709,7 @@ export const heatMapOptions = (
   yFormatter = null,
   tickAmount = undefined,
   isStacked = false,
-  legend = false,
+  ranges = [],
 ) => ({
   chart: {
     type: 'heatmap',
@@ -725,7 +730,6 @@ export const heatMapOptions = (
     colors: [theme.palette.background.paper],
     width: 1,
   },
-  colors: [theme.palette.primary.main],
   states: {
     hover: {
       filter: {
@@ -742,11 +746,7 @@ export const heatMapOptions = (
     strokeDashArray: 3,
   },
   legend: {
-    show: legend,
-    itemMargin: {
-      horizontal: 5,
-      vertical: 20,
-    },
+    show: false,
   },
   tooltip: {
     theme: theme.palette.mode,
@@ -780,14 +780,10 @@ export const heatMapOptions = (
   },
   plotOptions: {
     heatmap: {
-      radius: 2,
-      enableShades: true,
-      shadeIntensity: 0.1,
-      reverseNegativeShade: true,
-      distributed: true,
-      useFillColorAsStroke: true,
+      enableShades: false,
+      distributed: false,
       colorScale: {
-        inverse: true,
+        ranges,
       },
     },
   },

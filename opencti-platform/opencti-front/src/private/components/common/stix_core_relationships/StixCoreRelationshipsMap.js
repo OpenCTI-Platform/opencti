@@ -1,29 +1,26 @@
 import React from 'react';
 import * as R from 'ramda';
-import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Chart from 'react-apexcharts';
-import { useTheme } from '@mui/styles';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { QueryRenderer } from '../../../../relay/environment';
+import Paper from '@mui/material/Paper';
 import { useFormatter } from '../../../../components/i18n';
-import { radarChartOptions } from '../../../../utils/Charts';
+import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
+import { QueryRenderer } from '../../../../relay/environment';
+import { computeLevel } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
-import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
 }));
 
-const stixCoreRelationshipsRadarsDistributionQuery = graphql`
-  query StixCoreRelationshipsRadarDistributionQuery(
+export const stixCoreRelationshipsMapStixCoreRelationshipsDistributionQuery = graphql`
+  query StixCoreRelationshipsMapStixCoreRelationshipsDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -76,106 +73,24 @@ const stixCoreRelationshipsRadarsDistributionQuery = graphql`
         ... on BasicRelationship {
           entity_type
         }
-        ... on AttackPattern {
+        ... on Country {
           name
-          description
-        }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
+          x_opencti_aliases
+          latitude
+          longitude
         }
         ... on City {
           name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
+          x_opencti_aliases
+          latitude
+          longitude
         }
       }
     }
   }
 `;
 
-const StixCoreRelationshipsRadar = ({
+const StixCoreRelationshipsMap = ({
   title,
   variant,
   height,
@@ -190,7 +105,6 @@ const StixCoreRelationshipsRadar = ({
   parameters = {},
 }) => {
   const classes = useStyles();
-  const theme = useTheme();
   const { t } = useFormatter();
   const renderContent = () => {
     let finalFilters = [];
@@ -239,7 +153,7 @@ const StixCoreRelationshipsRadar = ({
     };
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsRadarsDistributionQuery}
+        query={stixCoreRelationshipsMapStixCoreRelationshipsDistributionQuery}
         variables={variables}
         render={({ props }) => {
           if (
@@ -247,38 +161,34 @@ const StixCoreRelationshipsRadar = ({
             && props.stixCoreRelationshipsDistribution
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
-            let data = props.stixCoreRelationshipsDistribution;
-            if (finalField === 'internal_id') {
-              data = R.map(
-                (n) => R.assoc(
-                  'label',
-                  `${
-                    finalToTypes && finalToTypes.length > 1
-                      ? `[${t(
-                        `entity_${n.entity.entity_type}`,
-                      )}] ${defaultValue(n.entity)}`
-                      : `${defaultValue(n.entity)}`
-                  }`,
-                  n,
-                ),
+            const values = R.pluck(
+              'value',
+              props.stixCoreRelationshipsDistribution,
+            );
+            const countries = R.map(
+              (x) => R.assoc(
+                'level',
+                computeLevel(x.value, R.last(values), R.head(values) + 1),
+                x.entity,
+              ),
+              R.filter(
+                (n) => n.entity?.entity_type === 'Country',
                 props.stixCoreRelationshipsDistribution,
-              );
-            }
-            const valueData = data.map((n) => n.value);
-            const chartData = [
-              {
-                name: selection.label || t('Number of relationships'),
-                data: valueData,
-              },
-            ];
-            const labels = data.map((n) => n.label);
+              ),
+            );
+            const cities = R.map(
+              (x) => x.entity,
+              R.filter(
+                (n) => n.entity?.entity_type === 'City',
+                props.stixCoreRelationshipsDistribution,
+              ),
+            );
             return (
-              <Chart
-                options={radarChartOptions(theme, labels, [], true, false)}
-                series={chartData}
-                type="radar"
-                width="100%"
-                height="100%"
+              <LocationMiniMapTargets
+                center={[48.8566969, 2.3514616]}
+                countries={countries}
+                cities={cities}
+                zoom={2}
               />
             );
           }
@@ -336,4 +246,4 @@ const StixCoreRelationshipsRadar = ({
   );
 };
 
-export default StixCoreRelationshipsRadar;
+export default StixCoreRelationshipsMap;

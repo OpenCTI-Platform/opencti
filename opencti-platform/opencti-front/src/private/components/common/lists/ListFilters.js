@@ -94,6 +94,7 @@ const ListFilters = ({
           horizontal: 'center',
         }}
         elevation={1}
+        className="noDrag"
       >
         {filterElement}
       </Popover>

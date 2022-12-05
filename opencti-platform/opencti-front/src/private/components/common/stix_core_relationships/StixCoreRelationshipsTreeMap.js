@@ -5,12 +5,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chart from 'react-apexcharts';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { radarChartOptions } from '../../../../utils/Charts';
+import { treeMapOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -21,38 +22,50 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreObjectsRadarDistributionQuery = graphql`
-  query StixCoreObjectsRadarDistributionQuery(
-    $objectId: String
-    $relationship_type: [String]
-    $toTypes: [String]
+const stixCoreRelationshipsTreeMapsDistributionQuery = graphql`
+  query StixCoreRelationshipsTreeMapDistributionQuery(
     $field: String!
+    $operation: StatsOperation!
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
-    $operation: StatsOperation!
+    $isTo: Boolean
     $limit: Int
-    $order: String
-    $types: [String]
-    $filters: [StixCoreObjectsFiltering]
-    $filterMode: FilterMode
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
+    $fromId: [String]
+    $fromRole: String
+    $fromTypes: [String]
+    $toId: [String]
+    $toRole: String
+    $toTypes: [String]
+    $relationship_type: [String]
+    $confidences: [Int]
     $search: String
+    $filters: [StixCoreRelationshipsFiltering]
+    $filterMode: FilterMode
   ) {
-    stixCoreObjectsDistribution(
-      objectId: $objectId
-      relationship_type: $relationship_type
-      toTypes: $toTypes
+    stixCoreRelationshipsDistribution(
       field: $field
+      operation: $operation
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
-      operation: $operation
+      isTo: $isTo
       limit: $limit
-      order: $order
-      types: $types
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
+      fromId: $fromId
+      fromRole: $fromRole
+      fromTypes: $fromTypes
+      toId: $toId
+      toRole: $toRole
+      toTypes: $toTypes
+      relationship_type: $relationship_type
+      confidences: $confidences
+      search: $search
       filters: $filters
       filterMode: $filterMode
-      search: $search
     ) {
       label
       value
@@ -162,11 +175,17 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
   }
 `;
 
-const StixCoreObjectsRadar = ({
+const StixCoreRelationshipsTreeMap = ({
+  title,
   variant,
   height,
+  stixCoreObjectId,
+  relationshipType,
+  toTypes,
+  field,
   startDate,
   endDate,
+  dateAttribute,
   dataSelection,
   parameters = {},
 }) => {
@@ -174,60 +193,88 @@ const StixCoreObjectsRadar = ({
   const theme = useTheme();
   const { t } = useFormatter();
   const renderContent = () => {
-    const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
-    const dataSelectionTypes = R.head(
-      finalFilters.filter((n) => n.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
-    const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
-    const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
-    finalFilters = finalFilters.filter(
-      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
-        n.key,
-      ),
-    );
+    let finalFilters = [];
+    let selection = {};
+    let dataSelectionRelationshipType = null;
+    let dataSelectionFromId = null;
+    let dataSelectionToId = null;
+    let dataSelectionFromTypes = null;
+    let dataSelectionToTypes = null;
+    if (dataSelection) {
+      // eslint-disable-next-line prefer-destructuring
+      selection = dataSelection[0];
+      finalFilters = convertFilters(selection.filters);
+      dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+        ?.values || null;
+      dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
+      dataSelectionToId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
+      dataSelectionFromTypes = R.head(finalFilters.filter((n) => n.key === 'fromTypes'))?.values
+        || null;
+      dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
+      finalFilters = finalFilters.filter(
+        (n) => ![
+          'relationship_type',
+          'fromId',
+          'toId',
+          'fromTypes',
+          'toTypes',
+        ].includes(n.key),
+      );
+    }
+    const finalField = selection.attribute || field || 'entity_type';
+    const finalToTypes = dataSelectionToTypes || toTypes;
+    const variables = {
+      fromId: dataSelectionFromId || stixCoreObjectId,
+      toId: dataSelectionToId,
+      relationship_type: dataSelectionRelationshipType || relationshipType,
+      fromTypes: dataSelectionFromTypes,
+      toTypes: finalToTypes,
+      field: finalField,
+      operation: 'count',
+      startDate,
+      endDate,
+      dateAttribute,
+      limit: 10,
+      filters: finalFilters,
+    };
     return (
       <QueryRenderer
-        query={stixCoreObjectsRadarDistributionQuery}
-        variables={{
-          objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
-          toTypes: dataSelectionToTypes,
-          types: dataSelectionTypes,
-          field: selection.attribute,
-          operation: 'count',
-          startDate,
-          endDate,
-          dateAttribute:
-            selection.date_attribute && selection.date_attribute.length > 0
-              ? selection.date_attribute
-              : 'created_at',
-          filters: finalFilters,
-          limit: 10,
-        }}
+        query={stixCoreRelationshipsTreeMapsDistributionQuery}
+        variables={variables}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreObjectsDistribution
-            && props.stixCoreObjectsDistribution.length > 0
+            && props.stixCoreRelationshipsDistribution
+            && props.stixCoreRelationshipsDistribution.length > 0
           ) {
-            const data = props.stixCoreObjectsDistribution.map((n) => n.value);
-            const chartData = [
-              {
-                name: selection.label || t('Number of relationships'),
-                data,
-              },
-            ];
-            const labels = props.stixCoreObjectsDistribution.map(
-              (n) => n.label,
-            );
+            let data = props.stixCoreRelationshipsDistribution;
+            if (finalField === 'internal_id') {
+              data = R.map(
+                (n) => R.assoc(
+                  'label',
+                  `${
+                    finalToTypes && finalToTypes.length > 1
+                      ? `[${t(
+                        `entity_${n.entity.entity_type}`,
+                      )}] ${defaultValue(n.entity)}`
+                      : `${defaultValue(n.entity)}`
+                  }`,
+                  n,
+                ),
+                props.stixCoreRelationshipsDistribution,
+              );
+            }
+            const chartData = data.map((n) => ({ x: n.label, y: n.value }));
+            const series = [{ data: chartData }];
             return (
               <Chart
-                options={radarChartOptions(theme, labels, [], true, false)}
-                series={chartData}
-                type="radar"
+                options={treeMapOptions(
+                  theme,
+                  'bottom',
+                  parameters.distributed,
+                )}
+                series={series}
+                type="treemap"
                 width="100%"
                 height="100%"
               />
@@ -271,20 +318,20 @@ const StixCoreObjectsRadar = ({
         variant="h4"
         gutterBottom={true}
         style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
         }}
       >
-        {parameters.title || t('Distribution of entities')}
+        {parameters.title || title || t('Relationships distribution')}
       </Typography>
-      {variant === 'inLine' ? (
-        renderContent()
-      ) : (
+      {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {renderContent()}
         </Paper>
+      ) : (
+        renderContent()
       )}
     </div>
   );
 };
 
-export default StixCoreObjectsRadar;
+export default StixCoreRelationshipsTreeMap;
