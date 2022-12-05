@@ -27,7 +27,6 @@ import CyioWorkspaceHeader from '../CyioWorkspaceHeader';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import CyioWidgetCreation from './CyioWidgetCreation';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 import CyioWidgetPopover from './CyioWidgetPopover';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import Loader from '../../../../components/Loader';

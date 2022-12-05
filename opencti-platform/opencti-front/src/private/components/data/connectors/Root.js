@@ -9,7 +9,6 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 class RootConnector extends Component {
   render() {
     const {
-      me,
       match: {
         params: { connectorId },
       },

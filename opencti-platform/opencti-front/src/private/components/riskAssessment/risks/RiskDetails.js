@@ -16,8 +16,8 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '10px 0 20px 0',
-    padding: '24px 24px 32px 24px',
+    marginTop: '2%',
+    padding: '1.5rem 1.5rem 2rem 1.5rem',
     borderRadius: 6,
   },
   link: {
@@ -59,6 +59,9 @@ const styles = (theme) => ({
     marginBottom: '5px',
     border: '1px solid #075AD3',
   },
+  gridContainer: {
+    marginBottom: '5%',
+  },
 });
 
 class RiskDetailsComponent extends Component {
@@ -73,12 +76,54 @@ class RiskDetailsComponent extends Component {
       R.path(['origins']),
     )(risk);
     return (
-      <div style={{ height: '500px' }}>
+      <div>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Grid container={true} spacing={3}>
+          <Grid container spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 5 }}
+              >
+                {t('First Seen')}
+              </Typography>
+              <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Identifies the date/time when the risk was first seen/observered.',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {risk.first_seen && fldt(risk.first_seen)}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 5 }}
+              >
+                {t('Last Seen')}
+              </Typography>
+              <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Idetifies the date/time when the risk was last seen/observed.',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {risk.last_seen && fldt(risk.last_seen)}
+            </Grid>
             <Grid item={true} xs={12}>
               <div>
                 <Typography
@@ -110,8 +155,6 @@ class RiskDetailsComponent extends Component {
                 </div>
               </div>
             </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
@@ -186,8 +229,6 @@ class RiskDetailsComponent extends Component {
                 </Typography>
               )))}
             </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <div>
                 <Typography
@@ -214,33 +255,6 @@ class RiskDetailsComponent extends Component {
                   className={classes.statusButton}
                 >
                   {t(risk.false_positive)}
-                </Button>}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 21 }}
-                >
-                  {t('Risk Adjusted')}
-                </Typography>
-                <div style={{ float: 'left', margin: '22px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk.',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.risk_adjusted && <Button
-                  variant="outlined"
-                  size="small"
-                  className={classes.statusButton}
-                >
-                  {t(risk.risk_adjusted)}
                 </Button>}
               </div>
             </Grid>
@@ -272,6 +286,37 @@ class RiskDetailsComponent extends Component {
                   {t(risk.accepted)}
                 </Button>}
               </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 21 }}
+                >
+                  {t('Risk Adjusted')}
+                </Typography>
+                <div style={{ float: 'left', margin: '22px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {risk.risk_adjusted && <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {t(risk.risk_adjusted)}
+                </Button>}
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
@@ -333,6 +378,8 @@ const RiskDetails = createFragmentContainer(
         false_positive
         vendor_dependency
         impacted_control_id
+        first_seen
+        last_seen
         origins {
           origin_actors {
             actor_type
