@@ -55,10 +55,8 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const NetworkDeletionMutation = graphql`
-  mutation NetworkDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
-      delete
-    }
+  mutation NetworkDeletionMutation($ids: [ID]!) {
+    deleteAssets(ids: $ids)
   }
 `;
 
@@ -105,58 +103,36 @@ class NetworkDeletion extends Component {
     this.setState({ displayEdit: false });
   }
 
-  // submitDelete() {
-  //   this.setState({ deleting: true });
-  //   commitMutation({
-  //     mutation: NetworkDeletionMutation,
-  //     variables: {
-  //       id: this.props.id,
-  //     },
-  //     config: [
-  //       {
-  //         type: 'NODE_DELETE',
-  //         deletedIDFieldName: 'id',
-  //       },
-  //     ],
-  //     onCompleted: () => {
-  //       this.setState({ deleting: false });
-  //       this.handleClose();
-  //       this.props.history.push('/defender HQ/assets/network');
-  //     },
-  //   });
-  // }
-
   submitDelete() {
+    const networkIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
-    commitMutation({
-      mutation: NetworkDeletionDarkLightMutation,
-      variables: {
-        id: this.props.id,
-      },
-      onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        this.props.history.push('/defender HQ/assets/network');
-      },
-      onError: (err) => console.log('NetwrokDeletionDarkLightMutationError', err),
-    });
-    // commitMutation({
-    //   mutation: NetworkDeletionDarkLightMutation,
-    //   variables: {
-    //     id: this.props.id,
-    //   },
-    //   config: [
-    //     {
-    //       type: 'NODE_DELETE',
-    //       deletedIDFieldName: 'id',
-    //     },
-    //   ],
-    //   onCompleted: () => {
-    //     this.setState({ deleting: false });
-    //     this.handleClose();
-    //     this.props.history.push('/defender HQ/assets/network');
-    //   },
-    // });
+    if (networkIds.length > 1) {
+      commitMutation({
+        mutation: NetworkDeletionMutation,
+        variables: {
+          ids: networkIds,
+        },
+        onCompleted: () => {
+          this.setState({ deleting: false });
+          this.handleClose();
+          this.props.history.push('/defender HQ/assets/network');
+        },
+        onError: (err) => console.log('NetwrokDeletionDarkLightMutationError', err),
+      });
+    } else {
+      commitMutation({
+        mutation: NetworkDeletionDarkLightMutation,
+        variables: {
+          id: networkIds[0],
+        },
+        onCompleted: () => {
+          this.setState({ deleting: false });
+          this.handleClose();
+          this.props.history.push('/defender HQ/assets/network');
+        },
+        onError: (err) => console.log('NetwrokDeletionDarkLightMutationError', err),
+      });
+    }
   }
 
   render() {
@@ -169,7 +145,7 @@ class NetworkDeletion extends Component {
     return (
       <div className={classes.container}>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
-          <Tooltip title={t('Delete')}>
+        <Tooltip title={t('Delete')}>
           <Button
             variant="contained"
             onClick={this.handleOpenDelete.bind(this)}
@@ -178,9 +154,9 @@ class NetworkDeletion extends Component {
             color="primary"
             size="large"
           >
-              <DeleteIcon fontSize="inherit"/>
-            </Button>
-          </Tooltip>
+            <DeleteIcon fontSize="inherit" />
+          </Button>
+        </Tooltip>
         {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
@@ -189,18 +165,18 @@ class NetworkDeletion extends Component {
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
-              <Typography style={{
-                fontSize: '18px',
-                lineHeight: '24px',
-                color: 'white',
-              }} >
-                {t('Are you sure you’d like to delete this Network?')}
-              </Typography>
-              <DialogContentText>
-                {t('This action can’t be undone')}
-              </DialogContentText>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to delete this Network?')}
+            </Typography>
+            <DialogContentText>
+              {t('This action can’t be undone')}
+            </DialogContentText>
           </DialogContent>
-          <DialogActions className={ classes.dialogActions }>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
@@ -228,7 +204,7 @@ class NetworkDeletion extends Component {
 }
 
 NetworkDeletion.propTypes = {
-  id: PropTypes.string,
+  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

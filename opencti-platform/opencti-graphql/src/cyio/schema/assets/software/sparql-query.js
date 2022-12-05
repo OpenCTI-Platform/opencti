@@ -8,41 +8,6 @@ import {
   OASIS_SCO_NS, 
   CyioError} from "../../utils.js";
 
-const predicateBody = `
-    ?iri <http://darklight.ai/ns/common#id> ?id .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#locations> ?locations } .
-    # OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#responsible_parties> ?responsible_party } .
-    # ItAsset
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> ?asset_tag } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#serial_number> ?serial_number } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#vendor_name> ?vendor_name }.
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#version> ?version } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#release_date> ?release_date } .
-    # Software - OperatingSystem - ApplicationSoftware
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#function> ?function } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#cpe_identifier> ?cpe_identifier } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#software_identifier> ?software_identifier } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#patch_level> ?patch } .
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installation_id> ?installation_id }
-    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#license_key> ?license_key } .
-    `;
-
-const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
-const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{softwareType}> . \n`;
-
-const inventoryConstraint = `
-{
-    SELECT DISTINCT ?iri
-    WHERE {
-        ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
-              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
-    }
-}`;
-
 export function getReducer( type ) {
   switch( type ) {
     case 'SOFTWARE':
@@ -56,11 +21,16 @@ export function getReducer( type ) {
 
 // Reducers
 const softwareAssetReducer = (item) => {
-  // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
-  } else {
-    item.object_type = 'software';
+  // if no object type was returned, compute the type from the asset type and/or the IRI
+  if ( item.object_type === undefined ) {
+    if (item.asset_type !== undefined) {
+      if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
+      if (item.asset_type in softwareMap) item.object_type = 'software'  
+    }
+    if (item.object_type === undefined && item.iri !== undefined) {
+      if (item.iri.includes('Software')) item.object_type = 'software';
+    }
+    if (item.object_type === undefined || item.object_type !== 'software') return null;
   }
 
   return {
@@ -98,113 +68,12 @@ const softwareAssetReducer = (item) => {
     ...(item.external_references && {ext_ref_iri: item.external_references}),
 	  ...(item.labels && {labels_iri: item.labels}),
     ...(item.notes && {notes_iri: item.notes}),
+    ...(item.os_installed_on && {os_installed_on: item.os_installed_on}),
+    ...(item.sw_installed_on && {sw_installed_on: item.sw_installed_on}),
+    ...(item.related_risks && {related_risks: item.related_risks}),
   }
 }
 
-// Software resolver support functions
-export function getSelectSparqlQuery(type, select, id, args) {
-  let sparqlQuery;
-
-  if (type == 'SOFTWARE') {
-    if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
-    if (!select.includes('id')) select.push('id');
-
-    if (args !== undefined ) {
-      if ( args.filters !== undefined && id === undefined ) {
-        for( const filter of args.filters) {
-          if (!select.includes(filter.key)) select.push( filter.key );
-        }
-      }
-      
-      // add value of orderedBy's key to cause special predicates to be included
-      if ( args.orderedBy !== undefined ) {
-        if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
-      }
-    }
-  }
-  
-  let { selectionClause, predicates } = buildSelectVariables(softwarePredicateMap, select)
-  selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
-  const selectPortion = `
-  ${selectionClause}
-  FROM <tag:stardog:api:context:named>
-  WHERE {
-    `;
-    switch( type ) {
-    case 'SOFTWARE':
-      let byId = '';
-      if (id !== undefined) {
-        byId = byIdClause(id);
-      }
-
-      let filterStr = ''
-      sparqlQuery = selectPortion +
-          typeConstraint.replace('{softwareType}', 'Software') + 
-          byId + 
-          predicates +
-          inventoryConstraint + 
-          filterStr + '}';
-      break;
-    case 'SOFTWARE-IRI':
-      sparqlQuery = selectPortion +
-          bindIRIClause.replace('{iri}', id) + 
-          typeConstraint.replace('{softwareType}', 'Software') +
-          predicates + '}';
-      break;
-    case 'OS-IRI':
-      sparqlQuery = selectPortion +
-          bindIRIClause.replace('{iri}', id) + 
-          typeConstraint.replace('{softwareType}', 'OperatingSystem') +
-          predicates + '}';
-      break
-    default:
-      throw new Error(`Unsupported query type ' ${type}'`)
-  }
-
-  return sparqlQuery ;
-}
-export const insertQuery = (propValues) => {
-  const id_material = {
-    ...(propValues.name && { "name": propValues.name}),
-    ...(propValues.cpe_identifier && {"cpe": propValues.cpe_identifier}),
-    ...(propValues.software_identifier && {"swid": propValues.software_identifier}),
-    ...(propValues.vendor_name && {"vendor": propValues.vendor_name}),
-    ...(propValues.version && {"version": propValues.version})
-  } ;
-  const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString();
-
-  // escape any special characters (e.g., newline)
-  if (propValues.description !== undefined) {
-    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
-    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
-    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
-  }
-  
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
-  const insertPredicates = Object.entries(propValues)
-    .filter((propPair) => softwarePredicateMap.hasOwnProperty(propPair[0]))
-    .map((propPair) => softwarePredicateMap[propPair[0]].binding(iri, propPair[1]))
-    .join('.\n      ');
-  const query = `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Component> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Software> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
-      ${iri} a <http://darklight.ai/ns/common#Object> . 
-      ${iri} <http://darklight.ai/ns/common#id> "${id}".
-      ${iri} <http://darklight.ai/ns/common#object_type> "software" . 
-      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
-      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates}
-    }
-  }
-  `;
-  return {iri, id, query}
-};
-// TODO: Update resolvers to utilize these functions in place of the above; delete the above
 export const insertSoftwareQuery = (propValues) => {
   const id_material = {
     ...(propValues.name && { "name": propValues.name}),
@@ -276,8 +145,38 @@ export const selectSoftwareQuery = (id, select) => {
 }
 export const selectSoftwareByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
+
+  // if no select values provides, use all available field names of the object
   if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
+
+  // retrieve required fields if not already on the list of fields to be selected
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type')
+
+  // if looking for device on which software was installed
+  if (select.includes('installed_on')) {
+    // remove 'installed_on'
+    select = select.filter(i => i !== 'installed_on');
+    // replace with 'os_installed_on' and 'sw_installed_on'
+    select.push('os_installed_on');
+    select.push('sw_installed_on');
+  }
+
+  // build list of selection variables and predicates
   const { selectionClause, predicates } = buildSelectVariables(softwarePredicateMap, select);
+
+  // define related risks clause to restrict to only Risk since it available in other objects
+  let relatedRiskClause = '';
+  if (select.includes('related_risks')) {
+    relatedRiskClause = `
+    OPTIONAL {
+      SELECT DISTINCT ?related_risks
+      WHERE {
+        FILTER regex(str(?related_risks), "#Risk", "i")
+      }
+    }`
+  }
+  
   return `
   SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
@@ -285,12 +184,33 @@ export const selectSoftwareByIriQuery = (iri, select) => {
     BIND(${iri} AS ?iri)
     ?iri a <http://scap.nist.gov/ns/asset-identification#Software> .
     ${predicates}
+    ${relatedRiskClause}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    }
   }
   `
 }
 export const selectAllSoftware = (select, args) => {
+  // if no select values provides, use all available field names of the object
   if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
+
+  // retrieve required fields if not already on the list of fields to be selected
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type')
+
+  // if looking for device on which software was installed
+  if (select.includes('installed_on')) {
+    // remove 'installed_on'
+    select = select.filter(i => i !== 'installed_on');
+    // replace with 'os_installed_on' and 'sw_installed_on'
+    select.push('os_installed_on');
+    select.push('sw_installed_on');
+  }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -305,13 +225,35 @@ export const selectAllSoftware = (select, args) => {
     }
   }
 
+  // define related risks clause to restrict to only Risk since it available in other objects
+  let relatedRiskClause = '';
+  if (select.includes('related_risks')) {
+    relatedRiskClause = `
+    OPTIONAL {
+      SELECT DISTINCT ?related_risks
+      WHERE {
+        FILTER regex(str(?related_risks), "#Risk", "i")
+      }
+    }`
+  }  
+
+  // Build select clause and predicates
   const { selectionClause, predicates } = buildSelectVariables(softwarePredicateMap, select);
+
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Software> . 
     ${predicates}
+    ${relatedRiskClause}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    }
   }
   `
 }
@@ -374,6 +316,21 @@ export const detachFromSoftwareQuery = (id, field, itemIris) => {
     }
   }
   `
+}
+
+// softwareMap that maps asset_type values to class
+const softwareMap = {
+  "application-software": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ApplicationSoftware",
+    parent: "software",
+  },
+  "operating-system": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem",
+    parent: "software",
+  },
+  "software": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software",
+  },
 }
 
 // Predicate Maps
@@ -526,6 +483,57 @@ export const softwarePredicateMap = {
   last_scanned: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#last_scanned>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "last_scanned");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  // Predicate mappings used to gather data for POAM ID
+  hw_installed_on: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_hardware>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "hw_installed_on");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  hw_installed_on_id: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_hardware>/<http://scap.nist.gov/ns/asset-identification#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "hw_installed_on_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  hw_installed_on_name: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_hardware>/<http://scap.nist.gov/ns/asset-identification#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "hw_installed_on_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  os_installed_on: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_operating_system>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "os_installed_on");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  os_installed_on_id: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_operating_system>/<http://scap.nist.gov/ns/asset-identification#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "os_installed_on_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  os_installed_on_name: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_operating_system>/<http://scap.nist.gov/ns/asset-identification#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "os_installed_on_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  sw_installed_on: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_software>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "sw_installed_on");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  sw_installed_on_id: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_software>/<http://scap.nist.gov/ns/asset-identification#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "sw_installed_on_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  sw_installed_on_name: {
+    predicate: "^<http://scap.nist.gov/ns/asset-identification#installed_software>/<http://scap.nist.gov/ns/asset-identification#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "sw_installed_on_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  related_risks: {
+    predicate: "^<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/^<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/^<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "related_risks");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }

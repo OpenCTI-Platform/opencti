@@ -795,10 +795,10 @@ const subjectResolvers = {
       } else {
         return [];
       }
-    },    
+    },
     subject_ref: async (parent, _, {dbName, dataSources, selectMap }) => {
       if (parent.subject_ref_iri === undefined) return null;
-      if( parent.subject_ref_iri.length > 1) {
+      if( Array.isArray(parent.subject_ref_iri) && parent.subject_ref_iri.length > 1) {
         console.log(`[CYIO] CONSTRAINT-VIOLATION: ${parent.iri} 'subject_ref' violates maxCount constraint; dropping extras`);
       }
 
@@ -807,13 +807,14 @@ const subjectResolvers = {
 
       // If all the necessary pieces are here, just build the subject and return it
       let select = selectMap.getNode("subject_ref");
+      if (select !== undefined && (select.length === 1 && select.includes('__typename'))) select = undefined;
       if ( parent.hasOwnProperty('subject_id') && parent.hasOwnProperty('subject_name')) {
-        return {
+        return reducer({
           iri: `${iri}`,
           id: `${parent.subject_id}`,
           entity_type: `${parent.subject_type}`,
           name: (parent.subject_version !== undefined) ? `${parent.subject_name} ${parent.subject_version}` : `${parent.subject_name}`
-        }
+        });
       }
 
       if (select === undefined) {

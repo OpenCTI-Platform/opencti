@@ -10,7 +10,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
-import TopBar from '../../../nav/TopBar';
 import EntityRole from './EntityAssessmentPlatform';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -69,7 +68,6 @@ class RootAssessmentPlatform extends Component {
     const link = `/data/entities/assessment_platform/${assessmentPlatformId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/data/entities/assessment_platform/:assessmentPlatformId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

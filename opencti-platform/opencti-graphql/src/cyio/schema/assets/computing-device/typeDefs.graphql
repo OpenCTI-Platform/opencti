@@ -368,33 +368,47 @@
 
   # this is used to restrict the set of asset_types values that are allowed in a filter
   "Defines the list of Device assets types that can be used in filtering"
-  enum DeviceAssetTypes {
-    "Computing Device"
-    computing_device
-    "Laptop"
-    laptop
+  enum DeviceAssetType {
     "Appliance"
     appliance
-    "Workstation"
-    workstation
-    "Network Device"
-    network_device
-    "Mobile Device"
-    mobile_device
+    "Computing Device"
+    computing_device
+    "Embedded Device"
+    embedded
+    "Firewall"
+    firewall
+    "Hypervisor"
+    hypervisor
+    "Laptop"
+    laptop
     "Load Balancer"
     load_balancer
-    "Router"
-    router
-    "Switch"
-    switch
-    "Printer"
-    printer
-    "Storage Array"
-    storage_array
-    "VoIP Device"
-    voip_device
+    "Mobile Device"
+    mobile_device
+    "Network Device"
+    network_device
+    "PBX"
+    pbx
     "Physical Device"
     physical_device
+    "Printer"
+    printer
+    "Router"
+    router
+    "Server"
+    server
+    "Storage Array"
+    storage_array
+    "Network Switch"
+    network_switch
+    "VoIP Device"
+    voip_device
+    "VoIP Handset"
+    voip_handset
+    "VoIP Router"
+    voip_router
+    "Workstation"
+    workstation
   }
 
   union ComputingDeviceKind = ComputingDeviceAsset | ServerAsset | WorkstationAsset | LaptopAsset

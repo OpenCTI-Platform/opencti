@@ -1,3 +1,4 @@
+// import { logApp } from '../../../../../config/conf.js';
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues, CyioError} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
@@ -677,10 +678,26 @@ const observationResolvers = {
       }
 
       for (let subject of response) {
-        if (subject.id === undefined || subject.id === null ) {
-          console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
+        if (!subject.hasOwnProperty('id') || subject.id === undefined || subject.id === null ) {
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
           continue;
         }
+
+        if (!subject.hasOwnProperty('subject_ref') || subject.subject_ref === undefined) {
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_ref'; skipping`);
+          continue;
+        }
+
+        if (!subject.hasOwnProperty('subject_id') || subject.subject_id === undefined) {
+          // logApp.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_id'; skipping`);
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_id'; skipping`);
+          continue;
+        }
+        if (!subject.hasOwnProperty('subject_name') || subject.subject_name === undefined) {
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_name'; skipping`);
+          continue;
+        }
+
         results.push(reducer(subject));
       }
 

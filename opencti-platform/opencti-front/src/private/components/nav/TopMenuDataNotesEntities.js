@@ -6,16 +6,26 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import inject18n from '../../../components/i18n';
+
 const styles = (theme) => ({
+  buttonHome: {
+    marginRight: theme.spacing(2),
+    padding: '4px 5px',
+    minHeight: 20,
+    textTransform: 'none',
+  },
   button: {
     marginRight: theme.spacing(1),
     padding: '4px 25px',
     minHeight: 20,
     minWidth: 20,
-    width: 180,
     textTransform: 'none',
-    borderRadius: '8px 8px 0px 0px',
+  },
+  arrow: {
+    verticalAlign: 'middle',
+    marginRight: 10,
   },
   icon: {
     marginRight: theme.spacing(1),
@@ -27,6 +37,18 @@ class TopMenuDataNotesEntities extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
+        <Button
+          component={Link}
+          to="/data/entities/notes"
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
+        >
+          {t('Notes')}
+        </Button>
+        <ChevronRightIcon
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to="/data/entities/notes"

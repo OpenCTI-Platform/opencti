@@ -97,11 +97,12 @@ class EntitiesLabelsDeletion extends Component {
   }
 
   submitDelete() {
+    const labelIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
     commitMutation({
       mutation: EntitiesLabelsDeletionDarkLightMutation,
       variables: {
-        id: this.props.id,
+        id: labelIds[0],
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -127,7 +128,7 @@ class EntitiesLabelsDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/activities/risk assessment/risks');
+    //     this.props.history.push('/activities/risk_assessment/risks');
     //   },
     // });
   }
@@ -142,18 +143,18 @@ class EntitiesLabelsDeletion extends Component {
     return (
       <div className={classes.container}>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}> */}
-          <Tooltip title={t('Delete')}>
-            <Button
-              variant="contained"
-              onClick={this.handleOpenDelete.bind(this)}
-              className={classes.iconButton}
-              disabled={(Boolean(!id) && Boolean(!isAllselected))}
-              color="primary"
-              size="large"
-            >
-              <DeleteIcon fontSize="inherit" />
-            </Button>
-          </Tooltip>
+        <Tooltip title={t('Delete')}>
+          <Button
+            variant="contained"
+            onClick={this.handleOpenDelete.bind(this)}
+            className={classes.iconButton}
+            disabled={(Boolean(!id) && Boolean(!isAllselected))}
+            color="primary"
+            size="large"
+          >
+            <DeleteIcon fontSize="inherit" />
+          </Button>
+        </Tooltip>
         {/* </Security> */}
         <Dialog
           open={this.state.displayDelete}
@@ -161,19 +162,19 @@ class EntitiesLabelsDeletion extends Component {
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
-            <DialogContent>
-              <Typography style={{
-                fontSize: '18px',
-                lineHeight: '24px',
-                color: 'white',
-              }} >
-                {t('Are you sure you’d like to delete this Label?')}
-              </Typography>
-              <DialogContentText>
-                {t('This action can’t be undone')}
-              </DialogContentText>
-            </DialogContent>
-          <DialogActions className={ classes.dialogActions }>
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to delete this Label?')}
+            </Typography>
+            <DialogContentText>
+              {t('This action can’t be undone')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
@@ -201,7 +202,7 @@ class EntitiesLabelsDeletion extends Component {
 }
 
 EntitiesLabelsDeletion.propTypes = {
-  id: PropTypes.string,
+  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

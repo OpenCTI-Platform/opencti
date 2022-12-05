@@ -8,7 +8,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Device from './Device';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -66,7 +65,6 @@ class RootDevice extends Component {
     const link = `/defender HQ/assets/devices/${deviceId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/defender HQ/assets/devices/:deviceId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

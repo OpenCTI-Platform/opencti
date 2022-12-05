@@ -16,33 +16,33 @@ class Root extends Component {
       <Switch>
         <BoundaryRoute
           exact
-          path="/activities/vulnerability assessment"
-          render={() => <Redirect to="/activities/vulnerability assessment/scans" />}
+          path="/activities/vulnerability_assessment"
+          render={() => <Redirect to="/activities/vulnerability_assessment/scans" />}
         />
          <BoundaryRoute
           exact
-          path="/activities/vulnerability assessment/scans/explore results/:exploreResultId"
+          path="/activities/vulnerability_assessment/scans/explore results/:exploreResultId"
           render={(routeProps) => (
             <ExploreResults {...routeProps} me={me} displayCreate={true} />
           )}
         />
         <BoundaryRoute
           exact
-          path="/activities/vulnerability assessment/scans/view charts"
+          path="/activities/vulnerability_assessment/scans/view charts"
           render={(routeProps) => (
             <ViewCharts {...routeProps} me={me} displayCreate={true} />
           )}
         />
         <BoundaryRoute
           exact
-          path="/activities/vulnerability assessment/scans/compare analysis"
+          path="/activities/vulnerability_assessment/scans/compare analysis"
           render={(routeProps) => (
             <Compare {...routeProps} me={me} displayCreate={true} />
           )}
         />
         <BoundaryRoute
           exact
-          path="/activities/vulnerability assessment/scans"
+          path="/activities/vulnerability_assessment/scans"
           render={(routeProps) => (
             <Scans {...routeProps} me={me} displayCreate={true} />
           )}

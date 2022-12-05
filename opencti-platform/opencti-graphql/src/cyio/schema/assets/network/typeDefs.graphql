@@ -58,6 +58,9 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     last_scanned: Timestamp
+    connected_assets: [HardwareAsset]
+    "Indicates the risks related to this entity."
+    related_risks: [Risk]
   }
 
   # Mutation Types

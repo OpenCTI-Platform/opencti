@@ -16,7 +16,6 @@ import RemediationGeneralOverview from './RemediationGeneralOverview';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import RequiredResources from './RequiredResources';
 import RelatedTasks from './RelatedTasks';
-import TopMenuRisk from '../../../nav/TopMenuRisk';
 import RemediationDetailsPopover from './RemediationDetailsPopover';
 import RemediationCreation from './RemediationCreation';
 
@@ -79,10 +78,9 @@ class RemediationComponent extends Component {
             PopoverComponent={<RiskPopover />}
             handleOpenNewCreation={this.handleOpen.bind(this)}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-            OperationsComponent={<RemediationDeletion riskId={riskId}/>}
-            goBack={`/activities/risk assessment/risks/${risk.id}/remediation`}
+            OperationsComponent={<RemediationDeletion riskId={riskId} />}
+            goBack={`/activities/risk_assessment/risks/${risk.id}/remediation`}
           />
-          <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
           <Grid
             container={true}
             spacing={3}
@@ -110,7 +108,7 @@ class RemediationComponent extends Component {
             <Grid item={true} xs={6}>
               <RelatedTasks
                 toType='OscalTask'
-                fromType= 'RiskResponse'
+                fromType='RiskResponse'
                 history={history}
                 remediationId={remediation.id}
               />
@@ -155,18 +153,18 @@ class RemediationComponent extends Component {
             riskId={riskId}
             handleCloseEdit={this.handleCloseEdit.bind(this)}
           />
-          {this.state.openCreation 
+          {this.state.openCreation
             && <RemediationCreation
-                  remediationId={remediation.id}
-                  riskId={riskId}
-                  history={history}
-                  openCreation={this.state.openCreation}
-                  handleOpenCreation={this.handleOpenCreation.bind(this)}
-                  handleCreation={this.handleOpen.bind(this)}
-                  refreshQuery={refreshQuery}
-                  location={location}
-                />
-          }          
+              remediationId={remediation.id}
+              riskId={riskId}
+              history={history}
+              openCreation={this.state.openCreation}
+              handleOpenCreation={this.handleOpenCreation.bind(this)}
+              handleCreation={this.handleOpen.bind(this)}
+              refreshQuery={refreshQuery}
+              location={location}
+            />
+          }
         </div>
         {/* <RemediationEdition
             open={this.state.openEdit}

@@ -10,7 +10,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
-import TopBar from '../../../nav/TopBar';
 import EntityExternalReference from './EntityExternalReference';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -69,7 +68,6 @@ class RootExternalReference extends Component {
     const link = `/data/entities/external_references/${externalReferenceId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/data/entities/external_references/:externalReferenceId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

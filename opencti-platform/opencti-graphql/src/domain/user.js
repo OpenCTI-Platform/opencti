@@ -49,6 +49,7 @@ import { buildPagination, isEmptyField, isNotEmptyField } from '../database/util
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { oidcRefresh, tokenExpired } from '../config/tokenManagement';
+import {keycloakAdminClient} from "../service/keycloak";
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -90,7 +91,16 @@ const extractTokenFromBasicAuth = async (authorization) => {
 
 export const findById = async (user, userId) => {
   const data = await loadById(user, userId, ENTITY_TYPE_USER);
-  return data ? R.dissoc('password', data) : data;
+  const userObj = data ? R.dissoc('password', data) : data;
+  if(userObj === undefined) return undefined;
+  const q = {email: userObj.user_email};
+  const kcUserRes = await keycloakAdminClient.users.find(q);
+  if(kcUserRes.length === 0) return userObj;
+  const kcUser = kcUserRes[0];
+  userObj.user_email = kcUser.email;
+  userObj.firstName = kcUser.firstName;
+  userObj.lastName = kcUser.lastName;
+  return userObj;
 };
 
 export const findAll = (user, args) => {
@@ -641,6 +651,7 @@ export const authenticateUserFromRequest = async (req) => {
 export const initAdmin = async (email, password, tokenValue) => {
   const existingAdmin = await findById(SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
+    logApp.info('[INIT] Admin user exists, patching...')
     // If admin user exists, just patch the fields
     const patch = {
       user_email: email,
@@ -649,6 +660,7 @@ export const initAdmin = async (email, password, tokenValue) => {
       external: true,
     };
     await patchAttribute(SYSTEM_USER, existingAdmin.id, ENTITY_TYPE_USER, patch);
+    logApp.info('[INIT] Admin user patched')
   } else {
     const userToCreate = {
       internal_id: OPENCTI_ADMIN_UUID,
@@ -664,6 +676,7 @@ export const initAdmin = async (email, password, tokenValue) => {
       password,
     };
     await addUser(SYSTEM_USER, userToCreate);
+    logApp.info('[INIT] Admin user created')
   }
 };
 

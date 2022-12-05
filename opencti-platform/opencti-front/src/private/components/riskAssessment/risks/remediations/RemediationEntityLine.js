@@ -101,7 +101,7 @@ class RemediationEntityLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/activities/risk assessment/risks/${riskId}/remediation/${node.id}`}
+        to={`/activities/risk_assessment/risks/${riskId}/remediation/${node.id}`}
       >
         <ListItemText
           primary={

@@ -3,20 +3,27 @@ import {compareValues, updateQuery, filterValues, CyioError} from '../../utils.j
 import {UserInputError} from "apollo-server-express";
 import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../assetUtil.js";
 import {
-  getSelectSparqlQuery,
   getReducer,
-  // insertQuery, 
   insertSoftwareQuery,
+  selectAllSoftware,
   selectSoftwareQuery,
   selectSoftwareByIriQuery,
   softwarePredicateMap,
 } from './sparql-query.js';
+import {
+  selectHardwareByIriQuery,
+  getReducer as getHardwareReducer,
+} from '../hardware/sparql-query.js';
 import {
   selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
 } from '../../global/resolvers/sparql-query.js';
+import {
+  selectRiskByIriQuery,
+  getReducer as getAssessmentReducer,
+} from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
 
 const softwareResolvers = {
   Query: {
@@ -35,8 +42,7 @@ const softwareResolvers = {
       }
       // END WORKAROUND
       
-      const selectionList = selectMap.getNode("node");
-      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, undefined, args);
+      const sparqlQuery = selectAllSoftware(selectMap.getNode("node"), args);
       const reducer = getReducer('SOFTWARE');
       const response = await dataSources.Stardog.queryAll({
               dbName,
@@ -46,11 +52,11 @@ const softwareResolvers = {
             }
         );
 
-      if (response === undefined) return null;
+      if (response === undefined || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        let skipCount = 0,filterCount, resultCount, limit, offset, limitSize, offsetSize;
         limitSize = limit = (args.first === undefined ? response.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         filterCount = 0;
@@ -67,6 +73,7 @@ const softwareResolvers = {
 
           if (asset.id === undefined || asset.id == null ) {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'; skipping`);
+            skipCount++;
             continue;
           }
 
@@ -94,7 +101,7 @@ const softwareResolvers = {
         // check if there is data to be returned
         if (edges.length === 0 ) return null;
         let hasNextPage = false, hasPreviousPage = false;
-        resultCount = assetList.length;
+        resultCount = assetList.length - skipCount;
         if (edges.length < resultCount) {
           if (edges.length === limitSize && filterCount <= limitSize ) {
             hasNextPage = true;
@@ -128,8 +135,7 @@ const softwareResolvers = {
       }
     },
     softwareAsset: async ( _, {id}, {dbName, dataSources, selectMap} ) => {
-      const selectionList = selectMap.getNode("softwareAsset");
-      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, id);
+      const sparqlQuery = selectSoftwareQuery(id, selectMap.getNode("softwareAsset"));
       const reducer = getReducer('SOFTWARE');
       const response = await dataSources.Stardog.queryById({
         dbName,
@@ -385,6 +391,90 @@ const softwareResolvers = {
               dbName,
               sparqlQuery,
               queryId: "Select Note",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+    installed_on: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.os_installed_on === undefined && parent.sw_installed_on === undefined) return [];
+      let iriArray = [];
+      if (parent.os_installed_on) iriArray = iriArray.concat(parent.os_installed_on)
+      if (parent.sw_installed_on) iriArray = iriArray.concat(parent.sw_installed_on);
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getHardwareReducer("HARDWARE-DEVICE");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Hardware')) continue;
+          let select = selectMap.getNode("installed_on");
+          const sparqlQuery = selectHardwareByIriQuery(iri, select);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Hardware",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+    related_risks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.related_risks === undefined) return [];
+      let iriArray = parent.related_risks;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getAssessmentReducer("RISK");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Risk')) continue;
+          let select = selectMap.getNode("related_risks");
+          const sparqlQuery = selectRiskByIriQuery(iri, select);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Risk",
               singularizeSchema
             });
           } catch (e) {

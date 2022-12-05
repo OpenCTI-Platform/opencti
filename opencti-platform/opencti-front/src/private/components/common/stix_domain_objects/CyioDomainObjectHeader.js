@@ -27,8 +27,8 @@ Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   header: {
-    margin: '0 0 20px 0',
-    padding: '24px 12px 30px 12px',
+    margin: '0 -1.5rem 1rem -1.5rem',
+    padding: '1.5rem',
     height: '70px',
     backgroundColor: theme.palette.background.paper,
   },
@@ -108,36 +108,36 @@ class CyioDomainObjectAssetHeader extends Component {
         </Typography>
         <div className={classes.aliases}>
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-            {handleDisplayEdit && <Tooltip title={t('Edit')}>
-             <Button
-                variant="contained"
-                onClick={handleDisplayEdit?.bind(this)}
-                className={classes.iconButton}
-                disabled={Boolean(!cyioDomainObject?.id) || disabled}
-                color="primary"
-                size="large"
-              >
-                <Edit fontSize="inherit" />
-              </Button>
-            </Tooltip>}
-            <div style={{ display: 'inline-block' }}>
-              {OperationsComponent && React.cloneElement(OperationsComponent, {
-                id: cyioDomainObject?.id,
-                disabled: disablePopover,
-              })}
-            </div>
-            <Tooltip title={t('Create New')}>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
-                startIcon={<AddCircleOutline />}
-                disabled={disabled || !handleOpenNewCreation || false}
-                color='primary'
-              >
-                {t('New')}
-              </Button>
-            </Tooltip>
+          {handleDisplayEdit && <Tooltip title={t('Edit')}>
+            <Button
+              variant="contained"
+              onClick={handleDisplayEdit?.bind(this)}
+              className={classes.iconButton}
+              disabled={Boolean(!cyioDomainObject?.id) || disabled}
+              color="primary"
+              size="large"
+            >
+              <Edit fontSize="inherit" />
+            </Button>
+          </Tooltip>}
+          <div style={{ display: 'inline-block' }}>
+            {OperationsComponent && React.cloneElement(OperationsComponent, {
+              id: [cyioDomainObject?.id],
+              disabled: disablePopover,
+            })}
+          </div>
+          <Tooltip title={t('Create New')}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
+              startIcon={<AddCircleOutline />}
+              disabled={disabled || !handleOpenNewCreation || false}
+              color='primary'
+            >
+              {t('New')}
+            </Button>
+          </Tooltip>
           {/* </Security> */}
         </div>
       </div>

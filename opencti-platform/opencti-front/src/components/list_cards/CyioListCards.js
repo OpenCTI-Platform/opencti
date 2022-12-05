@@ -32,7 +32,6 @@ import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
-import TopBarMenu from '../../private/components/nav/TopBarMenu';
 
 const styles = (theme) => ({
   container: {
@@ -51,7 +50,7 @@ const styles = (theme) => ({
     margin: '0 300px 0 -10px',
   },
   toolBar: {
-    margin: '0 0 30px 0',
+    margin: '0 -1.2rem 2rem -1.2rem',
     height: '100%',
     display: 'flex',
     '@media (max-width: 1400px)': {
@@ -277,126 +276,126 @@ class CyioListCards extends Component {
                     to='/data/entities/responsibility'
                     value='responsibility'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={roles} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={roles} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('Responsibility')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('Responsibility')}
-                    </div>
-                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/locations'
                     value='locations'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={locations} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={locations} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('Locations')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('Locations')}
-                    </div>
-                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/parties'
                     value='parties'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={parties} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={parties} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('Parties')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('Parties')}
-                    </div>
-                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/responsible_parties'
                     value='responsible_parties'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={responsiblePartiesIcon} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={responsiblePartiesIcon} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('Responsible Parties')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('Responsible Parties')}
-                    </div>
-                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/tasks'
                     value='tasks'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={tasksIcon} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={tasksIcon} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('Tasks')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('Tasks')}
-                    </div>
-                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/assessment_platform'
                     value='assessment_platform'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={assessmentPlatform} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={assessmentPlatform} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('Assessment Platform')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('Assessment Platform')}
-                    </div>
-                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/notes'
                     value='notes'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={notes} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={notes} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('Notes')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('Notes')}
-                    </div>
-                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/labels'
                     value='labels'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={labels} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={labels} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('Labels')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('Labels')}
-                    </div>
-                  </div>
                   </MenuItem>
                   <MenuItem
                     component={Link}
                     to='/data/entities/external_references'
                     value='external_references'
                   >
-                  <div className={ classes.menuItems }>
-                    <div className={classes.iconsContainer}>
-                      <img src={externalReferenceIcon} alt="" />
+                    <div className={classes.menuItems}>
+                      <div className={classes.iconsContainer}>
+                        <img src={externalReferenceIcon} alt="" />
+                      </div>
+                      <div className={classes.menuItemText}>
+                        {t('External References')}
+                      </div>
                     </div>
-                    <div className={classes.menuItemText}>
-                      {t('External References')}
-                    </div>
-                  </div>
                   </MenuItem>
                 </Select>
               </FormControl>
@@ -492,7 +491,7 @@ class CyioListCards extends Component {
                   <div style={{ display: 'inline-block' }}>
                     {OperationsComponent && React.cloneElement(OperationsComponent, {
                       id: Object.entries(selectedElements || {}).length !== 0
-                        && Object.entries(selectedElements)[0][0],
+                        && Object.entries(selectedElements),
                       isAllselected: selectAll,
                     })}
                   </div>
@@ -528,7 +527,6 @@ class CyioListCards extends Component {
           </div>
         </div>
         <div className="clearfix" />
-        <TopBarMenu />
         <div className={classes.cardsContainer}>{children}</div>
       </div>
     );
