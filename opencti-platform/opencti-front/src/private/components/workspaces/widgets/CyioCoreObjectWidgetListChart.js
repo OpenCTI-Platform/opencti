@@ -65,7 +65,7 @@ class CyioCoreObjectVulnerableInventoryItemList extends Component {
     const {
       operation, type, field,
     } = widget.config.variables;
-    const finalStartDate = startDate || monthsAgo(12);
+    const finalStartDate = startDate || '1970-01-01T00:00:00Z';
     const finalEndDate = endDate || now();
     const ListChartVariables = {
       type: type || null,
