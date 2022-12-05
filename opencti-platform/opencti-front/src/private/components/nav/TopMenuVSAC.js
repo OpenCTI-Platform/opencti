@@ -6,14 +6,15 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { PublicOutlined, LaptopChromebookOutlined } from '@material-ui/icons';
-import { DiamondOutline, ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import deviceIcon from '../../../resources/images/assets/deviceIcon.svg';
-import networkIcon from '../../../resources/images/assets/networkIcon.svg';
-import softwareIcon from '../../../resources/images/assets/softwareIcon.svg';
 
 const styles = (theme) => ({
+  buttonHome: {
+    marginRight: theme.spacing(2),
+    padding: '4px 5px',
+    minHeight: 20,
+    textTransform: 'none',
+  },
   button: {
     marginRight: theme.spacing(1),
     padding: '4px 25px',
@@ -34,60 +35,12 @@ class TopMenuVSAC extends Component {
       <div>
         <Button
           component={Link}
-          to="/defender HQ/assets/devices"
-          variant={
-            location.pathname.includes('/defender HQ/assets/devices')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/defender HQ/assets/devices')
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
+          to="/defender HQ/assets"
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
         >
-          <img src={deviceIcon} className={classes.icon} alt="" />
-          {t('Devices')}
-        </Button>
-        <Button
-          component={Link}
-          to="/defender HQ/assets/network"
-          variant={
-            location.pathname.includes('/defender HQ/assets/network')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/defender HQ/assets/network')
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <img src={networkIcon} className={classes.icon} alt="" />
-          {t('Network')}
-        </Button>
-        <Button
-          component={Link}
-          to="/defender HQ/assets/software"
-          variant={
-            location.pathname.includes('/defender HQ/assets/software')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/defender HQ/assets/software'
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <img src={softwareIcon} className={classes.icon} alt="" />
-          {t('Software')}
+          {t('Vulnerability Assessment')}
         </Button>
       </div>
     );

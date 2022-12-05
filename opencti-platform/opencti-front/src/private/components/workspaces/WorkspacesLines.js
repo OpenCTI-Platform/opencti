@@ -21,7 +21,13 @@ class WorkspacesLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, paginationOptions,
+      relay,
+      selectAll,
+      dataColumns,
+      initialLoading,
+      onToggleEntity,
+      selectedElements,
+      paginationOptions,
     } = this.props;
     return (
       <ListLinesContent
@@ -39,7 +45,10 @@ class WorkspacesLines extends Component {
         DummyLineComponent={<WorkspaceLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        selectAll={selectAll}
         paginationOptions={paginationOptions}
+        selectedElements={selectedElements}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }

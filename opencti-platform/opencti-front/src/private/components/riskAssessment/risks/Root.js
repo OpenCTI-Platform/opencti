@@ -5,7 +5,6 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Risk from './Risk';
 import Loader from '../../../../components/Loader';
 import Remediations from './Remediations';
@@ -14,6 +13,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import RiskAnalysisContainer from './RiskAnalysisContainer';
 import RiskTracking from './RiskTracking';
 import RemediationRoot from './remediations/Root';
+import TopBar from '../../nav/TopBar';
 
 // const subscription = graphql`
 //   subscription RootRiskSubscription($id: ID!) {
@@ -49,11 +49,10 @@ class RootRisk extends Component {
         params: { riskId },
       },
     } = this.props;
-    const link = `/activities/risk assessment/risks/${riskId}/knowledge`;
+    const link = `/activities/risk_assessment/risks/${riskId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
-        <Route path="/activities/risk assessment/risks/:riskId/knowledge">
+        <Route path="/activities/risk_assessment/risks/:riskId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -72,6 +71,7 @@ class RootRisk extends Component {
             ]}
           />
         </Route>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={riskQuery}
           variables={{ id: riskId }}
@@ -82,7 +82,7 @@ class RootRisk extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId"
+                      path="/activities/risk_assessment/risks/:riskId"
                       render={(routeProps) => (
                         <Risk
                           {...routeProps}
@@ -93,19 +93,19 @@ class RootRisk extends Component {
                     />
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/analysis"
+                      path="/activities/risk_assessment/risks/:riskId/analysis"
                       render={(routeProps) => (
-                          <RiskAnalysisContainer
-                            {...routeProps}
-                            refreshQuery={retry}
-                            risk={props.risk}
-                            riskId={riskId}
-                          />
+                        <RiskAnalysisContainer
+                          {...routeProps}
+                          refreshQuery={retry}
+                          risk={props.risk}
+                          riskId={riskId}
+                        />
                       )}
                     />
                     {/* <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/remediation"
+                      path="/activities/risk_assessment/risks/:riskId/remediation"
                       render={(routeProps) => (
                           <Remediations
                             {...routeProps}
@@ -113,42 +113,42 @@ class RootRisk extends Component {
                           />
                       )}
                     /> */}
-                     <Route
+                    <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/remediation"
+                      path="/activities/risk_assessment/risks/:riskId/remediation"
                       render={(routeProps) => (
                         <Remediations
-                            {...routeProps}
-                            refreshQuery={retry}
-                            remediation={props.risk}
-                            riskId={props.risk}
+                          {...routeProps}
+                          refreshQuery={retry}
+                          remediation={props.risk}
+                          riskId={props.risk}
                         />
                       )}
                     />
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/remediation/:remediationId"
+                      path="/activities/risk_assessment/risks/:riskId/remediation/:remediationId"
                       render={(routeProps) => (
                         <RemediationRoot
-                            {...routeProps}
-                            risk={props.risk}
-                            riskId={props.risk.id}
+                          {...routeProps}
+                          risk={props.risk}
+                          riskId={props.risk.id}
                         />
                       )}
                     />
-                     <Route
+                    <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/tracking"
+                      path="/activities/risk_assessment/risks/:riskId/tracking"
                       render={(routeProps) => (
-                          <RiskTracking
-                            {...routeProps}
-                            risk={props.risk}
-                            riskId={props.risk.id}
-                          />
+                        <RiskTracking
+                          {...routeProps}
+                          risk={props.risk}
+                          riskId={props.risk.id}
+                        />
                       )}
                     />
                     {/* <Route
-                      path="/activities/risk assessment/risks/:riskId/remediation"
+                      path="/activities/risk_assessment/risks/:riskId/remediation"
                       render={(routeProps) => (
                         <RiskKnowledge
                           {...routeProps}
@@ -156,7 +156,7 @@ class RootRisk extends Component {
                         />
                       )}
                     /> */}
-                </Switch>
+                  </Switch>
                 );
               }
               return <ErrorNotFound />;
@@ -174,7 +174,7 @@ class RootRisk extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId"
+                      path="/activities/risk_assessment/risks/:riskId"
                       render={(routeProps) => (
                         <Risk
                           {...routeProps}
@@ -184,15 +184,15 @@ class RootRisk extends Component {
                     />
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/knowledge"
+                      path="/activities/risk_assessment/risks/:riskId/knowledge"
                       render={() => (
                         <Redirect
-                          to={`/activities/risk assessment/risks/${riskId}/knowledge/overview`}
+                          to={`/activities/risk_assessment/risks/${riskId}/knowledge/overview`}
                         />
                       )}
                     />
                     <Route
-                      path="/activities/risk assessment/risks/:riskId/knowledge"
+                      path="/activities/risk_assessment/risks/:riskId/knowledge"
                       render={(routeProps) => (
                         <RiskKnowledge
                           {...routeProps}
@@ -202,7 +202,7 @@ class RootRisk extends Component {
                     />
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/analysis"
+                      path="/activities/risk_assessment/risks/:riskId/analysis"
                       render={(routeProps) => (
                         <React.Fragment>
                           <CyioDomainObjectHeader
@@ -220,7 +220,7 @@ class RootRisk extends Component {
                     />
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/indicators"
+                      path="/activities/risk_assessment/risks/:riskId/indicators"
                       render={(routeProps) => (
                         <React.Fragment>
                           <CyioDomainObjectHeader
@@ -231,14 +231,14 @@ class RootRisk extends Component {
                           <StixDomainObjectIndicators
                             {...routeProps}
                             stixDomainObjectId={riskId}
-    stixDomainObjectLink={`/activities/risk assessment/risks/${riskId}/indicators`}
+    stixDomainObjectLink={`/activities/risk_assessment/risks/${riskId}/indicators`}
                           />
                         </React.Fragment>
                       )}
                     />
                     <Route
                       exact
-                    path="/activities/risk assessment/risks/:riskId/indicators
+                    path="/activities/risk_assessment/risks/:riskId/indicators
                     /relations/:relationId"
                       render={(routeProps) => (
                         <StixCoreRelationship
@@ -249,7 +249,7 @@ class RootRisk extends Component {
                     />
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/files"
+                      path="/activities/risk_assessment/risks/:riskId/files"
                       render={(routeProps) => (
                         <React.Fragment>
                           <CyioDomainObjectHeader
@@ -268,7 +268,7 @@ class RootRisk extends Component {
                     />
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/history"
+                      path="/activities/risk_assessment/risks/:riskId/history"
                       render={(routeProps) => (
                         <React.Fragment>
                           <CyioDomainObjectHeader

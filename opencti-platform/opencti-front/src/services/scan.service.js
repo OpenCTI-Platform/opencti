@@ -11,6 +11,7 @@ export const createScan = async (params, clientID, passedConfig) => {
     weakness_range: params.weaknessRange,
     vignette: params.vignette,
     notify: params.notify,
+    implementation_point: params.implementationPoint,
   };
 
   const config = {

@@ -127,7 +127,7 @@ class EntitiesAssessmentPlatformsDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/activities/risk assessment/risks');
+    //     this.props.history.push('/activities/risk_assessment/risks');
     //   },
     // });
   }

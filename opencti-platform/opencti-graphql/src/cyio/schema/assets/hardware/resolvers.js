@@ -3,9 +3,7 @@ import { UserInputError } from "apollo-server-express";
 import { compareValues, filterValues, updateQuery, CyioError } from '../../utils.js';
 import { addToInventoryQuery, deleteQuery, removeFromInventoryQuery } from "../assetUtil.js";
 import { 
-  // getSelectSparqlQuery, 
   getReducer, 
-  // insertQuery, 
   insertHardwareQuery,
   selectAllHardware,
   selectHardwareQuery,
@@ -15,11 +13,11 @@ import {
 } from './sparql-query.js';
 import { getSelectSparqlQuery} from '../computing-device/sparql-query.js'
 import {
-  getSelectSparqlQuery as getSoftwareQuery,
+  selectSoftwareByIriQuery,
   getReducer as getSoftwareReducer
 } from '../software/sparql-query.js';
 import {
-  getSelectSparqlQuery as getNetworkQuery,
+  selectNetworkByIriQuery,
   getReducer as getNetworkReducer
 } from '../network/sparql-query.js';
 import {
@@ -39,6 +37,10 @@ import {
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
 } from '../../global/resolvers/sparql-query.js';
+import {
+  selectRiskByIriQuery,
+  getReducer as getAssessmentReducer,
+} from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
 import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
   
 const hardwareResolvers = {
@@ -764,7 +766,6 @@ const hardwareResolvers = {
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         var reducer = getSoftwareReducer('SOFTWARE-IRI');
-        let selectList = selectMap.getNode('installed_software');
         for (let iri of iriArray) {
           // check if this is an Software object
           if (iri === undefined || !iri.includes('Software')) {
@@ -772,7 +773,7 @@ const hardwareResolvers = {
           }
 
           // query for the Software based on its IRI
-          var sparqlQuery = getSoftwareQuery('SOFTWARE-IRI', selectList, iri);
+          let sparqlQuery = selectSoftwareByIriQuery(iri, selectMap.getNode('installed_software'));
           const response = await dataSources.Stardog.queryById({
             dbName,
             sparqlQuery,
@@ -811,8 +812,8 @@ const hardwareResolvers = {
         iri = parent.installed_os_iri;
       }
 
-      var sparqlQuery = getSoftwareQuery('OS-IRI', selectMap.getNode('installed_operating_system'), iri);
-      var reducer = getSoftwareReducer('OS-IRI');
+      let sparqlQuery = selectSoftwareByIriQuery(iri, selectMap.getNode('installed_operating_system'));
+      let reducer = getSoftwareReducer('OS-IRI');
       let response;
       try {
         response = await dataSources.Stardog.queryById({
@@ -1015,8 +1016,7 @@ const hardwareResolvers = {
         iri = parent.conn_network_iri;
       }
 
-      let selectList = selectMap.getNode('connected_to_network');
-      var sparqlQuery = getNetworkQuery('CONN-NET-IRI', selectList, iri);
+      let sparqlQuery = selectNetworkByIriQuery(iri, selectMap.getNode('connected_to_network'));
       var reducer = getNetworkReducer('NETWORK');
       const response = await dataSources.Stardog.queryById({
         dbName,
@@ -1132,6 +1132,47 @@ const hardwareResolvers = {
               dbName,
               sparqlQuery,
               queryId: "Select Note",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+    related_risks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.related_risks === undefined) return [];
+      let iriArray = parent.related_risks;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getAssessmentReducer("RISK");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Risk')) continue;
+          let select = selectMap.getNode("related_risks");
+          const sparqlQuery = selectRiskByIriQuery(iri, select);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Risk",
               singularizeSchema
             });
           } catch (e) {

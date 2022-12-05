@@ -167,7 +167,6 @@ class RiskEditionContainer extends Component {
         'value': adaptFieldValue(n[1]),
       })),
     )(adaptedValues);
-    console.log('riskEditionFinalValues', finalValues);
     // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
     commitMutation({
       mutation: riskEditionMutation,
@@ -181,7 +180,7 @@ class RiskEditionContainer extends Component {
         resetForm();
         this.handleClose();
         console.log('RiskEditionDarkLightMutationData', data);
-        this.props.history.push('/activities/risk assessment/risks');
+        this.props.history.push('/activities/risk_assessment/risks');
       },
       onError: (err) => console.log('RiskEditionDarkLightMutationError', err),
     });

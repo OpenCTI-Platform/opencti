@@ -48,23 +48,23 @@ const IndexRoutePath = (me) => (
       render={(routeProps) => <RootDataEntities {...routeProps} me={me} />}
     />
     <BoundaryRoute path="/about" component={RootAbout} />
-    <BoundaryRoute path="/activities/vulnerability assessment" component={RootVSAC} />
+    <BoundaryRoute path="/activities/vulnerability_assessment" component={RootVSAC} />
     <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
     <BoundaryRoute path="/dashboard/events" component={RootEvents} />
     <Route path="/dashboard/observations" component={RootObservations} />
     <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
     <BoundaryRoute path="/defender HQ/assets" component={RootAssets} />
     <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
-    <FeatureFlag tag={'RISK_ASSESSMENT'}>
-      <BoundaryRoute path="/activities/risk assessment" component={RootRiskAssessment} />
-    </FeatureFlag>
-    <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
-    <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
-    <BoundaryRoute path="/dashboard/data" render={RootData} />
     <BoundaryRoute
       path="/dashboard/workspaces"
       component={RootWorkspaces}
     />
+    <FeatureFlag tag={'RISK_ASSESSMENT'}>
+      <BoundaryRoute path="/activities/risk_assessment" component={RootRiskAssessment} />
+    </FeatureFlag>
+    <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
+    <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
+    <BoundaryRoute path="/dashboard/data" render={RootData} />
     <BoundaryRoute
       exact
       path="/dashboard/profile"
@@ -86,4 +86,4 @@ IndexRoutePath.propTypes = {
   me: PropTypes.object,
 };
 
-export default React.memo(IndexRoutePath);
+export default IndexRoutePath;

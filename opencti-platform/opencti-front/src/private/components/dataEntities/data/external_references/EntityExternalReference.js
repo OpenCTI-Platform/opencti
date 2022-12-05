@@ -14,7 +14,6 @@ import EntitiesExternalReferencesPopover from './EntitiesExternalReferencesPopov
 import EntitiesExternalReferencesDeletion from './EntitiesExternalReferencesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
-import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import ExternalReferenceEntityEditionContainer from './ExternalReferenceEntityEditionContainer';
@@ -67,7 +66,6 @@ class EntityExternalReferenceComponent extends Component {
             OperationsComponent={<EntitiesExternalReferencesDeletion />}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           />
-          <TopBarBreadcrumbs />
           <Grid
             container={true}
             spacing={3}

@@ -148,7 +148,7 @@ class ViewCharts extends Component {
 
   render() {
 
-    if (this.props.location.state == undefined) return <Redirect to="/activities/vulnerability assessment/scans" />;
+    if (this.props.location.state == undefined) return <Redirect to="/activities/vulnerability_assessment/scans" />;
 
     const {
       tabValue,
@@ -387,7 +387,7 @@ class ViewCharts extends Component {
     const { trendingName, trendingData } = this.state;
 
     return (
-      <div>
+      <div style={{ marginTop: '1rem' }}>
         <Button
           aria-controls="simple-menu"
           aria-haspopup="true"

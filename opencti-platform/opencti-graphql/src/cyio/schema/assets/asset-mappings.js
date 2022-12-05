@@ -196,6 +196,15 @@ const assetSingularizeSchema = { singularizeVariables: {
     "vendor_name": true,
     "version": true,
     "vlan_id": true,
+    "hw_installed_on": false,
+    "hw_installed_on_id": false,
+    "hw_installed_on_name": false,
+    "os_installed_on": false,
+    "os_installed_on_id": false,
+    "os_installed_on_name": false,
+    "sw_installed_on": false,
+    "sw_installed_on_id": false,
+    "sw_installed_on_name": false,
   } };
   
 export { assetNameContext, assetSingularizeSchema, objectTypeMapping }

@@ -43,7 +43,7 @@ class Message extends Component {
 
   handleCloseMessage(event, reason) {
     if (reason === 'clickaway') return;
-    this.setState({ open: false });
+    this.setState({ openMessage: false });
   }
 
   render() {
