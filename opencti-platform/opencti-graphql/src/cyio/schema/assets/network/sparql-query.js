@@ -16,8 +16,10 @@ export function getReducer( type ) {
 const networkAssetReducer = (item) => {
   // if no object type was returned, compute the type from the asset type and/or the IRI
   if ( item.object_type === undefined ) {
-    if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
-    if (item.asset_type in networkMap) item.object_type = 'network'
+    if (item.asset_type !== undefined) {
+      if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
+      if (item.asset_type in networkMap) item.object_type = 'network'
+    }
     if (item.object_type === undefined && item.iri !== undefined) {
       if (item.iri.includes('Network')) item.object_type = 'network';
     }

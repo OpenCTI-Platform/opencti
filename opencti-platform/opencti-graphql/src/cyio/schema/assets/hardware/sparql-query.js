@@ -28,9 +28,11 @@ export function getReducer( type ) {
 const hardwareAssetReducer = (item) => {
   // if no object type was returned, compute the type from the asset type and/or the IRI
   if ( item.object_type === undefined ) {
-    if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
-    if (item.asset_type == 'compute-device') item.asset_type = 'computing-device';
-    if (item.asset_type in deviceMap) item.object_type = 'hardware';
+    if (item.asset_type !== undefined) {
+      if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
+      if (item.asset_type == 'compute-device') item.asset_type = 'computing-device';
+      if (item.asset_type in deviceMap) item.object_type = 'hardware';
+    }
     if (item.object_type === undefined && item.iri !== undefined) {
       if (item.iri.includes('Hardware')) item.object_type = 'hardware';
     }
