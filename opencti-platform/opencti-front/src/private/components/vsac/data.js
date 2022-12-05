@@ -55,6 +55,18 @@ export const vignettes = [
   },
 ];
 
+export const implementationPoint = [
+  {
+    id: 'internal',
+    title: 'Internal',
+  },
+  {
+    id: 'external',
+    title: 'External',
+  },
+];
+
 export const defaultVulnerabilityRange = vulnerabilityRanges[0];
 export const defaultWeaknessCount = weaknessesCount[0];
 export const defaultVignette = vignettes[0];
+export const defaultImplementationPoint = implementationPoint[0];

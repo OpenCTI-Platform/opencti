@@ -82,6 +82,8 @@
     is_scanned: Boolean
     is_virtual: Boolean
     last_scanned: Timestamp
+    "Indicates the risks related to this entity."
+    related_risks: [Risk]
   }
   # Mutation
   input HardwareAssetAddInput {

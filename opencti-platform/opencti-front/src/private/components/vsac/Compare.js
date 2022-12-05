@@ -27,7 +27,7 @@ const Compare = (props) => {
 
   const scatter = [];
 
-  if(props.location.state == undefined) return <Redirect to="/activities/vulnerability assessment/scans" />;
+  if(props.location.state == undefined) return <Redirect to="/activities/vulnerability_assessment/scans" />;
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {

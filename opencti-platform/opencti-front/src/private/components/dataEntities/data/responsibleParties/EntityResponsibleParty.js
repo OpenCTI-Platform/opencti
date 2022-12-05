@@ -14,7 +14,6 @@ import EntitiesResponsiblePartiesPopover from './EntitiesResponsiblePartiesPopov
 import EntitiesResponsiblePartiesDeletion from './EntitiesResponsiblePartiesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
-import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import ResponsiblePartyEntityEditionContainer from './ResponsiblePartyEntityEditionContainer';
@@ -68,7 +67,6 @@ class EntityResponsiblePartyComponent extends Component {
             OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           />
-          <TopBarBreadcrumbs />
           <Grid
             container={true}
             spacing={3}

@@ -10,7 +10,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
-import TopBar from '../../../nav/TopBar';
 import EntityNote from './EntityNote';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -68,7 +67,6 @@ class Notes extends Component {
     const link = `/data/entities/notes/${noteId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/data/entities/notes/:noteId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

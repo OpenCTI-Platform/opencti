@@ -16,7 +16,6 @@ import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainO
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import RiskOverview from './RiskOverview';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
-import TopMenuRisk from '../../nav/TopMenuRisk';
 import RiskObservation from './RiskObservation';
 
 const styles = () => ({
@@ -42,7 +41,7 @@ class RiskComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/activities/risk assessment/risks',
+      pathname: '/activities/risk_assessment/risks',
       openNewCreation: true,
     });
   }
@@ -66,11 +65,10 @@ class RiskComponent extends Component {
               cyioDomainObject={risk}
               PopoverComponent={<RiskPopover />}
               OperationsComponent={<RiskDeletion />}
-              goBack='/activities/risk assessment/risks'
+              goBack='/activities/risk_assessment/risks'
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
             />
-            <TopMenuRisk risk={risk.name}/>
             <Grid
               container={true}
               spacing={3}
@@ -81,22 +79,22 @@ class RiskComponent extends Component {
               </Grid>
               <Grid item={true} xs={6}>
                 <RiskDetails risk={risk} history={history} />
-                <RiskObservation risk={risk} history={history}/>
+                <RiskObservation risk={risk} history={history} />
               </Grid>
             </Grid>
             <Grid
               container={true}
               spacing={3}
               classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 25, marginBottom: 30  }}
+              style={{ marginTop: 25, marginBottom: 30 }}
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
-                typename={risk.__typename}
-                fieldName='links'
-                externalReferences={risk.links}
-                cyioCoreObjectId={risk.id}
-                refreshQuery={refreshQuery}
+                  typename={risk.__typename}
+                  fieldName='links'
+                  externalReferences={risk.links}
+                  cyioCoreObjectId={risk.id}
+                  refreshQuery={refreshQuery}
                 />
               </Grid>
               <Grid item={true} xs={6}>

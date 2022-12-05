@@ -10,7 +10,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
-import TopBar from '../../../nav/TopBar';
 import EntityRole from './EntityRole';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -69,7 +68,6 @@ class RootRole extends Component {
     const link = `/data/entities/responsibility/${responsibilityId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
         <Route path="/data/entities/responsibility/:responsibilityId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
