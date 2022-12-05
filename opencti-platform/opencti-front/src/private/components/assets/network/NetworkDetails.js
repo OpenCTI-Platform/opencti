@@ -56,8 +56,10 @@ const styles = (theme) => ({
   },
   link: {
     textAlign: 'left',
-    fontSize: '16px',
+    fontSize: '1rem',
     display: 'flex',
+    minWidth: '50px',
+    width: '100%',
   },
   launchIcon: {
     marginRight: '5%',
@@ -255,7 +257,7 @@ class NetworkDetailsComponent extends Component {
                         component="button"
                         variant="body2"
                         className={classes.link}
-                        onClick={() => (history.push(`/defender HQ/assets/software/${risk.id}`))}
+                        onClick={() => (history.push(`/activities/risk_assessment/risks/${risk.id}`))}
                       >
                         <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(risk.name)}</div>
                       </Link>
