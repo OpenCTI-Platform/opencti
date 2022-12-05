@@ -72,7 +72,7 @@ class CyioCoreObjectWidgetAreaChart extends Component {
       theme,
     } = this.props;
     const interval = 'month';
-    const finalStartDate = startDate || monthsAgo(12);
+    const finalStartDate = startDate || '1970-01-01T00:00:00Z';
     const finalEndDate = endDate || now();
     const days = numberOfDays(finalStartDate, finalEndDate);
     let tickFormatter = md;
@@ -193,7 +193,7 @@ class CyioCoreObjectWidgetAreaChart extends Component {
       theme,
     } = this.props;
     const interval = 'month';
-    const finalStartDate = startDate || monthsAgo(12);
+    const finalStartDate = startDate || '1970-01-01T00:00:00Z';
     const finalEndDate = endDate || now();
     const days = numberOfDays(finalStartDate, finalEndDate);
     let tickFormatter = md;

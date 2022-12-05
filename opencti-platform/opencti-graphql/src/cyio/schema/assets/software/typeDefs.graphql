@@ -71,6 +71,11 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     last_scanned: Timestamp
+    # Hyperlinks
+    "Indicates the assets on which the software is installed"
+    installed_on: [HardwareAsset]
+    "Indicates the risks related to this entity."
+    related_risks: [Risk]
 }
 
   "Defines identifying information about an instance of operating system software."
@@ -115,7 +120,11 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     last_scanned: Timestamp
+    # Hyperlinks
+    "Indicates the assets on which the software is installed"
+    installed_on: [HardwareAsset]
     # Operating SystemAsset
+    "Indicates the family to which the operating system belongs"
     family: FamilyType
   }
 
@@ -161,6 +170,9 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     last_scanned: Timestamp
+    # Hyperlinks
+    "Indicates the assets on which the software is installed"
+    installed_on: [HardwareAsset]
 }
 
   # Mutation Types

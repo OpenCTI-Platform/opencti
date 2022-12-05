@@ -124,7 +124,7 @@ class CyioCoreObjectWidgetDonutChart extends Component {
       startDate,
       endDate,
     } = this.props;
-    const finalStartDate = startDate || monthsAgo(12);
+    const finalStartDate = startDate || '1970-01-01T00:00:00Z';
     const finalEndDate = endDate || now();
     const donutChartVariables = {
       ...widget.config.variables,
