@@ -26,7 +26,18 @@ export function getReducer( type ) {
 
 // Reducers
 const hardwareAssetReducer = (item) => {
-  // this code is to work around an issue in the data where we sometimes get multiple operating systems
+  // if no object type was returned, compute the type from the asset type and/or the IRI
+  if ( item.object_type === undefined ) {
+    if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
+    if (item.asset_type == 'compute-device') item.asset_type = 'computing-device';
+    if (item.asset_type in deviceMap) item.object_type = 'hardware';
+    if (item.object_type === undefined && item.iri !== undefined) {
+      if (item.iri.includes('Hardware')) item.object_type = 'hardware';
+    }
+    if (item.object_type === undefined || item.object_type !== 'hardware') return null;
+  }  
+
+  // WORKAROUND: this code is to work around an issue in the data where we sometimes get multiple operating systems
   // when there shouldn't be but just one
   if ('installed_operating_system' in item) {
     if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
@@ -35,21 +46,8 @@ const hardwareAssetReducer = (item) => {
       }
       item.installed_operating_system = item.installed_operating_system[0]
     }
-}
-
-  // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    if (item.asset_type == 'compute-device') {
-      item.asset_type = 'computing-device';
-      item.object_type = 'computing-device';
-    } else {
-      if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
-      item.object_type = item.asset_type;
-    }
-  } else {
-    item.object_type = 'hardware';
   }
-  
+
   return {
     iri: item.iri,
     id: item.id,
@@ -333,10 +331,6 @@ const deviceMap = {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Appliance",
     parent: "network-device",
   },
-  // "application-software": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ApplicationSoftware",
-  //   parent: "software",
-  // },
   // "circuit": {
   //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Circuit",
   // },
@@ -389,9 +383,6 @@ const deviceMap = {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#MobileDevice",
     parent: "network-device",
   },
-  // "network": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Network",
-  // },
   "network-device": {
     iriTemplate:"http://scap.nist.gov/ns/asset-identification#NetworkDevice",
     parent: "hardware",
@@ -400,10 +391,6 @@ const deviceMap = {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#NetworkSwitch",
     parent: "network-device",
   },
-  // "operating-system": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem",
-  //   parent: "software",
-  // },
   "pbx": {
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#PBX",
     parent: "hardware",
@@ -434,9 +421,6 @@ const deviceMap = {
   },
   // "service": {
   //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Service",
-  // },
-  // "software": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software",
   // },
   // "standard": {
   //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Standard",

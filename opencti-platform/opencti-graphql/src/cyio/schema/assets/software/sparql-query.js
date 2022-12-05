@@ -21,11 +21,14 @@ export function getReducer( type ) {
 
 // Reducers
 const softwareAssetReducer = (item) => {
-  // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
-  } else {
-    item.object_type = 'software';
+  // if no object type was returned, compute the type from the asset type and/or the IRI
+  if ( item.object_type === undefined ) {
+    if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
+    if (item.asset_type in softwareMap) item.object_type = 'software'
+    if (item.object_type === undefined && item.iri !== undefined) {
+      if (item.iri.includes('Software')) item.object_type = 'software';
+    }
+    if (item.object_type === undefined || item.object_type !== 'software') return null;
   }
 
   return {
@@ -304,6 +307,21 @@ export const detachFromSoftwareQuery = (id, field, itemIris) => {
     }
   }
   `
+}
+
+// softwareMap that maps asset_type values to class
+const softwareMap = {
+  "application-software": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ApplicationSoftware",
+    parent: "software",
+  },
+  "operating-system": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem",
+    parent: "software",
+  },
+  "software": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software",
+  },
 }
 
 // Predicate Maps

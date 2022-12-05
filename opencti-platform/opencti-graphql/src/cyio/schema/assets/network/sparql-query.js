@@ -1,15 +1,5 @@
 import {byIdClause, buildSelectVariables, optionalizePredicate, parameterizePredicate, generateId, OASIS_SCO_NS} from "../../utils.js";
 
-const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
-const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#Network> . \n`;
-const inventoryConstraint = `
-{
-  SELECT DISTINCT ?iri
-  WHERE {
-    ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
-          <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
-  }
-}`;
 
 export function getReducer( type ) {
   switch( type ) {
@@ -24,11 +14,14 @@ export function getReducer( type ) {
 
 // Reducers
 const networkAssetReducer = (item) => {
-  // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
-  } else {
-    item.object_type = 'network';
+  // if no object type was returned, compute the type from the asset type and/or the IRI
+  if ( item.object_type === undefined ) {
+    if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
+    if (item.asset_type in networkMap) item.object_type = 'network'
+    if (item.object_type === undefined && item.iri !== undefined) {
+      if (item.iri.includes('Network')) item.object_type = 'network';
+    }
+    if (item.object_type === undefined || item.object_type !== 'network') return null;
   }
   
   return {
@@ -94,124 +87,7 @@ const ipAddrRangeReducer = (item) => {
   }
 }
 
-// Network resolver support functions
-export function getSelectSparqlQuery(type, select, id, args, ) {
-  var sparqlQuery;
 
-  if (type === 'NETWORK') {
-    if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
-    if (!select.includes('id')) select.push('id');
-
-    if (args !== undefined ) {
-      if ( args.filters !== undefined && id === undefined ) {
-        for( const filter of args.filters) {
-          if (!select.includes(filter.key)) select.push( filter.key );
-        }
-      }
-      
-      // add value of orderedBy's key to cause special predicates to be included
-      if ( args.orderedBy !== undefined ) {
-        if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
-      }
-    }
-  }
-
-  let { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
-  selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
-  const selectPortion = `
-  ${selectionClause}
-  FROM <tag:stardog:api:context:named>
-  WHERE {
-      `;
-  let iri;
-  switch( type ) {
-    case 'NETADDR-RANGE':
-      iri = id == null ? "?iri" : `<http://scap.nist.gov/ns/asset-identification#IpAddressRange-${id}>`
-      sparqlQuery = `
-      ${selectionClause}
-      FROM <tag:stardog:api:context:named>
-      WHERE {
-        ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
-        ${predicates}
-      }
-      `
-      break;
-    case 'NETWORK':
-      iri = id == null ? "?iri" : `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`
-      let byId = '';
-      if (id !== undefined) {
-        byId = byIdClause(id);
-      }
-      sparqlQuery = selectPortion + typeConstraint + byId + predicates + inventoryConstraint + '}';
-      break;
-    case 'CONN-NET-IRI':
-      sparqlQuery = selectPortion +
-          bindIRIClause.replace('{iri}', id) + 
-          typeConstraint +
-          predicates + '}';
-      break
-    default:
-    throw new Error(`Unsupported query type ' ${type}'`)
-  }
-  // console.log(`[INFO] Query = ${sparqlQuery}`)
-  return sparqlQuery ;
-}
-
-export const insertQuery = (propValues) => {
-  const id_material = {
-    ...(propValues.network_name && { "network_name": propValues.network_name}),
-    ...(propValues.network_id && {"network_id": propValues.network_id}),
-  } ;
-  const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString();
-
-  // escape any special characters (e.g., newline)
-  if (propValues.description !== undefined) {
-    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
-    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
-    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
-  }
-
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`;
-  const insertPredicates = Object.entries(propValues)
-    .filter((propPair) => networkPredicateMap.hasOwnProperty(propPair[0]))
-    .map((propPair) => networkPredicateMap[propPair[0]].binding(iri, propPair[1]))
-    .join(' .\n      ')
-  const query = `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Component> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Network> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
-      ${iri} a <http://darklight.ai/ns/common#Object> . 
-      ${iri} <http://darklight.ai/ns/common#id> "${id}".
-      ${iri} <http://darklight.ai/ns/common#object_type> "network" . 
-      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
-      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates} .
-    }
-  }
-  `
-  return {iri, id, query}
-}
-export const deleteNetworkAssetQuery = (id) =>  {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`;
-  return `
-  DELETE {
-    GRAPH ${iri} {
-      ${iri} ?p ?o
-    }
-  } WHERE {
-    GRAPH ${iri} {
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Network> .
-      ${iri} ?p ?o
-    }  
-  }
-  `
-
-}
-// TODO: Update resolvers to utilize these functions in place of the above; delete the above
 export const insertNetworkQuery = (propValues) => {
   const id_material = {
     ...(propValues.network_name && { "network_name": propValues.network_name}),
@@ -401,6 +277,12 @@ export const detachFromNetworkQuery = (id, field, itemIris) => {
   `
 }
 
+// networkMap that maps asset_type values to class
+const networkMap = {
+  "network": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Network",
+  },
+}
 
 // Predicate Maps
 export const networkPredicateMap = {

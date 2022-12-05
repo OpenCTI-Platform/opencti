@@ -4,8 +4,7 @@ import { compareValues, filterValues, generateId, DARKLIGHT_NS, updateQuery, Cyi
 import { addToInventoryQuery, removeFromInventoryQuery } from "../assetUtil.js";
 import {
   getReducer,
-  insertQuery,
-  deleteNetworkAssetQuery,
+  deleteNetworkQuery,
   insertNetworkQuery,
   selectAllNetworks,
   selectNetworkQuery,
@@ -237,7 +236,7 @@ const networkResolvers = {
         });
       }
 
-      const { iri, id, query } = insertQuery(input);
+      const { iri, id, query } = insertNetworkQuery(input);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
@@ -337,7 +336,7 @@ const networkResolvers = {
         sparqlQuery: relationshipQuery,
         queryId: "Delete Network Asset from Inventory"
       })
-      const deleteQuery = deleteNetworkAssetQuery(id);
+      const deleteQuery = deleteNetworkQuery(id);
       await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: deleteQuery,
