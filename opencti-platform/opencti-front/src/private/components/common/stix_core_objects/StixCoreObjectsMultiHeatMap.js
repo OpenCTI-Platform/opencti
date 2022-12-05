@@ -39,6 +39,7 @@ const darkColors = [
   '#3a95f3',
   '#4da3ff',
   '#76bbff',
+  '#9eccff',
 ];
 
 const lightColors = [
@@ -52,6 +53,7 @@ const lightColors = [
   '#02407a',
   '#023362',
   '#001e3c',
+  '#021428',
 ];
 
 const stixCoreObjectsMultiHeatMapTimeSeriesQuery = graphql`
@@ -144,13 +146,22 @@ const StixCoreObjectsMultiHeatMap = ({
             const colorRanges = Array(10)
               .fill(0)
               .map((_, i) => ({
-                from: minValue + (i + 1) * interval - interval,
+                from:
+                  minValue + (i + 1) * interval - interval === 0
+                    ? 1
+                    : minValue + (i + 1) * interval - interval,
                 to: minValue + (i + 1) * interval,
                 color:
                   theme.palette.mode === 'dark'
-                    ? darkColors[i]
-                    : lightColors[i],
+                    ? darkColors[i + 1]
+                    : lightColors[i + 1],
               }));
+            colorRanges.push({
+              from: 0,
+              to: 0,
+              color:
+                theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
+            });
             return (
               <Chart
                 options={heatMapOptions(
