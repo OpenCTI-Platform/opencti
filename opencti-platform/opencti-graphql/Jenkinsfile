@@ -50,7 +50,7 @@ node {
     }
   } catch (Exception e) {
     currentBuild.result = "FAILED"
-		throw ex
+		throw e
   } finally {
     notify.notifyBuild(currentBuild.result);
   }
