@@ -23,8 +23,10 @@ export function getReducer( type ) {
 const softwareAssetReducer = (item) => {
   // if no object type was returned, compute the type from the asset type and/or the IRI
   if ( item.object_type === undefined ) {
-    if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
-    if (item.asset_type in softwareMap) item.object_type = 'software'
+    if (item.asset_type !== undefined) {
+      if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
+      if (item.asset_type in softwareMap) item.object_type = 'software'  
+    }
     if (item.object_type === undefined && item.iri !== undefined) {
       if (item.iri.includes('Software')) item.object_type = 'software';
     }
@@ -147,6 +149,10 @@ export const selectSoftwareByIriQuery = (iri, select) => {
   // if no select values provides, use all available field names of the object
   if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
 
+  // retrieve required fields if not already on the list of fields to be selected
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type')
+
   // if looking for device on which software was installed
   if (select.includes('installed_on')) {
     // remove 'installed_on'
@@ -192,7 +198,10 @@ export const selectSoftwareByIriQuery = (iri, select) => {
 export const selectAllSoftware = (select, args) => {
   // if no select values provides, use all available field names of the object
   if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
+
+  // retrieve required fields if not already on the list of fields to be selected
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type')
 
   // if looking for device on which software was installed
   if (select.includes('installed_on')) {
