@@ -1,0 +1,124 @@
+# declares the query entry-points for this type
+extend type Query {
+  ingestActivity(id: ID!): IngestActivty  @hasPermission(resources: "DataSource:view")
+  ingestActivities(
+    first: Int
+    offset: Int
+    orderBy: IngestOrdering
+    orderMode: OrderingMode
+    filters: [IngestFiltering]
+    filterMode: FilterMode
+    search: String
+  ): IngestConnection  @hasPermission(resources: "DataSource:view")
+}
+
+# declares the mutation entry-points for this type
+# extend type Mutation {
+# }
+
+
+"""
+ActivityProgress interface defines the base definition of a
+representation of the progress of an activity.
+"""
+interface WorkActivity {
+  "Identifies the unique identifier associated with the source of the work"
+  source: ID!
+  "Identifies the name associated with the data source"
+  name: String!
+  "Indicates the current status of the activity"
+  status: WorkActivityStatus!
+  # "Indicates the originator of the work activity"
+  # initiator: User
+  "Indicates the date/time when the activity started"
+  start_time: Timestamp!
+  "Indicates the date/time when the activity completed"
+  completed_time: Timestamp
+  "Indictes the total operations to be performed for the activity"
+  total_operations: Int
+  "Indictes that number of operations completed so far"
+  operations_completed: Int
+  "An array of non-error messages that occurred during the activity"
+  messages: [WorkMessage]
+  "An array of error messages that occurred during the activity "
+  errors: [WorkMessage]
+  "Provides details about the progress of ingest process"
+  tracking: WorkTracking
+}
+
+type IngestActivty implements BasicObject & LifecycleObject & WorkActivity {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp!
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp!
+  # Work Activity
+  "Identifies the unique identifier associated with the source of the work"
+  source: ID!
+  "Identifies the name associated with the data source"
+  name: String!
+  "Indicates the current status of the activity"
+  status: WorkActivityStatus!
+  "Indicates the date/time when the activity started"
+  start_time: Timestamp!
+  "Indicates the date/time when the activity completed"
+  completed_time: Timestamp
+  "Indictes the total operations to be performed for the activity"
+  total_operations: Int
+  "Indictes that number of operations completed so far"
+  operations_completed: Int
+  "An array of non-error messages that occurred during the activity"
+  messages: [WorkMessage]
+  "An array of error messages that occurred during the activity "
+  errors: [WorkMessage]
+  "Provides details about the progress of ingest process"
+  tracking: WorkTracking
+}
+
+enum IngestOrdering {
+  "Status"
+  status
+  "Start Time"
+  start_time
+  "Completed Time"
+  completed_time
+}
+enum IngestFiltering {
+  "Status"
+  status
+  "Start Time"
+  start_time
+  "Completed Time"
+  completed_time
+}
+type IngestConnection {
+  pageInfo: PageInfo!
+  edges: [IngestEdge]
+}
+type IngestEdge {
+  cursor: String!
+  node: IngestActivty!
+}
+
+"""
+WorkActivityStatus defines the various states of progress
+"""
+enum WorkActivityStatus {
+  "Completed"
+  completed
+  "Failed"
+  failed
+  "In-Progress"
+  in_progress
+}
+
+union WorkSource =  DataSource

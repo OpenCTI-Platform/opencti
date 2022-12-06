@@ -1,0 +1,147 @@
+# declares the query entry-points for this type
+extend type Query {
+  assessmentResults(id: ID = "22f2ad37-4f07-5182-bf4e-59ea197a73dc"): AssessmentResults  @hasPermission(resources:"AssessmentResults:view")
+  listAssessmentResults(
+    first: Int
+    offset: Int
+    orderedBy: AssessmentResultsOrdering
+    orderMode: OrderingMode
+    filters: [AssessmentResultsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): AssessmentResultsConnection  @hasPermission(resources:"AssessmentResults:view")
+}
+
+# declares the mutation entry-points for this type
+# extend type Mutation {
+# }
+
+# ================== Types ==============
+"""
+AssessmentResults provides a representation of a security assessment results, such as those provided by a FedRAMP assessor in the FedRAMP Security Assessment Report for an information system.
+"""
+type AssessmentResults implements BasicObject & LifecycleObject & OscalObject & OscalModel {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Indicates the date and time at which the object was originally created."
+  created: Timestamp
+  "Indicates the date and time that this particular version of the object was last modified."
+  modified: Timestamp
+  # OscalObject
+  "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+  labels: [CyioLabel]
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [CyioNote]
+  "Identifies one or more relationships to other entities."
+  relationships(
+    first: Int
+    offset: Int
+    orderedBy: OscalRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: [OscalRelationshipsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OscalRelationshipConnection
+  # Metadata
+  "Identifies the name given to the document."
+  name: String!
+  "Identifies the date and time the document was published."
+  published: Timestamp
+  "Identifies the date and time the document as last modified."
+  last_modified: Timestamp
+  "Identifies the current version of the document."
+  version: String!
+  "Identifies the OSCAL model version the document was authored against."
+  oscal_version: String!
+  "Identifies a list of revisions to the containing document."
+  revisions: [Revision]
+  "Identifies references to previous versions of this document."
+  document_ids: [ID]
+  "Provides information about the containing document, and defines concepts that are shared across the document."
+  shared_metadata: OscalMetadata!
+  # AssessmentResult
+  # "Specifies reference to the associated Assessment Plan to import information about the original plan for assessing the system."
+  # assessment_plan: AssessmentPlan!
+  "Identifies data objects that are used in the assessment plan, that do not appear in the referenced SSP."
+  local_definitions: ARLocalDefinitions!
+  "Identifies all of the assessment observations and findings, initial and residual risks, deviations, and disposition."
+  results(first: Int, offset: Int): ResultConnection
+  # Backmatter
+  "Identifies one or more Resources that are associated with this POAM."
+  resources(first: Int, offset: Int): OscalResourceConnection
+}
+
+# Pagination Types
+type AssessmentResultsConnection {
+  pageInfo: PageInfo!
+  edges: [AssessmentResultsEdge]
+}
+type AssessmentResultsEdge {
+  cursor: String!
+  node: AssessmentResults!
+}
+# Filtering Types
+input AssessmentResultsFiltering {
+  key: AssessmentResultsFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+enum AssessmentResultsFilter {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Label"
+  label_name
+  "Name"
+  name
+  "id"
+  id
+  "Published"
+  published
+}
+# Ordering Enum
+enum AssessmentResultsOrdering {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Label"
+  label_name
+  "Name"
+  name
+  "id"
+  id
+  "Published"
+  published
+}
+
+
+type ARLocalDefinitions {
+  "Identifies local definitions of a control objective for this assessment. Uses catalog syntax for control objective and assessment actions."
+  objectives_and_methods: [ControlObjective]
+  "Identifies an assessment or related process that can be performed."
+  activities(first: Int, offset: Int): ActivityConnection
+}
+
+type ControlObjective {
+  "Identifies a reference to a control. When referencing an externally defined control, the Control Identifier Reference must be used in the context of the external / imported OSCAL instance (e.g., uri-reference)."
+  control: Control!
+  "Identifies a human-readable description of this control objective"
+  description: String
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
+  "Identifies a partition of a control's definition or a child of another part."
+  parts: [AssessmentPart]
+}
