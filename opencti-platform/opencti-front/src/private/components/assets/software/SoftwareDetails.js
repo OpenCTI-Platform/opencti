@@ -11,10 +11,12 @@ import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
+import Link from '@material-ui/core/Link';
+import LaunchIcon from '@material-ui/icons/Launch';
 import inject18n from '../../../../components/i18n';
 import Switch from '@material-ui/core/Switch';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -22,12 +24,46 @@ const styles = () => ({
     padding: '24px 24px 32px 24px',
     borderRadius: 6,
   },
+  scrollBg: {
+    background: theme.palette.header.background,
+    width: '100%',
+    color: 'white',
+    padding: '10px 5px 10px 15px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  scrollDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '78px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
+  scrollObj: {
+    color: theme.palette.header.text,
+    fontFamily: 'sans-serif',
+    padding: '0px',
+    textAlign: 'left',
+  },
+  link: {
+    textAlign: 'left',
+    fontSize: '1rem',
+    display: 'flex',
+    minWidth: '50px',
+    width: '100%',
+  },
+  launchIcon: {
+    marginRight: '5%',
+  },
+  linkTitle: {
+    color: '#fff',
+  }
 });
 
 class SoftwareDetailsComponent extends Component {
   render() {
     const {
-       t, classes, software,fldt
+       t, classes, software,fldt, history
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -182,6 +218,64 @@ class SoftwareDetailsComponent extends Component {
                 {software.last_scanned && fldt(software.last_scanned)}
               </Grid>
             </Grid>
+            <Grid container spacing={3}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Installed on Assets')}
+                </Typography>
+                <div className="clearfix" />
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {software.installed_on && software.installed_on.map((asset, key) => (
+                        <Link
+                          key={key}
+                          component="button"
+                          variant="body2"
+                          className={classes.link}
+                          onClick={() => (history.push(`/defender HQ/assets/devices/${asset.id}`))}
+                        >
+                          <LaunchIcon fontSize='small' className={classes.launchIcon}/><div className={classes.linkTitle}>{t(asset.name)}</div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Grid>       
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20  }}
+                >
+                  {t('Related Risks')}
+                </Typography>
+                <div className="clearfix" />
+                <div className={classes.scrollBg}>
+                  <div className={classes.scrollDiv}>
+                    <div className={classes.scrollObj}>
+                      {software.related_risks && software.related_risks.map((risk, key) => (
+                      <Link
+                        key={key}
+                        component="button"
+                        variant="body2"
+                        className={classes.link}
+                        onClick={() => (history.push(`/activities/risk_assessment/risks/${risk.id}`))}
+                      >
+                        <LaunchIcon fontSize='small' className={classes.launchIcon}/><div className={classes.linkTitle}>{t(risk.name)}</div>
+                      </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Grid>             
+            </Grid>
           </Grid>
         </Paper>
       </div>
@@ -208,6 +302,17 @@ const SoftwareDetails = createFragmentContainer(SoftwareDetailsComponent, {
       implementation_point
       last_scanned
       is_scanned
+      installed_on {
+        id
+        entity_type
+        vendor_name
+        name
+        version
+      }
+      related_risks {
+        id
+        name
+      }
     }
   `,
 });

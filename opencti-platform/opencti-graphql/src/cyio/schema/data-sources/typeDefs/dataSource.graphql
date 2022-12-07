@@ -1,0 +1,274 @@
+# declares the query entry-points for this type
+extend type Query {
+  dataSource(id: ID!): DataSource @hasPermission(resources: "DataSource:view")
+  dataSources(
+    first: Int
+    offset: Int
+    orderedBy: DataSourceOrdering
+    orderMode: OrderingMode
+    filters: [DataSourceFiltering]
+    filterMode: FilterMode
+    search: String @constraint(minLength: 2)
+  ): DataSourceConnection @hasPermission(resources: "DataSource:view")
+  dataSourceConnectionConfig(id: ID!): DataSourceConnectionConfig @hasPermission(resources: "DataSource:view")
+}
+
+# declares the mutation entry-points for this type
+extend type Mutation {
+  deleteDataSources(ids: [ID!]!): [ID]  @hasPermission(resources: "DataSource:delete")
+  createDataSource(input: DataSourceInput): DataSource  @hasPermission(resources: "DataSource:update")
+  deleteDataSource(id: ID!): String! @hasPermission(resources: "DataSource:delete")
+  editDataSource(id: ID!, input: [EditInput]!, commitMessage: String): DataSource @hasPermission(resources: "DataSource:update")
+  createDataSourcConnectionConfig(input: DataSourceConnectionConfigInput): DataSourceConnectionConfig  @hasPermission(resources: "DataSource:update")
+  deleteDataSourceConnectionConfig(id: ID!): String! @hasPermission(resources: "DataSource:delete")
+  editDataSourceConnectionConfig(id: ID!, input: [EditInput]!, commitMessage: String): DataSourceConnectionConfig @hasPermission(resources: "DataSource:update")
+  # Data Source Management
+  startDataSource(id: ID!): DataSource  @hasPermission(resources: "DataSource:manage-state")
+  pauseDataSource(id: ID!): DataSource  @hasPermission(resources: "DataSource:manage-state")
+  resetDataSource(id: ID!): DataSource  @hasPermission(resources: "DataSource:manage-state")
+}
+
+"""
+DataSource defines the information required to describe a data source.
+"""
+type DataSource implements BasicObject & LifecycleObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp!
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp!
+  # Data Source
+  "Identifies the name of the product"
+  name: String!
+  "Identifies the name used to display to users"
+  display_name: String
+  "Identifies a human-readable description of the data source"
+  description: String
+  "Identifies the current status of the data source"
+  status: DataSourceStatus!
+  "Identifies the type of data source"
+  data_source_type: DataSourceType!
+  "Identifies if the data is contextual"
+  contextual: Boolean!
+  "Identifies whether collection is automatically triggered"
+  auto: Boolean!
+  "Identifies the types of information represented in the ingested data"
+  scope: [String]
+  "Indicates the frequency at which the Connector should attempt to ingest data from an externa source"
+  update_frequency: FrequencyTiming!
+  "Identifies the Information Exchange Policy that must be applied to any data ingested."
+  iep: IEPMarking
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  external_references: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  notes: [CyioNote]
+}
+
+input DataSourceInput {
+  # Data Source
+  "Identifies the name of the product"
+  name: String!
+  "Identifies the name used to display to users"
+  display_name: String
+  "Identifies a human-readable description of the data source"
+  description: String
+  "Identifies the current status of the data source"
+  status: DataSourceStatus!
+  "Identifies the type of data source"
+  data_source_type: DataSourceType!
+  "Identifies if the data is contextual"
+  contextual: Boolean!
+  "Identifies whether collection is automatically triggered"
+  auto: Boolean!
+  "Identifies the types of information represented in the ingested data"
+  scope: [String]
+  "Indicates the frequency at which the Connector should attempt to ingest data from an externa source"
+  update_frequency: FrequencyTimingAddInput!
+  "Identifies the Information Exchange Policy that must be applied to any data ingested."
+  iep: IEPMarkingInput!
+}
+
+"""
+DataSourceConfig defines the information about the configuration of a Data Source
+including information about:
+  - the frequency at which the Data Source will attempt to ingest data from the external source
+  - required to successfully make a network connection.
+"""
+type DataSourceConnectionConfig implements BasicObject & LifecycleObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp!
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp!
+  # Data Source Configuration
+  "Indicates the information necessary to make a connection to the external source."
+  connection: ConnectionParams!
+  "Indicates the topic on which connector is to listen for data"
+  listen: String
+  "Indicates the topic on which connector is to listen for data"
+  listen_exchange: String
+  "Indicates the exchange on which connector is to push data"
+  push: String
+  "Indicates the exchange on which connector is to push data"
+  push_exchange: String
+}
+
+# Data Source Configuration
+input DataSourceConnectionConfigInput {
+  "Indicates the information necessary to make a connection to the external source."
+  connection: ConnectionParamsInput!
+  "Indicates the topic on which connector is to listen for data"
+  listen: String
+  "Indicates the topic on which connector is to listen for data"
+  listen_exchange: String
+  "Indicates the exchange on which connector is to push data"
+  push: String
+  "Indicates the exchange on which connector is to push data"
+  push_exchange: String
+}
+
+"""
+ConnectionParams contains the information necessary to successfully make a connection to the external source.
+"""
+type ConnectionParams {
+  "Indicates the requirement for a secure (e.g., TLS) connection"
+  secure: Boolean!
+  "Indicates the name of the host or IP address of the connection"
+  host: String!
+  "Indications the port number to be used by the connection"
+  port: Int!
+  "Indicates the query or body to be used by the connection"
+  query: String
+  "Indicates the file(s) containing the Certificate Authority for the connection"
+  ca: [String]
+  "Indicates the API key to be used by the connection"
+  api_key: String
+  "Indicates the username to be used to establish the connection"
+  username: String
+  "Indicates the passphrase to be used to establish the connection"
+  passphrase: String
+}
+
+input ConnectionParamsInput {
+  "Indicates the requirement for a secure (e.g., TLS) connection"
+  secure: Boolean!
+  "Indicates the name of the host or IP address of the connection"
+  host: String!
+  "Indications the port number to be used by the connection"
+  port: Int!
+  "Indicates the query or body to be used by the connection"
+  query: String
+  "Indicates the file(s) containing the Certificate Authority for the connection"
+  ca: [String]
+  "Indicates the API key to be used by the connection"
+  api_key: String
+  "Indicates the username to be used to establish the connection"
+  username: String
+  "Indicates the passphrase to be used to establish the connection"
+  passphrase: String
+}
+
+# Data Source Status
+"""
+DataSourceStatus field provides an indication about the state of the Data Source.
+ - ACTIVE indicates the Data Source will actively attempt to ingest data.
+ - INACTIVE indicates the Data Source will not actively attempt to ingest data.
+ - NOT_APPLICABLE indicates that the Data Source is typically manual and does not have an active state.
+"""
+enum DataSourceStatus {
+  "Indicates the data source is active"
+  ACTIVE
+  "Indicates the data source is Inactive"
+  INACTIVE
+  "Indicates the data source isnot applicable"
+  NOT_APPLICABLE
+}
+
+# Data Source Type
+"""
+DataSourceType provides an indication about the type of the Data Source
+  - EXTERNAL_IMPORT indicates the Data Source ingests a stream of data
+  - EXTERNAL_IMPORT_FILE indicates the Data Source downloads a file
+  - INTERNAL_ENRICHMENT indicates the Data Source reaches to an external source
+    to obtain data about a subject that is used to enrich a store piece of knowledge
+"""
+enum DataSourceType {
+  "Import of data via API from External Source"
+  EXTERNAL_IMPORT
+  "Import of data via file form External Source"
+  EXTERNAL_IMPORT_FILE
+  "Interal export of data for a specific entity"
+  INTERNAL_ENRICHMENT
+  # INTERNAL_IMPORT_FILE
+  # INTERNAL_EXPORT_FILE
+  # STREAM
+}
+
+
+# Ordering
+enum DataSourceOrdering {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Display Name"
+  display_name
+  "Name"
+  name
+  "Status"
+  status
+}
+
+# Filtering Enumerations
+enum DataSourceFilter {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Display Name"
+  display_name
+  "Data Source Type"
+  data_source_type
+  "Name"
+  name
+  "Status"
+  status
+  "Trigger"
+  trigger
+}
+
+input DataSourceFiltering {
+  key: DataSourceFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+
+# Pagination Types
+type DataSourceConnection {
+  pageInfo: PageInfo!
+  edges: [DataSourceEdge]
+}
+type DataSourceEdge {
+  cursor: String!
+  node: DataSource!
+}
+

@@ -1,0 +1,288 @@
+# declares the query entry-points for this type
+extend type Query {
+  dataMarking(id: ID!): DataMarking  @hasPermission(resources: "Cyio:view")
+  dataMarkings(
+    first: Int
+    offset: Int
+    orderedBy: DataMarkingOrdering
+    orderMode: OrderingMode
+    filters: [DataMarkingFiltering]
+    filterMode: FilterMode
+    search: String @constraint(minLength: 2)
+  ): DataMarkingConnection @hasPermission(resources: "Cyio:view")
+}
+
+extend type Mutation {
+  deleteMarkings(id: [ID!]!): [ID]  @hasPermission(resources: "Marking:delete")
+  createStatementMarking(input: StatementMarkingInput): StatementMarking  @hasPermission(resources: "Marking:update")
+  deleteStatementMarking(id: ID!): String! @hasPermission(resources: "Marking:delete")
+  editStatementMarking(id: ID!, input: [EditInput]!, commitMessage: String): StatementMarking @hasPermission(resources:"Marking:update")
+  createTLPMarking(input: TLPMarkingInput): TLPMarking  @hasPermission(resources: "Marking:update")
+  deleteTLPMarking(id: ID!): String! @hasPermission(resources: "Marking:delete")
+  editTLPMarking(id: ID!, input: [EditInput]!, commitMessage: String): TLPMarking @hasPermission(resources:"Marking:update")
+  createIEPMarking(input: IEPMarkingInput): IEPMarking  @hasPermission(resources: "Marking:update")
+  deleteIEPMarking(id: ID!): String! @hasPermission(resources: "Marking:delete")
+  editIEPMarking(id: ID!, input: [EditInput]!, commitMessage: String): IEPMarking @hasPermission(resources:"Marking:update")
+}
+
+interface MarkingObject {
+  "Indicates the type of the data marking."
+  definition_type: DataMarkingType!
+  "Identifies the color to be applied."
+  color: String!
+}
+
+type StatementMarking implements BasicObject & LifecycleObject & MarkingObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp!
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp!
+  # Data Marking
+  "Indicates the type of the data marking."
+  definition_type: DataMarkingType!
+  "Identifies the color to be applied."
+  color: String!
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  external_references: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  notes: [CyioNote]
+  # Statement Marking
+  "Indicates the name of the data marking"
+  name: String!
+  "Identifies a human-readable description that provide some background information about the IEP implementation."
+  description: String
+  "Indicates a textual statement (e.g., copyright, terms of use, etc.) applied to the content marked by this marking."
+  statement: String!
+}
+
+input StatementMarkingInput {
+  # Statement Marking
+  "Indicates the name of the data marking"
+  name: String!
+  "Identifies a human-readable description that provide some background information about the IEP implementation."
+  description: String
+  "Indicates a textual statement (e.g., copyright, terms of use, etc.) applied to the content marked by this marking."
+  statement: String!
+  "Identifies the color to be applied."
+  color: String!
+}
+
+type TLPMarking implements BasicObject & LifecycleObject & MarkingObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp!
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp!
+  # Data Marking
+  "Indicates the type of the data marking."
+  definition_type: DataMarkingType!
+  "Identifies the color to be applied."
+  color: String!
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  external_references: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  notes: [CyioNote]
+  # TLP Marking
+  "Indicates the name of the data marking"
+  name: String!
+  "Identifies a human-readable description that provide some background information about the IEP implementation."
+  description: String
+  "Indicates the recipient with whom they may re-share copies of the information."
+  tlp: TLPLevel!
+}
+
+input TLPMarkingInput {
+  # TLP Marking
+  "Indicates the name of the data marking"
+  name: String!
+  "Identifies a human-readable description that provide some background information about the IEP implementation."
+  description: String
+  "Indicates the recipient with whom they may re-share copies of the information."
+  tlp: TLPLevel!
+  "Identifies the color to be applied."
+  color: String!
+}
+
+type IEPMarking implements BasicObject & LifecycleObject & MarkingObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp!
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp!
+  # Data Marking
+  "Indicates the type of the data marking."
+  definition_type: DataMarkingType!
+  "Identifies the color to be applied."
+  color: String!
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  external_references: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the entity."
+  notes: [CyioNote]
+  # IEP Marking
+  "Indicates the version of the poliicy"
+  version: Float!
+  "Indicates the name of the data marking"
+  name: String!
+  "Identifies a human-readable description that provide some background information about the IEP implementation."
+  description: String
+  "Indicates the date that the IEP is effective from.  If none supplied, the IEP is applicable up until the end date."
+  start_date: Timestamp
+  "Indictes the date that the IEP is effective until.  If none supplied, the IEP is applicable in perpetuity."
+  end_date: Timestamp
+  "Identifies whether the received information has to be encrypted when it is retransmitted by the recipient."
+  encrypt_in_transit: EncryptInTransit!
+  "Identifies the permitted actions that Recipients can take upon information received."
+  permitted_actions: PermittedActions!
+  "Identifies whether recipients are permitted to notify affected third parties of a compromise or threat."
+  affected_party_notifications: AffectedPartyNotifications!
+  "Identified whether recipients are permitted to redistribute the information received within the redistribution scope as defined by the enumerations."
+  sharing: TLPMarking!
+  "Identifies whether recipients are required to attribute or anonymize the Provider when redistributing the information received."
+  provider_attribution: ProviderAttribution!
+  "Indicates whether the recipient MAY or MUST NOT resell the information received unmodified or in a semantically equivalent format."
+  unmodified_resale: UnmodifiedResale!
+}
+
+input IEPMarkingInput {
+  # IEP Marking
+  "Indicates the version of the poliicy"
+  version: Float!
+  "Indicates the name of the data marking"
+  name: String!
+  "Identifies a human-readable description that provide some background information about the IEP implementation."
+  description: String
+  "Indicates the date that the IEP is effective from.  If none supplied, the IEP is applicable up until the end date."
+  start_date: Timestamp
+  "Indictes the date that the IEP is effective until.  If none supplied, the IEP is applicable in perpetuity."
+  end_date: Timestamp
+  "Identifies whether the received information has to be encrypted when it is retransmitted by the recipient."
+  encrypt_in_transit: EncryptInTransit!
+  "Identifies the permitted actions that Recipients can take upon information received."
+  permitted_actions: PermittedActions!
+  "Identifies whether recipients are permitted to notify affected third parties of a compromise or threat."
+  affected_party_notifications: AffectedPartyNotifications!
+  "Identified whether recipients are permitted to redistribute the information received within the redistribution scope as defined by the enumerations."
+  sharing: TLPMarkingInput!
+  "Identifies whether recipients are required to attribute or anonymize the Provider when redistributing the information received."
+  provider_attribution: ProviderAttribution!
+  "Indicates whether the recipient MAY or MUST NOT resell the information received unmodified or in a semantically equivalent format."
+  unmodified_resale: UnmodifiedResale!
+  "Identifies the color to be applied."
+  color: String!
+}
+
+union DataMarking = StatementMarking | TLPMarking | IEPMarking
+
+enum DataMarkingType {
+  "Statement Marking"
+  statement
+  "Traffic Light Protocol Marking"
+  tlp
+  "Information Exchange Policy"
+  iep
+}
+enum TLPLevel {
+  "For the eyes and ears of individual recipients only, no further disclosure."
+  red
+  "Limited disclosure, recipients can only spread this on a need-to-know basis within their organization and its clients."
+  amber
+  "Limited disclosure, recipients can only spread this on a need-to-know basis within their organization only."
+  amber_strict
+  "Limited disclosure, recipients can spread this within their community."
+  green
+  "Recipients can spread this to the world, there is no limit on disclosure."
+  clear
+}
+enum EncryptInTransit {
+  "Recipients MUST encrypt the information received when it is retransmitted or redistributed. Software implementations MUST ensure that any information retransmitted is encrypted during transit to an adequate level of encryption, as defined in the protocol that uses IEP."
+  MUST
+  "Recipients MAY encrypt the information received when it is retransmitted or redistributed. Software implementations MAY ensure that any information retransmitted is encrypted during transit to an adequate level of encryption, as defined in the protocol that uses IEP."
+  MAY
+}
+enum PermittedActions {
+  "Recipients SHOULD NOT act upon the information received. The information SHOULD only be used for internal informational purposes, and internally visible actions, externally visible indirect actions and externally visible direct actions SHOULD NOT be performed."
+  NONE
+  "Recipients MUST contact the Providers before acting upon the information received. An example is where information redacted by the Provider could be derived by the Recipient and identify the affected parties."
+  CONTACT_FOR_INSTRUCTION
+  "Recipients MAY conduct actions on the information received that are only visible on the Recipient's internal networks and systems, and MUST NOT conduct actions that are visible outside of the Recipients networks and systems, or visible to third parties."
+  INTERNALLY_VISIBLE_ACTIONS
+  "Recipients MAY conduct internally visible actions, and MAY also conduct indirect, or passive, actions on the information received. Recipients MUST NOT conduct direct, or active, actions that will be visible by Threat Actors mentioned within the shared information."
+  EXTERNALLY_VISIBLE_INDIRECT_ACTIONS
+  "Recipients MAY conduct any actions on the information received."
+  EXTERNALLY_VISIBLE_DIRECT_ACTIONS
+}
+enum AffectedPartyNotifications {
+  "Recipients MAY notify affected parties of a potential compromise or threat."
+  MAY
+  "Recipients MUST NOT notify affected parties of potential compromise or threat."
+  MUST_NOT
+}
+enum ProviderAttribution {
+  "Recipients MAY directly attribute the Provider when redistributing the information received."
+  MAY
+  "Recipients MUST directly attribute the Provider when redistributing the information received."
+  MUST
+  "Recipients MUST NOT directly attribute the Provider when redistributing the information received. Warning: It still may be possible attribution will still be derived from the information itself."
+  MUST_NOT
+}
+enum UnmodifiedResale {
+  "Recipients MAY resell the information received."
+  MAY
+  "Recipients MUST NOT resell the information received unmodified or in a semantically equivalent format."
+  MUST_NOT
+}
+
+# Order Enum
+enum DataMarkingOrdering {
+  definition_type
+  color
+  created
+  modified
+}
+# Filter Types
+enum DataMarkingFilter {
+  definition
+}
+input DataMarkingFiltering {
+  key: [DataMarkingFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+# Pagination Types
+type DataMarkingConnection {
+  pageInfo: PageInfo!
+  edges: [DataMarkingEdge]
+}
+type DataMarkingEdge {
+  cursor: String!
+  node: DataMarking!
+}

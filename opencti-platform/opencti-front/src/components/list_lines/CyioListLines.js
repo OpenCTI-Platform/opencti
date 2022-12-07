@@ -302,7 +302,6 @@ class CyioListLines extends Component {
       OperationsComponent,
       message,
       handleClearSelectedElements,
-      location,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {

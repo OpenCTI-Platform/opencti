@@ -15,6 +15,11 @@ import { toastGenericError } from '../../../../utils/bakedToast';
 import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = (theme) => ({
+  mainContainer: {
+    marginTop: '4%',
+    minHeight: '500px',
+    height: 'auto',
+  },
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -76,7 +81,7 @@ class RiskObservation extends Component {
       history,
     } = this.props;
     return (
-      <div style={{ marginTop: '50px', height: '500px' }}>
+      <div className={classes.mainContainer}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Observations')}
         </Typography>
