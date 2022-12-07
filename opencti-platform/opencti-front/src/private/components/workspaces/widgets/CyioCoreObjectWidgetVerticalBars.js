@@ -79,8 +79,8 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
     const verticalBarsChartVariables = {
       type: type || null,
       field: field || null,
-      endDate: finalEndDate,
-      startDate: finalStartDate,
+      endDate: new Date(finalEndDate).toISOString(),
+      startDate: new Date(finalStartDate).toISOString(),
       operation: operation || 'count',
     };
     return (
@@ -193,8 +193,8 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
     const finalEndDate = endDate || now();
     const verticalBarsChartVariables = {
       ...widget.config.variables,
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
     };
     return (
       <>

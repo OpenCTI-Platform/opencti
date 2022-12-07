@@ -78,8 +78,8 @@ class CyioCoreObjectWidgetHorizontalBars extends Component {
     const horizontalBarsChartVariables = {
       type: type || null,
       field: field || null,
-      endDate: finalEndDate,
-      startDate: finalStartDate,
+      endDate: new Date(finalEndDate).toISOString(),
+      startDate: new Date(finalStartDate).toISOString(),
       operation: operation || 'count',
     };
 
@@ -196,8 +196,8 @@ class CyioCoreObjectWidgetHorizontalBars extends Component {
       field: field || null,
       match: match || [],
       operation: operation || 'count',
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
     };
 
     return (
