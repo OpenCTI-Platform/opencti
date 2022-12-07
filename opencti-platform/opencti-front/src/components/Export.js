@@ -313,7 +313,7 @@ class Export extends Component {
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t('SAR Report Generation')}
+                  {t('Security Assessment Report Generation')}
                   <Typography>
                     {t('This feature will generate a report in Markdown (a lightweight text markup language) that can be further edited and then transformed into the output of your choice (Word, PDF, etc.). For more about Markdown and useful conversion tools, see ')}
                     <span className={classes.spanLink}>https://www.markdownguide.org</span>
