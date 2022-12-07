@@ -364,18 +364,12 @@ const RiskDetails = createFragmentContainer(
   {
     risk: graphql`
       fragment RiskDetails_risk on Risk {
-        id
-        name
-        accepted
-        description
         statement
         risk_status
-        risk_level
         deadline
-        accepted
-        risk_adjusted
-        priority
         false_positive
+        risk_adjusted
+        accepted
         vendor_dependency
         impacted_control_id
         first_seen
