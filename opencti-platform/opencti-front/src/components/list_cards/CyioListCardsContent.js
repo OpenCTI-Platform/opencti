@@ -53,45 +53,58 @@ class CyioListCardsContent extends Component {
       prevProps.bookmarkList || [],
     );
     let selection = false;
+    const {
+      dataList,
+      offset,
+      selectAll,
+      selectedElements,
+      globalCount,
+      handleDecrementedOffsetChange,
+    } = this.props;
+    const {
+      loadedData,
+      newDataList,
+      loadingCardCount,
+    } = this.state;
     if (
-      Object.keys(this.props.selectedElements || {}).length
+      Object.keys(selectedElements || {}).length
       !== Object.keys(prevProps.selectedElements || {}).length
     ) {
       selection = true;
     }
-    if (this.props.selectAll !== prevProps.selectAll) {
+    if (selectAll !== prevProps.selectAll) {
       selection = true;
     }
     if (diff.length > 0 || diffBookmark.length > 0 || selection) {
       this.gridRef.forceUpdate();
     }
     const checker = (arr, target) => target.every((v) => arr.includes(v));
-    if (!checker(this.state.newDataList, this.props.dataList)
-      && (this.state.loadingCardCount === 0 || this.props.offset !== 0)) {
+    if (!checker(newDataList, dataList)
+      && (loadingCardCount === 0 || offset !== 0)) {
       this.setState({
-        newDataList: [...this.props.dataList, ...this.state.newDataList],
-        loadedData: this.state.loadedData - this.props.dataList.length,
+        newDataList: [...dataList, ...newDataList],
+        loadedData: loadedData - dataList.length,
       });
     }
-    if (window.pageYOffset < 40 && this.state.newDataList.length > 50
-      && this.props.offset >= 0) {
-      if (this.props.offset !== 0) {
+    if (window.pageYOffset < 40 && newDataList.length > 50
+      && offset >= 0) {
+      if (offset !== 0) {
         window.scrollTo(0, 3000);
-        this.props.handleDecrementedOffsetChange();
+        handleDecrementedOffsetChange();
       }
-      this.setState({ newDataList: this.state.newDataList.slice(-this.props.dataList.length) });
+      this.setState({ newDataList: newDataList.slice(-dataList.length) });
     }
-    if (this.state.loadedData !== (this.props.dataList.length + this.props.offset)
-      && ((this.props.globalCount - this.state.loadedData) > 0)
-      && (this.state.loadingCardCount !== 0 || this.props.offset === 0)) {
-      if (this.props.dataList.length === 0) {
+    if (loadedData !== (dataList.length + offset)
+      && ((globalCount - loadedData) > 0)
+      && (loadingCardCount !== 0 || offset === 0)) {
+      if (dataList.length === 0) {
         this.setState({ newDataList: [] });
         this.gridRef.forceUpdate();
       }
-      if (!checker(this.state.newDataList, this.props.dataList)) {
+      if (!checker(newDataList, dataList)) {
         this.setState({
-          newDataList: [...this.state.newDataList, ...this.props.dataList],
-          loadedData: this.state.loadedData + this.props.dataList.length,
+          newDataList: [...newDataList, ...dataList],
+          loadedData: loadedData + dataList.length,
         });
       }
     }
@@ -127,21 +140,24 @@ class CyioListCardsContent extends Component {
       handleIncrementedOffsetChange,
       nbOfCardsToLoad,
     } = this.props;
+    const { loadedData, newDataList } = this.state;
     if (!hasMore() || isLoading()) {
       return;
     }
-    const difference = globalCount - this.state.newDataList.length;
-    this.setState({
-      loadingCardCount:
-        difference >= nbOfCardsToLoad ? nbOfCardsToLoad : difference,
-    });
-    handleIncrementedOffsetChange();
-    loadMore(nbOfCardsToLoad, this._resetLoadingCardCount);
-    if (this.state.newDataList.length > 50 && difference > 0) {
-      setTimeout(() => {
-        this.setState({ newDataList: this.state.newDataList.slice(50) });
-        window.scrollTo(0, 4000);
-      }, 500);
+    if (hasMore() && globalCount !== loadedData) {
+      const difference = globalCount - newDataList.length;
+      this.setState({
+        loadingCardCount:
+          difference >= nbOfCardsToLoad ? nbOfCardsToLoad : difference,
+      });
+      handleIncrementedOffsetChange();
+      loadMore(nbOfCardsToLoad, this._resetLoadingCardCount);
+      if (newDataList.length > 50 && difference > 0) {
+        setTimeout(() => {
+          this.setState({ newDataList: newDataList.slice(50) });
+          window.scrollTo(0, 4000);
+        }, 500);
+      }
     }
   }
 

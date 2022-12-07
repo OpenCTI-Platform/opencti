@@ -66,7 +66,7 @@ class Risks extends Component {
       filters: [],
       openRiskCreation,
     };
-    if (this.props.history.location.pathname !== '/activities/risk assessment/risks'
+    if (this.props.history.location.pathname !== '/activities/risk_assessment/risks'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
@@ -106,13 +106,13 @@ class Risks extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/activities/risk assessment/risks');
+    this.props.history.push('/activities/risk_assessment/risks');
   }
 
   handleDisplayEdit(selectedElements) {
     const riskId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/activities/risk assessment/risks/${riskId}`,
+      pathname: `/activities/risk_assessment/risks/${riskId}`,
       openEdit: true,
     });
   }

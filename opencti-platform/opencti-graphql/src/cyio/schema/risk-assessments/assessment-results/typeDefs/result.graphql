@@ -1,0 +1,274 @@
+# declares the query entry-points for this type
+# extend type Query {
+# }
+
+# declares the mutation entry-points for this type
+# extend type Mutation {
+# }
+
+# ================== Types ==============
+"""
+Result
+"""
+type Result implements BasicObject & LifecycleObject & OscalObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # CoreObject
+  "Indicates the date and time at which the object was originally created."
+  created: Timestamp
+  "Indicates the date and time that this particular version of the object was last modified."
+  modified: Timestamp
+  # OscalObject
+  "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+  labels: [CyioLabel]
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [CyioNote]
+  "Identifies one or more relationships to other entities."
+  relationships(
+    first: Int
+    offset: Int
+    orderedBy: OscalRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: [OscalRelationshipsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OscalRelationshipConnection
+  # Result
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
+  "Identifies a title for this set of results."
+  name: String!
+  "Identifies a human-readable description of this set of test results."
+  description: String
+  "Identifies the date/time stamp identifying the start of the evidence collection reflected in these results."
+  start: Timestamp!
+  "Identifies the date/time stamp identifying the end of the evidence collection reflected in these results. In a continuous motoring scenario, this may contain the same value as start if appropriate."
+  end: Timestamp!
+  "Identifies data objects that are used in the assessment plan, that do not appear in the referenced SSP."
+  local_definitions: ResultLocalDefinitions
+  "Identifies the controls being assessed and their control objectives."
+  reviewed_controls: [ControlsReview]
+  "Identifies a set of textual statements, typically written by the assessor."
+  attestations: [Attestation]
+  "Identifies a log of all assessment-related actions taken."
+  assessment_log(first: Int, offset: Int): AssessmentLogEntryConnection
+  "Identifies one or more individual observations."
+  observations(first: Int, offset: Int): ObservationConnection
+  "Identifies one or more individual observations."
+  risks(first: Int, offset: Int, orderedBy: RisksOrdering orderMode: OrderingMode): RiskConnection
+  "Identifies one ore more POAM Items that bind a specific Risk to the associated Observations."
+  findings(first: Int, offset: Int): FindingConnection
+  # Backmatter
+  "Identifies one or more Resources that are associated with this POAM."
+  resources(first: Int, offset: Int): OscalResourceConnection
+}
+
+# Pagination Types
+type ResultConnection {
+  pageInfo: PageInfo!
+  edges: [ResultEdge]
+}
+type ResultEdge {
+  cursor: String!
+  node: Result!
+}
+# Filtering Types
+input ResultFiltering {
+  key: ResultFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+enum ResultFilter {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Label"
+  label_name
+  "Name"
+  name
+  "Assessment Start"
+  start
+  "Assessment End"
+  end
+}
+# Ordering Enum
+enum ResultOrdering {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Label"
+  label_name
+  "Name"
+  name
+  "Assessment Start"
+  start
+  "Assessment End"
+  end
+}
+
+"""
+ResultLocalDefinitions are used to define data objects that are used in the assessment plan, that do not appear in the referenced SSP.
+"""
+type ResultLocalDefinitions {
+  # Local Definitions
+  entity_type: String!
+  components(first: Int, offset: Int): ComponentConnection
+  inventory_items(first: Int, offset: Int): InventoryItemConnection
+  users(first: Int, offset: Int): UserConnection
+  assessment_assets: AssessmentAsset
+  tasks(first: Int, offset: Int): TaskConnection
+}
+
+"""
+Attestion defines identifying information about an attestation statement, typically written by the assessor.
+"""
+type Attestation {
+  "Identifies a reference to one or more roles with responsibility for performing a function relative to the containing object."
+  responsible_parties: [OscalResponsibleParty]
+  parts: [OscalPart]
+}
+
+"""
+ControlsReview defines identifying information about Controls being assessed 
+and their control objectives.
+
+In the context of an assessment plan, this construct is used to identify the 
+controls and control objectives that are to be assessed. In the context of 
+an assessment result, this construct is used to identify the actual controls 
+and objectives that were assessed, reflecting any changes from the plan.
+
+When resolving the selection of controls and control objectives, the 
+following processing will occur:
+
+1. Controls will be resolved by creating a set of controls based on the control-selections by first handling the includes, and then removing any excluded controls.
+
+2. The set of control objectives will be resolved from the set of controls that was generated in the previous step. The set of control objectives is based on the control-objective-selection by first handling the includes, and then removing any excluded control objectives.
+
+The Assessment Results control-selection ignores any control selection in the 
+Assessment Plan and re-selects controls from the baseline identified by the SSP.
+
+The Assessment Results control-objective-selection ignores any control objective 
+selection in the Assessment Plan and re-selects control objectives from the 
+baseline identified by the SSP.
+
+Any additional control objectives defined in the Assessment Plan local-definitions 
+do not need to be re-defined in the Assessment Results local-definitions; however, 
+if they were explicitly referenced with an Assessment Plan control-objective-selection, 
+they need to be selected again in the Assessment Results control-objective-selection.
+"""
+type ControlsReview {
+  "Identifies a human-readable description of control objectives."
+  description: String
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
+  "Identifies the controls being assessed. In the assessment plan, these are the planned controls. In the assessment results, these are the actual controls, and reflects any changes from the plan."
+  control_selections: [AssessedControls]
+  "Identifies the control objectives of the assessment. In the assessment plan, these are the planned objectives. In the assessment results, these are the assessed objectives, and reflects any changes from the plan."
+  control_objective_selections: [ReferencedControlObjective]
+}
+
+"""
+AssessedControls identifies the controls being assessed. In the assessment plan, 
+these are the planned controls. In the assessment results, these are the actual 
+controls, and reflects any changes from the plan.
+
+The include-all, specifies all control identified in the baseline are included 
+in the scope if this assessment, as specified by the include-profile statement 
+within the linked SSP.
+
+Any control specified within exclude-controls must first be within a range of 
+explicitly included controls, via include-controls or include-all.
+"""
+type AssessedControls {
+  "Identifies a human-readable description of in-scope controls specified for assessment."
+  description: String
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [CyioNote]
+  "Indicates to include all controls from the imported catalog or profile resources."
+  include_all_controls: Boolean
+  "Used to select a control for inclusion by the control's identifier. Specific control statements can be selected by their statement identifier."
+  include_controls: [SelectControl]
+  "Used to select a control for exclusion by the control's identifier. Specific control statements can be excluded by their statement identifier."
+  exclude_controls: [SelectControl]
+}
+
+
+"""
+SelectControl defines a means to select a control for inclusion/exclusion based 
+on one or more control identifiers. A set of statement identifiers can be used 
+to target the inclusion/exclusion to only specific control statements providing
+ more granularity over the specific statements that are within the asessment scope.
+"""
+type SelectControl {
+  "Identifies a reference to a control. When referencing an externally defined control, the Control Identifier Reference must be used in the context of the external / imported OSCAL instance (e.g., uri-reference)."
+  control: Control!
+  "Identifies Statements of a control to constrain the selection to only specificity identified statements."
+  statements: [ControlStatement]
+}
+
+"""
+ReferencedControlObjective identifies the control objectives of the assessment. 
+In the assessment plan, these are the planned objectives. In the assessment 
+results, these are the assessed objectives, and reflects any changes from the plan.
+"""
+type ReferencedControlObjective {
+  "Identifies a human-readable description of this collection of control objectives."
+  description: String
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
+  "Indicates to include all controls from the imported catalog or profile resources."
+  include_all_controls: Boolean
+  "Used to select a control objective for inclusion/exclusion based on the control objective's identifier."
+  include_objectives: [SelectObjective]
+  "Used to select a control objective for exclusion by the control objective's identifier."
+  exclude_objectives: [SelectObjective]
+}
+
+type SelectObjective {
+  "Identifies a reference to a control. When referencing an externally defined control, the Control Identifier Reference must be used in the context of the external / imported OSCAL instance (e.g., uri-reference)."
+  objective: ReferencedControlObjective!
+}
+
+type AssessmentPart {
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies a textual label that uniquely identifies the part's semantic type."
+  name: AssessmentPartName!
+  "Identifies a namespace qualifying the part's name. This allows different organizations to associate distinct semantics with the same name."
+  ns: URL
+  "Identifies a textual label that provides a sub-type or characterization of the part's name. This can be used to further distinguish or discriminate between the semantics of multiple parts of the same control with the same name and ns."
+  class: String
+  "Identifies A name given to the part, which may be used by a tool for display and navigation."
+  title: String!
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
+  "Identifies multiple paragraphs, lists, tables etc."
+  prose: String
+  "Identifies a partition of a control's definition or a child of another part."
+  parts: [AssessmentPart]
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+}
+
+enum AssessmentPartName {
+  "The part defines an assessment objective."
+  assessment_objective
+  "The part defines an assessment method."
+  assessment_method
+}

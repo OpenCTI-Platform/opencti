@@ -160,13 +160,13 @@ class RemediationCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
-      pathname: `/activities/risk assessment/risks/${this.props.riskId}/remediation`,
+      pathname: `/activities/risk_assessment/risks/${this.props.riskId}/remediation`,
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
         this.handleCancelCloseClick();
         this.props.refreshQuery();
-        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
+        this.props.history.push(`/activities/risk_assessment/risks/${this.props.riskId}/remediation`);
       },
       onError: (err) => {
         toastGenericError('Failed to create Remediation');
@@ -194,7 +194,7 @@ class RemediationCreation extends Component {
     } = this.props;
     return (
       <>
-      {!location.pathname.includes(`/activities/risk assessment/risks/${riskId}/remediation/${remediationId}`) 
+      {!location.pathname.includes(`/activities/risk_assessment/risks/${riskId}/remediation/${remediationId}`) 
         && <IconButton
               color="default"
               aria-label="Label"

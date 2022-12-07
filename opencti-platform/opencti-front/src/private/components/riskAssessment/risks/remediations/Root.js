@@ -8,7 +8,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../../relay/environment';
-import TopBar from '../../../nav/TopBar';
 import Remediation from './Remediation';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -58,17 +57,15 @@ class RootRemediation extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { riskId, remediationId },
       },
       risk,
     } = this.props;
-    const link = `/activities/risk assessment/risks/${riskId}/knowledge`;
+    const link = `/activities/risk_assessment/risks/${riskId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
-        <Route path="/activities/risk assessment/risks/:riskId/knowledge">
+        <Route path="/activities/risk_assessment/risks/:riskId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -97,7 +94,7 @@ class RootRemediation extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/activities/risk assessment/risks/:riskId/remediation/:remediationId"
+                      path="/activities/risk_assessment/risks/:riskId/remediation/:remediationId"
                       render={(routeProps) => (
                         <Remediation
                           {...routeProps}

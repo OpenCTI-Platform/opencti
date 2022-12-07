@@ -9,7 +9,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -17,11 +16,10 @@ import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectL
 
 const styles = (theme) => ({
   item: {
-    '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: theme.palette.navAlt.background,
-    },
     paddingLeft: 10,
     height: 50,
+    borderTop: '0.75px solid #1F2842',
+    borderBottom: '0.75px solid #1F2842',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -63,6 +61,11 @@ class SoftwareLineComponent extends Component {
     return (
       <ListItem
         classes={{ root: classes.item }}
+        style={{
+          background: (selectAll || node.id in (selectedElements || {})) && 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #075AD3',
+          borderTop: (selectAll || node.id in (selectedElements || {})) && '0.75px solid #075AD3',
+          borderBottom: (selectAll || node.id in (selectedElements || {})) && '0.75px solid #075AD3',
+        }}
         divider={true}
         button={true}
         component={Link}
@@ -315,9 +318,6 @@ class SoftwareDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
       </ListItem>
     );
   }

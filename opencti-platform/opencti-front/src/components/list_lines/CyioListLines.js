@@ -41,7 +41,6 @@ import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
-import TopBarMenu from '../../private/components/nav/TopBarMenu';
 
 const styles = (theme) => ({
   container: {
@@ -67,7 +66,7 @@ const styles = (theme) => ({
     padding: '0 310px 50px 0',
   },
   toolBar: {
-    margin: '0 0 30px 0',
+    margin: '0 -1.2rem 2rem -1.2rem',
     height: '100%',
     display: 'flex',
     '@media (max-width: 1400px)': {
@@ -654,7 +653,6 @@ class CyioListLines extends Component {
         </div>
         <div className={className}>
           <div className="clearfix" />
-          <TopBarMenu />
           {message && (
             <div style={{ width: '100%' }}>
               <Alert

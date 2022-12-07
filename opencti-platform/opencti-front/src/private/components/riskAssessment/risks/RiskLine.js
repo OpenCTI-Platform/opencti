@@ -22,11 +22,10 @@ import RiskAssessmentPopover from './RiskAssessmentPopover';
 
 const styles = (theme) => ({
   item: {
-    '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: theme.palette.navAlt.background,
-    },
     paddingLeft: 10,
     height: 50,
+    borderTop: '0.75px solid #1F2842',
+    borderBottom: '0.75px solid #1F2842',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -138,11 +137,16 @@ class RiskLineComponent extends Component {
     return (
       <ListItem
         classes={{ root: classes.item }}
+        style={{
+          background: (selectAll || node.id in (selectedElements || {})) && 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #075AD3',
+          borderTop: (selectAll || node.id in (selectedElements || {})) && '0.75px solid #075AD3',
+          borderBottom: (selectAll || node.id in (selectedElements || {})) && '0.75px solid #075AD3',
+        }}
         divider={true}
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/activities/risk assessment/risks/${node?.id}`}
+        to={`/activities/risk_assessment/risks/${node?.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />

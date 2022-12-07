@@ -77,6 +77,16 @@ const styles = (theme) => ({
     top: 30,
     right: 30,
   },
+  disabledFields: {    
+    "& .MuiOutlinedInput-input.Mui-disabled": {
+      backgroundColor: 'rgba(241, 241, 242, 0.25)',
+    },
+
+    "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+      borderColor: 'rgba(255, 255, 255, 0.23)',
+      borderRadius: 'inherit',
+    }
+  },
 });
 
 class CyioDomainObjectAssetEditionOverviewComponent extends Component {
@@ -133,6 +143,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   name="id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
+                  classes={{ root: classes.disabledFields }}
                 // onFocus={this.handleChangeFocus.bind(this)}
                 // onSubmit={this.handleSubmitField.bind(this)}
                 />

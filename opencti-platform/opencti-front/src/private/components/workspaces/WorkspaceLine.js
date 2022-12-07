@@ -5,11 +5,11 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
+import Checkbox from '@material-ui/core/Checkbox';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {
   KeyboardArrowRightOutlined,
-  WorkOutlineOutlined,
 } from '@material-ui/icons';
 import { compose } from 'ramda';
 import Chip from '@material-ui/core/Chip';
@@ -18,6 +18,9 @@ import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
   item: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: theme.palette.navAlt.background,
+    },
     paddingLeft: 10,
     height: 50,
   },
@@ -31,6 +34,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingLeft: '24px',
   },
   goIcon: {
     position: 'absolute',
@@ -54,11 +58,16 @@ const styles = (theme) => ({
     width: 90,
   },
 });
-
 class WorkspaceLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node,
+      fd,
+      classes,
+      node,
+      selectAll,
+      dataColumns,
+      onToggleEntity,
+      selectedElements,
     } = this.props;
     return (
       <ListItem
@@ -66,10 +75,21 @@ class WorkspaceLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
+        selected={selectAll || node.id in (selectedElements || {})}
         to={`/dashboard/workspaces/${node.type}s/${node.id}`}
+        data-cy='workspace line'
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <WorkOutlineOutlined />
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 38 }}
+          onClick={onToggleEntity.bind(this, node)}
+        >
+          <Checkbox
+            edge="start"
+            color='primary'
+            checked={selectAll || node.id in (selectedElements || {})}
+            disableRipple={true}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -117,7 +137,6 @@ WorkspaceLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
-  onLabelClick: PropTypes.func,
 };
 
 const WorkspaceLineFragment = createFragmentContainer(WorkspaceLineComponent, {

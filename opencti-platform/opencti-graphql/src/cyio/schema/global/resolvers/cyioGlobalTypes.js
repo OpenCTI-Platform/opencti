@@ -477,6 +477,37 @@ const cyioGlobalTypeResolvers = {
     micronesia: 'micronesia',
     polynesia: 'polynesia',
   },
+  EncryptInTransit: {
+    MUST: 'must',
+    MAY: 'may',
+  },
+  PermittedActions: {
+    NONE: 'none',
+    CONTACT_FOR_INSTRUCTION: 'contact-for-instruction',
+    INTERNALLY_VISIBLE_ACTIONS: 'internally-visible-actions',
+    EXTERNALLY_VISIBLE_INDIRECT_ACTIONS: 'externally-visible-indirect-actions',
+    EXTERNALLY_VISIBLE_DIRECT_ACTIONS: 'externally-visible-direct-actions',
+  },
+  AffectedPartyNotifications: {
+    MAY: 'may',
+    MUST_NOT: 'must-not',
+  },
+  ProviderAttribution: {
+    MAY: 'may',
+    MUST: 'must',
+    MUST_NOT: 'must-not',
+  },
+  UnmodifiedResale: {
+    MAY: 'may',
+    MUST_NOT: 'must-not',
+  },
+  TLPLevel: {
+    red: 'red',
+    amber: 'amber',
+    amber_strict: 'amber+strict',
+    green: 'green',
+    clear: 'clear',
+  },
 }
 
 export default cyioGlobalTypeResolvers;

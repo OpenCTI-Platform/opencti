@@ -74,6 +74,8 @@ import applicationSoftwareIcon from '../resources/images/entities/application_so
 import locationsIcon from '../resources/images/assets/locationsIcon.svg';
 import inventoryItemIcon from '../resources/images/assets/inventoryItem.svg';
 import resourceIcon from '../resources/images/assets/resource.svg';
+import assetDashboard from '../resources/images/entities/asset_dashboard.svg';
+import riskDashboard from '../resources/images/entities/risk_dashboard.svg';
 
 const iconSelector = (type, variant, fontSize, color) => {
   let style = {};
@@ -154,6 +156,12 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <img src={collectIcon} style={style} alt="collected-icon" />;
     case 'poam':
       return <img src={poamIcon} style={style} alt="poam-icon" />;
+    case 'asset':
+    case 'global-assets':
+      return <img src={assetDashboard} style={style} alt="asset-icon" />;
+    case 'global-risks':
+    case 'risk':
+      return <img src={riskDashboard} style={style} alt="risk-icon" />;
     case 'storage_array':
       return <Storage style={style} fontSize={fontSize} role="img" />;
     case 'appliance':

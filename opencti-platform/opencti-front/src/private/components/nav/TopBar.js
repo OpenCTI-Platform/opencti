@@ -30,6 +30,14 @@ import TopMenuExternalReference from './TopMenuExternalReference';
 import TopMenuEvents from './TopMenuEvents';
 import TopMenuIncident from './TopMenuIncident';
 import TopMenuObservedData from './TopMenuObservedData';
+import TopMenuAssets from './TopMenuAssets';
+import TopMenuDataEntities from './TopMenuDataEntities';
+import TopMenuDataRolesEntities from './TopMenuDataRolesEntities';
+import TopMenuDataLabelsEntities from './TopMenuDataLabelsEntities';
+import TopMenuDataPartiesEntities from './TopMenuDataPartiesEntities';
+import TopMenuDataTasksEntities from './TopMenuDataTasksEntities';
+import TopMenuDataNotesEntities from './TopMenuDataNotesEntities';
+import TopMenuDataLocationsEntities from './TopMenuDataLocationsEntities';
 import TopMenuObservations from './TopMenuObservations';
 import TopMenuIndicator from './TopMenuIndicator';
 import TopMenuInfrastructure from './TopMenuInfrastructure';
@@ -48,6 +56,7 @@ import TopMenuEntities from './TopMenuEntities';
 import TopMenuSector from './TopMenuSector';
 import TopMenuSystem from './TopMenuSystem';
 import TopMenuOrganization from './TopMenuOrganization';
+import TopMenuVSAC from './TopMenuVSAC';
 import TopMenuIndividual from './TopMenuIndividual';
 import TopMenuRegion from './TopMenuRegion';
 import TopMenuCountry from './TopMenuCountry';
@@ -56,6 +65,9 @@ import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
+import TopMenuDataAssessmentPlatformsEntities from './TopMenuDataAssessmentPlatformsEntities';
+import TopMenuDataResponsiblePartiesEntities from './TopMenuDataResponsiblePartiesEntities';
+import TopMenuDataExternalReferenceEntities from './TopMenuDataExternalReferenceEntities';
 import { commitMutation } from '../../../relay/environment';
 import Security, {
   KNOWLEDGE,
@@ -63,11 +75,12 @@ import Security, {
 } from '../../../utils/Security';
 import AboutModal from '../../../components/AboutModal';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
-import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 import Export from '../../../components/Export';
 import ExportPoam from '../../../components/ExportPoam';
+import TopMenuRiskAssessment from './TopMenuRiskAssessment';
+import TopMenuRisk from './TopMenuRisk';
 
 const styles = (theme) => ({
   appBar: {
@@ -98,7 +111,21 @@ const styles = (theme) => ({
   },
   menuContainer: {
     float: 'left',
-    marginLeft: 40,
+    marginLeft: '16rem',
+    marginTop: '10px',
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  menuContainerClose: {
+    float: 'left',
+    marginTop: '10px',
+    marginLeft: '5rem',
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
   barRight: {
     position: 'absolute',
@@ -107,7 +134,7 @@ const styles = (theme) => ({
     height: '100%',
   },
   barContainer: {
-    display: 'table-cell',
+    display: 'flex',
     float: 'left',
     paddingTop: 10,
   },
@@ -136,7 +163,7 @@ const logoutMutation = graphql`
 `;
 
 const TopBar = ({
-  t, classes, location, history, theme,
+  t, classes, location, history, theme, drawer, dashboard, handleChangeDashboard,
 }) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
   const handleOpenMenu = (event) => {
@@ -169,15 +196,17 @@ const TopBar = ({
             <img src={theme.logo} alt="logo" className={classes.logo} />
           </Link>
         </div> */}
-        <div className={classes.menuContainer}>
+        <div className={drawer ? classes.menuContainerClose : classes.menuContainer}>
           {(location.pathname === '/dashboard'
-            || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
+            || location.pathname === '/dashboard/import')
+            && <TopMenuDashboard
+              dashboard={dashboard}
+              handleChangeDashboard={handleChangeDashboard}
+            />}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$'))
-            && (
-              <TopMenuAnalysis />
-            )}
+            && <TopMenuAnalysis />}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -192,9 +221,7 @@ const TopBar = ({
           ) && <TopMenuExternalReference />}
           {(location.pathname === '/dashboard/events'
             || location.pathname.match('/dashboard/events/[a-z_]+$'))
-            && (
-              <TopMenuEvents />
-            )}
+            && <TopMenuEvents />}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuIncident />
           )}
@@ -206,9 +233,7 @@ const TopBar = ({
           )}
           {(location.pathname === '/dashboard/observations'
             || location.pathname.match('/dashboard/observations/[a-z_]+$'))
-            && (
-              <TopMenuObservations />
-            )}
+            && <TopMenuObservations />}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
           ) && <TopMenuIndicator />}
@@ -223,9 +248,7 @@ const TopBar = ({
           )}
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$'))
-            && (
-              <TopMenuThreats />
-            )}
+            && <TopMenuThreats />}
           {location.pathname.includes('/dashboard/threats/threat_actors/') && (
             <TopMenuThreatActor />
           )}
@@ -235,17 +258,56 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
           )}
-          {(location.pathname === '/dashboard/arsenal'
-            || location.pathname.match('/dashboard/arsenal/[a-z_]+$'))
+          {(location.pathname === '/activities/vulnerability_assessment'
+            || location.pathname.match('/activities/vulnerability_assessment/scans'))
             && (
-              <TopMenuArsenal />
+              <TopMenuVSAC />
             )}
-          {location.pathname.includes('/dashboard/arsenal/malwares/') && (
-            <TopMenuMalware />
-          )}
-          {location.pathname.includes('/dashboard/arsenal/tools/') && (
-            <TopMenuTool />
-          )}
+          {/* {(location.pathname === '/activities/vulnerability_assessment/scans/explore result'
+            || location.pathname.match('/activities/vulnerability_assessment/scans/explore result'))
+            && (
+              <TopMenuVsacExploreResults />
+            )}
+          {(location.pathname === '/activities/vulnerability_assessment/scans/view charts'
+            || location.pathname.match('/activities/vulnerability_assessment/scans/view charts'))
+            && (
+              <TopMenuVsacViewCharts />
+            )}
+          {(location.pathname === '/activities/vulnerability_assessment/scans/compare analysis'
+            || location.pathname.match('/activities/vulnerability_assessment/scans/compare'))
+            && (
+              <TopMenuVsacCompare />
+            )} */}
+          {(location.pathname.includes('/defender HQ/assets')
+            || location.pathname.match('/defender HQ/assets/[a-z_]+$')) && <TopMenuAssets />}
+          {(location.pathname === ('/activities/risk_assessment')
+            || location.pathname.match('/activities/risk_assessment/[a-z_]+$')) && <TopMenuRiskAssessment />}
+          {(location.pathname.includes('/activities/risk_assessment/risks/')) && <TopMenuRisk />}
+          {/* Data Entities Section */}
+          {(location.pathname === '/data/entities'
+            || location.pathname === '/data/data source') && <TopMenuDataEntities />}
+          {(location.pathname === '/data/entities/responsibility'
+            || location.pathname === '/data/data source/responsibility') && <TopMenuDataRolesEntities />}
+          {(location.pathname === '/data/entities/labels'
+            || location.pathname === '/data/data source/labels') && <TopMenuDataLabelsEntities />}
+          {(location.pathname === '/data/entities/parties'
+            || location.pathname === '/data/data source/parties') && <TopMenuDataPartiesEntities />}
+          {(location.pathname === '/data/entities/tasks'
+            || location.pathname === '/data/data source/tasks') && <TopMenuDataTasksEntities />}
+          {(location.pathname === '/data/entities/notes'
+            || location.pathname === '/data/data source/notes') && <TopMenuDataNotesEntities />}
+          {(location.pathname === '/data/entities/locations'
+            || location.pathname === '/data/data source/locations') && <TopMenuDataLocationsEntities />}
+          {(location.pathname === '/data/entities/assessment_platform'
+            || location.pathname === '/data/data source/assessment_platform') && <TopMenuDataAssessmentPlatformsEntities />}
+          {(location.pathname === '/data/entities/responsible_parties'
+            || location.pathname === '/data/data source/responsible_parties') && <TopMenuDataResponsiblePartiesEntities />}
+          {(location.pathname === '/data/entities/external_references'
+            || location.pathname === '/data/data source/external_references') && <TopMenuDataExternalReferenceEntities />}
+          {(location.pathname === '/dashboard/arsenal'
+            || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && <TopMenuArsenal />}
+          {location.pathname.includes('/dashboard/arsenal/malwares/') && <TopMenuMalware />}
+          {location.pathname.includes('/dashboard/arsenal/tools/') && <TopMenuTool />}
           {location.pathname.includes(
             '/dashboard/arsenal/attack_patterns/',
           ) && <TopMenuAttackPattern />}
@@ -256,10 +318,7 @@ const TopBar = ({
             '/dashboard/arsenal/vulnerabilities/',
           ) && <TopMenuVulnerability />}
           {(location.pathname === '/dashboard/entities'
-            || location.pathname.match('/dashboard/entities/[a-z_]+$'))
-            && (
-              <TopMenuEntities />
-            )}
+            || location.pathname.match('/dashboard/entities/[a-z_]+$')) && <TopMenuEntities />}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
           )}
@@ -288,9 +347,9 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
           )}
-          {location.pathname.includes('/dashboard/workspaces/dashboards') && (
+          {/* {location.pathname.includes('/dashboard/workspaces/dashboards') && (
             <TopMenuWorkspacesDashboards />
-          )}
+          )} */}
           {location.pathname.includes(
             '/dashboard/workspaces/investigations',
           ) && <TopMenuWorkspacesInvestigations />}
@@ -325,29 +384,6 @@ const TopBar = ({
           <Divider className={classes.divider} orientation="vertical" />
           <div className={classes.barContainer}>
             <Security needs={[EXPLORE]}>
-              <Tooltip title={t('Custom dashboards')}>
-                <IconButton
-                  component={Link}
-                  to="/dashboard/workspaces/dashboards"
-                  variant={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'contained'
-                      : 'text'
-                  }
-                  color={
-                    location.pathname.includes(
-                      '/dashboard/workspaces/dashboards',
-                    )
-                      ? 'secondary'
-                      : 'inherit'
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  <InsertChartOutlined fontSize="medium" />
-                </IconButton>
-              </Tooltip>
               <Tooltip title={t('Investigations')}>
                 <IconButton
                   component={Link}
@@ -389,6 +425,17 @@ const TopBar = ({
                   history={history}
                   location={location}
                 />
+              </Grid>
+              <Grid item={true} xs='auto'>
+                <Tooltip title={t('Custom dashboards')}>
+                  <IconButton
+                    component={Link}
+                    to="/dashboard/workspaces/dashboards"
+                    classes={{ root: classes.button }}
+                  >
+                    <InsertChartOutlined fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
               </Grid>
               <Grid item={true} xs='auto'>
                 <Tooltip title={t('Find in Page')}>
@@ -445,12 +492,15 @@ const TopBar = ({
 };
 
 TopBar.propTypes = {
+  dashboard: PropTypes.string,
+  drawer: PropTypes.bool,
   keyword: PropTypes.string,
   theme: PropTypes.object,
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  handleChangeDashboard: PropTypes.func,
 };
 
 export default compose(
