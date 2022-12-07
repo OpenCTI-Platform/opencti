@@ -21,7 +21,7 @@ class DataSourcesLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'oscalLocations',
+      'dataSources',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -65,10 +65,10 @@ class DataSourcesLines extends Component {
         handleDecrementedOffsetChange={this.handleDecrementedOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['oscalLocations', 'edges'], this.props.data)}
+        dataList={pathOr([], ['dataSources', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['oscalLocations', 'pageInfo', 'globalCount'],
+          ['dataSources', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         offset={this.state.offset}
@@ -105,9 +105,9 @@ export const dataSourcesLinesQuery = graphql`
     $first: Int!
     $offset: Int!
     $cursor: ID
-    $orderedBy: OscalLocationOrdering
+    $orderedBy: DataSourceOrdering
     $orderMode: OrderingMode
-    $filters: [OscalLocationFiltering]
+    $filters: [DataSourceFiltering]
     $filterMode: FilterMode
   ) {
     ...DataSourcesLines_data
@@ -134,12 +134,12 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "OscalLocationOrdering", defaultValue: created }
+        orderedBy: { type: "DataSourceOrdering", defaultValue: created }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[OscalLocationFiltering]" }
+        filters: { type: "[DataSourceFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {
-        oscalLocations(
+        dataSources(
           search: $search
           first: $first
           offset: $offset
@@ -147,7 +147,7 @@ export default createPaginationContainer(
           orderMode: $orderMode
           filters: $filters
           filterMode: $filterMode
-        ) @connection(key: "Pagination_oscalLocations") {
+        ) @connection(key: "Pagination_dataSources") {
           edges {
             node {
               id
@@ -168,7 +168,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.oscalLocations;
+      return props.data && props.data.dataSources;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

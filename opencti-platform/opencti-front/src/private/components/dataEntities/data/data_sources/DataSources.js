@@ -397,11 +397,13 @@ class DataSources extends Component {
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
         {view === 'lines' && this.renderLines(paginationOptions)}
-        <DataSourcesCreation
-          openDataCreation={openDataCreation}
-          handleDataSourceCreation={this.handleDataSourceCreation.bind(this)}
-          history={this.props.history}
-        />
+        {openDataCreation && (
+          <DataSourcesCreation
+            openDataCreation={openDataCreation}
+            handleDataSourceCreation={this.handleDataSourceCreation.bind(this)}
+            history={this.props.history}
+          />
+        )}
         {this.state.selectedDataSourceId && (
           <DataSourceEdition
             displayEdit={this.state.displayEdit}

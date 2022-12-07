@@ -33,10 +33,10 @@ const subscription = graphql`
 
 const dataSourceQuery = graphql`
   query RootDataSourceQuery($id: ID!) {
-    oscalLocation(id: $id) {
+    dataSource(id: $id) {
       id
       name
-      ...DataSource_location
+      ...DataSource_data
     }
   }
 `;
@@ -98,7 +98,7 @@ class RootDataSource extends Component {
               toastGenericError('Failed to get location data');
             }
             if (props) {
-              if (props.oscalLocation) {
+              if (props.dataSource) {
                 return (
                   <Switch>
                     <Route
@@ -108,7 +108,7 @@ class RootDataSource extends Component {
                         <DataSource
                           {...routeProps}
                           refreshQuery={retry}
-                          location={props.oscalLocation}
+                          location={props.dataSource}
                         />
                       )}
                     />

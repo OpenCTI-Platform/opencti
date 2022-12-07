@@ -262,7 +262,7 @@ const DataSourceCardFragment = createFragmentContainer(
   DataSourceCardComponent,
   {
     node: graphql`
-      fragment DataSourceCard_node on OscalLocation {
+      fragment DataSourceCard_node on DataSource {
         __typename
         id
         entity_type
@@ -270,34 +270,6 @@ const DataSourceCardFragment = createFragmentContainer(
         name
         created
         modified
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
       }
     `,
   },

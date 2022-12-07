@@ -46,7 +46,7 @@ class DataSourceComponent extends Component {
   render() {
     const {
       classes,
-      location,
+      dataSource,
       history,
       refreshQuery,
     } = this.props;
@@ -55,8 +55,8 @@ class DataSourceComponent extends Component {
         <div className={classes.container}>
           <CyioDomainObjectHeader
             history={history}
-            name={location.name}
-            cyioDomainObject={location}
+            name={dataSource.name}
+            cyioDomainObject={dataSource}
             goBack='/data/data source'
             PopoverComponent={<DataSourcesPopover />}
             OperationsComponent={<DataSourcesDeletion />}
@@ -69,7 +69,7 @@ class DataSourceComponent extends Component {
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={12}>
-              <DataSourceDetails location={location} history={history} refreshQuery={refreshQuery} />
+              <DataSourceDetails dataSource={dataSource} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
         </div>
@@ -81,7 +81,7 @@ class DataSourceComponent extends Component {
         <DataSourceEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
-          location={location}
+          dataSource={dataSource}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>
@@ -90,50 +90,22 @@ class DataSourceComponent extends Component {
 }
 
 DataSourceComponent.propTypes = {
-  location: PropTypes.object,
+  dataSource: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
 const EntityLocation = createFragmentContainer(DataSourceComponent, {
-  location: graphql`
-    fragment DataSource_location on OscalLocation {
+  dataSource: graphql`
+    fragment DataSource_data on DataSource {
       __typename
       id
       created
       modified
       name
       description
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
-      links {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
-      }
-      remarks {
-        __typename
-        id
-        entity_type
-        abstract
-        content
-        authors
-      }
-      ...DataSourceDetails_location
+      ...DataSourceDetails_data
     }
   `,
 });

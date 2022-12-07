@@ -167,7 +167,7 @@ const DataSourceLineFragment = createFragmentContainer(
   DataSourceLineComponent,
   {
     node: graphql`
-      fragment DataSourceLine_node on OscalLocation {
+      fragment DataSourceLine_node on DataSource {
         __typename
         id
         entity_type
@@ -175,34 +175,6 @@ const DataSourceLineFragment = createFragmentContainer(
         name
         created
         modified
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-        links {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        remarks {
-          __typename
-          id
-          entity_type
-          abstract
-          content
-          authors
-        }
       }
     `,
   },

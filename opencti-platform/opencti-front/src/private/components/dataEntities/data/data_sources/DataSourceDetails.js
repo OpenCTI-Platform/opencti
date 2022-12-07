@@ -19,7 +19,6 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
-import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
 import DataSourceInformationExchangePolicyPopover from './DataSourceInformationExchangePolicyPopover';
 import DataSourceConfigurationPopover from './DataSourceConfigurationPopover';
 
@@ -119,8 +118,8 @@ class DataSourceDetailsComponent extends Component {
           <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Basic Information')}
-            </Typography>        
-            <Paper classes={{ root: classes.paper }} elevation={2}>            
+            </Typography>
+            <Paper classes={{ root: classes.paper }} elevation={2}>
               <Grid container item xs={12} spacing={1}>
                 <Grid item xs={6}>
                   <div>
@@ -206,7 +205,7 @@ class DataSourceDetailsComponent extends Component {
                     <Button style={{ width: '40%' }} color="primary" variant="contained">Yes</Button>
                   </div>
                 </Grid>
-              </Grid>            
+              </Grid>
               <Grid container item xs={12} spacing={1}>
                 <Grid item xs={6}>
                   <div style={{ marginTop: '20px' }}>
@@ -232,7 +231,7 @@ class DataSourceDetailsComponent extends Component {
                       {t('Type')}
                     </Typography>
                     <div className="clearfix" />
-                    <Chip variant="outlined" label="EXTERNAL_IMPORT" style={{ backgroundColor: 'rgba(211, 19, 74, 0.2)' }} classes={{ root: classes.chip }}/>
+                    <Chip variant="outlined" label="EXTERNAL_IMPORT" style={{ backgroundColor: 'rgba(211, 19, 74, 0.2)' }} classes={{ root: classes.chip }} />
                   </div>
                 </Grid>
                 <Grid item={true} xs={12}>
@@ -259,9 +258,9 @@ class DataSourceDetailsComponent extends Component {
                     </div>
                   </div>
                 </Grid>
-              </Grid>              
-            </Paper>             
-          </Grid>         
+              </Grid>
+            </Paper>
+          </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
@@ -278,7 +277,7 @@ class DataSourceDetailsComponent extends Component {
                       {t('Total Entities Collected')}
                     </Typography>
                     <div className="clearfix" />
-                    {t('184,501')}                      
+                    {t('184,501')}
                   </div>
                 </Grid>
                 <Grid item={true} xs={12}>
@@ -296,46 +295,46 @@ class DataSourceDetailsComponent extends Component {
                       </div>
                     </div>
                   </div>
-                </Grid>                
-              </Grid>  
+                </Grid>
+              </Grid>
               <Grid container item xs={12}>
                 <Grid item={true} xs={4}>
                   <div style={{ marginTop: '20px' }}>
-                    <Button 
-                      color='primary' 
+                    <Button
+                      color='primary'
                       variant='contained'
                       startIcon={<CogOutline />}
                       sx={{ mr: 5 }}
                       onClick={this.handleOpenConfiguration.bind(this)}
                     >
-                      {t('Configuration')}                    
+                      {t('Configuration')}
                     </Button>
-                  </div>                  
+                  </div>
                 </Grid>
                 <Grid item={true} xs={8}>
                   <div style={{ marginTop: '20px' }}>
-                    <Button 
-                      color='primary' 
+                    <Button
+                      color='primary'
                       variant='contained'
                       startIcon={<LaunchIcon />}
                       onClick={this.handleOpenInformationExchangePolicy.bind(this)}
                     >
-                      {t('Information Exchange Policy')}                    
+                      {t('Information Exchange Policy')}
                     </Button>
-                  </div>   
+                  </div>
                 </Grid>
-              </Grid>            
-            </Paper>                  
+              </Grid>
+            </Paper>
           </Grid>
           <Grid item xs={12}>
             <div style={{ marginTop: '3%' }}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('In Progress Works')}
               </Typography>
-            </div>              
+            </div>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <Grid container>
-                <Grid container item xs={6}>                             
+                <Grid container item xs={6}>
                   <Grid item xs={6}>
                     <div>
                       <Typography
@@ -359,9 +358,9 @@ class DataSourceDetailsComponent extends Component {
                         {t('Status')}
                       </Typography>
                       <div className="clearfix" />
-                      <Chip variant="outlined" label="In Progress" style={{ backgroundColor: 'rgba(73, 184, 252, 0.2)' }} classes={{ root: classes.chip }}/>
+                      <Chip variant="outlined" label="In Progress" style={{ backgroundColor: 'rgba(73, 184, 252, 0.2)' }} classes={{ root: classes.chip }} />
                     </div>
-                  </Grid>                
+                  </Grid>
                   <Grid item xs={6}>
                     <div style={{ marginTop: '20px' }}>
                       <Typography
@@ -386,7 +385,7 @@ class DataSourceDetailsComponent extends Component {
                       </Typography>
                       <div className="clearfix" />
                     </div>
-                  </Grid>                
+                  </Grid>
                 </Grid>
                 <Grid container item xs={6}>
                   <Grid item xs={6}>
@@ -426,18 +425,18 @@ class DataSourceDetailsComponent extends Component {
                     </Box>
                   </Grid>
                 </Grid>
-              </Grid>                
-            </Paper>        
+              </Grid>
+            </Paper>
           </Grid>
           <Grid item xs={12}>
             <div style={{ marginTop: '6%' }}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Completed Works')}
               </Typography>
-            </div>              
+            </div>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <Grid container>
-                <Grid container item xs={6}>                             
+                <Grid container item xs={6}>
                   <Grid item xs={6}>
                     <div>
                       <Typography
@@ -461,9 +460,9 @@ class DataSourceDetailsComponent extends Component {
                         {t('Status')}
                       </Typography>
                       <div className="clearfix" />
-                      <Chip variant="outlined" label="Completed" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
+                      <Chip variant="outlined" label="Completed" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }} />
                     </div>
-                  </Grid>                
+                  </Grid>
                   <Grid item xs={6}>
                     <div style={{ marginTop: '20px' }}>
                       <Typography
@@ -488,7 +487,7 @@ class DataSourceDetailsComponent extends Component {
                       </Typography>
                       <div className="clearfix" />
                     </div>
-                  </Grid>                
+                  </Grid>
                 </Grid>
                 <Grid container item xs={6}>
                   <Grid item xs={6}>
@@ -528,19 +527,19 @@ class DataSourceDetailsComponent extends Component {
                     </Box>
                   </Grid>
                 </Grid>
-              </Grid>                
+              </Grid>
             </Paper>
-          </Grid>         
-      </Grid>
-      <DataSourceConfigurationPopover
-        openConfiguration={this.state.openConfiguration}
-        handleCloseConfiguration={this.handleCloseConfiguration.bind(this)}
-       />
-      <DataSourceInformationExchangePolicyPopover 
-        openInformationExchangePolicy={this.state.openInformationExchangePolicy}
-        handleCloseInformationExchangePolicy={this.handleCloseInformationExchangePolicy.bind(this)}
-      />
-    </div>
+          </Grid>
+        </Grid>
+        <DataSourceConfigurationPopover
+          openConfiguration={this.state.openConfiguration}
+          handleCloseConfiguration={this.handleCloseConfiguration.bind(this)}
+        />
+        <DataSourceInformationExchangePolicyPopover
+          openInformationExchangePolicy={this.state.openInformationExchangePolicy}
+          handleCloseInformationExchangePolicy={this.handleCloseInformationExchangePolicy.bind(this)}
+        />
+      </div>
     );
   }
 }
@@ -557,7 +556,7 @@ const DataSourceDetails = createFragmentContainer(
   DataSourceDetailsComponent,
   {
     location: graphql`
-      fragment DataSourceDetails_location on OscalLocation {
+      fragment DataSourceDetails_data on DataSource {
         __typename
         id
         entity_type
@@ -565,32 +564,6 @@ const DataSourceDetails = createFragmentContainer(
         modified
         name
         description
-        location_type
-        location_class
-        address {
-          id
-          address_type
-          street_address
-          city
-          administrative_area
-          country_code
-          postal_code
-        }
-        email_addresses
-        telephone_numbers {
-          id
-          usage_type
-          phone_number
-        }
-        urls 
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
       }
     `,
   },
