@@ -15,18 +15,27 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
-import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    borderTop: '0.75px solid #1F2842',
-    borderBottom: '0.75px solid #1F2842',
+    borderTop: `0.75px solid ${theme.palette.dataView.border}`,
+    borderBottom: `0.75px solid ${theme.palette.dataView.border}`,
+  },
+  selectedItem: {
+    paddingLeft: 10,
+    height: 50,
+    borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+    borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+    background: theme.palette.dataView.selectedBackgroundColor,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -78,9 +87,68 @@ const styles = (theme) => ({
     minWidth: 'auto',
   },
   chip: { borderRadius: '4px' },
+  veryHigh: {
+    fill: theme.palette.riskPriority.veryHigh,
+  },
+  high: {
+    fill: theme.palette.riskPriority.high,
+  },
+  moderate: {
+    fill: theme.palette.riskPriority.moderate,
+  },
+  low: {
+    fill: theme.palette.riskPriority.low,
+  },
+  veryLow: {
+    fill: theme.palette.riskPriority.veryLow,
+  },
 });
 
+const RiskTooltip = withStyles((theme) => ({
+  tooltip: {
+    backgroundColor: 'rgba(241, 241, 242, 0.25)',
+    color: '#FFF',
+    maxWidth: 220,
+    fontSize: theme.typography.pxToRem(12),
+    border: '1px solid rgba(241, 241, 242, 0.5)',
+    borderRadius: '4px',
+  },
+}))(Tooltip);
+
 class RiskLineComponent extends Component {
+  renderRiskLevels() {
+    const { node, t, classes } = this.props;
+    const risk = node?.risk_level;
+
+    if (risk === 'very_high') {
+      return Array.from({ length: 5 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Very High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryHigh}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'high') {
+      return Array.from({ length: 4 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.high}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'moderate') {
+      return Array.from({ length: 3 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Moderate')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.moderate}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'low') {
+      return Array.from({ length: 2 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.low}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'very_low') {
+      return Array.from({ length: 1 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Very Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryLow}/></IconButton></RiskTooltip>);
+    }
+
+    return <></>;
+  }
+
   render() {
     const {
       t,
@@ -111,11 +179,9 @@ class RiskLineComponent extends Component {
 
     return (
       <ListItem
-        classes={{ root: classes.item }}
-        style={{
-          background: (selectAll || node.id in (selectedElements || {})) && 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #075AD3',
-          borderTop: (selectAll || node.id in (selectedElements || {})) && '0.75px solid #075AD3',
-          borderBottom: (selectAll || node.id in (selectedElements || {})) && '0.75px solid #075AD3',
+        classes={{
+          root: (selectAll || node.id in (selectedElements || {}))
+            ? classes.selectedItem : classes.item,
         }}
         divider={true}
         button={true}
@@ -154,7 +220,6 @@ class RiskLineComponent extends Component {
                 {node.name && t(node.name)}
               </div>
               <div
-                // className={classes.bodyItem}
                 style={{
                   display: 'flex',
                   width: dataColumns.risk_level.width,
@@ -162,7 +227,7 @@ class RiskLineComponent extends Component {
                   paddingLeft: '24px',
                 }}
               >
-                <ItemIcon variant='inline' type={node?.risk_level}/>
+                {this.renderRiskLevels()}
               </div>
               <div
                 className={classes.bodyItem}
