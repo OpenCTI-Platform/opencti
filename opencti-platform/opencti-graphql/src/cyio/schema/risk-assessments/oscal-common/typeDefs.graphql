@@ -141,6 +141,31 @@ extend type Mutation {
 
 ##### OSCAL Model
 ##
+interface OscalModel {
+  "Uniquely identifies this object."
+  id: ID!
+  # Metadata
+  "Identifies the name given to the document."
+  name: String!
+  "Identifies the date and time the document was published."
+  published: Timestamp
+  "Identifies the date and time the document as last modified."
+  last_modified: Timestamp
+  "Identifies the current version of the document."
+  version: String!
+  "Identifies the OSCAL model version the document was authored against."
+  oscal_version: String!
+  "Identifies a list of revisions to the containing document."
+  revisions: [Revision]
+  "Identifies references to previous versions of this document."
+  document_ids: [ID]
+  "Identifies metadata shared across all OSCAL model instances with the same ID value"
+  shared_metadata: OscalMetadata!
+  # Back-matter
+  resources(first: Int, offset: Int): OscalResourceConnection
+
+}
+
 "Defines identifying information about an OSCAL Model."
 interface Model {
   # BasicObject
@@ -223,6 +248,35 @@ interface OscalObject {
     search: String
   ): OscalRelationshipConnection
 }
+
+##### OSCAL Metadata
+##
+type OscalMetadata implements BasicObject & LifecycleObject{
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Indicates the date and time at which the object was originally created."
+  created: Timestamp
+  "Indicates the date and time that this particular version of the object was last modified."
+  modified: Timestamp
+  # Shared Metadata
+  "Identifies one or more references to a function assumed or expected to be assumed by a party in a specific situation."
+  roles(first: Int, offset: Int): OscalRoleConnection
+  "Identifies one or more references to a location."
+  locations(first: Int, offset: Int): OscalLocationConnection
+  "Identifies one or more references to a responsible entity which is either a person or an organization."
+  parties(first: Int, offset: Int): OscalPartyConnection
+  "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+  responsible_parties(first: Int, offset: Int): OscalResponsiblePartyConnection
+}
+
 
 ##### OSCAL Location
 ##
@@ -888,6 +942,7 @@ type OscalResponsiblePartyEdge {
   cursor: String!
   node: OscalResponsibleParty!
 }
+
 ##### OSCAL Responsible Role
 ##
 "Defines identifying information about a role with responsibility for performing a function relative to the containing object."
@@ -1357,7 +1412,7 @@ enum OscalModelType {
   # ap
   # "OSCAL Assessment Results"
   # ar
-  # "OSCAL Catalog"
+  # "OSCAL Control Catalog"
   # catalog
   # "OSCAL Component Definition"
   # component_definition
