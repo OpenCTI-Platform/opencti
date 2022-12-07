@@ -20,6 +20,9 @@ import {
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
@@ -101,32 +104,16 @@ const styles = (theme) => ({
   },
 });
 
-const colors = {
-  very_high: {
-    bg: 'rgba(243, 84, 38, 0.2)',
-    stroke: '#F35426',
+const RiskTooltip = withStyles((theme) => ({
+  tooltip: {
+    backgroundColor: 'rgba(241, 241, 242, 0.25)',
+    color: '#FFF',
+    maxWidth: 220,
+    fontSize: theme.typography.pxToRem(12),
+    border: '1px solid rgba(241, 241, 242, 0.5)',
+    borderRadius: '4px',
   },
-  high: {
-    bg: 'rgba(249, 180, 6, 0.2)',
-    stroke: '#F9B406',
-  },
-  moderate: {
-    bg: 'rgba(252, 218, 130, 0.2)',
-    stroke: '#FCDA82',
-  },
-  low: {
-    bg: 'rgba(254, 236, 193, 0.2)',
-    stroke: '#FEECC1',
-  },
-  very_low: {
-    bg: 'rgba(241, 241, 242, 0.25)',
-    stroke: '#F1F1F2',
-  },
-  unknown: {
-    bg: '#075AD333',
-    stroke: '#075AD3',
-  },
-};
+}))(Tooltip);
 
 class RiskCardComponent extends Component {
   constructor(props) {
@@ -138,6 +125,51 @@ class RiskCardComponent extends Component {
 
   handleOpenMenu(isOpen) {
     this.setState({ openMenu: isOpen });
+  }
+
+  renderRiskLevels() {
+    const { node, t } = this.props;
+    const risk = node?.risk_level;
+    let level = 1;
+    let riskColor = '';
+
+    if (risk === 'very_high') {
+      level = 5;
+      riskColor = '#FC0D1B';
+      return Array.from({ length: level },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Very High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'high') {
+      level = 4;
+      riskColor = '#F35426';
+      return Array.from({ length: level },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'moderate') {
+      level = 3;
+      riskColor = '#E28120';
+      return Array.from({ length: level },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Moderate')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'low') {
+      level = 2;
+      riskColor = '#FFA800';
+      return Array.from({ length: level },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'very_low') {
+      level = 1;
+      riskColor = '#FCC434';
+      return Array.from({ length: level },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Very Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
+    }
+
+    return <></>;
   }
 
   render() {
@@ -235,9 +267,15 @@ class RiskCardComponent extends Component {
                   gutterBottom={true}>
                   {t('Risk')}
                 </Typography>
-                <Typography>
-                  {node?.risk_level && t(node?.risk_level)}
-                </Typography>
+                <div
+                // className={classes.bodyItem}
+                style={{
+                  display: 'flex',
+                  marginRight: '20px',
+                }}
+              >
+                {this.renderRiskLevels()}
+              </div>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
