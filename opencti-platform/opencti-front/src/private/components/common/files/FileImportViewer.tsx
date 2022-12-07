@@ -90,6 +90,7 @@ const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProp
                   dense={true}
                   disableImport={disableImport}
                   file={file?.node}
+                  externalReferenceId={file?.node.id}
                   connectors={
                     connectors && connectors[file?.node?.metaData?.mimetype ?? 0]
                   }

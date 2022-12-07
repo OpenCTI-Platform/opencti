@@ -76,11 +76,12 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
     });
   };
 
-  const handleCreateExternalRef = (file: File) => {
+  const handleCreateExternalRef = (file: File, fileId?: string) => {
     const externalReferenceValues = {
       source_name: file.name.length > 2 ? file.name : (t('FromFile') + file.name),
       description: t('(file uploaded in Data)'),
       file,
+      fileId,
     };
     commitMutation({
       mutation: externalReferenceCreationMutation,
@@ -88,6 +89,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
         input: externalReferenceValues,
       },
       onCompleted: (externalRefResult: ExternalReferenceCreationMutation$data) => {
+        console.log('externalRefResult', externalRefResult);
         handleLinkExternalRef(externalRefResult); // link the external reference to the entity
       },
       updater: undefined,
@@ -113,17 +115,17 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
         }
         setUpload(null);
         MESSAGING$.notifySuccess('File successfully uploaded');
+        const fileId = entityId
+          ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit?.importPush?.id
+          : (result as FileUploaderGlobalMutation$data).uploadImport?.id;
         if (nameInCallback) {
-          onUploadSuccess(
-            entityId
-              ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit?.importPush?.id
-              : (result as FileUploaderGlobalMutation$data).uploadImport?.id,
-          );
+          onUploadSuccess(fileId);
         } else {
           onUploadSuccess();
         }
         if (createExternalRef) {
-          handleCreateExternalRef(file); // creation of the external reference associated to the file
+          console.log('fileId', fileId);
+          handleCreateExternalRef(file, fileId); // creation of the external reference associated to the file
         }
       },
       updater: undefined,

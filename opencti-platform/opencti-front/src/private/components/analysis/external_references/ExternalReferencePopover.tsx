@@ -15,14 +15,20 @@ import { MoreVertOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useHistory } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { Theme } from '../../../../components/Theme';
 import {
   ExternalReferencePopoverEditionQuery$data,
 } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
-import { deleteNode } from '../../../../utils/store';
+import { deleteNodeFromId } from '../../../../utils/store';
+
+const ExternalReferencePopoverFileLineDeleteMutation = graphql`
+    mutation ExternalReferencePopoverFileLineDeleteMutation($fileName: String) {
+        deleteImport(fileName: $fileName)
+    }
+`;
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -46,7 +52,7 @@ const Transition = React.forwardRef((props: SlideProps, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const externalReferencePopoverDeletionMutation = graphql`
+export const externalReferencePopoverDeletionMutation = graphql`
   mutation ExternalReferencePopoverDeletionMutation($id: ID!) {
     externalReferenceEdit(id: $id) {
       delete
@@ -66,10 +72,10 @@ interface ExternalReferencePopoverProps {
   id: string,
   handleRemove: (() => void) | undefined,
   entityId: string,
-  paginationOptions?: { search: string, orderMode: string, orderBy: string },
+  externalReferenceFileId?: string | null
 }
 
-const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, handleRemove, entityId, paginationOptions }) => {
+const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, handleRemove, entityId, externalReferenceFileId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const history = useHistory();
@@ -77,6 +83,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
+  const [displayWarning, setDisplayWarning] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const handleOpen = (event: React.SyntheticEvent) => {
@@ -113,7 +120,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
         id,
       },
       updater: (store: Store) => {
-        deleteNode(store, 'Pagination_externalReferences', paginationOptions, entityId);
+        deleteNodeFromId(store, entityId, 'Pagination_externalReferences', {}, id);
       },
       onCompleted: () => {
         setDeleting(false);
@@ -129,6 +136,52 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
       onError: undefined,
       setSubmitting: undefined,
     });
+  };
+
+  const executeRemoveFile = (fileId: string) => {
+    console.log('true id', fileId);
+    commitMutation({
+      mutation: ExternalReferencePopoverFileLineDeleteMutation,
+      variables: { fileName: fileId },
+      optimisticUpdater: (store: Store) => {
+        deleteNodeFromId(store, entityId, 'Pagination_importFiles', {}, fileId);
+      },
+      updater: (store: Store) => {
+        deleteNodeFromId(store, entityId, 'Pagination_importFiles', {}, fileId);
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess(t('Associated file successfully removed'));
+      },
+      optimisticResponse: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
+    });
+  };
+
+  const submitDeleteRefAndFile = () => {
+    submitDelete();
+    if (externalReferenceFileId) {
+      executeRemoveFile(externalReferenceFileId);
+    }
+  };
+
+  const handleOpenWarning = () => {
+    setDisplayWarning(true);
+    setDisplayDelete(false);
+    handleClose();
+  };
+
+  const handleCloseWarning = () => {
+    setDisplayWarning(false);
+  };
+
+  const submitDeleteAttempt = () => {
+    console.log('externalReferenceFileId', externalReferenceFileId);
+    if (externalReferenceFileId) {
+      handleOpenWarning();
+    } else {
+      submitDelete();
+    }
   };
 
   return (
@@ -208,7 +261,35 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
             </Button>
             <Button
               color="secondary"
-              onClick={submitDelete}
+              onClick={submitDeleteAttempt}
+              disabled={deleting}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayWarning}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={handleCloseWarning}
+      >
+          <DialogContent>
+            <DialogContentText>
+              {t('This external reference is linked to a file. If you delete it, the file will be deleted as well. Do you still want to delete this external reference?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleCloseWarning}
+              disabled={deleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={submitDeleteRefAndFile}
               disabled={deleting}
             >
               {t('Delete')}

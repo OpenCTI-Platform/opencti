@@ -1,23 +1,22 @@
-import React, { useEffect } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createRefetchContainer } from 'react-relay';
+import React, { FunctionComponent, useEffect } from 'react';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { FileExportOutline } from 'mdi-material-ui';
+import makeStyles from '@mui/styles/makeStyles';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from './FileLine';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
+import { FileExportViewer_entity$data } from './__generated__/FileExportViewer_entity.graphql';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -25,18 +24,26 @@ const styles = () => ({
     borderRadius: 6,
     marginTop: 2,
   },
-});
+}));
 
-const FileExportViewerBase = ({
+interface FileExportViewerComponentProps {
+  entity: FileExportViewer_entity$data,
+  relay: RelayRefetchProp,
+  handleOpenExport: () => void,
+  isExportPossible: boolean,
+}
+
+const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProps> = ({
   entity,
   relay,
-  t,
-  classes,
   handleOpenExport,
   isExportPossible,
 }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+
   const { id, exportFiles } = entity;
-  const { edges } = exportFiles;
+
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -46,6 +53,7 @@ const FileExportViewerBase = ({
       subscription.unsubscribe();
     };
   });
+
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
       <div style={{ height: '100%' }} className="break">
@@ -76,12 +84,12 @@ const FileExportViewerBase = ({
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          {edges.length ? (
+          {exportFiles?.edges?.length ? (
             <List>
-              {edges.map((file) => (
+              {exportFiles.edges.map((file) => (
                 <FileLine
-                  key={file.node.id}
-                  file={file.node}
+                  key={file?.node.id}
+                  file={file?.node}
                   dense={true}
                   disableImport={true}
                 />
@@ -105,11 +113,6 @@ const FileExportViewerBase = ({
     </Grid>
   );
 };
-
-const FileExportViewerComponent = compose(
-  inject18n,
-  withStyles(styles),
-)(FileExportViewerBase);
 
 const FileExportViewerRefetchQuery = graphql`
   query FileExportViewerRefetchQuery($id: String!) {
@@ -138,11 +141,5 @@ const FileExportViewer = createRefetchContainer(
   },
   FileExportViewerRefetchQuery,
 );
-
-FileExportViewer.propTypes = {
-  entity: PropTypes.object,
-  handleOpenExport: PropTypes.func,
-  isExportPossible: PropTypes.bool,
-};
 
 export default FileExportViewer;

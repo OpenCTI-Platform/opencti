@@ -2,15 +2,11 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter, isEmpty, propOr } from 'ramda';
 import moment from 'moment';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import {
-  DeleteOutlined,
-  GetAppOutlined,
-  WarningOutlined,
-} from '@mui/icons-material';
+import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -26,11 +22,8 @@ import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import FileWork from './FileWork';
 import inject18n from '../../../../components/i18n';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { externalReferencePopoverDeletionMutation } from '../../analysis/external_references/ExternalReferencePopover';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -96,11 +89,12 @@ class FileLineComponent extends Component {
     this.setState({ displayRemove: false });
   }
 
-  executeRemove(mutation, variables) {
+  executeRemove(variables) {
     this.setState({ deleting: true });
     const { t } = this.props;
+    console.log('variablesFromFileLine', variables);
     commitMutation({
-      mutation,
+      mutation: FileLineDeleteMutation,
       variables,
       optimisticUpdater: (store) => {
         const fileStore = store.get(this.props.file.id);
@@ -123,8 +117,32 @@ class FileLineComponent extends Component {
     });
   }
 
-  handleRemoveFile(name) {
-    this.executeRemove(FileLineDeleteMutation, { fileName: name });
+  // eslint-disable-next-line class-methods-use-this
+  externalRefDelete() {
+    const { externalReferenceId, externalReference } = this.props;
+    console.log('externalRefDelete function');
+    console.log('externalReferenceId', externalReferenceId);
+    console.log('externalReference', externalReference);
+    commitMutation({
+      mutation: externalReferencePopoverDeletionMutation,
+      variables: {
+        id: externalReferenceId,
+      },
+      onCompleted: () => {
+        console.log('externalrefe deleted SUCCESS');
+      },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
+    });
+  }
+
+  handleRemoveFile(fileId) {
+    this.executeRemove({ fileName: fileId });
+    console.log('attempt delete a file');
+    console.log('fileId', fileId);
+    this.externalRefDelete();
   }
 
   handleRemoveJob(id) {
@@ -335,6 +353,8 @@ FileLineComponent.propTypes = {
   handleOpenImport: PropTypes.func,
   nested: PropTypes.bool,
   workNested: PropTypes.bool,
+  externalReferenceId: PropTypes.string,
+  externalReference: PropTypes.object,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {

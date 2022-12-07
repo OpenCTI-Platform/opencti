@@ -91,6 +91,7 @@ export const externalReferenceCreationMutation = graphql`
       url
       external_id
       created
+      fileId
     }
   }
 `;

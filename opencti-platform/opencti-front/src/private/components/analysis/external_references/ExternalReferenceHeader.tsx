@@ -3,10 +3,11 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { truncate } from '../../../../utils/String';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
 import {
   ExternalReferenceHeader_externalReference$data,
 } from './__generated__/ExternalReferenceHeader_externalReference.graphql';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles(() => ({
   title: {

@@ -4896,6 +4896,7 @@ export type ExternalReference = BasicObject & StixMetaObject & StixObject & {
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
   external_id?: Maybe<Scalars['String']>;
+  fileId?: Maybe<Scalars['String']>;
   hash?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   importFiles?: Maybe<FileConnection>;
@@ -4950,6 +4951,7 @@ export type ExternalReferenceAddInput = {
   description?: InputMaybe<Scalars['String']>;
   external_id?: InputMaybe<Scalars['String']>;
   file?: InputMaybe<Scalars['Upload']>;
+  fileId?: InputMaybe<Scalars['String']>;
   hash?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   source_name: Scalars['String'];
@@ -25354,6 +25356,7 @@ export type ExternalReferenceResolvers<ContextType = any, ParentType extends Res
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ExternalReferenceExportFilesArgs>>;
   external_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  fileId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ExternalReferenceImportFilesArgs>>;

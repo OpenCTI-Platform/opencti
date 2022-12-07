@@ -1596,6 +1596,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   hash: String
   external_id: String
   references(types: [String]): StixObjectOrStixRelationshipConnection
+  fileId: String
   # Technical
   creator: Creator
   importFiles(first: Int): FileConnection
@@ -1618,6 +1619,7 @@ input ExternalReferenceAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  fileId: String
 }
 
 ############## KillChainPhases
