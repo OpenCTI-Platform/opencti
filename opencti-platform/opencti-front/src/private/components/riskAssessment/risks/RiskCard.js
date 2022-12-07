@@ -20,6 +20,9 @@ import {
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
@@ -29,7 +32,14 @@ const styles = (theme) => ({
     width: '100%',
     height: '319px',
     borderRadius: 9,
-    border: '1.5px solid #1F2842',
+    border: `1.5px solid ${theme.palette.dataView.border}`,
+  },
+  selectedItem: {
+    width: '100%',
+    height: '319px',
+    borderRadius: 9,
+    border: `1.5px solid ${theme.palette.dataView.selectedBorder}`,
+    background: theme.palette.dataView.selectedBackgroundColor,
   },
   cardDummy: {
     width: '100%',
@@ -99,7 +109,33 @@ const styles = (theme) => ({
     marginBottom: '5px',
     border: '1px solid #F9B406',
   },
+  veryHigh: {
+    fill: theme.palette.riskPriority.veryHigh,
+  },
+  high: {
+    fill: theme.palette.riskPriority.high,
+  },
+  moderate: {
+    fill: theme.palette.riskPriority.moderate,
+  },
+  low: {
+    fill: theme.palette.riskPriority.low,
+  },
+  veryLow: {
+    fill: theme.palette.riskPriority.veryLow,
+  },
 });
+
+const RiskTooltip = withStyles((theme) => ({
+  tooltip: {
+    backgroundColor: 'rgba(241, 241, 242, 0.25)',
+    color: '#FFF',
+    maxWidth: 220,
+    fontSize: theme.typography.pxToRem(12),
+    border: '1px solid rgba(241, 241, 242, 0.5)',
+    borderRadius: '4px',
+  },
+}))(Tooltip);
 
 class RiskCardComponent extends Component {
   constructor(props) {
@@ -111,6 +147,39 @@ class RiskCardComponent extends Component {
 
   handleOpenMenu(isOpen) {
     this.setState({ openMenu: isOpen });
+  }
+
+  renderRiskLevels() {
+    const { node, t, classes } = this.props;
+    const risk = node?.risk_level;
+
+    if (risk === 'very_high') {
+      return Array.from({ length: 5 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Very High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryHigh}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'high') {
+      return Array.from({ length: 4 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.high}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'moderate') {
+      return Array.from({ length: 3 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Moderate')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.moderate}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'low') {
+      return Array.from({ length: 2 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.low}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'very_low') {
+      return Array.from({ length: 1 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Very Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryLow}/></IconButton></RiskTooltip>);
+    }
+
+    return <></>;
   }
 
   render() {
@@ -129,13 +198,12 @@ class RiskCardComponent extends Component {
     )(node);
     return (
       <Card
-        classes={{ root: classes.card }}
+        classes={{
+          root: (selectAll || node.id in (selectedElements || {}))
+            ? classes.selectedItem : classes.card,
+        }}
         raised={true}
         elevation={3}
-        style={{
-          background: (selectAll || node.id in (selectedElements || {})) && 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #075AD3',
-          border: (selectAll || node.id in (selectedElements || {})) && '1.5px solid #075AD3',
-        }}
       >
         <CardActionArea
           classes={{ root: classes.area }}
@@ -208,9 +276,15 @@ class RiskCardComponent extends Component {
                   gutterBottom={true}>
                   {t('Risk')}
                 </Typography>
-                <Typography>
-                  {node?.risk_level && t(node?.risk_level)}
-                </Typography>
+                <div
+                // className={classes.bodyItem}
+                style={{
+                  display: 'flex',
+                  marginRight: '20px',
+                }}
+              >
+                {this.renderRiskLevels()}
+              </div>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography

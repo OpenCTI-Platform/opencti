@@ -24,7 +24,14 @@ const styles = (theme) => ({
     width: '100%',
     height: '319px',
     borderRadius: 9,
-    border: '1.5px solid #1F2842',
+    border: `1.5px solid ${theme.palette.dataView.border}`,
+  },
+  selectedItem: {
+    width: '100%',
+    height: '319px',
+    borderRadius: 9,
+    border: `1.5px solid ${theme.palette.dataView.selectedBorder}`,
+    background: theme.palette.dataView.selectedBackgroundColor,
   },
   cardDummy: {
     width: '100%',
@@ -120,13 +127,12 @@ class EntityRoleCardComponent extends Component {
 
     return (
       <Card
-        classes={{ root: classes.card }}
+        classes={{
+          root: (selectAll || node.id in (selectedElements || {}))
+            ? classes.selectedItem : classes.card,
+        }}
         raised={true}
         elevation={3}
-        style={{
-          background: (selectAll || node.id in (selectedElements || {})) && 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #075AD3',
-          border: (selectAll || node.id in (selectedElements || {})) && '1.5px solid #075AD3',
-        }}
       >
         <CardActionArea
           classes={{ root: classes.area }}
