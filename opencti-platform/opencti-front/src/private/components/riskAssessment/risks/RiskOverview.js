@@ -301,10 +301,16 @@ const RiskOverview = createFragmentContainer(
       fragment RiskOverview_risk on Risk {
         __typename
         id
+        name
         created
         modified
         description
+        statement
+        risk_status
         risk_level
+        deadline
+        accepted
+        risk_adjusted
         priority
         vendor_dependency
         impacted_control_id

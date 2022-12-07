@@ -140,6 +140,14 @@ const Risk = createFragmentContainer(RiskComponent, {
       __typename
       id
       name
+      labels {
+        __typename
+        id
+        name
+        color
+        entity_type
+        description
+      }
       links {
         __typename
         id
