@@ -93,7 +93,6 @@ class ListLinesContent extends Component {
       && (loadingRowCount !== 0 || offset === 0)) {
       if (dataList.length === 0) {
         this.setState({ newDataList: [] });
-        this.listRef.forceUpdateGrid();
       }
       if (!checker(newDataList, dataList)) {
         this.setState({
