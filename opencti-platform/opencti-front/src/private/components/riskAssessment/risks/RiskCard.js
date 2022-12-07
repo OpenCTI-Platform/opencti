@@ -20,12 +20,10 @@ import {
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   card: {
@@ -104,17 +102,6 @@ const styles = (theme) => ({
   },
 });
 
-const RiskTooltip = withStyles((theme) => ({
-  tooltip: {
-    backgroundColor: 'rgba(241, 241, 242, 0.25)',
-    color: '#FFF',
-    maxWidth: 220,
-    fontSize: theme.typography.pxToRem(12),
-    border: '1px solid rgba(241, 241, 242, 0.5)',
-    borderRadius: '4px',
-  },
-}))(Tooltip);
-
 class RiskCardComponent extends Component {
   constructor(props) {
     super(props);
@@ -125,51 +112,6 @@ class RiskCardComponent extends Component {
 
   handleOpenMenu(isOpen) {
     this.setState({ openMenu: isOpen });
-  }
-
-  renderRiskLevels() {
-    const { node, t } = this.props;
-    const risk = node?.risk_level;
-    let level = 1;
-    let riskColor = '';
-
-    if (risk === 'very_high') {
-      level = 5;
-      riskColor = '#FC0D1B';
-      return Array.from({ length: level },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Very High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'high') {
-      level = 4;
-      riskColor = '#F35426';
-      return Array.from({ length: level },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'moderate') {
-      level = 3;
-      riskColor = '#E28120';
-      return Array.from({ length: level },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Moderate')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'low') {
-      level = 2;
-      riskColor = '#FFA800';
-      return Array.from({ length: level },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'very_low') {
-      level = 1;
-      riskColor = '#FCC434';
-      return Array.from({ length: level },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Very Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon style={{ fill: riskColor }}/></IconButton></RiskTooltip>);
-    }
-
-    return <></>;
   }
 
   render() {
@@ -274,7 +216,7 @@ class RiskCardComponent extends Component {
                   marginRight: '20px',
                 }}
               >
-                {this.renderRiskLevels()}
+                <ItemIcon variant='inline' type={node?.risk_level}/>
               </div>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
