@@ -82,8 +82,8 @@ class CyioCoreObjectWidgetLineChart extends Component {
     }
     const areaChartVariables = {
       ...widget.config.variables,
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
       interval,
     };
     return (
@@ -200,8 +200,8 @@ class CyioCoreObjectWidgetLineChart extends Component {
     }
     const areaChartVariables = {
       ...widget.config.variables,
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
       interval,
     };
     return (
