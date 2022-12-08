@@ -33,8 +33,8 @@ class CyioListCardsContent extends Component {
     this._setRef = this._setRef.bind(this);
     this._resetLoadingCardCount = this._resetLoadingCardCount.bind(this);
     this.gridRef = React.createRef();
+    this.scrollRef = React.createRef();
     this.state = {
-      scrollValue: 0,
       loadedData: 0,
       loadingCardCount: 0,
       newDataList: [],
@@ -86,19 +86,12 @@ class CyioListCardsContent extends Component {
         loadedData: loadedData - dataList.length,
       });
     }
-    if (window.pageYOffset < 40 && newDataList.length > 50
-      && offset >= 0) {
-      if (offset !== 0) {
-        window.scrollTo(0, 3000);
-        handleDecrementedOffsetChange();
-      }
-      this.setState({ newDataList: newDataList.slice(-dataList.length) });
-    }
     if (loadedData !== (dataList.length + offset)
       && ((globalCount - loadedData) > 0)
       && (loadingCardCount !== 0 || offset === 0)) {
       if (dataList.length === 0) {
         this.setState({ newDataList: [] });
+        this.gridRef.forceUpdate();
       }
       if (!checker(newDataList, dataList)) {
         this.setState({
@@ -110,15 +103,18 @@ class CyioListCardsContent extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener('scroll', this.handleScroll.bind(this));
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll.bind(this));
-  }
-
-  handleScroll() {
-    this.setState({ scrollValue: window.pageYOffset });
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting && this.state.newDataList.length > 50
+        && this.props.offset >= 0) {
+        if (this.props.offset !== 0) {
+          window.scrollTo(0, 2500);
+          this.props.handleDecrementedOffsetChange();
+        }
+        this.setState({ newDataList: this.state.newDataList.slice(-this.props.dataList.length) });
+      }
+    });
+    observer.observe(this.scrollRef.current);
   }
 
   _setRef(windowScroller) {
@@ -240,61 +236,64 @@ class CyioListCardsContent extends Component {
       : nbLineForCards;
     const rowCount = initialLoading ? nbOfLinesToLoad : nbLinesWithLoading;
     return (
-      <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({
-          height, isScrolling, onChildScroll, scrollTop,
-        }) => (
-          <div className={styles.windowScrollerWrapper}>
-            <InfiniteLoader
-              isRowLoaded={this._isCellLoaded}
-              loadMoreRows={this._loadMoreRows}
-              rowCount={globalCount}
-            >
-              {({ onRowsRendered, registerChild }) => {
-                this._onRowsRendered = onRowsRendered;
-                return (
-                  <AutoSizer disableHeight>
-                    {({ width }) => (
-                      <ColumnSizer
-                        columnCount={numberOfCardsPerLine}
-                        width={width}
-                      >
-                        {({ adjustedWidth, getColumnWidth }) => {
-                          const columnWidth = getColumnWidth();
-                          return (
-                            <Grid
-                              ref={(ref) => {
-                                this.gridRef = ref;
-                                registerChild(ref);
-                              }}
-                              autoHeight={true}
-                              height={height}
-                              onRowsRendered={onRowsRendered}
-                              isScrolling={isScrolling}
-                              onScroll={onChildScroll}
-                              columnWidth={columnWidth}
-                              columnCount={numberOfCardsPerLine}
-                              rowHeight={rowHeight || 345}
-                              overscanColumnCount={numberOfCardsPerLine}
-                              overscanRowCount={2}
-                              rowCount={rowCount}
-                              cellRenderer={this._cellRenderer}
-                              onSectionRendered={this._onSectionRendered}
-                              scrollToIndex={-1}
-                              scrollTop={scrollTop}
-                              width={adjustedWidth}
-                            />
-                          );
-                        }}
-                      </ColumnSizer>
-                    )}
-                  </AutoSizer>
-                );
-              }}
-            </InfiniteLoader>
-          </div>
-        )}
-      </WindowScroller>
+      <>
+        <div ref={this.scrollRef} />
+        <WindowScroller ref={this._setRef} scrollElement={window}>
+          {({
+            height, isScrolling, onChildScroll, scrollTop,
+          }) => (
+            <div className={styles.windowScrollerWrapper}>
+              <InfiniteLoader
+                isRowLoaded={this._isCellLoaded}
+                loadMoreRows={this._loadMoreRows}
+                rowCount={globalCount}
+              >
+                {({ onRowsRendered, registerChild }) => {
+                  this._onRowsRendered = onRowsRendered;
+                  return (
+                    <AutoSizer disableHeight>
+                      {({ width }) => (
+                        <ColumnSizer
+                          columnCount={numberOfCardsPerLine}
+                          width={width}
+                        >
+                          {({ adjustedWidth, getColumnWidth }) => {
+                            const columnWidth = getColumnWidth();
+                            return (
+                              <Grid
+                                ref={(ref) => {
+                                  this.gridRef = ref;
+                                  registerChild(ref);
+                                }}
+                                autoHeight={true}
+                                height={height}
+                                onRowsRendered={onRowsRendered}
+                                isScrolling={isScrolling}
+                                onScroll={onChildScroll}
+                                columnWidth={columnWidth}
+                                columnCount={numberOfCardsPerLine}
+                                rowHeight={rowHeight || 345}
+                                overscanColumnCount={numberOfCardsPerLine}
+                                overscanRowCount={2}
+                                rowCount={rowCount}
+                                cellRenderer={this._cellRenderer}
+                                onSectionRendered={this._onSectionRendered}
+                                scrollToIndex={-1}
+                                scrollTop={scrollTop}
+                                width={adjustedWidth}
+                              />
+                            );
+                          }}
+                        </ColumnSizer>
+                      )}
+                    </AutoSizer>
+                  );
+                }}
+              </InfiniteLoader>
+            </div>
+          )}
+        </WindowScroller>
+      </>
     );
   }
 }

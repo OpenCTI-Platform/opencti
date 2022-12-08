@@ -27,8 +27,8 @@ class ListLinesContent extends Component {
     this._setRef = this._setRef.bind(this);
     this._resetLoadingRowCount = this._resetLoadingRowCount.bind(this);
     this.listRef = React.createRef();
+    this.scrollRef = React.createRef();
     this.state = {
-      scrollValue: 0,
       loadedData: 0,
       loadingRowCount: 0,
       newDataList: [],
@@ -53,7 +53,6 @@ class ListLinesContent extends Component {
       selectAll,
       selectedElements,
       globalCount,
-      handleDecrementedOffsetChange,
     } = this.props;
     const {
       loadedData,
@@ -80,19 +79,12 @@ class ListLinesContent extends Component {
         loadedData: loadedData - dataList.length,
       });
     }
-    if (window.pageYOffset < 40 && newDataList.length > 50
-      && offset >= 0) {
-      if (offset !== 0) {
-        window.scrollTo(0, 2500);
-        handleDecrementedOffsetChange();
-      }
-      this.setState({ newDataList: newDataList.slice(-dataList.length) });
-    }
     if (loadedData !== (dataList.length + offset)
       && ((globalCount - loadedData) > 0)
       && (loadingRowCount !== 0 || offset === 0)) {
       if (dataList.length === 0) {
         this.setState({ newDataList: [] });
+        this.listRef.forceUpdateGrid();
       }
       if (!checker(newDataList, dataList)) {
         this.setState({
@@ -104,15 +96,18 @@ class ListLinesContent extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener('scroll', this.handleScroll.bind(this));
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll.bind(this));
-  }
-
-  handleScroll() {
-    this.setState({ scrollValue: window.pageYOffset });
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting && this.state.newDataList.length > 50
+        && this.props.offset >= 0) {
+        if (this.props.offset !== 0) {
+          window.scrollTo(0, 2500);
+          this.props.handleDecrementedOffsetChange();
+        }
+        this.setState({ newDataList: this.state.newDataList.slice(-this.props.dataList.length) });
+      }
+    });
+    observer.observe(this.scrollRef.current);
   }
 
   _setRef(windowScroller) {
@@ -218,44 +213,47 @@ class ListLinesContent extends Component {
       : this.state.newDataList.length;
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
-      <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({
-          height, isScrolling, onChildScroll, scrollTop,
-        }) => (
-          <div className={classes.windowScrollerWrapper}>
-            <InfiniteLoader
-              isRowLoaded={this._isRowLoaded}
-              loadMoreRows={this._loadMoreRows}
-              rowCount={globalCount}
-            >
-              {({ onRowsRendered, registerChild }) => (
-                <AutoSizer disableHeight>
-                  {({ width }) => (
-                    <List
-                      ref={(ref) => {
-                        this.listRef = ref;
-                        registerChild(ref);
-                      }}
-                      autoHeight={true}
-                      height={height}
-                      onRowsRendered={onRowsRendered}
-                      isScrolling={isScrolling}
-                      onScroll={onChildScroll}
-                      overscanRowCount={nbOfRowsToLoad}
-                      rowCount={rowCount}
-                      rowHeight={50}
-                      rowRenderer={this._rowRenderer}
-                      scrollToIndex={-1}
-                      scrollTop={scrollTop}
-                      width={width}
-                    />
-                  )}
-                </AutoSizer>
-              )}
-            </InfiniteLoader>
-          </div>
-        )}
-      </WindowScroller>
+      <>
+        <div ref={this.scrollRef} />
+        <WindowScroller ref={this._setRef} scrollElement={window}>
+          {({
+            height, isScrolling, onChildScroll, scrollTop,
+          }) => (
+            <div className={classes.windowScrollerWrapper}>
+              <InfiniteLoader
+                isRowLoaded={this._isRowLoaded}
+                loadMoreRows={this._loadMoreRows}
+                rowCount={globalCount}
+              >
+                {({ onRowsRendered, registerChild }) => (
+                  <AutoSizer disableHeight>
+                    {({ width }) => (
+                      <List
+                        ref={(ref) => {
+                          this.listRef = ref;
+                          registerChild(ref);
+                        }}
+                        autoHeight={true}
+                        height={height}
+                        onRowsRendered={onRowsRendered}
+                        isScrolling={isScrolling}
+                        onScroll={onChildScroll}
+                        overscanRowCount={nbOfRowsToLoad}
+                        rowCount={rowCount}
+                        rowHeight={50}
+                        rowRenderer={this._rowRenderer}
+                        scrollToIndex={-1}
+                        scrollTop={scrollTop}
+                        width={width}
+                      />
+                    )}
+                  </AutoSizer>
+                )}
+              </InfiniteLoader>
+            </div>
+          )}
+        </WindowScroller>
+      </>
     );
   }
 }
