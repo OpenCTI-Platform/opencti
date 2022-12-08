@@ -389,6 +389,8 @@ const PositionEditionOverview = createFragmentContainer(
       fragment PositionEditionOverview_position on Position {
         id
         name
+        latitude
+        longitude
         description
         createdBy {
           ... on Identity {
