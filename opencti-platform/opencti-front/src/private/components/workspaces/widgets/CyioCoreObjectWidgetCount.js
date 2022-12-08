@@ -93,7 +93,7 @@ class CyioCoreObjectWidgetRiskCount extends Component {
     const finalEndDate = endDate || now();
     const countChartVariables = {
       ...widget.config.variables,
-      endDate: finalEndDate,
+      endDate: new Date(finalEndDate).toISOString(),
     };
     return (
       <>
@@ -169,7 +169,7 @@ class CyioCoreObjectWidgetRiskCount extends Component {
     const finalEndDate = endDate || now();
     const countChartVariables = {
       ...widget.config.variables,
-      endDate: finalEndDate,
+      endDate: new Date(finalEndDate).toISOString(),
     };
     return (
       <>

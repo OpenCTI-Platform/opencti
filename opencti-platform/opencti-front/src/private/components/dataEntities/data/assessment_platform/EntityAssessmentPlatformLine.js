@@ -17,11 +17,17 @@ import EntitiesAssessmentPlatformsPopover from './EntitiesAssessmentPlatformsPop
 
 const styles = (theme) => ({
   item: {
-    '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: theme.palette.navAlt.background,
-    },
     paddingLeft: 10,
     height: 50,
+    borderTop: `0.75px solid ${theme.palette.dataView.border}`,
+    borderBottom: `0.75px solid ${theme.palette.dataView.border}`,
+  },
+  selectedItem: {
+    paddingLeft: 10,
+    height: 50,
+    borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+    borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+    background: theme.palette.dataView.selectedBackgroundColor,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -64,7 +70,10 @@ class EntityAssessmentPlatformLineComponent extends Component {
     } = this.props;
     return (
       <ListItem
-        classes={{ root: classes.item }}
+        classes={{
+          root: (selectAll || node.id in (selectedElements || {}))
+            ? classes.selectedItem : classes.item,
+        }}
         divider={true}
         button={true}
         component={Link}

@@ -46,7 +46,7 @@ const subjectResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("SUBJECT");
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        let skipCount = 0, filterCount, resultCount, limit, offset, limitSize, offsetSize;
         limitSize = limit = (args.first === undefined ? response.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         filterCount = 0;
@@ -67,16 +67,37 @@ const subjectResolvers = {
             continue
           }
 
-          if (subject.id === undefined || subject.id == null) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
+          if (!subject.hasOwnProperty('id') || subject.id === undefined || subject.id === null ) {
+            console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
+            skipCount++;
             continue;
           }
-
-          if (subject.subject_ref === undefined) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_ref'; skipping`);
+  
+          if (!subject.hasOwnProperty('subject_ref') || subject.subject_ref === undefined) {
+            console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_ref'; skipping`);
+            skipCount++;
             continue;
           }
-
+  
+          if (!subject.hasOwnProperty('subject_id') && (!subject.hasOwnProperty('subject_name') || subject.subject_name === 'undefined')) {
+            // logApp.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_id'; skipping`);
+            console.warn(`[CYIO] DATA-CORRUPTION: (${dbName}) ${subject.iri} referencing missing object '${subject.subject_ref}'; skipping`);
+            skipCount++;
+            continue;
+          }
+  
+          if (!subject.hasOwnProperty('subject_id') || subject.subject_id === undefined) {
+            // logApp.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_id'; skipping`);
+            console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_id'; skipping`);
+            skipCount++;
+            continue;
+          }
+          if (!subject.hasOwnProperty('subject_name') || subject.subject_name === undefined) {
+            console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_name'; skipping`);
+            skipCount++;
+            continue;
+          }
+  
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(subject, args.filters, args.filterMode) ) {
@@ -99,7 +120,7 @@ const subjectResolvers = {
         // check if there is data to be returned
         if (edges.length === 0 ) return null;
         let hasNextPage = false, hasPreviousPage = false;
-        resultCount = subjectList.length;
+        resultCount = subjectList.length - skipCount;
         if (edges.length < resultCount) {
           if (edges.length === limitSize && filterCount <= limitSize ) {
             hasNextPage = true;
@@ -803,18 +824,28 @@ const subjectResolvers = {
       }
 
       let reducer = getCommonReducer(parent.subject_type.toUpperCase());
-      let iri = parent.subject_ref_iri[0];
+      let iri;
+      if (Array.isArray(parent.subject_ref_iri)) {
+        iri = parent.subject_ref_iri[0];
+      } else {
+        iri = parent.subject_ref_iri;
+      }
 
       // If all the necessary pieces are here, just build the subject and return it
       let select = selectMap.getNode("subject_ref");
       if (select !== undefined && (select.length === 1 && select.includes('__typename'))) select = undefined;
       if ( parent.hasOwnProperty('subject_id') && parent.hasOwnProperty('subject_name')) {
-        return reducer({
+        let subjectRef = {
           iri: `${iri}`,
           id: `${parent.subject_id}`,
           entity_type: `${parent.subject_type}`,
-          name: (parent.subject_version !== undefined) ? `${parent.subject_name} ${parent.subject_version}` : `${parent.subject_name}`
-        });
+          name: (parent.subject_version !== undefined) ? `${parent.subject_name} ${parent.subject_version}` : `${parent.subject_name}`,
+        }
+        if (parent.hasOwnProperty('subject_asset_type')) subjectRef.asset_type = parent.subject_asset_type;
+        if (parent.hasOwnProperty('subject_component_type')) subjectRef.component_type = parent.subject_component_type;
+        if (parent.hasOwnProperty('subject_location_type')) subjectRef.location_type = parent.subject_location_type;
+        if (parent.hasOwnProperty('subject_party_type')) subjectRef.party_type = parent.subject_party_type;
+        return reducer( subjectRef );
       }
 
       if (select === undefined) {

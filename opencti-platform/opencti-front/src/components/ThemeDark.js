@@ -25,6 +25,18 @@ export default (logo = null, primary = null, secondary = null) => ({
     },
     action: { disabled: '#4f4f4f', grid: '#0f181f', expansion: '#193e45' },
     divider: 'rgba(255, 255, 255, 0.2)',
+    riskPriority: {
+      veryHigh: '#FC0D1B',
+      high: '#F35426',
+      moderate: '#E28120',
+      low: '#FFA800',
+      veryLow: '#FCC434',
+    },
+    dataView: {
+      selectedBackgroundColor: 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),#075AD3 !important',
+      selectedBorder: '#075AD3',
+      border: '#1F2842',
+    },
   },
   typography: {
     useNextVariants: true,

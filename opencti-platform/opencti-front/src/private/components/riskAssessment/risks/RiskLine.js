@@ -15,6 +15,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
@@ -22,16 +25,39 @@ import RiskAssessmentPopover from './RiskAssessmentPopover';
 
 const styles = (theme) => ({
   item: {
-    '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: theme.palette.navAlt.background,
-    },
     paddingLeft: 10,
     height: 50,
+    borderTop: `0.75px solid ${theme.palette.dataView.border}`,
+    borderBottom: `0.75px solid ${theme.palette.dataView.border}`,
+  },
+  selectedItem: {
+    paddingLeft: 10,
+    height: 50,
+    borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+    borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+    background: theme.palette.dataView.selectedBackgroundColor,
   },
   itemIcon: {
     color: theme.palette.primary.main,
   },
+  bodyContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
   bodyItem: {
+    height: 36,
+    fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    display: 'grid',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingLeft: '24px',
+  },
+  dummyBodyItem: {
     height: 36,
     fontSize: 13,
     paddingLeft: 25,
@@ -57,12 +83,72 @@ const styles = (theme) => ({
   statusButton: {
     cursor: 'default',
     background: '#075AD333',
-    marginBottom: '5px',
     border: '1px solid #075AD3',
+    minWidth: 'auto',
+  },
+  chip: { borderRadius: '4px' },
+  veryHigh: {
+    fill: theme.palette.riskPriority.veryHigh,
+  },
+  high: {
+    fill: theme.palette.riskPriority.high,
+  },
+  moderate: {
+    fill: theme.palette.riskPriority.moderate,
+  },
+  low: {
+    fill: theme.palette.riskPriority.low,
+  },
+  veryLow: {
+    fill: theme.palette.riskPriority.veryLow,
   },
 });
 
+const RiskTooltip = withStyles((theme) => ({
+  tooltip: {
+    backgroundColor: 'rgba(241, 241, 242, 0.25)',
+    color: '#FFF',
+    maxWidth: 220,
+    fontSize: theme.typography.pxToRem(12),
+    border: '1px solid rgba(241, 241, 242, 0.5)',
+    borderRadius: '4px',
+  },
+}))(Tooltip);
+
 class RiskLineComponent extends Component {
+  renderRiskLevels() {
+    const { node, t, classes } = this.props;
+    const risk = node?.risk_level;
+
+    if (risk === 'very_high') {
+      return Array.from({ length: 5 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Very High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryHigh}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'high') {
+      return Array.from({ length: 4 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.high}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'moderate') {
+      return Array.from({ length: 3 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Moderate')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.moderate}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'low') {
+      return Array.from({ length: 2 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.low}/></IconButton></RiskTooltip>);
+    }
+    if (risk === 'very_low') {
+      return Array.from({ length: 1 },
+        (item, index) => <RiskTooltip
+          title={node?.risk_level && t('Very Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryLow}/></IconButton></RiskTooltip>);
+    }
+
+    return <></>;
+  }
+
   render() {
     const {
       t,
@@ -73,6 +159,7 @@ class RiskLineComponent extends Component {
       selectAll,
       onToggleEntity,
       selectedElements,
+      dataColumns,
     } = this.props;
     const riskData = pipe(
       pathOr([], ['related_risks', 'edges']),
@@ -92,7 +179,10 @@ class RiskLineComponent extends Component {
 
     return (
       <ListItem
-        classes={{ root: classes.item }}
+        classes={{
+          root: (selectAll || node.id in (selectedElements || {}))
+            ? classes.selectedItem : classes.item,
+        }}
         divider={true}
         button={true}
         component={Link}
@@ -116,28 +206,32 @@ class RiskLineComponent extends Component {
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
+            <div className={classes.bodyContainer}>
               <div
                 className={classes.bodyItem}
-                style={{ width: '12.3%' }}
+                style={{ width: dataColumns.poam_id.width }}
               >
                 {node.poam_id && t(node.poam_id)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.3%' }}
+                style={{ width: dataColumns.name.width }}
               >
                 {node.name && t(node.name)}
               </div>
               <div
-                className={classes.bodyItem}
-                style={{ width: '6.8%' }}
+                style={{
+                  display: 'flex',
+                  width: dataColumns.risk_level.width,
+                  marginRight: '20px',
+                  paddingLeft: '24px',
+                }}
               >
-                {node?.risk_level && node?.risk_level}
+                {this.renderRiskLevels()}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '16.3%' }}
+                style={{ width: dataColumns.risk_status.width }}
               >
                 <Button
                   variant="outlined"
@@ -150,7 +244,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '11.5%' }}
+                style={{ width: dataColumns.response_type.width }}
               >
                 <Button
                   variant="outlined"
@@ -163,7 +257,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '13.5%' }}
+                style={{ width: dataColumns.lifecycle.width }}
               >
                 <Button
                   variant="outlined"
@@ -176,13 +270,13 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '10.3%' }}
+                style={{ width: dataColumns.occurrences.width }}
               >
                 {node.occurrences && t(node.occurrences)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: '10%' }}
+                style={{ width: dataColumns.deadline.width }}
               >
                 {node?.deadline && fd(node?.deadline)}
               </div>
@@ -257,7 +351,7 @@ class RiskLineDummyComponent extends Component {
           primary={
             <div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.poam_id.width }}
               >
                 <Skeleton
@@ -268,7 +362,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 <Skeleton
@@ -279,7 +373,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.risk_level.width }}
               >
                 <Skeleton
@@ -290,7 +384,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.risk_status.width }}
               >
                 <Skeleton
@@ -301,7 +395,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.response_type.width }}
               >
                 <Skeleton
@@ -312,7 +406,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.lifecycle.width }}
               >
                 <Skeleton
@@ -323,7 +417,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.occurrences.width }}
               >
                 <Skeleton
@@ -334,7 +428,7 @@ class RiskLineDummyComponent extends Component {
                 />
               </div>
               <div
-                className={classes.bodyItem}
+                className={classes.dummyBodyItem}
                 style={{ width: dataColumns.deadline.width }}
               >
                 <Skeleton
