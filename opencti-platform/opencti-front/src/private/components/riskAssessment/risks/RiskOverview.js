@@ -51,7 +51,7 @@ const styles = (theme) => ({
   scrollDiv: {
     width: '100%',
     background: theme.palette.header.background,
-    height: '150px',
+    height: '300px',
     overflow: 'hidden',
     overflowY: 'scroll',
   },
