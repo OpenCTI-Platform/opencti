@@ -100,6 +100,7 @@ interface ContainerStixCyberObservablesLinesProps {
   setNumberOfElements: (value: { number?: number; symbol?: string; original?: number; }) => void,
   onTypesChange: (type: string) => void,
   queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>,
+  setSelectedElements: (selectedElements: Record<string, StixCyberObservableLine_node$data>) => void,
 }
 
 const ContainerStixCyberObservablesLines: FunctionComponent<ContainerStixCyberObservablesLinesProps> = ({
@@ -113,6 +114,7 @@ const ContainerStixCyberObservablesLines: FunctionComponent<ContainerStixCyberOb
   setNumberOfElements,
   onTypesChange,
   queryRef,
+  setSelectedElements,
 }) => {
   const {
     data,
@@ -127,6 +129,8 @@ const ContainerStixCyberObservablesLines: FunctionComponent<ContainerStixCyberOb
     setNumberOfElements,
   });
 
+  const numberOfElements = data?.container?.objects?.pageInfo?.globalCount;
+
   return (
     <div>
       <ListLinesContent
@@ -136,10 +140,11 @@ const ContainerStixCyberObservablesLines: FunctionComponent<ContainerStixCyberOb
         isLoading={isLoadingMore}
         dataList={data?.container?.objects?.edges ?? []}
         paginationOptions={paginationOptions}
-        globalCount={data?.container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+        globalCount={numberOfElements ?? nbOfRowsToLoad}
         LineComponent={
           <ContainerStixCyberObservableLine
             containerId={data?.container?.id}
+            setSelectedElements={setSelectedElements}
           />
         }
         DummyLineComponent={<ContainerStixCyberObservableLineDummy />}

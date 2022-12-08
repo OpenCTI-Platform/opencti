@@ -1,23 +1,25 @@
-import React, { useContext } from 'react';
-import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
+import React, { FunctionComponent, useContext } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixObjectsOrStixRelationshipsLines, {
   ContainerStixObjectsOrStixRelationshipsLinesQuery,
 } from './ContainerStixObjectsOrStixRelationshipsLines';
-import inject18n from '../../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  UserContext,
-} from '../../../../utils/Security';
+import { useFormatter } from '../../../../components/i18n';
+import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
+import {
+  ContainerStixObjectsOrStixRelationshipsLinesQuery$data,
+  ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
+} from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
+import {
+  ContainerStixObjectsOrStixRelationships_container$data,
+} from './__generated__/ContainerStixObjectsOrStixRelationships_container.graphql';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -25,16 +27,22 @@ const styles = () => ({
     padding: 0,
     borderRadius: 6,
   },
-});
+}));
 
-const ContainerStixObjectsOrStixRelationshipsComponent = ({
+interface ContainerStixObjectsOrStixRelationshipsComponentProps {
+  container: ContainerStixObjectsOrStixRelationships_container$data,
+  paginationOptions: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
+}
+
+const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<ContainerStixObjectsOrStixRelationshipsComponentProps> = ({
   container,
-  classes,
-  t,
   paginationOptions,
 }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+
   const { helper } = useContext(UserContext);
-  const isRuntimeSort = helper.isRuntimeFieldEnable();
+  const isRuntimeSort = helper?.isRuntimeFieldEnable('RUNTIME_SORTING');
   const dataColumns = {
     entity_type: {
       label: 'Type',
@@ -53,7 +61,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
     },
     objectMarking: {
       label: 'Marking',
-      isSortable: isRuntimeSort,
+      isSortable: isRuntimeSort ?? false,
     },
   };
   return (
@@ -63,8 +71,8 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
       </Typography>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ContainerAddStixCoreObjects
-          containerId={container?.id ?? null}
-          containerStixCoreObjects={container?.objects?.edges ?? []}
+          containerId={container.id}
+          containerStixCoreObjects={container.objects?.edges}
           paginationOptions={paginationOptions}
           simple={true}
           targetStixCoreObjectTypes={[
@@ -84,12 +92,12 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
           <QueryRenderer
             query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
             variables={{ id: container.id, count: 25 }}
-            render={({ props }) => {
+            render={({ props }: { props: ContainerStixObjectsOrStixRelationshipsLinesQuery$data }) => {
               if (
                 props
                 && props.container
                 && props.container.objects
-                && props.container.objects.edges.length === 0
+                && props.container.objects.edges?.length === 0
               ) {
                 return <div />;
               }
@@ -106,15 +114,6 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
       </Paper>
     </div>
   );
-};
-
-ContainerStixObjectsOrStixRelationshipsComponent.propTypes = {
-  container: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fd: PropTypes.func,
-  history: PropTypes.object,
-  paginationOptions: PropTypes.object,
 };
 
 const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
@@ -138,7 +137,4 @@ const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ContainerStixObjectsOrStixRelationships);
+export default ContainerStixObjectsOrStixRelationships;

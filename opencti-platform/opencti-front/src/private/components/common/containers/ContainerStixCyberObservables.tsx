@@ -117,7 +117,8 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
 
   let numberOfSelectedElements = Object.keys(selectedElements).length;
   if (selectAll) {
-    numberOfSelectedElements = numberOfElements?.original ?? 0;
+    numberOfSelectedElements = (numberOfElements?.number ?? 0)
+      - Object.keys(deSelectedElements).length;
   }
   const backgroundTaskFilters = {
     containedBy: [{ id: container.id, value: defaultValue(container) }],
@@ -280,6 +281,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
                   deSelectedElements={deSelectedElements}
                   onToggleEntity={handleToggleSelectEntity}
                   selectAll={selectAll}
+                  setSelectedElements={setSelectedElements}
                 />
               </React.Suspense>
             )}

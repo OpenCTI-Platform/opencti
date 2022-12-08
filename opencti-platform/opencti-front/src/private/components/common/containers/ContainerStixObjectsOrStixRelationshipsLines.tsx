@@ -19,7 +19,7 @@ interface ContainerStixObjectsOrStixRelationshipsLinesProps {
   initialLoading: boolean,
   dataColumns: DataColumns,
   relay: RelayPaginationProp,
-  container: ContainerStixObjectsOrStixRelationshipsLines_container$data,
+  container: ContainerStixObjectsOrStixRelationshipsLines_container$data | null,
   paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
 }
 

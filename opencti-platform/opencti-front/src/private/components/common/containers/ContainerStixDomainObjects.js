@@ -106,20 +106,12 @@ class ContainerStixDomainObjectsComponent extends Component {
         deSelectedElements: newDeSelectedElements,
       });
     } else if (selectAll) {
-      const newDeSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        deSelectedElements || {},
-      );
+      const newDeSelectedElements = { ...deSelectedElements, [entity.id]: entity };
       this.setState({
         deSelectedElements: newDeSelectedElements,
       });
     } else {
-      const newSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        selectedElements || {},
-      );
+      const newSelectedElements = { ...selectedElements, [entity.id]: entity };
       this.setState({
         selectAll: false,
         selectedElements: newSelectedElements,
@@ -143,23 +135,20 @@ class ContainerStixDomainObjectsComponent extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: R.assoc(
-            key,
-            isUniqFilter(key)
+          filters: { ...this.state.filters,
+            [key]: isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
                 ...this.state.filters[key],
-              ]),
-            this.state.filters,
-          ),
+              ]) },
         },
         () => this.saveView(),
       );
     } else {
       this.setState(
         {
-          filters: R.assoc(key, [{ id, value }], this.state.filters),
+          filters: { ...this.state.filters, [key]: [{ id, value }] },
         },
         () => this.saveView(),
       );
