@@ -15,8 +15,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import Skeleton from '@material-ui/lab/Skeleton';
@@ -26,17 +24,13 @@ import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   item: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      background: theme.palette.dataView.selectedBackgroundColor,
+      borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+      borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+    },
     paddingLeft: 10,
     height: 50,
-    borderTop: `0.75px solid ${theme.palette.dataView.border}`,
-    borderBottom: `0.75px solid ${theme.palette.dataView.border}`,
-  },
-  selectedItem: {
-    paddingLeft: 10,
-    height: 50,
-    borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
-    borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
-    background: theme.palette.dataView.selectedBackgroundColor,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -117,39 +111,6 @@ const RiskTooltip = withStyles((theme) => ({
 }))(Tooltip);
 
 class RiskLineComponent extends Component {
-  renderRiskLevels() {
-    const { node, t, classes } = this.props;
-    const risk = node?.risk_level;
-
-    if (risk === 'very_high') {
-      return Array.from({ length: 5 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Very High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryHigh}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'high') {
-      return Array.from({ length: 4 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.high}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'moderate') {
-      return Array.from({ length: 3 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Moderate')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.moderate}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'low') {
-      return Array.from({ length: 2 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.low}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'very_low') {
-      return Array.from({ length: 1 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Very Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryLow}/></IconButton></RiskTooltip>);
-    }
-
-    return <></>;
-  }
-
   render() {
     const {
       t,
@@ -180,10 +141,7 @@ class RiskLineComponent extends Component {
 
     return (
       <ListItem
-        classes={{
-          root: (selectAll || node.id in (selectedElements || {}))
-            ? classes.selectedItem : classes.item,
-        }}
+        classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
@@ -230,9 +188,6 @@ class RiskLineComponent extends Component {
               >
                 <RiskLevel
                   node={node}
-                  t={t}
-                  classes={classes}
-                  dataColumns={dataColumns}
                 />
               </div>
               <div
