@@ -51,7 +51,7 @@ const styles = (theme) => ({
   scrollDiv: {
     width: '100%',
     background: theme.palette.header.background,
-    height: '78px',
+    height: '150px',
     overflow: 'hidden',
     overflowY: 'scroll',
   },
@@ -75,9 +75,9 @@ class RiskOverviewComponent extends Component {
       t, fldt, classes, risk, refreshQuery,
     } = this.props;
     return (
-      <div style={{ height: '100%' }} className="break">
+      <div style={{ height: "100%" }} className="break">
         <Typography variant="h4" gutterBottom={true}>
-          {t('Basic Information')}
+          {t("Basic Information")}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
@@ -86,35 +86,31 @@ class RiskOverviewComponent extends Component {
                 variant="h3"
                 color="textSecondary"
                 gutterBottom={true}
-                style={{ float: 'left' }}
+                style={{ float: "left" }}
               >
-                {t('ID')}
+                {t("ID")}
               </Typography>
-              <div style={{ float: 'left', marginLeft: '5px' }}>
-                <Tooltip
-                  title={t(
-                    'Uniquely identifies this object',
-                  )}
-                >
+              <div style={{ float: "left", marginLeft: "5px" }}>
+                <Tooltip title={t("Uniquely identifies this object")}>
                   <Information fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
               <div className="clearfix" />
               {risk.id && t(risk.id)}
-            </Grid>         
+            </Grid>
             <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
                 color="textSecondary"
                 gutterBottom={true}
-                style={{ float: 'left' }}
+                style={{ float: "left" }}
               >
-                {t('Created')}
+                {t("Created")}
               </Typography>
-              <div style={{ float: 'left', marginLeft: '5px' }}>
+              <div style={{ float: "left", marginLeft: "5px" }}>
                 <Tooltip
                   title={t(
-                    'Indicates the date and time at which the object was originally created.',
+                    "Indicates the date and time at which the object was originally created."
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -128,14 +124,14 @@ class RiskOverviewComponent extends Component {
                 variant="h3"
                 color="textSecondary"
                 gutterBottom={true}
-                style={{ float: 'left' }}
+                style={{ float: "left" }}
               >
-                {t('Modified')}
+                {t("Modified")}
               </Typography>
-              <div style={{ float: 'left', marginLeft: '5px' }}>
+              <div style={{ float: "left", marginLeft: "5px" }}>
                 <Tooltip
                   title={t(
-                    'Indicates the date and time that this particular version of the object was last modified.',
+                    "Indicates the date and time that this particular version of the object was last modified."
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -143,20 +139,20 @@ class RiskOverviewComponent extends Component {
               </div>
               <div className="clearfix" />
               {risk.modified && fldt(risk.modified)}
-            </Grid>         
+            </Grid>
             <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
                 color="textSecondary"
                 gutterBottom={true}
-                style={{ float: 'left' }}
+                style={{ float: "left" }}
               >
-                {t('Description')}
+                {t("Description")}
               </Typography>
-              <div style={{ float: 'left', marginLeft: '5px' }}>
+              <div style={{ float: "left", marginLeft: "5px" }}>
                 <Tooltip
                   title={t(
-                    'Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system.',
+                    "Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system."
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -177,23 +173,19 @@ class RiskOverviewComponent extends Component {
                   </div>
                 </div>
               </div>
-            </Grid>          
+            </Grid>
             <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: '10px' }}
+                  style={{ float: "left", marginTop: "10px" }}
                 >
-                  {t('Risk Rating')}
+                  {t("Risk Rating")}
                 </Typography>
-                <div style={{ float: 'left', margin: '11px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Risk Rating',
-                    )}
-                  >
+                <div style={{ float: "left", margin: "11px 0 0 5px" }}>
+                  <Tooltip title={t("Risk Rating")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -207,14 +199,14 @@ class RiskOverviewComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 10 }}
+                  style={{ float: "left", marginTop: 10 }}
                 >
-                  {t('Priority')}
+                  {t("Priority")}
                 </Typography>
-                <div style={{ float: 'left', margin: '11px 0 0 5px' }}>
+                <div style={{ float: "left", margin: "11px 0 0 5px" }}>
                   <Tooltip
                     title={t(
-                     "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority.",
+                      "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
@@ -230,16 +222,12 @@ class RiskOverviewComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left' }}
+                  style={{ float: "left" }}
                 >
-                  {t('Impact')}
+                  {t("Impact")}
                 </Typography>
-                <div style={{ float: 'left', marginLeft: '5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Version',
-                    )}
-                  >
+                <div style={{ float: "left", marginLeft: "5px" }}>
+                  <Tooltip title={t("Version")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -253,23 +241,19 @@ class RiskOverviewComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left' }}
+                  style={{ float: "left" }}
                 >
-                  {t('Likelihood')}
+                  {t("Likelihood")}
                 </Typography>
-                <div style={{ float: 'left', marginLeft: '5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Likelihood',
-                    )}
-                  >
+                <div style={{ float: "left", marginLeft: "5px" }}>
+                  <Tooltip title={t("Likelihood")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 {/* {risk.likelihood && t(risk.likelihood)} */}
               </div>
-            </Grid>     
+            </Grid>
             <Grid item={true} xs={12}>
               <CyioCoreObjectLabelsView
                 labels={risk.labels}
