@@ -759,6 +759,32 @@ const requiredAssetResolvers = {
       }
 
       for (let subject of response) {
+        if (!subject.hasOwnProperty('id') || subject.id === undefined || subject.id === null ) {
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
+          continue;
+        }
+
+        if (!subject.hasOwnProperty('subject_ref') || subject.subject_ref === undefined) {
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_ref'; skipping`);
+          continue;
+        }
+
+        if (!subject.hasOwnProperty('subject_id') && (!subject.hasOwnProperty('subject_name') || subject.subject_name === 'undefined')) {
+          // logApp.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_id'; skipping`);
+          console.warn(`[CYIO] DATA-CORRUPTION: (${dbName}) ${subject.iri} referencing missing object '${subject.subject_ref}'; skipping`);
+          continue;
+        }
+
+        if (!subject.hasOwnProperty('subject_id') || subject.subject_id === undefined) {
+          // logApp.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_id'; skipping`);
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_id'; skipping`);
+          continue;
+        }
+        if (!subject.hasOwnProperty('subject_name') || subject.subject_name === undefined) {
+          console.warn(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_name'; skipping`);
+          continue;
+        }
+
         results.push(reducer(subject));
       }
 

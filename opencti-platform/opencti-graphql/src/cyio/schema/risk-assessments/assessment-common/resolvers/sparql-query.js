@@ -3817,11 +3817,15 @@ export const selectSubjectByIriQuery = (iri, select) => {
   // defensive code to protect against query not supplying subject type
   if (!select.includes('subject_type')) cloneSelect.push('subject_type');
   // get the references name and version, if name is asked for
-  if (select.includes('name')) {
-    cloneSelect.push('subject_id');
-    cloneSelect.push('subject_name');
-    cloneSelect.push('subject_version');
-  }
+  if (!select.push('subject_ref')) select.push('subject_ref');
+  if (!select.push('subject_id')) select.push('subject_id');
+  if (!select.push('subject_name')) select.push('subject_name');
+  if (!select.push('subject_version')) select.push('subject_version');
+  if (!select.push('subject_asset_type')) select.push('subject_asset_type');
+  if (!select.push('subject_component_type')) select.push('subject_component_type');
+  if (!select.push('subject_location_type')) select.push('subject_location_type');
+  if (!select.push('subject_party_type')) select.push('subject_party_type');
+
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, cloneSelect);
   return `
   SELECT ?iri ${selectionClause}
@@ -3833,18 +3837,22 @@ export const selectSubjectByIriQuery = (iri, select) => {
   }
   `
 }
+
 export const selectAllSubjects = (select, args, parent) => {
   let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
   if (!select.includes('id')) select.push('id');
   // defensive code to protect against query not supplying subject type
   if (!select.includes('subject_type')) select.push('subject_type');
-  // get the references name and version, if name is asked for
-  if (select.includes('name')) {
-    select.push('subject_id');
-    select.push('subject_name');
-    select.push('subject_version');
-  }
+  // get the references id, name, version to allow easy detection of subject ref
+  if (!select.push('subject_ref')) select.push('subject_ref');
+  if (!select.push('subject_id')) select.push('subject_id');
+  if (!select.push('subject_name')) select.push('subject_name');
+  if (!select.push('subject_version')) select.push('subject_version');
+  if (!select.push('subject_asset_type')) select.push('subject_asset_type');
+  if (!select.push('subject_component_type')) select.push('subject_component_type');
+  if (!select.push('subject_location_type')) select.push('subject_location_type');
+  if (!select.push('subject_party_type')) select.push('subject_party_type');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -3911,8 +3919,7 @@ export const deleteSubjectByIriQuery = (iri) => {
       ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Subject> .
       ?iri ?p ?o
     }
-  }
-  `
+  }`
 }
 export const attachToSubjectQuery = (id, field, itemIris) => {
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-${id}>`;
@@ -5349,13 +5356,33 @@ export const subjectPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_name: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/common#name>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_version: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/common#version>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#version>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_version");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_asset_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#asset_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "subject_asset_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_component_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#component_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_component_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_location_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#location_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_location_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_party_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#party_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_party_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
