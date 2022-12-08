@@ -1,57 +1,57 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr, propOr } from 'ramda';
+import React, { FunctionComponent } from 'react';
+import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
   ContainerStixObjectOrStixRelationshipLine,
   ContainerStixObjectOrStixRelationshipLineDummy,
 } from './ContainerStixObjectOrStixRelationshipLine';
+import { DataColumns } from '../../../../components/list_lines';
+import {
+  ContainerStixObjectsOrStixRelationshipsLines_container$data,
+} from './__generated__/ContainerStixObjectsOrStixRelationshipsLines_container.graphql';
+import {
+  ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
+} from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
 
 const nbOfRowsToLoad = 8;
 
-class ContainerStixObjectsOrStixRelationshipsLines extends Component {
-  render() {
-    const { initialLoading, dataColumns, relay, container, paginationOptions } = this.props;
-    return (
-      <div>
-        <ListLinesContent
-          initialLoading={initialLoading}
-          loadMore={relay.loadMore.bind(this)}
-          hasMore={relay.hasMore.bind(this)}
-          isLoading={relay.isLoading.bind(this)}
-          dataList={pathOr([], ['objects', 'edges'], container)}
-          paginationOptions={paginationOptions}
-          globalCount={pathOr(
-            nbOfRowsToLoad,
-            ['objects', 'pageInfo', 'globalCount'],
-            container,
-          )}
-          LineComponent={
-            <ContainerStixObjectOrStixRelationshipLine
-              containerId={propOr(null, 'id', container)}
-            />
-          }
-          DummyLineComponent={
-            <ContainerStixObjectOrStixRelationshipLineDummy />
-          }
-          dataColumns={dataColumns}
-          nbOfRowsToLoad={nbOfRowsToLoad}
-        />
-      </div>
-    );
-  }
+interface ContainerStixObjectsOrStixRelationshipsLinesProps {
+  initialLoading: boolean,
+  dataColumns: DataColumns,
+  relay: RelayPaginationProp,
+  container: ContainerStixObjectsOrStixRelationshipsLines_container$data | null,
+  paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
 }
 
-ContainerStixObjectsOrStixRelationshipsLines.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
-  container: PropTypes.object,
-  relay: PropTypes.object,
-  initialLoading: PropTypes.bool,
-  searchTerm: PropTypes.string,
-  setNumberOfElements: PropTypes.func,
+const ContainerStixObjectsOrStixRelationshipsLines: FunctionComponent<ContainerStixObjectsOrStixRelationshipsLinesProps> = ({
+  initialLoading,
+  dataColumns,
+  relay,
+  container,
+  paginationOptions }) => {
+  return (
+    <div>
+      <ListLinesContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore}
+        hasMore={relay.hasMore}
+        isLoading={relay.isLoading}
+        dataList={container?.objects?.edges ?? []}
+        paginationOptions={paginationOptions}
+        globalCount={container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+        LineComponent={
+          <ContainerStixObjectOrStixRelationshipLine
+            containerId={container?.id ?? null}
+          />
+        }
+        DummyLineComponent={
+          <ContainerStixObjectOrStixRelationshipLineDummy />
+        }
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
+      />
+    </div>
+  );
 };
 
 export const ContainerStixObjectsOrStixRelationshipsLinesQuery = graphql`

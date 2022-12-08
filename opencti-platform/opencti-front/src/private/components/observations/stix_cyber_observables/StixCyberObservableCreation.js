@@ -26,7 +26,6 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
@@ -53,11 +52,13 @@ import {
   dateAttributes,
   ignoredAttributes,
   multipleAttributes,
-  numberAttributes, openVocabularies,
+  numberAttributes,
+  openVocabularies,
 } from '../../../../utils/Entity';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -247,22 +248,6 @@ const stixCyberObservableValidation = (t) => Yup.object().shape({
   createIndicator: Yup.boolean(),
 });
 
-const sharedUpdater = (
-  store,
-  userId,
-  paginationKey,
-  paginationOptions,
-  newEdge,
-) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    paginationKey,
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class StixCyberObservableCreation extends Component {
   constructor(props) {
     super(props);
@@ -357,18 +342,7 @@ class StixCyberObservableCreation extends Component {
     commitMutation({
       mutation: stixCyberObservableMutation,
       variables: finalValues,
-      updater: (store) => {
-        const payload = store.getRootField('stixCyberObservableAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationKey,
-          this.props.paginationOptions,
-          newEdge,
-        );
-      },
+      updater: (store) => insertNode(store, this.props.paginationKey, this.props.paginationOptions, 'stixCyberObservableAdd'),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);

@@ -39,7 +39,7 @@ import {
   LinkOffOutlined,
   TransformOutlined,
 } from '@mui/icons-material';
-import { AutoFix, CloudRefresh, Label, Merge } from 'mdi-material-ui';
+import { AutoFix, ContentCopy, CloudRefresh, Label, Merge } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -235,6 +235,8 @@ const toolBarConnectorsQuery = graphql`
     }
   }
 `;
+
+const maxNumberOfObservablesToCopy = 1000;
 
 class ToolBar extends Component {
   constructor(props) {
@@ -504,6 +506,14 @@ class ToolBar extends Component {
       this.handleCloseMerge();
       this.handleOpenTask();
     });
+  }
+
+  titleCopy() {
+    const { t } = this.props;
+    if (this.props.numberOfSelectedElements > maxNumberOfObservablesToCopy) {
+      return `${t('Copy disabled: too many selected elements (maximum number of elements for a copy: ') + maxNumberOfObservablesToCopy})`;
+    }
+    return t('Copy');
   }
 
   submitTask() {
@@ -1127,6 +1137,7 @@ class ToolBar extends Component {
       notMergableTypes,
     );
     const selectedElementsList = R.values(selectedElements || {});
+    const titleCopy = this.titleCopy();
     let keptElement = null;
     let newAliases = [];
     if (!typesAreNotMergable && !typesAreDifferent) {
@@ -1245,6 +1256,18 @@ class ToolBar extends Component {
                 );
               }}
             </UserContext.Consumer>
+            { this.props.handleCopy && <Tooltip title={titleCopy}>
+              <span>
+                <IconButton
+                  aria-label="copy"
+                  disabled={numberOfSelectedElements > maxNumberOfObservablesToCopy}
+                  onClick={this.props.handleCopy}
+                  color="primary"
+                  size="large">
+                  <ContentCopy />
+                </IconButton>
+              </span>
+            </Tooltip>}
             <Tooltip title={t('Enrichment')}>
               <span>
                 <IconButton
@@ -1989,6 +2012,7 @@ ToolBar.propTypes = {
   variant: PropTypes.string,
   container: PropTypes.object,
   type: PropTypes.string,
+  handleCopy: PropTypes.func,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);

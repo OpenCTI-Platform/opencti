@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -107,6 +108,8 @@ class ContainerStixCoreObjectPopover extends Component {
       relationshipType,
       paginationKey,
       paginationOptions,
+      selectedElements,
+      setSelectedElements,
     } = this.props;
     this.setState({ removing: true });
     commitMutation({
@@ -117,23 +120,29 @@ class ContainerStixCoreObjectPopover extends Component {
         relationship_type: relationshipType,
       },
       updater: (store) => {
+        // ID is not valid pagination options, will be handled better when hooked
+        const options = { ...paginationOptions };
+        delete options.id;
+        delete options.count;
         if (toId) {
           const conn = ConnectionHandler.getConnection(
             store.get(containerId),
             paginationKey,
-            paginationOptions,
+            options,
           );
           ConnectionHandler.deleteNode(conn, toId);
         }
       },
       onCompleted: () => {
         this.handleCloseRemove();
+        const newSelectedElements = R.omit([toId], selectedElements);
+        setSelectedElements(newSelectedElements);
       },
     });
   }
 
   submitDelete() {
-    const { containerId, toId, paginationKey, paginationOptions } = this.props;
+    const { containerId, toId, paginationKey, paginationOptions, selectedElements, setSelectedElements } = this.props;
     this.setState({ deleting: true });
     commitMutation({
       mutation: containerStixCoreObjectPopoverDeleteMutation,
@@ -141,17 +150,23 @@ class ContainerStixCoreObjectPopover extends Component {
         id: toId,
       },
       updater: (store) => {
+        // ID is not valid pagination options, will be handled better when hooked
+        const options = { ...paginationOptions };
+        delete options.id;
+        delete options.count;
         if (toId) {
           const conn = ConnectionHandler.getConnection(
             store.get(containerId),
             paginationKey,
-            paginationOptions,
+            options,
           );
           ConnectionHandler.deleteNode(conn, toId);
         }
       },
       onCompleted: () => {
         this.handleCloseDelete();
+        const newSelectedElements = R.omit([toId], selectedElements);
+        setSelectedElements(newSelectedElements);
       },
     });
   }
@@ -250,6 +265,8 @@ ContainerStixCoreObjectPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  selectedElements: PropTypes.object,
+  setSelectedElements: PropTypes.func,
 };
 
 export default compose(

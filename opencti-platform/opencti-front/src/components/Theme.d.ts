@@ -15,6 +15,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   background: Partial<ExtendedBackground>
   primary: Partial<ExtendedColor>
   error: Partial<ExtendedColor>
+  secondary: Partial<ExtendedColor>
 }
 
 interface ExtendedThemeOptions extends ThemeOptions {
