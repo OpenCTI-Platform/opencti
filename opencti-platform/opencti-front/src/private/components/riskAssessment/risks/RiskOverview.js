@@ -300,7 +300,6 @@ const RiskOverview = createFragmentContainer(
     risk: graphql`
       fragment RiskOverview_risk on Risk {
         __typename
-        id
         created
         modified
         description
@@ -310,27 +309,6 @@ const RiskOverview = createFragmentContainer(
         impacted_control_id
         first_seen
         last_seen
-        origins {
-          origin_actors {
-            actor_type
-            actor_ref {
-              ... on AssessmentPlatform {
-                id
-                name
-              }
-              ... on Component {
-                id
-                component_type
-                name
-              }
-              ... on OscalParty {
-                id
-                party_type
-                name
-              }
-            }
-          }
-        }
         labels {
           __typename
           id
