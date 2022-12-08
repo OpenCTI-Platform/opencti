@@ -24,6 +24,18 @@ export default (logo = null, primary = null, secondary = null) => ({
       line: 'rgba(80, 123, 200, 0.05)',
     },
     action: { disabled: '#ababab', grid: '#dbdbdb', expansion: '#fafafa' },
+    riskPriority: {
+      veryHigh: '#FC0D1B',
+      high: '#F35426',
+      moderate: '#E28120',
+      low: '#FFA800',
+      veryLow: '#FCC434',
+    },
+    dataView: {
+      selectedBackgroundColor: 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),#49B8FC !important',
+      selectedBorder: '#49B8FC',
+      border: 'rgba(80, 123, 200, 0.05)',
+    },
   },
   typography: {
     useNextVariants: true,

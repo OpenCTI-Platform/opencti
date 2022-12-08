@@ -15,7 +15,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
+import { now, numberOfDays } from '../../../../utils/Time';
 import {
   dashboardQueryAssetsTimeSeries,
   dashboardQueryRiskTimeSeries,
@@ -81,8 +81,8 @@ class CyioCoreObjectWidgetAreaChart extends Component {
     }
     const areaChartVariables = {
       ...widget.config.variables,
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
       interval,
     };
 
@@ -202,8 +202,8 @@ class CyioCoreObjectWidgetAreaChart extends Component {
     }
     const areaChartVariables = {
       ...widget.config.variables,
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
       interval,
     };
 

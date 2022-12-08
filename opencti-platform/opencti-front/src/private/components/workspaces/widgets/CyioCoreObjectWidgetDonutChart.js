@@ -128,8 +128,8 @@ class CyioCoreObjectWidgetDonutChart extends Component {
     const finalEndDate = endDate || now();
     const donutChartVariables = {
       ...widget.config.variables,
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
     };
     return (
       <>
