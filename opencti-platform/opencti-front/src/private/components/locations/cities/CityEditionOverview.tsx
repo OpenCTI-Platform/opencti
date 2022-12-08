@@ -118,12 +118,9 @@ export const cityEditionOverviewFragment = graphql`
 
 const cityValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  latitude: Yup.number().typeError(t('This field must be a number')),
-  longitude: Yup.number().typeError(t('This field must be a number')),
+  description: Yup.string().nullable().max(5000, t('The value is too long')),
+  latitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
+  longitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
 });
 
 interface CityEditionOverviewProps {

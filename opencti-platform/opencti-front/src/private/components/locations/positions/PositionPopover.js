@@ -91,7 +91,7 @@ class PositionPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/locations/cities');
+        this.props.history.push('/dashboard/locations/positions');
       },
     });
   }
