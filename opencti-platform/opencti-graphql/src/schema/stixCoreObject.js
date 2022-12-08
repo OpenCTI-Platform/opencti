@@ -6,7 +6,7 @@ import { ABSTRACT_BASIC_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT,
 import { isBasicRelationship, isStixRelationShipExceptMeta } from './stixRelationship';
 import {
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
+  RELATION_EXTERNAL_REFERENCE, RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
@@ -31,6 +31,7 @@ export const stixCoreObjectOptions = {
     objectContains: buildRefRelationKey(RELATION_OBJECT),
     containedBy: buildRefRelationKey(RELATION_OBJECT),
     hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
+    killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
     indicates: buildRefRelationKey(RELATION_INDICATES),
     creator: 'creator_id',
   },

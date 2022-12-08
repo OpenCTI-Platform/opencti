@@ -24,6 +24,7 @@ const Filters = ({
   availableRelationshipTypes,
   allEntityTypes,
   handleAddFilter,
+  type,
 }) => {
   const { nsd } = useFormatter();
 
@@ -139,6 +140,7 @@ const Filters = ({
       handleChange={handleChange}
       searchEntities={searchEntities}
       renderSearchScopeSelection={renderSearchScopeSelection}
+      type={type}
     />
   );
 
@@ -155,6 +157,7 @@ const Filters = ({
         handleRemoveFilter={handleRemoveFilter}
         handleSearch={handleSearch}
         filterElement={filterElement}
+        type={type}
       />
     );
   }
@@ -176,6 +179,7 @@ const Filters = ({
       variant={variant}
       searchEntities={searchEntities}
       handleChange={handleChange}
+      type={type}
     />
   );
 };

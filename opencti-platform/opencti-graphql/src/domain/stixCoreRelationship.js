@@ -6,7 +6,7 @@ import {
   batchListThroughGetTo,
   createRelation,
   deleteElementById,
-  deleteRelationsByFromAndTo,
+  deleteRelationsByFromAndTo, distributionRelations,
   internalLoadById,
   storeLoadById,
   timeSeriesRelations,
@@ -15,13 +15,18 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
-import { READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
+import {
+  isNotEmptyField,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS
+} from '../database/utils';
 import {
   isStixCoreRelationship,
   STIX_CORE_RELATIONSHIPS,
   stixCoreRelationshipOptions
 } from '../schema/stixCoreRelationship';
 import {
+  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_IDENTITY
@@ -46,7 +51,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { listRelations } from '../database/middleware-loader';
+import { listEntities, listRelations } from '../database/middleware-loader';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { upload } from '../database/file-storage';
@@ -61,6 +66,21 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 };
 
 // region stats
+export const stixCoreRelationshipsDistribution = async (context, user, args) => {
+  const { dynamicFrom, dynamicTo } = args;
+  let finalArgs = args;
+  if (dynamicFrom && isNotEmptyField(dynamicFrom)) {
+    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], { connectionFormat: false, first: 500, filters: dynamicFrom })
+      .then((result) => result.map((n) => n.id));
+    finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+  }
+  if (dynamicTo && isNotEmptyField(dynamicTo)) {
+    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], { connectionFormat: false, first: 500, filters: dynamicTo })
+      .then((result) => result.map((n) => n.id));
+    finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
+  }
+  return distributionRelations(context, context.user, finalArgs);
+};
 export const stixCoreRelationshipsNumber = (context, user, args) => {
   const { relationship_type = [STIX_CORE_RELATIONSHIPS] } = args;
   const numberArgs = buildFilters({ ...args, types: relationship_type });

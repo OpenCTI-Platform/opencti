@@ -34,13 +34,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StixCyberObservablePopover = ({ onUpdate, widget, onDelete }) => {
+const StixCyberObservablePopover = ({
+  onUpdate,
+  onDuplicate,
+  widget,
+  onDelete,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
+  const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleOpenDelete = () => {
     setDisplayDelete(true);
+    setAnchorEl(null);
+  };
+  const handleOpenDuplicate = () => {
+    setDisplayDuplicate(true);
     setAnchorEl(null);
   };
   return (
@@ -69,6 +79,7 @@ const StixCyberObservablePopover = ({ onUpdate, widget, onDelete }) => {
             onComplete={onUpdate}
             widget={widget}
           />
+          <MenuItem onClick={handleOpenDuplicate}>{t('Duplicate')}</MenuItem>
           <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
@@ -89,6 +100,32 @@ const StixCyberObservablePopover = ({ onUpdate, widget, onDelete }) => {
           <Button onClick={() => setDisplayDelete(false)}>{t('Cancel')}</Button>
           <Button onClick={onDelete} color="secondary">
             {t('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={displayDuplicate}
+        PaperProps={{ elevation: 1 }}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={() => setDisplayDuplicate(false)}
+        className="noDrag"
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to duplicate this widget?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDisplayDelete(false)}>{t('Cancel')}</Button>
+          <Button
+            onClick={() => {
+              setDisplayDuplicate(false);
+              onDuplicate(widget);
+            }}
+            color="secondary"
+          >
+            {t('Duplicate')}
           </Button>
         </DialogActions>
       </Dialog>

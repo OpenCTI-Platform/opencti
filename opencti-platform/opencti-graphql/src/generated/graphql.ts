@@ -14490,6 +14490,8 @@ export type QueryStixCoreRelationshipsArgs = {
 export type QueryStixCoreRelationshipsDistributionArgs = {
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
   dateAttribute?: InputMaybe<Scalars['String']>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   endDate?: InputMaybe<Scalars['DateTime']>;
@@ -16823,9 +16825,12 @@ export enum StixCoreObjectsFilter {
   Creator = 'creator',
   EntityType = 'entity_type',
   HasExternalReference = 'hasExternalReference',
+  IncidentTypes = 'incident_types',
   Indicates = 'indicates',
   IndicatorTypes = 'indicator_types',
+  KillChainPhase = 'killChainPhase',
   LabelledBy = 'labelledBy',
+  MalwareTypes = 'malware_types',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
@@ -16834,6 +16839,7 @@ export enum StixCoreObjectsFilter {
   Published = 'published',
   ReportTypes = 'report_types',
   Subject = 'subject',
+  ThreatActorTypes = 'threat_actor_types',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
   Value = 'value',
@@ -17091,6 +17097,7 @@ export enum StixCoreRelationshipsFilter {
   FromId = 'fromId',
   FromName = 'fromName',
   FromTypes = 'fromTypes',
+  KillChainPhase = 'killChainPhase',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',

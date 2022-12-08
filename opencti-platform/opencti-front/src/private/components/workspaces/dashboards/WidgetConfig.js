@@ -141,7 +141,6 @@ const useStyles = makeStyles((theme) => ({
 
 const entitiesFilters = [
   'entity_type',
-  'relationship_type',
   'elementId',
   'markedBy',
   'labelledBy',
@@ -152,7 +151,10 @@ const entitiesFilters = [
   'revoked',
   'confidence',
   'pattern_type',
+  'killChainPhase',
   'creator',
+  'malware_types',
+  'relationship_type',
 ];
 
 const relationshipsFilters = [
@@ -165,6 +167,7 @@ const relationshipsFilters = [
   'labelledBy',
   'createdBy',
   'confidence',
+  'killChainPhase',
   'creator',
 ];
 
@@ -274,6 +277,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         perspective: null,
         isTo: false,
         filters: {},
+        dynamicFrom: {},
+        dynamicTo: {},
       },
     ],
   );
@@ -291,6 +296,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           isTo: false,
           perspective: null,
           filters: {},
+          dynamicFrom: {},
+          dynamicTo: {},
         },
       ]);
       setParameters({});
@@ -356,6 +363,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         date_attribute: 'created_at',
         perspective: subPerspective,
         filters: {},
+        dynamicFrom: {},
+        dynamicTo: {},
       },
     ]);
   };
@@ -425,6 +434,94 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         return {
           ...dataSelection[i],
           filters: R.dissoc(key, dataSelection[i].filters),
+        };
+      }
+      return data;
+    });
+    setDataSelection(newDataSelection);
+  };
+  const handleAddDataValidationDynamicFrom = (i, key, id, value) => {
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        if (
+          dataSelection[i].dynamicFrom[key]
+          && dataSelection[i].dynamicFrom[key].length > 0
+        ) {
+          return {
+            ...dataSelection[i],
+            dynamicFrom: R.assoc(
+              key,
+              isUniqFilter(key)
+                ? [{ id, value }]
+                : R.uniqBy(R.prop('id'), [
+                  { id, value },
+                  ...dataSelection[i].dynamicFrom[key],
+                ]),
+              dataSelection[i].dynamicFrom,
+            ),
+          };
+        }
+        return {
+          ...dataSelection[i],
+          dynamicFrom: R.assoc(
+            key,
+            [{ id, value }],
+            dataSelection[i].dynamicFrom,
+          ),
+        };
+      }
+      return data;
+    });
+    setDataSelection(newDataSelection);
+  };
+  const handleRemoveDataSelectionDynamicFrom = (i, key) => {
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        return {
+          ...dataSelection[i],
+          dynamicFrom: R.dissoc(key, dataSelection[i].dynamicFrom),
+        };
+      }
+      return data;
+    });
+    setDataSelection(newDataSelection);
+  };
+  const handleAddDataValidationDynamicTo = (i, key, id, value) => {
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        if (
+          dataSelection[i].dynamicTo[key]
+          && dataSelection[i].dynamicTo[key].length > 0
+        ) {
+          return {
+            ...dataSelection[i],
+            dynamicTo: R.assoc(
+              key,
+              isUniqFilter(key)
+                ? [{ id, value }]
+                : R.uniqBy(R.prop('id'), [
+                  { id, value },
+                  ...dataSelection[i].dynamicTo[key],
+                ]),
+              dataSelection[i].dynamicTo,
+            ),
+          };
+        }
+        return {
+          ...dataSelection[i],
+          dynamicTo: R.assoc(key, [{ id, value }], dataSelection[i].dynamicTo),
+        };
+      }
+      return data;
+    });
+    setDataSelection(newDataSelection);
+  };
+  const handleRemoveDataSelectionDynamicTo = (i, key) => {
+    const newDataSelection = dataSelection.map((data, n) => {
+      if (n === i) {
+        return {
+          ...dataSelection[i],
+          dynamicTo: R.dissoc(key, dataSelection[i].dynamicTo),
         };
       }
       return data;
@@ -602,7 +699,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       endAdornment: (
                         <InputAdornment
                           position="end"
-                          style={{ position: 'absolute', right: 5 }}
+                          style={{
+                            position: 'absolute',
+                            display: 'flex',
+                            right: 5,
+                          }}
                         >
                           <Filters
                             availableFilterKeys={
@@ -619,6 +720,44 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             }
                             noDirectFilters={true}
                           />
+                          {(dataSelection[i].perspective ?? perspective)
+                            === 'relationships' && (
+                            <Filters
+                              availableFilterKeys={entitiesFilters}
+                              availableEntityTypes={[
+                                'Stix-Domain-Object',
+                                'Stix-Cyber-Observable',
+                              ]}
+                              handleAddFilter={(key, id, value) => handleAddDataValidationDynamicFrom(
+                                i,
+                                key,
+                                id,
+                                value,
+                              )
+                              }
+                              noDirectFilters={true}
+                              type="from"
+                            />
+                          )}
+                          {(dataSelection[i].perspective ?? perspective)
+                            === 'relationships' && (
+                            <Filters
+                              availableFilterKeys={entitiesFilters}
+                              availableEntityTypes={[
+                                'Stix-Domain-Object',
+                                'Stix-Cyber-Observable',
+                              ]}
+                              handleAddFilter={(key, id, value) => handleAddDataValidationDynamicTo(
+                                i,
+                                key,
+                                id,
+                                value,
+                              )
+                              }
+                              noDirectFilters={true}
+                              type="to"
+                            />
+                          )}
                         </InputAdornment>
                       ),
                     }}
@@ -670,6 +809,100 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       </span>
                     );
                   }, R.toPairs(dataSelection[i].filters))}
+                  {R.map((currentFilter) => {
+                    const label = `${truncate(
+                      t(`filter_${currentFilter[0]}`),
+                      20,
+                    )}`;
+                    const values = (
+                      <span>
+                        {R.map(
+                          (n) => (
+                            <span key={n.value}>
+                              {n.value && n.value.length > 0
+                                ? truncate(n.value, 15)
+                                : t('No label')}{' '}
+                              {R.last(currentFilter[1]).value !== n.value && (
+                                <code>OR</code>
+                              )}{' '}
+                            </span>
+                          ),
+                          currentFilter[1],
+                        )}
+                      </span>
+                    );
+                    return (
+                      <span key={currentFilter[0]}>
+                        <Chip
+                          classes={{ root: classes.filter }}
+                          label={
+                            <div>
+                              <strong>{label}</strong>: {values}
+                            </div>
+                          }
+                          onDelete={() => handleRemoveDataSelectionDynamicFrom(
+                            i,
+                            currentFilter[0],
+                          )
+                          }
+                        />
+                        {R.last(R.toPairs(dataSelection[i].dynamicFrom))[0]
+                          !== currentFilter[0] && (
+                          <Chip
+                            classes={{ root: classes.operator }}
+                            label={t('AND')}
+                          />
+                        )}
+                      </span>
+                    );
+                  }, R.toPairs(dataSelection[i].dynamicFrom))}
+                  {R.map((currentFilter) => {
+                    const label = `${truncate(
+                      t(`filter_${currentFilter[0]}`),
+                      20,
+                    )}`;
+                    const values = (
+                      <span>
+                        {R.map(
+                          (n) => (
+                            <span key={n.value}>
+                              {n.value && n.value.length > 0
+                                ? truncate(n.value, 15)
+                                : t('No label')}{' '}
+                              {R.last(currentFilter[1]).value !== n.value && (
+                                <code>OR</code>
+                              )}{' '}
+                            </span>
+                          ),
+                          currentFilter[1],
+                        )}
+                      </span>
+                    );
+                    return (
+                      <span key={currentFilter[0]}>
+                        <Chip
+                          classes={{ root: classes.filter }}
+                          label={
+                            <div>
+                              <strong>{label}</strong>: {values}
+                            </div>
+                          }
+                          onDelete={() => handleRemoveDataSelectionDynamicTo(
+                            i,
+                            currentFilter[0],
+                          )
+                          }
+                        />
+                        {R.last(R.toPairs(dataSelection[i].dynamicTo))[0]
+                          !== currentFilter[0] && (
+                          <Chip
+                            classes={{ root: classes.operator }}
+                            label={t('AND')}
+                          />
+                        )}
+                      </span>
+                    );
+                  }, R.toPairs(dataSelection[i].dynamicTo))}
                 </div>
               </div>
             );
@@ -948,13 +1181,13 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                               checked={dataSelection[i].isTo}
                             />
                           }
-                          label={t('In relationship target')}
+                          label={t('Display the source')}
                         />
                       )}
                       {dataSelection[i].perspective === 'relationships' && (
                         <Tooltip
                           title={t(
-                            'Enable if the displayed data are the destination of relationships.',
+                            'Enable if the displayed data is the source of the relationships.',
                           )}
                         >
                           <InformationOutline

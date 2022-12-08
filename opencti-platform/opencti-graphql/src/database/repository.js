@@ -36,7 +36,7 @@ export const buildFilters = (args = {}) => {
   // region from filtering
   const nestedFrom = [];
   if (fromId) {
-    nestedFrom.push({ key: 'internal_id', values: [fromId] });
+    nestedFrom.push({ key: 'internal_id', values: Array.isArray(fromId) ? fromId : [fromId] });
   }
   if (fromTypes && fromTypes.length > 0) {
     nestedFrom.push({ key: 'types', values: fromTypes });
@@ -53,7 +53,7 @@ export const buildFilters = (args = {}) => {
   // region to filtering
   const nestedTo = [];
   if (toId) {
-    nestedTo.push({ key: 'internal_id', values: [toId] });
+    nestedTo.push({ key: 'internal_id', values: Array.isArray(toId) ? toId : [toId] });
   }
   if (toTypes && toTypes.length > 0) {
     nestedTo.push({ key: 'types', values: toTypes });

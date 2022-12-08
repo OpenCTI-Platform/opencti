@@ -39,6 +39,7 @@ import {
   VectorRadius,
   ShieldSearch,
   ServerNetwork,
+  Launch,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -146,6 +147,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       );
     case 'Language':
       return <TranslateOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Kill-Chain-Phase':
+      return <Launch style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

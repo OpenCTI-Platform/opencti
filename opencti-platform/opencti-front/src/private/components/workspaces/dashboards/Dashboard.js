@@ -4,6 +4,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
+import { v4 as uuid } from 'uuid';
 import {
   daysAgo,
   monthsAgo,
@@ -177,6 +178,15 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     const newManifest = R.assoc(
       'widgets',
       R.dissoc(widgetId, manifest.widgets),
+      manifest,
+    );
+    saveManifest(newManifest);
+  };
+  const handleDuplicateWidget = (widgetManifest) => {
+    const newId = uuid();
+    const newManifest = R.assoc(
+      'widgets',
+      R.assoc(newId, R.assoc('id', newId, widgetManifest), manifest.widgets),
       manifest,
     );
     saveManifest(newManifest);
@@ -696,7 +706,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'horizontal-bar':
         if (
           widget.dataSelection.length > 1
-          && widget.dataSelection[0].attribute === 'entity_id'
+          && widget.dataSelection[0].attribute === 'internal_id'
         ) {
           return (
             <StixCoreRelationshipsMultiHorizontalBars
@@ -858,6 +868,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 <WidgetPopover
                   widget={widget}
                   onUpdate={handleUpdateWidget}
+                  onDuplicate={handleDuplicateWidget}
                   onDelete={() => handleDeleteWidget(widget.id)}
                 />
               )}

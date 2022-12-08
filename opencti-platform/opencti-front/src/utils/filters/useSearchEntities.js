@@ -10,6 +10,7 @@ import {
 import { stixDomainObjectsLinesSearchQuery } from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue } from '../Graph';
 import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/marking_definitions/MarkingDefinitionsLines';
+import { killChainPhasesLinesSearchQuery } from '../../private/components/settings/kill_chain_phases/KillChainPhasesLines';
 import { labelsSearchQuery } from '../../private/components/settings/LabelsQuery';
 import { attributesSearchQuery } from '../../private/components/settings/AttributesQuery';
 import { statusFieldStatusesSearchQuery } from '../../private/components/common/form/StatusField';
@@ -417,6 +418,24 @@ const useSearchEntities = ({
             unionSetEntities('markedBy', markedByEntities);
           });
         break;
+      case 'killChainPhase':
+        fetchQuery(killChainPhasesLinesSearchQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const killChainPhaseEntities = R.pipe(
+              R.pathOr([], ['killChainPhases', 'edges']),
+              R.map((n) => ({
+                label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+                value: n.node.id,
+                type: 'Kill-Chain-Phase',
+              })),
+            )(data);
+            unionSetEntities('killChainPhase', killChainPhaseEntities);
+          });
+        break;
       case 'labelledBy':
         fetchQuery(labelsSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
@@ -606,6 +625,25 @@ const useSearchEntities = ({
               })),
             )(data);
             unionSetEntities('x_opencti_attack_vector', attackVectorEntities);
+          });
+        break;
+      case 'malware_types':
+        fetchQuery(attributesSearchQuery, {
+          attributeName: 'malware_types',
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const attackVectorEntities = R.pipe(
+              R.pathOr([], ['runtimeAttributes', 'edges']),
+              R.map((n) => ({
+                label: n.node.value,
+                value: n.node.value,
+                type: 'attribute',
+              })),
+            )(data);
+            unionSetEntities('malware_types', attackVectorEntities);
           });
         break;
       case 'x_opencti_workflow_id':

@@ -46,6 +46,8 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
     $search: String
     $filters: [StixCoreRelationshipsFiltering]
     $filterMode: FilterMode
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
   ) {
     stixCoreRelationshipsDistribution(
       field: $field
@@ -68,6 +70,8 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
       search: $search
       filters: $filters
       filterMode: $filterMode
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -238,6 +242,8 @@ const StixCoreRelationshipsHorizontalBars = ({
       limit: 10,
       filters: finalFilters,
       isTo: selection.isTo,
+      dynamicFrom: convertFilters(selection.dynamicFrom),
+      dynamicTo: convertFilters(selection.dynamicTo),
     };
     return (
       <QueryRenderer

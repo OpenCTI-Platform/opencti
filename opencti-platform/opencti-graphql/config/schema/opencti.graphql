@@ -1749,6 +1749,7 @@ enum StixCoreObjectsFilter {
   createdBy
   markedBy
   labelledBy
+  killChainPhase
   hasExternalReference
   objectContains
   containedBy
@@ -1769,6 +1770,9 @@ enum StixCoreObjectsFilter {
   subject
   value
   abstract
+  malware_types
+  threat_actor_types
+  incident_types
 }
 input StixCoreObjectsFiltering {
   key: [StixCoreObjectsFilter!]!
@@ -11344,6 +11348,7 @@ enum StixCoreRelationshipsFilter {
   creator
   markedBy
   labelledBy
+  killChainPhase
   fromName
   toName
   toCreatedAt
@@ -12701,6 +12706,8 @@ type Query {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
+    dynamicFrom: [StixCoreObjectsFiltering]
+    dynamicTo: [StixCoreObjectsFiltering]
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsNumber(
     authorId: String

@@ -45,6 +45,8 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
     $search: String
     $filters: [StixCoreRelationshipsFiltering]
     $filterMode: FilterMode
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
     $subDistributionField: String!
     $subDistributionOperation: StatsOperation!
     $subDistributionStartDate: DateTime
@@ -86,6 +88,8 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
       search: $search
       filters: $filters
       filterMode: $filterMode
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -345,6 +349,8 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
     $search: String
     $filters: [StixCoreRelationshipsFiltering]
     $filterMode: FilterMode
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
     $subDistributionRelationshipType: [String]
     $subDistributionToTypes: [String]
     $subDistributionField: String!
@@ -380,6 +386,8 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
       search: $search
       filters: $filters
       filterMode: $filterMode
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -720,6 +728,8 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
       limit: 10,
       filters: finalFilters,
       isTo: selection.isTo,
+      dynamicFrom: convertFilters(selection.dynamicFrom),
+      dynamicTo: convertFilters(selection.dynamicTo),
     };
     const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
     if (subSelection.perspective === 'entities') {
@@ -735,7 +745,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             ? subSelection.date_attribute
             : 'created_at',
         subDistributionOperation: 'count',
-        subDistributionLimit: 10,
+        subDistributionLimit: 15,
         subDistributionTypes,
         subDistributionFilters: subSelectionFinalFilters,
       };
@@ -751,7 +761,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             ? subSelection.date_attribute
             : 'created_at',
         subDistributionIsTo: subSelection.isTo,
-        subDistributionLimit: 10,
+        subDistributionLimit: 15,
         subDistributionFromId: subSelectionFromId,
         subDistributionFromTypes: subSelectionFromTypes,
         subDistributionToId: subSelectionToId,
@@ -794,7 +804,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
               }
             }
             const sortedEntityMapping = R.take(
-              10,
+              15,
               Object.entries(entitiesMapping).sort(([, a], [, b]) => b - a),
             );
             const categoriesValues = {};

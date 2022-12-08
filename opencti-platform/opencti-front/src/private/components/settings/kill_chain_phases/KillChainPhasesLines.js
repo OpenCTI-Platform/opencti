@@ -10,6 +10,21 @@ import {
 
 const nbOfRowsToLoad = 50;
 
+export const killChainPhasesLinesSearchQuery = graphql`
+  query KillChainPhasesLinesSearchQuery($search: String) {
+    killChainPhases(search: $search) {
+      edges {
+        node {
+          id
+          kill_chain_name
+          phase_name
+          x_opencti_order
+        }
+      }
+    }
+  }
+`;
+
 class KillChainPhasesLines extends Component {
   render() {
     const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
