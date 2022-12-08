@@ -22,6 +22,7 @@ import Button from '@material-ui/core/Button';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   item: {
@@ -227,7 +228,12 @@ class RiskLineComponent extends Component {
                   paddingLeft: '24px',
                 }}
               >
-                {this.renderRiskLevels()}
+                <RiskLevel
+                  node={node}
+                  t={t}
+                  classes={classes}
+                  dataColumns={dataColumns}
+                />
               </div>
               <div
                 className={classes.bodyItem}
