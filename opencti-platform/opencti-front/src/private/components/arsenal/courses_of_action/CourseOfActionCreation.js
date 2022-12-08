@@ -293,11 +293,13 @@ class CourseOfActionCreation extends Component {
               description: '',
               createdBy: '',
               objectMarking: [],
+              objectLabel: [],
             }}
             validationSchema={courseOfActionValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
-            render={({
+            >
+            {({
               submitForm,
               handleReset,
               isSubmitting,
@@ -360,7 +362,7 @@ class CourseOfActionCreation extends Component {
                 </DialogActions>
               </Form>
             )}
-          />
+          </Formik>
         </Dialog>
       </div>
     );
