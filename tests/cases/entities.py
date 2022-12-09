@@ -131,6 +131,14 @@ class EntityTestCases:
     def case_vulnerability(api_client):
         return VulnerabilityTest(api_client)
 
+    @staticmethod
+    def data_component(api_client):
+        return DataComponentTest(api_client)
+
+    @staticmethod
+    def data_source(api_client):
+        return DataSourceTest(api_client)
+
 
 class EntityTest:
     def __init__(self, api_client):
@@ -886,3 +894,23 @@ class VulnerabilityTest(EntityTest):
 
     def own_class(self):
         return self.api_client.vulnerability
+
+
+class DataComponentTest(EntityTest):
+    def data(self) -> Dict:
+        return {
+            "type": "DataComponent",
+            "name": "Command Execution",
+            "description": "A command Execution",
+        }
+
+    def own_class(self):
+        return self.api_client.data_component
+
+
+class DataSourceTest(EntityTest):
+    def data(self) -> Dict:
+        return {"type": "DataSource", "name": "Command", "description": "A command"}
+
+    def own_class(self):
+        return self.api_client.data_source

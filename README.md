@@ -54,6 +54,35 @@ To learn about how to use the OpenCTI Python client and read some examples and c
 
 To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://opencti-client-for-python.readthedocs.io/en/latest/pycti/pycti.html).
 
+## Tests
+
+### Install dependencies
+
+```bash
+$ pip install -r ./test-requirements.txt
+```
+
+[pytest](https://docs.pytest.org/en/7.2.x/) is used to launch the tests.
+
+### Launch tests
+
+#### Prerequisite
+
+Your OpenCTI API should be running.
+Your conftest.py should be configured with your API url and your token.
+
+#### Launching
+
+Unit tests
+```bash
+$ pytest ./tests/01-unit/
+```
+
+Integration testing
+```bash
+$ pytest ./tests/02-integration/
+```
+
 ## About
 
 OpenCTI is a product powered by the collaboration of the private company [Filigran](https://www.filigran.io), the [French national cybersecurity agency (ANSSI)](https://ssi.gouv.fr), the [CERT-EU](https://cert.europa.eu) and the [Luatix](https://www.luatix.org) non-profit organization.
