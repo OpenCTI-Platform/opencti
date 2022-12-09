@@ -21,9 +21,9 @@ import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObj
 const styles = (theme) => ({
   paper: {
     height: '100%',
-    minHeight: '100%',
+    minHeight: '50%',
     margin: '10px 0 0 0',
-    padding: '24px 24px 32px 24px',
+    padding: '24px 24px 0 24px',
     borderRadius: 6,
   },
   chip: {
@@ -51,7 +51,7 @@ const styles = (theme) => ({
   scrollDiv: {
     width: '100%',
     background: theme.palette.header.background,
-    height: '300px',
+    height: '165px',
     overflow: 'hidden',
     overflowY: 'scroll',
   },
