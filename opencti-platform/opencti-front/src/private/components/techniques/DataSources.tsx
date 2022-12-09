@@ -69,7 +69,7 @@ const DataSources: FunctionComponent = () => {
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Data Source"
+        exportEntityType="Data-Source"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -80,6 +80,7 @@ const DataSources: FunctionComponent = () => {
           'created_start_date',
           'created_end_date',
           'createdBy',
+          'revoked',
         ]}
       >
         {queryRef && (

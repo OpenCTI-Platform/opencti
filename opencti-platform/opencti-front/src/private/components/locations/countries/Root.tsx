@@ -3,7 +3,7 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Redirect, Switch, useParams } from 'react-router-dom';
-import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
+import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import Country from './Country';
@@ -21,6 +21,8 @@ import {
   RootCountriesSubscription,
 } from './__generated__/RootCountriesSubscription.graphql';
 import { RootCountryQuery } from './__generated__/RootCountryQuery.graphql';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -60,7 +62,7 @@ const countryQuery = graphql`
   }
 `;
 
-const RootCountry = () => {
+const RootCountryComponent = ({ queryRef }) => {
   const { me } = useAuth();
   const { countryId } = useParams() as { countryId: string };
 
@@ -71,7 +73,7 @@ const RootCountry = () => {
   }), [countryId]);
   useSubscription(subConfig);
 
-  const data = useLazyLoadQuery<RootCountryQuery>(countryQuery, { id: countryId });
+  const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForExport } = data;
 
   return (
@@ -187,6 +189,17 @@ const RootCountry = () => {
         </>
       </div>
   );
+};
+
+const RootCountry = () => {
+  const { countryId } = useParams() as { countryId: string };
+
+  const queryRef = useQueryLoading<RootCountryQuery>(countryQuery, { id: countryId });
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <RootCountryComponent queryRef={queryRef} />
+    </React.Suspense>
+  ) : <Loader variant={LoaderVariant.inElement} />;
 };
 
 export default RootCountry;

@@ -9,6 +9,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 import { RELATION_DATA_SOURCE } from '../dataComponent/dataComponent-domain';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
+import { INPUT_DATA_SOURCE } from '../dataComponent/dataComponent-types';
 
 export const findById = (context: AuthContext, user: AuthUser, dataSourceId: string): BasicStoreEntityDataSource => {
   return storeLoadById(context, user, dataSourceId, ENTITY_TYPE_DATA_SOURCE) as unknown as BasicStoreEntityDataSource;
@@ -28,11 +29,11 @@ export const batchDataComponents = async (context: AuthContext, user: AuthUser, 
 };
 
 export const dataSourceDataComponentAdd = async (context: AuthContext, user: AuthUser, dataSourceId: string, dataComponentId: string) => {
-  await stixDomainObjectEditField(context, user, dataComponentId, { key: 'dataSource', value: [dataSourceId] });
+  await stixDomainObjectEditField(context, user, dataComponentId, { key: INPUT_DATA_SOURCE, value: [dataSourceId] });
   return findById(context, user, dataSourceId);
 };
 
 export const dataSourceDataComponentDelete = async (context: AuthContext, user: AuthUser, dataSourceId: string, dataComponentId: string) => {
-  await stixDomainObjectEditField(context, user, dataComponentId, { key: 'dataSource', value: [null] });
+  await stixDomainObjectEditField(context, user, dataComponentId, { key: INPUT_DATA_SOURCE, value: [null] });
   return findById(context, user, dataSourceId);
 };

@@ -5,7 +5,7 @@ import {
   ContainerStixCyberObservableLine,
   ContainerStixCyberObservableLineDummy,
 } from './ContainerStixCyberObservableLine';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import {
   StixCyberObservableLine_node$data,
@@ -19,6 +19,7 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 import {
   ContainerStixCyberObservablesLines_container$key,
 } from './__generated__/ContainerStixCyberObservablesLines_container.graphql';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const nbOfRowsToLoad = 50;
 

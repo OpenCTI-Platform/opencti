@@ -1,4 +1,4 @@
-import type { StixDomainObject, StixMitreExtension, StixOpenctiExtension } from '../../types/stix-common';
+import type { StixDomainObject, StixOpenctiExtension } from '../../types/stix-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { DataComponent } from '../../generated/graphql';
@@ -20,10 +20,13 @@ export interface StoreEntityDataSource extends StoreEntity {
 export interface StixDataSource extends StixDomainObject {
   name: string;
   description: string;
+  platforms: string[];
+  collection_layers: string[];
   aliases: Array<string>;
-  dataComponent: DataComponent;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_MITRE]: StixMitreExtension;
+    [STIX_EXT_MITRE]: {
+      'extension_type': 'new-sdo'
+    }
   };
 }

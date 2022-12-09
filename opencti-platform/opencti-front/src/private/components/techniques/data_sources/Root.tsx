@@ -4,7 +4,7 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Redirect, Switch, useParams } from 'react-router-dom';
-import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
+import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -20,6 +20,8 @@ import { RootDataSourcesSubscription } from './__generated__/RootDataSourcesSubs
 import DataSourcePopover from './DataSourcePopover';
 import DataSourceKnowledgeComponent from './DataSourceKnowledge';
 import DataSource from './DataSource';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -57,7 +59,7 @@ const dataSourceQuery = graphql`
   }
 `;
 
-const RootDataSource = () => {
+const RootDataSourceComponent = ({ queryRef }) => {
   const { me } = useAuth();
   const { dataSourceId } = useParams() as { dataSourceId: string };
 
@@ -68,7 +70,7 @@ const RootDataSource = () => {
   }), [dataSourceId]);
   useSubscription(subConfig);
 
-  const data = useLazyLoadQuery<RootDataSourceQuery>(dataSourceQuery, { id: dataSourceId });
+  const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForExport } = data;
 
   return (
@@ -184,6 +186,17 @@ const RootDataSource = () => {
       </>
     </div>
   );
+};
+
+const RootDataSource = () => {
+  const { dataSourceId } = useParams() as { dataSourceId: string };
+
+  const queryRef = useQueryLoading<RootDataSourceQuery>(dataSourceQuery, { id: dataSourceId });
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <RootDataSourceComponent queryRef={queryRef} />
+    </React.Suspense>
+  ) : <Loader variant={LoaderVariant.inElement} />;
 };
 
 export default RootDataSource;

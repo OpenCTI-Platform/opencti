@@ -4,7 +4,7 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { Route, Redirect, Switch, useParams } from 'react-router-dom';
-import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
+import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import Region from './Region';
@@ -20,6 +20,8 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import useAuth from '../../../../utils/hooks/useAuth';
 import { RootCountriesSubscription } from '../countries/__generated__/RootCountriesSubscription.graphql';
 import { RootRegionQuery } from './__generated__/RootRegionQuery.graphql';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -59,7 +61,7 @@ const regionQuery = graphql`
   }
 `;
 
-const RootRegion = () => {
+const RootRegionComponent = ({ queryRef }) => {
   const { me } = useAuth();
   const { regionId } = useParams() as { regionId: string };
 
@@ -70,8 +72,9 @@ const RootRegion = () => {
   }), [regionId]);
   useSubscription(subConfig);
 
-  const data = useLazyLoadQuery<RootRegionQuery>(regionQuery, { id: regionId });
+  const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForExport } = data;
+
   return (
       <div>
         <TopBar me={me} />
@@ -185,6 +188,17 @@ const RootRegion = () => {
         </>
       </div>
   );
+};
+
+const RootRegion = () => {
+  const { regionId } = useParams() as { regionId: string };
+
+  const queryRef = useQueryLoading<RootRegionQuery>(regionQuery, { id: regionId });
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <RootRegionComponent queryRef={queryRef} />
+    </React.Suspense>
+  ) : <Loader variant={LoaderVariant.inElement} />;
 };
 
 export default RootRegion;

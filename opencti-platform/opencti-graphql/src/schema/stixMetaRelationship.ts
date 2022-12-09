@@ -41,7 +41,7 @@ export const STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD: { [k: string]: string } = {
   granted_refs: INPUT_GRANTED_REFS
 };
 
-export const META_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
+export const metaFieldToStixAttribute = () => R.mergeAll(
   Object.keys(STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD).map((k) => ({
     [STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[k]]: k,
   }))
@@ -76,8 +76,14 @@ const STIX_INTERNAL_META_RELATIONSHIPS = [
 ];
 export const stixMetaRelationships = () => [...STIX_EXTERNAL_META_RELATIONSHIPS, ...STIX_INTERNAL_META_RELATIONSHIPS];
 schemaTypes.register(ABSTRACT_STIX_META_RELATIONSHIP, stixMetaRelationships());
-export const isSingleStixMetaRelationship = (type: string): boolean => R.includes(type, [RELATION_CREATED_BY]);
-export const isSingleStixMetaRelationshipInput = (input: string): boolean => R.includes(input, [INPUT_CREATED_BY]);
+export const SINGLE_STIX_META_RELATIONSHIPS = [
+  RELATION_CREATED_BY
+];
+export const isSingleStixMetaRelationship = (type: string): boolean => R.includes(type, SINGLE_STIX_META_RELATIONSHIPS);
+export const SINGLE_STIX_META_RELATIONSHIPS_INPUTS = [
+  INPUT_CREATED_BY
+];
+export const isSingleStixMetaRelationshipInput = (input: string): boolean => R.includes(input, SINGLE_STIX_META_RELATIONSHIPS_INPUTS);
 
 export const isStixMetaRelationship = (type: string) => R.includes(type, stixMetaRelationships()) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 

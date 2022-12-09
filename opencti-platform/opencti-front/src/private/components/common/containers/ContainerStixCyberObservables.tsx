@@ -10,7 +10,6 @@ import { convertFilters } from '../../../../utils/ListParameters';
 import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
 import { defaultValue } from '../../../../utils/Graph';
-import { UserContext } from '../../../../utils/Security';
 import useLocalStorage, { localStorageToPaginationOptions } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
 import { Filters } from '../../../../components/list_lines';
@@ -31,6 +30,7 @@ import useCopy from '../../../../utils/hooks/useCopy';
 import {
   ContainerStixCyberObservablesLinesSearchQuery$data,
 } from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {

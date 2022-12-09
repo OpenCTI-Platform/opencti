@@ -12,7 +12,7 @@ import {
   isStixCyberObservableRelationship,
   STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE
 } from '../schema/stixCyberObservableRelationship';
-import { isStixMetaRelationship, META_FIELD_TO_STIX_ATTRIBUTE } from '../schema/stixMetaRelationship';
+import { isStixMetaRelationship, metaFieldToStixAttribute } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
@@ -317,8 +317,8 @@ export const generateUpdateMessage = (inputs) => {
     return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
       let message = 'nothing';
       let convertedKey = key;
-      if (META_FIELD_TO_STIX_ATTRIBUTE[key]) {
-        convertedKey = META_FIELD_TO_STIX_ATTRIBUTE[key];
+      if (metaFieldToStixAttribute()[key]) {
+        convertedKey = metaFieldToStixAttribute()[key];
       }
       if (STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
         convertedKey = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key];
@@ -327,7 +327,7 @@ export const generateUpdateMessage = (inputs) => {
       const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
       if (isNotEmptyField(values)) {
         // If update is based on internal ref, we need to extract the value
-        if (META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
+        if (metaFieldToStixAttribute()[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
           message = values.map((val) => truncate(extractEntityMainValue(val))).join(', ');
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');

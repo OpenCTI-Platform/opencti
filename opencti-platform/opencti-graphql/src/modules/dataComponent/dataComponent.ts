@@ -62,6 +62,7 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent> = {
       attribute: ATTRIBUTE_DATA_SOURCE,
       input: INPUT_DATA_SOURCE,
       relation: RELATION_DATA_SOURCE,
+      multiple: false,
       checker: (fromType, toType) => toType === ENTITY_TYPE_DATA_SOURCE
     }
   ],
