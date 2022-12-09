@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
 import {
   FlagOutlined,
   PersonOutlined,
@@ -40,7 +37,6 @@ import {
   ViewColumn,
   Wifi,
   Storage,
-  FiberManualRecord,
 } from '@material-ui/icons';
 import {
   MicrosoftWindows,
@@ -80,17 +76,6 @@ import inventoryItemIcon from '../resources/images/assets/inventoryItem.svg';
 import resourceIcon from '../resources/images/assets/resource.svg';
 import assetDashboard from '../resources/images/entities/asset_dashboard.svg';
 import riskDashboard from '../resources/images/entities/risk_dashboard.svg';
-
-const RiskTooltip = withStyles((theme) => ({
-  tooltip: {
-    backgroundColor: 'rgba(241, 241, 242, 0.25)',
-    color: '#FFF',
-    maxWidth: 220,
-    fontSize: theme.typography.pxToRem(12),
-    border: '1px solid rgba(241, 241, 242, 0.5)',
-    borderRadius: '4px',
-  },
-}))(Tooltip);
 
 const iconSelector = (type, variant, fontSize, color) => {
   let style = {};
@@ -312,26 +297,6 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'part-of':
     case 'drops':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
-    case 'very_high':
-      return Array.from({ length: 5 },
-        (item, index) => <RiskTooltip
-          title={type === 'very_high' && 'Very High'}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecord style={{ fill: '#FC0D1B' }}/></IconButton></RiskTooltip>);
-    case 'high':
-      return Array.from({ length: 4 },
-        (item, index) => <RiskTooltip
-          title={type === 'high' && 'High'}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecord style={{ fill: '#F35426' }}/></IconButton></RiskTooltip>);
-    case 'moderate':
-      return Array.from({ length: 3 },
-        (item, index) => <RiskTooltip
-          title={type === 'moderate' && 'Moderate'}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecord style={{ fill: '#E28120' }}/></IconButton></RiskTooltip>);
-    case 'low':
-      return Array.from({ length: 2 },
-        (item, index) => <RiskTooltip
-          title={type === 'low' && 'Low'}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecord style={{ fill: '#FFA800' }}/></IconButton></RiskTooltip>);
-    case 'very_low':
-      return Array.from({ length: 1 },
-        (item, index) => <RiskTooltip
-          title={type === 'very_low' && 'Very Low'}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecord style={{ fill: '#FCC434' }}/></IconButton></RiskTooltip>);
     default:
       return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
   }
