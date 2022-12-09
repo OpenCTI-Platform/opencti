@@ -294,9 +294,9 @@ class Export extends Component {
             enableReinitialize={true}
             initialValues={{
               purpose: '',
-              max_items: 0,
+              max_items: '5',
               db_scan: false,
-              media_type: '',
+              media_type: 'markdown',
               description: '',
               web_scan: false,
               pen_test: false,
