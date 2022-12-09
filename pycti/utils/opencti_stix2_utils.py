@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
 
 STIX_CYBER_OBSERVABLE_MAPPING = {
@@ -97,3 +99,15 @@ class OpenCTIStix2Utils:
         raise ValueError(
             "This function should not be used anymore, please use the generate_id function for SDO or proper SCO constructor"
         )
+
+    @staticmethod
+    def retrieveClassForMethod(
+        openCTIApiClient, entity: Dict, type_path: str, method: str
+    ) -> Any:
+        if entity is not None and type_path in entity:
+            attributeName = entity[type_path].lower().replace("-", "_")
+            if hasattr(openCTIApiClient, attributeName):
+                attribute = getattr(openCTIApiClient, attributeName)
+                if hasattr(attribute, method):
+                    return attribute
+        return None

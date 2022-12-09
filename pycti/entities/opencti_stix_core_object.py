@@ -160,6 +160,33 @@ class StixCoreObject:
                 description
                 x_opencti_aliases
             }
+            ... on DataComponent {
+                name
+                description
+                dataSource {
+                    id
+                    standard_id
+                    entity_type
+                    parent_types
+                    spec_version
+                    created_at
+                    updated_at
+                    revoked
+                    confidence
+                    created
+                    modified
+                    name
+                    description
+                    x_mitre_platforms
+                    collection_layers
+                }
+            }
+            ... on DataSource {
+                name
+                description
+                x_mitre_platforms
+                collection_layers
+            }
             ... on Individual {
                 name
                 description

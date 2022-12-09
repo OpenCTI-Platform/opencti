@@ -632,6 +632,10 @@ class OpenCTIStix2:
             "report": self.opencti.report.import_from_stix2,
             "grouping": self.opencti.grouping.import_from_stix2,
             "course-of-action": self.opencti.course_of_action.import_from_stix2,
+            "data-component": self.opencti.data_component.import_from_stix2,
+            "x-mitre-data-component": self.opencti.data_component.import_from_stix2,
+            "data-source": self.opencti.data_source.import_from_stix2,
+            "x-mitre-data-source": self.opencti.data_source.import_from_stix2,
             "identity": self.opencti.identity.import_from_stix2,
             "indicator": self.opencti.indicator.import_from_stix2,
             "infrastructure": self.opencti.infrastructure.import_from_stix2,
@@ -1078,6 +1082,25 @@ class OpenCTIStix2:
         if entity["entity_type"] == "StixFile":
             entity["entity_type"] = "File"
 
+        # Data component
+        if entity["entity_type"] == "Data-Component":
+            entity["standard_id"] = "x-mitre-" + entity["standard_id"]
+            entity["entity_type"] = "x-mitre-" + entity["entity_type"]
+
+        # Data source
+        if entity["entity_type"] == "Data-Source":
+            entity["standard_id"] = "x-mitre-" + entity["standard_id"]
+            entity["entity_type"] = "x-mitre-" + entity["entity_type"]
+            if "platforms" in entity and entity["platforms"] is not None:
+                entity["x_mitre_platforms"] = entity["platforms"]
+                del entity["platforms"]
+            if (
+                "collection_layers" in entity
+                and entity["collection_layers"] is not None
+            ):
+                entity["x_mitre_collection_layers"] = entity["collection_layers"]
+                del entity["collection_layers"]
+
         # Dates
         if (
             "valid_from" in entity
@@ -1222,6 +1245,19 @@ class OpenCTIStix2:
         if "observables" in entity:
             del entity["observables"]
             del entity["observablesIds"]
+
+        # DataSource
+        if (
+            not no_custom_attributes
+            and "dataSource" in entity
+            and entity["dataSource"] is not None
+        ):
+            data_source = self.generate_export(entity["dataSource"])
+            entity["x_mitre_data_source_ref"] = data_source["id"]
+            result.append(data_source)
+        if "dataSource" in entity:
+            del entity["dataSource"]
+            del entity["dataSourceId"]
 
         entity_copy = entity.copy()
         if no_custom_attributes:
@@ -1505,6 +1541,8 @@ class OpenCTIStix2:
                 "Opinion": self.opencti.opinion.read,
                 "Report": self.opencti.report.read,
                 "Course-Of-Action": self.opencti.course_of_action.read,
+                "Data-Component": self.opencti.data_component.read,
+                "Data-Source": self.opencti.data_source.read,
                 "Identity": self.opencti.identity.read,
                 "Indicator": self.opencti.indicator.read,
                 "Infrastructure": self.opencti.infrastructure.read,
@@ -1658,6 +1696,8 @@ class OpenCTIStix2:
             "Report": self.opencti.report.read,
             "Grouping": self.opencti.grouping.read,
             "Course-Of-Action": self.opencti.course_of_action.read,
+            "Data-Component": self.opencti.data_component.read,
+            "Data-Source": self.opencti.data_source.read,
             "Identity": self.opencti.identity.read,
             "Indicator": self.opencti.indicator.read,
             "Infrastructure": self.opencti.infrastructure.read,
@@ -1754,6 +1794,8 @@ class OpenCTIStix2:
             "Report": self.opencti.report.list,
             "Grouping": self.opencti.grouping.list,
             "Course-Of-Action": self.opencti.course_of_action.list,
+            "Data-Component": self.opencti.data_component.list,
+            "Data-Source": self.opencti.data_source.list,
             "Identity": self.opencti.identity.list,
             "Indicator": self.opencti.indicator.list,
             "Infrastructure": self.opencti.infrastructure.list,
