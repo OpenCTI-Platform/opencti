@@ -621,7 +621,7 @@ const inputResolveRefs = async (context, user, input, type) => {
   let forceAliases = false;
   const dependencyKeys = depsKeys();
   for (let index = 0; index < dependencyKeys.length; index += 1) {
-    const { src, dst } = depsKeys[index];
+    const { src, dst } = dependencyKeys[index];
     const destKey = dst || src;
     const id = input[src];
     if (!R.isNil(id) && !R.isEmpty(id)) {
