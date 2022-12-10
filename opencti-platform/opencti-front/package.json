@@ -111,7 +111,7 @@
   "scripts": {
     "start": "yarn clean && yarn relay && react-scripts start",
     "clean": "rm ../opencti-graphql/config/schema/compiled.graphql && yarn schema-compile",
-    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% REACT_APP_API_URL=https://api-dev.darklight.ai react-scripts build",
+    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=/ react-scripts build",
     "build": "yarn schema-compile && yarn relay && yarn generate",
     "lint": "eslint .",
     "cypress:open": "cypress open",
