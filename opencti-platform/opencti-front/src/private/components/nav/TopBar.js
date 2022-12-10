@@ -58,12 +58,10 @@ import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
+import TopMenuTechniques from './TopMenuTechniques';
 import { commitMutation } from '../../../relay/environment';
-import Security, {
-  KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
-  EXPLORE,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, EXPLORE } from '../../../utils/hooks/useGranted';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
@@ -72,6 +70,9 @@ import TopMenuChannel from './TopMenuChannel';
 import TopMenuNarrative from './TopMenuNarrative';
 import TopMenuEvent from './TopMenuEvent';
 import TopMenuImport from './TopMenuImport';
+import TopMenuLocation from './TopMenuLocation';
+import TopMenuDataComponent from './TopMenuDataComponent';
+import TopMenuDataSource from './TopMenuDataSource';
 
 const styles = (theme) => ({
   appBar: {
@@ -253,15 +254,6 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/arsenal/channels/') && (
             <TopMenuChannel />
           )}
-          {location.pathname.includes('/dashboard/arsenal/narratives/') && (
-            <TopMenuNarrative />
-          )}
-          {location.pathname.includes(
-            '/dashboard/arsenal/attack_patterns/',
-          ) && <TopMenuAttackPattern />}
-          {location.pathname.includes(
-            '/dashboard/arsenal/courses_of_action/',
-          ) && <TopMenuCourseOfAction />}
           {location.pathname.includes(
             '/dashboard/arsenal/vulnerabilities/',
           ) && <TopMenuVulnerability />}
@@ -284,17 +276,40 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/entities/individuals/') && (
             <TopMenuIndividual />
           )}
-          {location.pathname.includes('/dashboard/entities/regions/') && (
-            <TopMenuRegion />
+          {(location.pathname === '/dashboard/locations'
+            || location.pathname.match('/dashboard/locations/[a-z_]+$')) && (
+            <TopMenuLocation />
           )}
-          {location.pathname.includes('/dashboard/entities/countries/') && (
+          {location.pathname.includes('/dashboard/locations/countries/') && (
             <TopMenuCountry />
           )}
-          {location.pathname.includes('/dashboard/entities/cities/') && (
+          {location.pathname.includes('/dashboard/locations/regions/') && (
+            <TopMenuRegion />
+          )}
+          {location.pathname.includes('/dashboard/locations/cities/') && (
             <TopMenuCity />
           )}
-          {location.pathname.includes('/dashboard/entities/positions/') && (
+          {location.pathname.includes('/dashboard/locations/positions/') && (
             <TopMenuPosition />
+          )}
+          {(location.pathname === '/dashboard/techniques'
+            || location.pathname.match('/dashboard/techniques/[a-z_]+$')) && (
+            <TopMenuTechniques />
+          )}
+          {location.pathname.includes('/dashboard/techniques/attack_patterns/') && (
+              <TopMenuAttackPattern />
+          )}
+          {location.pathname.includes('/dashboard/techniques/narratives/') && (
+            <TopMenuNarrative />
+          )}
+          {location.pathname.includes('/dashboard/techniques/courses_of_action/') && (
+            <TopMenuCourseOfAction />
+          )}
+          {location.pathname.includes('/dashboard/techniques/data_components/') && (
+            <TopMenuDataComponent />
+          )}
+          {location.pathname.includes('/dashboard/techniques/data_sources/') && (
+            <TopMenuDataSource />
           )}
           {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
           {location.pathname.includes('/dashboard/settings') && (

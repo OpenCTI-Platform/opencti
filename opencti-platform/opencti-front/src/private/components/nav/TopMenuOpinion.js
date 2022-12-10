@@ -6,10 +6,8 @@ import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined, FeedbackOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {

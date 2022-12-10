@@ -13,10 +13,9 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import IndicatorsRightBar from './IndicatorsRightBar';
-import Security, {
-  UserContext,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import ToolBar from '../../data/ToolBar';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 

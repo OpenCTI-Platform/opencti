@@ -51,6 +51,8 @@ export const ENTITY_TYPE_THREAT_ACTOR = 'Threat-Actor';
 export const ENTITY_TYPE_TOOL = 'Tool';
 export const ENTITY_TYPE_VULNERABILITY = 'Vulnerability';
 export const ENTITY_TYPE_INCIDENT = 'Incident';
+export const ENTITY_TYPE_DATA_COMPONENT = 'Data-Component';
+export const ENTITY_TYPE_DATA_SOURCE = 'Data-Source';
 
 const STIX_DOMAIN_OBJECT_CONTAINERS: Array<string> = [
   ENTITY_TYPE_CONTAINER_NOTE,

@@ -12,7 +12,8 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import SystemsLines, { systemsLinesQuery } from './systems/SystemsLines';
 import SystemCreation from './systems/SystemCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Systems extends Component {

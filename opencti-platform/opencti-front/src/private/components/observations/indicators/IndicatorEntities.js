@@ -9,7 +9,8 @@ import IndicatorEntitiesLines, {
   indicatorEntitiesLinesQuery,
 } from './IndicatorEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = () => ({
   container: {

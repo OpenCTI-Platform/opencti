@@ -15,11 +15,12 @@ export enum OrganizationReliability {
 }
 
 interface StixMitreExtension {
-  'extension_type': 'property-extension',
+  'extension_type': 'property-extension' | 'new-sdo',
   id: string;
   detection: string;
   permissions_required: Array<string>;
   platforms: Array<string>;
+  collection_layers: Array<string>;
 }
 
 interface StixFileExtension {

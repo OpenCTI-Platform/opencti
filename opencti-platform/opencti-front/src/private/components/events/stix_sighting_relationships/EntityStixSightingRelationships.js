@@ -10,7 +10,8 @@ import EntityStixSightingRelationshipsLines, {
   entityStixSightingRelationshipsLinesQuery,
 } from './EntityStixSightingRelationshipsLines';
 import StixSightingRelationshipCreationFromEntity from './StixSightingRelationshipCreationFromEntity';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import {
   buildViewParamsFromUrlAndStorage,

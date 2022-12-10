@@ -2101,7 +2101,7 @@ input AttackPatternsFiltering {
 }
 type AttackPatternConnection {
   pageInfo: PageInfo!
-  edges: [AttackPatternEdge]
+  edges: [AttackPatternEdge!]!
 }
 type AttackPatternEdge {
   cursor: String!
@@ -2211,6 +2211,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   parentAttackPatterns: AttackPatternConnection
   subAttackPatterns: AttackPatternConnection
   isSubAttackPattern: Boolean
+  dataComponents: DataComponentConnection
   # Technical
   creator: Creator
   toStix: String
@@ -5551,10 +5552,12 @@ enum CountriesFilter {
   created
   modified
   created_at
+  updated_at
   createdBy
   markedBy
   labelledBy
   x_opencti_workflow_id
+  revoked
 }
 input CountriesFiltering {
   key: [CountriesFilter!]!
@@ -5564,7 +5567,7 @@ input CountriesFiltering {
 }
 type CountryConnection {
   pageInfo: PageInfo!
-  edges: [CountryEdge]
+  edges: [CountryEdge!]!
 }
 type CountryEdge {
   cursor: String!
@@ -11189,6 +11192,8 @@ union StixObjectOrStixRelationship =
   | StixMetaRelationship
   | StixSightingRelationship
   | StixCyberObservableRelationship
+  | DataComponent
+  | DataSource
 union StixCoreObjectOrStixCoreRelationship =
     #### Stix Core Objects
   ## Stix Domain Objects
@@ -11249,6 +11254,8 @@ union StixCoreObjectOrStixCoreRelationship =
   | PaymentCard
   | MediaContent
   | StixCoreRelationship
+  | DataComponent
+  | DataSource
 
 enum StixRelationshipsOrdering {
   entity_type

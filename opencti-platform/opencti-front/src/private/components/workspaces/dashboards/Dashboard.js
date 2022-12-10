@@ -15,7 +15,8 @@ import {
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import ThreatVictimologyAll from './ThreatVictimologyAll';
 import ThreatVictimologySectors from './ThreatVictimologySectors';
 import ThreatVictimologyCountries from './ThreatVictimologyCountries';

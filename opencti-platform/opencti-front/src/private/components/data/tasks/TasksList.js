@@ -27,9 +27,8 @@ import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const interval$ = interval(FIVE_SECONDS);
 

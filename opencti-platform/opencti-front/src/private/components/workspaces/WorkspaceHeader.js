@@ -20,7 +20,8 @@ import Button from '@mui/material/Button';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import inject18n from '../../../components/i18n';
-import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
 

@@ -66,11 +66,9 @@ import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMar
 import { defaultValue } from '../../../utils/Graph';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-  UserContext,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesSearchQuery } from '../analysis/ExternalReferences';

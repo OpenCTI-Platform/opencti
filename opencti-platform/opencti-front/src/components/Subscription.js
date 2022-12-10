@@ -6,7 +6,7 @@ import Avatar from '@mui/material/Avatar';
 import { compose, filter, find, insert, pipe, propEq } from 'ramda';
 import inject18n from './i18n';
 import { stringToColour } from '../utils/Colors';
-import { UserContext } from '../utils/Security';
+import { UserContext } from '../utils/hooks/useAuth';
 
 const SubscriptionAvatarsStyles = () => ({
   avatars: {

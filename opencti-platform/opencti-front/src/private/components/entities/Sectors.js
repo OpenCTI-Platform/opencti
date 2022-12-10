@@ -12,7 +12,8 @@ import inject18n from '../../../components/i18n';
 import SectorsLines, { sectorsLinesQuery } from './sectors/SectorsLines';
 import SectorCreation from './sectors/SectorCreation';
 import SearchInput from '../../../components/SearchInput';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 const styles = () => ({
   parameters: {

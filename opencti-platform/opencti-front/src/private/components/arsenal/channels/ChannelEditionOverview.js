@@ -30,7 +30,8 @@ import {
   convertStatus,
 } from '../../../../utils/edition';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import AutocompleteField from '../../../../components/AutocompleteField';

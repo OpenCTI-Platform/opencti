@@ -157,11 +157,12 @@ export const cleanObject = <T>(data: T): T => {
       delete obj[key];
     } else if (key === 'extensions') {
       // Extensions can be generated with only the extension_type
-      // If it's the case, no need to keep the extension
+      // If it's the case and the type is property-extension, no need to keep the extension
       const extensionDefinitions = Object.entries(obj[key] as Record<string, unknown>);
       for (let i = 0; i < extensionDefinitions.length; i += 1) {
         const [extKey, extObject] = extensionDefinitions[i];
-        if (Object.entries(extObject as Record<string, unknown>).length === 1) {
+        const extRecord = extObject as Record<string, unknown>;
+        if (extRecord.extension_type === 'property-extension' && Object.entries(extRecord).length === 1) {
           const ext = obj[key] as any;
           delete ext[extKey];
         }
@@ -199,7 +200,7 @@ const convertObjectReferences = (instance: StoreEntity) => {
 };
 
 // Extensions
-const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
+export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
   const octiExtensions: S.StixOpenctiExtension = {
     extension_type: 'property-extension',
     id: instance.internal_id,
@@ -221,13 +222,14 @@ const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
   };
   return cleanObject(octiExtensions);
 };
-const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
+export const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
   const mitreExtensions: S.StixMitreExtension = {
     extension_type: 'property-extension',
     id: instance.x_mitre_id,
     detection: instance.x_mitre_detection,
     permissions_required: instance.x_mitre_permissions_required,
     platforms: instance.x_mitre_platforms,
+    collection_layers: instance.collection_layers
   };
   return cleanObject(mitreExtensions);
 };

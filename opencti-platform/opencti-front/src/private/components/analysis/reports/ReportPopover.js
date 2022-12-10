@@ -9,9 +9,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 

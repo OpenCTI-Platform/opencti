@@ -17,7 +17,7 @@ import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../static/geo/countries.json';
 import inject18n from '../../../../components/i18n';
-import { UserContext } from '../../../../utils/Security';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import { fileUri } from '../../../../relay/environment';
 import CityOrange from '../../../../static/images/leaflet/city_orange.png';
 

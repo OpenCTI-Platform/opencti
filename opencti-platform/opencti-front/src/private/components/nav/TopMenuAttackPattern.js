@@ -45,7 +45,7 @@ class TopMenuAttackPattern extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/arsenal/attack_patterns"
+          to="/dashboard/techniques/attack_patterns"
           variant="contained"
           size="small"
           color="primary"
@@ -60,17 +60,17 @@ class TopMenuAttackPattern extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}`}
           variant={
             location.pathname
-            === `/dashboard/arsenal/attack_patterns/${attackPatternId}`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/arsenal/attack_patterns/${attackPatternId}`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}`
               ? 'secondary'
               : 'primary'
           }
@@ -80,10 +80,10 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`,
+              `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -91,7 +91,7 @@ class TopMenuAttackPattern extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`,
+              `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`,
             )
               ? 'secondary'
               : 'primary'
@@ -102,17 +102,17 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/analysis`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/arsenal/attack_patterns/${attackPatternId}/analysis`
+            === `/dashboard/technqiues/attack_patterns/${attackPatternId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/arsenal/attack_patterns/${attackPatternId}/analysis`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/analysis`
               ? 'secondary'
               : 'primary'
           }
@@ -122,10 +122,10 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`,
+              `/dashboard/techniques/attack_patterns/${attackPatternId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -133,7 +133,7 @@ class TopMenuAttackPattern extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`,
+              `/dashboard/techniques/attack_patterns/${attackPatternId}/indicators`,
             )
               ? 'secondary'
               : 'primary'
@@ -144,17 +144,17 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/history`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/history`}
           variant={
             location.pathname
-            === `/dashboard/arsenal/attack_patterns/${attackPatternId}/history`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/arsenal/attack_patterns/${attackPatternId}/history`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/history`
               ? 'secondary'
               : 'primary'
           }

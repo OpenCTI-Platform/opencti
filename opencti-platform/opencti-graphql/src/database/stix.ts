@@ -1198,24 +1198,21 @@ export const checkStixCyberObservableRelationshipMapping = (fromType: string, to
   return R.includes(relationshipType, targetRelations);
 };
 
+export const CHECK_META_RELATIONSHIP_VALUES: { [k: string]: (fromType: string, toType: string) => boolean } = {
+  [RELATION_GRANTED_TO]: (fromType, toType) => !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType)
+    || isStixDomainObjectLocation(fromType)) && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType,
+  [RELATION_CREATED_BY]: (fromType, toType) => isStixDomainObjectIdentity(toType),
+  [RELATION_OBJECT_MARKING]: (fromType, toType) => ENTITY_TYPE_MARKING_DEFINITION === toType,
+  [RELATION_OBJECT]: (fromType,) => isStixDomainObjectContainer(fromType),
+  [RELATION_OBJECT_LABEL]: (fromType, toType) => toType === ENTITY_TYPE_LABEL,
+  [RELATION_EXTERNAL_REFERENCE]: (fromType, toType) => toType === ENTITY_TYPE_EXTERNAL_REFERENCE,
+  [RELATION_KILL_CHAIN_PHASE]: (fromType, toType) => toType === ENTITY_TYPE_KILL_CHAIN_PHASE
+};
+
 export const checkMetaRelationship = (fromType: string, toType: string, relationshipType: string): boolean => {
-  switch (relationshipType) {
-    case RELATION_GRANTED_TO:
-      return !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType) || isStixDomainObjectLocation(fromType))
-        && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType;
-    case RELATION_CREATED_BY:
-      return isStixDomainObjectIdentity(toType);
-    case RELATION_OBJECT_MARKING:
-      return ENTITY_TYPE_MARKING_DEFINITION === toType;
-    case RELATION_OBJECT:
-      return isStixDomainObjectContainer(fromType);
-    case RELATION_OBJECT_LABEL:
-      return toType === ENTITY_TYPE_LABEL;
-    case RELATION_EXTERNAL_REFERENCE:
-      return toType === ENTITY_TYPE_EXTERNAL_REFERENCE;
-    case RELATION_KILL_CHAIN_PHASE:
-      return toType === ENTITY_TYPE_KILL_CHAIN_PHASE;
-    default:
-      return false;
+  const checkMetaRelationshipFn = CHECK_META_RELATIONSHIP_VALUES[relationshipType];
+  if (checkMetaRelationshipFn) {
+    return checkMetaRelationshipFn(fromType, toType);
   }
+  return false;
 };

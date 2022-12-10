@@ -10,7 +10,8 @@ import { SettingsInputComponent } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import Loader from '../../../../components/Loader';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 

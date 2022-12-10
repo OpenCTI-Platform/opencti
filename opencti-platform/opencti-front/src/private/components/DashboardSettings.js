@@ -16,7 +16,8 @@ import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../relay/environment';
-import Security, { EXPLORE } from '../../utils/Security';
+import Security from '../../utils/Security';
+import { EXPLORE } from '../../utils/hooks/useGranted';
 import inject18n from '../../components/i18n';
 
 const Transition = React.forwardRef((props, ref) => (

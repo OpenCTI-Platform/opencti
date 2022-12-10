@@ -19,7 +19,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreRelationshipCreationFromRelation from './StixCoreRelationshipCreationFromRelation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   paper: {

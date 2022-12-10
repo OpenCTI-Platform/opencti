@@ -2,7 +2,7 @@ import React, { FunctionComponent, useContext } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { createTheme, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 import { ThemeOptions } from '@mui/material/styles/createTheme';
-import { UserContext, UserContextType } from '../utils/Security';
+import { UserContext, UserContextType } from '../utils/hooks/useAuth';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
 import {

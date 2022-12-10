@@ -18,7 +18,8 @@ import ThreatActorsLines, {
   threatActorsLinesQuery,
 } from './threat_actors/ThreatActorsLines';
 import ThreatActorCreation from './threat_actors/ThreatActorCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class ThreatActors extends Component {

@@ -4,6 +4,8 @@ import { useSearchParams } from 'react-router-dom-v5-compat';
 import { isEmptyField, removeEmptyFields } from '../utils';
 import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
 import { isUniqFilter } from '../filters/filtersUtils';
+import { convertFilters } from '../ListParameters';
+import { DataComponentsLinesPaginationQuery$variables } from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 
 export interface LocalStorage {
   numberOfElements?: { number: number, symbol: string, original?: number },
@@ -34,7 +36,7 @@ export const localStorageToPaginationOptions = <U>({
     search: searchTerm,
     orderMode: orderAsc ? OrderMode.asc : OrderMode.desc,
     orderBy: sortBy,
-    filters,
+    filters: convertFilters(filters) as unknown as Filters,
   }) as unknown extends U ? PaginationOptions : U;
 };
 
@@ -167,6 +169,32 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
   };
 
   return [storedValue, setValue, helpers];
+};
+
+type PaginationLocalStorage<U> = {
+  viewStorage: LocalStorage,
+  helpers: {
+    handleSearch: (value: string) => void,
+    handleRemoveFilter: (key: string) => void,
+    handleSort: (field: string, order: boolean) => void
+    handleAddFilter: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void
+    handleToggleExports: () => void,
+    handleSetNumberOfElements: (value: { number?: number, symbol?: string }) => void,
+  },
+  paginationOptions: U,
+};
+
+export const usePaginationLocalStorage = <U>(key: string, initialValue: LocalStorage): PaginationLocalStorage<U> => {
+  const [viewStorage, , helpers] = useLocalStorage(key, initialValue);
+  const paginationOptions = localStorageToPaginationOptions<DataComponentsLinesPaginationQuery$variables>({
+    ...viewStorage,
+    count: 25,
+  });
+  return {
+    viewStorage,
+    helpers,
+    paginationOptions: paginationOptions as U,
+  };
 };
 
 export default useLocalStorage;

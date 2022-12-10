@@ -14,7 +14,8 @@ import Labels from './Labels';
 import Workflow from './Workflow';
 import Retention from './Retention';
 import { BoundaryRoute } from '../Error';
-import Security, { SETTINGS } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { SETTINGS } from '../../../utils/hooks/useGranted';
 import StatusTemplates from './workflow/StatusTemplates';
 
 const Root = () => (

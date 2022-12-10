@@ -1,26 +1,21 @@
 import type { StoreEntity } from './store';
 import type { ConvertFn } from '../database/stix-converter';
-import {
-  registerStixDomainAliased,
-  registerStixDomainType,
-  resolveAliasesField
-} from '../schema/stixDomainObject';
+import { registerStixDomainConverter } from '../database/stix-converter';
+import { registerStixDomainAliased, registerStixDomainType, resolveAliasesField } from '../schema/stixDomainObject';
 import { registerGraphqlSchema } from '../graphql/schema';
 import { registerModelIdentifier } from '../schema/identifier';
-import { schemaTypes } from '../schema/general';
-import { registerStixDomainConverter } from '../database/stix-converter';
-import {
-  booleanAttributes,
-  dateAttributes,
-  dictAttributes, jsonAttributes,
-  multipleAttributes,
-  numericAttributes
-} from '../schema/fieldDataAdapter';
+import { schemaTypes, STIX_META_RELATIONSHIPS_INPUTS } from '../schema/general';
+import { booleanAttributes, dateAttributes, dictAttributes, jsonAttributes, multipleAttributes, numericAttributes } from '../schema/fieldDataAdapter';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { CHECK_META_RELATIONSHIP_VALUES, RelationDefinition, stixCoreRelationshipsMapping as coreRels, } from '../database/stix';
 import {
-  RelationDefinition,
-  stixCoreRelationshipsMapping as coreRels,
-} from '../database/stix';
+  SINGLE_STIX_META_RELATIONSHIPS,
+  SINGLE_STIX_META_RELATIONSHIPS_INPUTS,
+  STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD,
+  STIX_EXTERNAL_META_RELATIONSHIPS,
+  STIX_META_RELATION_TO_FIELD
+} from '../schema/stixMetaRelationship';
+import { STIX_ATTRIBUTE_TO_META_FIELD } from '../schema/stixEmbeddedRelationship';
 
 export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json';
 export interface ModuleDefinition<T extends StoreEntity> {
@@ -51,6 +46,13 @@ export interface ModuleDefinition<T extends StoreEntity> {
   relations: Array<{
     name: string;
     targets: Array<RelationDefinition>;
+  }>;
+  relationsRefs?: Array<{
+    attribute: string;
+    input: string;
+    relation: string;
+    multiple: boolean;
+    checker: (fromType: string, toType: string) => boolean;
   }>;
   converter: ConvertFn<T>;
 }
@@ -102,5 +104,18 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
       const key: `${string}_${string}` = `${definition.type.name}_${target.name}`;
       coreRels[key] = [...(coreRels[key] ?? []), { name: source.name, type: target.type }];
     });
+  });
+  // Register relations ref
+  definition.relationsRefs?.forEach((source) => {
+    STIX_META_RELATIONSHIPS_INPUTS.push(source.input);
+    STIX_EXTERNAL_META_RELATIONSHIPS.push(source.relation);
+    STIX_META_RELATION_TO_FIELD[source.relation] = source.input;
+    CHECK_META_RELATIONSHIP_VALUES[source.relation] = source.checker;
+    STIX_ATTRIBUTE_TO_META_FIELD[source.attribute] = source.input;
+    STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[source.attribute] = source.input;
+    if (!source.multiple) {
+      SINGLE_STIX_META_RELATIONSHIPS.push(source.relation);
+      SINGLE_STIX_META_RELATIONSHIPS_INPUTS.push(source.input);
+    }
   });
 };

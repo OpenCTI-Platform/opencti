@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
@@ -31,11 +31,7 @@ import Markdown from 'react-markdown';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles, useTheme } from '@mui/styles';
 import ExportButtons from '../../../../components/ExportButtons';
-import Security, {
-  granted,
-  KNOWLEDGE_KNUPDATE,
-  UserContext,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import {
@@ -48,6 +44,7 @@ import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships
 import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -420,8 +417,7 @@ const ContainerHeader = (props) => {
   const theme = useTheme();
   const classes = useStyles();
   const { t, fd } = useFormatter();
-  const { me } = useContext(UserContext);
-  const userIsKnowledgeEditor = granted(me, [KNOWLEDGE_KNUPDATE]);
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});
   const [applying, setApplying] = useState([]);

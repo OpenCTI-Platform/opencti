@@ -16,7 +16,7 @@ import GroupingKnowledgeCorrelation, {
 } from './GroupingKnowledgeCorrelation';
 import Loader from '../../../../components/Loader';
 import GroupingPopover from './GroupingPopover';
-import AttackPatternsMatrix from '../../arsenal/attack_patterns/AttackPatternsMatrix';
+import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,

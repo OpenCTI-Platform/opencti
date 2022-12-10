@@ -31,7 +31,8 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import ItemStatus from '../../../../components/ItemStatus';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 
 const Transition = React.forwardRef((props, ref) => (

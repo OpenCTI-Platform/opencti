@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogActions from '@mui/material/DialogActions';
@@ -17,9 +17,9 @@ import IconButton from '@mui/material/IconButton';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { granted, KNOWLEDGE_KNUPDATE_KNORGARESTRICT, UserContext } from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
 import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectSharingQuery.graphql';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -112,9 +112,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const { me } = useContext(UserContext);
   const [displaySharing, setDisplaySharing] = useState(false);
-  const userIsOrganizationEditor = granted(me, [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+  const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
     return variant === 'header' ? <div style={{ display: 'inline-block' }} /> : <div style={{ marginTop: -20 }} />;

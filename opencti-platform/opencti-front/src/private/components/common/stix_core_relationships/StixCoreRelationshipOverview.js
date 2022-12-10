@@ -39,7 +39,8 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
 import StixCoreRelationshipExternalReferences from '../../analysis/external_references/StixCoreRelationshipExternalReferences';
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemCreator from '../../../../components/ItemCreator';

@@ -9,7 +9,7 @@ import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import RulesList, { rulesListQuery } from './RulesList';
 import SearchInput from '../../../components/SearchInput';
-import { UserContext } from '../../../utils/Security';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,

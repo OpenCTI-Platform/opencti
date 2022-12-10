@@ -13,9 +13,8 @@ import StixDomainObjectsExportCreation from './StixDomainObjectsExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
 import inject18n from '../../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/hooks/useGranted';
 
 const interval$ = interval(FIVE_SECONDS);
 

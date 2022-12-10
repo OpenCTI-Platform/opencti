@@ -66,7 +66,7 @@ const entityDescription = (element: StoreEntity | StoreCyberObservable) => {
 export const resolveLink = (type: string) => {
   switch (type) {
     case 'Attack-Pattern':
-      return '/dashboard/arsenal/attack_patterns';
+      return '/dashboard/techniques/attack_patterns';
     case 'Campaign':
       return '/dashboard/threats/campaigns';
     case 'Note':
@@ -80,7 +80,7 @@ export const resolveLink = (type: string) => {
     case 'Grouping':
       return '/dashboard/analysis/groupings';
     case 'Course-Of-Action':
-      return '/dashboard/arsenal/courses_of_action';
+      return '/dashboard/techniques/courses_of_action';
     case 'Individual':
       return '/dashboard/entities/individuals';
     case 'Organization':
@@ -98,19 +98,19 @@ export const resolveLink = (type: string) => {
     case 'Intrusion-Set':
       return '/dashboard/threats/intrusion_sets';
     case 'City':
-      return '/dashboard/entities/cities';
+      return '/dashboard/locations/cities';
     case 'Country':
-      return '/dashboard/entities/countries';
+      return '/dashboard/locations/countries';
     case 'Region':
-      return '/dashboard/entities/regions';
+      return '/dashboard/locations/regions';
     case 'Position':
-      return '/dashboard/entities/positions';
+      return '/dashboard/locations/positions';
     case 'Malware':
       return '/dashboard/arsenal/malwares';
     case 'Channel':
       return '/dashboard/arsenal/channels';
     case 'Narrative':
-      return '/dashboard/arsenal/narratives';
+      return '/dashboard/techniques/narratives';
     case 'Threat-Actor':
       return '/dashboard/threats/threat_actors';
     case 'Tool':
@@ -121,6 +121,10 @@ export const resolveLink = (type: string) => {
       return '/dashboard/events/incidents';
     case 'Artifact':
       return '/dashboard/observations/artifacts';
+    case 'Data-Component':
+      return './dashboard/techniques/data_components';
+    case 'Data-Source':
+      return './dashboard/techniques/data_sources';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

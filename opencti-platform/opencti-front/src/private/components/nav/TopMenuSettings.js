@@ -5,10 +5,8 @@ import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import inject18n from '../../../components/i18n';
-import Security, {
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETLABELS,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { SETTINGS_SETACCESSES, SETTINGS_SETLABELS } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   button: {

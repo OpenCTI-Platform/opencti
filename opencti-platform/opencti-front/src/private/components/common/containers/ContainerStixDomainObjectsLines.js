@@ -4,7 +4,8 @@ import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ContainerStixDomainObjectLine, ContainerStixDomainObjectLineDummy } from './ContainerStixDomainObjectLine';
 import { setNumberOfElements } from '../../../../utils/Number';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 
 const nbOfRowsToLoad = 50;

@@ -7,7 +7,8 @@ import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import List from '@mui/material/List';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableRelationshipCreationFromEntity from '../stix_cyber_observable_relationships/StixCyberObservableRelationshipCreationFromEntity';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectNestedEntitiesLines, {
   stixDomainObjectNestedEntitiesLinesQuery,

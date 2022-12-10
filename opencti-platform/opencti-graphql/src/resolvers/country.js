@@ -8,6 +8,8 @@ import {
   stixDomainObjectDelete,
 } from '../domain/stixDomainObject';
 import { batchLoader } from '../database/middleware';
+import { buildRefRelationKey } from '../schema/general';
+import { RELATION_CREATED_BY } from '../schema/stixMetaRelationship';
 
 const batchRegionLoader = batchLoader(batchRegion);
 
@@ -18,6 +20,9 @@ const countryResolvers = {
   },
   Country: {
     region: (country, _, context) => batchRegionLoader.load(country.id, context, context.user),
+  },
+  CountriesFilter: {
+    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
   },
   Mutation: {
     countryEdit: (_, { id }, context) => ({

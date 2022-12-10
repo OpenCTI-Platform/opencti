@@ -1,0 +1,205 @@
+type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDomainObject { # API model
+    # Basic Object
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+
+    # Stix Object
+    x_opencti_stix_ids: [StixId]
+    is_inferred: Boolean!
+    spec_version: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    # inferences
+    x_opencti_inferences: [Inference]
+
+    # Stix Core Object
+    createdBy: Identity
+    objectMarking: MarkingDefinitionConnection
+    objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+    objectLabel: LabelConnection
+    externalReferences(first: Int): ExternalReferenceConnection
+    reports(first: Int): ReportConnection
+    notes(first: Int): NoteConnection
+    opinions(first: Int): OpinionConnection
+    observedData(first: Int): ObservedDataConnection
+    groupings(first: Int): GroupingConnection
+    stixCoreRelationships(
+        first: Int
+        after: ID
+        orderBy: StixCoreRelationshipsOrdering
+        orderMode: OrderingMode
+        fromId: StixRef
+        toId: StixRef
+        fromTypes: [String]
+        toTypes: [String]
+        relationship_type: String
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): StixCoreRelationshipConnection
+    stixCoreObjectsDistribution(
+        relationship_type: [String]
+        toTypes: [String]
+        field: String!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        operation: StatsOperation!
+        limit: Int
+        order: String
+        types: [String]
+        filters: [StixCoreObjectsFiltering]
+        filterMode: FilterMode
+        search: String
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    stixCoreRelationshipsDistribution(
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        isTo: Boolean
+        limit: Int
+        order: String
+        elementWithTargetTypes: [String]
+        fromId: [String]
+        fromRole: String
+        fromTypes: [String]
+        toId: [String]
+        toRole: String
+        toTypes: [String]
+        relationship_type: [String]
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+
+    # Stix Domain Object
+    revoked: Boolean!
+    confidence: Int
+    lang: String
+    created: DateTime
+    modified: DateTime
+    x_opencti_graph_data: String
+
+    # Technical
+    creator: Creator
+    toStix: String
+    importFiles(first: Int): FileConnection
+    pendingFiles(first: Int): FileConnection
+    exportFiles(first: Int): FileConnection
+    editContext: [EditUserContext]
+    connectors(onlyAlive: Boolean): [Connector]
+    jobs(first: Int): [Work]
+    status: Status
+    workflowEnabled: Boolean
+
+    # DataComponents
+    name: String!
+    description: String
+    aliases: [String]
+    dataSource: DataSource
+    attackPatterns: AttackPatternConnection
+}
+
+# Ordering
+enum DataComponentsOrdering {
+    name
+    created
+    modified
+    created_at
+    updated_at
+    x_opencti_workflow_id
+}
+
+# Filtering
+enum DataComponentsFilter {
+    name
+    aliases
+    created
+    modified
+    created_at
+    updated_at
+    createdBy
+    markedBy
+    labelledBy
+    revoked
+    x_opencti_workflow_id
+}
+
+input DataComponentsFiltering {
+    key: [DataComponentsFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type DataComponentConnection {
+    pageInfo: PageInfo!
+    edges: [DataComponentEdge]
+
+}
+type DataComponentEdge {
+    cursor: String!
+    node: DataComponent!
+}
+
+# Queries
+type Query {
+    dataComponent(id: String!): DataComponent @auth(for: [KNOWLEDGE])
+    dataComponents(
+        first: Int
+        after: ID
+        orderBy: DataComponentsOrdering
+        orderMode: OrderingMode
+        filters: [DataComponentsFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): DataComponentConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input DataComponentAddInput {
+    stix_id: StixId
+    x_opencti_stix_ids: [StixId]
+    confidence: Int
+    revoked: Boolean
+    lang: String
+    createdBy: String
+    objectMarking: [String]
+    objectLabel: [String]
+    objectOrganization: [String]
+    externalReferences: [String]
+    created: DateTime
+    modified: DateTime
+    clientMutationId: String
+    update: Boolean
+
+    name: String! @constraint(minLength: 2)
+    description: String!
+    aliases: [String]
+    dataSource: String
+}
+
+type Mutation {
+    dataComponentAdd(input: DataComponentAddInput!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataComponentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    dataComponentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataComponentContextPatch(id: ID!, input: EditContext!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataComponentContextClean(id: ID!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataComponentRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataComponentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
+}

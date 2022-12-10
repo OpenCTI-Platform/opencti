@@ -10,7 +10,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WidgetConfig from './WidgetConfig';
 import Transition from '../../../../components/Transition';
 

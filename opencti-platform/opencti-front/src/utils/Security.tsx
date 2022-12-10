@@ -1,41 +1,9 @@
-import React, { FunctionComponent, ReactElement, useContext } from 'react';
+import React, { FunctionComponent, ReactElement } from 'react';
 import { filter, includes } from 'ramda';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
-import { ModuleHelper } from './platformModulesHelper';
+import useAuth from './hooks/useAuth';
+import useGranted, { BYPASS, KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from './hooks/useGranted';
 
-export interface UserContextType {
-  me: RootPrivateQuery$data['me'] | undefined;
-  settings: RootPrivateQuery$data['settings'] | undefined;
-  helper: ModuleHelper | undefined;
-}
-
-const defaultContext = {
-  me: undefined,
-  settings: undefined,
-  helper: undefined,
-};
-export const UserContext = React.createContext<UserContextType>(defaultContext);
-
-export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
-export const BYPASS = 'BYPASS';
-export const KNOWLEDGE = 'KNOWLEDGE';
-export const KNOWLEDGE_KNUPDATE = 'KNOWLEDGE_KNUPDATE';
-export const KNOWLEDGE_KNPARTICIPATE = 'KNOWLEDGE_KNPARTICIPATE';
-export const KNOWLEDGE_KNUPDATE_KNDELETE = 'KNOWLEDGE_KNUPDATE_KNDELETE';
-export const KNOWLEDGE_KNUPDATE_KNORGARESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
-export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
-export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
-export const KNOWLEDGE_KNGETEXPORT = 'KNOWLEDGE_KNGETEXPORT';
-export const KNOWLEDGE_KNGETEXPORT_KNASKEXPORT = 'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT';
-export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
-export const EXPLORE = 'EXPLORE';
-export const EXPLORE_EXUPDATE = 'EXPLORE_EXUPDATE';
-export const MODULES = 'MODULES';
-export const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
-export const SETTINGS = 'SETTINGS';
-export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
-export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
-export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const CAPABILITY_INFORMATION = {
   [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]: 'Granted only if user is a member of platform organization',
 };
@@ -51,11 +19,8 @@ interface DataSecurityProps extends SecurityProps {
   data: { createdBy: { id: string } };
 }
 
-export const granted = (
-  me: RootPrivateQuery$data['me'] | undefined,
-  capabilities: Array<string>,
-  matchAll = false,
-) => {
+// DEPECRATED
+export const granted = (me: RootPrivateQuery$data['me'], capabilities: Array<string>, matchAll = false) => {
   const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
   if (userCapabilities.includes(BYPASS)) {
     return true;
@@ -77,17 +42,9 @@ export const granted = (
   return numberOfAvailableCapabilities > 0;
 };
 
-const Security: FunctionComponent<SecurityProps> = ({
-  needs,
-  matchAll,
-  children,
-  placeholder = <span />,
-}) => {
-  const { me } = useContext<UserContextType>(UserContext);
-  if (me && granted(me, needs, matchAll)) {
-    return children;
-  }
-  return placeholder;
+const Security: FunctionComponent<SecurityProps> = ({ needs, matchAll = false, children, placeholder = <span /> }) => {
+  const isGranted = useGranted(needs, matchAll);
+  return isGranted ? children : placeholder;
 };
 
 export const CollaborativeSecurity: FunctionComponent<DataSecurityProps> = ({
@@ -97,13 +54,13 @@ export const CollaborativeSecurity: FunctionComponent<DataSecurityProps> = ({
   children,
   placeholder = <span />,
 }) => {
-  const { me } = useContext<UserContextType>(UserContext);
-  const haveCapability = granted(me, needs, matchAll);
+  const { me } = useAuth();
+  const haveCapability = useGranted(needs, matchAll);
+  const canParticipate = useGranted([KNOWLEDGE_KNPARTICIPATE]);
   if (haveCapability) {
     return children;
   }
-  const canParticipate = granted(me, [KNOWLEDGE_KNPARTICIPATE], false);
-  const isCreator = data.createdBy?.id ? data.createdBy?.id === me?.individual_id : false;
+  const isCreator = data.createdBy?.id ? data.createdBy?.id === me.individual_id : false;
   if (canParticipate && isCreator) {
     return children;
   }

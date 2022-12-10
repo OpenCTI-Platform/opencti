@@ -31,7 +31,8 @@ import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRela
 import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
 import {

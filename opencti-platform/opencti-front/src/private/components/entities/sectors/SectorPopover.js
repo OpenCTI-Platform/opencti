@@ -20,9 +20,8 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { sectorEditionQuery } from './SectorEdition';
 import SectorEditionContainer from './SectorEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   container: {

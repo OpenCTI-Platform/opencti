@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { React } from 'mdi-material-ui';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
 import StixCyberObservablesRightBar from './stix_cyber_observables/StixCyberObservablesRightBar';
-import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../utils/Security';
+import Security from '../../../utils/Security';
 import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixCyberObservablesLines, {
@@ -28,6 +28,8 @@ import {
   StixCyberObservablesLinesSearchQuery$data,
 } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
 import { convertFilters } from '../../../utils/ListParameters';
+import { UserContext } from '../../../utils/hooks/useAuth';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {

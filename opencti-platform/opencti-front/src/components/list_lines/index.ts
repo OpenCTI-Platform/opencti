@@ -15,7 +15,7 @@ export interface PaginationOptions {
   toId?: unknown,
   search?: string,
   orderBy?: string,
-  orderMode: OrderMode,
+  orderMode?: OrderMode,
   filters?: Filters,
 }
 

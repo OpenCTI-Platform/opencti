@@ -104,7 +104,7 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_EMAIL_ADDR]: [{ src: 'value' }], // value
     [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }], // from_ref, subject, body
     [C.ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [[{ src: 'hashes' }], [{ src: 'url' }]], // hashes, (!) payload_bin > Cause of volume
-    [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [[{ src: 'hashes' }], [{ src: 'name' }]], // hashes, name, (!) extensions, parent_directory_ref
+    [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [[{ src: 'hashes' }], [{ src: NAME_FIELD }]], // hashes, name, (!) extensions, parent_directory_ref
     [C.ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [[{ src: 'hashes' }], [{ src: 'serial_number' }], [{ src: 'subject' }]], // hashes, serial_number
     [C.ENTITY_IPV4_ADDR]: [{ src: 'value' }], // value
     [C.ENTITY_IPV6_ADDR]: [{ src: 'value' }], // value
@@ -212,6 +212,9 @@ const stixBaseEntityContribution = {
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_DATA_COMPONENT]: [[{ src: NAME_FIELD }]],
+    [D.ENTITY_TYPE_DATA_SOURCE]: [[{ src: NAME_FIELD }]],
+    [D.ENTITY_TYPE_DATA_SOURCE]: [[{ src: NAME_FIELD }]],
     // Stix Meta
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition', dependencies: ['definition_type'] }, { src: 'definition_type' }],
     [M.ENTITY_TYPE_LABEL]: [{ src: 'value' }],

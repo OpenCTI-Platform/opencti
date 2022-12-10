@@ -14,7 +14,8 @@ import InfrastructuresLines, {
   infrastructuresLinesQuery,
 } from './infrastructures/InfrastructuresLines';
 import InfrastructureCreation from './infrastructures/InfrastructureCreation';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
 class Infrastructures extends Component {

@@ -27,7 +27,8 @@ import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 

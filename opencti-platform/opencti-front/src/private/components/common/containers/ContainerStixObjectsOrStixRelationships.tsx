@@ -9,7 +9,7 @@ import ContainerStixObjectsOrStixRelationshipsLines, {
   ContainerStixObjectsOrStixRelationshipsLinesQuery,
 } from './ContainerStixObjectsOrStixRelationshipsLines';
 import { useFormatter } from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNUPDATE, UserContext } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import {
   ContainerStixObjectsOrStixRelationshipsLinesQuery$data,
@@ -18,6 +18,8 @@ import {
 import {
   ContainerStixObjectsOrStixRelationships_container$data,
 } from './__generated__/ContainerStixObjectsOrStixRelationships_container.graphql';
+import { UserContext } from '../../../../utils/hooks/useAuth';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles(() => ({
   paper: {

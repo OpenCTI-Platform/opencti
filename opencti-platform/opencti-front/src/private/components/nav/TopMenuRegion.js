@@ -6,10 +6,8 @@ import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import { MapOutlined, ArrowForwardIosOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/Security';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -48,14 +46,14 @@ class TopMenuRegion extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/entities/countries"
+          to="/dashboard/locations/regions"
           variant="contained"
           size="small"
           color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <MapOutlined className={classes.icon} fontSize="small" />
-          {t('Countries')}
+          {t('Regions')}
         </Button>
         <ArrowForwardIosOutlined
           color="primary"
@@ -63,15 +61,15 @@ class TopMenuRegion extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}`}
+          to={`/dashboard/locations/regions/${regionId}`}
           variant={
-            location.pathname === `/dashboard/entities/regions/${regionId}`
+            location.pathname === `/dashboard/locations/regions/${regionId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/regions/${regionId}`
+            location.pathname === `/dashboard/locations/regions/${regionId}`
               ? 'secondary'
               : 'primary'
           }
@@ -81,10 +79,10 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/knowledge`}
+          to={`/dashboard/locations/regions/${regionId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/knowledge`,
+              `/dashboard/locations/regions/${regionId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -92,7 +90,7 @@ class TopMenuRegion extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/knowledge`,
+              `/dashboard/locations/regions/${regionId}/knowledge`,
             )
               ? 'secondary'
               : 'primary'
@@ -103,17 +101,17 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/analysis`}
+          to={`/dashboard/locations/regions/${regionId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/analysis`
+            === `/dashboard/locations/regions/${regionId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/analysis`
+            === `/dashboard/locations/regions/${regionId}/analysis`
               ? 'secondary'
               : 'primary'
           }
@@ -123,17 +121,17 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/sightings`}
+          to={`/dashboard/locations/regions/${regionId}/sightings`}
           variant={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/sightings`
+            === `/dashboard/locations/regions/${regionId}/sightings`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/sightings`
+            === `/dashboard/locations/regions/${regionId}/sightings`
               ? 'secondary'
               : 'primary'
           }
@@ -144,17 +142,17 @@ class TopMenuRegion extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/entities/regions/${regionId}/files`}
+            to={`/dashboard/locations/regions/${regionId}/files`}
             variant={
               location.pathname
-              === `/dashboard/entities/regions/${regionId}/files`
+              === `/dashboard/locations/regions/${regionId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/entities/regions/${regionId}/files`
+              === `/dashboard/locations/regions/${regionId}/files`
                 ? 'secondary'
                 : 'primary'
             }
@@ -165,17 +163,17 @@ class TopMenuRegion extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/history`}
+          to={`/dashboard/locations/regions/${regionId}/history`}
           variant={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/history`
+            === `/dashboard/locations/regions/${regionId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/history`
+            === `/dashboard/locations/regions/${regionId}/history`
               ? 'secondary'
               : 'primary'
           }

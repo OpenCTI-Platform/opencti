@@ -17,7 +17,8 @@ import { defaultValue } from '../../../../utils/Graph';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import { TEN_SECONDS } from '../../../../utils/Time';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemConfidence from '../../../../components/ItemConfidence';
 

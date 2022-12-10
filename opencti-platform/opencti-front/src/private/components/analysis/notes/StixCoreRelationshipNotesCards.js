@@ -19,10 +19,8 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
-import Security, {
-  KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AddNotes from './AddNotes';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';

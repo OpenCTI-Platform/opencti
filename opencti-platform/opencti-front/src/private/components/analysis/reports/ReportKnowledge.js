@@ -16,7 +16,7 @@ import ReportKnowledgeCorrelation, {
 } from './ReportKnowledgeCorrelation';
 import Loader from '../../../../components/Loader';
 import ReportPopover from './ReportPopover';
-import AttackPatternsMatrix from '../../arsenal/attack_patterns/AttackPatternsMatrix';
+import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,

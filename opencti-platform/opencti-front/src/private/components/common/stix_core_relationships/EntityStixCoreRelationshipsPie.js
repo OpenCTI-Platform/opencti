@@ -12,7 +12,8 @@ import { SettingsInputComponent } from '@mui/icons-material';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = () => ({
   paper: {

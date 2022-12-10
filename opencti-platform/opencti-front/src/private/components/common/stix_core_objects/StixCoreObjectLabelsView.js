@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import {
   compose,
@@ -32,14 +32,10 @@ import inject18n from '../../../../components/i18n';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
-import Security, {
-  granted,
-  KNOWLEDGE_KNUPDATE,
-  SETTINGS_SETLABELS,
-  UserContext,
-} from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
 import { hexToRGB } from '../../../../utils/Colors';
 import { truncate } from '../../../../utils/String';
+import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -119,8 +115,7 @@ const stixCoreObjectMutationRelationDelete = graphql`
 
 const StixCoreObjectLabelsView = (props) => {
   const { classes, labels, t, marginTop } = props;
-  const { me } = useContext(UserContext);
-  const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
+  const isLabelManager = useGranted([SETTINGS_SETLABELS]);
   const [openAdd, setOpenAdd] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [stateLabels, setStateLabels] = useState([]);

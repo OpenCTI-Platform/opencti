@@ -1,5 +1,6 @@
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
+import { filter } from 'ramda';
 
 export const isNodeInConnection = (payload, conn) => {
   const records = conn.getLinkedRecords('edges');
@@ -45,4 +46,16 @@ export const deleteNode = (store, key, filters, id) => {
   } else {
     throw new Error(`Delete node connection not found ${{ key, params, id }}`);
   }
+};
+
+export const deleteNodeFromEdge = (store, path, rootId, deleteId) => {
+  const node = store.get(rootId);
+
+  const records = node.getLinkedRecord(path);
+  const edges = records.getLinkedRecords('edges');
+  const newEdges = filter(
+    (n) => n.getLinkedRecord('node').getValue('id') !== deleteId,
+    edges,
+  );
+  records.setLinkedRecords(newEdges, 'edges');
 };

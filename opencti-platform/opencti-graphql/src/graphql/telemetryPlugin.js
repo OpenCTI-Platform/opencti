@@ -43,17 +43,26 @@ export default {
       willSendResponse: async (sendContext) => {
         const requestError = getRequestError(sendContext);
         const payloadSize = Buffer.byteLength(JSON.stringify(sendContext.request.variables || {}));
-        tracingSpan.setAttribute(SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES, payloadSize);
+        // Tracing span can be null for invalid operations
+        if (tracingSpan) {
+          tracingSpan.setAttribute(SemanticAttributes.MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES, payloadSize);
+        }
         if (requestError) {
           meterManager.error();
-          tracingSpan.setStatus({ code: 2, message: requestError.name });
+          if (tracingSpan) {
+            tracingSpan.setStatus({ code: 2, message: requestError.name });
+          }
         } else {
           const stop = Date.now();
           const elapsed = stop - start;
           meterManager.latency(elapsed);
-          tracingSpan.setStatus({ code: 1 });
+          if (tracingSpan) {
+            tracingSpan.setStatus({ code: 1 });
+          }
         }
-        tracingSpan.end();
+        if (tracingSpan) {
+          tracingSpan.end();
+        }
       },
     };
   },

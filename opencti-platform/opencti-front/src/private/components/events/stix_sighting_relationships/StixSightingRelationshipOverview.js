@@ -31,7 +31,8 @@ import StixSightingRelationshipNotes from '../../analysis/notes/StixSightingRela
 import StixSightingRelationshipInference from './StixSightingRelationshipInference';
 import StixSightingRelationshipExternalReferences from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = (theme) => ({
