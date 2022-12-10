@@ -52,15 +52,14 @@ const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_P
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 // Subscription
 const loc = window.location;
-let { host } = loc;
-if (process.env.REACT_APP_GRAPHQL_HOST !== undefined) {
-  const hostUrl = new URL(process.env.REACT_APP_GRAPHQL_HOST);
-  host = hostUrl.host;
-}
-// eslint-disable-next-line no-console
-const isSecure = loc.protocol === 'https:' ? 's' : '';
+const serverUrl = new URL(
+  process.env.REACT_APP_GRAPHQL_HOST ? process.env.REACT_APP_GRAPHQL_HOST : loc.host,
+);
+export const SERVER_URL = serverUrl.origin;
+const isSecure = serverUrl.protocol === 'https:' ? 's' : '';
+
 const subscriptionClient = new SubscriptionClient(
-  `ws${isSecure}://${host}${APP_BASE_PATH}/graphql`,
+  `ws${isSecure}://${serverUrl.host}/graphql`,
   {
     reconnect: true,
   },
@@ -79,8 +78,8 @@ const subscribeFn = (request, variables) => {
 const network = new RelayNetworkLayer(
   [
     urlMiddleware({
-      url: `${APP_BASE_PATH}/graphql`,
-      credentials: 'same-origin',
+      url: `${SERVER_URL}/graphql`,
+      credentials: 'include',
     }),
     uploadMiddleware(),
   ],
