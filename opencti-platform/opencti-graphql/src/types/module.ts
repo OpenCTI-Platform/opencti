@@ -1,7 +1,5 @@
 import type { StoreEntity } from './store';
 import type { ConvertFn } from '../database/stix-converter';
-import { registerStixDomainConverter } from '../database/stix-converter';
-import { registerStixDomainAliased, registerStixDomainType, resolveAliasesField } from '../schema/stixDomainObject';
 import { registerStixDomainConverter, registerStixMetaConverter } from '../database/stix-converter';
 import { registerStixDomainAliased, registerStixDomainType, resolveAliasesField } from '../schema/stixDomainObject';
 import { registerGraphqlSchema } from '../graphql/schema';
@@ -16,9 +14,12 @@ import {
   numericAttributes
 } from '../schema/fieldDataAdapter';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { RelationDefinition, stixCoreRelationshipsMapping as coreRels, } from '../database/stix';
+import {
+  CHECK_META_RELATIONSHIP_VALUES,
+  RelationDefinition,
+  stixCoreRelationshipsMapping as coreRels,
+} from '../database/stix';
 import { UnsupportedError } from '../config/errors';
-import { CHECK_META_RELATIONSHIP_VALUES, RelationDefinition, stixCoreRelationshipsMapping as coreRels, } from '../database/stix';
 import {
   SINGLE_STIX_META_RELATIONSHIPS,
   SINGLE_STIX_META_RELATIONSHIPS_INPUTS,

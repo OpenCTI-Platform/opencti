@@ -14,15 +14,6 @@ import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import Security from '../../../../utils/Security';
-import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
@@ -243,12 +234,12 @@ class ChannelEditionOverviewComponent extends Component {
                 onSubmit={this.onSubmit.bind(this)}
               >
                 {({
-                    submitForm,
-                    isSubmitting,
-                    validateForm,
-                    setFieldValue,
-                    values,
-                  }) => (
+                  submitForm,
+                  isSubmitting,
+                  validateForm,
+                  setFieldValue,
+                  values,
+                }) => (
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
                       component={TextField}

@@ -21,8 +21,6 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import Loader from '../../../../components/Loader';
-import Security from '../../../../utils/Security';
-import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
 import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
