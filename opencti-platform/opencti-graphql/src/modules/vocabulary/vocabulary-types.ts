@@ -1,6 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import {
-  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
@@ -10,7 +11,6 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import type { StixObject } from '../../types/stix-common';
@@ -28,10 +28,19 @@ interface VocabularyDefinition {
 }
 
 export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinition> = {
+  // A
   account_type_ov: {
     entity_types: [ENTITY_USER_ACCOUNT],
     fields: [{
       key: 'account_type',
+      required: false,
+      multiple: false,
+    }]
+  },
+  attack_resource_level_ov: {
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET],
+    fields: [{
+      key: 'resource_level',
       required: false,
       multiple: false,
     }]
@@ -52,22 +61,16 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
-  attack_resource_level_ov: {
-    entity_types: [ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET],
-    fields: [{
-      key: 'resource_level',
-      required: false,
-      multiple: false,
-    }]
-  },
+  // C
   channel_types_ov: {
     entity_types: [ENTITY_TYPE_CHANNEL],
     fields: [{
       key: 'channel_types',
-      required: true,
+      required: false,
       multiple: true,
     }]
   },
+  // E
   event_type_ov: {
     entity_types: [ENTITY_TYPE_EVENT],
     fields: [{
@@ -76,6 +79,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
+  // G
   grouping_context_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_GROUPING],
     fields: [{
@@ -84,14 +88,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }]
   },
-  identity_sector_ov: {
-    entity_types: [ENTITY_TYPE_IDENTITY],
-    fields: [{
-      key: 'sectors',
-      required: false,
-      multiple: true,
-    }]
-  },
+  // I
   implementation_language_ov: {
     entity_types: [ENTITY_TYPE_MALWARE],
     fields: [{
@@ -116,15 +113,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
-  // TODO UNUSED ?
   integrity_level_ov: {
     entity_types: [ENTITY_PROCESS],
     fields: [{
-      key: 'unused',
+      key: 'integrity_level',
       required: false,
       multiple: false,
     }],
   },
+  // M
   malware_capabilities_ov: {
     entity_types: [ENTITY_TYPE_MALWARE],
     fields: [{
@@ -141,10 +138,32 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
+  // P
+  platforms_ov: {
+    entity_types: [ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_ATTACK_PATTERN],
+    fields: [{
+      key: 'x_mitre_platforms',
+      required: false,
+      multiple: true,
+    }]
+  },
+  collection_layers_ov: {
+    entity_types: [ENTITY_TYPE_DATA_SOURCE],
+    fields: [{
+      key: 'collection_layers',
+      required: false,
+      multiple: true,
+    },
+    { // For backward compatibility in python
+      key: 'x_mitre_collection_layers',
+      required: false,
+      multiple: true,
+    }]
+  },
   pattern_type_ov: {
     entity_types: [ENTITY_TYPE_INDICATOR],
     fields: [{
-      key: 'patter_type',
+      key: 'pattern_type',
       required: true,
       multiple: false,
     }]
@@ -157,14 +176,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
-  region_ov: {
-    entity_types: [ENTITY_TYPE_LOCATION],
-    fields: [{
-      key: 'region',
-      required: false,
-      multiple: false,
-    }]
-  },
+  // R
   report_types_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_REPORT],
     fields: [{
@@ -173,10 +185,11 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
+  // S
   service_status_ov: {
     entity_types: [ENTITY_PROCESS],
     fields: [{
-      key: 'unused',
+      key: 'service_status',
       required: false,
       multiple: false,
     }],
@@ -184,7 +197,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   service_type_ov: {
     entity_types: [ENTITY_PROCESS],
     fields: [{
-      key: 'unused',
+      key: 'service_type',
       required: false,
       multiple: false,
     }],
@@ -192,11 +205,12 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   start_type_ov: {
     entity_types: [ENTITY_PROCESS],
     fields: [{
-      key: 'unused',
+      key: 'start_type',
       required: false,
       multiple: false,
     }],
   },
+  // T
   threat_actor_type_ov: {
     entity_types: [ENTITY_TYPE_THREAT_ACTOR],
     fields: [{

@@ -1,10 +1,12 @@
 import type { Resolvers, VocabularyDefinition } from '../../generated/graphql';
 import {
-  addVocabulary, deleteVocabulary,
+  addVocabulary,
+  deleteVocabulary,
   editVocabulary,
   findAll,
   findById,
-  getVocabularyUsages, mergeVocabulary
+  getVocabularyUsages,
+  mergeVocabulary
 } from './vocabulary-domain';
 import { getVocabulariesCategories } from './vocabulary-utils';
 

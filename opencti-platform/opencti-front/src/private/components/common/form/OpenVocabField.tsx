@@ -85,10 +85,7 @@ const OpenVocabFieldComponent: FunctionComponent<Omit<OpenVocabProps, 'type'>> =
     const onDelete = () => onSubmit?.(name, values.filter((nValue) => nValue !== v));
     return (
       <Tooltip key={value} title={description}>
-        <Chip
-          onDelete={onDelete}
-          label={t(value)}
-        />
+        <Chip onDelete={onDelete} label={value} />
       </Tooltip>
     );
   });

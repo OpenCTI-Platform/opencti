@@ -287,7 +287,7 @@ export const createBasicRolesAndCapabilities = async (context) => {
 const createVocabularies = async (context) => {
   await Promise.all(Object.values(VocabularyCategory).flatMap(async (category) => {
     await Promise.all((openVocabularies[category] ?? []).map(async ({ key, description }) => {
-      await addVocabulary(context, SYSTEM_USER, { category, name: key, label: description, builtIn: builtInOv.includes(category) });
+      await addVocabulary(context, SYSTEM_USER, { name: key, description, category, builtIn: builtInOv.includes(category) });
     }));
   }));
 };

@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
 
 interface ItemOpenVocabProps {
   type: string;
-  value?: string;
+  value?: string | null;
   small: boolean;
 }
 
@@ -61,7 +61,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
         <pre style={{ margin: 0, paddingTop: 7, paddingBottom: 4 }}>
           {t('Unknown')}
         </pre>
-        <Tooltip title={t('No value')}>
+        <Tooltip title={t('No description')}>
           <InformationOutline
             className={small ? classes.smallIcon : classes.icon}
             fontSize="small"
@@ -72,7 +72,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
     );
   }
   const openVocab = R.head(openVocabList.filter((n) => n.name === value));
-  const description = openVocab && openVocab.description ? openVocab.description : t('No value');
+  const description = openVocab && openVocab.description ? openVocab.description : t('No description');
   const preStyle = small
     ? { margin: 0, paddingTop: 7, paddingBottom: 4 }
     : { marginTop: 7 };

@@ -51,38 +51,6 @@ enum Capabilities {
   TAXIIAPI_SETCOLLECTIONS
 }
 
-enum WindowsIntegrityLevel {
-  low
-  medium
-  high
-  system
-}
-
-enum WindowsServiceStartType {
-  SERVICE_AUTO_START
-  SERVICE_BOOT_START
-  SERVICE_DEMAND_START
-  SERVICE_DISABLED
-  SERVICE_SYSTEM_ALERT
-}
-
-enum WindowsServiceType {
-  SERVICE_KERNEL_DRIVER
-  SERVICE_FILE_SYSTEM_DRIVER
-  SERVICE_WIN32_OWN_PROCESS
-  SERVICE_WIN32_SHARE_PROCESS
-}
-
-enum WindowsServiceStatus {
-  SERVICE_CONTINUE_PENDING
-  SERVICE_PAUSE_PENDING
-  SERVICE_PAUSED
-  SERVICE_RUNNING
-  SERVICE_START_PENDING
-  SERVICE_STOP_PENDING
-  SERVICE_STOPPED
-}
-
 type PageInfo {
   startCursor: String!
   endCursor: String!
@@ -6106,15 +6074,15 @@ input ProcessAddInput {
   owner_sid: String
   window_title: String
   startup_info: [DictionaryInput]
-  integrity_level: WindowsIntegrityLevel
+  integrity_level: String
   service_name: String
   descriptions: [String]
   display_name: String
   group_name: String
-  start_type: WindowsServiceStartType
+  start_type: String
   serviceDlls: [String]
-  service_type: WindowsServiceType
-  service_status: WindowsServiceStatus
+  service_type: String
+  service_status: String
 }
 
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -9004,16 +8972,16 @@ enum VocabularyCategory {
   channel_types_ov
   event_type_ov
   grouping_context_ov
-  identity_sector_ov
   implementation_language_ov
   indicator_type_ov
   infrastructure_type_ov
   integrity_level_ov
   malware_capabilities_ov
   malware_type_ov
+  platforms_ov
+  collection_layers_ov
   pattern_type_ov
   processor_architecture_ov
-  region_ov
   report_types_ov
   service_status_ov
   service_type_ov

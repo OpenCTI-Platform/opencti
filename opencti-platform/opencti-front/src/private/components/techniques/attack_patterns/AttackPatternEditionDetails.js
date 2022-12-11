@@ -11,6 +11,8 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -129,7 +131,9 @@ class AttackPatternEditionDetailsComponent extends Component {
         validationSchema={attackPatternValidation()}
         onSubmit={() => true}
       >
-        {() => (
+        {({
+          setFieldValue,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
@@ -143,28 +147,17 @@ class AttackPatternEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="x_mitre_id" />
               }
             />
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="x_mitre_platforms"
-              multiple={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+            <OpenVocabField
               label={t('Platforms')}
-              fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_mitre_platforms"
-                />
-              }
-            >
-              <MenuItem value="Android">{t('Android')}</MenuItem>
-              <MenuItem value="macOS">{t('macOS')}</MenuItem>
-              <MenuItem value="Linux">{t('Linux')}</MenuItem>
-              <MenuItem value="Windows">{t('Windows')}</MenuItem>
-            </Field>
+              type="platforms_ov"
+              name="x_mitre_platforms"
+              variant={'edit'}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={true}
+              editContext={context}
+            />
             <Field
               component={SelectField}
               variant="standard"

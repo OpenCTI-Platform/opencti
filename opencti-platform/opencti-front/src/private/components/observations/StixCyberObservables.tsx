@@ -260,7 +260,12 @@ const StixCyberObservables: FunctionComponent = () => {
           paginationKey="Pagination_stixCyberObservables"
           paginationOptions={paginationOptions}
           openExports={openExports}
-        />
+          contextual={false}
+          open={false}
+          handleClose={undefined}
+          type={undefined}
+          display={undefined}
+          speeddial={false} />
       </Security>
       <StixCyberObservablesRightBar
         types={types}

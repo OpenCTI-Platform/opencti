@@ -154,27 +154,6 @@ export const resolveLocationType = (entity: Record<string, string>): string => {
   return 'Position';
 };
 
-export const openVocabularies: string[] = [
-  'malware-type-ov',
-  'event-type-ov',
-  'processor-architecture-ov',
-  'implementation-language-ov',
-  'malware-capabilities-ov',
-  'attack-resource-level-ov',
-  'attack-motivation-ov',
-  'indicator-type-ov',
-  'infrastructure-type-ov',
-  'threat-actor-role-ov',
-  'threat-actor-sophistication-ov',
-  'grouping-context-ov',
-  'incident-type-ov',
-  'incident-severity-ov',
-  'integrity_level-ov',
-  'start_type-ov',
-  'service_type-ov',
-  'service_status-ov',
-];
-
 export const ignoredAttributes = [
   'internal_id',
   'standard_id',

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
@@ -11,9 +11,9 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { Launch } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const styles = (theme) => ({
   paper: {
@@ -62,13 +62,15 @@ class ToolDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Tool types')}
               </Typography>
-              {R.propOr(['-'], 'tool_types', tool).map((toolType) => (
-                <Chip
-                  key={toolType}
-                  classes={{ root: classes.chip }}
-                  label={toolType}
-                />
-              ))}
+              {tool.tool_types && (
+                <List>
+                  {tool.tool_types.map((tool_type) => (
+                    <ListItem key={tool_type} dense={true} divider={true}>
+                      <ListItemText primary={<ItemOpenVocab type="tool_types_ov" value={tool_type} />} />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}

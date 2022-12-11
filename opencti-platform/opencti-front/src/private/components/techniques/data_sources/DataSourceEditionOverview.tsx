@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -19,8 +18,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSourceEditionOverview_dataSource.graphql';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import SelectField from '../../../../components/SelectField';
-import { Layers, Platforms } from './DataSourceCreation';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const dataSourceMutationFieldPatch = graphql`
   mutation DataSourceEditionOverviewFieldPatchMutation(
@@ -242,7 +240,7 @@ const DataSourceEditionOverviewComponent: FunctionComponent<DataSourceEditionOve
       }
     }
   };
-  const handleSubmitField = (name: string, value: Option | string) => {
+  const handleSubmitField = (name: string, value: Option | string | string[]) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
@@ -358,42 +356,28 @@ const DataSourceEditionOverviewComponent: FunctionComponent<DataSourceEditionOve
             }
             onChange={handleChangeObjectMarking}
           />
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="x_mitre_platforms"
+          <OpenVocabField
             label={t('Platforms')}
-            fullWidth={true}
+            type="platforms_ov"
+            name="x_mitre_platforms"
+            variant={'edit'}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
             multiple={true}
-            containerstyle={{ marginTop: 20, width: '100%' }}
-            onFocus={handleChangeFocus}
-            onChange={handleSubmitField}
-            helpertext={
-            <SubscriptionFocus
-              context={context}
-              fieldName="x_mitre_platforms"
-            />
-            }
-          >
-            {Object.values(Platforms).map((plaform) => (
-              <MenuItem key={plaform} value={plaform}>{t(plaform)}</MenuItem>
-            ))}
-          </Field>
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="collection_layers"
+            editContext={context}
+          />
+          <OpenVocabField
             label={t('Layers')}
-            fullWidth={true}
+            type="collection_layers_ov"
+            name="collection_layers"
+            variant={'edit'}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
             multiple={true}
-            containerstyle={{ marginTop: 20, width: '100%' }}
-            onFocus={handleChangeFocus}
-            onChange={handleSubmitField}
-          >
-            {Object.values(Layers).map((layer) => (
-              <MenuItem key={layer} value={layer}>{t(layer)}</MenuItem>
-            ))}
-          </Field>
+            editContext={context}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

@@ -1,11 +1,8 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import { assoc, compose, difference, filter, fromPairs, head, includes, map, pathOr, pick, pipe } from 'ramda';
-import { withRouter } from 'react-router-dom';
-import inject18n from '../../../../components/i18n';
+import { assoc, difference, filter, fromPairs, head, includes, map, pathOr, pick, pipe } from 'ramda';
+import { useHistory } from 'react-router-dom';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -21,35 +18,13 @@ import {
   dateAttributes,
   ignoredAttributes,
   multipleAttributes,
-  numberAttributes, openVocabularies,
+  numberAttributes,
 } from '../../../../utils/Entity';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
+import { useFormatter } from '../../../../components/i18n';
+import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 
 const stixCyberObservableMutationFieldPatch = graphql`
   mutation StixCyberObservableEditionOverviewFieldPatchMutation(
@@ -109,20 +84,24 @@ const stixCyberObservableMutationRelationDelete = graphql`
   }
 `;
 
-class StixCyberObservableEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
+const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enableReferences, context }) => {
+  const history = useHistory();
+  const { t } = useFormatter();
+  const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
+
+  const handleChangeFocus = (name) => {
     commitMutation({
       mutation: stixCyberObservableEditionOverviewFocus,
       variables: {
-        id: this.props.stixCyberObservable.id,
+        id: stixCyberObservable.id,
         input: {
           focusOn: name,
         },
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
+  const handleSubmitField = (name, value) => {
     let finalName = name;
     let finalValue = value || '';
     if (name.includes('hashes')) {
@@ -138,48 +117,47 @@ class StixCyberObservableEditionOverviewComponent extends Component {
     commitMutation({
       mutation: stixCyberObservableMutationFieldPatch,
       variables: {
-        id: this.props.stixCyberObservable.id,
+        id: stixCyberObservable.id,
         input: { key: finalName, value: finalValue },
       },
       onCompleted: (response) => {
         if (
           response.stixCyberObservableEdit.fieldPatch.id
-          !== this.props.stixCyberObservable.id
+          !== stixCyberObservable.id
         ) {
-          this.props.history.push(
+          history.push(
             `/dashboard/observations/observables/${response.stixCyberObservableEdit.fieldPatch.id}`,
           );
         }
       },
     });
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: stixCyberObservableMutationFieldPatch,
         variables: {
-          id: this.props.stixCyberObservable.id,
+          id: stixCyberObservable.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeRef(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeRef = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: stixCyberObservableMutationFieldPatch,
         variables: {
-          id: this.props.stixCyberObservable.id,
+          id: stixCyberObservable.id,
           input: { key: name, value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    const { stixCyberObservable } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
@@ -193,7 +171,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
       commitMutation({
         mutation: stixCyberObservableMutationRelationAdd,
         variables: {
-          id: this.props.stixCyberObservable.id,
+          id: stixCyberObservable.id,
           input: {
             toId: head(added).value,
             relationship_type: 'object-marking',
@@ -205,17 +183,15 @@ class StixCyberObservableEditionOverviewComponent extends Component {
       commitMutation({
         mutation: stixCyberObservableMutationRelationDelete,
         variables: {
-          id: this.props.stixCyberObservable.id,
+          id: stixCyberObservable.id,
           toId: head(removed).value,
           relationship_type: 'object-marking',
         },
       });
     }
-  }
+  };
 
-  render() {
-    const { t, stixCyberObservable, context } = this.props;
-    return (
+  return (
       <QueryRenderer
         query={stixCyberObservablesLinesAttributesQuery}
         variables={{ elementType: [stixCyberObservable.entity_type] }}
@@ -297,8 +273,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                       label={t('Score')}
                       fullWidth={true}
                       type="number"
-                      onFocus={this.handleChangeFocus.bind(this)}
-                      onSubmit={this.handleSubmitField.bind(this)}
+                      onFocus={handleChangeFocus}
+                      onSubmit={handleSubmitField}
                       helperText={
                         <SubscriptionFocus
                           context={context}
@@ -314,8 +290,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                       multiline={true}
                       rows="4"
                       style={{ marginTop: 20 }}
-                      onFocus={this.handleChangeFocus.bind(this)}
-                      onSubmit={this.handleSubmitField.bind(this)}
+                      onFocus={handleChangeFocus}
+                      onSubmit={handleSubmitField}
                       helperText={
                         <SubscriptionFocus
                           context={context}
@@ -334,8 +310,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                               label={t('hash_md5')}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
-                              onFocus={this.handleChangeFocus.bind(this)}
-                              onSubmit={this.handleSubmitField.bind(this)}
+                              onFocus={handleChangeFocus}
+                              onSubmit={handleSubmitField}
                               helperText={
                                 <SubscriptionFocus
                                   context={context}
@@ -350,8 +326,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                               label={t('hash_sha-1')}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
-                              onFocus={this.handleChangeFocus.bind(this)}
-                              onSubmit={this.handleSubmitField.bind(this)}
+                              onFocus={handleChangeFocus}
+                              onSubmit={handleSubmitField}
                               helperText={
                                 <SubscriptionFocus
                                   context={context}
@@ -366,8 +342,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                               label={t('hash_sha-256')}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
-                              onFocus={this.handleChangeFocus.bind(this)}
-                              onSubmit={this.handleSubmitField.bind(this)}
+                              onFocus={handleChangeFocus}
+                              onSubmit={handleSubmitField}
                               helperText={
                                 <SubscriptionFocus
                                   context={context}
@@ -382,8 +358,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                               label={t('hash_sha-512')}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
-                              onFocus={this.handleChangeFocus.bind(this)}
-                              onSubmit={this.handleSubmitField.bind(this)}
+                              onFocus={handleChangeFocus}
+                              onSubmit={handleSubmitField}
                               helperText={
                                 <SubscriptionFocus
                                   context={context}
@@ -401,8 +377,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             key={attribute.value}
                             name={attribute.value}
                             withSeconds={true}
-                            onFocus={this.handleChangeFocus.bind(this)}
-                            onSubmit={this.handleSubmitField.bind(this)}
+                            onFocus={handleChangeFocus}
+                            onSubmit={handleSubmitField}
                             TextFieldProps={{
                               label: attribute.value,
                               variant: 'standard',
@@ -429,8 +405,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             fullWidth={true}
                             number={true}
                             style={{ marginTop: 20 }}
-                            onFocus={this.handleChangeFocus.bind(this)}
-                            onSubmit={this.handleSubmitField.bind(this)}
+                            onFocus={handleChangeFocus}
+                            onSubmit={handleSubmitField}
                             helperText={
                               <SubscriptionFocus
                                 context={context}
@@ -449,19 +425,19 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             name={attribute.value}
                             label={attribute.value}
                             containerstyle={{ marginTop: 20 }}
-                            onChange={this.handleSubmitField.bind(this)}
+                            onChange={handleSubmitField}
                           />
                         );
                       }
-                      if (openVocabularies.includes(`${attribute.value}-ov`)) {
+                      if (isVocabularyField(stixCyberObservable.entity_type, attribute.value)) {
                         return (
                           <OpenVocabField
                             key={attribute.value}
                             label={t(attribute.value)}
-                            type={`${attribute.value}-ov`}
+                            type={fieldToCategory(stixCyberObservable.entity_type, attribute.value)}
                             name={attribute.value}
                             variant={'edit'}
-                            onChange={this.handleSubmitField.bind(this)}
+                            onChange={handleSubmitField}
                             containerStyle={fieldSpacingContainerStyle}
                             multiple={false}
                             editContext={context}
@@ -478,7 +454,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                               label: artifact.observable_value ?? artifact.id,
                               value: artifact.id,
                             } : undefined}
-                            onChange={this.handleChangeRef.bind(this)}
+                            onChange={handleChangeRef}
                           />
                         );
                       }
@@ -491,8 +467,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           label={attribute.value}
                           fullWidth={true}
                           style={{ marginTop: 20 }}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
+                          onFocus={handleChangeFocus}
+                          onSubmit={handleSubmitField}
                           helperText={
                             <SubscriptionFocus
                               context={context}
@@ -512,7 +488,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           fieldName="createdBy"
                         />
                       }
-                      onChange={this.handleChangeCreatedBy.bind(this)}
+                      onChange={handleChangeCreatedBy}
                     />
                     <ObjectMarkingField
                       name="objectMarking"
@@ -523,7 +499,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           fieldname="objectMarking"
                         />
                       }
-                      onChange={this.handleChangeObjectMarking.bind(this)}
+                      onChange={handleChangeObjectMarking}
                     />
                   </Form>
                 )}
@@ -533,17 +509,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
           return <div />;
         }}
       />
-    );
-  }
-}
-
-StixCyberObservableEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  stixCyberObservable: PropTypes.object,
-  context: PropTypes.array,
-  history: PropTypes.object,
+  );
 };
 
 const StixCyberObservableEditionOverview = createFragmentContainer(
@@ -795,8 +761,4 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles, { withTheme: true }),
-)(StixCyberObservableEditionOverview);
+export default StixCyberObservableEditionOverview;

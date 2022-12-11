@@ -26,10 +26,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabul
   let filters = opts.filters ?? [];
   const entityTypes = filters.find(({ key }) => key.includes(VocabularyFilter.EntityTypes));
   if (category) {
-    filters.push({
-      key: [VocabularyFilter.Category],
-      values: [category]
-    });
+    filters.push({ key: [VocabularyFilter.Category], values: [category] });
   } else if (entityTypes?.values && entityTypes?.values.length > 0) {
     const categories = entityTypes.values.flatMap((type) => getVocabulariesCategories()
       .filter(({ entity_types }) => entity_types.includes(type))
@@ -100,19 +97,18 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
 };
 
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
-  const created = await createEntity(context, user, { description: '', ...vocabulary }, ENTITY_TYPE_VOCABULARY);
+  const created = await createEntity(context, user, vocabulary, ENTITY_TYPE_VOCABULARY);
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, created, user) as BasicStoreEntityVocabulary;
 };
 
 export const deleteVocabulary = async (context: AuthContext, user: AuthUser, vocabularyId: string, props?: Record<string, unknown>) => {
   const vocabulary = await findById(context, user, vocabularyId);
   const usages = await getVocabularyUsages(context, user, vocabulary);
-
   const completeCategory = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
   const deletable = !vocabulary.builtIn && (!completeCategory || (!completeCategory.fields.some(({ required }) => required) || usages.length === 0));
   if (deletable) {
     if (completeCategory) {
-      elRawUpdateByQuery({
+      await elRawUpdateByQuery({
         index: READ_ENTITIES_INDICES,
         wait_for_completion: false,
         body: {

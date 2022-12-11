@@ -1,25 +1,19 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { compose, evolve, path, pluck } from 'ramda';
+import { evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import MenuItem from '@mui/material/MenuItem';
-import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -33,7 +27,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -87,7 +81,7 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
 
 const indicatorMutation = graphql`
   mutation IndicatorCreationMutation($input: IndicatorAddInput!) {
@@ -128,21 +122,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class IndicatorCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+const IndicatorCreation = ({ openExports, paginationOptions }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = evolve(
       {
         confidence: () => parseInt(values.confidence, 10),
@@ -166,7 +152,7 @@ class IndicatorCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
-          this.props.paginationOptions,
+          paginationOptions,
           newEdge,
         );
       },
@@ -178,21 +164,16 @@ class IndicatorCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
+  const onReset = () => handleClose();
 
-  onReset() {
-    this.handleClose();
-  }
-
-  render() {
-    const { t, classes, openExports } = this.props;
-    return (
+  return (
       <div>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={
@@ -202,18 +183,18 @@ class IndicatorCreation extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           sx={{ zIndex: 1202 }}
           elevation={1}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
+              onClick={handleClose}
               size="large"
               color="primary"
             >
@@ -242,8 +223,8 @@ class IndicatorCreation extends Component {
                 x_opencti_detection: false,
               }}
               validationSchema={indicatorValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
+              onSubmit={onSubmit}
+              onReset={onReset}
             >
               {({
                 submitForm,
@@ -274,25 +255,14 @@ class IndicatorCreation extends Component {
                     fullWidth={true}
                     containerStyle={fieldSpacingContainerStyle}
                   />
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="pattern_type"
+                  <OpenVocabField
                     label={t('Pattern type')}
-                    fullWidth={true}
-                    containerstyle={fieldSpacingContainerStyle}
-                  >
-                    <MenuItem value="stix">STIX</MenuItem>
-                    <MenuItem value="pcre">PCRE</MenuItem>
-                    <MenuItem value="sigma">SIGMA</MenuItem>
-                    <MenuItem value="snort">SNORT</MenuItem>
-                    <MenuItem value="suricata">Suricata</MenuItem>
-                    <MenuItem value="yara">YARA</MenuItem>
-                    <MenuItem value="tanium-signal">Tanium Signal</MenuItem>
-                    <MenuItem value="spl">Splunk SPL</MenuItem>
-                    <MenuItem value="eql">Elastic EQL</MenuItem>
-                    <MenuItem value="shodan">Shodan</MenuItem>
-                  </Field>
+                    type="pattern_type_ov"
+                    name="pattern_type"
+                    onChange={(name, value) => setFieldValue(name, value)}
+                    containerStyle={fieldSpacingContainerStyle}
+                    multiple={false}
+                  />
                   <Field
                     component={TextField}
                     variant="standard"
@@ -329,20 +299,14 @@ class IndicatorCreation extends Component {
                       style: { marginTop: 20 },
                     }}
                   />
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="x_mitre_platforms"
-                    multiple={true}
+                  <OpenVocabField
                     label={t('Platforms')}
-                    fullWidth={true}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                  >
-                    <MenuItem value="Android">{t('Android')}</MenuItem>
-                    <MenuItem value="macOS">{t('macOS')}</MenuItem>
-                    <MenuItem value="Linux">{t('Linux')}</MenuItem>
-                    <MenuItem value="Windows">{t('Windows')}</MenuItem>
-                  </Field>
+                    type="platforms_ov"
+                    name="x_mitre_platforms"
+                    onChange={(name, value) => setFieldValue(name, value)}
+                    containerStyle={fieldSpacingContainerStyle}
+                    multiple={true}
+                  />
                   <Field
                     component={MarkDownField}
                     name="description"
@@ -416,19 +380,7 @@ class IndicatorCreation extends Component {
           </div>
         </Drawer>
       </div>
-    );
-  }
-}
-
-IndicatorCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  openExports: PropTypes.bool,
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IndicatorCreation);
+export default IndicatorCreation;

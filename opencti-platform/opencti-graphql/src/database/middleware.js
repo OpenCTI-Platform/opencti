@@ -211,8 +211,8 @@ import {
   isSingleStixEmbeddedRelationship,
   isSingleStixEmbeddedRelationshipInput,
   isStixEmbeddedRelationship,
-  metaFieldAttributes,
   META_STIX_ATTRIBUTES,
+  metaFieldAttributes,
   STIX_ATTRIBUTE_TO_META_FIELD,
   stixEmbeddedRelationToField,
 } from '../schema/stixEmbeddedRelationship';
@@ -639,7 +639,6 @@ const inputResolveRefs = async (context, user, input, type) => {
         const elements = ids.map((i) => idNormalizeDataEntity(i, { category, entity_type: ENTITY_TYPE_VOCABULARY }))
           .map((lid) => ({ id: lid, destKey, multiple: isListing }));
         fetchingIds.push(...elements);
-        expectedIds.push(...elements.map((e) => e.id));
         forceAliases = true;
       } else if (isListing) {
         const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
@@ -711,18 +710,24 @@ const inputResolveRefs = async (context, user, input, type) => {
   }
   const complete = { ...cleanedInput, entity_type: type };
   const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
-
-  // Check Openvocab in resolved to flatten them
-  Object.values(vocabularyDefinitions)
-    .filter(({ entity_types }) => entity_types.includes(type))
-    .forEach(({ fields }) => {
-      fields.filter(({ key }) => Boolean(inputResolved[key]))
-        .forEach(({ key }) => {
-          const value = Array.isArray(inputResolved[key]) ? inputResolved[key].map(({ name }) => name) : inputResolved[key].name;
-          inputResolved[key] = value;
-        });
+  // Check Open vocab in resolved to convert them back to the raw value
+  const entityVocabs = Object.values(vocabularyDefinitions).filter(({ entity_types }) => entity_types.includes(type));
+  entityVocabs.forEach(({ fields }) => {
+    const existingFields = fields.filter(({ key }) => Boolean(input[key]));
+    existingFields.forEach(({ key, required, multiple }) => {
+      const resolvedData = inputResolved[key];
+      if (isEmptyField(resolvedData) && required) {
+        throw FunctionalError('Vocabulary value is mandatory', { key });
+      }
+      if (isNotEmptyField(resolvedData)) {
+        const isArrayValues = Array.isArray(resolvedData);
+        if (isArrayValues && !multiple) {
+          throw FunctionalError('Find multiple vocabularies for single one', { key, data: resolvedData });
+        }
+        inputResolved[key] = isArrayValues ? resolvedData.map(({ name }) => name) : resolvedData.name;
+      }
     });
-
+  });
   // Check the marking allow for the user and asked inside the input
   if (!isBypassUser(user) && inputResolved[INPUT_MARKINGS]) {
     const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);

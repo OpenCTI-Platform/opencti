@@ -19,6 +19,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const channelMutationFieldPatch = graphql`
   mutation ChannelEditionOverviewFieldPatchMutation(
@@ -259,6 +260,7 @@ class ChannelEditionOverviewComponent extends Component {
                       label="Channel types"
                       variant="edit"
                       multiple={true}
+                      containerStyle={fieldSpacingContainerStyle}
                       onSubmit={this.handleSubmitField.bind(this)}
                       onChange={(name, value) => setFieldValue(name, value)}
                     />

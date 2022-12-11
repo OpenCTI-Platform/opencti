@@ -4,11 +4,11 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { DataSourceDetails_dataSource$data, DataSourceDetails_dataSource$key } from './__generated__/DataSourceDetails_dataSource.graphql';
 import DataSourceDataComponents from './DataSourceDataComponents';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const styles = makeStyles(() => ({
   paper: {
@@ -79,21 +79,13 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
               {t('Platforms')}
             </Typography>
             {data.x_mitre_platforms?.map((plaform) => (
-              <Chip
-                key={plaform}
-                variant="outlined"
-                label={plaform}
-              />
+              <ItemOpenVocab small={false} type="platforms_ov" value={plaform} />
             ))}
             <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
               {t('Layers')}
             </Typography>
             {data.collection_layers?.map((layer) => (
-              <Chip
-                key={layer}
-                variant="outlined"
-                label={layer}
-              />
+              <ItemOpenVocab small={false} type="collection_layers_ov" value={layer} />
             ))}
           </Grid>
           <Grid item={true} xs={12}>

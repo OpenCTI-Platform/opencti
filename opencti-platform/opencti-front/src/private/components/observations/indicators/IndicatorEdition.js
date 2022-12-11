@@ -1,18 +1,15 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React, { useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
 import { graphql } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import IndicatorEditionContainer from './IndicatorEditionContainer';
 import { indicatorEditionOverviewFocus } from './IndicatorEditionOverview';
 import Loader from '../../../../components/Loader';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -29,7 +26,7 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-});
+}));
 
 export const indicatorEditionQuery = graphql`
   query IndicatorEditionContainerQuery($id: String!) {
@@ -42,33 +39,25 @@ export const indicatorEditionQuery = graphql`
   }
 `;
 
-class IndicatorEdition extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
+const IndicatorEdition = ({ indicatorId }) => {
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => {
     commitMutation({
       mutation: indicatorEditionOverviewFocus,
       variables: {
-        id: this.props.indicatorId,
+        id: indicatorId,
         input: { focusOn: '' },
       },
     });
-    this.setState({ open: false });
-  }
+    setOpen(false);
+  };
 
-  render() {
-    const { classes, indicatorId } = this.props;
-    return (
+  return (
       <div>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Edit"
           className={classes.editButton}
@@ -76,12 +65,12 @@ class IndicatorEdition extends Component {
           <Edit />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           sx={{ zIndex: 1202 }}
           elevation={1}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <QueryRenderer
             query={indicatorEditionQuery}
@@ -94,7 +83,7 @@ class IndicatorEdition extends Component {
                     enableReferences={props.settings.platform_enable_reference?.includes(
                       'Indicator',
                     )}
-                    handleClose={this.handleClose.bind(this)}
+                    handleClose={handleClose}
                   />
                 );
               }
@@ -103,16 +92,7 @@ class IndicatorEdition extends Component {
           />
         </Drawer>
       </div>
-    );
-  }
-}
-
-IndicatorEdition.propTypes = {
-  indicatorId: PropTypes.string,
-  me: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-export default compose(inject18n, withStyles(styles))(IndicatorEdition);
+export default IndicatorEdition;

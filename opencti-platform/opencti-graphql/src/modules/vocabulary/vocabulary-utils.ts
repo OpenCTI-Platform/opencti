@@ -6,118 +6,111 @@ export const builtInOv = [
   'pattern_type_ov',
 ];
 
-export const openVocabularies = {
-  malware_type_ov: [
+export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string }>> = {
+  // A
+  account_type_ov: [
+    { key: 'facebook', description: 'Specifies a Facebook account' },
+    { key: 'ldap', description: 'Specifies an LDAP account' },
+    { key: 'nis', description: 'Specifies a NIS account' },
+    { key: 'openid', description: 'Specifies an OpenID account' },
+    { key: 'radius', description: 'Specifies a RADIUS account' },
+    { key: 'skype', description: 'Specifies a Skype account' },
+    { key: 'tacacs', description: 'Specifies a TACACS account' },
+    { key: 'twitter', description: 'Specifies a Twitter account' },
+    { key: 'unix', description: 'Specifies a POSIX account' },
+    { key: 'windows-local', description: 'Specifies a Windows local account' },
+    { key: 'windows-domain', description: 'Specifies a Windows domain account' },
+  ],
+  attack_resource_level_ov: [
     {
-      key: 'adware',
+      key: 'individual',
       description:
-        'Any software that is funded by advertising. Adware may also gather sensitive user information from a system.',
+        'Resources limited to the average individual; Threat Actor acts independently.',
     },
     {
-      key: 'backdoor',
+      key: 'club',
       description:
-        'A malicious program that allows an attacker to perform actions on a remote system, such as transferring files, acquiring passwords, or executing arbitrary commands [NIST800-83].',
+        'Members interact on a social and volunteer basis, often with little personal interest in the specific target. An example might be a core group of unrelated activists who regularly exchange tips on a particular blog. Group persists long term.',
     },
     {
-      key: 'bot',
+      key: 'contest',
       description:
-        'A program that resides on an infected system, communicating with and forming part of a botnet. The bot may be implanted by a worm or Trojan, which opens a backdoor. The bot then monitors the backdoor for further instructions.',
+        'A short-lived and perhaps anonymous interaction that concludes when the participants have achieved a single goal. For example, people who break into systems just for thrills or prestige may hold a contest to see who can break into a specific target first. It also includes announced "operations" to achieve a specific goal, such as the original "OpIsrael" call for volunteers to disrupt all of Israel\'s Internet functions for a day.',
     },
     {
-      key: 'bootkit',
+      key: 'team',
       description:
-        'A malicious program which targets the Master Boot Record of the target computer.',
+        'A formally organized group with a leader, typically motivated by a specific goal and organized around that goal. Group persists long term and typically operates within a single geography.',
     },
     {
-      key: 'ddos',
+      key: 'organization',
       description:
-        'A program that is used to perform a distributed denial of service attack.',
+        'Larger and better resourced than a team; typically, a company or crime syndicate. Usually operates in multiple geographic areas and persists long term.',
     },
     {
-      key: 'downloader',
+      key: 'government',
       description:
-        'A small trojan file programmed to download and execute other files, usually more complex malware.',
-    },
-    {
-      key: 'dropper',
-      description:
-        'A type of trojan that deposits an enclosed payload (generally, other malware) onto the target computer.',
-    },
-    {
-      key: 'exploit-kit',
-      description: 'A software toolkit to target common vulnerabilities.',
-    },
-    {
-      key: 'keylogger',
-      description:
-        'A type of malware that surreptitiously monitors keystrokes and either records them for later retrieval or sends them back to a central collection point.',
-    },
-    {
-      key: ' ransomware',
-      description:
-        "A type of malware that encrypts files on a victim's system, demanding payment of ransom in return for the access codes required to unlock files.",
-    },
-    {
-      key: 'remote-access-trojan',
-      description:
-        'A remote access trojan program (or RAT), is a trojan horse capable of controlling a machine through commands issued by a remote attacker.',
-    },
-    {
-      key: 'resource-exploitation',
-      description:
-        "A type of malware that steals a system's resources (e.g., CPU cycles), such as a malicious bitcoin miner.",
-    },
-    {
-      key: 'rogue-security-software',
-      description:
-        'A fake security product that demands money to clean phony infections.',
-    },
-    {
-      key: 'rootkit',
-      description:
-        'A type of malware that hides its files or processes from normal methods of monitoring in order to conceal its presence and activities. Rootkits can operate at a number of levels, from the application level — simply replacing or adjusting the settings of system software to prevent the display of certain information — through hooking certain functions or inserting modules or drivers into the operating system kernel, to the deeper level of firmware or virtualization rootkits, which are activated before the operating system and thus even harder to detect while the system is running.',
-    },
-    {
-      key: 'screen-capture',
-      description:
-        'A type of malware used to capture images from the target systems screen, used for exfiltration and command and control.',
-    },
-    {
-      key: 'spyware',
-      description:
-        "Software that gathers information on a user's system without their knowledge and sends it to another party. Spyware is generally used to track activities for the purpose of delivering advertising.",
-    },
-    {
-      key: 'trojan',
-      description:
-        'Any malicious computer program which is used to hack into a computer by misleading users of its true intent.',
-    },
-    {
-      key: 'unknown',
-      description:
-        'There is not enough information available to determine the type of malware.',
-    },
-    {
-      key: 'virus',
-      description:
-        'A malicious computer program that replicates by reproducing itself or infecting other programs by modifying them.',
-    },
-    {
-      key: 'webshell',
-      description:
-        'A malicious script used by an attacker with the intent to escalate and maintain persistent access on an already compromised web application.',
-    },
-    {
-      key: 'wiper',
-      description:
-        'A piece of malware whose primary aim is to delete files or entire disks on a machine.',
-    },
-    {
-      key: 'worm',
-      description:
-        'A self-replicating, self-contained program that usually executes itself without user intervention.',
+        'Controls public assets and functions within a jurisdiction; very well resourced and persists long term.',
     },
   ],
+  attack_motivation_ov: [
+    {
+      key: 'accidental',
+      description:
+        'A non-hostile actor whose benevolent or harmless intent inadvertently causes harm. For example, a well-meaning and dedicated employee who through distraction or poor training unintentionally causes harm to his or her organization.',
+    },
+    {
+      key: 'coercion',
+      description:
+        "Being forced to act on someone else's behalf. Adversaries who are motivated by coercion are often forced through intimidation or blackmail to act illegally for someone else’s benefit. Unlike the other motivations, a coerced person does not act for personal gain, but out of fear of incurring a loss.",
+    },
+    {
+      key: 'dominance',
+      description:
+        'A desire to assert superiority over someone or something else. Adversaries who are seeking dominance over a target are focused on using their power to force their target into submission or irrelevance. Dominance may be found with ideology in some state-sponsored attacks and with notoriety in some cyber vandalism-based attacks.',
+    },
+    {
+      key: 'ideology',
+      description:
+        'A passion to express a set of ideas, beliefs, and values that may shape and drive harmful and illegal acts. Adversaries who act for ideological reasons (e.g., political, religious, human rights, environmental, desire to cause chaos/anarchy, etc.) are not usually motivated primarily by the desire for profit; they are acting on their own sense of morality, justice, or political loyalty. For example, an activist group may sabotage a company’s equipment because they believe the company is harming the environment.',
+    },
+    {
+      key: 'notoriety',
+      description:
+        'Seeking prestige or to become well known through some activity. Adversaries motivated by notoriety are often seeking either personal validation or respect within a community and staying covert is not a priority. In fact, one of the main goals is to garner the respect of their target audience.',
+    },
+    {
+      key: 'organizational-gain',
+      description:
+        'Seeking advantage over a competing organization, including a military organization. Adversaries motivated by increased profit or other gains through an unfairly obtained competitive advantage are often seeking theft of intellectual property, business processes, or supply chain agreements and thus accelerating their position in a market or capability.',
+    },
+    {
+      key: 'personal-gain',
+      description:
+        'The desire to improve one’s own financial status. Adversaries motivated by a selfish desire for personal gain are often out for gains that come from financial fraud, hacking for hire, or intellectual property theft. While a Threat Actor or Intrusion Set may be seeking personal gain, this does not mean they are acting alone. Individuals can band together solely to maximize their own personal profits.',
+    },
+    {
+      key: 'personal-satisfaction',
+      description:
+        'A desire to satisfy a strictly personal goal, including curiosity, thrill-seeking, amusement, etc. Threat Actors or Intrusion Set driven by personal satisfaction may incidentally receive some other gain from their actions, such as a profit, but their primary motivation is to gratify a personal, emotional need. Individuals can band together with others toward a mutual, but not necessarily organizational, objective.',
+    },
+    {
+      key: 'revenge',
+      description:
+        'A desire to avenge perceived wrongs through harmful actions such as sabotage, violence, theft, fraud, or embarrassing certain individuals or the organization. A disgruntled Threat Actor or Intrusion Set seeking revenge can include current or former employees, who may have extensive knowledge to leverage when conducting attacks. Individuals can band together with others if the individual believes that doing so will enable them to cause more harm.',
+    },
+    {
+      key: 'unpredictable',
+      description:
+        'Acting without identifiable reason or purpose and creating unpredictable events. Unpredictable is not a miscellaneous or default category. Unpredictable means a truly random and likely bizarre event, which seems to have no logical purpose to the victims.',
+    },
+  ],
+  // C
+  channel_types_ov: [
+    { key: 'Twitter' },
+    { key: 'Facebook' },
+  ],
+  // E
   event_type_ov: [
     {
       key: 'conference',
@@ -148,40 +141,25 @@ export const openVocabularies = {
       description: 'Sport competition.',
     },
   ],
-  processor_architecture_ov: [
+  // G
+  grouping_context_ov: [
     {
-      key: 'alpha',
-      description: 'Specifies the Alpha architecture.',
+      key: 'suspicious-activity',
+      description:
+        'A set of STIX content related to a particular suspicious activity event.',
     },
     {
-      key: 'arm',
-      description: 'Specifies the ARM architecture.',
+      key: 'malware-analysis',
+      description:
+        'A set of STIX content related to a particular malware instance or family.',
     },
     {
-      key: 'ia-64',
-      description: 'Specifies the 64-bit IA (Itanium) architecture.',
-    },
-    {
-      key: 'mips',
-      description: 'Specifies the MIPS architecture.',
-    },
-    {
-      key: 'powerpc',
-      description: 'Specifies the PowerPC architecture.',
-    },
-    {
-      key: 'sparc',
-      description: 'Specifies the SPARC architecture.',
-    },
-    {
-      key: 'x86',
-      description: 'Specifies the 32-bit x86 architecture.',
-    },
-    {
-      key: 'x86-64',
-      description: 'Specifies the 64-bit x86 architecture.',
+      key: 'unspecified',
+      description:
+        'A set of STIX content contextually related but without any precise characterization of the contextual relationship between the objects.',
     },
   ],
+  // I
   implementation_language_ov: [
     {
       key: 'applescript',
@@ -273,6 +251,123 @@ export const openVocabularies = {
       description: 'Specifies the x86 64-bit Assembly programming language.',
     },
   ],
+  indicator_type_ov: [
+    {
+      key: 'anomalous-activity',
+      description:
+        'Unexpected, or unusual activity that may not necessarily be malicious or indicate compromise. This type of activity may include reconnaissance-like behavior such as port scans or version identification, network behavior anomalies, and asset and/or user behavioral anomalies.',
+    },
+    {
+      key: 'anonymization',
+      description:
+        'Suspected anonymization tools or infrastructure (proxy, TOR, VPN, etc.).',
+    },
+    {
+      key: 'benign',
+      description:
+        'Activity that is not suspicious or malicious in and of itself, but when combined with other activity may indicate suspicious or malicious behavior.',
+    },
+    {
+      key: 'compromised',
+      description: 'Assets that are suspected to be compromised.',
+    },
+    {
+      key: 'malicious-activity',
+      description: 'Patterns of suspected malicious objects and/or activity.',
+    },
+    {
+      key: 'attribution',
+      description:
+        'Patterns of behavior that indicate attribution to a particular Threat Actor or Campaign.',
+    },
+    {
+      key: 'unknown',
+      description:
+        'There is not enough information available to determine the type of indicator.',
+    },
+  ],
+  infrastructure_type_ov: [
+    {
+      key: 'amplification',
+      description:
+        'Specifies infrastructure used for conducting amplification attacks.',
+    },
+    {
+      key: 'anonymization',
+      description:
+        'Specific infrastructure used for anonymization, such as a proxy.',
+    },
+    {
+      key: 'botnet',
+      description:
+        'Specifies the membership/makeup of a botnet, in terms of the network addresses of the hosts that comprise the botnet.',
+    },
+    {
+      key: 'command-and-control',
+      description:
+        'Specifies infrastructure used for command and control (C2). This is typically a domain name or IP address.',
+    },
+    {
+      key: 'control-system',
+      description:
+        'Specifies equipment such as IoT, HMI, RTU, PLC or other ICS devices.',
+    },
+    {
+      key: 'exfiltration',
+      description:
+        'Specifies infrastructure used as an endpoint for data exfiltration.',
+    },
+    {
+      key: 'firewall',
+      description:
+        'Specifies a device that inspects network traffic and restricts it based upon defined policies.',
+    },
+    {
+      key: 'hosting-malware',
+      description: 'Specifies infrastructure used for hosting malware.',
+    },
+    {
+      key: 'hosting-target-lists',
+      description:
+        'Specifies infrastructure used for hosting a list of targets for DDOS attacks, phishing, and other malicious activities. This is typically a domain name or IP address.',
+    },
+    {
+      key: 'phishing',
+      description:
+        'Specifies infrastructure used for conducting phishing attacks.',
+    },
+    {
+      key: 'reconnaissance',
+      description:
+        'Specifies infrastructure used for conducting reconnaissance activities.',
+    },
+    {
+      key: 'routers-switches',
+      description:
+        'Specifies IT infrastructure used to connect devices to the network.',
+    },
+    {
+      key: 'staging',
+      description:
+        'Specifies infrastructure used for hosting a list of targets for DDOS attacks, phishing, and other malicious activities. This is typically a domain name or IP address.',
+    },
+    {
+      key: 'workstation',
+      description:
+        'Specifies an endpoint machine used for work by an organization that needs protection.',
+    },
+    {
+      key: 'unknown',
+      description: 'Specifies an infrastructure of some unknown type.',
+    },
+  ],
+  integrity_level_ov: [
+    { key: 'low', description: 'A low level of integrity.' },
+    { key: 'medium', description: 'A medium level of integrity.' },
+    { key: 'high', description: 'A high level of integrity.' },
+    { key: 'system', description: 'A system level of integrity.' },
+  ],
+  // M
   malware_capabilities_ov: [
     {
       key: 'accesses-remote-machines',
@@ -461,200 +556,244 @@ export const openVocabularies = {
         'Indicates that the malware instance or family is able to compromise the operational integrity of the system on which it is executing and/or one or more remote systems, e.g., by causing them to operate beyond their set of specified operational parameters. For example, malware that causes the CPU fan on the machine that it is executing to spin at a higher than normal speed.',
     },
   ],
-  attack_resource_level_ov: [
+  malware_type_ov: [
     {
-      key: 'individual',
+      key: 'adware',
       description:
-        'Resources limited to the average individual; Threat Actor acts independently.',
+        'Any software that is funded by advertising. Adware may also gather sensitive user information from a system.',
     },
     {
-      key: 'club',
+      key: 'backdoor',
       description:
-        'Members interact on a social and volunteer basis, often with little personal interest in the specific target. An example might be a core group of unrelated activists who regularly exchange tips on a particular blog. Group persists long term.',
+        'A malicious program that allows an attacker to perform actions on a remote system, such as transferring files, acquiring passwords, or executing arbitrary commands [NIST800-83].',
     },
     {
-      key: 'contest',
+      key: 'bot',
       description:
-        'A short-lived and perhaps anonymous interaction that concludes when the participants have achieved a single goal. For example, people who break into systems just for thrills or prestige may hold a contest to see who can break into a specific target first. It also includes announced "operations" to achieve a specific goal, such as the original "OpIsrael" call for volunteers to disrupt all of Israel\'s Internet functions for a day.',
+        'A program that resides on an infected system, communicating with and forming part of a botnet. The bot may be implanted by a worm or Trojan, which opens a backdoor. The bot then monitors the backdoor for further instructions.',
     },
     {
-      key: 'team',
+      key: 'bootkit',
       description:
-        'A formally organized group with a leader, typically motivated by a specific goal and organized around that goal. Group persists long term and typically operates within a single geography.',
+        'A malicious program which targets the Master Boot Record of the target computer.',
     },
     {
-      key: 'organization',
+      key: 'ddos',
       description:
-        'Larger and better resourced than a team; typically, a company or crime syndicate. Usually operates in multiple geographic areas and persists long term.',
+        'A program that is used to perform a distributed denial of service attack.',
     },
     {
-      key: 'government',
+      key: 'downloader',
       description:
-        'Controls public assets and functions within a jurisdiction; very well resourced and persists long term.',
+        'A small trojan file programmed to download and execute other files, usually more complex malware.',
     },
-  ],
-  attack_motivation_ov: [
     {
-      key: 'accidental',
+      key: 'dropper',
       description:
-        'A non-hostile actor whose benevolent or harmless intent inadvertently causes harm. For example, a well-meaning and dedicated employee who through distraction or poor training unintentionally causes harm to his or her organization.',
+        'A type of trojan that deposits an enclosed payload (generally, other malware) onto the target computer.',
     },
     {
-      key: 'coercion',
+      key: 'exploit-kit',
+      description: 'A software toolkit to target common vulnerabilities.',
+    },
+    {
+      key: 'keylogger',
       description:
-        "Being forced to act on someone else's behalf. Adversaries who are motivated by coercion are often forced through intimidation or blackmail to act illegally for someone else’s benefit. Unlike the other motivations, a coerced person does not act for personal gain, but out of fear of incurring a loss.",
+        'A type of malware that surreptitiously monitors keystrokes and either records them for later retrieval or sends them back to a central collection point.',
     },
     {
-      key: 'dominance',
+      key: ' ransomware',
       description:
-        'A desire to assert superiority over someone or something else. Adversaries who are seeking dominance over a target are focused on using their power to force their target into submission or irrelevance. Dominance may be found with ideology in some state-sponsored attacks and with notoriety in some cyber vandalism-based attacks.',
+        "A type of malware that encrypts files on a victim's system, demanding payment of ransom in return for the access codes required to unlock files.",
     },
     {
-      key: 'ideology',
+      key: 'remote-access-trojan',
       description:
-        'A passion to express a set of ideas, beliefs, and values that may shape and drive harmful and illegal acts. Adversaries who act for ideological reasons (e.g., political, religious, human rights, environmental, desire to cause chaos/anarchy, etc.) are not usually motivated primarily by the desire for profit; they are acting on their own sense of morality, justice, or political loyalty. For example, an activist group may sabotage a company’s equipment because they believe the company is harming the environment.',
+        'A remote access trojan program (or RAT), is a trojan horse capable of controlling a machine through commands issued by a remote attacker.',
     },
     {
-      key: 'notoriety',
+      key: 'resource-exploitation',
       description:
-        'Seeking prestige or to become well known through some activity. Adversaries motivated by notoriety are often seeking either personal validation or respect within a community and staying covert is not a priority. In fact, one of the main goals is to garner the respect of their target audience.',
+        "A type of malware that steals a system's resources (e.g., CPU cycles), such as a malicious bitcoin miner.",
     },
     {
-      key: 'organizational-gain',
+      key: 'rogue-security-software',
       description:
-        'Seeking advantage over a competing organization, including a military organization. Adversaries motivated by increased profit or other gains through an unfairly obtained competitive advantage are often seeking theft of intellectual property, business processes, or supply chain agreements and thus accelerating their position in a market or capability.',
+        'A fake security product that demands money to clean phony infections.',
     },
     {
-      key: 'personal-gain',
+      key: 'rootkit',
       description:
-        'The desire to improve one’s own financial status. Adversaries motivated by a selfish desire for personal gain are often out for gains that come from financial fraud, hacking for hire, or intellectual property theft. While a Threat Actor or Intrusion Set may be seeking personal gain, this does not mean they are acting alone. Individuals can band together solely to maximize their own personal profits.',
+        'A type of malware that hides its files or processes from normal methods of monitoring in order to conceal its presence and activities. Rootkits can operate at a number of levels, from the application level — simply replacing or adjusting the settings of system software to prevent the display of certain information — through hooking certain functions or inserting modules or drivers into the operating system kernel, to the deeper level of firmware or virtualization rootkits, which are activated before the operating system and thus even harder to detect while the system is running.',
     },
     {
-      key: 'personal-satisfaction',
+      key: 'screen-capture',
       description:
-        'A desire to satisfy a strictly personal goal, including curiosity, thrill-seeking, amusement, etc. Threat Actors or Intrusion Set driven by personal satisfaction may incidentally receive some other gain from their actions, such as a profit, but their primary motivation is to gratify a personal, emotional need. Individuals can band together with others toward a mutual, but not necessarily organizational, objective.',
+        'A type of malware used to capture images from the target systems screen, used for exfiltration and command and control.',
     },
     {
-      key: 'revenge',
+      key: 'spyware',
       description:
-        'A desire to avenge perceived wrongs through harmful actions such as sabotage, violence, theft, fraud, or embarrassing certain individuals or the organization. A disgruntled Threat Actor or Intrusion Set seeking revenge can include current or former employees, who may have extensive knowledge to leverage when conducting attacks. Individuals can band together with others if the individual believes that doing so will enable them to cause more harm.',
+        "Software that gathers information on a user's system without their knowledge and sends it to another party. Spyware is generally used to track activities for the purpose of delivering advertising.",
     },
     {
-      key: 'unpredictable',
+      key: 'trojan',
       description:
-        'Acting without identifiable reason or purpose and creating unpredictable events. Unpredictable is not a miscellaneous or default category. Unpredictable means a truly random and likely bizarre event, which seems to have no logical purpose to the victims.',
-    },
-  ],
-  indicator_type_ov: [
-    {
-      key: 'anomalous-activity',
-      description:
-        'Unexpected, or unusual activity that may not necessarily be malicious or indicate compromise. This type of activity may include reconnaissance-like behavior such as port scans or version identification, network behavior anomalies, and asset and/or user behavioral anomalies.',
-    },
-    {
-      key: 'anonymization',
-      description:
-        'Suspected anonymization tools or infrastructure (proxy, TOR, VPN, etc.).',
-    },
-    {
-      key: 'benign',
-      description:
-        'Activity that is not suspicious or malicious in and of itself, but when combined with other activity may indicate suspicious or malicious behavior.',
-    },
-    {
-      key: 'compromised',
-      description: 'Assets that are suspected to be compromised.',
-    },
-    {
-      key: 'malicious-activity',
-      description: 'Patterns of suspected malicious objects and/or activity.',
-    },
-    {
-      key: 'attribution',
-      description:
-        'Patterns of behavior that indicate attribution to a particular Threat Actor or Campaign.',
+        'Any malicious computer program which is used to hack into a computer by misleading users of its true intent.',
     },
     {
       key: 'unknown',
       description:
-        'There is not enough information available to determine the type of indicator.',
+        'There is not enough information available to determine the type of malware.',
+    },
+    {
+      key: 'virus',
+      description:
+        'A malicious computer program that replicates by reproducing itself or infecting other programs by modifying them.',
+    },
+    {
+      key: 'webshell',
+      description:
+        'A malicious script used by an attacker with the intent to escalate and maintain persistent access on an already compromised web application.',
+    },
+    {
+      key: 'wiper',
+      description:
+        'A piece of malware whose primary aim is to delete files or entire disks on a machine.',
+    },
+    {
+      key: 'worm',
+      description:
+        'A self-replicating, self-contained program that usually executes itself without user intervention.',
     },
   ],
-  infrastructure_type_ov: [
+  // P
+  platforms_ov: [
+    { key: 'android' },
+    { key: 'macos' },
+    { key: 'linux' },
+    { key: 'windows' },
+  ],
+  collection_layers_ov: [
+    { key: 'duis' },
+    { key: 'laboris' },
+    { key: 'elit' },
+    { key: 'exercitation' },
+    { key: 'ea' },
+  ],
+  pattern_type_ov: [
+    { key: 'stix' },
+    { key: 'pcre' },
+    { key: 'sigma' },
+    { key: 'snort' },
+    { key: 'suricata' },
+    { key: 'yara' },
+    { key: 'tanium-signal' },
+    { key: 'spl' },
+    { key: 'eql' },
+    { key: 'shodan' },
+  ],
+  processor_architecture_ov: [
     {
-      key: 'amplification',
-      description:
-        'Specifies infrastructure used for conducting amplification attacks.',
+      key: 'alpha',
+      description: 'Specifies the Alpha architecture.',
     },
     {
-      key: 'anonymization',
-      description:
-        'Specific infrastructure used for anonymization, such as a proxy.',
+      key: 'arm',
+      description: 'Specifies the ARM architecture.',
     },
     {
-      key: 'botnet',
-      description:
-        'Specifies the membership/makeup of a botnet, in terms of the network addresses of the hosts that comprise the botnet.',
+      key: 'ia-64',
+      description: 'Specifies the 64-bit IA (Itanium) architecture.',
     },
     {
-      key: 'command-and-control',
-      description:
-        'Specifies infrastructure used for command and control (C2). This is typically a domain name or IP address.',
+      key: 'mips',
+      description: 'Specifies the MIPS architecture.',
     },
     {
-      key: 'control-system',
-      description:
-        'Specifies equipment such as IoT, HMI, RTU, PLC or other ICS devices.',
+      key: 'powerpc',
+      description: 'Specifies the PowerPC architecture.',
     },
     {
-      key: 'exfiltration',
-      description:
-        'Specifies infrastructure used as an endpoint for data exfiltration.',
+      key: 'sparc',
+      description: 'Specifies the SPARC architecture.',
     },
     {
-      key: 'firewall',
-      description:
-        'Specifies a device that inspects network traffic and restricts it based upon defined policies.',
+      key: 'x86',
+      description: 'Specifies the 32-bit x86 architecture.',
     },
     {
-      key: 'hosting-malware',
-      description: 'Specifies infrastructure used for hosting malware.',
-    },
-    {
-      key: 'hosting-target-lists',
-      description:
-        'Specifies infrastructure used for hosting a list of targets for DDOS attacks, phishing, and other malicious activities. This is typically a domain name or IP address.',
-    },
-    {
-      key: 'phishing',
-      description:
-        'Specifies infrastructure used for conducting phishing attacks.',
-    },
-    {
-      key: 'reconnaissance',
-      description:
-        'Specifies infrastructure used for conducting reconnaissance activities.',
-    },
-    {
-      key: 'routers-switches',
-      description:
-        'Specifies IT infrastructure used to connect devices to the network.',
-    },
-    {
-      key: 'staging',
-      description:
-        'Specifies infrastructure used for hosting a list of targets for DDOS attacks, phishing, and other malicious activities. This is typically a domain name or IP address.',
-    },
-    {
-      key: 'workstation',
-      description:
-        'Specifies an endpoint machine used for work by an organization that needs protection.',
-    },
-    {
-      key: 'unknown',
-      description: 'Specifies an infrastructure of some unknown type.',
+      key: 'x86-64',
+      description: 'Specifies the 64-bit x86 architecture.',
     },
   ],
+  // R
+  report_types_ov: [
+    { key: 'threat-report' },
+    { key: 'internal-report' },
+  ],
+  // S
+  service_status_ov: [
+    {
+      key: 'SERVICE_CONTINUE_PENDING',
+      description: 'The service continue is pending.',
+    },
+    {
+      key: 'SERVICE_PAUSE_PENDING',
+      description: 'The service pause is pending.',
+    },
+    { key: 'SERVICE_PAUSED', description: 'The service is paused.' },
+    { key: 'SERVICE_RUNNING', description: 'The service is running.' },
+    { key: 'SERVICE_START_PENDING', description: 'The service is starting.' },
+    { key: 'SERVICE_STOP_PENDING', description: 'The service is stopping.' },
+    { key: 'SERVICE_STOPPED', description: 'The service is not running.' },
+  ],
+  service_type_ov: [
+    {
+      key: 'SERVICE_KERNEL_DRIVER',
+      description: 'The service is a device driver.',
+    },
+    {
+      key: 'SERVICE_FILE_SYSTEM_DRIVER',
+      description: 'The service is a file system driver.',
+    },
+    {
+      key: 'SERVICE_WIN32_OWN_PROCESS',
+      description: 'The service runs in its own process.',
+    },
+    {
+      key: 'SERVICE_WIN32_SHARE_PROCESS',
+      description: 'The service shares a process with other services.',
+    },
+  ],
+  start_type_ov: [
+    {
+      key: 'SERVICE_AUTO_START',
+      description:
+        'A service started automatically by the service control manager during system startup.',
+    },
+    {
+      key: 'SERVICE_BOOT_START',
+      description:
+        'A device driver started by the system loader. This value is valid only for driver services.',
+    },
+    {
+      key: 'SERVICE_DEMAND_START',
+      description:
+        'A service started by the service control manager when a process calls the StartService function.',
+    },
+    {
+      key: 'SERVICE_DISABLED',
+      description:
+        'A service that cannot be started. Attempts to start the service result in the error code ERROR_SERVICE_DISABLED.',
+    },
+    {
+      key: 'SERVICE_SYSTEM_ALERT',
+      description:
+        'A device driver started by the IoInitSystem function. This value is valid only for driver services.',
+    },
+  ],
+  // T
   threat_actor_type_ov: [
     { key: 'activist' },
     { key: 'competitor' },
@@ -740,109 +879,16 @@ export const openVocabularies = {
         'State actors who create vulnerabilities through an active program to "influence" commercial products and services during design, development or manufacturing, or with the ability to impact products while in the supply chain to enable exploitation of networks and systems of interest.',
     },
   ],
-  grouping_context_ov: [
-    {
-      key: 'suspicious-activity',
-      description:
-        'A set of STIX content related to a particular suspicious activity event.',
-    },
-    {
-      key: 'malware-analysis',
-      description:
-        'A set of STIX content related to a particular malware instance or family.',
-    },
-    {
-      key: 'unspecified',
-      description:
-        'A set of STIX content contextually related but without any precise characterization of the contextual relationship between the objects.',
-    },
-  ],
-  integrity_level_ov: [
-    { key: 'low', description: 'A low level of integrity.' },
-    { key: 'medium', description: 'A medium level of integrity.' },
-    { key: 'high', description: 'A high level of integrity.' },
-    { key: 'system', description: 'A system level of integrity.' },
-  ],
-  start_type_ov: [
-    {
-      key: 'SERVICE_AUTO_START',
-      description:
-        'A service started automatically by the service control manager during system startup.',
-    },
-    {
-      key: 'SERVICE_BOOT_START',
-      description:
-        'A device driver started by the system loader. This value is valid only for driver services.',
-    },
-    {
-      key: 'SERVICE_DEMAND_START',
-      description:
-        'A service started by the service control manager when a process calls the StartService function.',
-    },
-    {
-      key: 'SERVICE_DISABLED',
-      description:
-        'A service that cannot be started. Attempts to start the service result in the error code ERROR_SERVICE_DISABLED.',
-    },
-    {
-      key: 'SERVICE_SYSTEM_ALERT',
-      description:
-        'A device driver started by the IoInitSystem function. This value is valid only for driver services.',
-    },
-  ],
-  service_type_ov: [
-    {
-      key: 'SERVICE_KERNEL_DRIVER',
-      description: 'The service is a device driver.',
-    },
-    {
-      key: 'SERVICE_FILE_SYSTEM_DRIVER',
-      description: 'The service is a file system driver.',
-    },
-    {
-      key: 'SERVICE_WIN32_OWN_PROCESS',
-      description: 'The service runs in its own process.',
-    },
-    {
-      key: 'SERVICE_WIN32_SHARE_PROCESS',
-      description: 'The service shares a process with other services.',
-    },
-  ],
-  service_status_ov: [
-    {
-      key: 'SERVICE_CONTINUE_PENDING',
-      description: 'The service continue is pending.',
-    },
-    {
-      key: 'SERVICE_PAUSE_PENDING',
-      description: 'The service pause is pending.',
-    },
-    { key: 'SERVICE_PAUSED', description: 'The service is paused.' },
-    { key: 'SERVICE_RUNNING', description: 'The service is running.' },
-    { key: 'SERVICE_START_PENDING', description: 'The service is starting.' },
-    { key: 'SERVICE_STOP_PENDING', description: 'The service is stopping.' },
-    { key: 'SERVICE_STOPPED', description: 'The service is not running.' },
-  ],
-  report_types_ov: [
-    { key: 'threat-report' },
-    { key: 'internal-report' },
-  ],
-  channel_types_ov: [
-    { key: 'Twitter' },
-    { key: 'Facebook' },
-  ],
-  pattern_type_ov: [
-    { key: 'stix' },
-    { key: 'pcre' },
-    { key: 'sigma' },
-    { key: 'snort' },
-    { key: 'suricata' },
-    { key: 'yara' },
-    { key: 'tanium-signal' },
-    { key: 'spl' },
-    { key: 'eql' },
-    { key: 'shodan' },
-  ],
+  tool_types_ov: [
+    { key: 'denial-of-service', description: 'Tools used to perform denial of service attacks or DDoS attacks, such as Low Orbit Ion Cannon (LOIC) and DHCPig' },
+    { key: 'exploitation', description: 'Tools used to exploit software and systems, such as sqlmap and Metasploit' },
+    { key: 'information-gathering', description: 'Tools used to enumerate system and network information, e.g., NMAP' },
+    { key: 'network-capture', description: 'Tools used to capture network traffic, such as Wireshark and Kismet' },
+    { key: 'credential-exploitation', description: 'Tools used to crack password databases or otherwise exploit/discover credentials, either locally or remotely, such as John the Ripper and NCrack' },
+    { key: 'remote-access', description: 'Tools used to access machines remotely, such as VNC and Remote Desktop' },
+    { key: 'vulnerability-scanning', description: 'Tools used to scan systems and networks for vulnerabilities, e.g., Nessus' },
+    { key: 'unknown', description: 'There is not enough information available to determine the type of tool' },
+  ]
 };
 
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {

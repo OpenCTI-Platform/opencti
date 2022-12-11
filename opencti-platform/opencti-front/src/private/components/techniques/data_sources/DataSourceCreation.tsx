@@ -10,7 +10,6 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import MenuItem from '@mui/material/MenuItem';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -23,13 +22,13 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import SelectField from '../../../../components/SelectField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { DataSourcesLinesPaginationQuery$variables } from './__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -101,19 +100,6 @@ const dataSourceValidation = (t: (message: string) => string) => Yup.object()
       .required(t('This field is required')),
     confidence: Yup.number(),
   });
-
-export enum Platforms {
-  ANDROID = 'Android',
-  MAC_OS = 'macOS',
-  LINUX = 'Linux',
-  WINDOWS = 'Windows',
-}
-
-export enum Layers {
-  CLOUD_CONTROL_PLANE = 'Cloud Control Plane',
-  HOST = 'Host',
-  NETWORK = 'Network',
-}
 
 interface DataSourceAddInput {
   name: string,
@@ -205,7 +191,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
     });
   };
 
-  const fields = (setFieldValue: (field: string, value: never, shouldValidate?: (boolean | undefined)) => void, values: DataSourceAddInput) => (
+  const fields = (setFieldValue: (field: string, value: unknown, shouldValidate?: (boolean | undefined)) => void, values: DataSourceAddInput) => (
     <React.Fragment>
       <Field
         component={TextField}
@@ -263,32 +249,22 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
         setFieldValue={setFieldValue}
         values={values.externalReferences}
       />
-      <Field
-        component={SelectField}
-        variant="standard"
-        name="x_mitre_platforms"
+      <OpenVocabField
         label={t('Platforms')}
-        fullWidth={true}
+        type="platforms_ov"
+        name="x_mitre_platforms"
+        onChange={(name, value) => setFieldValue(name, value)}
+        containerStyle={fieldSpacingContainerStyle}
         multiple={true}
-        containerstyle={{ marginTop: 20, width: '100%' }}
-      >
-        {Object.values(Platforms).map((plaform) => (
-          <MenuItem key={plaform} value={plaform}>{t(plaform)}</MenuItem>
-        ))}
-      </Field>
-      <Field
-        component={SelectField}
-        variant="standard"
-        name="collection_layers"
+      />
+      <OpenVocabField
         label={t('Layers')}
-        fullWidth={true}
+        type="collection_layers_ov"
+        name="collection_layers"
+        onChange={(name, value) => setFieldValue(name, value)}
+        containerStyle={fieldSpacingContainerStyle}
         multiple={true}
-        containerstyle={{ marginTop: 20, width: '100%' }}
-      >
-        {Object.values(Layers).map((layer) => (
-          <MenuItem key={layer} value={layer}>{t(layer)}</MenuItem>
-        ))}
-      </Field>
+      />
     </React.Fragment>
   );
 
@@ -342,7 +318,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a data component')}</Typography>
+          <Typography variant="h6">{t('Create a data source')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik<DataSourceAddInput>

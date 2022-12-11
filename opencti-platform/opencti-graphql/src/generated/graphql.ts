@@ -13764,16 +13764,16 @@ export type ProcessAddInput = {
   display_name?: InputMaybe<Scalars['String']>;
   environment_variables?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   group_name?: InputMaybe<Scalars['String']>;
-  integrity_level?: InputMaybe<WindowsIntegrityLevel>;
+  integrity_level?: InputMaybe<Scalars['String']>;
   is_hidden?: InputMaybe<Scalars['Boolean']>;
   owner_sid?: InputMaybe<Scalars['String']>;
   pid?: InputMaybe<Scalars['Int']>;
   priority?: InputMaybe<Scalars['String']>;
   serviceDlls?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   service_name?: InputMaybe<Scalars['String']>;
-  service_status?: InputMaybe<WindowsServiceStatus>;
-  service_type?: InputMaybe<WindowsServiceType>;
-  start_type?: InputMaybe<WindowsServiceStartType>;
+  service_status?: InputMaybe<Scalars['String']>;
+  service_type?: InputMaybe<Scalars['String']>;
+  start_type?: InputMaybe<Scalars['String']>;
   startup_info?: InputMaybe<Array<InputMaybe<DictionaryInput>>>;
   window_title?: InputMaybe<Scalars['String']>;
   x_opencti_description?: InputMaybe<Scalars['String']>;
@@ -21495,9 +21495,9 @@ export enum VocabularyCategory {
   AttackMotivationOv = 'attack_motivation_ov',
   AttackResourceLevelOv = 'attack_resource_level_ov',
   ChannelTypesOv = 'channel_types_ov',
+  CollectionLayersOv = 'collection_layers_ov',
   EventTypeOv = 'event_type_ov',
   GroupingContextOv = 'grouping_context_ov',
-  IdentitySectorOv = 'identity_sector_ov',
   ImplementationLanguageOv = 'implementation_language_ov',
   IndicatorTypeOv = 'indicator_type_ov',
   InfrastructureTypeOv = 'infrastructure_type_ov',
@@ -21505,8 +21505,8 @@ export enum VocabularyCategory {
   MalwareCapabilitiesOv = 'malware_capabilities_ov',
   MalwareTypeOv = 'malware_type_ov',
   PatternTypeOv = 'pattern_type_ov',
+  PlatformsOv = 'platforms_ov',
   ProcessorArchitectureOv = 'processor_architecture_ov',
-  RegionOv = 'region_ov',
   ReportTypesOv = 'report_types_ov',
   ServiceStatusOv = 'service_status_ov',
   ServiceTypeOv = 'service_type_ov',
@@ -21848,13 +21848,6 @@ export type VulnerabilityEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
   toId: Scalars['StixRef'];
 };
-
-export enum WindowsIntegrityLevel {
-  High = 'high',
-  Low = 'low',
-  Medium = 'medium',
-  System = 'system'
-}
 
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'WindowsRegistryKey';
@@ -22255,31 +22248,6 @@ export type WindowsRegistryValueTypeAddInput = {
   data_type?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
 };
-
-export enum WindowsServiceStartType {
-  ServiceAutoStart = 'SERVICE_AUTO_START',
-  ServiceBootStart = 'SERVICE_BOOT_START',
-  ServiceDemandStart = 'SERVICE_DEMAND_START',
-  ServiceDisabled = 'SERVICE_DISABLED',
-  ServiceSystemAlert = 'SERVICE_SYSTEM_ALERT'
-}
-
-export enum WindowsServiceStatus {
-  ServiceContinuePending = 'SERVICE_CONTINUE_PENDING',
-  ServicePaused = 'SERVICE_PAUSED',
-  ServicePausePending = 'SERVICE_PAUSE_PENDING',
-  ServiceRunning = 'SERVICE_RUNNING',
-  ServiceStartPending = 'SERVICE_START_PENDING',
-  ServiceStopped = 'SERVICE_STOPPED',
-  ServiceStopPending = 'SERVICE_STOP_PENDING'
-}
-
-export enum WindowsServiceType {
-  ServiceFileSystemDriver = 'SERVICE_FILE_SYSTEM_DRIVER',
-  ServiceKernelDriver = 'SERVICE_KERNEL_DRIVER',
-  ServiceWin32OwnProcess = 'SERVICE_WIN32_OWN_PROCESS',
-  ServiceWin32ShareProcess = 'SERVICE_WIN32_SHARE_PROCESS'
-}
 
 export type Work = {
   __typename?: 'Work';
@@ -23451,14 +23419,10 @@ export type ResolversTypes = ResolversObject<{
   VulnerabilityConnection: ResolverTypeWrapper<Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['VulnerabilityEdge']>>> }>;
   VulnerabilityEdge: ResolverTypeWrapper<Omit<VulnerabilityEdge, 'node'> & { node: ResolversTypes['Vulnerability'] }>;
   VulnerabilityEditMutations: ResolverTypeWrapper<Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Vulnerability']>, contextPatch?: Maybe<ResolversTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversTypes['Vulnerability']>, relationDelete?: Maybe<ResolversTypes['Vulnerability']> }>;
-  WindowsIntegrityLevel: WindowsIntegrityLevel;
   WindowsRegistryKey: ResolverTypeWrapper<Omit<WindowsRegistryKey, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
   WindowsRegistryValueType: ResolverTypeWrapper<Omit<WindowsRegistryValueType, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
   WindowsRegistryValueTypeAddInput: WindowsRegistryValueTypeAddInput;
-  WindowsServiceStartType: WindowsServiceStartType;
-  WindowsServiceStatus: WindowsServiceStatus;
-  WindowsServiceType: WindowsServiceType;
   Work: ResolverTypeWrapper<Omit<Work, 'connector' | 'user'> & { connector?: Maybe<ResolversTypes['Connector']>, user?: Maybe<ResolversTypes['User']> }>;
   WorkConnection: ResolverTypeWrapper<Omit<WorkConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['WorkEdge']>>> }>;
   WorkEdge: ResolverTypeWrapper<Omit<WorkEdge, 'node'> & { node: ResolversTypes['Work'] }>;
