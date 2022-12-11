@@ -10,7 +10,6 @@ const convertVocabularyToStix = (instance: StoreEntityVocabulary): StixVocabular
     description: instance.description,
     category: instance.category,
     aliases: instance.aliases ?? [],
-    builtIn: instance.builtIn || false,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

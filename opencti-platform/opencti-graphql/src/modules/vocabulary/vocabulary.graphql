@@ -115,11 +115,15 @@ type Query {
 
 # Mutations
 input VocabularyAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
   description: String
-  category: String!
+  category: VocabularyCategory!
+  created: DateTime
+  modified: DateTime
   aliases: [String!]
-  builtIn: Boolean
+  update: Boolean
 }
 
 input VocabularyMergeInput {

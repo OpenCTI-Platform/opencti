@@ -21484,10 +21484,14 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
 
 export type VocabularyAddInput = {
   aliases?: InputMaybe<Array<Scalars['String']>>;
-  builtIn?: InputMaybe<Scalars['Boolean']>;
-  category: Scalars['String'];
+  category: VocabularyCategory;
+  created?: InputMaybe<Scalars['DateTime']>;
   description?: InputMaybe<Scalars['String']>;
+  modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  stix_id?: InputMaybe<Scalars['StixId']>;
+  update?: InputMaybe<Scalars['Boolean']>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
 export enum VocabularyCategory {

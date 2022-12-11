@@ -9060,11 +9060,15 @@ type VocabularyEdge {
 }
 
 input VocabularyAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
-  category: String!
+  category: VocabularyCategory!
+  created: DateTime
+  modified: DateTime
   aliases: [String!]
-  builtIn: Boolean
+  update: Boolean
 }
 
 input VocabularyMergeInput {

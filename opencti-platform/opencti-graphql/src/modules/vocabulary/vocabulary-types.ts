@@ -283,7 +283,6 @@ export interface StixVocabulary extends StixObject {
   aliases: string[]
   description?: string
   category: VocabularyCategory
-  builtIn: boolean;
 }
 
 // endregion
