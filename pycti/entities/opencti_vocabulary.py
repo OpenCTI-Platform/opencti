@@ -87,8 +87,15 @@ class Vocabulary:
         return vocab_data
 
     def create(self, **kwargs):
+        stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
         category = kwargs.get("category", None)
+        description = kwargs.get("description", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
+        aliases = kwargs.get("aliases", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        update = kwargs.get("update", False)
 
         if name is not None and category is not None:
             self.opencti.log(
@@ -109,8 +116,15 @@ class Vocabulary:
                 query,
                 {
                     "input": {
+                        "stix_id": stix_id,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "name": name,
+                        "description": description,
                         "category": category,
+                        "created": created,
+                        "modified": modified,
+                        "aliases": aliases,
+                        "update": update,
                     }
                 },
             )

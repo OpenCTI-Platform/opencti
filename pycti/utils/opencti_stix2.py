@@ -694,7 +694,6 @@ class OpenCTIStix2:
             "tool": self.opencti.tool.import_from_stix2,
             "channel": self.opencti.channel.import_from_stix2,
             "narrative": self.opencti.narrative.import_from_stix2,
-            "Vocabulary": self.opencti.vocabulary.import_from_stix2,
             "vulnerability": self.opencti.vulnerability.import_from_stix2,
             "incident": self.opencti.incident.import_from_stix2,
         }
@@ -1764,7 +1763,6 @@ class OpenCTIStix2:
             "Tool": self.opencti.tool.read,
             "Channel": self.opencti.channel.read,
             "Narrative": self.opencti.narrative.read,
-            "Vocabulary": self.opencti.vocabulary.read,
             "Vulnerability": self.opencti.vulnerability.read,
             "Incident": self.opencti.incident.read,
             "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
@@ -1863,7 +1861,6 @@ class OpenCTIStix2:
             "Tool": self.opencti.tool.list,
             "Channel": self.opencti.channel.list,
             "Narrative": self.opencti.narrative.list,
-            "Vocabulary": self.opencti.vocabulary.list,
             "Vulnerability": self.opencti.vulnerability.list,
             "Incident": self.opencti.incident.list,
             "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.list,
@@ -1962,6 +1959,17 @@ class OpenCTIStix2:
                         stix_id=item["id"],
                         value=item["value"],
                         color=item["color"],
+                        x_opencti_stix_ids=stix_ids,
+                        update=update,
+                    )
+                elif item["type"] == "vocabulary":
+                    stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+                    self.opencti.vocabulary.create(
+                        stix_id=item["id"],
+                        name=item["name"],
+                        category=item["category"],
+                        description=item["description"],
+                        aliases=item["aliases"],
                         x_opencti_stix_ids=stix_ids,
                         update=update,
                     )
