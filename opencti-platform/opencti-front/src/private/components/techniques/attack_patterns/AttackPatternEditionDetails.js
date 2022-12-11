@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import { assoc, compose, pick, pipe, propOr } from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -104,18 +102,9 @@ class AttackPatternEditionDetailsComponent extends Component {
   render() {
     const { t, attackPattern, context } = this.props;
     const initialValues = pipe(
-      assoc(
-        'x_mitre_platforms',
-        propOr([], 'x_mitre_platforms', attackPattern),
-      ),
-      assoc(
-        'x_mitre_permissions_required',
-        propOr([], 'x_mitre_permissions_required', attackPattern),
-      ),
-      assoc(
-        'x_mitre_detection',
-        propOr('', 'x_mitre_detection', attackPattern),
-      ),
+      assoc('x_mitre_platforms', propOr([], 'x_mitre_platforms', attackPattern)),
+      assoc('x_mitre_permissions_required', propOr([], 'x_mitre_permissions_required', attackPattern)),
+      assoc('x_mitre_detection', propOr('', 'x_mitre_detection', attackPattern)),
       pick([
         'x_mitre_id',
         'x_mitre_platforms',
@@ -158,26 +147,17 @@ class AttackPatternEditionDetailsComponent extends Component {
               multiple={true}
               editContext={context}
             />
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="x_mitre_permissions_required"
-              multiple={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+            <OpenVocabField
               label={t('Required permissions')}
-              fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_mitre_permissions_required"
-                />
-              }
-            >
-              <MenuItem value="User">User</MenuItem>
-              <MenuItem value="Administrator">Administrator</MenuItem>
-            </Field>
+              type="permissions-ov"
+              name="x_mitre_permissions_required"
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              variant="edit"
+              multiple={true}
+              editContext={context}
+            />
             <Field
               component={TextField}
               variant="standard"

@@ -667,7 +667,19 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
         'A self-replicating, self-contained program that usually executes itself without user intervention.',
     },
   ],
+  // O
+  opinion_ov: [
+    { key: 'strongly-disagree', description: 'The creator strongly disagrees with the information and believes it is inaccurate or incorrect.' },
+    { key: 'disagree', description: 'The creator disagrees with the information and believes it is inaccurate or incorrect.' },
+    { key: 'neutral', description: 'The creator is neutral about the accuracy or correctness of the information.' },
+    { key: 'agree', description: 'The creator agrees with the information and believes that it is accurate and correct.' },
+    { key: 'strongly-agree', description: 'The creator strongly agrees with the information and believes that it is accurate and correct.' },
+  ],
   // P
+  permissions_ov: [
+    { key: 'User' },
+    { key: 'Administrator' },
+  ],
   platforms_ov: [
     { key: 'android' },
     { key: 'macos' },

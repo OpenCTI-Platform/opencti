@@ -1,6 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import {
-  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
@@ -138,6 +138,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
+  // O
+  opinion_ov: {
+    entity_types: [ENTITY_TYPE_CONTAINER_OPINION],
+    fields: [{
+      key: 'opinion',
+      required: true,
+      multiple: false,
+    }]
+  },
   // P
   platforms_ov: {
     entity_types: [ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_ATTACK_PATTERN],
@@ -171,7 +180,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   processor_architecture_ov: {
     entity_types: [ENTITY_TYPE_MALWARE],
     fields: [{
-      key: 'architecture_execution_envs ',
+      key: 'architecture_execution_envs',
+      required: false,
+      multiple: true,
+    }]
+  },
+  permissions_ov: {
+    entity_types: [ENTITY_TYPE_ATTACK_PATTERN],
+    fields: [{
+      key: 'x_mitre_permissions_required',
       required: false,
       multiple: true,
     }]

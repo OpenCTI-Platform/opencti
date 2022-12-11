@@ -3,6 +3,7 @@ enum VocabularyCategory {
   attack_motivation_ov
   attack_resource_level_ov
   channel_types_ov
+  collection_layers_ov
   event_type_ov
   grouping_context_ov
   implementation_language_ov
@@ -12,8 +13,9 @@ enum VocabularyCategory {
   malware_capabilities_ov
   malware_type_ov
   platforms_ov
-  collection_layers_ov
+  opinion_ov
   pattern_type_ov
+  permissions_ov
   processor_architecture_ov
   report_types_ov
   service_status_ov

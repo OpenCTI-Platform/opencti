@@ -19,6 +19,7 @@ class ConfidenceField extends Component {
       disabled,
     } = this.props;
     if (variant === 'edit') {
+      /* TODO Migrate to vocab with range 2555 */
       return (
         <Field
           component={SelectField}
