@@ -20,9 +20,9 @@ def api_client(pytestconfig):
         )
     else:
         return OpenCTIApiClient(
-            "https://demo.opencti.io",
-            "7e663f91-d048-4a8b-bdfa-cdb55597942b",
-            ssl_verify=True,
+            "http://localhost:4000",
+            "d434ce02-e58e-4cac-8b4c-42bf16748e84",
+            ssl_verify=False,
         )
 
 

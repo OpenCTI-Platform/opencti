@@ -52,6 +52,7 @@ from pycti.entities.opencti_stix_object_or_stix_relationship import (
 from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelationship
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_tool import Tool
+from pycti.entities.opencti_vocabulary import Vocabulary
 from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
@@ -150,6 +151,7 @@ class OpenCTIApiClient:
         self.stix2 = OpenCTIStix2(self)
 
         # Define the entities
+        self.vocabulary = Vocabulary(self)
         self.label = Label(self)
         self.marking_definition = MarkingDefinition(self)
         self.external_reference = ExternalReference(self, File)
