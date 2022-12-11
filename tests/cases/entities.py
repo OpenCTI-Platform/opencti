@@ -596,7 +596,7 @@ class ReportTest(EntityTest):
             "name": "The Black Vine Cyberespionage Group",
             "description": "A simple report with an indicator and campaign",
             "published": "2016-01-20T17:00:00.000Z",
-            "report_types": ["campaign"],
+            "report_types": ["threat-report"],
             # "lang": "en",
             # "object_refs": [self.ipv4["id"], self.domain["id"]],
         }
@@ -870,7 +870,6 @@ class ToolTest(EntityTest):
         return {
             "type": "Tool",
             "description": "The Evil Org threat actor group",
-            "tool_types": ["remote-access"],
             "name": "VNC",
         }
 

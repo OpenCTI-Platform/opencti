@@ -295,6 +295,51 @@ class OpenCTIStix2:
             if "object_marking_refs" in stix_object
             else []
         )
+
+        # Open vocabularies
+        object_open_vocabularies = {}
+        if self.mapping_cache.get("vocabularies_definition_fields") is None:
+            self.mapping_cache["vocabularies_definition_fields"] = []
+            query = """
+                    query getVocabCategories {
+                      vocabularyCategories {
+                        key
+                        fields{
+                          key
+                          required
+                        }
+                      }
+                    }
+                """
+            result = self.opencti.query(query)
+            for category in result["data"]["vocabularyCategories"]:
+                for field in category["fields"]:
+                    self.mapping_cache["vocabularies_definition_fields"].append(field)
+                    self.mapping_cache["category_" + field["key"]] = category["key"]
+        if any(
+            field["key"] in stix_object
+            for field in self.mapping_cache["vocabularies_definition_fields"]
+        ):
+            for f in self.mapping_cache["vocabularies_definition_fields"]:
+                if stix_object.get(f["key"]) is None:
+                    continue
+                if isinstance(stix_object.get(f["key"]), list):
+                    object_open_vocabularies[f["key"]] = []
+                    for vocab in stix_object[f["key"]]:
+                        object_open_vocabularies[f["key"]].append(
+                            self.opencti.vocabulary.handle_vocab(
+                                vocab, self.mapping_cache, field=f
+                            )["name"]
+                        )
+                else:
+                    object_open_vocabularies[
+                        f["key"]
+                    ] = self.opencti.vocabulary.handle_vocab(
+                        stix_object[f["key"]], self.mapping_cache, field=f
+                    )[
+                        "name"
+                    ]
+
         # Object Labels
         object_label_ids = []
         if (
@@ -569,6 +614,7 @@ class OpenCTIStix2:
             "created_by": created_by_id,
             "object_marking": object_marking_ids,
             "object_label": object_label_ids,
+            "open_vocabs": object_open_vocabularies,
             "kill_chain_phases": kill_chain_phases_ids,
             "object_refs": object_refs_ids,
             "granted_refs": granted_refs_ids,
@@ -604,6 +650,7 @@ class OpenCTIStix2:
         created_by_id = embedded_relationships["created_by"]
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
+        open_vocabs = embedded_relationships["open_vocabs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
@@ -614,6 +661,7 @@ class OpenCTIStix2:
             "created_by_id": created_by_id,
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
+            "open_vocabs": open_vocabs,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
@@ -717,6 +765,7 @@ class OpenCTIStix2:
         created_by_id = embedded_relationships["created_by"]
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
+        open_vocabs = embedded_relationships["open_vocabs"]
         granted_refs_ids = embedded_relationships["granted_refs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
@@ -728,6 +777,7 @@ class OpenCTIStix2:
             "created_by_id": created_by_id,
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
+            "open_vocabs": open_vocabs,
             "granted_refs_ids": granted_refs_ids,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
@@ -854,6 +904,7 @@ class OpenCTIStix2:
         created_by_id = embedded_relationships["created_by"]
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
+        open_vocabs = embedded_relationships["open_vocabs"]
         granted_refs_ids = embedded_relationships["granted_refs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
@@ -865,6 +916,7 @@ class OpenCTIStix2:
             "created_by_id": created_by_id,
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
+            "open_vocabs": open_vocabs,
             "granted_refs_ids": granted_refs_ids,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
@@ -947,6 +999,7 @@ class OpenCTIStix2:
         created_by_id = embedded_relationships["created_by"]
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
+        open_vocabs = embedded_relationships["open_vocabs"]
         granted_refs_ids = embedded_relationships["granted_refs"]
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         object_refs_ids = embedded_relationships["object_refs"]
@@ -958,6 +1011,7 @@ class OpenCTIStix2:
             "created_by_id": created_by_id,
             "object_marking_ids": object_marking_ids,
             "object_label_ids": object_label_ids,
+            "open_vocabs": open_vocabs,
             "granted_refs_ids": granted_refs_ids,
             "kill_chain_phases_ids": kill_chain_phases_ids,
             "object_ids": object_refs_ids,
