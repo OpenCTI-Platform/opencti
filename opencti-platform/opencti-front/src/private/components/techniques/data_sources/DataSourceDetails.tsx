@@ -78,14 +78,14 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
             <Typography variant="h3" gutterBottom={true}>
               {t('Platforms')}
             </Typography>
-            {data.x_mitre_platforms?.map((plaform) => (
-              <ItemOpenVocab small={false} type="platforms_ov" value={plaform} />
+            {data.x_mitre_platforms?.map((platform) => (
+              <ItemOpenVocab key={platform} small={false} type="platforms_ov" value={platform} />
             ))}
             <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
               {t('Layers')}
             </Typography>
             {data.collection_layers?.map((layer) => (
-              <ItemOpenVocab small={false} type="collection_layers_ov" value={layer} />
+              <ItemOpenVocab key={layer} small={false} type="collection_layers_ov" value={layer} />
             ))}
           </Grid>
           <Grid item={true} xs={12}>
