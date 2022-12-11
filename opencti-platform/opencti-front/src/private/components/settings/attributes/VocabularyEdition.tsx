@@ -180,7 +180,7 @@ const VocabularyEdition = ({
           enableReinitialize={true}
           initialValues={{
             name: vocab.name,
-            aliases: (vocab?.aliases ?? []).map((n) => ({ id: n, value: n, label: n })) as Array<{ id: string, label: string, value: string }>,
+            aliases: (vocab.aliases ?? []).map((n) => ({ id: n, value: n, label: n })) as Array<{ id: string, label: string, value: string }>,
             description: vocab.description ?? '',
           }}
           validationSchema={attributeValidation(t)}
