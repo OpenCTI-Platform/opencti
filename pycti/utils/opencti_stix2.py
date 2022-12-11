@@ -694,6 +694,7 @@ class OpenCTIStix2:
             "tool": self.opencti.tool.import_from_stix2,
             "channel": self.opencti.channel.import_from_stix2,
             "narrative": self.opencti.narrative.import_from_stix2,
+            "Vocabulary": self.opencti.vocabulary.import_from_stix2,
             "vulnerability": self.opencti.vulnerability.import_from_stix2,
             "incident": self.opencti.incident.import_from_stix2,
         }
@@ -1763,6 +1764,7 @@ class OpenCTIStix2:
             "Tool": self.opencti.tool.read,
             "Channel": self.opencti.channel.read,
             "Narrative": self.opencti.narrative.read,
+            "Vocabulary": self.opencti.vocabulary.read,
             "Vulnerability": self.opencti.vulnerability.read,
             "Incident": self.opencti.incident.read,
             "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
@@ -1861,6 +1863,7 @@ class OpenCTIStix2:
             "Tool": self.opencti.tool.list,
             "Channel": self.opencti.channel.list,
             "Narrative": self.opencti.narrative.list,
+            "Vocabulary": self.opencti.vocabulary.list,
             "Vulnerability": self.opencti.vulnerability.list,
             "Incident": self.opencti.incident.list,
             "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.list,
