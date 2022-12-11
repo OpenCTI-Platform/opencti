@@ -1968,8 +1968,8 @@ class OpenCTIStix2:
                         stix_id=item["id"],
                         name=item["name"],
                         category=item["category"],
-                        description=item["description"],
-                        aliases=item["aliases"],
+                        description=item["description"] if "description" in item else None,
+                        aliases=item["aliases"] if "aliases" in item else None,
                         x_opencti_stix_ids=stix_ids,
                         update=update,
                     )

@@ -144,3 +144,34 @@ class Vocabulary:
             except ValueError:
                 return None
         return vocab
+
+    def update_field(self, **kwargs):
+        id = kwargs.get("id", None)
+        input = kwargs.get("input", None)
+        if id is not None and input is not None:
+            self.opencti.log("info", "Updating Vocabulary {" + id + "}.")
+            query = """
+                        mutation VocabularyEdit($id: ID!, $input: [EditInput!]!) {
+                            vocabularyFieldPatch(id: $id, input: $input) { 
+                                id
+                                standard_id
+                                entity_type
+                            }
+                        }
+                    """
+            result = self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": input,
+                },
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["vocabularyFieldPatch"]
+            )
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_vocabulary] Missing parameters: id and key and value",
+            )
+            return None

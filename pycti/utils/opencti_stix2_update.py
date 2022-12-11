@@ -246,6 +246,8 @@ class OpenCTIStix2Update:
             self.opencti.marking_definition.update_field(id=id, input=input)
         elif entity_type == "label":
             self.opencti.label.update_field(id=id, input=input)
+        elif entity_type == "vocabulary":
+            self.opencti.vocabulary.update_field(id=id, input=input)
         elif entity_type == "kill-chain-phase":
             self.opencti.kill_chain_phase.update_field(id=id, input=input)
         elif entity_type == "external-reference":
