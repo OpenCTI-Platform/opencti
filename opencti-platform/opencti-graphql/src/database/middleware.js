@@ -1463,8 +1463,11 @@ export const updateAttributeRaw = async (context, user, instance, inputs, opts =
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
     if (nameInput || aliasesInput) {
-      aliasesInput.value = R.uniq(aliasesInput.value.map((a) => a.trim()).filter((a) => isNotEmptyField(a)));
       const name = nameInput ? R.head(nameInput.value) : undefined;
+      // Cleanup the alias input
+      if (aliasesInput) {
+        aliasesInput.value = R.uniq(aliasesInput.value.map((a) => a.trim()).filter((a) => isNotEmptyField(a)));
+      }
       // In case of upsert name change, old name must be pushed in aliases
       // If aliases are also ask for modification, we need to change the input
       if (name && normalizeName(instance.name) !== normalizeName(name)) {

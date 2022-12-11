@@ -243,7 +243,7 @@ const VocabularyEdition = ({
                 multiple={true}
                 createLabel={t('Add')}
                 textfieldprops={{ variant: 'standard', label: t('Aliases') }}
-                options={(vocab?.aliases ?? []).map((n) => ({ id: n, value: n, label: n }))}
+                options={(vocab.aliases ?? []).map((n) => ({ id: n, value: n, label: n }))}
                 renderOption={(props: Record<string, unknown>, option: Option) => (
                   <li {...props}>
                     <div className={classes.text}>
