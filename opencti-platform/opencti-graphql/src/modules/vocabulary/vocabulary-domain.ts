@@ -4,7 +4,6 @@ import type {
   EditInput,
   QueryVocabulariesArgs,
   VocabularyAddInput,
-  VocabularyCategory,
   VocabularyDefinition,
   VocabularyMergeInput,
 } from '../../generated/graphql';
@@ -203,12 +202,12 @@ const updateElasticVocabularyValue = async (oldName: string, name: string, categ
   });
 };
 
-export const editVocabulary = async (context: AuthContext, user: AuthUser, id: string, category: VocabularyCategory, input: EditInput[], props: Record<string, unknown>) => {
+export const editVocabulary = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], props: Record<string, unknown>) => {
   if (input.some(({ key }) => key === 'name')) {
     const name = input.find(({ key }) => key === 'name')?.value[0];
     const oldValue = await findById(context, user, id);
     if (name) {
-      const completeCategory = getVocabulariesCategories().find(({ key }) => key === category);
+      const completeCategory = getVocabulariesCategories().find(({ key }) => key === oldValue.category);
       if (completeCategory) {
         await updateElasticVocabularyValue(oldValue.name, name, completeCategory);
       }
@@ -235,7 +234,7 @@ export const mergeVocabulary = async (context: AuthContext, user: AuthUser, {
   await deleteVocabulary(context, user, fromVocab.id, { publishStreamEvent: false });
   const aggregateAliases = Array.from(new Set([...(fromVocab.aliases ?? []), ...(toVocab.aliases ?? []), fromVocab.name]));
   const input = [{ key: 'aliases', value: aggregateAliases }];
-  const element = await editVocabulary(context, user, toVocab.id, toVocab.category, input, { publishStreamEvent: false });
+  const element = await editVocabulary(context, user, toVocab.id, input, { publishStreamEvent: false });
   const impacts = { dependencyDeletions: [], updatedRelations: [] };
   const sources = [fromCompleteVocab as StoreEntityVocabulary];
   await storeMergeEvent(context, user, toVocab as StoreEntityVocabulary, element, sources, impacts, {});

@@ -62,10 +62,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const vocabularyMutationUpdate = graphql`
   mutation VocabularyEditionUpdateMutation(
     $id: ID!
-    $category: VocabularyCategory!
     $input: [EditInput!]!
   ) {
-    vocabularyFieldPatch(id: $id, category: $category, input: $input){
+    vocabularyFieldPatch(id: $id, input: $input){
       ...useVocabularyCategory_Vocabularynode
     }
   }
@@ -136,7 +135,7 @@ const VocabularyEdition = ({
     });
     if (input.length > 0) {
       commitUpdateMutation({
-        variables: { id: vocab.id, category: vocab.category.key, input },
+        variables: { id: vocab.id, input },
         onError: (error) => {
           const { errors } = (error as unknown as { res: { errors: { data: { existingIds: string[], reason: string } }[] } }).res;
           if (errors.at(0)?.data.reason === 'This update will produce a duplicate') {

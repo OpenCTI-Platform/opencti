@@ -89,6 +89,7 @@ describe('Database sync testing', () => {
     expect(objectMap.get('Indicator')).toEqual(28);
     expect(objectMap.get('Malware')).toEqual(27);
     expect(objectMap.get('Label')).toEqual(13);
+    expect(objectMap.get('Vocabulary')).toEqual(234);
     // Relations
     const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' });
     const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
@@ -103,7 +104,7 @@ describe('Database sync testing', () => {
   const checkMapConsistency = (before, after) => {
     after.forEach((value, key) => {
       const compareValue = before.get(key);
-      expect(`${key} - ${compareValue}`).toEqual(`${key} - ${value}`);
+      expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
     });
   };
   const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {

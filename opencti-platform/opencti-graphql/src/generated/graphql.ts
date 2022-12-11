@@ -10940,7 +10940,6 @@ export type MutationVocabularyDeleteArgs = {
 
 
 export type MutationVocabularyFieldPatchArgs = {
-  category: VocabularyCategory;
   id: Scalars['ID'];
   input: Array<EditInput>;
 };
@@ -26962,7 +26961,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userSubscriptionEdit?: Resolver<Maybe<ResolversTypes['UserSubscriptionEditMutations']>, ParentType, ContextType, RequireFields<MutationUserSubscriptionEditArgs, 'id'>>;
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;
   vocabularyDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationVocabularyDeleteArgs, 'id'>>;
-  vocabularyFieldPatch?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyFieldPatchArgs, 'category' | 'id' | 'input'>>;
+  vocabularyFieldPatch?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyFieldPatchArgs, 'id' | 'input'>>;
   vocabularyMerge?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyMergeArgs, 'fromVocab' | 'toId'>>;
   vulnerabilityAdd?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, Partial<MutationVulnerabilityAddArgs>>;
   vulnerabilityEdit?: Resolver<Maybe<ResolversTypes['VulnerabilityEditMutations']>, ParentType, ContextType, RequireFields<MutationVulnerabilityEditArgs, 'id'>>;

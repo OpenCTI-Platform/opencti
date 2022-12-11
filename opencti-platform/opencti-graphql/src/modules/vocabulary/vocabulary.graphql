@@ -117,7 +117,7 @@ type Query {
 input VocabularyAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 1)
   description: String
   category: VocabularyCategory!
   created: DateTime
@@ -135,7 +135,7 @@ input VocabularyMergeInput {
 
 type Mutation {
   vocabularyAdd(input: VocabularyAddInput!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
-  vocabularyFieldPatch(id: ID!, category: VocabularyCategory!, input: [EditInput!]!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
+  vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
   vocabularyDelete(id: ID!): ID @auth(for: [SETTINGS_SETLABELS])
   vocabularyMerge(fromVocab: VocabularyMergeInput!, toId: ID!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
 }

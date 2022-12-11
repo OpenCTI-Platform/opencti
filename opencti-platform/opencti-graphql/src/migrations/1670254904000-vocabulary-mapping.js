@@ -6,16 +6,22 @@ import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-ut
 
 export const up = async (next) => {
   const context = executionContext('migration');
-  await Promise.all(Object.values(VocabularyCategory).flatMap(async (category) => {
-    await Promise.all((openVocabularies[category] ?? []).map(async ({ key, description }) => {
-      await addVocabulary(context, SYSTEM_USER, { name: key, description, category, builtIn: builtInOv.includes(category) });
-    }));
+  const categories = Object.values(VocabularyCategory);
+  for (let index = 0; index < categories.length; index += 1) {
+    const category = categories[index];
+    const vocabularies = openVocabularies[category] ?? [];
+    for (let i = 0; i < vocabularies.length; i += 1) {
+      const { key, description } = vocabularies[i];
+      const data = { name: key, description, category, builtIn: builtInOv.includes(category) };
+      await addVocabulary(context, SYSTEM_USER, data);
+    }
     const { edges } = await elAttributeValues(context, SYSTEM_USER, category);
     const keys = edges.map(({ node: { value } }) => value);
-    keys.map(async (name) => {
+    for (let j = 0; index < keys.length; j += 1) {
+      const name = keys[j];
       await addVocabulary(context, SYSTEM_USER, { name, category });
-    });
-  }));
+    }
+  }
   next();
 };
 

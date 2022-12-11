@@ -8184,7 +8184,7 @@ type Mutation {
   dataSourceDataComponentAdd(id: ID!, dataComponentId: ID!): DataSource
   dataSourceDataComponentDelete(id: ID!, dataComponentId: ID!): DataSource
   vocabularyAdd(input: VocabularyAddInput!): Vocabulary
-  vocabularyFieldPatch(id: ID!, category: VocabularyCategory!, input: [EditInput!]!): Vocabulary
+  vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary
   vocabularyDelete(id: ID!): ID
   vocabularyMerge(fromVocab: VocabularyMergeInput!, toId: ID!): Vocabulary
 }
@@ -9062,7 +9062,7 @@ type VocabularyEdge {
 input VocabularyAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: name_String_NotNull_minLength_2!
+  name: name_String_NotNull_minLength_1!
   description: String
   category: VocabularyCategory!
   created: DateTime
@@ -9070,6 +9070,8 @@ input VocabularyAddInput {
   aliases: [String!]
   update: Boolean
 }
+
+scalar name_String_NotNull_minLength_1
 
 input VocabularyMergeInput {
   id: ID!

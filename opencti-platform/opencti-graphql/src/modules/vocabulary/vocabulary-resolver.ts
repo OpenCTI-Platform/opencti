@@ -22,12 +22,18 @@ const vocabularyResolvers: Resolvers = {
     usages: (current, _, context) => getVocabularyUsages(context, context.user, current),
   },
   Mutation: {
-    vocabularyAdd: (_, { input }, context) => addVocabulary(context, context.user, input),
-    vocabularyFieldPatch: (_, { id, category, input, ...props }, context) => {
-      return editVocabulary(context, context.user, id, category, input, props);
+    vocabularyAdd: (_, { input }, context) => {
+      return addVocabulary(context, context.user, input);
     },
-    vocabularyDelete: (_, { id }, context) => deleteVocabulary(context, context.user, id),
-    vocabularyMerge: (_, { fromVocab, toId }, context) => mergeVocabulary(context, context.user, { fromVocab, toId }),
+    vocabularyFieldPatch: (_, { id, input, ...props }, context) => {
+      return editVocabulary(context, context.user, id, input, props);
+    },
+    vocabularyDelete: (_, { id }, context) => {
+      return deleteVocabulary(context, context.user, id);
+    },
+    vocabularyMerge: (_, { fromVocab, toId }, context) => {
+      return mergeVocabulary(context, context.user, { fromVocab, toId });
+    },
   },
 };
 

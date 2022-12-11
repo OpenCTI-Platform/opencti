@@ -285,11 +285,16 @@ export const createBasicRolesAndCapabilities = async (context) => {
 };
 
 const createVocabularies = async (context) => {
-  await Promise.all(Object.values(VocabularyCategory).flatMap(async (category) => {
-    await Promise.all((openVocabularies[category] ?? []).map(async ({ key, description }) => {
-      await addVocabulary(context, SYSTEM_USER, { name: key, description, category, builtIn: builtInOv.includes(category) });
-    }));
-  }));
+  const categories = Object.values(VocabularyCategory);
+  for (let index = 0; index < categories.length; index += 1) {
+    const category = categories[index];
+    const vocabularies = openVocabularies[category] ?? [];
+    for (let i = 0; i < vocabularies.length; i += 1) {
+      const { key, description } = vocabularies[i];
+      const data = { name: key, description, category, builtIn: builtInOv.includes(category) };
+      await addVocabulary(context, SYSTEM_USER, data);
+    }
+  }
 };
 
 const initializeDefaultValues = async (context, withMarkings = true) => {
