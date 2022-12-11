@@ -93,13 +93,9 @@ const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({ variant, lab
   const { t } = useFormatter();
   const classes = styles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
-  if (Object.keys(inlineStyles).includes(label)) {
-    return (
-      <Chip className={style} style={inlineStyles[label]} label={t(label)} />
-    );
-  }
+  const hasPredefinedStyle = Object.keys(inlineStyles).includes(label);
   return (
-    <Chip className={style} style={inlineStyles.stix} label={t('Unknown')} />
+    <Chip className={style} style={hasPredefinedStyle ? inlineStyles[label] : inlineStyles.stix} label={t(label)} />
   );
 };
 export default ItemPatternType;

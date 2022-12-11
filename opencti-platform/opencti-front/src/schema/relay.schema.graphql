@@ -77,7 +77,7 @@ enum EditOperation {
 
 input EditInput {
   key: String!
-  value: [String]!
+  value: [String!]!
   operation: EditOperation
 }
 

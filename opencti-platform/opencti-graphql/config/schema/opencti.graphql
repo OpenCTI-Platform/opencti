@@ -84,7 +84,7 @@ enum EditOperation {
 }
 input EditInput {
   key: String! # Field name to change
-  value: [String]! # Values to apply
+  value: [String!]! # Values to apply
   operation: EditOperation # Undefined = REPLACE
 }
 input EditContext {

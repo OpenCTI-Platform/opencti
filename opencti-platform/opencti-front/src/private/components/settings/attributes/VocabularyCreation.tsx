@@ -12,13 +12,14 @@ import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { VocabularyCreationMutation } from './__generated__/VocabularyCreationMutation.graphql';
+import { VocabularyAddInput, VocabularyCreationMutation } from './__generated__/VocabularyCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 import { VocabulariesLines_DataQuery$variables } from './__generated__/VocabulariesLines_DataQuery.graphql';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
+import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 
 interface VocabularyCreationProps {
   paginationOptions: VocabulariesLines_DataQuery$variables,
@@ -86,10 +87,17 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
 
   const handleClose = () => setOpen(false);
 
-  const onSubmit: FormikConfig<{ name: string, description: string, category: string }>['onSubmit'] = (values, { resetForm }) => {
+  interface FormInterface { name: string, description: string, category: string, aliases: Array<{ value: string }> }
+  const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (values, { resetForm }) => {
+    const data: VocabularyAddInput = {
+      name: values.name,
+      description: values.description,
+      aliases: values.aliases.map((a) => a.value),
+      category: values.category,
+    };
     addVocab({
       variables: {
-        input: values,
+        input: data,
       },
       updater: (store) => insertNode(
         store,
@@ -140,6 +148,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
               name: '',
               description: '',
               category: '',
+              aliases: [] as Array<{ value: string }>,
             }}
             validationSchema={labelValidation(t)}
             onSubmit={onSubmit}
@@ -164,12 +173,21 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
                   style={fieldSpacingContainerStyle}
                 />
                 <Field
-                  component={TextField}
-                  variant="standard"
-                  name={'aliases'}
-                  label={t('Aliases separated by commas')}
-                  fullWidth={true}
+                  component={AutocompleteFreeSoloField}
                   style={fieldSpacingContainerStyle}
+                  name="aliases"
+                  multiple={true}
+                  textfieldprops={{
+                    variant: 'standard',
+                    label: t('Aliases'),
+                  }}
+                  options={[]}
+                  renderOption={(props: Record<string, unknown>, option: Option) => (
+                    <li {...props}>
+                      <div className={classes.text}>{option.label}</div>
+                    </li>
+                  )}
+                  classes={{ clearIndicator: classes.autoCompleteIndicator }}
                 />
                 <Field
                   component={AutocompleteField}

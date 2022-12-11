@@ -228,28 +228,16 @@ export const mergeVocabulary = async (context: AuthContext, user: AuthUser, {
 }: { fromVocab: VocabularyMergeInput, toId: string }) => {
   const toVocab = await findById(context, user, toId);
   const fromCompleteVocab = { ...await findById(context, user, fromVocab.id), ...fromVocab };
-
   const completeCategory = getVocabulariesCategories().find(({ key }) => key === toVocab.category);
   if (completeCategory) {
     await updateElasticVocabularyValue(fromCompleteVocab.name, toVocab.name, completeCategory);
   }
   await deleteVocabulary(context, user, fromVocab.id, { publishStreamEvent: false });
-  const input = [
-    {
-      key: 'aliases',
-      value: Array.from(new Set([...(fromVocab.aliases ?? []), ...(toVocab.aliases ?? []), fromVocab.name]))
-    },
-    { key: 'description', value: [fromVocab.description ?? toVocab.description] },
-  ];
+  const aggregateAliases = Array.from(new Set([...(fromVocab.aliases ?? []), ...(toVocab.aliases ?? []), fromVocab.name]));
+  const input = [{ key: 'aliases', value: aggregateAliases }];
   const element = await editVocabulary(context, user, toVocab.id, toVocab.category, input, { publishStreamEvent: false });
-  await storeMergeEvent(
-    context,
-    user,
-    toVocab as StoreEntityVocabulary,
-    element,
-    [fromCompleteVocab as StoreEntityVocabulary],
-    { dependencyDeletions: [], updatedRelations: [] },
-    {}
-  );
+  const impacts = { dependencyDeletions: [], updatedRelations: [] };
+  const sources = [fromCompleteVocab as StoreEntityVocabulary];
+  await storeMergeEvent(context, user, toVocab as StoreEntityVocabulary, element, sources, impacts, {});
   return element;
 };

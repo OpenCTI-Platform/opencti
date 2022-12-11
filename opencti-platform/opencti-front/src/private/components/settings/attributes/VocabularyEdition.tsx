@@ -25,6 +25,8 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
 import { deleteNode } from '../../../../utils/store';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
+import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -88,7 +90,7 @@ const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
 interface VocabularyEditionFormikValues {
   name: string,
   description: string,
-  aliases: string
+  aliases: Array<{ id: string, label: string, value: string }>
 }
 
 const VocabularyEdition = ({
@@ -111,7 +113,7 @@ const VocabularyEdition = ({
         fromVocab: {
           id: vocab.id,
           name: vocab.name,
-          aliases: (values.aliases ?? '').split(','),
+          aliases: values.aliases.map((a) => a.value),
           description: values.description,
         },
       },
@@ -126,7 +128,7 @@ const VocabularyEdition = ({
   const onSubmit: FormikConfig<VocabularyEditionFormikValues>['onSubmit'] = (values, { setSubmitting }) => {
     const input = formikFieldToEditInput({
       ...values,
-      aliases: (values.aliases ?? '').split(','),
+      aliases: values.aliases.map((a) => a.value),
     }, {
       name: vocab.name,
       aliases: vocab.aliases ?? [],
@@ -178,7 +180,7 @@ const VocabularyEdition = ({
           enableReinitialize={true}
           initialValues={{
             name: vocab.name,
-            aliases: (vocab.aliases ?? []).join(','),
+            aliases: (vocab?.aliases ?? []).map((n) => ({ id: n, value: n, label: n })) as Array<{ id: string, label: string, value: string }>,
             description: vocab.description ?? '',
           }}
           validationSchema={attributeValidation(t)}
@@ -235,12 +237,21 @@ const VocabularyEdition = ({
                 style={fieldSpacingContainerStyle}
               />
               <Field
-                component={TextField}
-                variant="standard"
-                name={'aliases'}
-                label={t('Aliases separated by commas')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                component={AutocompleteFreeSoloField}
+                style={{ marginTop: 20 }}
+                name="aliases"
+                multiple={true}
+                createLabel={t('Add')}
+                textfieldprops={{ variant: 'standard', label: t('Aliases') }}
+                options={(vocab?.aliases ?? []).map((n) => ({ id: n, value: n, label: n }))}
+                renderOption={(props: Record<string, unknown>, option: Option) => (
+                  <li {...props}>
+                    <div className={classes.text}>
+                      {option.label}
+                    </div>
+                  </li>
+                )}
+                classes={{ clearIndicator: classes.autoCompleteIndicator }}
               />
               <div className={classes.buttons}>
                 <Button
