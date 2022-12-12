@@ -47,6 +47,7 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+      - "35300:35300"
     environment:
       MINIO_ROOT_USER: ChangeMe
       MINIO_ROOT_PASSWORD: ChangeMe
