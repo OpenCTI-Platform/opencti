@@ -18,9 +18,7 @@ import RiskAnalysisEdition from './RiskAnalysisEdition';
 import RiskPopover from './RiskPopover';
 import RiskDeletion from './RiskDeletion';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import RiskAnalysisCharacterization from './RiskAnalysisCharacterization';
-import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = () => ({
   container: {
