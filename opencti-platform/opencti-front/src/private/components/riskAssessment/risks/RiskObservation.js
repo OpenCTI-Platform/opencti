@@ -16,9 +16,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   mainContainer: {
-    marginTop: '4%',
-    minHeight: '500px',
-    height: 'auto',
+    height: '30%',
   },
   paper: {
     height: '100%',
@@ -82,7 +80,7 @@ class RiskObservation extends Component {
     } = this.props;
     return (
       <div className={classes.mainContainer}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true} style={{ marginTop: '10px' }}>
           {t('Observations')}
         </Typography>
         <div className="clearfix" />
