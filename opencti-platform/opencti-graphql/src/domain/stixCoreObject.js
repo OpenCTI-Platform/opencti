@@ -10,7 +10,6 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   internalLoadById,
-  mergeEntities,
   storeLoadById,
   storeLoadByIdWithRefs,
   timeSeriesEntities,
@@ -23,7 +22,8 @@ import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } 
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  buildRefRelationKey,
   ENTITY_TYPE_IDENTITY,
 } from '../schema/general';
 import {
@@ -160,10 +160,6 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
     throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
   }
   return deleteElementById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-};
-
-export const stixCoreObjectMerge = async (context, user, targetId, sourceIds) => {
-  return mergeEntities(context, user, targetId, sourceIds);
 };
 
 export const askElementEnrichmentForConnector = async (context, user, elementId, connectorId) => {

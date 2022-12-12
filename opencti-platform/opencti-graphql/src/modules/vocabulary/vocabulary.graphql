@@ -126,16 +126,8 @@ input VocabularyAddInput {
   update: Boolean
 }
 
-input VocabularyMergeInput {
-  id: ID!
-  name: String!
-  description: String
-  aliases: [String!]
-}
-
 type Mutation {
   vocabularyAdd(input: VocabularyAddInput!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
   vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
   vocabularyDelete(id: ID!): ID @auth(for: [SETTINGS_SETLABELS])
-  vocabularyMerge(fromVocab: VocabularyMergeInput!, toId: ID!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
 }

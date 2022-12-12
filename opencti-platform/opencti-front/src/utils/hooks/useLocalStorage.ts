@@ -8,7 +8,7 @@ import { convertFilters } from '../ListParameters';
 import { DataComponentsLinesPaginationQuery$variables } from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 
 export interface LocalStorage {
-  numberOfElements?: { number: number, symbol: string, original?: number },
+  numberOfElements?: { number: number | string, symbol: string, original?: number },
   filters?: Filters,
   searchTerm?: string,
   sortBy?: string,
@@ -17,6 +17,15 @@ export interface LocalStorage {
   count?: number,
   types?: string[]
   zoom?: Record<string, unknown>,
+}
+
+export interface UseLocalStorageHelpers {
+  handleSearch: (value: string) => void,
+  handleRemoveFilter: (key: string) => void,
+  handleSort: (field: string, order: boolean) => void
+  handleAddFilter: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void
+  handleToggleExports: () => void,
+  handleSetNumberOfElements: (value: { number?: number | string, symbol?: string, original?: number }) => void,
 }
 
 export const localStorageToPaginationOptions = <U>({
@@ -42,14 +51,7 @@ export const localStorageToPaginationOptions = <U>({
 
 export type UseLocalStorage = [value: LocalStorage,
   setValue: Dispatch<SetStateAction<LocalStorage>>,
-  helpers: {
-    handleSearch: (value: string) => void,
-    handleRemoveFilter: (key: string) => void,
-    handleSort: (field: string, order: boolean) => void
-    handleAddFilter: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void
-    handleToggleExports: () => void,
-    handleSetNumberOfElements: (value: { number?: number, symbol?: string, original?: number }) => void,
-  },
+  helpers: UseLocalStorageHelpers,
 ];
 
 const buildParamsFromHistory = (params: LocalStorage) => removeEmptyFields({
@@ -83,15 +85,15 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
     if (typeof window === 'undefined') {
       return initialValue;
     }
-    if (Array.from(searchParams.values()).length > 0) {
-      return finalParams;
-    }
     try {
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
       // Parse stored json or if none return initialValue
-      const value: LocalStorage = item ? JSON.parse(item) : null;
-      return isEmptyField<LocalStorage>(value) ? initialValue : value;
+      let value: LocalStorage = item ? JSON.parse(item) : null;
+      if (isEmptyField(value)) {
+        value = initialValue;
+      }
+      return Array.from(searchParams.values()).length > 0 ? { ...value, ...finalParams } : value;
     } catch (error) {
       // If error also return initialValue
       throw Error('Error while initializing values in local storage');
@@ -157,7 +159,7 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       }
     },
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
-    handleSetNumberOfElements: ({ number, symbol, original }: { number?: number, symbol?: string, original?: number }) => setValue((c) => ({
+    handleSetNumberOfElements: ({ number, symbol, original }: { number?: number | string, symbol?: string, original?: number }) => setValue((c) => ({
       ...c,
       numberOfElements: {
         ...c.numberOfElements,
@@ -173,14 +175,7 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
 
 type PaginationLocalStorage<U> = {
   viewStorage: LocalStorage,
-  helpers: {
-    handleSearch: (value: string) => void,
-    handleRemoveFilter: (key: string) => void,
-    handleSort: (field: string, order: boolean) => void
-    handleAddFilter: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void
-    handleToggleExports: () => void,
-    handleSetNumberOfElements: (value: { number?: number, symbol?: string }) => void,
-  },
+  helpers: UseLocalStorageHelpers,
   paginationOptions: U,
 };
 

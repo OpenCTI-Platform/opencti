@@ -1,4 +1,4 @@
-import { stixDelete } from '../domain/stix';
+import { stixDelete, stixObjectMerge } from '../domain/stix';
 import { stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 
@@ -10,6 +10,7 @@ const stixResolvers = {
   Mutation: {
     stixEdit: (_, { id }, context) => ({
       delete: () => stixDelete(context, context.user, id),
+      merge: ({ stixObjectsIds }) => stixObjectMerge(context, context.user, id, stixObjectsIds),
     }),
   },
 };

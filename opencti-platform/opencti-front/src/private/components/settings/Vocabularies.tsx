@@ -17,6 +17,8 @@ import { Theme } from '../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import VocabularyCreation from './attributes/VocabularyCreation';
+import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import ToolBar from '../data/ToolBar';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -44,11 +46,13 @@ const Vocabularies = () => {
       handleSort,
       handleSearch,
       handleRemoveFilter,
+      handleSetNumberOfElements,
     },
   ] = useLocalStorage('view-vocabulary', {
     sortBy: 'name',
     orderAsc: true,
     searchTerm: '',
+    numberOfElements: { number: 0, symbol: '', original: 0 },
   });
 
   const queryProps = localStorageToPaginationOptions<VocabulariesLines_DataQuery$variables>({
@@ -56,6 +60,16 @@ const Vocabularies = () => {
     count: 200,
   });
   const queryRef = useQueryLoading<VocabulariesLinesPaginationQuery>(vocabulariesLinesQuery, queryProps);
+
+  const {
+    onToggleEntity,
+    selectAll,
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    selectedElements,
+    deSelectedElements,
+  } = useEntityToggle<useVocabularyCategory_Vocabularynode$data>('view-vocabulary');
 
   const renderLines = () => {
     const dataColumns = {
@@ -115,6 +129,8 @@ const Vocabularies = () => {
         handleSearch={handleSearch}
         handleAddFilter={handleAddFilter}
         handleRemoveFilter={handleRemoveFilter}
+        handleToggleSelectAll={handleToggleSelectAll}
+        selectAll={selectAll}
         displayImport={false}
         secondaryAction={true}
         keyword={queryProps.search}
@@ -125,13 +141,29 @@ const Vocabularies = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <VocabulariesLines
-              queryRef={queryRef}
-              paginationOptions={queryProps}
-              dataColumns={dataColumns}
+          <>
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <VocabulariesLines
+                queryRef={queryRef}
+                paginationOptions={queryProps}
+                dataColumns={dataColumns}
+                setNumberOfElements={handleSetNumberOfElements}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+              />
+            </React.Suspense>
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              handleClearSelectedElements={handleClearSelectedElements}
+              filters={{ entity_type: [{ id: 'Vocabulary' }] }}
+              variant="large"
             />
-          </React.Suspense>
+          </>
         )}
       </ListLines>
     );

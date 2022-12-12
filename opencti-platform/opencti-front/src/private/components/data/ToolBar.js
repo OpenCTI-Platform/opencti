@@ -1165,7 +1165,7 @@ class ToolBar extends Component {
     );
     const typesAreDifferent = selectedTypes.length > 1;
     // region update
-    const notUpdatableTypes = ['Label'];
+    const notUpdatableTypes = ['Label', 'Vocabulary'];
     const typesAreNotUpdatable = R.includes(
       R.uniq(
         R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1176,7 +1176,7 @@ class ToolBar extends Component {
         && notUpdatableTypes.includes(R.head(filters.entity_type).id));
     // endregion
     // region rules
-    const notScannableTypes = ['Label'];
+    const notScannableTypes = ['Label', 'Vocabulary'];
     const typesAreNotScannable = R.includes(
       R.uniq(
         R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1200,7 +1200,7 @@ class ToolBar extends Component {
     const promoteDisable = !isManualPromoteSelect && !isAllPromoteSelect;
     // endregion
     // region enrich
-    const notEnrichableTypes = ['Label'];
+    const notEnrichableTypes = ['Label', 'Vocabulary'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
     const isAllEnrichSelect = selectAll && (filters?.entity_type ?? []).length === 1;
     const enrichDisable = notEnrichableTypes.includes(R.head(selectedTypes))

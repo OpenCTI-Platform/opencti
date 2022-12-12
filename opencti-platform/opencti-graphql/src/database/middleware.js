@@ -97,6 +97,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
@@ -224,7 +225,11 @@ import { checkRelationConsistency, isRelationConsistent } from '../utils/modelCo
 import { getEntitiesFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabularyCategoryForField } from '../modules/vocabulary/vocabulary-utils';
+import {
+  getVocabulariesCategories,
+  getVocabularyCategoryForField,
+  updateElasticVocabularyValue
+} from '../modules/vocabulary/vocabulary-utils';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1308,6 +1313,11 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const sources = await Promise.all(sourceEntityIds.map((sourceId) => storeLoadByIdWithRefs(context, SYSTEM_USER, sourceId)));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
+
+    if (target.entity_type === ENTITY_TYPE_VOCABULARY) {
+      const completeCategory = getVocabulariesCategories().find(({ key }) => key === target.category);
+      await updateElasticVocabularyValue(sources.map((s) => s.name), target.name, completeCategory);
+    }
     // - TRANSACTION PART
     const mergeImpacts = await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
@@ -1315,7 +1325,8 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
-    return storeLoadById(context, user, target.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) => {
+
+    return storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
     });
   } catch (err) {

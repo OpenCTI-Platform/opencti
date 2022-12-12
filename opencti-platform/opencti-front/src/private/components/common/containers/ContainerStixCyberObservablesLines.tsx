@@ -16,6 +16,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { ContainerStixCyberObservablesLines_container$key } from './__generated__/ContainerStixCyberObservablesLines_container.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
@@ -102,11 +103,7 @@ interface ContainerStixCyberObservablesLinesProps {
   selectedElements: Record<string, StixCyberObservableLine_node$data>;
   deSelectedElements: Record<string, StixCyberObservableLine_node$data>;
   selectAll: boolean;
-  setNumberOfElements: (value: {
-    number?: number;
-    symbol?: string;
-    original?: number;
-  }) => void;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   onTypesChange: (type: string) => void;
   queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>;
   setSelectedElements: (

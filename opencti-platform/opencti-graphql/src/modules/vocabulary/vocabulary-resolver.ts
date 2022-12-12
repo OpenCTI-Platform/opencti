@@ -6,7 +6,6 @@ import {
   findAll,
   findById,
   getVocabularyUsages,
-  mergeVocabulary
 } from './vocabulary-domain';
 import { getVocabulariesCategories } from './vocabulary-utils';
 
@@ -30,9 +29,6 @@ const vocabularyResolvers: Resolvers = {
     },
     vocabularyDelete: (_, { id }, context) => {
       return deleteVocabulary(context, context.user, id);
-    },
-    vocabularyMerge: (_, { fromVocab, toId }, context) => {
-      return mergeVocabulary(context, context.user, { fromVocab, toId });
     },
   },
 };

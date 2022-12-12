@@ -7642,6 +7642,7 @@ type SynchronizerEditMutations {
 
 type StixEditMutations {
   delete: ID
+  merge(stixObjectsIds: [String]!): StixObject
 }
 
 type MarkingDefinitionEditMutations {
@@ -7685,7 +7686,6 @@ type StixCoreObjectEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): StixCoreObject
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
-  merge(stixCoreObjectsIds: [String]!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
   importPush(file: Upload!, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
@@ -8187,7 +8187,6 @@ type Mutation {
   vocabularyAdd(input: VocabularyAddInput!): Vocabulary
   vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary
   vocabularyDelete(id: ID!): ID
-  vocabularyMerge(fromVocab: VocabularyMergeInput!, toId: ID!): Vocabulary
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -9073,10 +9072,3 @@ input VocabularyAddInput {
 }
 
 scalar name_String_NotNull_minLength_1
-
-input VocabularyMergeInput {
-  id: ID!
-  name: String!
-  description: String
-  aliases: [String!]
-}

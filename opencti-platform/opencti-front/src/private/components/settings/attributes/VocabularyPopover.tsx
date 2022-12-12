@@ -178,7 +178,6 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
         <VocabularyEdition
           vocab={vocab}
           handleClose={handleCloseUpdate}
-          paginationOptions={paginationOptions}
         />
       </Drawer>
     </div>

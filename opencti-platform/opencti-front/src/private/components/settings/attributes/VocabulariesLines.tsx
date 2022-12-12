@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { VocabularyLine, VocabularyLineDummy } from './VocabularyLine';
@@ -9,11 +9,21 @@ import {
 } from './__generated__/VocabulariesLines_DataQuery.graphql';
 import { VocabulariesLines_data$key } from './__generated__/VocabulariesLines_data.graphql';
 import { VocabulariesLinesPaginationQuery } from './__generated__/VocabulariesLinesPaginationQuery.graphql';
+import {
+  useVocabularyCategory_Vocabularynode$data,
+} from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
+import { numberFormat } from '../../../../utils/Number';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 export interface VocabulariesLinesProps {
   paginationOptions: VocabulariesLines_DataQuery$variables,
   dataColumns: DataColumns,
   queryRef: PreloadedQuery<VocabulariesLinesPaginationQuery>,
+  selectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
+  deSelectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
+  onToggleEntity: (entity: useVocabularyCategory_Vocabularynode$data, event: React.SyntheticEvent) => void,
+  selectAll: boolean,
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
 }
 
 export const vocabulariesLinesQuery = graphql`
@@ -69,7 +79,16 @@ export const vocabulariesLinesFragment = graphql`
   }
 `;
 
-const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({ queryRef, dataColumns, paginationOptions }) => {
+const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
+  queryRef,
+  dataColumns,
+  paginationOptions,
+  setNumberOfElements,
+  selectedElements,
+  deSelectedElements,
+  onToggleEntity,
+  selectAll,
+}) => {
   const queryData = usePreloadedQuery(vocabulariesLinesQuery, queryRef);
   const {
     data,
@@ -81,6 +100,11 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({ queryRef
 
   const vocabularies = data?.vocabularies?.edges ?? [];
   const globalCount = data?.vocabularies?.pageInfo?.globalCount;
+
+  useEffect(() => {
+    setNumberOfElements(numberFormat(vocabularies.length));
+  }, [vocabularies.length]);
+
   return (
     <ListLinesContent
       initialLoading={!queryData}
@@ -95,6 +119,10 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({ queryRef
       dataColumns={dataColumns}
       nbOfRowsToLoad={10}
       paginationOptions={paginationOptions}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      onToggleEntity={onToggleEntity}
+      selectAll={selectAll}
     />
   );
 };

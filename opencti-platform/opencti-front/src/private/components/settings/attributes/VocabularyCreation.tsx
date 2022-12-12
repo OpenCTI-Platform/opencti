@@ -12,7 +12,11 @@ import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { VocabularyAddInput, VocabularyCreationMutation } from './__generated__/VocabularyCreationMutation.graphql';
+import {
+  VocabularyAddInput,
+  VocabularyCategory,
+  VocabularyCreationMutation,
+} from './__generated__/VocabularyCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 import { VocabulariesLines_DataQuery$variables } from './__generated__/VocabulariesLines_DataQuery.graphql';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
@@ -93,7 +97,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
       name: values.name,
       description: values.description,
       aliases: values.aliases.map((a) => a.value),
-      category: values.category,
+      category: values.category as VocabularyCategory,
     };
     addVocab({
       variables: {

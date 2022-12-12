@@ -7,6 +7,7 @@ import { DataComponentsLinesPaginationQuery, DataComponentsLinesPaginationQuery$
 import DataComponentLineDummy from './DataComponentLineDummy';
 import DataComponentLine from './DataComponentLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
@@ -15,7 +16,7 @@ interface DataComponentsLinesProps {
   onLabelClick: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void,
   paginationOptions: DataComponentsLinesPaginationQuery$variables,
   queryRef: PreloadedQuery<DataComponentsLinesPaginationQuery>,
-  setNumberOfElements: (value: { number?: number, symbol?: string }) => void,
+  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'],
 }
 
 export const dataComponentsLinesQuery = graphql`

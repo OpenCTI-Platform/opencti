@@ -140,7 +140,7 @@ ContainerStixCyberObservablesComponentProps
 
   let numberOfSelectedElements = Object.keys(selectedElements).length;
   if (selectAll) {
-    numberOfSelectedElements = (numberOfElements?.number ?? 0) - Object.keys(deSelectedElements).length;
+    numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements).length;
   }
   const backgroundTaskFilters = {
     containedBy: [{ id: container.id, value: defaultValue(container) }],

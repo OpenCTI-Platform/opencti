@@ -1,6 +1,12 @@
 import mime from 'mime-types';
 import { assoc, invertObj, map, pipe, propOr } from 'ramda';
-import { batchListThroughGetTo, deleteElementById, internalLoadById, updateAttribute } from '../database/middleware';
+import {
+  batchListThroughGetTo,
+  deleteElementById,
+  internalLoadById,
+  mergeEntities,
+  updateAttribute
+} from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -39,6 +45,10 @@ export const stixDelete = async (context, user, id) => {
     throw UnsupportedError('This method can only delete Stix element');
   }
   throw FunctionalError(`Cannot delete the stix element, ${id} cannot be found.`);
+};
+
+export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
+  return mergeEntities(context, user, targetId, sourceIds);
 };
 
 export const askListExport = async (context, user, format, entityType, listParams, type = 'simple', maxMarkingId = null) => {

@@ -3,14 +3,14 @@ import { useEffect } from 'react';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { KeyType } from 'react-relay/relay-hooks/helpers';
-import { UseLocalStorage } from './useLocalStorage';
+import { UseLocalStorageHelpers } from './useLocalStorage';
 
 interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
   queryRef: PreloadedQuery<QueryType>
   linesQuery: GraphQLTaggedNode
   linesFragment: GraphQLTaggedNode
   nodePath: string[]
-  setNumberOfElements?: UseLocalStorage[2]['handleSetNumberOfElements']
+  setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 const usePreloadedPaginationFragment = <QueryType extends OperationType, FragmentKey extends KeyType>({

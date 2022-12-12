@@ -1,20 +1,14 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, storeLoadById, updateAttribute } from '../../database/middleware';
-import type {
-  EditInput,
-  QueryVocabulariesArgs,
-  VocabularyAddInput,
-  VocabularyDefinition,
-  VocabularyMergeInput,
-} from '../../generated/graphql';
+import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, } from '../../generated/graphql';
 import { VocabularyFilter } from '../../generated/graphql';
 import { listEntitiesPaginated } from '../../database/middleware-loader';
-import { BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, StoreEntityVocabulary } from './vocabulary-types';
-import { notify, storeMergeEvent } from '../../database/redis';
+import { BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
+import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawSearch, elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
-import { getVocabulariesCategories } from './vocabulary-utils';
+import { getVocabulariesCategories, updateElasticVocabularyValue } from './vocabulary-utils';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string): BasicStoreEntityVocabulary => {
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY) as unknown as BasicStoreEntityVocabulary;
@@ -156,52 +150,6 @@ export const deleteVocabulary = async (context: AuthContext, user: AuthUser, voc
   return vocabularyId;
 };
 
-const updateElasticVocabularyValue = async (oldName: string, name: string, category: VocabularyDefinition) => {
-  await elRawUpdateByQuery({
-    index: READ_ENTITIES_INDICES,
-    wait_for_completion: false,
-    body: {
-      script: {
-        source: 'for(field in params.category.fields) if(ctx._source[field.key] instanceof List){ ctx._source[field.key][ctx._source[field.key].indexOf(params.oldName)] = params.name; ctx._source[field.key] = ctx._source[field.key].stream().distinct().collect(Collectors.toList()) } else ctx._source[field.key] = params.name;',
-        lang: 'painless',
-        params: { oldName, name, category },
-      },
-      query: {
-        bool: {
-          must: [
-            {
-              bool: {
-                should: [
-                  ...category.fields.map((f) => ({
-                    match: {
-                      [`${f.key}.keyword`]: {
-                        query: oldName
-                      }
-                    }
-                  })),
-                ],
-                minimum_should_match: 1
-              }
-            },
-            {
-              bool: {
-                should: [
-                  ...category.fields.map((f) => ({
-                    exists: {
-                      field: f.key,
-                    }
-                  })),
-                ],
-                minimum_should_match: 1
-              }
-            }
-          ],
-        },
-      }
-    },
-  });
-};
-
 export const editVocabulary = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], props: Record<string, unknown>) => {
   if (input.some(({ key }) => key === 'name')) {
     const name = input.find(({ key }) => key === 'name')?.value[0];
@@ -209,7 +157,7 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
     if (name) {
       const completeCategory = getVocabulariesCategories().find(({ key }) => key === oldValue.category);
       if (completeCategory) {
-        await updateElasticVocabularyValue(oldValue.name, name, completeCategory);
+        await updateElasticVocabularyValue([oldValue.name], name, completeCategory);
       }
     }
     const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
@@ -218,25 +166,5 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
   }
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
   await notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].EDIT_TOPIC, element, user);
-  return element;
-};
-
-export const mergeVocabulary = async (context: AuthContext, user: AuthUser, {
-  fromVocab,
-  toId
-}: { fromVocab: VocabularyMergeInput, toId: string }) => {
-  const toVocab = await findById(context, user, toId);
-  const fromCompleteVocab = { ...await findById(context, user, fromVocab.id), ...fromVocab };
-  const completeCategory = getVocabulariesCategories().find(({ key }) => key === toVocab.category);
-  if (completeCategory) {
-    await updateElasticVocabularyValue(fromCompleteVocab.name, toVocab.name, completeCategory);
-  }
-  await deleteVocabulary(context, user, fromVocab.id, { publishStreamEvent: false });
-  const aggregateAliases = Array.from(new Set([...(fromVocab.aliases ?? []), ...(toVocab.aliases ?? []), fromVocab.name]));
-  const input = [{ key: 'aliases', value: aggregateAliases }];
-  const element = await editVocabulary(context, user, toVocab.id, input, { publishStreamEvent: false });
-  const impacts = { dependencyDeletions: [], updatedRelations: [] };
-  const sources = [fromCompleteVocab as StoreEntityVocabulary];
-  await storeMergeEvent(context, user, toVocab as StoreEntityVocabulary, element, sources, impacts, {});
   return element;
 };
