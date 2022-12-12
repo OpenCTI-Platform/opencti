@@ -5,7 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import {
   KeyboardArrowRightOutlined,
-  LocalPlayOutlined,
+  PublicOutlined,
 } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
@@ -13,40 +13,24 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { RegionLine_node$key } from './__generated__/RegionLine_node.graphql';
 import { Theme } from '../../../../components/Theme';
+import { DataColumns } from '../../../../components/list_lines';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  item: {},
+  item: {
+    paddingLeft: 10,
+    height: 50,
+  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  name: {
-    width: '60%',
+  bodyItem: {
     height: 20,
-    lineHeight: '20px',
+    fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  createdAt: {
-    width: '20%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-  },
-  modifiedAt: {
-    width: '20%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
+    paddingRight: 5,
   },
   text: {
     fontSize: 12,
@@ -75,10 +59,13 @@ const regionLineFragment = graphql`
 `;
 
 interface RegionLineComponentProps {
-  node: RegionLine_node$key,
+  dataColumns: DataColumns;
+  node: RegionLine_node$key;
 }
 
-export const RegionLineComponent: FunctionComponent<RegionLineComponentProps> = ({ node }) => {
+export const RegionLineComponent: FunctionComponent<
+RegionLineComponentProps
+> = ({ dataColumns, node }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
   const data = useFragment(regionLineFragment, node);
@@ -92,18 +79,27 @@ export const RegionLineComponent: FunctionComponent<RegionLineComponentProps> = 
       to={`/dashboard/locations/regions/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <LocalPlayOutlined />
+        <PublicOutlined />
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <div className={classes.name}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
               {data.name}
             </div>
-            <div className={classes.createdAt}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
               {fd(data.created)}
             </div>
-            <div className={classes.modifiedAt}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified.width }}
+            >
               {fd(data.modified)}
             </div>
           </div>
@@ -121,12 +117,7 @@ export const RegionLineDummy = () => {
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

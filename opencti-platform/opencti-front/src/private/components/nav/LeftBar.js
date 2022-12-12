@@ -11,12 +11,34 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Collapse from '@mui/material/Collapse';
-import { AssignmentOutlined, BuildOutlined, DashboardOutlined, ExpandLess, ExpandMore, LayersOutlined, PlaceOutlined } from '@mui/icons-material';
-import { Binoculars, Brain, CogOutline, Database, FlaskOutline, FolderTableOutline, GlobeModel, Timetable } from 'mdi-material-ui';
+import {
+  AssignmentOutlined,
+  BuildOutlined,
+  DashboardOutlined,
+  ExpandLess,
+  ExpandMore,
+  LayersOutlined,
+  MapOutlined,
+} from '@mui/icons-material';
+import {
+  Binoculars,
+  Brain,
+  CogOutline,
+  Database,
+  FlaskOutline,
+  FolderTableOutline,
+  GlobeModel,
+  Timetable,
+} from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import Security from '../../../utils/Security';
-import useGranted, { KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE,
+  MODULES,
+  SETTINGS,
+  TAXIIAPI_SETCOLLECTIONS,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -343,10 +365,7 @@ const LeftBar = ({ t, location, classes, theme }) => {
                             color: theme.palette.text.secondary,
                           }}
                         >
-                          <PlaceOutlined
-                            fontSize="small"
-                            color="inherit"
-                          />
+                          <MapOutlined fontSize="small" color="inherit" />
                         </ListItemIcon>
                         <ListItemText
                           classes={{ primary: classes.menuItemNestedText }}

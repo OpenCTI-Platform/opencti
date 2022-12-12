@@ -9,7 +9,6 @@ import {
   HelpOutlined,
   BugReportOutlined,
   DescriptionOutlined,
-  MapOutlined,
   CenterFocusStrongOutlined,
   ShortTextOutlined,
   WorkOutline,
@@ -124,7 +123,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Country':
       return <FlagOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Region':
-      return <MapOutlined style={style} fontSize={fontSize} role="img" />;
+      return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Malware':
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
     case 'Threat-Actor':

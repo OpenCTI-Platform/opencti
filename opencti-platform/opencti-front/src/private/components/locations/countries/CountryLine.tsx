@@ -7,43 +7,29 @@ import { KeyboardArrowRightOutlined, FlagOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import * as R from 'ramda';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { CountryLine_node$key } from './__generated__/CountryLine_node.graphql';
+import { DataColumns } from '../../../../components/list_lines';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  item: {},
+  item: {
+    paddingLeft: 10,
+    height: 50,
+  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  name: {
-    width: '60%',
+  bodyItem: {
     height: 20,
-    lineHeight: '20px',
+    fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  createdAt: {
-    width: '20%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-  },
-  modifiedAt: {
-    width: '20%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
+    paddingRight: 5,
   },
   text: {
     fontSize: 12,
@@ -63,23 +49,30 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CountryLineProps {
-  node: CountryLine_node$key
+  dataColumns: DataColumns;
+  node: CountryLine_node$key;
 }
 
 const countryLineFragment = graphql`
   fragment CountryLine_node on Country {
     id
     name
+    x_opencti_aliases
     created
     modified
   }
 `;
 
-export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({ node }) => {
+export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
+  dataColumns,
+  node,
+}) => {
   const classes = useStyles();
   const { fd } = useFormatter();
   const data = useFragment(countryLineFragment, node);
-
+  const flag = R.head(
+    (data.x_opencti_aliases ?? []).filter((n) => n?.length === 2),
+  );
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -89,18 +82,35 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({ node
       to={`/dashboard/locations/countries/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <FlagOutlined />
+        {flag ? (
+          <img
+            style={{ width: 20 }}
+            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+            alt={data.name}
+          />
+        ) : (
+          <FlagOutlined />
+        )}
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <div className={classes.name}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
               {data.name}
             </div>
-            <div className={classes.createdAt}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
               {fd(data.created)}
             </div>
-            <div className={classes.modifiedAt}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified.width }}
+            >
               {fd(data.modified)}
             </div>
           </div>
@@ -116,48 +126,43 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({ node
 export const CountryLineDummy = () => {
   const classes = useStyles();
   return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div className={classes.name}>
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div className={classes.createdAt}>
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div className={classes.modifiedAt}>
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div className={classes.name}>
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
             </div>
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
-        </ListItemIcon>
-      </ListItem>
+            <div className={classes.createdAt}>
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+              />
+            </div>
+            <div className={classes.modifiedAt}>
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+              />
+            </div>
+          </div>
+        }
+      />
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRightOutlined />
+      </ListItemIcon>
+    </ListItem>
   );
 };
