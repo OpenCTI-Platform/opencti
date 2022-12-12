@@ -1,0 +1,141 @@
+enum VocabularyCategory {
+  account_type_ov
+  attack_motivation_ov
+  attack_resource_level_ov
+  channel_types_ov
+  collection_layers_ov
+  event_type_ov
+  grouping_context_ov
+  implementation_language_ov
+  indicator_type_ov
+  infrastructure_type_ov
+  integrity_level_ov
+  malware_capabilities_ov
+  malware_type_ov
+  platforms_ov
+  opinion_ov
+  pattern_type_ov
+  permissions_ov
+  processor_architecture_ov
+  report_types_ov
+  service_status_ov
+  service_type_ov
+  start_type_ov
+  threat_actor_type_ov
+  threat_actor_role_ov
+  threat_actor_sophistication_ov
+  tool_types_ov
+}
+
+type VocabularyFieldDefinition {
+  key: String!
+  required: Boolean!
+  multiple: Boolean!
+}
+
+type VocabularyDefinition {
+  key: VocabularyCategory!
+  entity_types: [String!]!
+  fields: [VocabularyFieldDefinition!]!
+}
+
+type Vocabulary implements BasicObject & StixObject & StixMetaObject {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  creator: Creator
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixMetaObject
+  created: DateTime
+  modified: DateTime
+  # Vocabulary
+  category: VocabularyDefinition!
+  name: String!
+  description: String
+  usages: [String!]!
+  aliases: [String!]
+  builtIn: Boolean
+}
+
+# Ordering
+enum VocabularyOrdering {
+  name
+  category
+  description
+}
+
+# Filtering
+enum VocabularyFilter {
+  name
+  category
+  description
+  entity_types
+  aliases
+}
+input VocabularyFiltering {
+  key: [VocabularyFilter!]!
+  values: [String!]!
+  operator: String
+  filterMode: FilterMode
+}
+
+# Relay connections
+type VocabularyConnection {
+  pageInfo: PageInfo!
+  edges: [VocabularyEdge!]!
+}
+type VocabularyEdge {
+  cursor: String!
+  node: Vocabulary!
+}
+
+# Queries
+type Query {
+  vocabulary(id: String!): Vocabulary @auth(for: [SETTINGS])
+  vocabularyCategories: [VocabularyDefinition!]! @auth(for: [SETTINGS])
+  vocabularies(
+    category: VocabularyCategory
+    first: Int
+    after: ID
+    orderBy: VocabularyOrdering
+    orderMode: OrderingMode
+    filters: [VocabularyFiltering!]
+    filterMode: FilterMode
+    search: String
+  ): VocabularyConnection @auth(for: [SETTINGS])
+}
+
+# Mutations
+input VocabularyAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 1)
+  description: String
+  category: VocabularyCategory!
+  created: DateTime
+  modified: DateTime
+  aliases: [String!]
+  update: Boolean
+}
+
+input VocabularyMergeInput {
+  id: ID!
+  name: String!
+  description: String
+  aliases: [String!]
+}
+
+type Mutation {
+  vocabularyAdd(input: VocabularyAddInput!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
+  vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
+  vocabularyDelete(id: ID!): ID @auth(for: [SETTINGS_SETLABELS])
+  vocabularyMerge(fromVocab: VocabularyMergeInput!, toId: ID!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
+}

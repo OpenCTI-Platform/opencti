@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { compose, evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
@@ -16,15 +16,15 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import MenuItem from '@mui/material/MenuItem';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import SelectField from '../../../../components/SelectField';
 import MarkDownField from '../../../../components/MarkDownField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -207,24 +207,14 @@ class OpinionCreation extends Component {
                 values,
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="opinion"
+                  <OpenVocabField
                     label={t('Opinion')}
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  >
-                    <MenuItem value="strongly-disagree">
-                      {t('strongly-disagree')}
-                    </MenuItem>
-                    <MenuItem value="disagree">{t('disagree')}</MenuItem>
-                    <MenuItem value="neutral">{t('neutral')}</MenuItem>
-                    <MenuItem value="agree">{t('agree')}</MenuItem>
-                    <MenuItem value="strongly-agree">
-                      {t('strongly-agree')}
-                    </MenuItem>
-                  </Field>
+                    type="opinion_ov"
+                    name="opinion"
+                    onChange={(name, value) => setFieldValue(name, value)}
+                    containerStyle={fieldSpacingContainerStyle}
+                    multiple={false}
+                  />
                   <Field
                     component={TextField}
                     variant="standard"
@@ -318,24 +308,14 @@ class OpinionCreation extends Component {
               <Form>
                 <DialogTitle>{t('Create an opinion')}</DialogTitle>
                 <DialogContent>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="opinion"
+                  <OpenVocabField
                     label={t('Opinion')}
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  >
-                    <MenuItem value="strongly-disagree">
-                      {t('strongly-disagree')}
-                    </MenuItem>
-                    <MenuItem value="disagree">{t('disagree')}</MenuItem>
-                    <MenuItem value="neutral">{t('neutral')}</MenuItem>
-                    <MenuItem value="agree">{t('agree')}</MenuItem>
-                    <MenuItem value="strongly-agree">
-                      {t('strongly-agree')}
-                    </MenuItem>
-                  </Field>
+                    type="opinion_ov"
+                    name="opinion"
+                    onChange={(name, value) => setFieldValue(name, value)}
+                    containerStyle={fieldSpacingContainerStyle}
+                    multiple={false}
+                  />
                   <Field
                     component={MarkDownField}
                     name="explanation"
@@ -347,18 +327,18 @@ class OpinionCreation extends Component {
                   />
                   <CreatedByField
                     name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                   />
                   <ObjectLabelField
                     name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                   />
                   <ObjectMarkingField
                     name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                 </DialogContent>
                 <DialogActions>

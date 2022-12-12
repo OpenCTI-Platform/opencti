@@ -69,6 +69,7 @@ const StixSightingRelationships = () => {
     sortBy: 'created',
     orderAsc: false,
     openExports: false,
+    count: 25,
   });
 
   const {
@@ -113,8 +114,6 @@ const StixSightingRelationships = () => {
         variables={paginationOptions}
         render={({ props }: { props: unknown }) => (
           <StixSightingRelationshipsLines
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             data={props}
             paginationOptions={paginationOptions}
             dataColumns={dataColumns}

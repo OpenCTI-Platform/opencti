@@ -1,4 +1,4 @@
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
@@ -12,7 +12,7 @@ import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
 import { Theme } from '../../../../components/Theme';
@@ -51,21 +51,18 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   const navigate = useNavigate();
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const [commitMutation] = useMutation(reportPopoverDeletionMutation);
+
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
-      mutation: reportPopoverDeletionMutation,
       variables: { id: reportId, purgeElements },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
         navigate('/dashboard/analysis/reports');
       },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      onError: undefined,
-      setSubmitting: undefined,
     });
   };
   return (

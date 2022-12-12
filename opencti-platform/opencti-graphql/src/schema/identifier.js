@@ -32,6 +32,7 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { now } from '../utils/format';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 
 // region hashes
 const MD5 = 'MD5';
@@ -223,6 +224,9 @@ const stixBaseEntityContribution = {
   },
   resolvers: {
     name(data) {
+      return normalizeName(data);
+    },
+    value(data) {
       return normalizeName(data);
     },
     definition(data) {
@@ -452,6 +456,9 @@ export const generateAliasesId = (rawAliases, instance = {}) => {
   }
   if (instance.entity_type === ENTITY_TYPE_ATTACK_PATTERN && instance.x_mitre_id) {
     additionalFields.x_mitre_id = instance.x_mitre_id;
+  }
+  if (instance.entity_type === ENTITY_TYPE_VOCABULARY) {
+    additionalFields.category = instance.category;
   }
   return R.uniq(aliases.map((alias) => {
     const dataUUID = { name: normalizeName(alias), ...additionalFields };

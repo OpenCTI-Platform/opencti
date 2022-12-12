@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { buildDate, parse } from '../../../../utils/Time';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -19,18 +18,11 @@ import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import ItemIcon from '../../../../components/ItemIcon';
-import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import Security from '../../../../utils/Security';
-import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   createButton: {
@@ -182,9 +174,6 @@ class ReportEditionOverviewComponent extends Component {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      if (name === 'report_types') {
-        finalValue = R.pluck('value', value);
-      }
       reportValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -253,7 +242,7 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, report, context, enableReferences, classes } = this.props;
+    const { t, report, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(report);
     const objectMarking = convertMarkings(report);
     const status = convertStatus(t, report);
@@ -262,10 +251,7 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('objectMarking', objectMarking),
       R.assoc('published', buildDate(report.published)),
       R.assoc('x_opencti_workflow_id', status),
-      R.assoc(
-        'report_types',
-        (report.report_types || []).map((n) => ({ label: n, value: n })),
-      ),
+      R.assoc('report_types', report.report_types ?? []),
       R.pick([
         'name',
         'published',
@@ -280,18 +266,10 @@ class ReportEditionOverviewComponent extends Component {
     return (
       <div>
         <QueryRenderer
-          query={attributesQuery}
-          variables={{ key: 'report_types' }}
+          query={vocabulariesQuery}
+          variables={{ category: 'report_types_ov' }}
           render={({ props }) => {
-            if (props && props.runtimeAttributes) {
-              const reportEdges = props.runtimeAttributes.edges.map(
-                (e) => e.node.value,
-              );
-              const elements = R.uniq([
-                ...reportEdges,
-                'threat-report',
-                'internal-report',
-              ]);
+            if (props && props.vocabularies) {
               return (
                 <Formik
                   enableReinitialize={true}
@@ -323,84 +301,17 @@ class ReportEditionOverviewComponent extends Component {
                             />
                           }
                         />
-                        <Security
-                          needs={[SETTINGS_SETLABELS]}
-                          placeholder={
-                            <Field
-                              component={AutocompleteField}
-                              onChange={this.handleSubmitField.bind(this)}
-                              style={{ marginTop: 20 }}
-                              name="report_types"
-                              multiple={true}
-                              createLabel={t('Add')}
-                              textfieldprops={{
-                                variant: 'standard',
-                                label: t('Report types'),
-                                helperText: (
-                                  <SubscriptionFocus
-                                    context={context}
-                                    fieldName="report_types"
-                                  />
-                                ),
-                              }}
-                              options={elements.map((n) => ({
-                                id: n,
-                                value: n,
-                                label: n,
-                              }))}
-                              renderOption={(optionProps, option) => (
-                                <li {...optionProps}>
-                                  <div className={classes.icon}>
-                                    <ItemIcon type="attribute" />
-                                  </div>
-                                  <div className={classes.text}>
-                                    {option.label}
-                                  </div>
-                                </li>
-                              )}
-                              classes={{
-                                clearIndicator: classes.autoCompleteIndicator,
-                              }}
-                            />
-                          }
-                        >
-                          <Field
-                            component={AutocompleteFreeSoloField}
-                            onChange={this.handleSubmitField.bind(this)}
-                            style={{ marginTop: 20 }}
-                            name="report_types"
-                            multiple={true}
-                            createLabel={t('Add')}
-                            textfieldprops={{
-                              variant: 'standard',
-                              label: t('Report types'),
-                              helperText: (
-                                <SubscriptionFocus
-                                  context={context}
-                                  fieldName="report_types"
-                                />
-                              ),
-                            }}
-                            options={elements.map((n) => ({
-                              id: n,
-                              value: n,
-                              label: n,
-                            }))}
-                            renderOption={(optionProps, option) => (
-                              <li {...optionProps}>
-                                <div className={classes.icon}>
-                                  <ItemIcon type="attribute" />
-                                </div>
-                                <div className={classes.text}>
-                                  {option.label}
-                                </div>
-                              </li>
-                            )}
-                            classes={{
-                              clearIndicator: classes.autoCompleteIndicator,
-                            }}
-                          />
-                        </Security>
+                        <OpenVocabField
+                          label={t('Report types')}
+                          type="report_types_ov"
+                          name="report_types"
+                          onSubmit={this.handleSubmitField.bind(this)}
+                          onChange={(name, value) => setFieldValue(name, value)}
+                          containerStyle={fieldSpacingContainerStyle}
+                          variant="edit"
+                          multiple={true}
+                          editContext={context}
+                        />
                         <ConfidenceField
                           name="confidence"
                           onFocus={this.handleChangeFocus.bind(this)}

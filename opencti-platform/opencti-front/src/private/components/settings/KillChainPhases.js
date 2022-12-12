@@ -15,7 +15,7 @@ import KillChainPhasesLines, {
   killChainPhasesLinesQuery,
 } from './kill_chain_phases/KillChainPhasesLines';
 import KillChainPhaseCreation from './kill_chain_phases/KillChainPhaseCreation';
-import LabelsAttributesMenu from './LabelsAttributesMenu';
+import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 
 const styles = () => ({
   container: {
@@ -133,7 +133,7 @@ class KillChainPhases extends Component {
     };
     return (
       <div className={classes.container}>
-        <LabelsAttributesMenu />
+        <LabelsVocabulariesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <KillChainPhaseCreation paginationOptions={paginationOptions} />
       </div>

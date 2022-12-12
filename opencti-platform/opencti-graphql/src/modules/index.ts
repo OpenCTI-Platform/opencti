@@ -6,4 +6,5 @@ import './grouping/grouping';
 import './narrative/narrative';
 import './dataComponent/dataComponent';
 import './dataSource/dataSource';
+import './vocabulary/vocabulary';
 // endregion

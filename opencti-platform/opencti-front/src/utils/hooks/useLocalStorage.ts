@@ -36,7 +36,7 @@ export const localStorageToPaginationOptions = <U>({
     search: searchTerm,
     orderMode: orderAsc ? OrderMode.asc : OrderMode.desc,
     orderBy: sortBy,
-    filters: convertFilters(filters) as unknown as Filters,
+    filters: filters ? convertFilters(filters) : undefined,
   }) as unknown extends U ? PaginationOptions : U;
 };
 

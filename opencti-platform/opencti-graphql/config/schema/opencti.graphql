@@ -57,37 +57,6 @@ enum Capabilities {
   TAXIIAPI_SETCOLLECTIONS
 }
 
-### STIX ENUM
-
-enum WindowsIntegrityLevel {
-  low
-  medium
-  high
-  system
-}
-enum WindowsServiceStartType {
-  SERVICE_AUTO_START
-  SERVICE_BOOT_START
-  SERVICE_DEMAND_START
-  SERVICE_DISABLED
-  SERVICE_SYSTEM_ALERT
-}
-enum WindowsServiceType {
-  SERVICE_KERNEL_DRIVER
-  SERVICE_FILE_SYSTEM_DRIVER
-  SERVICE_WIN32_OWN_PROCESS
-  SERVICE_WIN32_SHARE_PROCESS
-}
-enum WindowsServiceStatus {
-  SERVICE_CONTINUE_PENDING
-  SERVICE_PAUSE_PENDING
-  SERVICE_PAUSED
-  SERVICE_RUNNING
-  SERVICE_START_PENDING
-  SERVICE_STOP_PENDING
-  SERVICE_STOPPED
-}
-
 ### RELAY
 
 type PageInfo {
@@ -115,7 +84,7 @@ enum EditOperation {
 }
 input EditInput {
   key: String! # Field name to change
-  value: [String]! # Values to apply
+  value: [String!]! # Values to apply
   operation: EditOperation # Undefined = REPLACE
 }
 input EditContext {
@@ -9175,16 +9144,16 @@ input ProcessAddInput {
   owner_sid: String
   window_title: String
   startup_info: [DictionaryInput]
-  integrity_level: WindowsIntegrityLevel # windows-integrity-level-enum
+  integrity_level: String # windows-integrity-level-enum
   ## windows-service-ext
   service_name: String
   descriptions: [String]
   display_name: String
   group_name: String
-  start_type: WindowsServiceStartType # windows-service-start-type-enum
+  start_type: String # windows-service-start-type-enum
   serviceDlls: [String] # service_dll_refs
-  service_type: WindowsServiceType # windows-service-type-enum
-  service_status: WindowsServiceStatus # windows-service-status-enum
+  service_type: String # windows-service-type-enum
+  service_status: String # windows-service-status-enum
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -11767,7 +11736,7 @@ type Query {
     type: String
     includeParents: Boolean
     search: String
-  ): SubTypeConnection @auth(for: [KNOWLEDGE])
+  ): SubTypeConnection! @auth(for: [KNOWLEDGE])
   file(id: String!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])

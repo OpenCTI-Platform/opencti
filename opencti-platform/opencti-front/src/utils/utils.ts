@@ -15,3 +15,13 @@ export const removeEmptyFields = (obj: Record<string, any | undefined>): Record<
   Object.keys(clone).forEach((key) => clone[key] == null && delete clone[key]);
   return clone;
 };
+
+export const formikFieldToEditInput = <T extends Record<string, unknown>>(current: T, previous: T) => {
+  const object = { ...current };
+  Object.entries(previous).forEach(([key, value]) => {
+    if (object[key] === value) {
+      delete object[key];
+    }
+  });
+  return Object.entries(object).map(([key, value]) => ({ key, value }));
+};

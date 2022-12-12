@@ -1,6 +1,6 @@
 import { Launch } from 'mdi-material-ui';
 import { Field } from 'formik';
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
@@ -22,6 +22,7 @@ export interface Option {
   value: string
   label: string
   color?: string
+  [key: string]: ReactNode
 }
 
 interface RelationFieldProps {

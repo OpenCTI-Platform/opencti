@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -10,22 +10,18 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -210,58 +206,14 @@ class ThreatActorCreation extends Component {
                       'Malware',
                     ]}
                   />
-                  <Field
-                    component={SelectField}
-                    variant="standard"
+                  <OpenVocabField
+                    type="threat-actor-type-ov"
                     name="threat_actor_types"
                     label={t('Threat actor types')}
-                    fullWidth={true}
                     multiple={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
-                  >
-                    <MenuItem key="activist" value="activist">
-                      {t('activist')}
-                    </MenuItem>
-                    <MenuItem key="competitor" value="competitor">
-                      {t('competitor')}
-                    </MenuItem>
-                    <MenuItem key="crime-syndicate" value="crime-syndicate">
-                      {t('crime-syndicate')}
-                    </MenuItem>
-                    <MenuItem key="criminal'" value="criminal'">
-                      {t('criminal')}
-                    </MenuItem>
-                    <MenuItem key="hacker" value="hacker">
-                      {t('hacker')}
-                    </MenuItem>
-                    <MenuItem
-                      key="insider-accidental"
-                      value="insider-accidental"
-                    >
-                      {t('insider-accidental')}
-                    </MenuItem>
-                    <MenuItem
-                      key="insider-disgruntled"
-                      value="insider-disgruntled"
-                    >
-                      {t('insider-disgruntled')}
-                    </MenuItem>
-                    <MenuItem key="nation-state" value="nation-state">
-                      {t('nation-state')}
-                    </MenuItem>
-                    <MenuItem key="sensationalist" value="sensationalist">
-                      {t('sensationalist')}
-                    </MenuItem>
-                    <MenuItem key="spy" value="spy">
-                      {t('spy')}
-                    </MenuItem>
-                    <MenuItem key="terrorist" value="terrorist">
-                      {t('terrorist')}
-                    </MenuItem>
-                    <MenuItem key="unknown" value="unknown">
-                      {t('unknown')}
-                    </MenuItem>
-                  </Field>
+                    containerStyle={{ width: '100%', marginTop: 20 }}
+                    onChange={setFieldValue}
+                  />
                   <ConfidenceField
                     name="confidence"
                     label={t('Confidence')}

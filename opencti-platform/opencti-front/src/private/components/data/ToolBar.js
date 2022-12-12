@@ -1162,7 +1162,7 @@ class ToolBar extends Component {
         );
       }
     }
-    let paperClass = classes.bottomNav;
+    let paperClass;
     switch (variant) {
       case 'large':
         paperClass = classes.bottomNavWithLargePadding;

@@ -6,6 +6,7 @@ import MUIAutocomplete from '@mui/material/Autocomplete';
 import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
+import { useFormatter } from './i18n';
 
 const AutocompleteField = (props) => {
   const {
@@ -18,6 +19,8 @@ const AutocompleteField = (props) => {
     textfieldprops,
     openCreate,
   } = props;
+  const { t } = useFormatter();
+
   const [, meta] = useField(name);
   const internalOnChange = React.useCallback(
     (_, value) => {
@@ -50,10 +53,11 @@ const AutocompleteField = (props) => {
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
-        renderInput={(params) => (
+        renderInput={({ inputProps: { value, ...inputProps }, ...params }) => (
           <TextField
-            {...params}
+            {...{ ...params, inputProps }}
             {...textfieldprops}
+            value={value ? t(value) : value}
             name={name}
             fullWidth={true}
             error={!isNil(meta.error)}

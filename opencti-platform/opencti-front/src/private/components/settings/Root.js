@@ -9,7 +9,6 @@ import Sessions from './Sessions';
 import MarkingDefinitions from './MarkingDefinitions';
 import Rules from './Rules';
 import KillChainPhases from './KillChainPhases';
-import Attributes from './Attributes';
 import Labels from './Labels';
 import Workflow from './Workflow';
 import Retention from './Retention';
@@ -17,6 +16,7 @@ import { BoundaryRoute } from '../Error';
 import Security from '../../../utils/Security';
 import { SETTINGS } from '../../../utils/hooks/useGranted';
 import StatusTemplates from './workflow/StatusTemplates';
+import Vocabularies from './Vocabularies';
 
 const Root = () => (
   <Switch>
@@ -79,23 +79,23 @@ const Root = () => (
       <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/attributes"
-        render={() => <Redirect to="/dashboard/settings/attributes/labels" />}
+        path="/dashboard/settings/vocabularies"
+        render={() => <Redirect to="/dashboard/settings/vocabularies/labels" />}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/attributes/labels"
+        path="/dashboard/settings/vocabularies/labels"
         component={Labels}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/attributes/kill_chain_phases"
+        path="/dashboard/settings/vocabularies/kill_chain_phases"
         component={KillChainPhases}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/attributes/fields/:attributeKey"
-        component={Attributes}
+        path="/dashboard/settings/vocabularies/fields"
+        component={Vocabularies}
       />
     </Security>
   </Switch>

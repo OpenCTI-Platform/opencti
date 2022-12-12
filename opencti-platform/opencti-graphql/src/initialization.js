@@ -27,6 +27,9 @@ import {
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   KNOWLEDGE_UPDATE
 } from './schema/general';
+import { VocabularyCategory } from './generated/graphql';
+import { addVocabulary } from './modules/vocabulary/vocabulary-domain';
+import { builtInOv, openVocabularies } from './modules/vocabulary/vocabulary-utils';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -281,6 +284,19 @@ export const createBasicRolesAndCapabilities = async (context) => {
   });
 };
 
+const createVocabularies = async (context) => {
+  const categories = Object.values(VocabularyCategory);
+  for (let index = 0; index < categories.length; index += 1) {
+    const category = categories[index];
+    const vocabularies = openVocabularies[category] ?? [];
+    for (let i = 0; i < vocabularies.length; i += 1) {
+      const { key, description } = vocabularies[i];
+      const data = { name: key, description, category, builtIn: builtInOv.includes(category) };
+      await addVocabulary(context, SYSTEM_USER, data);
+    }
+  }
+};
+
 const initializeDefaultValues = async (context, withMarkings = true) => {
   logApp.info('[INIT] Initialization of settings and basic elements');
   // Create default elements
@@ -292,6 +308,7 @@ const initializeDefaultValues = async (context, withMarkings = true) => {
   });
   await createDefaultStatusTemplates(context);
   await createBasicRolesAndCapabilities(context);
+  await createVocabularies(context);
   if (withMarkings) {
     await createMarkingDefinitions(context);
   }

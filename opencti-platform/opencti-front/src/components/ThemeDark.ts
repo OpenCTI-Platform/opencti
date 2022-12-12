@@ -19,6 +19,7 @@ const ThemeDark = (
     error: { main: '#f44336' },
     primary: { main: primary || '#00b1ff' },
     secondary: { main: secondary || '#ec407a' },
+    chip: { main: '#ffffff' },
     background: {
       default: background || THEME_DARK_DEFAULT_BACKGROUND,
       paper: paper || '#001e3c',

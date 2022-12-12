@@ -1,25 +1,21 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import MarkDownField from '../../../../components/MarkDownField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -197,6 +193,7 @@ class OpinionEditionOverviewComponent extends Component {
       R.pick([
         'attribute_abstract',
         'content',
+        'opinion',
         'confidence',
         'createdBy',
         'objectMarking',
@@ -212,17 +209,17 @@ class OpinionEditionOverviewComponent extends Component {
         {({ setFieldValue }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="opinion"
+              <OpenVocabField
                 label={t('Opinion')}
-                fullWidth={true}
+                type="opinion-ov"
+                name="opinion"
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="opinion" />
-                }
+                onChange={(name, value) => setFieldValue(name, value)}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+                editContext={context}
               />
               <Field
                 component={MarkDownField}

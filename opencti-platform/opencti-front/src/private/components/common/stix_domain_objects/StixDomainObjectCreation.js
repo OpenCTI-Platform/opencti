@@ -42,6 +42,7 @@ import {
   typesWithoutAliases,
 } from '../../../../utils/Entity';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import OpenVocabField from '../form/OpenVocabField';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -495,24 +496,14 @@ class StixDomainObjectCreation extends Component {
                   )}
                   {values.type === 'Indicator' && (
                     <div>
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="pattern_type"
+                      <OpenVocabField
                         label={t('Pattern type')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        <MenuItem value="stix">STIX</MenuItem>
-                        <MenuItem value="pcre">PCRE</MenuItem>
-                        <MenuItem value="sigma">SIGMA</MenuItem>
-                        <MenuItem value="snort">SNORT</MenuItem>
-                        <MenuItem value="suricata">Suricata</MenuItem>
-                        <MenuItem value="yara">YARA</MenuItem>
-                        <MenuItem value="tanium-signal">Tanium Signal</MenuItem>
-                        <MenuItem value="spl">Splunk SPL</MenuItem>
-                        <MenuItem value="eql">Elastic EQL</MenuItem>
-                      </Field>
+                        type="pattern_type_ov"
+                        name="pattern_type"
+                        onChange={(name, value) => setFieldValue(name, value)}
+                        containerStyle={fieldSpacingContainerStyle}
+                        multiple={false}
+                      />
                       <Field
                         component={TextField}
                         variant="standard"
@@ -689,24 +680,14 @@ class StixDomainObjectCreation extends Component {
                   )}
                   {values.type === 'Indicator' && (
                     <div>
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="pattern_type"
+                      <OpenVocabField
                         label={t('Pattern type')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        <MenuItem value="stix">STIX</MenuItem>
-                        <MenuItem value="pcre">PCRE</MenuItem>
-                        <MenuItem value="sigma">SIGMA</MenuItem>
-                        <MenuItem value="snort">SNORT</MenuItem>
-                        <MenuItem value="suricata">Suricata</MenuItem>
-                        <MenuItem value="yara">YARA</MenuItem>
-                        <MenuItem value="tanium-signal">Tanium Signal</MenuItem>
-                        <MenuItem value="spl">Splunk SPL</MenuItem>
-                        <MenuItem value="eql">Elastic EQL</MenuItem>
-                      </Field>
+                        type="pattern_type_ov"
+                        name="pattern_type"
+                        onChange={(name, value) => setFieldValue(name, value)}
+                        containerStyle={fieldSpacingContainerStyle}
+                        multiple={false}
+                      />
                       <Field
                         component={TextField}
                         variant="standard"

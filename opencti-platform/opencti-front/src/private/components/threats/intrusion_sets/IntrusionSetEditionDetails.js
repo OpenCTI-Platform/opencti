@@ -208,7 +208,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
               type="attack-resource-level-ov"
               name="resource_level"
               onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
@@ -219,7 +219,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
               type="attack-motivation-ov"
               name="primary_motivation"
               onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
@@ -230,7 +230,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
               type="attack-motivation-ov"
               name="secondary_motivations"
               onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={true}

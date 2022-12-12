@@ -51,38 +51,6 @@ enum Capabilities {
   TAXIIAPI_SETCOLLECTIONS
 }
 
-enum WindowsIntegrityLevel {
-  low
-  medium
-  high
-  system
-}
-
-enum WindowsServiceStartType {
-  SERVICE_AUTO_START
-  SERVICE_BOOT_START
-  SERVICE_DEMAND_START
-  SERVICE_DISABLED
-  SERVICE_SYSTEM_ALERT
-}
-
-enum WindowsServiceType {
-  SERVICE_KERNEL_DRIVER
-  SERVICE_FILE_SYSTEM_DRIVER
-  SERVICE_WIN32_OWN_PROCESS
-  SERVICE_WIN32_SHARE_PROCESS
-}
-
-enum WindowsServiceStatus {
-  SERVICE_CONTINUE_PENDING
-  SERVICE_PAUSE_PENDING
-  SERVICE_PAUSED
-  SERVICE_RUNNING
-  SERVICE_START_PENDING
-  SERVICE_STOP_PENDING
-  SERVICE_STOPPED
-}
-
 type PageInfo {
   startCursor: String!
   endCursor: String!
@@ -109,7 +77,7 @@ enum EditOperation {
 
 input EditInput {
   key: String!
-  value: [String]!
+  value: [String!]!
   operation: EditOperation
 }
 
@@ -6106,15 +6074,15 @@ input ProcessAddInput {
   owner_sid: String
   window_title: String
   startup_info: [DictionaryInput]
-  integrity_level: WindowsIntegrityLevel
+  integrity_level: String
   service_name: String
   descriptions: [String]
   display_name: String
   group_name: String
-  start_type: WindowsServiceStartType
+  start_type: String
   serviceDlls: [String]
-  service_type: WindowsServiceType
-  service_status: WindowsServiceStatus
+  service_type: String
+  service_status: String
 }
 
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -7362,7 +7330,7 @@ type Query {
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering], filterMode: FilterMode, search: String): LogConnection
   logsTimeSeries(userId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: [LogsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   subType(id: String!): SubType
-  subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection
+  subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection!
   file(id: String!): File
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
@@ -7559,6 +7527,9 @@ type Query {
   dataComponents(first: Int, after: ID, orderBy: DataComponentsOrdering, orderMode: OrderingMode, filters: [DataComponentsFiltering!], filterMode: FilterMode, search: String): DataComponentConnection
   dataSource(id: String!): DataSource
   dataSources(first: Int, after: ID, orderBy: DataSourcesOrdering, orderMode: OrderingMode, filters: [DataSourcesFiltering!], filterMode: FilterMode, search: String): DataSourceConnection
+  vocabulary(id: String!): Vocabulary
+  vocabularyCategories: [VocabularyDefinition!]!
+  vocabularies(category: VocabularyCategory, first: Int, after: ID, orderBy: VocabularyOrdering, orderMode: OrderingMode, filters: [VocabularyFiltering!], filterMode: FilterMode, search: String): VocabularyConnection
 }
 
 type Subscription {
@@ -8212,6 +8183,10 @@ type Mutation {
   dataSourceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataSource
   dataSourceDataComponentAdd(id: ID!, dataComponentId: ID!): DataSource
   dataSourceDataComponentDelete(id: ID!, dataComponentId: ID!): DataSource
+  vocabularyAdd(input: VocabularyAddInput!): Vocabulary
+  vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary
+  vocabularyDelete(id: ID!): ID
+  vocabularyMerge(fromVocab: VocabularyMergeInput!, toId: ID!): Vocabulary
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -8988,4 +8963,119 @@ input DataSourceAddInput {
   x_mitre_platforms: [String]
   collection_layers: [String]
   dataComponents: [String]
+}
+
+enum VocabularyCategory {
+  account_type_ov
+  attack_motivation_ov
+  attack_resource_level_ov
+  channel_types_ov
+  collection_layers_ov
+  event_type_ov
+  grouping_context_ov
+  implementation_language_ov
+  indicator_type_ov
+  infrastructure_type_ov
+  integrity_level_ov
+  malware_capabilities_ov
+  malware_type_ov
+  platforms_ov
+  opinion_ov
+  pattern_type_ov
+  permissions_ov
+  processor_architecture_ov
+  report_types_ov
+  service_status_ov
+  service_type_ov
+  start_type_ov
+  threat_actor_type_ov
+  threat_actor_role_ov
+  threat_actor_sophistication_ov
+  tool_types_ov
+}
+
+type VocabularyFieldDefinition {
+  key: String!
+  required: Boolean!
+  multiple: Boolean!
+}
+
+type VocabularyDefinition {
+  key: VocabularyCategory!
+  entity_types: [String!]!
+  fields: [VocabularyFieldDefinition!]!
+}
+
+type Vocabulary implements BasicObject & StixObject & StixMetaObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  creator: Creator
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  created: DateTime
+  modified: DateTime
+  category: VocabularyDefinition!
+  name: String!
+  description: String
+  usages: [String!]!
+  aliases: [String!]
+  builtIn: Boolean
+}
+
+enum VocabularyOrdering {
+  name
+  category
+  description
+}
+
+enum VocabularyFilter {
+  name
+  category
+  description
+  entity_types
+  aliases
+}
+
+input VocabularyFiltering {
+  key: [VocabularyFilter!]!
+  values: [String!]!
+  operator: String
+  filterMode: FilterMode
+}
+
+type VocabularyConnection {
+  pageInfo: PageInfo!
+  edges: [VocabularyEdge!]!
+}
+
+type VocabularyEdge {
+  cursor: String!
+  node: Vocabulary!
+}
+
+input VocabularyAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_1!
+  description: String
+  category: VocabularyCategory!
+  created: DateTime
+  modified: DateTime
+  aliases: [String!]
+  update: Boolean
+}
+
+scalar name_String_NotNull_minLength_1
+
+input VocabularyMergeInput {
+  id: ID!
+  name: String!
+  description: String
+  aliases: [String!]
 }

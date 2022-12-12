@@ -237,10 +237,11 @@ class ConnectorsStatusComponent extends Component {
           0,
           'messages',
           filter(
-            (o) => o.name
-                === (i.connector_type === 'INTERNAL_ENRICHMENT'
-                  ? `listen_${i.id}`
-                  : `push_${i.id}`),
+            (o) => o.name.includes(
+              (i.connector_type === 'INTERNAL_ENRICHMENT'
+                ? `listen_${i.id}`
+                : `push_${i.id}`),
+            ),
             queues,
           )[0],
         ),

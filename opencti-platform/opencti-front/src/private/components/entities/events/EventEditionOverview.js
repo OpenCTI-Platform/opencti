@@ -284,7 +284,8 @@ class EventEditionOverviewComponent extends Component {
               type="event-type-ov"
               name="event_types"
               onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={true}

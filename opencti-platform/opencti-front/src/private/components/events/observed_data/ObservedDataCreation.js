@@ -1,31 +1,22 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { compose, evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import MenuItem from '@mui/material/MenuItem';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import SelectField from '../../../../components/SelectField';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
@@ -305,115 +296,7 @@ class ObservedDataCreation extends Component {
     );
   }
 
-  renderContextual() {
-    const { t, classes, inputValue, display } = this.props;
-    return (
-      <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
-        >
-          <Formik
-            enableReinitialize={true}
-            initialValues={{
-              observedData: inputValue,
-              explanation: '',
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
-            }}
-            validationSchema={observedDataValidation(t)}
-            onSubmit={this.onSubmit.bind(this)}
-            onReset={this.onResetContextual.bind(this)}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form>
-                <DialogTitle>{t('Create a ObservedData')}</DialogTitle>
-                <DialogContent>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="observedData"
-                    label={t('ObservedData')}
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  >
-                    <MenuItem value="strongly-disagree">
-                      {t('strongly-disagree')}
-                    </MenuItem>
-                    <MenuItem value="disagree">{t('disagree')}</MenuItem>
-                    <MenuItem value="neutral">{t('neutral')}</MenuItem>
-                    <MenuItem value="agree">{t('agree')}</MenuItem>
-                    <MenuItem value="strongly-agree">
-                      {t('strongly-agree')}
-                    </MenuItem>
-                  </Field>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="explanation"
-                    label={t('Explanation')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </Dialog>
-      </div>
-    );
-  }
-
   render() {
-    const { contextual } = this.props;
-    if (contextual) {
-      return this.renderContextual();
-    }
     return this.renderClassic();
   }
 }
@@ -423,7 +306,6 @@ ObservedDataCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  contextual: PropTypes.bool,
   display: PropTypes.bool,
   inputValue: PropTypes.string,
 };

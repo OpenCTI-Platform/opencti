@@ -80,10 +80,10 @@ const threatActorValidation = (t) => Yup.object().shape({
   last_seen: Yup.date()
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  sophistication: Yup.string().nullable(),
-  resource_level: Yup.string().nullable(),
+  sophistication: Yup.object().nullable(),
+  resource_level: Yup.object().nullable(),
   roles: Yup.array().nullable(),
-  primary_motivation: Yup.string().nullable(),
+  primary_motivation: Yup.object().nullable(),
   secondary_motivations: Yup.array().nullable(),
   personal_motivations: Yup.array().nullable(),
   goals: Yup.string().nullable(),
@@ -276,7 +276,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="threat-actor-role-ov"
                   name="roles"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={true}
@@ -287,7 +288,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="attack-motivation-ov"
                   name="primary_motivation"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={false}
@@ -298,7 +299,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="attack-motivation-ov"
                   name="secondary_motivations"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={true}
@@ -309,7 +311,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="attack-motivation-ov"
                   name="personal_motivations"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={true}

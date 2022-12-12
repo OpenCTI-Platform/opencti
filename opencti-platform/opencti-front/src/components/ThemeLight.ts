@@ -17,6 +17,7 @@ const ThemeLight = (
     error: { main: '#f44336' },
     primary: { main: primary || '#007fff' },
     secondary: { main: secondary || '#d81b60' },
+    chip: { main: '#000000' },
     background: {
       default: background || '#ffffff',
       paper: paper || '#f3f6f9',

@@ -15,7 +15,8 @@ import { labelsSearchQuery } from '../../private/components/settings/LabelsQuery
 import { attributesSearchQuery } from '../../private/components/settings/AttributesQuery';
 import { statusFieldStatusesSearchQuery } from '../../private/components/common/form/StatusField';
 import { useFormatter } from '../../components/i18n';
-import { openVocabularies } from '../Entity';
+import { vocabCategoriesQuery } from '../hooks/useVocabularyCategory';
+import { vocabularySearchQuery } from '../../private/components/settings/VocabularyQuery';
 
 const filtersAllTypesQuery = graphql`
   query useSearchEntitiesAllTypesQuery {
@@ -213,6 +214,7 @@ const useSearchEntities = ({
     ),
   }));
 
+  let entitiesTypes = [];
   const searchEntities = (filterKey, event) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
     const scores = [
@@ -690,68 +692,42 @@ const useSearchEntities = ({
           });
         break;
       case 'indicator_types':
-        // eslint-disable-next-line no-case-declarations
-        const indicatorTypesEntities = R.pipe(
-          R.map((n) => ({
-            label: t(n.key),
-            value: n.key,
-            type: 'attribute',
-          })),
-        )(openVocabularies['indicator-type-ov']);
-        unionSetEntities('indicator_types', indicatorTypesEntities);
-        break;
-      case 'incident_type':
-        // eslint-disable-next-line no-case-declarations
-        const incidentTypeEntities = R.pipe(
-          R.map((n) => ({
-            label: t(n.key),
-            value: n.key,
-            type: 'attribute',
-          })),
-        )(openVocabularies['incident-type-ov']);
-        unionSetEntities('incident_type', incidentTypeEntities);
-        break;
-      case 'report_types':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'report_types',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
+        fetchQuery(vocabularySearchQuery, {
+          category: 'indicator_type_ov',
         })
           .toPromise()
           .then((data) => {
-            const reportTypesEntities = R.pipe(
-              R.pathOr([], ['runtimeAttributes', 'edges']),
-              R.map((n) => ({
-                label: t(n.node.value),
-                value: n.node.value,
-                type: 'attribute',
-              })),
-            )(data);
-            unionSetEntities('report_types', reportTypesEntities);
+            unionSetEntities('indicator_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'attribute' })));
+          });
+        break;
+      case 'incident_type':
+        fetchQuery(vocabularySearchQuery, {
+          category: 'incident_type_ov',
+        })
+          .toPromise()
+          .then((data) => {
+            unionSetEntities('indicator_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'attribute' })));
+          });
+        break;
+      case 'report_types':
+        fetchQuery(vocabularySearchQuery, {
+          category: 'report_types_ov',
+        })
+          .toPromise()
+          .then((data) => {
+            unionSetEntities('report_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'attribute' })));
           });
         break;
       case 'channel_types':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'channel_types',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
+        fetchQuery(vocabularySearchQuery, {
+          category: 'channel_types_ov',
         })
           .toPromise()
           .then((data) => {
-            const channelTypesEntities = R.pipe(
-              R.pathOr([], ['runtimeAttributes', 'edges']),
-              R.map((n) => ({
-                label: t(n.node.value),
-                value: n.node.value,
-                type: 'attribute',
-              })),
-            )(data);
-            unionSetEntities('channel_types', channelTypesEntities);
+            unionSetEntities('channel_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'attribute' })));
           });
         break;
       case 'entity_type':
-        // eslint-disable-next-line no-case-declarations
-        let entitiesTypes = [];
         if (
           availableEntityTypes
           && !availableEntityTypes.includes('Stix-Cyber-Observable')
@@ -839,6 +815,102 @@ const useSearchEntities = ({
               unionSetEntities('entity_type', entitiesTypes);
             });
         }
+        break;
+      case 'entity_types':
+        if (
+          availableEntityTypes
+          && !availableEntityTypes.includes('Stix-Cyber-Observable')
+          && !availableEntityTypes.includes('Stix-Domain-Object')
+        ) {
+          entitiesTypes = R.pipe(
+            R.map((n) => ({
+              label: t(
+                n.toString()[0] === n.toString()[0].toUpperCase()
+                  ? `entity_${n.toString()}`
+                  : `relationship_${n.toString()}`,
+              ),
+              value: n,
+              type: n,
+            })),
+            R.sortWith([R.ascend(R.prop('label'))]),
+          )(availableEntityTypes);
+          if (allEntityTypes) {
+            entitiesTypes = R.prepend(
+              { label: t('entity_All'), value: 'all', type: 'entity' },
+              entitiesTypes,
+            );
+          }
+          unionSetEntities('entity_types', entitiesTypes);
+        } else {
+          fetchQuery(filtersAllTypesQuery)
+            .toPromise()
+            .then((data) => {
+              let result = [];
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('Stix-Cyber-Observable')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['scoTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`entity_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('Stix-Domain-Object')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['sdoTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`entity_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              if (
+                !availableEntityTypes
+                || availableEntityTypes.includes('stix-core-relationship')
+              ) {
+                result = [
+                  ...R.pipe(
+                    R.pathOr([], ['sroTypes', 'edges']),
+                    R.map((n) => ({
+                      label: t(`relationship_${n.node.label}`),
+                      value: n.node.label,
+                      type: n.node.label,
+                    })),
+                  )(data),
+                  ...result,
+                ];
+              }
+              entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], result);
+              if (allEntityTypes) {
+                entitiesTypes = R.prepend(
+                  { label: t('entity_All'), value: 'all', type: 'entity' },
+                  entitiesTypes,
+                );
+              }
+              unionSetEntities('entity_types', entitiesTypes);
+            });
+        }
+        break;
+      case 'category':
+        fetchQuery(vocabCategoriesQuery)
+          .toPromise()
+          .then((data) => {
+            unionSetEntities('category', data.vocabularyCategories.map(({ key }) => ({ label: key, value: key, type: 'attribute' })));
+          });
         break;
       case 'fromTypes':
         // eslint-disable-next-line no-case-declarations

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Form, Formik, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -14,23 +14,17 @@ import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import Loader from '../../../../components/Loader';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import ItemIcon from '../../../../components/ItemIcon';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import Security from '../../../../utils/Security';
-import { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -135,7 +129,7 @@ class ReportCreation extends Component {
     const finalValues = R.pipe(
       R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('published', parse(values.published).format()),
-      R.assoc('report_types', R.pluck('value', values.report_types)),
+      R.assoc('report_types', values.report_types),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
@@ -174,12 +168,10 @@ class ReportCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
-        >
+          className={classes.createButton}>
           <Add />
         </Fab>
         <Drawer
@@ -188,209 +180,132 @@ class ReportCreation extends Component {
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <QueryRenderer
-            query={attributesQuery}
-            variables={{ key: 'report_types' }}
-            render={({ props }) => {
-              if (props && props.runtimeAttributes) {
-                const reportEdges = props.runtimeAttributes.edges.map(
-                  (e) => e.node.value,
-                );
-                const elements = R.uniq([
-                  ...reportEdges,
-                  'threat-report',
-                  'internal-report',
-                ]);
-                return (
-                  <div>
-                    <div className={classes.header}>
-                      <IconButton
-                        aria-label="Close"
-                        className={classes.closeButton}
-                        onClick={this.handleClose.bind(this)}
-                        size="large"
-                        color="primary"
+          onClose={this.handleClose.bind(this)}>
+          <div>
+            <div className={classes.header}>
+              <IconButton
+                aria-label="Close"
+                className={classes.closeButton}
+                onClick={this.handleClose.bind(this)}
+                size="large"
+                color="primary"
+              >
+                <Close fontSize="small" color="primary" />
+              </IconButton>
+              <Typography variant="h6">
+                {t('Create a report')}
+              </Typography>
+            </div>
+            <div className={classes.container}>
+              <Formik
+                initialValues={{
+                  name: '',
+                  published: dayStartDate(),
+                  confidence: 75,
+                  description: '',
+                  report_types: [],
+                  createdBy: '',
+                  objectMarking: [],
+                  objectLabel: [],
+                  externalReferences: [],
+                }}
+                validationSchema={reportValidation(t)}
+                onSubmit={this.onSubmit.bind(this)}
+                onReset={this.onReset.bind(this)}
+              >
+                {({
+                  submitForm,
+                  handleReset,
+                  isSubmitting,
+                  setFieldValue,
+                  values,
+                }) => (
+                  <Form style={{ margin: '0px 0 20px 0' }}>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="name"
+                      label={t('Name')}
+                      fullWidth={true}
+                    />
+                    <Field
+                      component={DateTimePickerField}
+                      name="published"
+                      TextFieldProps={{
+                        label: t('Publication date'),
+                        variant: 'standard',
+                        fullWidth: true,
+                        style: { marginTop: 20 },
+                      }}
+                    />
+                    <OpenVocabField
+                      label={t('Report types')}
+                      type="report_types_ov"
+                      name="report_types"
+                      onChange={(name, value) => setFieldValue(name, value)}
+                      containerStyle={fieldSpacingContainerStyle}
+                      multiple={true}
+                    />
+                    <ConfidenceField
+                      name="confidence"
+                      label={t('Confidence')}
+                      fullWidth={true}
+                      containerStyle={fieldSpacingContainerStyle}
+                    />
+                    <Field
+                      component={MarkDownField}
+                      name="description"
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <CreatedByField
+                      name="createdBy"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                    />
+                    <ObjectLabelField
+                      name="objectLabel"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.objectLabel}
+                    />
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                    <ExternalReferencesField
+                      name="externalReferences"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.externalReferences}
+                    />
+                    <div className={classes.buttons}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
                       >
-                        <Close fontSize="small" color="primary" />
-                      </IconButton>
-                      <Typography variant="h6">
-                        {t('Create a report')}
-                      </Typography>
-                    </div>
-                    <div className={classes.container}>
-                      <Formik
-                        initialValues={{
-                          name: '',
-                          published: dayStartDate(),
-                          confidence: 75,
-                          description: '',
-                          report_types: [],
-                          createdBy: '',
-                          objectMarking: [],
-                          objectLabel: [],
-                          externalReferences: [],
-                        }}
-                        validationSchema={reportValidation(t)}
-                        onSubmit={this.onSubmit.bind(this)}
-                        onReset={this.onReset.bind(this)}
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
                       >
-                        {({
-                          submitForm,
-                          handleReset,
-                          isSubmitting,
-                          setFieldValue,
-                          values,
-                        }) => (
-                          <Form style={{ margin: '0px 0 20px 0' }}>
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="name"
-                              label={t('Name')}
-                              fullWidth={true}
-                            />
-                            <Field
-                              component={DateTimePickerField}
-                              name="published"
-                              TextFieldProps={{
-                                label: t('Publication date'),
-                                variant: 'standard',
-                                fullWidth: true,
-                                style: { marginTop: 20 },
-                              }}
-                            />
-                            <Security
-                              needs={[SETTINGS_SETLABELS]}
-                              placeholder={
-                                <Field
-                                  component={AutocompleteField}
-                                  style={{ marginTop: 20 }}
-                                  name="report_types"
-                                  multiple={true}
-                                  createLabel={t('Add')}
-                                  textfieldprops={{
-                                    variant: 'standard',
-                                    label: t('Report types'),
-                                  }}
-                                  options={elements.map((n) => ({
-                                    id: n,
-                                    value: n,
-                                    label: n,
-                                  }))}
-                                  renderOption={(optionProps, option) => (
-                                    <li {...optionProps}>
-                                      <div className={classes.icon}>
-                                        <ItemIcon type="attribute" />
-                                      </div>
-                                      <div className={classes.text}>
-                                        {option.label}
-                                      </div>
-                                    </li>
-                                  )}
-                                  classes={{
-                                    clearIndicator:
-                                      classes.autoCompleteIndicator,
-                                  }}
-                                />
-                              }
-                            >
-                              <Field
-                                component={AutocompleteFreeSoloField}
-                                style={{ marginTop: 20 }}
-                                name="report_types"
-                                multiple={true}
-                                createLabel={t('Add')}
-                                textfieldprops={{
-                                  variant: 'standard',
-                                  label: t('Report types'),
-                                }}
-                                options={elements.map((n) => ({
-                                  id: n,
-                                  value: n,
-                                  label: n,
-                                }))}
-                                renderOption={(optionProps, option) => (
-                                  <li {...optionProps}>
-                                    <div className={classes.icon}>
-                                      <ItemIcon type="attribute" />
-                                    </div>
-                                    <div className={classes.text}>
-                                      {option.label}
-                                    </div>
-                                  </li>
-                                )}
-                                classes={{
-                                  clearIndicator: classes.autoCompleteIndicator,
-                                }}
-                              />
-                            </Security>
-                            <ConfidenceField
-                              name="confidence"
-                              label={t('Confidence')}
-                              fullWidth={true}
-                              containerStyle={fieldSpacingContainerStyle}
-                            />
-                            <Field
-                              component={MarkDownField}
-                              name="description"
-                              label={t('Description')}
-                              fullWidth={true}
-                              multiline={true}
-                              rows="4"
-                              style={{ marginTop: 20 }}
-                            />
-                            <CreatedByField
-                              name="createdBy"
-                              style={{ marginTop: 20, width: '100%' }}
-                              setFieldValue={setFieldValue}
-                            />
-                            <ObjectLabelField
-                              name="objectLabel"
-                              style={{ marginTop: 20, width: '100%' }}
-                              setFieldValue={setFieldValue}
-                              values={values.objectLabel}
-                            />
-                            <ObjectMarkingField
-                              name="objectMarking"
-                              style={{ marginTop: 20, width: '100%' }}
-                            />
-                            <ExternalReferencesField
-                              name="externalReferences"
-                              style={{ marginTop: 20, width: '100%' }}
-                              setFieldValue={setFieldValue}
-                              values={values.externalReferences}
-                            />
-                            <div className={classes.buttons}>
-                              <Button
-                                variant="contained"
-                                onClick={handleReset}
-                                disabled={isSubmitting}
-                                classes={{ root: classes.button }}
-                              >
-                                {t('Cancel')}
-                              </Button>
-                              <Button
-                                variant="contained"
-                                color="secondary"
-                                onClick={submitForm}
-                                disabled={isSubmitting}
-                                classes={{ root: classes.button }}
-                              >
-                                {t('Create')}
-                              </Button>
-                            </div>
-                          </Form>
-                        )}
-                      </Formik>
+                        {t('Create')}
+                      </Button>
                     </div>
-                  </div>
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </div>
         </Drawer>
       </div>
     );

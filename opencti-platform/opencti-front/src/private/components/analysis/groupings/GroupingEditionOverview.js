@@ -1,6 +1,6 @@
 import React from 'react';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { commitMutation } from '../../../../relay/environment';
@@ -14,11 +14,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -87,7 +83,7 @@ const groupingValidation = (t) => Yup.object().shape({
   published: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
-  grouping_types: Yup.array().required(t('This field is required')),
+  context: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   confidence: Yup.number(),
   x_opencti_workflow_id: Yup.object(),
@@ -260,6 +256,7 @@ const GroupingEditionOverviewComponent = (props) => {
               name="context"
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
+              onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}

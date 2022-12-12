@@ -120,15 +120,15 @@ const TopMenuSettings = ({ t, location, classes }) => (
     <Security needs={[SETTINGS_SETLABELS]}>
       <Button
         component={Link}
-        to="/dashboard/settings/attributes"
+        to="/dashboard/settings/vocabularies"
         variant={
-          location.pathname.includes('/dashboard/settings/attributes')
+          location.pathname.includes('/dashboard/settings/vocabularies')
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname.includes('/dashboard/settings/attributes')
+          location.pathname.includes('/dashboard/settings/vocabularies')
             ? 'secondary'
             : 'primary'
         }

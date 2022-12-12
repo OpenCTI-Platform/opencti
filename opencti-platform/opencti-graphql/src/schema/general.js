@@ -77,6 +77,8 @@ export const ENTITY_TYPE_CONTAINER = 'Container';
 export const ENTITY_TYPE_IDENTITY = 'Identity';
 export const ENTITY_TYPE_LOCATION = 'Location';
 
+export const DEPS_KEYS = 'depsKeys';
+
 // Abstract
 export const ABSTRACT_TYPES = [
   ABSTRACT_BASIC_OBJECT,
@@ -106,6 +108,11 @@ export const schemaTypes = {
   // eslint-disable-next-line object-shorthand,func-names
   register: function (type, children) {
     this.types[type] = children;
+  },
+  // eslint-disable-next-line object-shorthand,func-names
+  add: function (type, children) {
+    const values = Array.isArray(children) ? children : [children];
+    this.types[type] = [...(this.get(type)), ...values];
   },
   // eslint-disable-next-line object-shorthand,func-names
   get: function (type) {

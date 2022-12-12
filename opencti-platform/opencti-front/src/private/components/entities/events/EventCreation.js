@@ -224,6 +224,7 @@ class EventCreation extends Component {
                     name="event_types"
                     containerStyle={fieldSpacingContainerStyle}
                     multiple={true}
+                    onChange={(name, value) => setFieldValue(name, value)}
                   />
                   <Field
                     component={MarkDownField}
