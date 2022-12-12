@@ -14,6 +14,7 @@ import type { StixCoreObject } from '../types/stix-common';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
+export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
@@ -114,6 +115,10 @@ export const getBaseUrl = (req: Request): string => {
 
 export const isBypassUser = (user: AuthUser): boolean => {
   return R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+};
+
+export const isUserHasCapability = (user: AuthUser, capability: string): boolean => {
+  return isBypassUser(user) || R.find((s) => s.name === capability, user.capabilities || []) !== undefined;
 };
 
 export const filterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {

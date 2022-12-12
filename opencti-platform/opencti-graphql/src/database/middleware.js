@@ -1678,6 +1678,9 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
   }
+  if (updates.length === 0) {
+    return { element: initial };
+  }
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const enforceReferences = conf.get('app:enforce_references') || [];
   const keys = R.map((t) => t.key, attributes);

@@ -15,7 +15,7 @@ import { delEditContext, getRedisVersion, notify, setEditContext } from '../data
 import { searchEngineVersion, isRuntimeSortEnable } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -75,6 +75,8 @@ export const settingsEditContext = (context, user, settingsId, input) => {
 };
 
 export const settingsEditField = async (context, user, settingsId, input) => {
-  const { element } = await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, input);
+  const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
+  const data = hasSetAccessCapability ? input : input.filter((i) => i.key !== 'platform_organization');
+  const { element } = await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
 };

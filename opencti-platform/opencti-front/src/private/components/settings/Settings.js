@@ -30,6 +30,7 @@ import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -215,6 +216,7 @@ const settingsValidation = (t) => Yup.object().shape({
 const Settings = () => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const isAccessAdmin = useGranted([SETTINGS_SETACCESSES]);
   const handleChangeFocus = (id, name) => {
     commitMutation({
       mutation: settingsFocus,
@@ -415,6 +417,7 @@ const Settings = () => {
                               </Tooltip>
                               <ObjectOrganizationField
                                 name="platform_organization"
+                                disabled={!isAccessAdmin}
                                 onChange={(name, value) => handleSubmitField(id, name, value)}
                                 style={{ width: '100%' }}
                                 multiple={false}

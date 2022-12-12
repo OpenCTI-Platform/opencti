@@ -56,7 +56,9 @@ import {
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
+  isUserHasCapability,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  SETTINGS_SET_ACCESSES,
   SYSTEM_USER
 } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -721,7 +723,8 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   }
   const sessionUser = buildSessionUser(logged, impersonate, provider);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  if (!isBypassUser(logged) && settings.platform_organization && logged.organizations.length === 0) {
+  const hasSetAccessCapability = isUserHasCapability(logged, SETTINGS_SET_ACCESSES);
+  if (!hasSetAccessCapability && settings.platform_organization && logged.organizations.length === 0) {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
   req.session.user = sessionUser;
