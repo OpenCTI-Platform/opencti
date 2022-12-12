@@ -98,37 +98,6 @@ class RiskAnalysisContainerComponent extends Component {
                 <RiskAnalysisThreats risk={risk} history={history} />
               </Grid>
             </Grid>
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 25 }}
-            >
-              <Grid item={true} xs={6}>
-                <CyioCoreObjectExternalReferences
-                  disableAdd={true}
-                  typename={riskCharacterizations.__typename}
-                  externalReferences={riskCharacterizations.links}
-                  fieldName='links'
-                  cyioCoreObjectId={riskCharacterizations.id}
-                  refreshQuery={refreshQuery}
-                  removeIcon={true}
-                />
-              </Grid>
-              <Grid item={true} xs={6}>
-                {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
-                <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  typename={riskCharacterizations.__typename}
-                  disableAdd={true}
-                  notes={riskCharacterizations.remarks}
-                  cyioCoreObjectOrCyioCoreRelationshipId={riskCharacterizations.id}
-                  marginTop='0px'
-                  fieldName='remarks'
-                  refreshQuery={refreshQuery}
-                  removeIcon={true}
-                />
-              </Grid>
-            </Grid>
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <RiskEdition riskId={risk.id} />
               </Security> */}
