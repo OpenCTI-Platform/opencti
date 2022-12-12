@@ -58,6 +58,10 @@ const indicatorResolvers = {
     basedOn: buildRefRelationKey(RELATION_BASED_ON),
     indicates: buildRefRelationKey(RELATION_INDICATES),
     sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
+    creator: 'creator_id',
+  },
+  IndicatorsOrdering: {
+    creator: 'creator_id',
   },
   Indicator: {
     killChainPhases: (indicator, _, context) => killChainPhasesLoader.load(indicator.id, context, context.user),

@@ -249,12 +249,17 @@ class Indicators extends Component {
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '10%',
         isSortable: false,
       },
       created: {
         label: 'Creation date',
-        width: '18%',
+        width: '15%',
+        isSortable: true,
+      },
+      creator: {
+        label: 'Creator',
+        width: '10%',
         isSortable: true,
       },
       valid_until: {
@@ -344,6 +349,7 @@ class Indicators extends Component {
                 'x_opencti_detection',
                 'basedOn',
                 'revoked',
+                'creator',
               ]}
             >
               <QueryRenderer

@@ -186,6 +186,10 @@ export default createPaginationContainer(
               entity_type
               observable_value
               created_at
+              creator {
+                id
+                name
+              }
               objectMarking {
                 edges {
                   node {

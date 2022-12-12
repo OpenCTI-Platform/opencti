@@ -221,9 +221,14 @@ class Reports extends Component {
         width: '15%',
         isSortable: isRuntimeSort,
       },
+      creator: {
+        label: 'Creator',
+        width: '12%',
+        isSortable: true,
+      },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '10%',
         isSortable: false,
       },
       published: {
@@ -268,6 +273,7 @@ class Reports extends Component {
             'x_opencti_workflow_id',
             'labelledBy',
             'createdBy',
+            'creator',
             'markedBy',
             'published_start_date',
             'published_end_date',

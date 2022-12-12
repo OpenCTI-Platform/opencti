@@ -237,6 +237,10 @@ const stixCyberObservableMutation = graphql`
           }
         }
       }
+      creator {
+        id 
+        name
+      }
     }
   }
 `;

@@ -229,6 +229,7 @@ const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
     'x_opencti_detection',
     'x_mitre_platforms',
     'x_opencti_main_observable_type',
+    'creator',
   ],
   [ENTITY_TYPE_INFRASTRUCTURE]: ['name', 'revoked', 'description', 'confidence', 'aliases'],
   [ENTITY_TYPE_INTRUSION_SET]: [
@@ -276,6 +277,7 @@ const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
     'x_opencti_confidentiality_impact',
     'confidence',
     'x_opencti_aliases',
+    'creator',
   ],
   [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'incident_type', 'severity', 'source', 'first_seen', 'last_seen', 'objective', 'confidence', 'aliases'],
 };
@@ -423,6 +425,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<string> } = {
     'confidence',
     'lang',
     'created',
+    'creator',
     'modified',
     'name',
     'description',

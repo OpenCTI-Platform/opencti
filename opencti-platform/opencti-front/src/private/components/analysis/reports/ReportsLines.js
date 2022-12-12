@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ReportLine, ReportLineDummy } from './ReportLine';
 import { setNumberOfElements } from '../../../../utils/Number';
@@ -35,12 +34,8 @@ class ReportsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['reports', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['reports', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        dataList={this.props.data?.reports?.edges ?? []}
+        globalCount={this.props.data?.reports?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={<ReportLine />}
         DummyLineComponent={<ReportLineDummy />}
         dataColumns={dataColumns}
@@ -133,6 +128,10 @@ export default createPaginationContainer(
                     definition
                   }
                 }
+              }
+              creator {
+                id
+                name
               }
               ...ReportLine_node
             }
