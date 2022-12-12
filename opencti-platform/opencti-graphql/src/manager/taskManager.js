@@ -407,7 +407,7 @@ const executeProcessing = async (context, user, job) => {
             await executeUnshare(context, user, actionContext, element);
           }
         } catch (err) {
-          errors.push({ id: element.id, message: err.message, reason: err.reason });
+          errors.push({ id: element.id, message: `${err.message} - ${err.data?.reason ?? err.reason}` });
         }
       }
     }

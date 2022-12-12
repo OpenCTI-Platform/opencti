@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { useState } from 'react';
 
 const useEntityToggle = <T extends { id: string }>(key: string) => {
-  const { numberOfElements } = JSON.parse(window.localStorage.getItem(key) ?? '');
+  const { numberOfElements } = JSON.parse(window.localStorage.getItem(key) ?? '{}');
 
   const [selectedElements, setSelectedElements] = useState<Record<string, T>>({});
   const [deSelectedElements, setDeSelectedElements] = useState<Record<string, T>>({});

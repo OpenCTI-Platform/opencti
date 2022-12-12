@@ -85,7 +85,7 @@ class TestLocalSynchronizer:
             elif msg.event == "merge":
                 sources = data["context"]["sources"]
                 object_ids = list(map(lambda element: element["id"], sources))
-                self.opencti_target_helper.api.stix_core_object.merge(
+                self.opencti_target_helper.api.stix.merge(
                     id=data["data"]["id"], object_ids=object_ids
                 )
             elif msg.event == "delete":

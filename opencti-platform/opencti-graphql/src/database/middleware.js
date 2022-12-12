@@ -1028,10 +1028,21 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   const sourceTypes = R.map((s) => s.entity_type, sourceEntities);
   const isWorkingOnSameType = sourceTypes.every((v) => v === targetType);
   if (!isWorkingOnSameType) {
-    throw FunctionalError('Cannot merge entities of different types', {
-      dest: targetType,
-      source: sourceTypes,
-    });
+    throw FunctionalError('Cannot merge entities of different types', { dest: targetType, source: sourceTypes });
+  }
+  // Check supported entities
+  if (!isStixCoreObject(targetEntity.entity_type) && targetEntity.entity_type !== ENTITY_TYPE_VOCABULARY) {
+    throw FunctionalError('Unsupported entity type for merging', { type: targetType });
+  }
+  // For vocabularies, extra elastic query is required
+  if (targetEntity.entity_type === ENTITY_TYPE_VOCABULARY) {
+    // Merge is only possible between same categories
+    const categories = new Set([targetEntity.category, ...sourceEntities.map((s) => s.category)]);
+    if (categories.size > 1) {
+      throw FunctionalError('Cannot merge vocabularies of different category', { categories });
+    }
+    const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetEntity.category);
+    await updateElasticVocabularyValue(sourceEntities.map((s) => s.name), targetEntity.name, completeCategory);
   }
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
@@ -1313,11 +1324,6 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const sources = await Promise.all(sourceEntityIds.map((sourceId) => storeLoadByIdWithRefs(context, SYSTEM_USER, sourceId)));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
-
-    if (target.entity_type === ENTITY_TYPE_VOCABULARY) {
-      const completeCategory = getVocabulariesCategories().find(({ key }) => key === target.category);
-      await updateElasticVocabularyValue(sources.map((s) => s.name), target.name, completeCategory);
-    }
     // - TRANSACTION PART
     const mergeImpacts = await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
@@ -1325,7 +1331,6 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
-
     return storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
     });
