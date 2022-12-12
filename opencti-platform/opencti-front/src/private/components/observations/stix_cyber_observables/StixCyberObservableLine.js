@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -118,14 +117,16 @@ const StixCyberObservableLineComponent = (props) => {
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              {t(node.creator.name)}
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                markingDefinitions={R.pathOr(
-                  [],
-                  ['objectMarking', 'edges'],
-                  node,
-                )}
+                markingDefinitions={node.objectMarking.edges ?? []}
                 limit={1}
                 variant="inList"
               />
@@ -187,6 +188,10 @@ export const StixCyberObservableLine = createFragmentContainer(
               color
             }
           }
+        }
+        creator {
+          id
+          name
         }
       }
     `,
@@ -251,6 +256,17 @@ export const StixCyberObservableLineDummy = (props) => {
                 animation="wave"
                 variant="rectangular"
                 width={140}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
                 height="100%"
               />
             </div>

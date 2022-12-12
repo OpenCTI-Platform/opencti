@@ -307,6 +307,12 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
           name
           aliases
         }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
         createdBy {
           ... on Identity {
             name

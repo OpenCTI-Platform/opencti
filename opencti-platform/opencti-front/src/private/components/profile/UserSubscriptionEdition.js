@@ -584,6 +584,12 @@ const UserSubscriptionEditionFragment = createFragmentContainer(
           ... on Language {
             name
           }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
         }
       }
     `,

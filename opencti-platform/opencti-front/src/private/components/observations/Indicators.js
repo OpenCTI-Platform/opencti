@@ -235,6 +235,11 @@ class Indicators extends Component {
         width: '18%',
         isSortable: true,
       },
+      creator: {
+        label: 'Creator',
+        width: '12%',
+        isSortable: true,
+      },
       valid_until: {
         label: 'Valid until',
         width: '13%',
@@ -322,6 +327,7 @@ class Indicators extends Component {
                 'x_opencti_detection',
                 'basedOn',
                 'revoked',
+                'creator',
               ]}
             >
               <QueryRenderer

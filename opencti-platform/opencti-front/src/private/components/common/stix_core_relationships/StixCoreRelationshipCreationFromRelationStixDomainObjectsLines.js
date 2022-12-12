@@ -340,6 +340,12 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
                 ... on Language {
                   name
                 }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
               }
             }
           }

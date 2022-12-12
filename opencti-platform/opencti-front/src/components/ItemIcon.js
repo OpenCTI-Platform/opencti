@@ -24,6 +24,8 @@ import {
   SpeakerNotesOutlined,
   TranslateOutlined,
   WorkspacesOutlined,
+  StreamOutlined,
+  SourceOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -39,6 +41,7 @@ import {
   ShieldSearch,
   ServerNetwork,
   Launch,
+  LaptopAccount,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -127,7 +130,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Malware':
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
     case 'Threat-Actor':
-      return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
+      return <LaptopAccount style={style} fontSize={fontSize} role="img" />;
     case 'Tool':
       return <WebAssetOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Vulnerability':
@@ -146,6 +149,10 @@ const iconSelector = (type, variant, fontSize, color) => {
       );
     case 'Language':
       return <TranslateOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Data-Source':
+      return <StreamOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Data-Component':
+      return <SourceOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Kill-Chain-Phase':
       return <Launch style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':

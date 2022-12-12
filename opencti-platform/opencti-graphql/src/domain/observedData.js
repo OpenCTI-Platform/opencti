@@ -35,9 +35,9 @@ export const resolveName = async (context, user, observedData) => {
     if (isStixDomainObject(firstObject.node.entity_type)) {
       return firstObject.node.name;
     }
-    return observableValue(firstObject);
+    return observableValue(firstObject.node);
   }
-  return observedData.last_observed;
+  return observedData.node.last_observed;
 };
 
 // All entities

@@ -4,8 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { LockPattern } from 'mdi-material-ui';
-import { KeyboardArrowRight } from '@mui/icons-material';
+import { KeyboardArrowRight, SourceOutlined } from '@mui/icons-material';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { DataComponentLine_node$key } from './__generated__/DataComponentLine_node.graphql';
@@ -45,9 +44,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface DataComponentLineProps {
-  node: DataComponentLine_node$key,
-  dataColumns: DataColumns,
-  onLabelClick: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void,
+  node: DataComponentLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: (
+    k: string,
+    id: string,
+    value: Record<string, unknown>,
+    event: React.KeyboardEvent
+  ) => void;
 }
 
 const dataComponentFragment = graphql`
@@ -88,7 +92,7 @@ const DataComponentLine: FunctionComponent<DataComponentLineProps> = ({
       to={`/dashboard/techniques/data_components/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <LockPattern />
+        <SourceOutlined />
       </ListItemIcon>
       <ListItemText
         primary={

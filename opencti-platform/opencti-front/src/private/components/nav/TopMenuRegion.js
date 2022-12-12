@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { MapOutlined, ArrowForwardIosOutlined } from '@mui/icons-material';
+import { PublicOutlined, ArrowForwardIosOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
@@ -52,7 +52,7 @@ class TopMenuRegion extends Component {
           color="primary"
           classes={{ root: classes.buttonHome }}
         >
-          <MapOutlined className={classes.icon} fontSize="small" />
+          <PublicOutlined className={classes.icon} fontSize="small" />
           {t('Regions')}
         </Button>
         <ArrowForwardIosOutlined

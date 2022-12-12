@@ -170,6 +170,12 @@ const filtersStixCoreObjectsSearchQuery = graphql`
             name
             description
           }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
           ... on Language {
             name
           }

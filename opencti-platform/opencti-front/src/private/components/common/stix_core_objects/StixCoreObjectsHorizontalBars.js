@@ -157,6 +157,12 @@ const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
         ... on Language {
           name
         }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
         }

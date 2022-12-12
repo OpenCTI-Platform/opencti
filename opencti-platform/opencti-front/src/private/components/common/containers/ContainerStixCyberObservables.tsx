@@ -3,10 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ContainerStixCyberObservablesLines, {
-  containerStixCyberObservablesLinesQuery,
-} from './ContainerStixCyberObservablesLines';
-import { convertFilters } from '../../../../utils/ListParameters';
+import ContainerStixCyberObservablesLines, { containerStixCyberObservablesLinesQuery, } from './ContainerStixCyberObservablesLines';
 import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
 import { defaultValue } from '../../../../utils/Graph';
@@ -14,22 +11,13 @@ import useLocalStorage, { localStorageToPaginationOptions } from '../../../../ut
 import { Theme } from '../../../../components/Theme';
 import { Filters } from '../../../../components/list_lines';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
-import {
-  ContainerStixCyberObservablesLinesQuery,
-  ContainerStixCyberObservablesLinesQuery$variables,
-} from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
-import {
-  StixCyberObservableLine_node$data,
-} from '../../observations/stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
+import { ContainerStixCyberObservablesLinesQuery, ContainerStixCyberObservablesLinesQuery$variables, } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
+import { StixCyberObservableLine_node$data, } from '../../observations/stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import {
-  ContainerStixCyberObservables_container$data,
-} from './__generated__/ContainerStixCyberObservables_container.graphql';
+import { ContainerStixCyberObservables_container$data, } from './__generated__/ContainerStixCyberObservables_container.graphql';
 import useCopy from '../../../../utils/hooks/useCopy';
-import {
-  ContainerStixCyberObservablesLinesSearchQuery$data,
-} from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
+import { ContainerStixCyberObservablesLinesSearchQuery$data, } from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>(() => ({
@@ -104,14 +92,13 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       (types && types.length > 0) ? types.map((n) => ({ id: n, value: n })) : [],
     ...filters,
   };
-  const finalFilters = convertFilters(exportFilters) as unknown as Filters;
 
   const paginationOptions = localStorageToPaginationOptions<ContainerStixCyberObservablesLinesQuery$variables>({
     ...viewStorage,
     count: 25,
     id: container.id,
     types: (types && types.length > 0) ? types : ['Stix-Cyber-Observable'],
-    filters: finalFilters,
+    filters: exportFilters,
     orderMode: orderAsc ? 'asc' : 'desc',
   });
 

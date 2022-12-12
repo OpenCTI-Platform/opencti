@@ -780,6 +780,12 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                     ... on Language {
                       name
                     }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -882,6 +888,12 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                     }
                     ... on Language {
+                      name
+                    }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
                       name
                     }
                     ... on StixCyberObservable {
