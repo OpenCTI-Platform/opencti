@@ -27,7 +27,6 @@ import useCopy from '../../../utils/hooks/useCopy';
 import {
   StixCyberObservablesLinesSearchQuery$data,
 } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
-import { convertFilters } from '../../../utils/ListParameters';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
@@ -54,14 +53,23 @@ const StixCyberObservables: FunctionComponent = () => {
   const { numberOfElements, filters, searchTerm, sortBy, orderAsc, openExports, types } = viewStorage;
   const { handleRemoveFilter, handleSearch, handleSort, handleToggleExports, handleAddFilter, handleSetNumberOfElements } = helpers;
 
+  const finalType = () => {
+    if (types && types.length > 0) {
+      return types.map((n) => ({ id: n, value: n }));
+    }
+    return [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }];
+  };
+  const exportFilters = {
+    entity_type: finalType(),
+    ...filters,
+  };
+
   const [selectedElements, setSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
   const [deSelectedElements, setDeSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
 
-  const convertedFilters = convertFilters(viewStorage.filters) as unknown as Filters;
   const paginationOptions = localStorageToPaginationOptions<StixCyberObservablesLinesPaginationQuery$variables>({
     ...viewStorage,
     count: 25,
-    filters: convertedFilters,
   });
 
   const [selectAll, setSelectAll] = useState<boolean>(false);
@@ -172,17 +180,6 @@ const StixCyberObservables: FunctionComponent = () => {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
         - Object.keys(deSelectedElements).length;
     }
-    let finalFilters = convertedFilters;
-    const finalType = () => {
-      if (types && types.length > 0) {
-        return types.map((n) => ({ id: n, value: n }));
-      }
-      return [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }];
-    };
-    finalFilters = {
-      ...finalFilters,
-      entity_type: finalType(),
-    };
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -240,7 +237,7 @@ const StixCyberObservables: FunctionComponent = () => {
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
-              filters={finalFilters}
+              filters={exportFilters}
               search={searchTerm}
               handleClearSelectedElements={handleClearSelectedElements}
               variant="large"
