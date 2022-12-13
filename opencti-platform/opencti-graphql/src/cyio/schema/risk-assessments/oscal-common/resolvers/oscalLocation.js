@@ -1,6 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import { compareValues, updateQuery, filterValues, CyioError} from '../../../utils.js';
 import { UserInputError } from "apollo-server-express";
+import { selectObjectIriByIdQuery } from '../../../global/global-utils.js'
 import {
   selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
