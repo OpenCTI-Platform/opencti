@@ -4,10 +4,14 @@ import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, PublicOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined } from '@mui/icons-material';
+import { LaptopAccount } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -52,7 +56,7 @@ class TopMenuThreatActor extends Component {
           color="primary"
           classes={{ root: classes.buttonHome }}
         >
-          <PublicOutlined className={classes.icon} fontSize="small" />
+          <LaptopAccount className={classes.icon} fontSize="small" />
           {t('Threat actors')}
         </Button>
         <ArrowForwardIosOutlined

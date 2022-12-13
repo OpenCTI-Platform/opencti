@@ -30,7 +30,9 @@ import { defaultValue } from '../../utils/Graph';
 import { resolveLink } from '../../utils/Entity';
 import StixCoreObjectLabels from './common/stix_core_objects/StixCoreObjectLabels';
 import StixCoreObjectsExports from './common/stix_core_objects/StixCoreObjectsExports';
-import useGranted, { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNGETEXPORT,
+} from '../../utils/hooks/useGranted';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -263,6 +265,8 @@ const SearchBulk = () => {
                           .includes(value.toLowerCase())
                         || o.x_mitre_id?.toLowerCase() === value.toLowerCase()
                         || o.value?.toLowerCase() === value.toLowerCase()
+                        || o.observable_value?.toLowerCase()
+                          === value.toLowerCase()
                         || o.subject?.toLowerCase() === value.toLowerCase()
                         || o.abstract?.toLowerCase() === value.toLowerCase(),
                     );

@@ -1579,9 +1579,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
               ... on Channel {
                 name
               }
-              ... on Narrative {
-                name
-              }
               ... on Language {
                 name
               }

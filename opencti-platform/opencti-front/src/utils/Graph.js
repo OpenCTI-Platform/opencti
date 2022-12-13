@@ -25,7 +25,7 @@ import Country from '../static/images/entities/country.svg';
 import Region from '../static/images/entities/region.svg';
 import Position from '../static/images/entities/position.svg';
 import Malware from '../static/images/entities/malware.svg';
-import ThreatActor from '../static/images/entities/threat-actor.svg';
+import ThreatActor from '../static/images/entities/region.svg';
 import Tool from '../static/images/entities/tool.svg';
 import Vulnerability from '../static/images/entities/vulnerability.svg';
 import Incident from '../static/images/entities/incident.svg';
@@ -33,6 +33,8 @@ import Channel from '../static/images/entities/channel.svg';
 import Narrative from '../static/images/entities/narrative.svg';
 import Language from '../static/images/entities/language.svg';
 import Event from '../static/images/entities/event.svg';
+import DataComponent from '../static/images/entities/data-component.svg';
+import DataSource from '../static/images/entities/data-source.svg';
 import Unknown from '../static/images/entities/unknown.svg';
 import StixCyberObservable from '../static/images/entities/stix-cyber-observable.svg';
 import relationship from '../static/images/entities/relationship.svg';
@@ -89,6 +91,8 @@ export const graphImages = {
   Narrative: genImage(Narrative),
   Language: genImage(Language),
   Event: genImage(Event),
+  'Data-Component': genImage(DataComponent),
+  'Data-Source': genImage(DataSource),
   'Autonomous-System': genImage(StixCyberObservable),
   Directory: genImage(StixCyberObservable),
   'Domain-Name': genImage(StixCyberObservable),
@@ -152,6 +156,8 @@ export const graphLevel = {
   Narrative: 1,
   Language: 1,
   Event: 1,
+  'Data-Component': 1,
+  'Data-Source': 1,
   'Autonomous-System': 1,
   Directory: 1,
   'Domain-Name': 1,
@@ -218,6 +224,8 @@ export const graphRawImages = {
   Narrative,
   Language,
   Event,
+  'Data-Component': DataComponent,
+  'Data-Source': DataSource,
   'Autonomous-System': StixCyberObservable,
   Directory: StixCyberObservable,
   'Domain-Name': StixCyberObservable,

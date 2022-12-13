@@ -251,6 +251,12 @@ export const entitiesStixDomainObjectsLinesSearchQuery = graphql`
             name
             aliases
           }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
           createdBy {
             ... on Identity {
               name

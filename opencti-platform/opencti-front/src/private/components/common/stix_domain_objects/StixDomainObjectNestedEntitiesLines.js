@@ -275,6 +275,12 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
                 ... on Language {
                   name
                 }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -376,6 +382,12 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
                   description
                 }
                 ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
                   name
                 }
                 ... on StixCyberObservable {

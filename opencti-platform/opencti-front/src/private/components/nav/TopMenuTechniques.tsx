@@ -2,7 +2,11 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { LockPattern, ProgressWrench } from 'mdi-material-ui';
-import { SpeakerNotesOutlined } from '@mui/icons-material';
+import {
+  SpeakerNotesOutlined,
+  StreamOutlined,
+  SourceOutlined,
+} from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import useHelper from '../../../utils/hooks/useHelper';
@@ -52,7 +56,8 @@ const TopMenuTechniques = () => {
           >
             <LockPattern className={classes.icon} fontSize="small" />
             {t('Attack Patterns')}
-          </Button>)}
+          </Button>
+      )}
       {!isEntityTypeHidden('Narrative') && (
         <Button
           component={Link}
@@ -70,10 +75,7 @@ const TopMenuTechniques = () => {
           }
           classes={{ root: classes.button }}
         >
-          <SpeakerNotesOutlined
-            className={classes.icon}
-            fontSize="small"
-          />
+          <SpeakerNotesOutlined className={classes.icon} fontSize="small" />
           {t('Narratives')}
         </Button>
       )}
@@ -115,7 +117,7 @@ const TopMenuTechniques = () => {
           }
           classes={{ root: classes.button }}
         >
-          <ProgressWrench className={classes.icon} fontSize="small" />
+          <SourceOutlined className={classes.icon} fontSize="small" />
           {t('Data components')}
         </Button>
       )}
@@ -136,7 +138,7 @@ const TopMenuTechniques = () => {
           }
           classes={{ root: classes.button }}
         >
-          <ProgressWrench className={classes.icon} fontSize="small" />
+          <StreamOutlined className={classes.icon} fontSize="small" />
           {t('Data Sources')}
         </Button>
       )}

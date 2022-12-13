@@ -1,12 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined } from '@mui/icons-material';
-import { ProgressWrench } from 'mdi-material-ui';
+import { ArrowForwardIosOutlined, StreamOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 import { Theme } from '../../../components/Theme';
 
 const styles = makeStyles<Theme>((theme) => ({
@@ -48,7 +50,7 @@ const TopMenuDataSource: FunctionComponent = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <ProgressWrench className={classes.icon} fontSize="small" />
+        <StreamOutlined className={classes.icon} fontSize="small" />
         {t('Data Sources')}
       </Button>
       <ArrowForwardIosOutlined

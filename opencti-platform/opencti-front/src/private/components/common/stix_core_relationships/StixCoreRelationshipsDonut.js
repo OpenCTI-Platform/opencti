@@ -167,6 +167,14 @@ const stixCoreRelationshipsDonutsDistributionQuery = graphql`
         ... on Language {
           name
         }
+        ... on DataComponent {
+          name
+          description
+        }
+        ... on DataSource {
+          name
+          description
+        }
         ... on StixCyberObservable {
           observable_value
         }

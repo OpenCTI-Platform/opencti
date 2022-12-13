@@ -519,6 +519,12 @@ const StixDomainObjectsLines = createPaginationContainer(
               ... on Language {
                 name
               }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
+                name
+              }
               objectLabel {
                 edges {
                   node {

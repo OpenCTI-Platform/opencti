@@ -13,7 +13,7 @@ import Drawer from '@mui/material/Drawer';
 import Collapse from '@mui/material/Collapse';
 import {
   AssignmentOutlined,
-  BuildOutlined,
+  ConstructionOutlined,
   DashboardOutlined,
   ExpandLess,
   ExpandMore,
@@ -314,7 +314,7 @@ const LeftBar = ({ t, location, classes, theme }) => {
                             color: theme.palette.text.secondary,
                           }}
                         >
-                          <BuildOutlined fontSize="small" color="inherit" />
+                          <ConstructionOutlined fontSize="small" color="inherit" />
                         </ListItemIcon>
                         <ListItemText
                           classes={{ primary: classes.menuItemNestedText }}

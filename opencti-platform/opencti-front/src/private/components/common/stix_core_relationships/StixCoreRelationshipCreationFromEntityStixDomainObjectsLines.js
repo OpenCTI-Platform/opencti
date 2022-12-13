@@ -345,6 +345,12 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                 ... on Language {
                   name
                 }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
                 ... on ObservedData {
                   objects(first: 1) {
                     edges {
@@ -492,6 +498,12 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                           description
                         }
                         ... on Language {
+                          name
+                        }
+                        ... on DataComponent {
+                          name
+                        }
+                        ... on DataSource {
                           name
                         }
                         ... on StixCyberObservable {

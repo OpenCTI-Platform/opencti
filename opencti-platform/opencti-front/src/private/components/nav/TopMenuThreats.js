@@ -4,8 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { PublicOutlined } from '@mui/icons-material';
-import { DiamondOutline, ChessKnight } from 'mdi-material-ui';
+import { DiamondOutline, ChessKnight, LaptopAccount } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import { UserContext } from '../../../utils/hooks/useAuth';
 
@@ -51,7 +50,7 @@ class TopMenuThreats extends Component {
                   }
                   classes={{ root: classes.button }}
                 >
-                  <PublicOutlined className={classes.icon} fontSize="small" />
+                  <LaptopAccount className={classes.icon} fontSize="small" />
                   {t('Threat actors')}
                 </Button>
             )}

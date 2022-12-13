@@ -307,6 +307,12 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
           ... on Language {
             name
           }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
           ... on StixCyberObservable {
             id
             entity_type

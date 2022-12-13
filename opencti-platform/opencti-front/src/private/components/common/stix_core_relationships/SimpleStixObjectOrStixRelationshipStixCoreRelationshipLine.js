@@ -313,6 +313,12 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             ... on Language {
               name
             }
+            ... on DataComponent {
+              name
+            }
+            ... on DataSource {
+              name
+            }
             ... on StixCyberObservable {
               id
               entity_type
@@ -507,6 +513,12 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               description
             }
             ... on Language {
+              name
+            }
+            ... on DataComponent {
+              name
+            }
+            ... on DataSource {
               name
             }
             ... on StixCyberObservable {

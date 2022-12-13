@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { FlagOutlined, KeyboardArrowRightOutlined } from '@mui/icons-material';
+import {
+  StreamOutlined,
+  KeyboardArrowRightOutlined,
+} from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -45,10 +48,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface DataSourceLineProps {
-  node: DataSourceLine_node$key
-  dataColumns: DataColumns
-  onLabelClick: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void,
-
+  node: DataSourceLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: (
+    k: string,
+    id: string,
+    value: Record<string, unknown>,
+    event: React.KeyboardEvent
+  ) => void;
 }
 
 const dataSourceLineFragment = graphql`
@@ -72,11 +79,9 @@ const dataSourceLineFragment = graphql`
   }
 `;
 
-export const DataSourceLineComponent: FunctionComponent<DataSourceLineProps> = ({
-  dataColumns,
-  node,
-  onLabelClick,
-}) => {
+export const DataSourceLineComponent: FunctionComponent<
+DataSourceLineProps
+> = ({ dataColumns, node, onLabelClick }) => {
   const classes = useStyles();
   const data = useFragment(dataSourceLineFragment, node);
   const { fd } = useFormatter();
@@ -90,7 +95,7 @@ export const DataSourceLineComponent: FunctionComponent<DataSourceLineProps> = (
       to={`/dashboard/techniques/data_sources/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <FlagOutlined />
+        <StreamOutlined />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -133,17 +138,16 @@ export const DataSourceLineComponent: FunctionComponent<DataSourceLineProps> = (
   );
 };
 
-export const DataSourceLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const DataSourceLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

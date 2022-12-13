@@ -259,6 +259,12 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         ... on Language {
           name
         }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
         objectLabel {
           edges {
             node {

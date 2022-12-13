@@ -242,6 +242,12 @@ export const searchStixCoreObjectsLinesSearchQuery = graphql`
             name
             aliases
           }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }

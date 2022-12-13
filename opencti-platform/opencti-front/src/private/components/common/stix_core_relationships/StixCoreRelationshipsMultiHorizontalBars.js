@@ -222,6 +222,14 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
               ... on Language {
                 name
               }
+              ... on DataComponent {
+                name
+                description
+              }
+              ... on DataSource {
+                name
+                description
+              }
               ... on StixCyberObservable {
                 observable_value
               }
@@ -317,6 +325,12 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
           description
         }
         ... on Language {
+          name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
           name
         }
         ... on StixCyberObservable {
@@ -514,6 +528,14 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
               ... on Language {
                 name
               }
+              ... on DataComponent {
+                name
+                description
+              }
+              ... on DataSource {
+                name
+                description
+              }
               ... on StixCyberObservable {
                 observable_value
               }
@@ -609,6 +631,12 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
           description
         }
         ... on Language {
+          name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
           name
         }
         ... on StixCyberObservable {

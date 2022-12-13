@@ -227,6 +227,12 @@ const userSubscriptionMutation = graphql`
         ... on Language {
           name
         }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
       }
     }
   }

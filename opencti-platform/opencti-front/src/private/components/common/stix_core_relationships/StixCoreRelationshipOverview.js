@@ -742,6 +742,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             ... on Language {
               name
             }
+            ... on DataComponent {
+              name
+            }
+            ... on DataSource {
+              name
+            }
             ... on StixCoreRelationship {
               id
               relationship_type
@@ -837,6 +843,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   name
                 }
                 ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
                   name
                 }
                 ... on StixCyberObservable {
@@ -991,6 +1003,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         ... on Language {
                           name
                         }
+                        ... on DataComponent {
+                          name
+                        }
+                        ... on DataSource {
+                          name
+                        }
                         ... on StixCyberObservable {
                           observable_value
                           x_opencti_description
@@ -1093,6 +1111,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Language {
                       name
                     }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
                   }
                   to {
                     ... on BasicObject {
@@ -1179,6 +1203,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on Language {
+                      name
+                    }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
                       name
                     }
                     ... on ObservedData {
@@ -1328,6 +1358,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on Language {
+                              name
+                            }
+                            ... on DataComponent {
+                              name
+                            }
+                            ... on DataSource {
                               name
                             }
                             ... on StixCyberObservable {
@@ -1431,6 +1467,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Language {
                   name
                 }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -1583,6 +1625,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         ... on Language {
                           name
                         }
+                        ... on DataComponent {
+                          name
+                        }
+                        ... on DataSource {
+                          name
+                        }
                         ... on StixCyberObservable {
                           observable_value
                           x_opencti_description
@@ -1687,6 +1735,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Language {
                       name
                     }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -1837,6 +1891,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on Language {
+                              name
+                            }
+                            ... on DataComponent {
+                              name
+                            }
+                            ... on DataSource {
                               name
                             }
                             ... on StixCyberObservable {
@@ -1937,6 +1997,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Language {
                       name
                     }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -2087,6 +2153,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on Language {
+                              name
+                            }
+                            ... on DataComponent {
+                              name
+                            }
+                            ... on DataSource {
                               name
                             }
                             ... on StixCyberObservable {
@@ -2194,6 +2266,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Language {
                   name
                 }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -2346,6 +2424,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         ... on Language {
                           name
                         }
+                        ... on DataComponent {
+                          name
+                        }
+                        ... on DataSource {
+                          name
+                        }
                         ... on StixCyberObservable {
                           observable_value
                           x_opencti_description
@@ -2448,6 +2532,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Language {
                       name
                     }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
                   }
                   to {
                     ... on BasicObject {
@@ -2534,6 +2624,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on Language {
+                      name
+                    }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
                       name
                     }
                     ... on ObservedData {
@@ -2683,6 +2779,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on Language {
+                              name
+                            }
+                            ... on DataComponent {
+                              name
+                            }
+                            ... on DataSource {
                               name
                             }
                             ... on StixCyberObservable {
@@ -2786,6 +2888,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Language {
                   name
                 }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -2938,6 +3046,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         ... on Language {
                           name
                         }
+                        ... on DataComponent {
+                          name
+                        }
+                        ... on DataSource {
+                          name
+                        }
                         ... on StixCyberObservable {
                           observable_value
                           x_opencti_description
@@ -3042,6 +3156,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Language {
                       name
                     }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -3192,6 +3312,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on Language {
+                              name
+                            }
+                            ... on DataComponent {
+                              name
+                            }
+                            ... on DataSource {
                               name
                             }
                             ... on StixCyberObservable {
@@ -3292,6 +3418,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Language {
                       name
                     }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -3442,6 +3574,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on Language {
+                              name
+                            }
+                            ... on DataComponent {
+                              name
+                            }
+                            ... on DataSource {
                               name
                             }
                             ... on StixCyberObservable {
@@ -3563,6 +3701,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Language {
             name
           }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -3715,6 +3859,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   ... on Language {
                     name
                   }
+                  ... on DataComponent {
+                    name
+                  }
+                  ... on DataSource {
+                    name
+                  }
                   ... on StixCyberObservable {
                     observable_value
                     x_opencti_description
@@ -3817,6 +3967,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Language {
                 name
               }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
+                name
+              }
             }
             to {
               ... on BasicObject {
@@ -3903,6 +4059,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Language {
+                name
+              }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
                 name
               }
             }
@@ -3997,6 +4159,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Language {
             name
           }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -4146,6 +4314,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   ... on Language {
                     name
                   }
+                  ... on DataComponent {
+                    name
+                  }
+                  ... on DataSource {
+                    name
+                  }
                   ... on StixCyberObservable {
                     observable_value
                     x_opencti_description
@@ -4241,6 +4415,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Language {
                 name
               }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
+                name
+              }
               ... on StixCyberObservable {
                 observable_value
               }
@@ -4323,6 +4503,12 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on Language {
+                name
+              }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
                 name
               }
               ... on StixCyberObservable {

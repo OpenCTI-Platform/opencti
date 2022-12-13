@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, MapOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined, FlagOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
@@ -47,7 +47,7 @@ const TopMenuCountry: FunctionComponent = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <MapOutlined className={classes.icon} fontSize="small" />
+        <FlagOutlined className={classes.icon} fontSize="small" />
         {t('Countries')}
       </Button>
       <ArrowForwardIosOutlined

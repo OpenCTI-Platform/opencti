@@ -309,6 +309,12 @@ export const SearchStixCoreObjectLine = createFragmentContainer(
           name
           aliases
         }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
         }
