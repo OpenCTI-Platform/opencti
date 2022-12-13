@@ -5,7 +5,6 @@ import ListLines from '../../../components/list_lines/ListLines';
 import StixSightingRelationshipsLines, {
   stixSightingRelationshipsLinesQuery,
 } from './stix_sighting_relationships/StixSightingRelationshipsLines';
-import { convertFilters } from '../../../utils/ListParameters';
 import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../components/list_lines';
 import {
@@ -132,11 +131,10 @@ const StixSightingRelationships = () => {
     toSightingId = R.head(filters.toSightingId)?.id;
     processedFilters = R.dissoc<Filters, string>('toSightingId', processedFilters);
   }
-  const finalFilters = convertFilters(processedFilters) as unknown as Filters;
   const paginationOptions = localStorageToPaginationOptions<StixSightingRelationshipsLinesPaginationQuery$variables>({
     ...viewStorage,
     toId: toSightingId,
-    filters: finalFilters,
+    filters: processedFilters,
     count: viewStorage.count ?? 25,
   });
   return (
