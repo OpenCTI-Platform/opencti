@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { Store } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -119,7 +119,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
       variables: {
         id,
       },
-      updater: (store: Store) => {
+      updater: (store: RecordSourceSelectorProxy) => {
         deleteNodeFromId(store, entityId, 'Pagination_externalReferences', {}, id);
       },
       onCompleted: () => {
@@ -139,14 +139,13 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
   };
 
   const executeRemoveFile = (fileId: string) => {
-    console.log('true id', fileId);
     commitMutation({
       mutation: ExternalReferencePopoverFileLineDeleteMutation,
       variables: { fileName: fileId },
-      optimisticUpdater: (store: Store) => {
+      optimisticUpdater: (store: RecordSourceSelectorProxy) => {
         deleteNodeFromId(store, entityId, 'Pagination_importFiles', {}, fileId);
       },
-      updater: (store: Store) => {
+      updater: (store: RecordSourceSelectorProxy) => {
         deleteNodeFromId(store, entityId, 'Pagination_importFiles', {}, fileId);
       },
       onCompleted: () => {
@@ -176,7 +175,6 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
   };
 
   const submitDeleteAttempt = () => {
-    console.log('externalReferenceFileId', externalReferenceFileId);
     if (externalReferenceFileId) {
       handleOpenWarning();
     } else {

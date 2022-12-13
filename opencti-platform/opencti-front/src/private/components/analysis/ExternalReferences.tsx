@@ -26,6 +26,7 @@ export const externalReferencesSearchQuery = graphql`
           external_id
           description
           url
+          fileId
         }
       }
     }

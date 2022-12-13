@@ -15,7 +15,7 @@ import Fab from '@mui/material/Fab';
 import { SimpleFileUpload } from 'formik-mui';
 import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { Store } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -154,7 +154,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       variables: {
         input: finalValues,
       },
-      updater: (store: Store) => insertNode(
+      updater: (store: RecordSourceSelectorProxy) => insertNode(
         store,
         'Pagination_externalReferences',
         paginationOptions,

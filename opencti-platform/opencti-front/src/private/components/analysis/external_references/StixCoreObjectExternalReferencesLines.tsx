@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import * as R from 'ramda';
 import { includes } from 'ramda';
 import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
-import { Store } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -112,7 +112,6 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<StixCore
   relay }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  console.log('data', data);
 
   const [displayDialog, setDisplayDialog] = useState(false);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -122,11 +121,11 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<StixCore
   const [expanded, setExpanded] = useState(false);
   const [fileToImport, setFileToImport] = useState<{
     id: string;
-    lastModified: any | null;
+    lastModified: string | null;
     metaData: {
       mimetype: string | null;
-    } | null;
-  } | null>(null);
+    } | null | undefined;
+  } | null | undefined>(null);
 
   const externalReferencesEdges = data.stixCoreObject
     ? data.stixCoreObject.externalReferences?.edges : [];
@@ -175,7 +174,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<StixCore
         fromId: stixCoreObjectId,
         relationship_type: 'external-reference',
       },
-      updater: (store: Store) => {
+      updater: (store: RecordSourceSelectorProxy) => {
         deleteNodeFromId(store, stixCoreObjectId, 'Pagination_externalReferences', undefined, externalReferenceEdge?.node.id);
       },
       onCompleted: () => {
@@ -196,11 +195,11 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<StixCore
 
   const handleOpenImport = (file: {
     id: string;
-    lastModified: any | null;
+    lastModified: string | null;
     metaData: {
       mimetype: string | null;
     } | null;
-  } | null) => {
+  } | null | undefined) => {
     setFileToImport(file);
   };
 

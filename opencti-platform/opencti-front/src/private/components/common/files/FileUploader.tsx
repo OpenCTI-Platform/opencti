@@ -89,7 +89,6 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
         input: externalReferenceValues,
       },
       onCompleted: (externalRefResult: ExternalReferenceCreationMutation$data) => {
-        console.log('externalRefResult', externalRefResult);
         handleLinkExternalRef(externalRefResult); // link the external reference to the entity
       },
       updater: undefined,
@@ -124,7 +123,6 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
           onUploadSuccess();
         }
         if (createExternalRef) {
-          console.log('fileId', fileId);
           handleCreateExternalRef(file, fileId); // creation of the external reference associated to the file
         }
       },

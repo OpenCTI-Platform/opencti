@@ -12,7 +12,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import { Store } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -105,7 +105,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({ 
       variables: {
         id: statusTemplateId,
       },
-      updater: (store: Store) => deleteNode(store, 'Pagination_statusTemplates', paginationOptions, statusTemplateId),
+      updater: (store: RecordSourceSelectorProxy) => deleteNode(store, 'Pagination_statusTemplates', paginationOptions, statusTemplateId),
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();

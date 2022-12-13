@@ -27,6 +27,7 @@ import SelectField from '../../../../components/SelectField';
 import {
   ExternalReferenceFileImportViewer_entity$data,
 } from './__generated__/ExternalReferenceFileImportViewer_entity.graphql';
+import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -73,23 +74,11 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReference
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const [fileToImport, setFileToImport] = useState<{
-    id: string;
-    metaData: {
-      mimetype: string | null;
-    } | null;
-    ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
-  } | null>(null);
+  const [fileToImport, setFileToImport] = useState<FileLine_file$data | null | undefined>(null);
 
   const { id, importFiles } = externalReference;
 
-  const handleOpenImport = (file: {
-    id: string;
-    metaData: {
-      mimetype: string | null;
-    } | null;
-    ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
-  } | null) => setFileToImport(file);
+  const handleOpenImport = (file: FileLine_file$data | null | undefined) => setFileToImport(file);
 
   const handleCloseImport = () => setFileToImport(null);
 

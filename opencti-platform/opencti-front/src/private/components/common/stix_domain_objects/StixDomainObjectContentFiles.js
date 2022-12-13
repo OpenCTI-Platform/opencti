@@ -127,7 +127,6 @@ class StixDomainObjectContentFiles extends Component {
     event.stopPropagation();
     event.preventDefault();
     this.setState({ deleting: fileName });
-    console.log('fileName in StixDomainObjectContentFiles', fileName);
     commitMutation({
       mutation: FileLineDeleteMutation,
       variables: {

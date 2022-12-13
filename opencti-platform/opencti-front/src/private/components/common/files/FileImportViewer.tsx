@@ -12,6 +12,7 @@ import FileUploader from './FileUploader';
 import { useFormatter } from '../../../../components/i18n';
 import FreeTextUploader from './FreeTextUploader';
 import { FileImportViewer_entity$data } from './__generated__/FileImportViewer_entity.graphql';
+import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -28,7 +29,7 @@ const useStyles = makeStyles(() => ({
 interface FileImportViewerComponentProps {
   entity: FileImportViewer_entity$data,
   disableImport: boolean,
-  handleOpenImport: (file: File) => void,
+  handleOpenImport: (file: FileLine_file$data | undefined) => void,
   connectors: Record<string, {
     id: string,
     name: string,
@@ -90,7 +91,6 @@ const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProp
                   dense={true}
                   disableImport={disableImport}
                   file={file?.node}
-                  externalReferenceId={file?.node.id}
                   connectors={
                     connectors && connectors[file?.node?.metaData?.mimetype ?? 0]
                   }

@@ -783,6 +783,7 @@ type File {
   metaData: FileMetadata
   uploadStatus: State!
   works: [Work]
+  externalReferenceId: String
 }
 type FileEdge {
   cursor: String!
@@ -1558,6 +1559,7 @@ enum ExternalReferencesFilter {
   usedBy
   source_name
   external_id
+  fileId
 }
 input ExternalReferencesFiltering {
   key: [ExternalReferencesFilter!]!

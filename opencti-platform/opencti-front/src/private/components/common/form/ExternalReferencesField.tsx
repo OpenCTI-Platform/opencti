@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { append, union } from 'ramda';
 import { Field } from 'formik';
 import { LanguageOutlined } from '@mui/icons-material';
-import { Store } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -106,6 +106,7 @@ const ExternalReferencesField: FunctionComponent<ExternalReferencesFieldProps> =
           node: {
             description: string | null;
             external_id: string | null;
+            fileId: string | null;
             id: string;
             source_name: string;
             url: string | null;
@@ -176,7 +177,7 @@ const ExternalReferencesField: FunctionComponent<ExternalReferencesFieldProps> =
                 id: newExternalReference?.id,
                 input,
               },
-              updater: (store: Store) => {
+              updater: (store: RecordSourceSelectorProxy) => {
                 if (!noStoreUpdate) {
                   insertNode(store, 'Pagination_externalReferences', undefined, 'externalReferenceEdit');
                 }

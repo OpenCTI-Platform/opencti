@@ -5019,6 +5019,7 @@ export type ExternalReferenceEditMutationsRelationDeleteArgs = {
 
 export enum ExternalReferencesFilter {
   ExternalId = 'external_id',
+  FileId = 'fileId',
   SourceName = 'source_name',
   Url = 'url',
   UsedBy = 'usedBy'
@@ -5105,6 +5106,7 @@ export enum FeedOrdering {
 
 export type File = {
   __typename?: 'File';
+  externalReferenceId?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   lastModified?: Maybe<Scalars['DateTime']>;
   lastModifiedSinceMin?: Maybe<Scalars['Int']>;
@@ -25438,6 +25440,7 @@ export type FeedMappingResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type FileResolvers<ContextType = any, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = ResolversObject<{
+  externalReferenceId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastModified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   lastModifiedSinceMin?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
