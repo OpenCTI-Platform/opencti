@@ -70,7 +70,7 @@ const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
 interface VocabularyEditionFormikValues {
   name: string,
   description: string,
-  aliases: Array<{ id: string, label: string, value: string }>
+  aliases: { id: string, label: string, value: string }[]
 }
 
 const VocabularyEdition = ({
@@ -136,7 +136,7 @@ const VocabularyEdition = ({
               id: n,
               value: n,
               label: n,
-            })) as Array<{ id: string, label: string, value: string }>,
+            })) as { id: string, label: string, value: string }[],
             description: vocab.description ?? '',
           }}
           validationSchema={attributeValidation(t)}

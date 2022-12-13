@@ -125,10 +125,10 @@ const cityValidation = (t: (v: string) => string) => Yup.object().shape({
 
 interface CityEditionOverviewProps {
   cityRef: CityEditionOverview_city$key,
-  context: ReadonlyArray<{
+  context: readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null> | null
+  } | null)[] | null
   enableReferences?: boolean
   handleClose: () => void
 }

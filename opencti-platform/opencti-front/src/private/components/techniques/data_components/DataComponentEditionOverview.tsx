@@ -128,10 +128,10 @@ const dataComponentValidation = (t: (message: string) => string) => Yup.object()
 
 interface DataComponentEditionOverviewComponentProps {
   data: DataComponentEditionOverview_dataComponent$key
-  context: ReadonlyArray<{
+  context: readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null> | null
+  } | null)[] | null
   enableReferences?: boolean
   handleClose: () => void
 }
@@ -140,7 +140,7 @@ interface DataComponentAddInput {
   name: string,
   description: string | null,
   createdBy: Option | undefined,
-  objectMarking: Array<Option>,
+  objectMarking: Option[],
   x_opencti_workflow_id: string | { label: string, color: string, value: string, order: string },
   confidence: number | null,
   message?: string

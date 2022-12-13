@@ -129,10 +129,10 @@ const regionValidation = (t: (v: string) => string) => Yup.object()
 
 interface RegionEdititionOverviewProps {
   regionRef: RegionEditionOverview_region$key,
-  context: ReadonlyArray<{
+  context: readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null> | null
+  } | null)[] | null
   enableReferences?: boolean
   handleClose: () => void
 }

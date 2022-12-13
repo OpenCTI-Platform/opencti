@@ -3,16 +3,14 @@ import { FilterListOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import * as R from 'ramda';
-import Autocomplete from '@mui/material/Autocomplete';
 import { RayStartArrow, RayEndArrow } from 'mdi-material-ui';
-import TextField from '@mui/material/TextField';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { directFilters } from '../../../../utils/filters/filtersUtils';
+import FilterAutocomplete from './FilterAutocomplete';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   filters: {
     float: 'left',
     margin: '-3px 0 0 -5px',
@@ -26,16 +24,6 @@ const useStyles = makeStyles((theme) => ({
     margin: '5px 10px 0 10px',
     width: 200,
   },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
 }));
 
 const ListFilters = ({
@@ -47,15 +35,15 @@ const ListFilters = ({
   anchorEl,
   noDirectFilters,
   availableFilterKeys,
-  searchScope,
-  entities,
-  inputValues,
-  renderSearchScopeSelection,
   filterElement,
   variant,
-  searchEntities,
-  handleChange,
   type,
+  inputValues,
+  setInputValues,
+  availableEntityTypes,
+  availableRelationshipTypes,
+  allEntityTypes,
+  defaultHandleAddFilter,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -109,78 +97,19 @@ const ListFilters = ({
       {!noDirectFilters
         && R.filter((n) => R.includes(n, directFilters), availableFilterKeys).map(
           (filterKey) => {
-            let options = [];
-            if (
-              ['elementId', 'fromId', 'toId', 'objectContains'].includes(
-                filterKey,
-              )
-            ) {
-              if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
-                options = (entities[filterKey] || [])
-                  .filter((n) => (searchScope[filterKey] || []).includes(n.type))
-                  .sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
-              } else {
-                // eslint-disable-next-line max-len
-                options = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
-              }
-            } else if (entities[filterKey]) {
-              options = entities[filterKey];
-            }
             return (
-              <Autocomplete
-                key={filterKey}
-                className={classes.autocomplete}
-                selectOnFocus={true}
-                autoSelect={false}
-                autoHighlight={true}
-                options={options}
-                getOptionLabel={(option) => (option.label ? option.label : '')}
-                noOptionsText={t('No available options')}
-                onInputChange={(event) => searchEntities(filterKey, event)}
-                onChange={(event, value) => handleChange(filterKey, event, value)
-                }
-                isOptionEqualToValue={(option, value) => option.value === value}
-                inputValue={inputValues[filterKey] || ''}
-                groupBy={
-                  ['elementId', 'fromId', 'toId', 'objectContains'].includes(
-                    filterKey,
-                  )
-                    ? (option) => option.type
-                    : null
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...R.dissoc('InputProps', params)}
-                    label={t(`filter_${filterKey}`)}
-                    variant="outlined"
-                    size="small"
-                    fullWidth={true}
-                    onFocus={(event) => searchEntities(filterKey, event)}
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: [
-                        'elementId',
-                        'fromId',
-                        'toId',
-                        'objectContains',
-                      ].includes(filterKey)
-                        ? renderSearchScopeSelection(filterKey)
-                        : params.InputProps.endAdornment,
-                    }}
-                  />
-                )}
-                renderOption={(props, option) => (
-                  <li {...props}>
-                    <div
-                      className={classes.icon}
-                      style={{ color: option.color }}
-                    >
-                      <ItemIcon type={option.type} />
-                    </div>
-                    <div className={classes.text}>{option.label}</div>
-                  </li>
-                )}
-              />
+              <div className={classes.autocomplete} key={filterKey}>
+                <FilterAutocomplete
+                  filterKey={filterKey}
+                  defaultHandleAddFilter={defaultHandleAddFilter}
+                  inputValues={inputValues}
+                  setInputValues={setInputValues}
+                  availableEntityTypes={availableEntityTypes}
+                  availableRelationshipTypes={availableRelationshipTypes}
+                  allEntityTypes={allEntityTypes}
+                  openOnFocus={false}
+                />
+              </div>
             );
           },
         )}

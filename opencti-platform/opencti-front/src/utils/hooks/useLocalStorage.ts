@@ -1,12 +1,10 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import * as R from 'ramda';
 import { isEmptyField, removeEmptyFields } from '../utils';
 import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
 import { isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
-import {
-  DataComponentsLinesPaginationQuery$variables,
-} from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
+import { DataComponentsLinesPaginationQuery$variables } from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 
 export interface LocalStorage {
   numberOfElements?: { number: number | string, symbol: string, original?: number },
@@ -25,7 +23,7 @@ export interface UseLocalStorageHelpers {
   handleSearch: (value: string) => void,
   handleRemoveFilter: (key: string) => void,
   handleSort: (field: string, order: boolean) => void
-  handleAddFilter: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void
+  handleAddFilter: HandleAddFilter
   handleToggleExports: () => void,
   handleSetNumberOfElements: (value: { number?: number | string, symbol?: string, original?: number }) => void,
 }
@@ -50,6 +48,8 @@ export const localStorageToPaginationOptions = <U>({
     filters: filters ? convertFilters(filters) : undefined,
   }) as unknown extends U ? PaginationOptions : U;
 };
+
+export type HandleAddFilter = (k: string, id: string, value: Record<string, unknown> | string, event: SyntheticEvent) => void;
 
 export type UseLocalStorage = [value: LocalStorage,
   setValue: Dispatch<SetStateAction<LocalStorage>>,
@@ -142,7 +142,7 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       sortBy: field,
       orderAsc: order,
     })),
-    handleAddFilter: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => {
+    handleAddFilter: (k: string, id: string, value: Record<string, unknown> | string, event: SyntheticEvent) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();

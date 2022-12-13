@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import { useFormatter } from '../../../../components/i18n';
-import {
-  FiltersVariant,
-  isUniqFilter,
-  onlyGroupOrganization,
-} from '../../../../utils/filters/filtersUtils';
+import { FiltersVariant, isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
-import SearchScopeElement from './SearchScopeElement';
-import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 
 const Filters = ({
   variant,
@@ -26,26 +19,13 @@ const Filters = ({
   handleAddFilter,
   type,
 }) => {
-  const { nsd } = useFormatter();
-
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-
   const [inputValues, setInputValues] = useState({});
   const [filters, setFilters] = useState({});
-
   const [keyword, setKeyword] = useState('');
-  const [searchScope, setSearchScope] = useState({});
-
-  const [entities, searchEntities] = useSearchEntities({
-    searchScope,
-    setInputValues,
-    availableEntityTypes,
-    availableRelationshipTypes,
-    allEntityTypes,
-  });
 
   const handleOpenFilters = (event) => {
     setOpen(true);
@@ -85,44 +65,7 @@ const Filters = ({
     );
   };
 
-  const handleChange = (filterKey, event, value) => {
-    if (value) {
-      const group = !onlyGroupOrganization.includes(filterKey)
-        ? value.group
-        : undefined;
-      const filterAdd = `${filterKey}${group ? `_${group}` : ''}`;
-      defaultHandleAddFilter(filterAdd, value.value, value.label, event);
-    }
-  };
-
   const handleChangeKeyword = (event) => setKeyword(event.target.value);
-
-  const handleChangeDate = (filterKey, date) => {
-    setInputValues((c) => ({ ...c, [filterKey]: date }));
-  };
-
-  const handleAcceptDate = (filterKey, date) => {
-    if (date && date.toISOString()) {
-      defaultHandleAddFilter(filterKey, date.toISOString(), nsd(date));
-    }
-  };
-
-  const handleValidateDate = (filterKey, event) => {
-    if (event.key === 'Enter') {
-      if (inputValues[filterKey].toString() !== 'Invalid Date') {
-        return handleAcceptDate(filterKey, inputValues[filterKey]);
-      }
-    }
-    return null;
-  };
-
-  const renderSearchScopeSelection = (key) => (
-    <SearchScopeElement
-      name={key}
-      searchScope={searchScope}
-      setSearchScope={setSearchScope}
-    />
-  );
 
   const filterElement = (
     <FiltersElement
@@ -130,17 +73,13 @@ const Filters = ({
       keyword={keyword}
       availableFilterKeys={availableFilterKeys}
       handleChangeKeyword={handleChangeKeyword}
-      handleChangeDate={handleChangeDate}
-      handleAcceptDate={handleAcceptDate}
-      handleValidateDate={handleValidateDate}
       noDirectFilters={noDirectFilters}
       inputValues={inputValues}
-      searchScope={searchScope}
-      entities={entities}
-      handleChange={handleChange}
-      searchEntities={searchEntities}
-      renderSearchScopeSelection={renderSearchScopeSelection}
-      type={type}
+      setInputValues={setInputValues}
+      defaultHandleAddFilter={defaultHandleAddFilter}
+      availableEntityTypes={availableEntityTypes}
+      availableRelationshipTypes={availableRelationshipTypes}
+      allEntityTypes={allEntityTypes}
     />
   );
 
@@ -171,15 +110,15 @@ const Filters = ({
       anchorEl={anchorEl}
       noDirectFilters={noDirectFilters}
       availableFilterKeys={availableFilterKeys}
-      searchScope={searchScope}
-      entities={entities}
-      inputValues={inputValues}
-      renderSearchScopeSelection={renderSearchScopeSelection}
       filterElement={filterElement}
       variant={variant}
-      searchEntities={searchEntities}
-      handleChange={handleChange}
       type={type}
+      inputValues={inputValues}
+      setInputValues={setInputValues}
+      defaultHandleAddFilter={defaultHandleAddFilter}
+      availableEntityTypes={availableEntityTypes}
+      availableRelationshipTypes={availableRelationshipTypes}
+      allEntityTypes={allEntityTypes}
     />
   );
 };

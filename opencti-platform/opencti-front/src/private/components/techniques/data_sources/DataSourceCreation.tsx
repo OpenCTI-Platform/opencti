@@ -105,12 +105,12 @@ interface DataSourceAddInput {
   name: string,
   description: string,
   createdBy: Option | undefined,
-  objectMarking: Array<Option>,
-  objectLabel: Array<Option>,
-  externalReferences: Array<Option>,
+  objectMarking: Option[],
+  objectLabel: Option[],
+  externalReferences: Option[],
   confidence: number,
-  x_mitre_platforms: Array<string>,
-  collection_layers: Array<string>,
+  x_mitre_platforms: string[],
+  collection_layers: string[],
 }
 
 interface DataSourceCreationProps {
