@@ -34,7 +34,7 @@ class AssetType extends Component {
   }
   componentDidMount() {
     fetchQuery(assetTypeQuery, {
-      type: `${this.props.assetType}AssetTypes`,
+      type: `${this.props.assetType}AssetType`,
     })
       .toPromise()
       .then((data) => {
