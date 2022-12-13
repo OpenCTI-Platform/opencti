@@ -27,7 +27,8 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalFindByIds,
-  internalLoadById, listAllThings,
+  internalLoadById,
+  listAllThings,
   mergeEntities,
   patchAttribute,
   stixLoadById,
@@ -47,8 +48,10 @@ import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey,
+  ABSTRACT_STIX_RELATIONSHIP,
+  buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
+  INPUT_OBJECTS,
   RULE_PREFIX
 } from '../schema/general';
 import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
@@ -73,6 +76,7 @@ import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_L
 const SCHEDULE_TIME = conf.get('task_scheduler:interval');
 const TASK_MANAGER_KEY = conf.get('task_scheduler:lock_key');
 
+const ACTION_ON_CONTAINER_FIELD = 'container-object';
 const ACTION_TYPE_ATTRIBUTE = 'ATTRIBUTE';
 const ACTION_TYPE_RELATION = 'RELATION';
 const ACTION_TYPE_REVERSED_RELATION = 'REVERSED_RELATION';
@@ -96,6 +100,7 @@ const computeRuleTaskElements = async (context, user, task) => {
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
+    const actions = [{ type: ACTION_TYPE_RULE_APPLY, context: { rule: ruleDefinition } }];
     const options = {
       first: MAX_TASK_ELEMENTS,
       orderMode: 'asc',
@@ -107,27 +112,26 @@ const computeRuleTaskElements = async (context, user, task) => {
     // Apply the actions for each element
     for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
       const element = elements[elementIndex];
-      const actions = [{ type: ACTION_TYPE_RULE_APPLY, context: { rule: ruleDefinition } }];
-      processingElements.push({ element: element.node, actions, next: element.cursor });
+      processingElements.push({ element: element.node, next: element.cursor });
     }
-  } else {
-    const filters = [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }];
-    const options = {
-      first: MAX_TASK_ELEMENTS,
-      orderMode: 'asc',
-      orderBy: 'updated_at',
-      after: task_position,
-      filters,
-    };
-    const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES, options);
-    // Apply the actions for each element
-    for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
-      const element = elements[elementIndex];
-      const actions = [{ type: ACTION_TYPE_RULE_CLEAR, context: { rule: ruleDefinition } }];
-      processingElements.push({ element: element.node, actions, next: element.cursor });
-    }
+    return { actions, elements: processingElements };
   }
-  return processingElements;
+  const filters = [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }];
+  const actions = [{ type: ACTION_TYPE_RULE_CLEAR, context: { rule: ruleDefinition } }];
+  const options = {
+    first: MAX_TASK_ELEMENTS,
+    orderMode: 'asc',
+    orderBy: 'updated_at',
+    after: task_position,
+    filters,
+  };
+  const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES, options);
+  // Apply the actions for each element
+  for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
+    const element = elements[elementIndex];
+    processingElements.push({ element: element.node, next: element.cursor });
+  }
+  return { actions, elements: processingElements };
 };
 const computeQueryTaskElements = async (context, user, task) => {
   const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
@@ -140,10 +144,10 @@ const computeQueryTaskElements = async (context, user, task) => {
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
     if (!task_excluded_ids.includes(element.node.id)) {
-      processingElements.push({ element: element.node, actions, next: element.cursor });
+      processingElements.push({ element: element.node, next: element.cursor });
     }
   }
-  return processingElements;
+  return { actions, elements: processingElements };
 };
 const computeListTaskElements = async (context, user, task) => {
   const { actions, task_position, task_ids } = task;
@@ -156,10 +160,10 @@ const computeListTaskElements = async (context, user, task) => {
     const elementToResolve = task_ids[elementId];
     const element = await internalLoadById(context, user, elementToResolve);
     if (element) {
-      processingElements.push({ element, actions, next: element.id });
+      processingElements.push({ element, next: element.id });
     }
   }
-  return processingElements;
+  return { actions, elements: processingElements };
 };
 const appendTaskErrors = async (taskId, errors) => {
   if (errors.length === 0) {
@@ -195,7 +199,8 @@ const executeAdd = async (context, user, actionContext, element) => {
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
     const patch = { [field]: values };
-    await patchAttribute(context, user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_ADD });
+    const operations = { [field]: UPDATE_OPERATION_ADD };
+    await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
   }
 };
 const executeRemove = async (context, user, actionContext, element) => {
@@ -214,7 +219,8 @@ const executeRemove = async (context, user, actionContext, element) => {
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
     const patch = { [field]: values };
-    await patchAttribute(context, user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_REMOVE });
+    const operations = { [field]: UPDATE_OPERATION_REMOVE };
+    await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
   }
 };
 const executeReplace = async (context, user, actionContext, element) => {
@@ -340,55 +346,74 @@ const executeUnshare = async (context, user, actionContext, element) => {
     }
   }
 };
-const executeProcessing = async (context, user, processingElements) => {
+const executeProcessing = async (context, user, job) => {
   const errors = [];
-  for (let index = 0; index < processingElements.length; index += 1) {
-    const { element, actions } = processingElements[index];
-    try {
-      for (let actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
-        const { type, context: actionContext } = actions[actionIndex];
-        if (type === ACTION_TYPE_DELETE) {
-          await executeDelete(context, user, element);
-          break; // You cant have multiple actions on deletion, just stopping the loop.
-        }
-        if (type === ACTION_TYPE_ADD) {
-          await executeAdd(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_REMOVE) {
-          await executeRemove(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_REPLACE) {
-          await executeReplace(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_MERGE) {
-          await executeMerge(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_PROMOTE) {
-          await executePromote(context, user, element);
-        }
-        if (type === ACTION_TYPE_ENRICHMENT) {
-          await executeEnrichment(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_RULE_APPLY) {
-          await executeRuleApply(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_RULE_CLEAR) {
-          await executeRuleClean(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
-          await executeRuleElementRescan(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_SHARE) {
-          await executeShare(context, user, actionContext, element);
-        }
-        if (type === ACTION_TYPE_UNSHARE) {
-          await executeUnshare(context, user, actionContext, element);
+  for (let index = 0; index < job.actions.length; index += 1) {
+    const { type, context: actionContext } = job.actions[index];
+    const { field, values } = actionContext;
+    // Containers specific operations
+    // Can be done in one shot patch modification.
+    if (field === ACTION_ON_CONTAINER_FIELD) {
+      for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
+        const value = values[valueIndex];
+        try {
+          const objects = job.elements.map((e) => e.element.internal_id).filter((id) => value !== id);
+          const patch = { [INPUT_OBJECTS]: objects };
+          const operations = { [INPUT_OBJECTS]: type.toLowerCase() }; // add, remove, replace
+          await patchAttribute(context, user, value, ENTITY_TYPE_CONTAINER, patch, { operations });
+        } catch (err) {
+          errors.push({ id: value, message: err.message, reason: err.reason });
         }
       }
-    } catch (err) {
-      logApp.error('Error executing background task', { error: err, element, actions });
-      errors.push({ id: element.id, message: err.message, reason: err.reason });
+    } else { // Classic action, need to be apply on each element
+      for (let elementIndex = 0; elementIndex < job.elements.length; elementIndex += 1) {
+        const { element } = job.elements[elementIndex];
+        try {
+          if (type === ACTION_TYPE_DELETE) {
+            await executeDelete(context, user, element);
+            break; // You cant have multiple actions on deletion, just stopping the loop.
+          }
+          if (type === ACTION_TYPE_ADD) {
+            await executeAdd(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_REMOVE) {
+            await executeRemove(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_REPLACE) {
+            await executeReplace(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_MERGE) {
+            await executeMerge(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_PROMOTE) {
+            await executePromote(context, user, element);
+          }
+          if (type === ACTION_TYPE_ENRICHMENT) {
+            await executeEnrichment(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_RULE_APPLY) {
+            await executeRuleApply(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_RULE_CLEAR) {
+            await executeRuleClean(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
+            await executeRuleElementRescan(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_SHARE) {
+            await executeShare(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_UNSHARE) {
+            await executeUnshare(context, user, actionContext, element);
+          }
+        } catch (err) {
+          errors.push({ id: element.id, message: err.message, reason: err.reason });
+        }
+      }
     }
+  }
+  if (errors.length > 0) {
+    logApp.error('Error executing background task', { errors });
   }
   return errors;
 };
@@ -418,19 +443,20 @@ const taskHandler = async () => {
     // Fetch the user responsible for the task
     const rawUser = await resolveUserById(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
-    let processingElements;
+    let jobToExecute;
     if (isQueryTask) {
-      processingElements = await computeQueryTaskElements(context, user, task);
+      jobToExecute = await computeQueryTaskElements(context, user, task);
     }
     if (isListTask) {
-      processingElements = await computeListTaskElements(context, user, task);
+      jobToExecute = await computeListTaskElements(context, user, task);
     }
     if (isRuleTask) {
-      processingElements = await computeRuleTaskElements(context, user, task);
+      jobToExecute = await computeRuleTaskElements(context, user, task);
     }
     // Process the elements (empty = end of execution)
+    const processingElements = jobToExecute.elements;
     if (processingElements.length > 0) {
-      const errors = await executeProcessing(context, user, processingElements);
+      const errors = await executeProcessing(context, user, jobToExecute);
       await appendTaskErrors(task.id, errors);
     }
     // Update the task

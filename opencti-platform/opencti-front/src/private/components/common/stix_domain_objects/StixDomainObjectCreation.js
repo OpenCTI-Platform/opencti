@@ -3,31 +3,18 @@ import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
-import {
-  assoc,
-  compose,
-  dissoc,
-  filter,
-  includes,
-  map,
-  pipe,
-  pluck,
-  split,
-} from 'ramda';
+import { assoc, compose, dissoc, filter, includes, map, pipe, pluck, split } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -37,10 +24,7 @@ import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ConfidenceField from '../form/ConfidenceField';
-import {
-  typesWithOpenCTIAliases,
-  typesWithoutAliases,
-} from '../../../../utils/Entity';
+import { typesWithOpenCTIAliases, typesWithoutAliases } from '../../../../utils/Entity';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../form/OpenVocabField';
 
@@ -229,6 +213,12 @@ const stixDomainObjectCreationMutation = graphql`
       ... on DataSource {
         name
       }
+      ... on Report {
+        name
+      }
+      ... on Grouping {
+        name
+      }
     }
   }
 `;
@@ -311,28 +301,31 @@ class StixDomainObjectCreation extends Component {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('stixDomainObjectAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          this.props.paginationKey || 'Pagination_stixDomainObjects',
-          newEdge,
-        );
+        if (!this.props.creationCallback) {
+          const payload = store.getRootField('stixDomainObjectAdd');
+          const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+          const container = store.getRoot();
+          sharedUpdater(
+            store,
+            container.getDataID(),
+            this.props.paginationOptions,
+            this.props.paginationKey || 'Pagination_stixDomainObjects',
+            newEdge,
+          );
+        }
       },
       setSubmitting,
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        if (this.props.creationCallback) {
+          this.props.creationCallback(response);
+          this.props.handleClose();
+        } else {
+          this.handleClose();
+        }
       },
     });
-  }
-
-  onResetClassic() {
-    this.handleClose();
   }
 
   onResetContextual() {
@@ -417,170 +410,6 @@ class StixDomainObjectCreation extends Component {
     );
   }
 
-  renderClassic() {
-    const { t, classes, targetStixDomainObjectTypes } = this.props;
-    return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create an entity')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                type: '',
-                name: '',
-                confidence: 75,
-                description: '',
-                pattern_type: '',
-                pattern: '',
-                aliases: '',
-                x_opencti_aliases: '',
-                createdBy: '',
-                objectLabel: [],
-                objectMarking: [],
-              }}
-              validationSchema={stixDomainObjectValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onResetClassic.bind(this)}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  {this.renderEntityTypesList()}
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                    detectDuplicate={targetStixDomainObjectTypes || []}
-                  />
-                  {!includes(values.type, typesWithoutAliases) && (
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name={
-                        includes(values.type, typesWithOpenCTIAliases)
-                          ? 'x_opencti_aliases'
-                          : 'aliases'
-                      }
-                      label={t('Aliases separated by commas')}
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
-                    />
-                  )}
-                  {values.type === 'Indicator' && (
-                    <div>
-                      <OpenVocabField
-                        label={t('Pattern type')}
-                        type="pattern_type_ov"
-                        name="pattern_type"
-                        onChange={(name, value) => setFieldValue(name, value)}
-                        containerStyle={fieldSpacingContainerStyle}
-                        multiple={false}
-                      />
-                      <Field
-                        component={TextField}
-                        variant="standard"
-                        name="pattern"
-                        label={t('Pattern')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        style={{ marginTop: 20 }}
-                        detectDuplicate={['Indicator']}
-                      />
-                    </div>
-                  )}
-                  <ConfidenceField
-                    name="confidence"
-                    label={t('Confidence')}
-                    fullWidth={true}
-                    containerStyle={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </div>
-    );
-  }
-
   renderContextual() {
     const {
       t,
@@ -594,7 +423,7 @@ class StixDomainObjectCreation extends Component {
       targetStixDomainObjectTypes,
     } = this.props;
     const initialValues = {
-      type: '',
+      type: targetStixDomainObjectTypes.at(0),
       name: inputValue,
       confidence: confidence || 15,
       description: '',
@@ -713,6 +542,18 @@ class StixDomainObjectCreation extends Component {
                     fullWidth={true}
                     containerStyle={fieldSpacingContainerStyle}
                   />
+                  {values.type === 'Grouping' && (
+                    <div>
+                      <OpenVocabField
+                        label={t('Context')}
+                        type="grouping-context-ov"
+                        name="context"
+                        onChange={(name, value) => setFieldValue(name, value)}
+                        containerStyle={fieldSpacingContainerStyle}
+                        multiple={false}
+                      />
+                    </div>
+                  )}
                   <Field
                     component={MarkDownField}
                     name="description"
@@ -761,11 +602,7 @@ class StixDomainObjectCreation extends Component {
   }
 
   render() {
-    const { contextual } = this.props;
-    if (contextual) {
-      return this.renderContextual();
-    }
-    return this.renderClassic();
+    return this.renderContextual();
   }
 }
 
@@ -776,9 +613,9 @@ StixDomainObjectCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  contextual: PropTypes.bool,
   speeddial: PropTypes.bool,
   handleClose: PropTypes.func,
+  creationCallback: PropTypes.func,
   display: PropTypes.bool,
   open: PropTypes.bool,
   inputValue: PropTypes.string,

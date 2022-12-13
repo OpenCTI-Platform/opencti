@@ -595,7 +595,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           />
           <StixDomainObjectCreation
             display={this.state.open}
-            contextual={true}
             inputValue={this.state.search}
             paginationOptions={stixDomainObjectsPaginationOptions}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}

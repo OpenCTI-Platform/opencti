@@ -28,6 +28,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import {
+  Add,
   AddOutlined,
   BrushOutlined,
   CancelOutlined,
@@ -78,6 +79,7 @@ import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesSearchQuery } from '../analysis/ExternalReferences';
+import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -242,6 +244,30 @@ const toolBarConnectorsQuery = graphql`
 
 const maxNumberOfObservablesToCopy = 1000;
 
+const toolBarContainersQuery = graphql`
+  query ToolBarContainersQuery($search: String) {
+    containers(search: $search, filters: [
+      { key: entity_type, values: ["Report", "Grouping"] }
+    ]) {
+      edges {
+        node {
+          id
+          entity_type
+          ... on Report {
+            name
+          }
+          ... on Grouping {
+            name
+          }
+          ... on ObservedData {
+            name
+          }
+        }
+      }
+    }
+  }
+`;
+
 class ToolBar extends Component {
   constructor(props) {
     super(props);
@@ -252,6 +278,7 @@ class ToolBar extends Component {
       displayRescan: false,
       displayMerge: false,
       displayPromote: false,
+      containerCreation: false,
       actions: [],
       actionsInputs: [{}],
       keptEntityId: null,
@@ -260,6 +287,7 @@ class ToolBar extends Component {
       markingDefinitions: [],
       labels: [],
       identities: [],
+      containers: [],
       statuses: [],
       externalReferences: [],
       enrichConnectors: [],
@@ -432,16 +460,7 @@ class ToolBar extends Component {
   }
 
   handleLaunchRemove() {
-    const actions = [
-      {
-        type: 'REMOVE',
-        context: {
-          type: 'REVERSED_RELATION',
-          field: 'object',
-          values: [this.props.container],
-        },
-      },
-    ];
+    const actions = [{ type: 'REMOVE', context: { field: 'container-object', values: [this.props.container] } }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
@@ -612,56 +631,27 @@ class ToolBar extends Component {
     if (actionsInputs[i]?.type === 'ADD') {
       options = [
         { label: t('Marking definitions'), value: 'object-marking' },
-        {
-          label: t('Labels'),
-          value: 'object-label',
-        },
-        {
-          label: t('External references'),
-          value: 'external-reference',
-        },
+        { label: t('Labels'), value: 'object-label' },
+        { label: t('External references'), value: 'external-reference' },
+        { label: t('In containers'), value: 'container-object' },
       ];
     } else if (actionsInputs[i]?.type === 'REPLACE') {
       options = [
         { label: t('Marking definitions'), value: 'object-marking' },
-        {
-          label: t('Labels'),
-          value: 'object-label',
-        },
-        {
-          label: t('Author'),
-          value: 'created-by',
-        },
-        {
-          label: t('Score'),
-          value: 'x_opencti_score',
-        },
-        {
-          label: t('Confidence'),
-          value: 'confidence',
-        },
-        {
-          label: t('filter_creator'),
-          value: 'creator_id',
-        },
+        { label: t('Labels'), value: 'object-label' },
+        { label: t('Author'), value: 'created-by' },
+        { label: t('Score'), value: 'x_opencti_score' },
+        { label: t('Confidence'), value: 'confidence' },
+        { label: t('filter_creator'), value: 'creator_id' },
       ];
       if (this.props.type) {
-        options.push({
-          label: t('Status'),
-          value: 'x_opencti_workflow_id',
-        });
+        options.push({ label: t('Status'), value: 'x_opencti_workflow_id' });
       }
     } else if (actionsInputs[i]?.type === 'REMOVE') {
       options = [
         { label: t('Marking definitions'), value: 'object-marking' },
-        {
-          label: t('Labels'),
-          value: 'object-label',
-        },
-        {
-          label: t('External references'),
-          value: 'external-reference',
-        },
+        { label: t('Labels'), value: 'object-label' },
+        { label: t('External references'), value: 'external-reference' },
       ];
     }
     return (
@@ -685,6 +675,26 @@ class ToolBar extends Component {
         )}
       </Select>
     );
+  }
+
+  searchContainers(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(toolBarContainersQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const elements = data.containers.edges.map((e) => e.node);
+        const containers = elements.map((n) => ({ label: n.name, type: n.entity_type, value: n.id }));
+        this.setState({ containers });
+      });
   }
 
   searchMarkingDefinitions(i, event, newValue) {
@@ -837,6 +847,64 @@ class ToolBar extends Component {
     const { actionsInputs } = this.state;
     const disabled = R.isNil(actionsInputs[i]?.field) || R.isEmpty(actionsInputs[i]?.field);
     switch (actionsInputs[i]?.field) {
+      case 'container-object':
+        return <>
+          <StixDomainObjectCreation
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            open={this.state.containerCreation}
+            display={true}
+            speeddial={true}
+            targetStixDomainObjectTypes={['Report', 'Grouping']}
+            handleClose={() => this.setState({ containerCreation: false })}
+            creationCallback={(data) => {
+              const element = {
+                label: data.stixDomainObjectAdd.name,
+                value: data.stixDomainObjectAdd.id,
+                type: data.stixDomainObjectAdd.entity_type,
+              };
+              this.handleChangeActionInputValues(i, null, element);
+            }}
+          />
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchContainers.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.containers}
+            onInputChange={this.searchContainers.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <ItemIcon type={option.type} />
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+          <IconButton onClick={() => this.setState({ containerCreation: true }) }
+            edge="end"
+            style={{ position: 'absolute', top: 22, right: 48 }}
+            size="large">
+            <Add />
+          </IconButton>
+        </>;
       case 'object-marking':
         return (
           <Autocomplete

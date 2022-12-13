@@ -568,7 +568,6 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
           </SpeedDial>
           <StixDomainObjectCreation
             display={open}
-            contextual={true}
             inputValue={search}
             paginationKey="Pagination_stixCoreObjects"
             paginationOptions={paginationOptions}

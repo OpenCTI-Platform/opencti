@@ -1973,6 +1973,7 @@ input StixDomainObjectAddInput {
   description: String
   confidence: Int
   pattern_type: String
+  context: String
   pattern: String
   aliases: [String]
   x_opencti_aliases: [String]

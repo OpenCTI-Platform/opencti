@@ -440,7 +440,6 @@ class StixSightingRelationshipCreationFromEntity extends Component {
         />
         <StixDomainObjectCreation
           display={open}
-          contextual={true}
           inputValue={search}
           paginationOptions={stixDomainObjectsPaginationOptions}
           targetStixDomainObjectTypes={targetStixDomainObjectTypes}

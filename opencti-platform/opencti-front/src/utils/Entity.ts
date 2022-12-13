@@ -278,4 +278,4 @@ export const typesWithOpenCTIAliases = [
   'Narrative',
 ];
 
-export const typesWithoutAliases = ['Indicator', 'Vulnerability', 'Language'];
+export const typesWithoutAliases = ['Indicator', 'Vulnerability', 'Language', 'Grouping', 'Report'];

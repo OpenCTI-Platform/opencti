@@ -191,7 +191,6 @@ class StixDomainObjectAddObjectRefs extends Component {
         </Drawer>
         <StixDomainObjectCreation
           display={this.state.open}
-          contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
         />

@@ -21,10 +21,10 @@ import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
+  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
-  isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   stixDomainObjectOptions,
@@ -39,6 +39,8 @@ import { isStixMetaRelationship, RELATION_CREATED_BY } from '../schema/stixMetaR
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from '../schema/stixCyberObservableRelationship';
+import { utcDate } from '../utils/format';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -116,15 +118,20 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   if (!isStixDomainObject(innerType)) {
     throw UnsupportedError('This method can only create Stix domain');
   }
-  if (isStixDomainObjectContainer(innerType)) {
-    throw UnsupportedError('This method cant create Stix domain container');
-  }
   const data = stixDomainObject;
   if (isStixDomainObjectIdentity(innerType)) {
     data.identity_class = innerType === ENTITY_TYPE_IDENTITY_SECTOR ? 'class' : innerType.toLowerCase();
   }
   if (isStixDomainObjectLocation(innerType)) {
     data.x_opencti_location_type = innerType;
+  }
+  if (innerType === ENTITY_TYPE_CONTAINER_REPORT) {
+    data.published = utcDate();
+  }
+  if (innerType === ENTITY_TYPE_CONTAINER_GROUPING) {
+    if (isEmptyField(stixDomainObject.context)) {
+      throw UnsupportedError('You need to specify a context to create an grouping');
+    }
   }
   if (innerType === ENTITY_TYPE_INDICATOR) {
     if (isEmptyField(stixDomainObject.pattern) || isEmptyField(stixDomainObject.pattern_type)) {

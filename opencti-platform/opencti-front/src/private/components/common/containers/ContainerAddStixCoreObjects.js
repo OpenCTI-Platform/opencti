@@ -176,7 +176,6 @@ class ContainerAddStixCoreObjects extends Component {
     return (
       <StixDomainObjectCreation
         display={open}
-        contextual={true}
         inputValue={search}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={paginationOptions}
@@ -258,7 +257,6 @@ class ContainerAddStixCoreObjects extends Component {
         </SpeedDial>
         <StixDomainObjectCreation
           display={open}
-          contextual={true}
           inputValue={search}
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={paginationOptions}

@@ -18419,6 +18419,7 @@ export type StixDomainObjectAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  context?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
