@@ -32,6 +32,7 @@ export const vocabCategoriesQuery = graphql`
 export const vocabFragment = graphql`
   fragment useVocabularyCategory_Vocabularynode on Vocabulary {
     id
+    entity_type
     name
     description
     usages
