@@ -1,5 +1,5 @@
-import React, { FunctionComponent, useEffect } from 'react';
-import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { VocabularyLine, VocabularyLineDummy } from './VocabularyLine';
 import { DataColumns } from '../../../../components/list_lines';
@@ -12,8 +12,8 @@ import { VocabulariesLinesPaginationQuery } from './__generated__/VocabulariesLi
 import {
   useVocabularyCategory_Vocabularynode$data,
 } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
-import { numberFormat } from '../../../../utils/Number';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 export interface VocabulariesLinesProps {
   paginationOptions: VocabulariesLines_DataQuery$variables,
@@ -89,29 +89,28 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
   onToggleEntity,
   selectAll,
 }) => {
-  const queryData = usePreloadedQuery(vocabulariesLinesQuery, queryRef);
   const {
     data,
-    refetch,
-    hasNext,
-    loadNext,
-    isLoadingNext,
-  } = usePaginationFragment<VocabulariesLines_DataQuery, VocabulariesLines_data$key>(vocabulariesLinesFragment, queryData);
+    hasMore,
+    loadMore,
+    isLoadingMore,
+  } = usePreloadedPaginationFragment<VocabulariesLines_DataQuery, VocabulariesLines_data$key>({
+    queryRef,
+    linesQuery: vocabulariesLinesQuery,
+    linesFragment: vocabulariesLinesFragment,
+    nodePath: ['vocabularies', 'edges'],
+    setNumberOfElements,
+  });
 
   const vocabularies = data?.vocabularies?.edges ?? [];
   const globalCount = data?.vocabularies?.pageInfo?.globalCount;
 
-  useEffect(() => {
-    setNumberOfElements(numberFormat(vocabularies.length));
-  }, [vocabularies.length]);
-
   return (
     <ListLinesContent
-      initialLoading={!queryData}
-      loadMore={loadNext}
-      hasMore={() => hasNext}
-      refetch={refetch}
-      isLoading={() => isLoadingNext}
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
       dataList={vocabularies}
       globalCount={globalCount}
       LineComponent={VocabularyLine}

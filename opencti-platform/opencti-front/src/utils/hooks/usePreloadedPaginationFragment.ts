@@ -4,6 +4,7 @@ import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { KeyType } from 'react-relay/relay-hooks/helpers';
 import { UseLocalStorageHelpers } from './useLocalStorage';
+import { numberFormat } from '../Number';
 
 interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
   queryRef: PreloadedQuery<QueryType>
@@ -29,8 +30,8 @@ const usePreloadedPaginationFragment = <QueryType extends OperationType, Fragmen
   } = usePaginationFragment<QueryType, FragmentKey>(linesFragment, queryData);
   useEffect(() => {
     const deep_value = nodePath.reduce((a, v) => a[v as keyof object], data as object) as unknown[];
-    if (setNumberOfElements && deep_value) {
-      setNumberOfElements({ number: deep_value.length });
+    if (setNumberOfElements && !!deep_value) {
+      setNumberOfElements(numberFormat(deep_value.length));
     }
   }, [data]);
 

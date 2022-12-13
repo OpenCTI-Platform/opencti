@@ -1,11 +1,12 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import * as R from 'ramda';
-import { useSearchParams } from 'react-router-dom-v5-compat';
 import { isEmptyField, removeEmptyFields } from '../utils';
 import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
 import { isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
-import { DataComponentsLinesPaginationQuery$variables } from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
+import {
+  DataComponentsLinesPaginationQuery$variables,
+} from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 
 export interface LocalStorage {
   numberOfElements?: { number: number | string, symbol: string, original?: number },
@@ -75,17 +76,16 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
 };
 
 const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStorage => {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const finalParams = searchParamsToStorage(searchParams);
-
   // State to store our value
+
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<LocalStorage>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
     }
     try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const finalParams = searchParamsToStorage(searchParams);
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
       // Parse stored json or if none return initialValue
@@ -110,10 +110,18 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       // Save to local storage
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
+
+        const searchParams = new URLSearchParams(window.location.search);
+        const finalParams = searchParamsToStorage(searchParams);
         const urlParams = buildParamsFromHistory(valueToStore);
-        if (!R.equals(urlParams, buildParamsFromHistory(finalParams))
-          && Object.entries(urlParams).some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)) {
-          setSearchParams(urlParams);
+
+        if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
+          const effectiveParams = new URLSearchParams(urlParams);
+          if (Object.entries(urlParams).some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)) {
+            window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
+          } else {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
         }
       }
     } catch (error) {
@@ -159,15 +167,22 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       }
     },
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
-    handleSetNumberOfElements: ({ number, symbol, original }: { number?: number | string, symbol?: string, original?: number }) => setValue((c) => ({
-      ...c,
-      numberOfElements: {
-        ...c.numberOfElements,
-        ...(number ? { number } : { number: 0 }),
-        ...(symbol ? { symbol } : { symbol: '' }),
-        ...(original ? { original } : { original: 0 }),
-      },
-    })),
+    handleSetNumberOfElements: (nbElements: { number?: number | string, symbol?: string, original?: number }) => {
+      if (!R.equals(nbElements, storedValue.numberOfElements)) {
+        setValue((c) => {
+          const { number, symbol, original } = nbElements;
+          return ({
+            ...c,
+            numberOfElements: {
+              ...c.numberOfElements,
+              ...(number ? { number } : { number: 0 }),
+              ...(symbol ? { symbol } : { symbol: '' }),
+              ...(original ? { original } : { original: 0 }),
+            },
+          });
+        });
+      }
+    },
   };
 
   return [storedValue, setValue, helpers];
