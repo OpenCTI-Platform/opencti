@@ -19,6 +19,7 @@ import type { VocabularyCategory } from '../../generated/graphql';
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
 interface VocabularyDefinition {
+  description?: string,
   entity_types: string[],
   fields: {
     key: string,
@@ -30,6 +31,7 @@ interface VocabularyDefinition {
 export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinition> = {
   // A
   account_type_ov: {
+    description: 'An open vocabulary of User Account types',
     entity_types: [ENTITY_USER_ACCOUNT],
     fields: [{
       key: 'account_type',
@@ -37,15 +39,9 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }]
   },
-  attack_resource_level_ov: {
-    entity_types: [ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET],
-    fields: [{
-      key: 'resource_level',
-      required: false,
-      multiple: false,
-    }]
-  },
   attack_motivation_ov: {
+    description: `Knowing a Threat Actor or Intrusion Set's motivation may allow an analyst or defender to better understand likely targets and behaviors.
+      Motivation shapes the intensity and the persistence of an attack. Threat Actors and Intrusion Sets usually act in a manner that reflects their underlying emotion or situation, and this informs defenders of the manner of attack. For example, a spy motivated by nationalism (ideology) likely has the patience to achieve long-term goals and work quietly for years, whereas a cyber-vandal out for notoriety can create an intense and attention-grabbing attack but may quickly lose interest and move on. Understanding these differences allows defenders to implement controls tailored to each type of attack for greatest efficiency`,
     entity_types: [ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET],
     fields: [{
       key: 'primary_motivation',
@@ -61,97 +57,20 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
+  attack_resource_level_ov: {
+    description: 'Attack Resource Level is an open vocabulary that captures the general level of resources that a threat actor, intrusion set, or campaign might have access to. It ranges from individual, a person acting alone, to government, the resources of a national government',
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET],
+    fields: [{
+      key: 'resource_level',
+      required: false,
+      multiple: false,
+    }]
+  },
   // C
   channel_types_ov: {
     entity_types: [ENTITY_TYPE_CHANNEL],
     fields: [{
       key: 'channel_types',
-      required: false,
-      multiple: true,
-    }]
-  },
-  // E
-  event_type_ov: {
-    entity_types: [ENTITY_TYPE_EVENT],
-    fields: [{
-      key: 'event_types',
-      required: false,
-      multiple: true,
-    }]
-  },
-  // G
-  grouping_context_ov: {
-    entity_types: [ENTITY_TYPE_CONTAINER_GROUPING],
-    fields: [{
-      key: 'context',
-      required: true,
-      multiple: false,
-    }]
-  },
-  // I
-  implementation_language_ov: {
-    entity_types: [ENTITY_TYPE_MALWARE],
-    fields: [{
-      key: 'implementation_languages',
-      required: false,
-      multiple: true,
-    }]
-  },
-  indicator_type_ov: {
-    entity_types: [ENTITY_TYPE_INDICATOR],
-    fields: [{
-      key: 'indicator_types',
-      required: false,
-      multiple: true,
-    }]
-  },
-  infrastructure_type_ov: {
-    entity_types: [ENTITY_TYPE_INFRASTRUCTURE],
-    fields: [{
-      key: 'infrastructure_types',
-      required: false,
-      multiple: true,
-    }]
-  },
-  integrity_level_ov: {
-    entity_types: [ENTITY_PROCESS],
-    fields: [{
-      key: 'integrity_level',
-      required: false,
-      multiple: false,
-    }],
-  },
-  // M
-  malware_capabilities_ov: {
-    entity_types: [ENTITY_TYPE_MALWARE],
-    fields: [{
-      key: 'capabilities',
-      required: false,
-      multiple: true,
-    }]
-  },
-  malware_type_ov: {
-    entity_types: [ENTITY_TYPE_MALWARE],
-    fields: [{
-      key: 'malware_types',
-      required: false,
-      multiple: true,
-    }]
-  },
-  // O
-  opinion_ov: {
-    entity_types: [ENTITY_TYPE_CONTAINER_OPINION],
-    fields: [{
-      key: 'opinion',
-      required: true,
-      multiple: false,
-    }]
-  },
-  // P
-  platforms_ov: {
-    entity_types: [ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_ATTACK_PATTERN],
-    fields: [{
-      key: 'x_mitre_platforms',
       required: false,
       multiple: true,
     }]
@@ -169,7 +88,102 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
+  // E
+  event_type_ov: {
+    entity_types: [ENTITY_TYPE_EVENT],
+    fields: [{
+      key: 'event_types',
+      required: false,
+      multiple: true,
+    }]
+  },
+  // G
+  grouping_context_ov: {
+    description: 'While the majority of this vocabulary is undefined (producers may use custom vocabulary entries), it has been added specifically to capture the suspicious-activity-event value. That value indicates that the information contained in the Grouping relates to a suspicious event',
+    entity_types: [ENTITY_TYPE_CONTAINER_GROUPING],
+    fields: [{
+      key: 'context',
+      required: true,
+      multiple: false,
+    }]
+  },
+  // I
+  implementation_language_ov: {
+    description: 'This is a non-exhaustive, open vocabulary that covers common programming languages and is intended to characterize the languages that may have been used to implement a malware instance or family',
+    entity_types: [ENTITY_TYPE_MALWARE],
+    fields: [{
+      key: 'implementation_languages',
+      required: false,
+      multiple: true,
+    }]
+  },
+  indicator_type_ov: {
+    description: 'Indicator type is an open vocabulary used to categorize Indicators. It is intended to be high-level to promote consistent practices. Indicator types should not be used to capture information that can be better captured via related Malware or Attack Pattern objects. It is better to link an Indicator to a Malware object describing Poison Ivy rather than simply providing a type or label of "poison-ivy"',
+    entity_types: [ENTITY_TYPE_INDICATOR],
+    fields: [{
+      key: 'indicator_types',
+      required: false,
+      multiple: true,
+    }]
+  },
+  infrastructure_type_ov: {
+    description: 'A non-exhaustive enumeration of infrastructure types',
+    entity_types: [ENTITY_TYPE_INFRASTRUCTURE],
+    fields: [{
+      key: 'infrastructure_types',
+      required: false,
+      multiple: true,
+    }]
+  },
+  integrity_level_ov: {
+    description: 'Windows integrity levels are a security feature and represent the trustworthiness of an object',
+    entity_types: [ENTITY_PROCESS],
+    fields: [{
+      key: 'integrity_level',
+      required: false,
+      multiple: false,
+    }],
+  },
+  // M
+  malware_capabilities_ov: {
+    description: 'This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family',
+    entity_types: [ENTITY_TYPE_MALWARE],
+    fields: [{
+      key: 'capabilities',
+      required: false,
+      multiple: true,
+    }]
+  },
+  malware_type_ov: {
+    description: 'Malware type is an open vocabulary that represents different types and functions of malware. Malware types are not mutually exclusive; for example, a malware instance can be both spyware and a screen capture tool',
+    entity_types: [ENTITY_TYPE_MALWARE],
+    fields: [{
+      key: 'malware_types',
+      required: false,
+      multiple: true,
+    }]
+  },
+  // O
+  opinion_ov: {
+    description: 'This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement',
+    entity_types: [ENTITY_TYPE_CONTAINER_OPINION],
+    fields: [{
+      key: 'opinion',
+      required: true,
+      multiple: false,
+    }]
+  },
+  // P
+  platforms_ov: {
+    entity_types: [ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_ATTACK_PATTERN],
+    fields: [{
+      key: 'x_mitre_platforms',
+      required: false,
+      multiple: true,
+    }]
+  },
   pattern_type_ov: {
+    description: 'This is a non-exhaustive, open vocabulary that covers common pattern languages and is intended to characterize the pattern language that the indicator pattern is expressed in',
     entity_types: [ENTITY_TYPE_INDICATOR],
     fields: [{
       key: 'pattern_type',
@@ -178,6 +192,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   processor_architecture_ov: {
+    description: 'This is a non-exhaustive, open vocabulary that covers common processor architectures and is intended to characterize the architectures that a malware instance or family may be able to execute on',
     entity_types: [ENTITY_TYPE_MALWARE],
     fields: [{
       key: 'architecture_execution_envs',
@@ -195,6 +210,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   // R
   report_types_ov: {
+    description: 'Report type is an open vocabulary to describe the primary purpose or subject of a report. For example, a report that contains malware and indicators for that malware should have a report type of malware to capture that the malware is the primary purpose. Report types are not mutually exclusive: a Report can be both a malware report and a tool report. Just because a report contains objects of a type does not mean that the report should include that type. If the objects are there to simply provide evidence or context for other objects, it is not necessary to include them in the type',
     entity_types: [ENTITY_TYPE_CONTAINER_REPORT],
     fields: [{
       key: 'report_types',
@@ -204,6 +220,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   // S
   service_status_ov: {
+    description: 'An enumeration of Windows service statuses',
     entity_types: [ENTITY_PROCESS],
     fields: [{
       key: 'service_status',
@@ -212,6 +229,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }],
   },
   service_type_ov: {
+    description: 'An enumeration of Windows service types',
     entity_types: [ENTITY_PROCESS],
     fields: [{
       key: 'service_type',
@@ -220,6 +238,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }],
   },
   start_type_ov: {
+    description: 'An enumeration of Windows service start types',
     entity_types: [ENTITY_PROCESS],
     fields: [{
       key: 'start_type',
@@ -229,6 +248,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   // T
   threat_actor_type_ov: {
+    description: 'Threat actor type is an open vocabulary used to describe what type of threat actor the individual or group is. For example, some threat actors are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor can be both a disgruntled insider and a spy. [Casey 2007])',
     entity_types: [ENTITY_TYPE_THREAT_ACTOR],
     fields: [{
       key: 'threat_actor_types',
@@ -237,6 +257,8 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   threat_actor_role_ov: {
+    description: `Threat actor role is an open vocabulary that is used to describe the different roles that a threat actor can play. For example, some threat actors author malware or operate botnets while other actors actually carry out attacks directly
+      Threat actor roles are not mutually exclusive. For example, an actor can be both a financial backer for attacks and also direct attacks`,
     entity_types: [ENTITY_TYPE_THREAT_ACTOR],
     fields: [{
       key: 'roles',
@@ -245,6 +267,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   threat_actor_sophistication_ov: {
+    description: 'Threat actor sophistication vocabulary captures the skill level of a threat actor. It ranges from "none", which describes a complete novice, to "strategic", which describes an attacker who is able to influence supply chains to introduce vulnerabilities. This vocabulary is separate from resource level because an innovative, highly-skilled threat actor may have access to very few resources while a minimal-level actor might have the resources of an organized crime ring',
     entity_types: [ENTITY_TYPE_THREAT_ACTOR],
     fields: [{
       key: 'sophistication',
@@ -253,6 +276,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   tool_types_ov: {
+    description: 'Tool types describe the categories of tools that can be used to perform attacks',
     entity_types: [ENTITY_TYPE_TOOL],
     fields: [{
       key: 'tool_types',

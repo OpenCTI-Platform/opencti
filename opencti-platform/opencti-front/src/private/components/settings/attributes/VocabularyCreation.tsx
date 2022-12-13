@@ -19,14 +19,13 @@ import {
 } from './__generated__/VocabularyCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 import { VocabulariesLines_DataQuery$variables } from './__generated__/VocabulariesLines_DataQuery.graphql';
-import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
-import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 
 interface VocabularyCreationProps {
   paginationOptions: VocabulariesLines_DataQuery$variables,
+  category: VocabularyCategory
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -77,27 +76,24 @@ const vocabularyAdd = graphql`
 
 const labelValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  category: Yup.string().required(t('This field is required')),
 });
 
-const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ paginationOptions }) => {
+const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ paginationOptions, category }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
   const [open, setOpen] = useState(false);
   const [addVocab] = useMutation<VocabularyCreationMutation>(vocabularyAdd);
 
-  const { categoriesOptions } = useVocabularyCategory();
-
   const handleClose = () => setOpen(false);
 
-  interface FormInterface { name: string, description: string, category: string, aliases: Array<{ value: string }> }
+  interface FormInterface { name: string, description: string, aliases: Array<{ value: string }> }
   const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (values, { resetForm }) => {
     const data: VocabularyAddInput = {
       name: values.name,
       description: values.description,
       aliases: values.aliases.map((a) => a.value),
-      category: values.category as VocabularyCategory,
+      category,
     };
     addVocab({
       variables: {
@@ -151,14 +147,13 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
             initialValues={{
               name: '',
               description: '',
-              category: '',
               aliases: [] as Array<{ value: string }>,
             }}
             validationSchema={labelValidation(t)}
             onSubmit={onSubmit}
             onReset={handleClose}
           >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+            {({ submitForm, handleReset, isSubmitting }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -192,18 +187,6 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
                     </li>
                   )}
                   classes={{ clearIndicator: classes.autoCompleteIndicator }}
-                />
-                <Field
-                  component={AutocompleteField}
-                  name="category"
-                  options={categoriesOptions}
-                  containerStyle={fieldSpacingContainerStyle}
-                  textfieldprops={{
-                    variant: 'standard',
-                    label: t('Category'),
-                  }}
-                  style={fieldSpacingContainerStyle}
-                  onChange={(name: string, value: Option) => setFieldValue(name, value.value)}
                 />
                 <div className={classes.buttons}>
                   <Button

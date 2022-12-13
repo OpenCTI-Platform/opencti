@@ -1240,6 +1240,8 @@ class ToolBar extends Component {
         );
       }
     }
+    const notDeletableTypes = ['Vocabulary'];
+    const deleteDisable = notDeletableTypes.includes(R.head(filters.entity_type).id);
     let paperClass;
     switch (variant) {
       case 'large':
@@ -1289,13 +1291,13 @@ class ToolBar extends Component {
             </IconButton>
           </Typography>
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <Tooltip title={t('Update')}>
+            {!typesAreNotUpdatable && (
+              <Tooltip title={t('Update')}>
               <span>
                 <IconButton
                   aria-label="update"
                   disabled={
-                    typesAreNotUpdatable
-                    || numberOfSelectedElements === 0
+                    numberOfSelectedElements === 0
                     || this.state.processing
                   }
                   onClick={this.handleOpenUpdate.bind(this)}
@@ -1305,7 +1307,8 @@ class ToolBar extends Component {
                   <BrushOutlined fontSize="small" />
                 </IconButton>
               </span>
-            </Tooltip>
+              </Tooltip>
+            )}
             <UserContext.Consumer>
               {({ helper }) => {
                 const label = helper.isRuleEngineEnable()
@@ -1315,7 +1318,7 @@ class ToolBar extends Component {
                   || !helper.isRuleEngineEnable()
                   || numberOfSelectedElements === 0
                   || this.state.processing;
-                return (
+                return typesAreNotScannable ? undefined : (
                   <Tooltip title={t(label)}>
                     <span>
                       <IconButton
@@ -1349,6 +1352,7 @@ class ToolBar extends Component {
                 </span>
               </Tooltip>
             )}
+            {!enrichDisable && (
             <Tooltip title={t('Enrichment')}>
               <span>
                 <IconButton
@@ -1362,11 +1366,13 @@ class ToolBar extends Component {
                 </IconButton>
               </span>
             </Tooltip>
+            )}
+            {!promoteDisable && (
             <Tooltip title={t('Indicators/observables generation')}>
               <span>
                 <IconButton
                   aria-label="promote"
-                  disabled={promoteDisable || this.state.processing}
+                  disabled={this.state.processing}
                   onClick={this.handleOpenPromote.bind(this)}
                   color="primary"
                   size="small"
@@ -1374,27 +1380,29 @@ class ToolBar extends Component {
                   <TransformOutlined fontSize="small" />
                 </IconButton>
               </span>
-            </Tooltip>
-            <Tooltip title={t('Merge')}>
-              <span>
-                <IconButton
-                  aria-label="merge"
-                  disabled={
-                    typesAreNotMergable
-                    || typesAreDifferent
-                    || numberOfSelectedElements < 2
-                    || numberOfSelectedElements > 4
-                    || selectAll
-                    || this.state.processing
-                  }
-                  onClick={this.handleOpenMerge.bind(this)}
-                  color="primary"
-                  size="small"
-                >
-                  <MergeOutlined fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
+              </Tooltip>
+            )}
+            {!typesAreNotMergable && (
+              <Tooltip title={t('Merge')}>
+                <span>
+                  <IconButton
+                    aria-label="merge"
+                    disabled={
+                      typesAreDifferent
+                      || numberOfSelectedElements < 2
+                      || numberOfSelectedElements > 4
+                      || selectAll
+                      || this.state.processing
+                    }
+                    onClick={this.handleOpenMerge.bind(this)}
+                    color="primary"
+                    size="small"
+                  >
+                    <MergeOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
           </Security>
           {container && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -1415,23 +1423,25 @@ class ToolBar extends Component {
               </Tooltip>
             </Security>
           )}
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <Tooltip title={t('Delete')}>
-              <span>
-                <IconButton
-                  aria-label="delete"
-                  disabled={
-                    numberOfSelectedElements === 0 || this.state.processing
-                  }
-                  onClick={this.handleLaunchDelete.bind(this)}
-                  color="primary"
-                  size="small"
-                >
-                  <DeleteOutlined fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Security>
+          {!deleteDisable && (
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+              <Tooltip title={t('Delete')}>
+                <span>
+                  <IconButton
+                    aria-label="delete"
+                    disabled={
+                      numberOfSelectedElements === 0 || this.state.processing
+                    }
+                    onClick={this.handleLaunchDelete.bind(this)}
+                    color="primary"
+                    size="small"
+                  >
+                    <DeleteOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Security>
+          )}
         </Toolbar>
         <Dialog
           PaperProps={{ elevation: 1 }}
@@ -1555,10 +1565,10 @@ class ToolBar extends Component {
                                 />
                                 {R.last(R.toPairs(filters))[0]
                                   !== currentFilter[0] && (
-                                  <Chip
-                                    classes={{ root: classes.operator }}
-                                    label={t('AND')}
-                                  />
+                                    <Chip
+                                      classes={{ root: classes.operator }}
+                                      label={t('AND')}
+                                    />
                                 )}
                               </span>
                             );
@@ -1776,8 +1786,8 @@ class ToolBar extends Component {
                     primary={defaultValue(element)}
                     secondary={truncate(
                       element.description
-                        || element.x_opencti_description
-                        || '',
+                      || element.x_opencti_description
+                      || '',
                       60,
                     )}
                   />
@@ -1841,11 +1851,11 @@ class ToolBar extends Component {
               {t('Aliases')}
             </Typography>
             {newAliases.map((label) => (label.length > 0 ? (
-                <Chip
-                  key={label}
-                  classes={{ root: classes.aliases }}
-                  label={label}
-                />
+              <Chip
+                key={label}
+                classes={{ root: classes.aliases }}
+                label={label}
+              />
             ) : (
               ''
             )))}

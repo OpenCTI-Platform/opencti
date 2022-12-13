@@ -12,14 +12,14 @@ export const up = async (next) => {
     const vocabularies = openVocabularies[category] ?? [];
     for (let i = 0; i < vocabularies.length; i += 1) {
       const { key, description } = vocabularies[i];
-      const data = { name: key, description, category, builtIn: builtInOv.includes(category) };
+      const data = { name: key, description: description ?? '', category, builtIn: builtInOv.includes(category) };
       await addVocabulary(context, SYSTEM_USER, data);
     }
     const { edges } = await elAttributeValues(context, SYSTEM_USER, category);
     const keys = edges.map(({ node: { value } }) => value);
-    for (let j = 0; index < keys.length; j += 1) {
+    for (let j = 0; j < keys.length; j += 1) {
       const name = keys[j];
-      await addVocabulary(context, SYSTEM_USER, { name, category });
+      await addVocabulary(context, SYSTEM_USER, { name, description: '', category });
     }
   }
   next();

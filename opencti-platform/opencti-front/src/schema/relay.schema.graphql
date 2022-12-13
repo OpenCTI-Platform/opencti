@@ -9002,6 +9002,7 @@ type VocabularyFieldDefinition {
 
 type VocabularyDefinition {
   key: VocabularyCategory!
+  description: String
   entity_types: [String!]!
   fields: [VocabularyFieldDefinition!]!
 }

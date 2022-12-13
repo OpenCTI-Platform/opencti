@@ -17,6 +17,7 @@ import Security from '../../../utils/Security';
 import { SETTINGS } from '../../../utils/hooks/useGranted';
 import StatusTemplates from './workflow/StatusTemplates';
 import Vocabularies from './Vocabularies';
+import VocabularyCategories from './VocabularyCategories';
 
 const Root = () => (
   <Switch>
@@ -95,6 +96,11 @@ const Root = () => (
       <BoundaryRoute
         exact
         path="/dashboard/settings/vocabularies/fields"
+        component={VocabularyCategories}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/vocabularies/category/:category"
         component={Vocabularies}
       />
     </Security>

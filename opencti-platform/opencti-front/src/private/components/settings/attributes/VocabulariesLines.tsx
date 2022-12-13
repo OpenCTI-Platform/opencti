@@ -22,7 +22,6 @@ export interface VocabulariesLinesProps {
   selectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
   deSelectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
   onToggleEntity: (entity: useVocabularyCategory_Vocabularynode$data, event: React.SyntheticEvent) => void,
-  selectAll: boolean,
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
 }
 
@@ -33,6 +32,7 @@ export const vocabulariesLinesQuery = graphql`
     $orderMode: OrderingMode
     $orderBy: VocabularyOrdering
     $filters: [VocabularyFiltering!]
+    $category: VocabularyCategory
   ) {
     ...VocabulariesLines_data
     @arguments(
@@ -41,6 +41,7 @@ export const vocabulariesLinesQuery = graphql`
       orderMode: $orderMode
       orderBy: $orderBy
       filters: $filters
+      category: $category
     )
   }
 `;
@@ -54,6 +55,7 @@ export const vocabulariesLinesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     orderBy: { type: "VocabularyOrdering", defaultValue: name }
     after: { type: "ID", defaultValue: "" }
+    category: { type: "VocabularyCategory" }
   )
   @refetchable(queryName: "VocabulariesLines_DataQuery")
   {
@@ -64,6 +66,7 @@ export const vocabulariesLinesFragment = graphql`
       orderMode: $orderMode
       orderBy: $orderBy
       after: $after
+      category: $category
     ) @connection(key: "Pagination_vocabularies") {
       edges {
         node {
@@ -87,7 +90,6 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
   selectedElements,
   deSelectedElements,
   onToggleEntity,
-  selectAll,
 }) => {
   const {
     data,
@@ -121,7 +123,6 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
       selectedElements={selectedElements}
       deSelectedElements={deSelectedElements}
       onToggleEntity={onToggleEntity}
-      selectAll={selectAll}
     />
   );
 };
