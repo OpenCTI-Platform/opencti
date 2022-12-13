@@ -20,12 +20,11 @@ import {
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   card: {
@@ -149,39 +148,6 @@ class RiskCardComponent extends Component {
     this.setState({ openMenu: isOpen });
   }
 
-  renderRiskLevels() {
-    const { node, t, classes } = this.props;
-    const risk = node?.risk_level;
-
-    if (risk === 'very_high') {
-      return Array.from({ length: 5 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Very High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryHigh}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'high') {
-      return Array.from({ length: 4 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('High')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.high}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'moderate') {
-      return Array.from({ length: 3 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Moderate')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.moderate}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'low') {
-      return Array.from({ length: 2 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.low}/></IconButton></RiskTooltip>);
-    }
-    if (risk === 'very_low') {
-      return Array.from({ length: 1 },
-        (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Very Low')}><IconButton style={{ padding: 0, minWidth: '1rem' }} key={index}><FiberManualRecordIcon className={classes.veryLow}/></IconButton></RiskTooltip>);
-    }
-
-    return <></>;
-  }
-
   render() {
     const {
       t,
@@ -208,7 +174,7 @@ class RiskCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          TouchRippleProps={ this.state.openMenu && { classes: { root: classes.buttonRipple } }}
+          TouchRippleProps={this.state.openMenu && { classes: { root: classes.buttonRipple } }}
           to={`/activities/risk_assessment/risks/${node?.id}`}
         >
           {/* <CardHeader
@@ -277,14 +243,16 @@ class RiskCardComponent extends Component {
                   {t('Risk')}
                 </Typography>
                 <div
-                // className={classes.bodyItem}
-                style={{
-                  display: 'flex',
-                  marginRight: '20px',
-                }}
-              >
-                {this.renderRiskLevels()}
-              </div>
+                  // className={classes.bodyItem}
+                  style={{
+                    display: 'flex',
+                    marginRight: '20px',
+                  }}
+                >
+                  <RiskLevel
+                    node={node}
+                  />
+                </div>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography

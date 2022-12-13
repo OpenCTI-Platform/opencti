@@ -164,7 +164,7 @@ class RiskObservationLineContainer extends Component {
                   </div>
                   <div className="clearfix" />
                   <Typography
-                    variant="h2"
+                    variant="h3"
                     style={{ color: 'white' }}
                   >
                     {observation.node.name && t(observation.node.name)}
