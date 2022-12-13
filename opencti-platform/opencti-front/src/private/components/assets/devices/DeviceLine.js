@@ -18,17 +18,13 @@ import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectL
 
 const styles = (theme) => ({
   item: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      background: theme.palette.dataView.selectedBackgroundColor,
+      borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+      borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+    },
     paddingLeft: 10,
     height: 50,
-    borderTop: `0.75px solid ${theme.palette.dataView.border}`,
-    borderBottom: `0.75px solid ${theme.palette.dataView.border}`,
-  },
-  selectedItem: {
-    paddingLeft: 10,
-    height: 50,
-    borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
-    borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
-    background: theme.palette.dataView.selectedBackgroundColor,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -70,10 +66,7 @@ class DeviceLineComponent extends Component {
     const operatingSystem = node.installed_operating_system?.vendor_name?.toLowerCase();
     return (
       <ListItem
-        classes={{
-          root: (selectAll || node.id in (selectedElements || {}))
-            ? classes.selectedItem : classes.item,
-        }}
+        classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}

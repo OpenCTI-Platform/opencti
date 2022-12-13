@@ -14,11 +14,10 @@ import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     marginTop: '2%',
-    padding: '1.5rem 1.5rem 2rem 1.5rem',
+    padding: '1.5rem',
     borderRadius: 6,
+    height: '70%',
   },
   link: {
     fontSize: '16px',
