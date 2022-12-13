@@ -246,7 +246,7 @@ const FeedCreation = (props) => {
   };
 
   const areAttributesValid = () => {
-    if (Object.keys(feedAttributes).length === 0) {
+    if (selectedTypes.length === 0 || Object.keys(feedAttributes).length === 0) {
       return false;
     }
     for (const n of Object.keys(feedAttributes)) {
@@ -632,7 +632,7 @@ const FeedCreation = (props) => {
                             ))}
                             <div className={classes.add}>
                               <Button
-                                disabled={!areAttributesValid()}
+                                disabled={selectedTypes.length === 0}
                                 variant="contained"
                                 color="secondary"
                                 size="small"
