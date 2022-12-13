@@ -11198,6 +11198,7 @@ union StixObjectOrStixRelationship =
   | StixCyberObservableRelationship
   | DataComponent
   | DataSource
+  | Case
 union StixCoreObjectOrStixCoreRelationship =
     #### Stix Core Objects
   ## Stix Domain Objects
@@ -11260,6 +11261,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | StixCoreRelationship
   | DataComponent
   | DataSource
+  | Case
 
 enum StixRelationshipsOrdering {
   entity_type

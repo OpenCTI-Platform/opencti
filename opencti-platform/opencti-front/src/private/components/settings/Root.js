@@ -18,6 +18,8 @@ import { SETTINGS } from '../../../utils/hooks/useGranted';
 import StatusTemplates from './workflow/StatusTemplates';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
+import Cases from './Cases';
+import RootCase from './cases/Root';
 
 const Root = () => (
   <Switch>
@@ -25,37 +27,46 @@ const Root = () => (
       <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/accesses"
-        render={() => <Redirect to="/dashboard/settings/accesses/roles" />}
+        path="/dashboard/settings/managements"
+        render={() => <Redirect to="/dashboard/settings/managements/roles" />}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/accesses/users"
+        path="/dashboard/settings/managements/users"
         component={Users}
       />
       <BoundaryRoute
-        path="/dashboard/settings/accesses/users/:userId"
+        path="/dashboard/settings/managements/users/:userId"
         component={RootUser}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/accesses/roles"
+        path="/dashboard/settings/managements/roles"
         component={Roles}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/accesses/groups"
+        path="/dashboard/settings/managements/groups"
         component={Groups}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/accesses/sessions"
+        path="/dashboard/settings/managements/sessions"
         component={Sessions}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/accesses/marking"
+        path="/dashboard/settings/managements/marking"
         component={MarkingDefinitions}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/managements/feedback"
+        component={Cases}
+      />
+      <BoundaryRoute
+        path="/dashboard/settings/managements/feedback/:caseId"
+        render={(routeProps) => <RootCase {...routeProps} />}
       />
       <BoundaryRoute
         exact

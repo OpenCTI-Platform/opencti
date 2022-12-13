@@ -105,7 +105,7 @@ class UserPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/settings/accesses/users');
+        this.props.history.push('/dashboard/settings/managements/users');
       },
     });
   }

@@ -4,7 +4,7 @@ import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import Slide from '@mui/material/Slide';
-import AccessesMenu from './AccessesMenu';
+import ManagementsMenu from './ManagementsMenu';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import SessionsList, { sessionsListQuery } from './SessionsList';
@@ -62,7 +62,7 @@ class Sessions extends Component {
     const { classes } = this.props;
     return (
       <div className={classes.container}>
-        <AccessesMenu />
+        <ManagementsMenu />
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput

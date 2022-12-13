@@ -46,21 +46,21 @@ const TopMenuSettings = ({ t, location, classes }) => (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <Button
         component={Link}
-        to="/dashboard/settings/accesses"
+        to="/dashboard/settings/managements"
         variant={
-          location.pathname.includes('/dashboard/settings/accesses')
+          location.pathname.includes('/dashboard/settings/managements')
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname.includes('/dashboard/settings/accesses')
+          location.pathname.includes('/dashboard/settings/managements')
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
       >
-        {t('Accesses')}
+        {t('Managements')}
       </Button>
     </Security>
     <Button

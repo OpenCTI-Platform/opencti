@@ -32,8 +32,8 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
   return listEntitiesPaginated<BasicStoreEntityGrouping>(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], opts);
 };
 
-export const addGrouping = async (context: AuthContext, user: AuthUser, channel: GroupingAddInput) => {
-  const created = await createEntity(context, user, channel, ENTITY_TYPE_CONTAINER_GROUPING);
+export const addGrouping = async (context: AuthContext, user: AuthUser, grouping: GroupingAddInput) => {
+  const created = await createEntity(context, user, grouping, ENTITY_TYPE_CONTAINER_GROUPING);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

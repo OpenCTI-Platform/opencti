@@ -13,7 +13,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
 import GroupCreation from './groups/GroupCreation';
-import AccessesMenu from './AccessesMenu';
+import ManagementsMenu from './ManagementsMenu';
 
 export const groupsSearchQuery = graphql`
   query GroupsSearchQuery($search: String) {
@@ -137,7 +137,7 @@ class Groups extends Component {
     };
     return (
       <div className={classes.container}>
-        <AccessesMenu />
+        <ManagementsMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <GroupCreation paginationOptions={paginationOptions} />
       </div>

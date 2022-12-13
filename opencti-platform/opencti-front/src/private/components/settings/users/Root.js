@@ -57,7 +57,7 @@ class RootUser extends Component {
                   <div>
                     <Route
                       exact
-                      path="/dashboard/settings/accesses/users/:userId"
+                      path="/dashboard/settings/managements/users/:userId"
                       render={(routeProps) => (
                         <User {...routeProps} user={props.user} />
                       )}

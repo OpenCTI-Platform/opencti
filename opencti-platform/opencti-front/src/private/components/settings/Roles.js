@@ -12,7 +12,7 @@ import {
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
-import AccessesMenu from './AccessesMenu';
+import ManagementsMenu from './ManagementsMenu';
 import RoleCreation from './roles/RoleCreation';
 
 export const rolesSearchQuery = graphql`
@@ -130,7 +130,7 @@ class Roles extends Component {
     };
     return (
       <div className={classes.container}>
-        <AccessesMenu />
+        <ManagementsMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <RoleCreation paginationOptions={paginationOptions} />
       </div>

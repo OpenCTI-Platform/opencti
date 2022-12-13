@@ -178,7 +178,7 @@ export const booleanAttributes = [
   'dep_enabled',
 ];
 export const dictAttributes = ['hashes', 'startup_info'];
-export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
+export const numericOrBooleanAttributes = () => [...numericAttributes, ...booleanAttributes];
 
 export const isJsonAttribute = (key: string): boolean => jsonAttributes.includes(key);
 export const isDictionaryAttribute = (key: string): boolean => dictAttributes.includes(key);

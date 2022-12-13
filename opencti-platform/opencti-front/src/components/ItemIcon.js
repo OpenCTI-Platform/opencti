@@ -25,7 +25,7 @@ import {
   TranslateOutlined,
   WorkspacesOutlined,
   StreamOutlined,
-  SourceOutlined,
+  SourceOutlined, ReceiptOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -162,6 +162,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <Launch style={style} fontSize={fontSize} role="img" />;
     case 'Artifact':
       return <ArchiveOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Case':
+      return <ReceiptOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

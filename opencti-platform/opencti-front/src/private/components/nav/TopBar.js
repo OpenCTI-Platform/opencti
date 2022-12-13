@@ -74,6 +74,7 @@ import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
 import TopMenuDataComponent from './TopMenuDataComponent';
 import TopMenuDataSource from './TopMenuDataSource';
+import CaseCreation from '../settings/cases/CaseCreation';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -151,6 +152,7 @@ const TopBar = ({
     };
   });
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
+  const [openDrawer, setOpenDrawer] = useState(false);
   const handleOpenMenu = (event) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
@@ -173,6 +175,15 @@ const TopBar = ({
       history.push(`/dashboard/search/${encodeKey}`);
     }
   };
+  const handleOpenDrawer = () => {
+    setOpenDrawer(true);
+    handleCloseMenu();
+  };
+  const handleCloseDrawer = () => {
+    setOpenDrawer(false);
+    handleCloseMenu();
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -483,11 +494,20 @@ const TopBar = ({
               >
                 {t('Profile')}
               </MenuItem>
+              <MenuItem
+                onClick={handleOpenDrawer}
+                >
+                {t('Feedback')}
+              </MenuItem>
               <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
             </Menu>
           </div>
         </div>
       </Toolbar>
+      <CaseCreation
+        openDrawer={openDrawer}
+        handleCloseDrawer={handleCloseDrawer}
+      />
     </AppBar>
   );
 };
