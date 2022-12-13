@@ -85,7 +85,7 @@ const CountriesLines: FunctionComponent<CountriesLinesProps> = ({ setNumberOfEle
     linesQuery: countriesLinesQuery,
     linesFragment: countriesLinesFragment,
     queryRef,
-    nodePath: ['countries', 'edges'],
+    nodePath: ['countries', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (

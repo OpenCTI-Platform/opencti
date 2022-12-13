@@ -82,7 +82,7 @@ const DataComponentsLines: FunctionComponent<DataComponentsLinesProps> = ({ data
     linesQuery: dataComponentsLinesQuery,
     linesFragment: dataComponentsLinesFragment,
     queryRef,
-    nodePath: ['dataComponents', 'edges'],
+    nodePath: ['dataComponents', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 

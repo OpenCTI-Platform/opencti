@@ -10,7 +10,7 @@ interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
   queryRef: PreloadedQuery<QueryType>
   linesQuery: GraphQLTaggedNode
   linesFragment: GraphQLTaggedNode
-  nodePath: string[]
+  nodePath?: string[]
   setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
@@ -29,9 +29,9 @@ const usePreloadedPaginationFragment = <QueryType extends OperationType, Fragmen
     isLoadingNext,
   } = usePaginationFragment<QueryType, FragmentKey>(linesFragment, queryData);
   useEffect(() => {
-    const deep_value = nodePath.reduce((a, v) => a[v as keyof object], data as object) as unknown[];
+    const deep_value = (nodePath ?? []).reduce((a, v) => a[v as keyof object], data) as number;
     if (setNumberOfElements && !!deep_value) {
-      setNumberOfElements(numberFormat(deep_value.length));
+      setNumberOfElements(numberFormat(deep_value));
     }
   }, [data]);
 

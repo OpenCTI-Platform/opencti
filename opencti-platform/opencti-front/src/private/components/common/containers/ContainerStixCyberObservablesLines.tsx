@@ -133,7 +133,7 @@ ContainerStixCyberObservablesLinesProps
     linesQuery: containerStixCyberObservablesLinesQuery,
     linesFragment: ContainerStixCyberObservablesLinesFragment,
     queryRef,
-    nodePath: ['container', 'objects', 'edges'],
+    nodePath: ['container', 'objects', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 

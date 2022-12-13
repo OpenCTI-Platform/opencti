@@ -90,7 +90,6 @@ const AddDataSourcesLines: FunctionComponent<AddDataSourcesLinesContainerProps> 
     linesQuery: addDataSourcesLinesQuery,
     linesFragment: addDataSourcesLinesFragment,
     queryRef,
-    nodePath: ['dataSources', 'edges'],
   });
 
   const [commit] = useMutation(addDataSourcesLinesMutationAdd);

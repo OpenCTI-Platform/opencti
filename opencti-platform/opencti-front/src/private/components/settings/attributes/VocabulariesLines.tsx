@@ -98,7 +98,7 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
     queryRef,
     linesQuery: vocabulariesLinesQuery,
     linesFragment: vocabulariesLinesFragment,
-    nodePath: ['vocabularies', 'edges'],
+    nodePath: ['vocabularies', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 
