@@ -516,7 +516,7 @@ const riskResolvers = {
 
       // Handle 'dynamic' property editing separately
       for (let editItem of input) {
-        let parentIri, iriTemplate, predicateMap;
+        let parentIri, iriTemplate, classIri, predicateMap;
         if (editItem.key === 'poam_id') {
           // remove edit item so it doesn't get processed again
           input = input.filter(item => item.key != 'poam_id');
@@ -535,6 +535,7 @@ const riskResolvers = {
             let index = result.objectType.indexOf('poam-item');
             parentIri = result.parentIri[index];
             iriTemplate = objectMap[result.objectType[index]].iriTemplate;
+            classIri = objectMap[result.objectType[index]].classIri;
             predicateMap = objectMap[result.objectType[index]].predicateMap;
             break;
           }
@@ -542,7 +543,7 @@ const riskResolvers = {
           let newInput = [editItem];
           const query = updateQuery(
             parentIri,
-            iriTemplate,
+            classIri,
             newInput,
             predicateMap
           );
