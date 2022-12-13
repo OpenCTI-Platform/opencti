@@ -7,104 +7,116 @@ import {
 } from './ContainerStixCyberObservableLine';
 import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
-import {
-  StixCyberObservableLine_node$data,
-} from '../../observations/stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
+import { StixCyberObservableLine_node$data } from '../../observations/stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import {
   ContainerStixCyberObservablesLinesQuery,
   ContainerStixCyberObservablesLinesQuery$variables,
 } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  ContainerStixCyberObservablesLines_container$key,
-} from './__generated__/ContainerStixCyberObservablesLines_container.graphql';
+import { ContainerStixCyberObservablesLines_container$key } from './__generated__/ContainerStixCyberObservablesLines_container.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const nbOfRowsToLoad = 50;
 
 export const containerStixCyberObservablesLinesQuery = graphql`
-    query ContainerStixCyberObservablesLinesQuery(
-        $id: String!
-        $types: [String]
-        $search: String
-        $count: Int
-        $cursor: ID
-        $orderBy: StixObjectOrStixRelationshipsOrdering
-        $orderMode: OrderingMode
-        $filters: [StixObjectOrStixRelationshipsFiltering]
-    ) {
-            ...ContainerStixCyberObservablesLines_container
-            @arguments(
-                types: $types
-                search: $search
-                count: $count
-                cursor: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-                filters: $filters
-            )
-    }
+  query ContainerStixCyberObservablesLinesQuery(
+    $id: String!
+    $types: [String]
+    $search: String
+    $count: Int
+    $cursor: ID
+    $orderBy: StixObjectOrStixRelationshipsOrdering
+    $orderMode: OrderingMode
+    $filters: [StixObjectOrStixRelationshipsFiltering]
+  ) {
+    ...ContainerStixCyberObservablesLines_container
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 const ContainerStixCyberObservablesLinesFragment = graphql`
-    fragment ContainerStixCyberObservablesLines_container on Query
-    @argumentDefinitions(
-        types: { type: "[String]" }
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: {
-            type: "StixObjectOrStixRelationshipsOrdering"
-            defaultValue: name
-        }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
-    ) @refetchable(queryName: "ContainerStixCyberObservablesLinesRefetchQuery") {
-    container (id: $id) {
-        id
-        objects(
-            types: $types
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_objects") {
-            edges {
-                types
-                node {
-                  ... on StixCyberObservable {
-                    id
-                  }
-                  ...ContainerStixCyberObservableLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
-        }}
+  fragment ContainerStixCyberObservablesLines_container on Query
+  @argumentDefinitions(
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+      type: "StixObjectOrStixRelationshipsOrdering"
+      defaultValue: name
     }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
+  )
+  @refetchable(queryName: "ContainerStixCyberObservablesLinesRefetchQuery") {
+    container(id: $id) {
+      id
+      objects(
+        types: $types
+        search: $search
+        first: $count
+        after: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      ) @connection(key: "Pagination_objects") {
+        edges {
+          types
+          node {
+            ... on StixCyberObservable {
+              id
+            }
+            ...ContainerStixCyberObservableLine_node
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+          globalCount
+        }
+      }
+    }
+  }
 `;
 
 interface ContainerStixCyberObservablesLinesProps {
-  dataColumns: DataColumns,
-  paginationOptions: ContainerStixCyberObservablesLinesQuery$variables,
-  openExports?: boolean,
-  onToggleEntity: (entity: StixCyberObservableLine_node$data, event: React.SyntheticEvent) => void,
-  selectedElements: Record<string, StixCyberObservableLine_node$data>,
-  deSelectedElements: Record<string, StixCyberObservableLine_node$data>,
-  selectAll: boolean,
-  setNumberOfElements: (value: { number?: number; symbol?: string; original?: number; }) => void,
-  onTypesChange: (type: string) => void,
-  queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>,
-  setSelectedElements: (selectedElements: Record<string, StixCyberObservableLine_node$data>) => void,
+  dataColumns: DataColumns;
+  paginationOptions: ContainerStixCyberObservablesLinesQuery$variables;
+  openExports?: boolean;
+  onToggleEntity: (
+    entity:
+    | StixCyberObservableLine_node$data
+    | Array<StixCyberObservableLine_node$data>,
+    event: React.SyntheticEvent,
+    forceRemove: Array<StixCyberObservableLine_node$data>
+  ) => void;
+  selectedElements: Record<string, StixCyberObservableLine_node$data>;
+  deSelectedElements: Record<string, StixCyberObservableLine_node$data>;
+  selectAll: boolean;
+  setNumberOfElements: (value: {
+    number?: number;
+    symbol?: string;
+    original?: number;
+  }) => void;
+  onTypesChange: (type: string) => void;
+  queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>;
+  setSelectedElements: (
+    selectedElements: Record<string, StixCyberObservableLine_node$data>
+  ) => void;
 }
 
-const ContainerStixCyberObservablesLines: FunctionComponent<ContainerStixCyberObservablesLinesProps> = ({
+const ContainerStixCyberObservablesLines: FunctionComponent<
+ContainerStixCyberObservablesLinesProps
+> = ({
   dataColumns,
   paginationOptions,
   openExports,
@@ -117,12 +129,10 @@ const ContainerStixCyberObservablesLines: FunctionComponent<ContainerStixCyberOb
   queryRef,
   setSelectedElements,
 }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<ContainerStixCyberObservablesLinesQuery, ContainerStixCyberObservablesLines_container$key>({
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+  ContainerStixCyberObservablesLinesQuery,
+  ContainerStixCyberObservablesLines_container$key
+  >({
     linesQuery: containerStixCyberObservablesLinesQuery,
     linesFragment: ContainerStixCyberObservablesLinesFragment,
     queryRef,

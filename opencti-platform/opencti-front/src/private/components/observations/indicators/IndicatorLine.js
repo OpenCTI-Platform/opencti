@@ -60,6 +60,8 @@ class IndicatorLineComponent extends Component {
       selectedElements,
       deSelectedElements,
       selectAll,
+      onToggleShiftEntity,
+      index,
     } = this.props;
     return (
       <ListItem
@@ -72,7 +74,10 @@ class IndicatorLineComponent extends Component {
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
           style={{ minWidth: 40 }}
-          onClick={onToggleEntity.bind(this, node)}
+          onClick={(event) => (event.shiftKey
+            ? onToggleShiftEntity(index, node, event)
+            : onToggleEntity(node, event))
+          }
         >
           <Checkbox
             edge="start"

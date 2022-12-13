@@ -46,18 +46,19 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StixCyberObservableLineComponent = (props) => {
+const StixCyberObservableLineComponent = ({
+  dataColumns,
+  node,
+  onLabelClick,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleShiftEntity,
+  index,
+}) => {
   const classes = useStyles();
   const { t, nsdt } = useFormatter();
-  const {
-    dataColumns,
-    node,
-    onLabelClick,
-    onToggleEntity,
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-  } = props;
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -71,7 +72,10 @@ const StixCyberObservableLineComponent = (props) => {
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => onToggleEntity(node, event)}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, node, event)
+          : onToggleEntity(node, event))
+        }
       >
         <Checkbox
           edge="start"

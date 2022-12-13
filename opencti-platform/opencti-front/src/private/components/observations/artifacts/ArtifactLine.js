@@ -59,6 +59,8 @@ class ArtifactLineComponent extends Component {
       selectedElements,
       deSelectedElements,
       selectAll,
+      onToggleShiftEntity,
+      index,
     } = this.props;
     const file = node.importFiles.edges.length > 0
       ? node.importFiles.edges[0].node
@@ -74,7 +76,10 @@ class ArtifactLineComponent extends Component {
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
           style={{ minWidth: 40 }}
-          onClick={onToggleEntity.bind(this, node)}
+          onClick={(event) => (event.shiftKey
+            ? onToggleShiftEntity(index, node, event)
+            : onToggleEntity(node, event))
+          }
         >
           <Checkbox
             edge="start"

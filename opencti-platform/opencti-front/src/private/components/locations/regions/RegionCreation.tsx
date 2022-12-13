@@ -161,7 +161,7 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a Region')}</Typography>
+          <Typography variant="h6">{t('Create a region')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik<RegionAddInput>

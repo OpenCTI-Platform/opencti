@@ -99,11 +99,33 @@ class StixDomainObjectIndicators extends Component {
     this.setState({ observableTypes: [] }, () => this.saveView());
   }
 
-  handleToggleSelectEntity(entity, event) {
+  handleToggleSelectEntity(entity, event, forceRemove = []) {
     event.stopPropagation();
     event.preventDefault();
     const { selectedElements, deSelectedElements, selectAll } = this.state;
-    if (entity.id in (selectedElements || {})) {
+    if (Array.isArray(entity)) {
+      const currentIds = R.values(selectedElements).map((n) => n.id);
+      const givenIds = entity.map((n) => n.id);
+      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
+      let newSelectedElements = {
+        ...selectedElements,
+        ...R.indexBy(
+          R.prop('id'),
+          entity.filter((n) => addedIds.includes(n.id)),
+        ),
+      };
+      if (forceRemove.length > 0) {
+        newSelectedElements = R.omit(
+          forceRemove.map((n) => n.id),
+          newSelectedElements,
+        );
+      }
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+        deSelectedElements: null,
+      });
+    } else if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
       this.setState({
         selectAll: false,

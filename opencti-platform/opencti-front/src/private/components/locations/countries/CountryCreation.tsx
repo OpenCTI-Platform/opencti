@@ -161,7 +161,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a Country')}</Typography>
+          <Typography variant="h6">{t('Create a country')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik<CountryAddInput>

@@ -48,6 +48,8 @@ const LabelLineComponent = ({
   selectedElements,
   deSelectedElements,
   selectAll,
+  onToggleShiftEntity,
+  index,
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
@@ -56,7 +58,8 @@ const LabelLineComponent = ({
       classes={{ root: classes.item }}
       divider={true}
       button={true}
-      onClick={() => onToggleEntity(node)}
+      onClick={(event) => (event.shiftKey ? onToggleShiftEntity(index, node) : onToggleEntity(node))
+      }
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}

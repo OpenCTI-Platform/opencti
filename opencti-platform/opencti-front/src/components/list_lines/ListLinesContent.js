@@ -32,10 +32,7 @@ class ListLinesContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const diff = !R.equals(
-      this.props.dataList,
-      prevProps.dataList,
-    );
+    const diff = !R.equals(this.props.dataList, prevProps.dataList);
     const diffBookmark = R.symmetricDifferenceWith(
       (x, y) => x.node.id === y.node.id,
       this.props.bookmarkList || [],
@@ -95,6 +92,40 @@ class ListLinesContent extends Component {
     return !this.props.hasMore() || index < this.props.dataList.length;
   }
 
+  _onRowShiftClick(currentIndex, currentEntity, event = null) {
+    const { dataList, onToggleEntity, selectedElements } = this.props;
+    if (selectedElements && !R.isEmpty(selectedElements)) {
+      // Find the indexes of the first and last selected entities
+      let firstIndex = R.findIndex(
+        (n) => n.node.id === R.head(R.values(selectedElements)).id,
+        dataList,
+      );
+      if (currentIndex > firstIndex) {
+        let entities = [];
+        while (firstIndex <= currentIndex) {
+          entities = [...entities, dataList[firstIndex].node];
+          // eslint-disable-next-line no-plusplus
+          firstIndex++;
+        }
+        const forcedRemove = R.values(selectedElements).filter(
+          (n) => !entities.map((o) => o.id).includes(n.id),
+        );
+        return onToggleEntity(entities, event, forcedRemove);
+      }
+      let entities = [];
+      while (firstIndex >= currentIndex) {
+        entities = [...entities, dataList[firstIndex].node];
+        // eslint-disable-next-line no-plusplus
+        firstIndex--;
+      }
+      const forcedRemove = R.values(selectedElements).filter(
+        (n) => !entities.map((o) => o.id).includes(n.id),
+      );
+      return onToggleEntity(entities, event, forcedRemove);
+    }
+    return onToggleEntity(currentEntity, event);
+  }
+
   _rowRenderer({ index, key, style }) {
     const {
       dataColumns,
@@ -121,9 +152,11 @@ class ListLinesContent extends Component {
           {/* TODO remove this when all components are pure function without compose() */}
           {!React.isValidElement(DummyLineComponent) ? (
             <DummyLineComponent dataColumns={dataColumns} />
-          ) : React.cloneElement(DummyLineComponent, {
-            dataColumns,
-          })}
+          ) : (
+            React.cloneElement(DummyLineComponent, {
+              dataColumns,
+            })
+          )}
         </div>
       );
     }
@@ -148,6 +181,8 @@ class ListLinesContent extends Component {
             onToggleEntity={onToggleEntity}
             connectionKey={connectionKey}
             isTo={isTo}
+            onToggleShiftEntity={this._onRowShiftClick.bind(this)}
+            index={index}
           />
         ) : (
           React.cloneElement(LineComponent, {
@@ -166,7 +201,10 @@ class ListLinesContent extends Component {
             onToggleEntity,
             connectionKey,
             isTo,
-          }))}
+            onToggleShiftEntity: this._onRowShiftClick.bind(this),
+            index,
+          })
+        )}
       </div>
     );
   }

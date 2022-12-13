@@ -64,6 +64,8 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
       selectedElements,
       deSelectedElements,
       selectAll,
+      onToggleShiftEntity,
+      index,
     } = this.props;
     const remoteNode = node.from ? node.from : node.to;
     let link = null;
@@ -77,7 +79,10 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         button={true}
-        onClick={onToggleEntity.bind(this, node)}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, node)
+          : onToggleEntity(node))
+        }
         selected={node.id in (selectedElements || {})}
       >
         <ListItemIcon
@@ -91,7 +96,6 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
               || node.id in (selectedElements || {})
             }
             disableRipple={true}
-            onChange={onToggleEntity.bind(this, node)}
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3650,7 +3654,12 @@ class RelationshipsStixCoreRelationshipLineDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <IconButton aria-label="Go to" component={Link} disabled={true} size="large">
+          <IconButton
+            aria-label="Go to"
+            component={Link}
+            disabled={true}
+            size="large"
+          >
             <VisibilityOutlined />
           </IconButton>
         </ListItemSecondaryAction>

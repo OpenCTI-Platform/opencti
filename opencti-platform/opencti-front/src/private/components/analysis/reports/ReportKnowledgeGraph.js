@@ -1579,7 +1579,16 @@ const ReportKnowledgeGraph = createFragmentContainer(
               ... on Channel {
                 name
               }
+              ... on Narrative {
+                name
+              }
               ... on Language {
+                name
+              }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
                 name
               }
               ... on StixCyberObservable {

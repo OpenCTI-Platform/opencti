@@ -63,6 +63,8 @@ const SearchStixCoreObjectLineComponent = ({
   selectedElements,
   deSelectedElements,
   selectAll,
+  onToggleShiftEntity,
+  index,
 }) => {
   const classes = useStyles();
   const { t, fd, n } = useFormatter();
@@ -78,7 +80,10 @@ const SearchStixCoreObjectLineComponent = ({
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => onToggleEntity(node, event)}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, node, event)
+          : onToggleEntity(node, event))
+        }
       >
         <Checkbox
           edge="start"

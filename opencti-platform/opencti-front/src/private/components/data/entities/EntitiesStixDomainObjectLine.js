@@ -57,6 +57,8 @@ const EntitiesStixDomainObjectLineComponent = ({
   selectedElements,
   deSelectedElements,
   selectAll,
+  onToggleShiftEntity,
+  index,
 }) => {
   const classes = useStyles();
   const { t, fd } = useFormatter();
@@ -66,7 +68,8 @@ const EntitiesStixDomainObjectLineComponent = ({
       classes={{ root: classes.item }}
       divider={true}
       button={true}
-      onClick={() => onToggleEntity(node)}
+      onClick={(event) => (event.shiftKey ? onToggleShiftEntity(index, node) : onToggleEntity(node))
+      }
       selected={node.id in (selectedElements || {})}
     >
       <ListItemIcon

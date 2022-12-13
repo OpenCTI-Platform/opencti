@@ -38,8 +38,11 @@ import {
   LanguageOutlined,
   LinkOffOutlined,
   TransformOutlined,
+  ContentCopyOutlined,
+  AutoFixHighOutlined,
+  MergeOutlined,
 } from '@mui/icons-material';
-import { AutoFix, ContentCopy, CloudRefresh, Label, Merge } from 'mdi-material-ui';
+import { CloudRefresh, Label } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -67,7 +70,10 @@ import { defaultValue } from '../../../utils/Graph';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
@@ -509,7 +515,11 @@ class ToolBar extends Component {
   titleCopy() {
     const { t } = this.props;
     if (this.props.numberOfSelectedElements > maxNumberOfObservablesToCopy) {
-      return `${t('Copy disabled: too many selected elements (maximum number of elements for a copy: ') + maxNumberOfObservablesToCopy})`;
+      return `${
+        t(
+          'Copy disabled: too many selected elements (maximum number of elements for a copy: ',
+        ) + maxNumberOfObservablesToCopy
+      })`;
     }
     return t('Copy');
   }
@@ -1205,7 +1215,7 @@ class ToolBar extends Component {
               aria-label="clear"
               disabled={numberOfSelectedElements === 0 || this.state.processing}
               onClick={handleClearSelectedElements.bind(this)}
-              size="large"
+              size="small"
             >
               <ClearOutlined fontSize="small" />
             </IconButton>
@@ -1222,9 +1232,9 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleOpenUpdate.bind(this)}
                   color="primary"
-                  size="large"
+                  size="small"
                 >
-                  <BrushOutlined />
+                  <BrushOutlined fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -1245,27 +1255,32 @@ class ToolBar extends Component {
                         disabled={buttonDisable}
                         onClick={this.handleOpenRescan.bind(this)}
                         color="primary"
-                        size="large"
+                        size="small"
                       >
-                        <AutoFix />
+                        <AutoFixHighOutlined fontSize="small" />
                       </IconButton>
                     </span>
                   </Tooltip>
                 );
               }}
             </UserContext.Consumer>
-            { this.props.handleCopy && <Tooltip title={titleCopy}>
-              <span>
-                <IconButton
-                  aria-label="copy"
-                  disabled={numberOfSelectedElements > maxNumberOfObservablesToCopy}
-                  onClick={this.props.handleCopy}
-                  color="primary"
-                  size="large">
-                  <ContentCopy />
-                </IconButton>
-              </span>
-            </Tooltip>}
+            {this.props.handleCopy && (
+              <Tooltip title={titleCopy}>
+                <span>
+                  <IconButton
+                    aria-label="copy"
+                    disabled={
+                      numberOfSelectedElements > maxNumberOfObservablesToCopy
+                    }
+                    onClick={this.props.handleCopy}
+                    color="primary"
+                    size="small"
+                  >
+                    <ContentCopyOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
             <Tooltip title={t('Enrichment')}>
               <span>
                 <IconButton
@@ -1273,9 +1288,9 @@ class ToolBar extends Component {
                   disabled={enrichDisable || this.state.processing}
                   onClick={this.handleOpenEnrichment.bind(this)}
                   color="primary"
-                  size="large"
+                  size="small"
                 >
-                  <CloudRefresh />
+                  <CloudRefresh fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -1286,9 +1301,9 @@ class ToolBar extends Component {
                   disabled={promoteDisable || this.state.processing}
                   onClick={this.handleOpenPromote.bind(this)}
                   color="primary"
-                  size="large"
+                  size="small"
                 >
-                  <TransformOutlined />
+                  <TransformOutlined fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -1306,9 +1321,9 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleOpenMerge.bind(this)}
                   color="primary"
-                  size="large"
+                  size="small"
                 >
-                  <Merge />
+                  <MergeOutlined fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -1324,9 +1339,9 @@ class ToolBar extends Component {
                     }
                     onClick={this.handleLaunchRemove.bind(this)}
                     color="primary"
-                    size="large"
+                    size="small"
                   >
-                    <LinkOffOutlined />
+                    <LinkOffOutlined fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -1342,9 +1357,9 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleLaunchDelete.bind(this)}
                   color="primary"
-                  size="large"
+                  size="small"
                 >
-                  <DeleteOutlined />
+                  <DeleteOutlined fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -1593,7 +1608,7 @@ class ToolBar extends Component {
                     aria-label="Delete"
                     className={classes.stepCloseButton}
                     onClick={this.handleRemoveStep.bind(this, i)}
-                    size="large"
+                    size="small"
                   >
                     <CancelOutlined fontSize="small" />
                   </IconButton>
