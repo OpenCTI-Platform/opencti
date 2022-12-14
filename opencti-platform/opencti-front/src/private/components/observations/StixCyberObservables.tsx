@@ -25,7 +25,6 @@ import {
 import { QueryRenderer } from '../../../relay/environment';
 import useCopy from '../../../utils/hooks/useCopy';
 import { StixCyberObservablesLinesSearchQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
-import { convertFilters } from '../../../utils/ListParameters';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
@@ -77,14 +76,10 @@ const StixCyberObservables: FunctionComponent = () => {
   Record<string, StixCyberObservableLine_node$data>
   >({});
 
-  const convertedFilters = convertFilters(
-    viewStorage.filters,
-  ) as unknown as Filters;
   const paginationOptions = localStorageToPaginationOptions<StixCyberObservablesLinesPaginationQuery$variables>(
     {
       ...viewStorage,
       count: 25,
-      filters: convertedFilters,
     },
   );
 
@@ -233,16 +228,15 @@ const StixCyberObservables: FunctionComponent = () => {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
         - Object.keys(deSelectedElements).length;
     }
-    let finalFilters = convertedFilters;
-    const finalType = () => {
-      if (types && types.length > 0) {
-        return types.map((n) => ({ id: n, value: n }));
-      }
-      return [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }];
-    };
-    finalFilters = {
-      ...finalFilters,
-      entity_type: finalType(),
+    let finalType;
+    if (types && types.length > 0) {
+      finalType = types.map((n) => ({ id: n, value: n }));
+    } else {
+      finalType = [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }];
+    }
+    const finalFilters = {
+      ...viewStorage.filters,
+      entity_type: finalType,
     };
     return (
       <UserContext.Consumer>
