@@ -32,7 +32,6 @@ import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-  BASE_TYPE_RELATION,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER
 } from '../schema/general';
@@ -141,7 +140,7 @@ const createSeeMiddleware = () => {
     const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
     return R.find(capabilityControl, user.capabilities || []) !== undefined;
   };
-  const resolveMissingReferences = async (context, req, streamFilters, missingRefs, cache) => {
+  const resolveMissingReferences = async (context, req, missingRefs, cache) => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     const missingElements = [];
     if (refsToResolve.length > 0) {
@@ -160,7 +159,7 @@ const createSeeMiddleware = () => {
       const resolvedElements = await stixLoadByIds(context, req.session.user, uniqueIds);
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
-        const newMissing = await resolveMissingReferences(context, req, streamFilters, parentRefs, cache);
+        const newMissing = await resolveMissingReferences(context, req, parentRefs, cache);
         missingElements.unshift(...newMissing);
       }
     }
@@ -285,13 +284,6 @@ const createSeeMiddleware = () => {
       res.status(500).end();
     }
   };
-  const isFullVisibleElement = (instance) => {
-    const isMissingRelation = instance.base_type === BASE_TYPE_RELATION;
-    if (isMissingRelation) {
-      return instance.from && instance.to;
-    }
-    return true;
-  };
   const isInstanceMatchFilters = async (context, instance, filters, filterCache) => {
     // Pre-filter transformation to handle specific frontend format
     const adaptedFilters = adaptFiltersFrontendFormat(filters);
@@ -410,14 +402,13 @@ const createSeeMiddleware = () => {
     }
     return true;
   };
-  const resolveAndPublishMissingRefs = async (context, cache, channel, req, streamFilters, eventId, stixData) => {
+  const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
-    const missingElements = await resolveMissingReferences(context, req, streamFilters, refs, cache);
+    const missingElements = await resolveMissingReferences(context, req, refs, cache);
     for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
       const missingRef = missingElements[missingIndex];
       const missingInstance = await storeLoadByIdWithRefs(context, req.session.user, missingRef);
-      // missingElements is already cache filtered
-      if (isFullVisibleElement(missingInstance)) {
+      if (missingInstance) {
         const missingData = convertStoreToStix(missingInstance);
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
@@ -430,7 +421,7 @@ const createSeeMiddleware = () => {
   };
   const resolveAndPublishDependencies = async (context, noDependencies, cache, channel, req, streamFilters, eventId, stix) => {
     // Resolving REFS
-    await resolveAndPublishMissingRefs(context, cache, channel, req, streamFilters, eventId, stix);
+    await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
     // Resolving CORE RELATIONS
     if (noDependencies === false) {
       const allRelCallback = async (relations) => {
@@ -438,10 +429,10 @@ const createSeeMiddleware = () => {
         for (let relIndex = 0; relIndex < notCachedRelations.length; relIndex += 1) {
           const relation = notCachedRelations[relIndex];
           const missingRelation = await storeLoadByIdWithRefs(context, req.session.user, relation.id);
-          if (isFullVisibleElement(missingRelation)) {
+          if (missingRelation) {
             const stixRelation = convertStoreToStix(missingRelation);
             // Resolve refs
-            await resolveAndPublishMissingRefs(context, cache, channel, req, streamFilters, eventId, stixRelation);
+            await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stixRelation);
             // Publish relations
             const message = generateCreateMessage(missingRelation);
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
@@ -506,6 +497,41 @@ const createSeeMiddleware = () => {
     }
     client.sendHeartbeat(eventId);
   };
+  const convertParameterToDate = (param) => {
+    if (!param) {
+      return undefined;
+    }
+    if (param === '0' || param === '0-0') {
+      return FROM_START_STR;
+    }
+    const isFromEventFormat = param && param.includes('-') && param.split('-').length === 2;
+    if (isFromEventFormat) {
+      const [timestamp] = param.split('-');
+      return utcDate(parseInt(timestamp, 10)).toISOString();
+    }
+    const streamStartDate = utcDate(param);
+    if (streamStartDate.isValid()) {
+      return streamStartDate.toISOString();
+    }
+    return undefined;
+  };
+  const convertParameterToStreamId = (param) => {
+    if (!param) {
+      return undefined;
+    }
+    if (param === '0' || param === '0-0') {
+      return '0-0';
+    }
+    const isFromEventFormat = param && param.includes('-') && param.split('-').length === 2;
+    if (isFromEventFormat) {
+      return param;
+    }
+    const startFrom = utcDate(param);
+    if (startFrom.isValid()) {
+      return `${startFrom.valueOf()}-0`;
+    }
+    return undefined;
+  };
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
     try {
@@ -515,13 +541,10 @@ const createSeeMiddleware = () => {
       // If stream is starting after, we need to use the main database to catchup
       const context = executionContext('live_stream');
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
-      let startFrom = (paramStartFrom === '0' || paramStartFrom === '0-0') ? FROM_START_STR : paramStartFrom;
-      // Also handle event id with redis format stamp or stamp-index
-      if (startFrom && startFrom.includes('-') && startFrom.split('-').length === 2) {
-        const [timestamp] = startFrom.split('-');
-        startFrom = utcDate(parseInt(timestamp, 10)).toISOString();
-      }
-      const recoverTo = extractQueryParameter(req, 'recover') || req.headers.recover || req.headers['recover-date'];
+      const startIsoDate = convertParameterToDate(paramStartFrom);
+      const startStreamId = convertParameterToStreamId(paramStartFrom);
+      const recoverToParameter = extractQueryParameter(req, 'recover') || req.headers.recover || req.headers['recover-date'];
+      const recoverTo = convertParameterToDate(recoverToParameter);
       const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
       const publishDependencies = noDependencies === false;
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
@@ -582,8 +605,8 @@ const createSeeMiddleware = () => {
       const { channel, client } = createSseChannel(req, res);
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
-      if (isNotEmptyField(recoverTo) && isEmptyField(startFrom)) {
-        throw UnsupportedError('Recovery mode is only possible with a start date.');
+      if (isNotEmptyField(recoverTo) && isEmptyField(startIsoDate)) {
+        throw UnsupportedError('Recovery mode is only possible without a start date.');
       }
       // Init stream and broadcasting
       const userEmail = user.user_email;
@@ -635,7 +658,7 @@ const createSeeMiddleware = () => {
                   }
                   // At least one container is matching the filter, so publishing the event
                   if (isContainerMatching) {
-                    await resolveAndPublishMissingRefs(context, cache, channel, req, streamFilters, eventId, stix);
+                    await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
                     client.sendEvent(eventId, event, eventData);
                   }
                 }
@@ -665,6 +688,10 @@ const createSeeMiddleware = () => {
         await wait(channel.delay);
       });
       await initBroadcasting(req, res, client, processor);
+      // After recovery start the stream listening
+      const startMessage = startStreamId ? `${startStreamId} / ${startIsoDate}` : 'now';
+      const recoveringMessage = recoverTo ? ` - recovering to ${recoverTo}` : '';
+      logApp.info(`[STREAM] Listening stream ${id} from ${startMessage}${recoveringMessage}`);
       // Start recovery if needed
       if (isNotEmptyField(recoverTo)) {
         // noinspection UnnecessaryLocalVariableJS
@@ -673,7 +700,7 @@ const createSeeMiddleware = () => {
             const { internal_id: elemId, standard_id: standardId } = elements[index];
             if (!cache.has(standardId)) { // With dependency resolving, id can be added in a previous iteration
               const instance = await storeLoadByIdWithRefs(context, user, elemId);
-              if (isFullVisibleElement(instance)) {
+              if (instance) {
                 const stixData = convertStoreToStix(instance);
                 const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
                 const eventId = `${utcDate(stixUpdatedAt).toDate().getTime()}-0`;
@@ -697,19 +724,12 @@ const createSeeMiddleware = () => {
           await wait(channel.delay);
           return channel.connected();
         };
-        const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startFrom, before: recoverTo });
+        const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startIsoDate, before: recoverTo });
         queryOptions.callback = queryCallback;
         await elList(context, user, queryIndices, queryOptions);
       }
-      // After recovery start the stream listening
-      let streamStartDate = utcDate(startFrom);
-      if (recoverTo && utcDate(recoverTo).isAfter(streamStartDate)) {
-        streamStartDate = utcDate(recoverTo);
-      }
-      logApp.info(`[STREAM] Listening stream ${id} from ${streamStartDate ?? 'live'}`);
-      const startEventTime = streamStartDate && streamStartDate.isValid() ? `${streamStartDate.unix() * 1000}-0` : 'live';
       // noinspection ES6MissingAwait
-      processor.start(startEventTime);
+      processor.start(startStreamId);
     } catch (e) {
       logApp.error(`Error executing live stream ${id}`, { error: e });
       res.statusMessage = `Error in stream ${id}: ${e.message}`;

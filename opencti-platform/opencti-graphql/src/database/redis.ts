@@ -645,8 +645,8 @@ export const createStreamProcessor = (user: AuthUser, provider: string, withInte
         fromStart = 'live';
       }
       startEventId = fromStart === 'live' ? '$' : fromStart;
+      logApp.info(`[STREAM] Starting stream processor at ${startEventId} for ${provider}`);
       client = await createRedisClient(provider); // Create client for this processing loop
-      logApp.info(`[STREAM] Starting stream processor for ${provider}`);
       processingLoopPromise = processingLoop();
     },
     shutdown: async () => {
