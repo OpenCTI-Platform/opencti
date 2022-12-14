@@ -158,8 +158,11 @@ const Vocabularies = () => {
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
+              noAuthor={true}
+              noMarking={true}
+              noWarning={true}
               filters={{ entity_type: [{ id: 'Vocabulary' }] }}
-              variant="large"
+              variant="small"
             />
           </>
         )}

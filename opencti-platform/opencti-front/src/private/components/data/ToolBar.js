@@ -1157,6 +1157,9 @@ class ToolBar extends Component {
       theme,
       container,
       variant,
+      noAuthor,
+      noMarking,
+      noWarning,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -1859,40 +1862,46 @@ class ToolBar extends Component {
             ) : (
               ''
             )))}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Author')}
-            </Typography>
-            {R.pathOr('', ['createdBy', 'name'], keptElement)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Marking')}
-            </Typography>
-            {R.pathOr([], ['markingDefinitions', 'edges'], keptElement).length
-            > 0 ? (
-                R.map(
-                  (markingDefinition) => (
-                  <ItemMarking
-                    key={markingDefinition.node.id}
-                    label={markingDefinition.node.definition}
-                  />
-                  ),
-                  R.pathOr([], ['objectMarking', 'edges'], keptElement),
-                )
-              ) : (
-              <ItemMarking label="TLP:CLEAR" />
-              )}
-            <Alert severity="warning" style={{ marginTop: 20 }}>
-              {t(
-                'The relations attached to selected entities will be copied to the merged entity.',
-              )}
-            </Alert>
+            {noAuthor !== true && <>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Author')}
+              </Typography>
+              {R.pathOr('', ['createdBy', 'name'], keptElement)}
+            </>}
+            {noMarking !== true && <>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Marking')}
+              </Typography>
+              {R.pathOr([], ['markingDefinitions', 'edges'], keptElement).length
+              > 0 ? (
+                  R.map(
+                    (markingDefinition) => (
+                    <ItemMarking
+                      key={markingDefinition.node.id}
+                      label={markingDefinition.node.definition}
+                    />
+                    ),
+                    R.pathOr([], ['objectMarking', 'edges'], keptElement),
+                  )
+                ) : (
+                <ItemMarking label="TLP:CLEAR" />
+                )}
+            </>}
+            {noWarning !== true && <>
+              <Alert severity="warning" style={{ marginTop: 20 }}>
+                {t(
+                  'The relations attached to selected entities will be copied to the merged entity.',
+                )}
+              </Alert>
+            </>}
             <div className={classes.buttons}>
               <Button
                 variant="contained"
