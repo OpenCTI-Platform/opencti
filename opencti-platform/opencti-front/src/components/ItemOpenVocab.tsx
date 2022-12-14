@@ -3,10 +3,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql, usePreloadedQuery } from 'react-relay';
+import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { useFormatter } from './i18n';
 import useVocabularyCategory from '../utils/hooks/useVocabularyCategory';
 import { ItemOpenVocabQuery } from './__generated__/ItemOpenVocabQuery.graphql';
+import useQueryLoading from '../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from './Loader';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -26,6 +29,7 @@ interface ItemOpenVocabProps {
   type: string;
   value?: string | null;
   small: boolean;
+  queryRef: PreloadedQuery<ItemOpenVocabQuery>;
 }
 
 const itemOpenVocabQuery = graphql`
@@ -43,15 +47,14 @@ const itemOpenVocabQuery = graphql`
   }
 `;
 
-const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
-  type,
+const ItemOpenVocabComponent: FunctionComponent<Omit<ItemOpenVocabProps, 'type'>> = ({
   value,
   small = true,
+  queryRef,
 }) => {
   const { t } = useFormatter();
 
-  const { typeToCategory } = useVocabularyCategory();
-  const { vocabularies } = useLazyLoadQuery<ItemOpenVocabQuery>(itemOpenVocabQuery, { category: typeToCategory(type) });
+  const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(itemOpenVocabQuery, queryRef);
   const openVocabList = (vocabularies?.edges ?? []).map(({ node }) => node);
 
   const classes = useStyles();
@@ -88,6 +91,16 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
       </Tooltip>
     </span>
   );
+};
+
+const ItemOpenVocab: FunctionComponent<Omit<ItemOpenVocabProps, 'queryRef'>> = (props) => {
+  const { typeToCategory } = useVocabularyCategory();
+  const queryRef = useQueryLoading<ItemOpenVocabQuery>(itemOpenVocabQuery, { category: typeToCategory(props.type) });
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <ItemOpenVocabComponent {...props} queryRef={queryRef} />
+    </React.Suspense>
+  ) : <Loader variant={LoaderVariant.inElement} />;
 };
 
 export default ItemOpenVocab;
