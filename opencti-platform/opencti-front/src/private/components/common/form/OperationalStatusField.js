@@ -80,6 +80,9 @@ class OperationalStatusField extends Component {
         style={style}
         helperText={helperText}
       >
+        <MenuItem value={''}>
+          <em>None</em>
+        </MenuItem>
         {operationalStatusList.map((operationalStatus, key) => (
           operationalStatus.label
           && <MenuItem key={key} value={operationalStatus.value}>

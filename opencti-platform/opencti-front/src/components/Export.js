@@ -591,6 +591,7 @@ class Export extends Component {
                           name="media_type"
                           taskType='ReportMediaType'
                           fullWidth={true}
+                          required={true}
                           style={{ height: '18.09px' }}
                           containerstyle={{ width: '100%', marginLeft: '12px' }}
                         />

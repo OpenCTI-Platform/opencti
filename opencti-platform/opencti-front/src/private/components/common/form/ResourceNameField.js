@@ -248,6 +248,9 @@ class ResourceNameField extends Component {
           style={style}
           helperText={helperText}
         >
+          <MenuItem value={''}>
+            <em>None</em>
+          </MenuItem>
           {this.state.resourceType.map((value, i) => (
             <MenuItem
               key={i}

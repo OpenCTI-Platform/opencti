@@ -383,6 +383,7 @@ class PartyEntityEditionContainer extends Component {
                           name='party_type'
                           taskType='PartyType'
                           fullWidth={true}
+                          required={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
