@@ -689,11 +689,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'windows' },
   ],
   collection_layers_ov: [
-    { key: 'duis' },
-    { key: 'laboris' },
-    { key: 'elit' },
-    { key: 'exercitation' },
-    { key: 'ea' },
+    { key: 'container' },
+    { key: 'cloud-control-plane' },
+    { key: 'host' },
+    { key: 'OSINT' },
+    { key: 'network' },
   ],
   pattern_type_ov: [
     { key: 'stix' },
