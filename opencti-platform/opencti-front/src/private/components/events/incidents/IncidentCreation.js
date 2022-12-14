@@ -197,6 +197,7 @@ const IncidentCreation = ({ paginationOptions }) => {
                   name="incident_type"
                   containerStyle={fieldSpacingContainerStyle}
                   multiple={false}
+                  onChange={setFieldValue}
                 />
                 <OpenVocabField
                   label={t('Severity')}
@@ -204,6 +205,7 @@ const IncidentCreation = ({ paginationOptions }) => {
                   name="severity"
                   containerStyle={fieldSpacingContainerStyle}
                   multiple={false}
+                  onChange={setFieldValue}
                 />
                 <Field
                   component={MarkDownField}
