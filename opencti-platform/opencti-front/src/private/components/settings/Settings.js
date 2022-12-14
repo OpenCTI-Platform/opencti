@@ -259,6 +259,31 @@ const Settings = () => {
       }
     }
     if (name === 'platform_hidden_types' || name === 'platform_automatic_types') {
+      if (finalValue.includes('Analysis')) {
+        finalValue = finalValue.filter(
+          (n) => ![
+            'Report',
+            'Grouping',
+            'Note',
+            'Opinion',
+          ].includes(n),
+        );
+      }
+      if (finalValue.includes('Events')) {
+        finalValue = finalValue.filter(
+          (n) => !['Incident', 'Sighting', 'Observed-Data'].includes(n),
+        );
+      }
+      if (finalValue.includes('Observations')) {
+        finalValue = finalValue.filter(
+          (n) => ![
+            'Observable',
+            'Artifact',
+            'Indicator',
+            'Infrastructure',
+          ].includes(n),
+        );
+      }
       if (finalValue.includes('Threats')) {
         finalValue = finalValue.filter(
           (n) => !['Threat-Actor', 'Intrusion-Set', 'Campaign'].includes(n),

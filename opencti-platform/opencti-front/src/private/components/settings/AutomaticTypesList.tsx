@@ -56,6 +56,223 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         </Box>
       )}
     >
+      <MenuItem value="Analysis" dense={true}>
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Analysis') > -1
+          }
+        />
+        {t('Analysis')}
+      </MenuItem>
+      <MenuItem
+        value="Report"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Analysis')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Report') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Report')}
+      </MenuItem>
+      <MenuItem
+        value="Grouping"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Analysis')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Grouping') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Grouping')}
+      </MenuItem>
+      <MenuItem
+        value="Note"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Analysis')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Note') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Note')}
+      </MenuItem>
+      <MenuItem
+        value="Opinion"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Analysis')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Opinion') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Opinion')}
+      </MenuItem>
+      <MenuItem value="Events" dense={true}>
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Events') > -1
+          }
+        />
+        {t('Events')}
+      </MenuItem>
+      <MenuItem
+        value="Incident"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Events')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Incident') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Incident')}
+      </MenuItem>
+      <MenuItem
+        value="Sighting"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Events')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Sighting') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Sighting')}
+      </MenuItem>
+      <MenuItem
+        value="Observed-Data"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Events')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Observed-Data') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Observed-Data')}
+      </MenuItem>
+      <MenuItem value="Observations" dense={true}>
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Observations') > -1
+          }
+        />
+        {t('Observations')}
+      </MenuItem>
+      <MenuItem
+        value="Observable"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Observations')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Observable') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Observable')}
+      </MenuItem>
+      <MenuItem
+        value="Artifact"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Observations')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Artifact') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Artifact')}
+      </MenuItem>
+      <MenuItem
+        value="Indicator"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Observations')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Indicator') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Indicator')}
+      </MenuItem>
+      <MenuItem
+        value="Infrastructure"
+        disabled={(
+          values.platform_automatic_types || []
+        ).includes('Observations')}
+        dense={true}
+      >
+        <Checkbox
+          checked={
+            (
+              values.platform_automatic_types || []
+            ).indexOf('Infrastructure') > -1
+          }
+          style={{ marginLeft: 10 }}
+        />
+        {t('entity_Infrastructure')}
+      </MenuItem>
       <MenuItem value="Threats" dense={true}>
         <Checkbox
           checked={

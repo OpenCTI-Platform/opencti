@@ -5,12 +5,12 @@ import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import {
   ExternalReferenceEditionContainer_externalReference$data,
 } from './__generated__/ExternalReferenceEditionContainer_externalReference.graphql';
+import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview';
 
 const useStyles = makeStyles<Theme >((theme) => ({
   header: {

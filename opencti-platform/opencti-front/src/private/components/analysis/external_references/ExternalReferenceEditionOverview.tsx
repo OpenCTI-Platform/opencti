@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { pick } from 'ramda';
@@ -47,10 +47,7 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
 
 interface ExternalReferenceEditionOverviewComponentProps {
   externalReference: ExternalReferenceEditionOverview_externalReference$data,
-  context: {
-    focusOn: string | null;
-    name: string;
-  }[] | null,
+  context: readonly ({ readonly focusOn: string | null; readonly name: string; } | null)[] | null,
 }
 
 const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalReferenceEditionOverviewComponentProps> = ({ externalReference, context }) => {
