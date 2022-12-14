@@ -604,7 +604,7 @@ const createSeeMiddleware = () => {
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
       if (isNotEmptyField(recoverIsoDate) && isEmptyField(startIsoDate)) {
-        throw UnsupportedError('Recovery mode is only possible without a start date.');
+        throw UnsupportedError('Recovery mode is only possible with a start date.');
       }
       // Init stream and broadcasting
       const userEmail = user.user_email;
@@ -672,7 +672,7 @@ const createSeeMiddleware = () => {
               } else if (isRelation && publishDependencies) { // Not an update and not visible
                 // In case of relationship publication, from or to can be related to something that
                 // is part of the filtering. We can consider this as dependencies
-                await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, element);
+                await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
               }
             }
             // Delete eventual filtering cache
