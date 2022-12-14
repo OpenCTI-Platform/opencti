@@ -101,6 +101,9 @@ class ResourceTypeField extends Component {
         style={style}
         helperText={helperText}
       >
+          <MenuItem value={''}>
+            <em>None</em>
+          </MenuItem>
         {resourceTypeList.map((resourceType, key) => (
           resourceType.name
           && <MenuItem
