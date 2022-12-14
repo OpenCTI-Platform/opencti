@@ -268,6 +268,12 @@ const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationC
                   name
                   description
                 }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }

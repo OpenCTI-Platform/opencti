@@ -475,6 +475,12 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 first_seen
                 last_seen
               }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
+                name
+              }
               ... on StixCyberObservable {
                 observable_value
                 x_opencti_description

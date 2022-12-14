@@ -423,7 +423,7 @@ class StixDomainObjectCreation extends Component {
       targetStixDomainObjectTypes,
     } = this.props;
     const initialValues = {
-      type: targetStixDomainObjectTypes.at(0),
+      type: (targetStixDomainObjectTypes ?? []).at(0),
       name: inputValue,
       confidence: confidence || 15,
       description: '',
