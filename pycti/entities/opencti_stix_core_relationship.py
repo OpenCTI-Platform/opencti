@@ -202,6 +202,14 @@ class StixCoreRelationship:
                 ... on Language {
                     name
                 }
+                ... on DataComponent {
+                    name
+                    description
+                }
+                ... on DataSource {
+                    name
+                    description
+                }
                 ... on StixCyberObservable {
                     observable_value
                 }
@@ -300,6 +308,14 @@ class StixCoreRelationship:
                 }
                 ... on Language {
                     name
+                }
+                ... on DataComponent {
+                    name
+                    description
+                }
+                ... on DataSource {
+                    name
+                    description
                 }
                 ... on StixCyberObservable {
                     observable_value

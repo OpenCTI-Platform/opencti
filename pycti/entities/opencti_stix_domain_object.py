@@ -451,6 +451,14 @@ class StixDomainObject:
                 aliases
                 narrative_types
             }
+            ... on DataComponent {
+                name
+                description
+            }
+            ... on DataSource {
+                name
+                description
+            }
             ... on Vulnerability {
                 name
                 description
