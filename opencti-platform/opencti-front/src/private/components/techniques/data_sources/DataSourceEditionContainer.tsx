@@ -80,7 +80,7 @@ const DataSourceEditionContainer: FunctionComponent<DataSourceEditionContainerPr
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a Data Source')}
+            {t('Update a data source')}
           </Typography>
           <SubscriptionAvatars context={queryData.dataSource.editContext} />
           <div className="clearfix" />

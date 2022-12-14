@@ -51,7 +51,7 @@ const TopMenuDataSource: FunctionComponent = () => {
         classes={{ root: classes.buttonHome }}
       >
         <StreamOutlined className={classes.icon} fontSize="small" />
-        {t('Data Sources')}
+        {t('Data sources')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"

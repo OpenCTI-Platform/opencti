@@ -5,11 +5,10 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { ProgressWrench } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemSecondaryAction } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import { LinkOff } from '@mui/icons-material';
+import { LinkOff, SourceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { useFormatter } from '../../../../components/i18n';
 import AddDataComponents from './AddDataComponents';
@@ -63,7 +62,7 @@ const DataSourceDataComponentsComponent: FunctionComponent<{ dataSource: DataSou
                 >
                   <ListItemIcon>
                     <ListItemIcon>
-                      <ProgressWrench color="primary" />
+                      <SourceOutlined color="primary" />
                     </ListItemIcon>
                   </ListItemIcon>
                   <ListItemText primary={dataComponent.name} />

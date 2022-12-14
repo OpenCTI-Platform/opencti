@@ -4019,7 +4019,7 @@ export type EditContext = {
 export type EditInput = {
   key: Scalars['String'];
   operation?: InputMaybe<EditOperation>;
-  value: Array<Scalars['String']>;
+  value: Array<InputMaybe<Scalars['String']>>;
 };
 
 export enum EditOperation {
