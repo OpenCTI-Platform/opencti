@@ -13,6 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FreeTextUploader from './FreeTextUploader';
 import { FileImportViewer_entity$data } from './__generated__/FileImportViewer_entity.graphql';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -30,13 +31,7 @@ interface FileImportViewerComponentProps {
   entity: FileImportViewer_entity$data,
   disableImport: boolean,
   handleOpenImport: (file: FileLine_file$data | undefined) => void,
-  connectors: Record<string, {
-    id: string,
-    name: string,
-    active: boolean,
-    connector_scope: string[],
-    updated_at: string,
-  }>,
+  connectors: { [p: string]: { data: { name: string, active: boolean } }[] },
   relay: RelayRefetchProp,
 }
 
@@ -48,8 +43,9 @@ const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProp
   relay }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const { isEntityTypeAutomatic } = useHelper();
 
-  const { id, importFiles } = entity;
+  const { id, importFiles, entity_type } = entity;
 
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -73,7 +69,7 @@ const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProp
             onUploadSuccess={() => relay.refetch({ id })}
             size="medium"
             color={undefined}
-            createExternalRef={true}
+            createExternalRef={isEntityTypeAutomatic(entity_type)}
           />
           <FreeTextUploader
             entityId={id}

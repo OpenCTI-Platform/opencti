@@ -16886,6 +16886,7 @@ export type Settings = BasicObject & InternalObject & {
   entity_type: Scalars['String'];
   id: Scalars['ID'];
   parent_types: Array<Scalars['String']>;
+  platform_automatic_types?: Maybe<Array<Scalars['String']>>;
   platform_email?: Maybe<Scalars['String']>;
   platform_enable_reference?: Maybe<Array<Scalars['String']>>;
   platform_favicon?: Maybe<Scalars['String']>;
@@ -28299,6 +28300,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_automatic_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_enable_reference?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
-import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ExternalReferenceLine, ExternalReferenceLineDummy } from './ExternalReferenceLine';
 import { ExternalReferencesLines_data$data } from './__generated__/ExternalReferencesLines_data.graphql';
@@ -40,12 +39,8 @@ const ExternalReferencesLines: FunctionComponent<ExternalReferencesLinesProps> =
       loadMore={relay.loadMore}
       hasMore={relay.hasMore}
       isLoading={relay.isLoading}
-      dataList={pathOr([], ['externalReferences', 'edges'], data)}
-      globalCount={pathOr(
-        nbOfRowsToLoad,
-        ['externalReferences', 'pageInfo', 'globalCount'],
-        data,
-      )}
+      dataList={data?.externalReferences?.edges ?? []}
+      globalCount={data?.externalReferences?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={<ExternalReferenceLine node={undefined}/>}
       DummyLineComponent={<ExternalReferenceLineDummy />}
       dataColumns={dataColumns}

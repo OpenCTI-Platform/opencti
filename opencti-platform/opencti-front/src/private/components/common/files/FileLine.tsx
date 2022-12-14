@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { isEmpty, propOr } from 'ramda';
+import { isEmpty } from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer, graphql, GraphQLTaggedNode, useMutation } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
@@ -11,7 +11,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Link } from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -26,11 +25,13 @@ import { APP_BASE_PATH, commitMutation, fetchQuery, MESSAGING$ } from '../../../
 import { externalReferencePopoverDeletionMutation } from '../../analysis/external_references/ExternalReferencePopover';
 import { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
-import { externalReferencesSearchQuery } from '../../analysis/ExternalReferences';
-import { ExternalReferencesSearchQuery$data } from '../../analysis/__generated__/ExternalReferencesSearchQuery.graphql';
 import {
   ExternalReferencePopoverDeletionMutation,
 } from '../../analysis/external_references/__generated__/ExternalReferencePopoverDeletionMutation.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
+import {
+  FileLineExternalReferencesSearchQuery$data,
+} from './__generated__/FileLineExternalReferencesSearchQuery.graphql';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -68,9 +69,29 @@ const FileLineAskDeleteMutation = graphql`
   }
 `;
 
+export const fileLineExternalReferencesSearchQuery = graphql`
+    query FileLineExternalReferencesSearchQuery(
+        $search: String
+        $filters: [ExternalReferencesFiltering]
+    ) {
+        externalReferences(search: $search, filters: $filters) {
+            edges {
+                node {
+                    id
+                    source_name
+                    external_id
+                    description
+                    url
+                    fileId
+                }
+            }
+        }
+    }
+`;
+
 interface FileLineComponentProps {
   file: FileLine_file$data | undefined,
-  connectors?: { data: { name: any; active: any; }; }[],
+  connectors?: { data: { name: string; active: boolean; }; }[],
   dense: boolean,
   disableImport?: boolean,
   directDownload?: boolean,
@@ -91,6 +112,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { t, fld } = useFormatter();
+  const { isEntityTypeAutomatic } = useHelper();
 
   const [displayRemove, setDisplayRemove] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
@@ -98,6 +120,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const [commitMutationDeleteExternalRef] = useMutation<ExternalReferencePopoverDeletionMutation>(externalReferencePopoverDeletionMutation);
 
+  const entity_type = file?.id.split('/')[1];
   const isFail = file?.metaData?.errors && file.metaData.errors.length > 0;
   const isProgress = file?.uploadStatus === 'progress' || file?.uploadStatus === 'wait';
   const isOutdated = file?.uploadStatus === 'timeout';
@@ -115,7 +138,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const toolTip = history.map((s) => s?.message).filter((s) => !isEmpty(s)).join(', ');
   const encodedFilePath = encodeURIComponent(file?.id ?? '');
-  const listClick = `${APP_BASE_PATH}/storage/${directDownload ? 'get' : 'view'}/${encodeURIComponent(encodedFilePath)}`;
 
   const handleOpenDelete = () => {
     setDisplayDelete(true);
@@ -165,13 +187,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   };
 
   const externalRefDelete = (fileId: string) => {
-    fetchQuery(externalReferencesSearchQuery, {
+    fetchQuery(fileLineExternalReferencesSearchQuery, {
       search: '',
       filters: [{ key: ['source_name'] }],
     })
       .toPromise()
       .then((data) => {
-        const edges = (data as ExternalReferencesSearchQuery$data).externalReferences?.edges;
+        const edges = (data as FileLineExternalReferencesSearchQuery$data).externalReferences?.edges;
         edges?.filter((o) => o.node.fileId === fileId);
         const externalReferenceId = edges?.map((o) => o.node.id)[0];
 
@@ -195,7 +217,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const handleRemoveFile = (fileId: string | undefined) => {
     if (fileId) {
       executeRemove(FileLineDeleteMutation, { fileName: fileId });
-      externalRefDelete(fileId);
+      if (entity_type && isEntityTypeAutomatic(entity_type)) {
+        externalRefDelete(fileId);
+      }
     }
   };
 
@@ -211,12 +235,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         divider={true}
         dense={dense === true}
         classes={{ root: nested ? classes.itemNested : classes.item }}
-        button={true}
-        component={isOutdated ? null : Link}
         disabled={isProgress}
-        to={listClick}
-        target="_blank"
-        rel="noopener noreferrer"
       >
         <ListItemIcon>
           {isProgress && (
@@ -241,7 +260,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           <ListItemText
             classes={{ root: classes.itemText }}
             primary={file?.name}
-            secondary={fld(propOr(moment(), 'lastModified', file))}
+            secondary={fld(file?.lastModified ?? moment())}
           />
         </Tooltip>
         <ListItemSecondaryAction>

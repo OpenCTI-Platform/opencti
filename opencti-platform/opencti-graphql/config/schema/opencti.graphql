@@ -1032,6 +1032,7 @@ type Settings implements InternalObject & BasicObject {
   platform_reference_attachment: Boolean @auth
   platform_feature_flags: [Module!] @auth
   platform_hidden_types: [String!] @auth
+  platform_automatic_types: [String!] @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   # Technical

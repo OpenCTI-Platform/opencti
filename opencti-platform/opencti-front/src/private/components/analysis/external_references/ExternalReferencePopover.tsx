@@ -23,6 +23,7 @@ import {
   ExternalReferencePopoverEditionQuery$data,
 } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
 import { deleteNodeFromId } from '../../../../utils/store';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const ExternalReferencePopoverFileLineDeleteMutation = graphql`
     mutation ExternalReferencePopoverFileLineDeleteMutation($fileName: String) {
@@ -79,6 +80,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
   const classes = useStyles();
   const { t } = useFormatter();
   const history = useHistory();
+  const { isEntityTypeAutomatic } = useHelper();
 
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -159,7 +161,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
 
   const submitDeleteRefAndFile = () => {
     submitDelete();
-    if (externalReferenceFileId) {
+    if (externalReferenceFileId && isEntityTypeAutomatic(externalReferenceFileId.split('/')[1])) {
       executeRemoveFile(externalReferenceFileId);
     }
   };

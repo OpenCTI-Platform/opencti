@@ -28,6 +28,7 @@ const rootPrivateQuery = graphql`
       platform_map_tile_server_dark
       platform_map_tile_server_light
       platform_hidden_types
+      platform_automatic_types
       platform_theme
       platform_feature_flags {
         id

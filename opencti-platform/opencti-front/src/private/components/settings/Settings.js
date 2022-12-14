@@ -15,8 +15,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
-import Checkbox from '@mui/material/Checkbox';
-import Box from '@mui/material/Box';
 import { ListItemAvatar } from '@mui/material';
 import { deepPurple } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
@@ -31,6 +29,8 @@ import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import HiddenTypesList from './HiddenTypesList';
+import AutomaticTypesList from './AutomaticTypesList';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -105,6 +105,7 @@ const settingsQuery = graphql`
       platform_theme_light_logo_login
       platform_enable_reference
       platform_hidden_types
+      platform_automatic_types
       platform_organization {
         id
         name
@@ -153,6 +154,7 @@ const settingsMutationFieldPatch = graphql`
         platform_language
         platform_login_message
         platform_hidden_types
+        platform_automatic_types
         platform_organization {
           id
           name
@@ -210,6 +212,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
   platform_hidden_types: Yup.array().nullable(),
+  platform_automatic_types: Yup.array().nullable(),
   platform_organization: Yup.object().nullable(),
 });
 
@@ -255,7 +258,7 @@ const Settings = () => {
         finalValue = '#000000';
       }
     }
-    if (name === 'platform_hidden_types') {
+    if (name === 'platform_hidden_types' || name === 'platform_automatic_types') {
       if (finalValue.includes('Threats')) {
         finalValue = finalValue.filter(
           (n) => !['Threat-Actor', 'Intrusion-Set', 'Campaign'].includes(n),
@@ -317,6 +320,10 @@ const Settings = () => {
                 settings.platform_hidden_types ?? [],
               ),
               R.assoc(
+                'platform_automatic_types',
+                settings.platform_automatic_types ?? [],
+              ),
+              R.assoc(
                 'platform_organization',
                 settings.platform_organization
                   ? {
@@ -351,6 +358,7 @@ const Settings = () => {
                 'platform_map_tile_server_dark',
                 'platform_map_tile_server_light',
                 'platform_hidden_types',
+                'platform_automatic_types',
                 'platform_organization',
               ]),
             )(settings);
@@ -508,379 +516,18 @@ const Settings = () => {
                               <MenuItem value="ja-jp">日本語</MenuItem>
                               <MenuItem value="zh-cn">简化字</MenuItem>
                             </Field>
-                            <Field
-                              component={SelectField}
-                              variant="standard"
-                              name="platform_hidden_types"
-                              label={t('Hidden entity types')}
-                              fullWidth={true}
-                              multiple={true}
-                              containerstyle={{
-                                marginTop: 20,
-                                width: '100%',
-                              }}
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)}
-                              helpertext={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_hidden_types"
-                                />
-                              }
-                              renderValue={(selected) => (
-                                <Box
-                                  sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: 0.5,
-                                  }}
-                                >
-                                  {selected.map((value) => (
-                                    <Chip
-                                      key={value}
-                                      label={t(`entity_${value}`)}
-                                    />
-                                  ))}
-                                </Box>
-                              )}
-                            >
-                              <MenuItem value="Threats" dense={true}>
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Threats') > -1
-                                  }
-                                />
-                                {t('Threats')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Threat-Actor"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Threats')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Threat-Actor') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Threat-Actor')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Intrusion-Set"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Threats')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Intrusion-Set') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Intrusion-Set')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Campaign"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Threats')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Campaign') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Campaign')}
-                              </MenuItem>
-                              <MenuItem value="Arsenal" dense={true}>
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Arsenal') > -1
-                                  }
-                                />
-                                {t('Arsenal')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Malware"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Arsenal')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Malware') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Malware')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Attack-Pattern"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Arsenal')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Attack-Pattern') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Attack-Pattern')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Channel"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Arsenal')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Channel') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Channel')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Narrative"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Arsenal')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Narrative') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Narrative')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Course-Of-Action"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Arsenal')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Course-Of-Action') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Course-Of-Action')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Tool"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Arsenal')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Tool') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Tool')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Vulnerability"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Arsenal')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Vulnerability') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Vulnerability')}
-                              </MenuItem>
-                              <MenuItem value="Entities" dense={true}>
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Entities') > -1
-                                  }
-                                />
-                                {t('Entities')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Sector"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Entities')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Sector') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Sector')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Country"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Entities')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Country') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Country')}
-                              </MenuItem>
-                              <MenuItem
-                                value="City"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Entities')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('City') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_City')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Position"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Entities')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Position') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Position')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Event"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Entities')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Event') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Event')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Organization"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Entities')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Organization') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Organization')}
-                              </MenuItem>
-                              <MenuItem
-                                value="System"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Entities')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('System') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_System')}
-                              </MenuItem>
-                              <MenuItem
-                                value="Individual"
-                                disabled={(
-                                  values.platform_hidden_types || []
-                                ).includes('Entities')}
-                                dense={true}
-                              >
-                                <Checkbox
-                                  checked={
-                                    (
-                                      values.platform_hidden_types || []
-                                    ).indexOf('Individual') > -1
-                                  }
-                                  style={{ marginLeft: 10 }}
-                                />
-                                {t('entity_Individual')}
-                              </MenuItem>
-                            </Field>
+                            <HiddenTypesList values={values}
+                                          handleChangeFocus={handleChangeFocus}
+                                          handleSubmitField={handleSubmitField}
+                                          id={id}
+                                          editContext={editContext}
+                            />
+                            <AutomaticTypesList values={values}
+                                             handleChangeFocus={handleChangeFocus}
+                                             handleSubmitField={handleSubmitField}
+                                             id={id}
+                                             editContext={editContext}
+                            />
                           </Form>
                         )}
                       </Formik>

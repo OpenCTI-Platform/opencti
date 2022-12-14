@@ -28,6 +28,7 @@ import {
   ExternalReferenceFileImportViewer_entity$data,
 } from './__generated__/ExternalReferenceFileImportViewer_entity.graphql';
 import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
+import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -67,7 +68,6 @@ interface ExternalReferenceFileImportViewerBaseProps {
 const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReferenceFileImportViewerBaseProps> = ({
   externalReference,
   disableImport,
-  connectors,
   relay,
   connectorsImport,
 }) => {
@@ -77,6 +77,8 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReference
   const [fileToImport, setFileToImport] = useState<FileLine_file$data | null | undefined>(null);
 
   const { id, importFiles } = externalReference;
+
+  const importConnsPerFormat = scopesConn(connectorsImport);
 
   const handleOpenImport = (file: FileLine_file$data | null | undefined) => setFileToImport(file);
 
@@ -158,7 +160,7 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReference
                   disableImport={disableImport}
                   file={file?.node}
                   connectors={
-                    (connectors && file?.node.metaData?.mimetype) ? connectors && connectors[file.node.metaData.mimetype] : []
+                    importConnsPerFormat[file?.node.metaData?.mimetype ?? 0]
                   }
                   handleOpenImport={handleOpenImport}
                 />

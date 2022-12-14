@@ -61,6 +61,7 @@ export const multipleAttributes = [
   'platform_enable_reference',
   'feed_types',
   'platform_hidden_types',
+  'platform_automatic_types',
   'descriptions',
   // meta
   INPUT_OBJECTS,

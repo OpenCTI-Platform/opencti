@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import * as R from 'ramda';
 import { includes } from 'ramda';
 import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -246,7 +245,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<StixCore
       <Paper classes={{ root: classes.paper }} variant="outlined">
         {(externalReferencesEdges ? externalReferencesEdges.length > 0 : false) ? (
           <List style={{ marginBottom: 0 }}>
-            {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
+            {externalReferencesEdges?.slice(0, expanded ? 200 : 7).map(
               (externalReferenceEdge) => {
                 const externalReference = externalReferenceEdge.node;
                 const externalReferenceId = externalReference.external_id

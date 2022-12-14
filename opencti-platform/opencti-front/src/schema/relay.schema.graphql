@@ -1086,6 +1086,7 @@ type Settings implements InternalObject & BasicObject {
   platform_reference_attachment: Boolean
   platform_feature_flags: [Module!]
   platform_hidden_types: [String!]
+  platform_automatic_types: [String!]
   created_at: DateTime!
   updated_at: DateTime!
   editContext: [EditUserContext!]
