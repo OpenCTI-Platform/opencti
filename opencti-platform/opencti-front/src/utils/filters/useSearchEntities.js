@@ -476,7 +476,7 @@ const useSearchEntities = ({
         const baseScoreEntities = ['lte', 'gt'].flatMap((group) => baseScores.map((n) => ({
           label: n,
           value: n,
-          type: 'attribute',
+          type: 'Vocabulary',
           group,
         })));
         unionSetEntities('x_opencti_base_score', baseScoreEntities);
@@ -487,7 +487,7 @@ const useSearchEntities = ({
         const confidenceEntities = ['lte', 'gt'].flatMap((group) => confidences.map((n) => ({
           label: n,
           value: n,
-          type: 'attribute',
+          type: 'Vocabulary',
           group,
         })));
         unionSetEntities('confidence', confidenceEntities);
@@ -498,7 +498,7 @@ const useSearchEntities = ({
           R.map((n) => ({
             label: t(`confidence_${n.toString()}`),
             value: n,
-            type: 'attribute',
+            type: 'Vocabulary',
           })),
         )(confidences);
         unionSetEntities('confidence_gt', confidenceEntitiesGt);
@@ -508,7 +508,7 @@ const useSearchEntities = ({
         const confidenceLteEntities = confidences.map((n) => ({
           label: n,
           value: n,
-          type: 'attribute',
+          type: 'Vocabulary',
         }));
         unionSetEntities('confidence_lte', confidenceLteEntities);
         break;
@@ -519,7 +519,7 @@ const useSearchEntities = ({
         const scoreEntities = ['lte', 'gt'].flatMap((group) => scores.map((n) => ({
           label: n,
           value: n,
-          type: 'attribute',
+          type: 'Vocabulary',
           group,
         })));
         unionSetEntities('x_opencti_score', scoreEntities);
@@ -529,7 +529,7 @@ const useSearchEntities = ({
         const scoreGtEntities = scores.map((n) => ({
           label: n,
           value: n,
-          type: 'attribute',
+          type: 'Vocabulary',
         }));
         unionSetEntities('x_opencti_score_gt', scoreGtEntities);
         break;
@@ -538,7 +538,7 @@ const useSearchEntities = ({
         const scoreLteEntities = scores.map((n) => ({
           label: n,
           value: n,
-          type: 'attribute',
+          type: 'Vocabulary',
         }));
         unionSetEntities('x_opencti_score_lte', scoreLteEntities);
         break;
@@ -549,7 +549,7 @@ const useSearchEntities = ({
           R.map((n) => ({
             label: t(n),
             value: n,
-            type: 'attribute',
+            type: 'Vocabulary',
           })),
         )(['true', 'false']);
         unionSetEntities('x_opencti_detection', detectionEntities);
@@ -560,7 +560,7 @@ const useSearchEntities = ({
           R.map((n) => ({
             label: n === 'EXISTS' ? t('Yes') : t('No'),
             value: n,
-            type: 'attribute',
+            type: 'Vocabulary',
           })),
         )(['EXISTS', null]);
         unionSetEntities('basedOn', basedOnEntities);
@@ -571,7 +571,7 @@ const useSearchEntities = ({
           R.map((n) => ({
             label: t(n),
             value: n,
-            type: 'attribute',
+            type: 'Vocabulary',
           })),
         )(['true', 'false']);
         unionSetEntities('revoked', revokedEntities);
@@ -582,7 +582,7 @@ const useSearchEntities = ({
           R.map((n) => ({
             label: t(n),
             value: n,
-            type: 'attribute',
+            type: 'Vocabulary',
           })),
         )([
           'stix',
@@ -610,7 +610,7 @@ const useSearchEntities = ({
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
-                type: 'attribute',
+                type: 'Vocabulary',
               })),
             )(data);
             unionSetEntities('x_opencti_base_severity', severityEntities);
@@ -629,7 +629,7 @@ const useSearchEntities = ({
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
-                type: 'attribute',
+                type: 'Vocabulary',
               })),
             )(data);
             unionSetEntities('x_opencti_attack_vector', attackVectorEntities);
@@ -648,7 +648,7 @@ const useSearchEntities = ({
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
-                type: 'attribute',
+                type: 'Vocabulary',
               })),
             )(data);
             unionSetEntities('malware_types', attackVectorEntities);
@@ -669,7 +669,7 @@ const useSearchEntities = ({
                 value: n.node.id,
                 order: n.node.order,
                 group: n.node.type,
-                type: 'attribute',
+                type: 'Vocabulary',
               })),
             )(data);
             unionSetEntities('x_opencti_workflow_id', statusEntities);
@@ -688,7 +688,7 @@ const useSearchEntities = ({
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
-                type: 'attribute',
+                type: 'Vocabulary',
               })),
             )(data);
             unionSetEntities(
@@ -703,7 +703,7 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('indicator_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'attribute' })));
+            unionSetEntities('indicator_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
           });
         break;
       case 'incident_type':
@@ -712,7 +712,7 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('indicator_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'attribute' })));
+            unionSetEntities('indicator_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
           });
         break;
       case 'report_types':
@@ -721,7 +721,7 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('report_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'attribute' })));
+            unionSetEntities('report_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
           });
         break;
       case 'channel_types':
@@ -730,7 +730,7 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('channel_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'attribute' })));
+            unionSetEntities('channel_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
           });
         break;
       case 'entity_type':
@@ -915,7 +915,7 @@ const useSearchEntities = ({
         fetchQuery(vocabCategoriesQuery)
           .toPromise()
           .then((data) => {
-            unionSetEntities('category', data.vocabularyCategories.map(({ key }) => ({ label: key, value: key, type: 'attribute' })));
+            unionSetEntities('category', data.vocabularyCategories.map(({ key }) => ({ label: key, value: key, type: 'Vocabulary' })));
           });
         break;
       case 'fromTypes':
@@ -1124,7 +1124,7 @@ const useSearchEntities = ({
         const negativeValue = [true, false].map((n) => ({
           label: t(n ? 'False positive' : 'Malicious'),
           value: n.toString(),
-          type: 'attribute',
+          type: 'Vocabulary',
         }));
         unionSetEntities('x_opencti_negative', negativeValue);
         break;
