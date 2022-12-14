@@ -20348,6 +20348,7 @@ export enum ThreatActorsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Revoked = 'revoked',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }

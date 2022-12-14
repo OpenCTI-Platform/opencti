@@ -4627,6 +4627,7 @@ enum ThreatActorsFilter {
   markedBy
   labelledBy
   x_opencti_workflow_id
+  revoked
 }
 
 input ThreatActorsFiltering {
