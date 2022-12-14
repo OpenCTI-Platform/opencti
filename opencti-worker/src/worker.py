@@ -247,7 +247,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             event_content["context"]["sources"],
                         )
                     )
-                    self.api.stix_core_object.merge(id=target_id, object_ids=source_ids)
+                    self.api.stix.merge(id=target_id, object_ids=source_ids)
                     # Update the target entity after merge
                     bundle = {
                         "type": "bundle",

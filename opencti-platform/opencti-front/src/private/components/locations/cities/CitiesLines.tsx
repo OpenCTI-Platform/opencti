@@ -83,7 +83,7 @@ const CitiesLines: FunctionComponent<CitiesLinesProps> = ({ setNumberOfElements,
     linesQuery: citiesLinesQuery,
     linesFragment: citiesLinesFragment,
     queryRef,
-    nodePath: ['cities', 'edges'],
+    nodePath: ['cities', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 

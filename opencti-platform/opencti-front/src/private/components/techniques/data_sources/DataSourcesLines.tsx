@@ -86,7 +86,7 @@ const DataSourcesLines: FunctionComponent<DataSourceLinesProps> = ({ setNumberOf
     linesQuery: dataSourcesLinesQuery,
     linesFragment: dataSourcesLinesFragment,
     queryRef,
-    nodePath: ['dataSources', 'edges'],
+    nodePath: ['dataSources', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 

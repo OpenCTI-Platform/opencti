@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { VocabularyLine, VocabularyLineDummy } from './VocabularyLine';
 import { DataColumns } from '../../../../components/list_lines';
@@ -9,11 +9,20 @@ import {
 } from './__generated__/VocabulariesLines_DataQuery.graphql';
 import { VocabulariesLines_data$key } from './__generated__/VocabulariesLines_data.graphql';
 import { VocabulariesLinesPaginationQuery } from './__generated__/VocabulariesLinesPaginationQuery.graphql';
+import {
+  useVocabularyCategory_Vocabularynode$data,
+} from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 export interface VocabulariesLinesProps {
   paginationOptions: VocabulariesLines_DataQuery$variables,
   dataColumns: DataColumns,
   queryRef: PreloadedQuery<VocabulariesLinesPaginationQuery>,
+  selectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
+  deSelectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
+  onToggleEntity: (entity: useVocabularyCategory_Vocabularynode$data, event: React.SyntheticEvent) => void,
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
 }
 
 export const vocabulariesLinesQuery = graphql`
@@ -23,6 +32,7 @@ export const vocabulariesLinesQuery = graphql`
     $orderMode: OrderingMode
     $orderBy: VocabularyOrdering
     $filters: [VocabularyFiltering!]
+    $category: VocabularyCategory
   ) {
     ...VocabulariesLines_data
     @arguments(
@@ -31,6 +41,7 @@ export const vocabulariesLinesQuery = graphql`
       orderMode: $orderMode
       orderBy: $orderBy
       filters: $filters
+      category: $category
     )
   }
 `;
@@ -44,6 +55,7 @@ export const vocabulariesLinesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     orderBy: { type: "VocabularyOrdering", defaultValue: name }
     after: { type: "ID", defaultValue: "" }
+    category: { type: "VocabularyCategory" }
   )
   @refetchable(queryName: "VocabulariesLines_DataQuery")
   {
@@ -54,6 +66,7 @@ export const vocabulariesLinesFragment = graphql`
       orderMode: $orderMode
       orderBy: $orderBy
       after: $after
+      category: $category
     ) @connection(key: "Pagination_vocabularies") {
       edges {
         node {
@@ -69,25 +82,37 @@ export const vocabulariesLinesFragment = graphql`
   }
 `;
 
-const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({ queryRef, dataColumns, paginationOptions }) => {
-  const queryData = usePreloadedQuery(vocabulariesLinesQuery, queryRef);
+const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
+  queryRef,
+  dataColumns,
+  paginationOptions,
+  setNumberOfElements,
+  selectedElements,
+  deSelectedElements,
+  onToggleEntity,
+}) => {
   const {
     data,
-    refetch,
-    hasNext,
-    loadNext,
-    isLoadingNext,
-  } = usePaginationFragment<VocabulariesLines_DataQuery, VocabulariesLines_data$key>(vocabulariesLinesFragment, queryData);
+    hasMore,
+    loadMore,
+    isLoadingMore,
+  } = usePreloadedPaginationFragment<VocabulariesLines_DataQuery, VocabulariesLines_data$key>({
+    queryRef,
+    linesQuery: vocabulariesLinesQuery,
+    linesFragment: vocabulariesLinesFragment,
+    nodePath: ['vocabularies', 'pageInfo', 'globalCount'],
+    setNumberOfElements,
+  });
 
   const vocabularies = data?.vocabularies?.edges ?? [];
   const globalCount = data?.vocabularies?.pageInfo?.globalCount;
+
   return (
     <ListLinesContent
-      initialLoading={!queryData}
-      loadMore={loadNext}
-      hasMore={() => hasNext}
-      refetch={refetch}
-      isLoading={() => isLoadingNext}
+      initialLoading={!data}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      isLoading={isLoadingMore}
       dataList={vocabularies}
       globalCount={globalCount}
       LineComponent={VocabularyLine}
@@ -95,6 +120,9 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({ queryRef
       dataColumns={dataColumns}
       nbOfRowsToLoad={10}
       paginationOptions={paginationOptions}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      onToggleEntity={onToggleEntity}
     />
   );
 };

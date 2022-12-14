@@ -105,7 +105,6 @@ const AddAttackPatternsLines: FunctionComponent<AddAttackPatternsLinesContainerP
     linesQuery: addAttackPatternsLinesQuery,
     linesFragment: addAttackPatternsLinesFragment,
     queryRef,
-    nodePath: ['attackPatterns', 'edges'],
   });
 
   const [commitAdd] = useMutation(addAttackPatternsMutationRelationAdd);

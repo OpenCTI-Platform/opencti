@@ -97,6 +97,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
@@ -224,7 +225,11 @@ import { checkRelationConsistency, isRelationConsistent } from '../utils/modelCo
 import { getEntitiesFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabularyCategoryForField } from '../modules/vocabulary/vocabulary-utils';
+import {
+  getVocabulariesCategories,
+  getVocabularyCategoryForField,
+  updateElasticVocabularyValue
+} from '../modules/vocabulary/vocabulary-utils';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1023,10 +1028,21 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   const sourceTypes = R.map((s) => s.entity_type, sourceEntities);
   const isWorkingOnSameType = sourceTypes.every((v) => v === targetType);
   if (!isWorkingOnSameType) {
-    throw FunctionalError('Cannot merge entities of different types', {
-      dest: targetType,
-      source: sourceTypes,
-    });
+    throw FunctionalError('Cannot merge entities of different types', { dest: targetType, source: sourceTypes });
+  }
+  // Check supported entities
+  if (!isStixCoreObject(targetEntity.entity_type) && targetEntity.entity_type !== ENTITY_TYPE_VOCABULARY) {
+    throw FunctionalError('Unsupported entity type for merging', { type: targetType });
+  }
+  // For vocabularies, extra elastic query is required
+  if (targetEntity.entity_type === ENTITY_TYPE_VOCABULARY) {
+    // Merge is only possible between same categories
+    const categories = new Set([targetEntity.category, ...sourceEntities.map((s) => s.category)]);
+    if (categories.size > 1) {
+      throw FunctionalError('Cannot merge vocabularies of different category', { categories });
+    }
+    const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetEntity.category);
+    await updateElasticVocabularyValue(sourceEntities.map((s) => s.name), targetEntity.name, completeCategory);
   }
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
@@ -1315,7 +1331,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
-    return storeLoadById(context, user, target.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) => {
+    return storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
     });
   } catch (err) {

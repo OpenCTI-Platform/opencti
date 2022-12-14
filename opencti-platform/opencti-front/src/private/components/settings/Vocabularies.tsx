@@ -2,6 +2,7 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
+import { useParams } from 'react-router-dom';
 import ListLines from '../../../components/list_lines/ListLines';
 import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
 import VocabulariesLines, { vocabulariesLinesQuery } from './attributes/VocabulariesLines';
@@ -17,6 +18,9 @@ import { Theme } from '../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import VocabularyCreation from './attributes/VocabularyCreation';
+import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import ToolBar from '../data/ToolBar';
+import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -36,6 +40,10 @@ const Vocabularies = () => {
   const { t } = useFormatter();
   const theme = useTheme<Theme>();
 
+  const params = useParams() as { category: string };
+  const { typeToCategory } = useVocabularyCategory();
+  const category = typeToCategory(params.category);
+
   const [
     viewStorage,
     _,
@@ -44,18 +52,29 @@ const Vocabularies = () => {
       handleSort,
       handleSearch,
       handleRemoveFilter,
+      handleSetNumberOfElements,
     },
-  ] = useLocalStorage('view-vocabulary', {
+  ] = useLocalStorage(`view-vocabulary-${category}`, {
     sortBy: 'name',
     orderAsc: true,
     searchTerm: '',
+    numberOfElements: { number: 0, symbol: '', original: 0 },
   });
 
   const queryProps = localStorageToPaginationOptions<VocabulariesLines_DataQuery$variables>({
     ...viewStorage,
     count: 200,
+    category,
   });
   const queryRef = useQueryLoading<VocabulariesLinesPaginationQuery>(vocabulariesLinesQuery, queryProps);
+
+  const {
+    onToggleEntity,
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+    selectedElements,
+    deSelectedElements,
+  } = useEntityToggle<useVocabularyCategory_Vocabularynode$data>(`view-vocabulary-${category}`);
 
   const renderLines = () => {
     const dataColumns = {
@@ -109,6 +128,7 @@ const Vocabularies = () => {
     return (
       <ListLines
         sortBy={viewStorage.sortBy}
+        iconExtension={true}
         orderAsc={viewStorage.orderAsc}
         dataColumns={dataColumns}
         handleSort={handleSort}
@@ -119,19 +139,33 @@ const Vocabularies = () => {
         secondaryAction={true}
         keyword={queryProps.search}
         filters={viewStorage.filters}
-        availableFilterKeys={[
-          'entity_types',
-          'category',
-        ]}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <VocabulariesLines
-              queryRef={queryRef}
-              paginationOptions={queryProps}
-              dataColumns={dataColumns}
+          <>
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <VocabulariesLines
+                queryRef={queryRef}
+                paginationOptions={queryProps}
+                dataColumns={dataColumns}
+                setNumberOfElements={handleSetNumberOfElements}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+              />
+            </React.Suspense>
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              handleClearSelectedElements={handleClearSelectedElements}
+              noAuthor={true}
+              noMarking={true}
+              noWarning={true}
+              deleteDisable={true}
+              filters={{ entity_type: [{ id: 'Vocabulary' }] }}
+              variant="small"
             />
-          </React.Suspense>
+          </>
         )}
       </ListLines>
     );
@@ -141,7 +175,7 @@ const Vocabularies = () => {
     <div className={classes.container}>
       <LabelsVocabulariesMenu />
       {renderLines()}
-      <VocabularyCreation paginationOptions={queryProps} />
+      <VocabularyCreation category={category} paginationOptions={queryProps} />
     </div>
   );
 };

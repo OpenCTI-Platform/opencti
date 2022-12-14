@@ -7,12 +7,14 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVertOutlined, ShortTextOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import Checkbox from '@mui/material/Checkbox';
 import VocabularyPopover from './VocabularyPopover';
 import { DataColumns } from '../../../../components/list_lines';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
 import { vocabFragment } from '../../../../utils/hooks/useVocabularyCategory';
 import {
+  useVocabularyCategory_Vocabularynode$data,
   useVocabularyCategory_Vocabularynode$key,
 } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 
@@ -53,6 +55,10 @@ interface VocabularyLineProps {
   dataColumns: DataColumns,
   paginationOptions: LocalStorage,
   refetch: () => void,
+  selectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
+  deSelectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
+  onToggleEntity: (entity: useVocabularyCategory_Vocabularynode$data, event: React.SyntheticEvent) => void,
+  selectAll: boolean,
 }
 
 export const VocabularyLine: FunctionComponent<VocabularyLineProps> = ({
@@ -60,13 +66,31 @@ export const VocabularyLine: FunctionComponent<VocabularyLineProps> = ({
   dataColumns,
   paginationOptions,
   refetch,
+  selectedElements,
+  deSelectedElements,
+  onToggleEntity,
+  selectAll,
 }) => {
   const classes = useStyles();
 
   const vocab = useFragment(vocabFragment, node);
 
   return (
-    <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
+        onClick={(event) => onToggleEntity(vocab, event)}
+      >
+        <Checkbox
+          edge="start"
+          checked={
+            (selectAll && !(vocab.id in (deSelectedElements || {})))
+            || vocab.id in (selectedElements || {})
+          }
+          disableRipple={true}
+        />
+      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ShortTextOutlined />
       </ListItemIcon>

@@ -105,7 +105,6 @@ const AddDataComponentsLines: FunctionComponent<AddDataComponentsLinesContainerP
     linesQuery: addDataComponentsLinesQuery,
     linesFragment: addDataComponentsLinesFragment,
     queryRef,
-    nodePath: ['dataComponents', 'edges'],
   });
 
   const [commitAdd] = useMutation(addDataComponentsMutationRelationAdd);

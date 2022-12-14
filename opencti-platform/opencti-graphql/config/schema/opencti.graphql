@@ -12934,6 +12934,7 @@ type SynchronizerEditMutations {
 ######## STIX OBJECT
 type StixEditMutations {
   delete: ID
+  merge(stixObjectsIds: [String]!): StixObject
 }
 
 ######## STIX OBJECT ENTITIES
@@ -12980,7 +12981,6 @@ type StixCoreObjectEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): StixCoreObject
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  merge(stixCoreObjectsIds: [String]!): StixCoreObject
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]

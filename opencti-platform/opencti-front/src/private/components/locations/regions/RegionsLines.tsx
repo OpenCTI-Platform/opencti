@@ -82,7 +82,7 @@ const RegionsLinesComponent: FunctionComponent<RegionsLinesProps> = ({ setNumber
     linesQuery: regionsLinesQuery,
     linesFragment: regionsLinesFragment,
     queryRef,
-    nodePath: ['regions', 'edges'],
+    nodePath: ['regions', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (
