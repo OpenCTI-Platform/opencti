@@ -22,7 +22,7 @@ import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditi
 import DataSourceEditionContainer, { dataSourceEditionQuery } from './DataSourceEditionContainer';
 import Transition from '../../../../components/Transition';
 
-const styles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -44,7 +44,7 @@ const DataSourcePopoverDeletionMutation = graphql`
 
 const DataSourcePopover = ({ id }: { id: string }) => {
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
   const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);

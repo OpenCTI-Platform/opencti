@@ -577,6 +577,7 @@ class StixCoreRelationshipContainer extends Component {
                 marginTop={55}
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
                 isRelationship={true}
+                defaultMarking={(stixCoreRelationship.objectMarking?.edges ?? []).map((edge) => edge.node)}
               />
             </div>
           )}

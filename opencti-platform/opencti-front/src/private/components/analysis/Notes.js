@@ -120,12 +120,17 @@ class Notes extends Component {
     const dataColumns = {
       attribute_abstract: {
         label: 'Abstract',
-        width: '40%',
+        width: '30%',
+        isSortable: true,
+      },
+      note_types: {
+        label: 'Note type',
+        width: '15%',
         isSortable: true,
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        width: '10%',
         isSortable: isRuntimeSort,
       },
       objectLabel: {
@@ -168,6 +173,8 @@ class Notes extends Component {
           'markedBy',
           'created_start_date',
           'created_end_date',
+          'likelihood',
+          'note_types',
         ]}
       >
         <QueryRenderer

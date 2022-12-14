@@ -92,6 +92,7 @@ class IndividualComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={individual.id}
+          defaultMarking={(individual.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndividualEdition individualId={individual.id} />

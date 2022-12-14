@@ -138,6 +138,7 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={dataSource.id}
+        defaultMarking={(dataSource.objectMarking?.edges ?? []).map((edge) => edge.node)}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataSourceEdition dataSourceId={dataSource.id} />

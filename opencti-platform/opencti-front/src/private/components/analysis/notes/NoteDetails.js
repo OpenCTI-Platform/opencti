@@ -8,15 +8,25 @@ import Typography from '@mui/material/Typography';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 
-const styles = () => ({
+const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+  },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: theme.palette.background.accent,
+    color: theme.palette.text.primary,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    margin: '0 5px 5px 0',
   },
 });
 
@@ -53,6 +63,29 @@ class NoteDetailsComponent extends Component {
           >
             {note.content}
           </Markdown>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Note types')}
+          </Typography>
+          {note.note_types?.map((noteType) => (
+            <Chip
+              key={noteType}
+              classes={{ root: classes.chip }}
+              label={noteType}
+            />
+          ))}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}>
+            {t('Likelihood')}
+          </Typography>
+          {note.likelihood
+            && <>{note.likelihood} %</>
+          }
         </Paper>
       </div>
     );
@@ -72,6 +105,8 @@ const NoteDetails = createFragmentContainer(NoteDetailsComponent, {
       id
       attribute_abstract
       content
+      note_types
+      likelihood
     }
   `,
 });

@@ -4,7 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -27,13 +27,14 @@ import { commitMutation } from '../../../../relay/environment';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemAuthor from '../../../../components/ItemAuthor';
-import StixSightingRelationshipNotes from '../../analysis/notes/StixSightingRelationshipNotes';
 import StixSightingRelationshipInference from './StixSightingRelationshipInference';
-import StixSightingRelationshipExternalReferences from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
+import StixSightingRelationshipExternalReferences
+  from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemStatus from '../../../../components/ItemStatus';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 const styles = (theme) => ({
   container: {
@@ -492,10 +493,11 @@ class StixSightingRelationshipContainer extends Component {
                   />
                 </Grid>
               </Grid>
-              <StixSightingRelationshipNotes
+              <StixCoreObjectOrStixCoreRelationshipNotes
                 marginTop={55}
-                stixSightingRelationshipId={stixSightingRelationship.id}
+                stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationship.id}
                 isRelationship={true}
+                defaultMarking={(stixSightingRelationship.objectMarking?.edges ?? []).map((edge) => edge.node)}
               />
             </div>
           )}

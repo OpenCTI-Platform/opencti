@@ -1,6 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import {
-  ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
@@ -175,6 +175,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     entity_types: [ENTITY_TYPE_MALWARE],
     fields: [{
       key: 'malware_types',
+      required: false,
+      multiple: true,
+    }]
+  },
+  // R
+  note_types_ov: {
+    entity_types: [ENTITY_TYPE_CONTAINER_NOTE],
+    fields: [{
+      key: 'note_types',
       required: false,
       multiple: true,
     }]

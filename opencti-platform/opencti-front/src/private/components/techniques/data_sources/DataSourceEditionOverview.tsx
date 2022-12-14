@@ -148,7 +148,7 @@ interface DataSourceEditionFormValues {
   references?: Option[],
 }
 
-const DataSourceEditionOverviewComponent: FunctionComponent<DataSourceEditionOverviewProps> = ({
+const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProps> = ({
   data,
   context,
   enableReferences = false,
@@ -394,4 +394,4 @@ const DataSourceEditionOverviewComponent: FunctionComponent<DataSourceEditionOve
   );
 };
 
-export default DataSourceEditionOverviewComponent;
+export default DataSourceEditionOverview;

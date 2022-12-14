@@ -1,16 +1,16 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React, { FunctionComponent } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import NoteEditionOverview from './NoteEditionOverview';
+import { Theme } from '../../../../components/Theme';
+import { NoteEditionContainer_note$data } from './__generated__/NoteEditionContainer_note.graphql';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -37,22 +37,20 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
-});
+}));
 
-class NoteEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { currentTab: 0 };
-  }
+interface NoteEditionContainerProps {
+  note: NoteEditionContainer_note$data
+  handleClose: () => void,
+}
 
-  handleChangeTab(event, value) {
-    this.setState({ currentTab: value });
-  }
+const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({ note, handleClose }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
 
-  render() {
-    const { t, classes, handleClose, note } = this.props;
-    const { editContext } = note;
-    return (
+  const { editContext } = note;
+
+  return (
       <div>
         <div className={classes.header}>
           <IconButton
@@ -71,35 +69,25 @@ class NoteEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <NoteEditionOverview note={this.props.note} context={editContext} />
+          <NoteEditionOverview note={note} context={editContext} />
         </div>
       </div>
-    );
-  }
-}
-
-NoteEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  note: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-const NoteEditionFragment = createFragmentContainer(NoteEditionContainer, {
-  note: graphql`
-    fragment NoteEditionContainer_note on Note {
-      id
-      ...NoteEditionOverview_note
-      editContext {
-        name
-        focusOn
+const NoteEditionContainerFragment = createFragmentContainer(
+  NoteEditionContainer,
+  {
+    note: graphql`
+      fragment NoteEditionContainer_note on Note {
+        ...NoteEditionOverview_note
+        editContext {
+          name
+          focusOn
+        }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(NoteEditionFragment);
+export default NoteEditionContainerFragment;

@@ -214,10 +214,10 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
 
   const handleChangeObjectMarking = (name: string, values: Option[]) => {
     if (!enableReferences) {
-      const currentMarkingDefinitions = dataComponent?.objectMarking?.edges?.map((n) => ({
-        label: n?.node.definition,
-        value: n?.node.id,
-      })) || [];
+      const currentMarkingDefinitions = (dataComponent?.objectMarking?.edges ?? []).map((n) => ({
+        label: n.node.definition,
+        value: n.node.id,
+      }));
 
       const added = values.filter((v) => !currentMarkingDefinitions.map((c) => c.value)
         .includes(v.value));

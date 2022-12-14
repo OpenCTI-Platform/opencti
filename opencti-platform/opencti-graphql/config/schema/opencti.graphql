@@ -1438,7 +1438,7 @@ input MarkingDefinitionsFiltering {
 }
 type MarkingDefinitionConnection {
   pageInfo: PageInfo!
-  edges: [MarkingDefinitionEdge!]
+  edges: [MarkingDefinitionEdge!]!
 }
 type MarkingDefinitionEdge {
   cursor: String!
@@ -2568,6 +2568,7 @@ enum NotesOrdering {
   createdBy
   x_opencti_workflow_id
   objectMarking
+  note_types
 }
 enum NotesFilter {
   attribute_abstract
@@ -2583,6 +2584,8 @@ enum NotesFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  note_types
+  likelihood
 }
 input NotesFiltering {
   key: [NotesFilter!]!
@@ -2592,7 +2595,7 @@ input NotesFiltering {
 }
 type NoteConnection {
   pageInfo: PageInfo!
-  edges: [NoteEdge]
+  edges: [NoteEdge!]!
 }
 type NoteEdge {
   cursor: String!
@@ -2716,6 +2719,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   attribute_abstract: String
   content: String!
   authors: [String]
+  note_types: [String]
+  likelihood: Int
   # Technical
   creator: Creator
   toStix: String
@@ -2734,6 +2739,8 @@ input NoteAddInput {
   attribute_abstract: String
   content: String! @constraint(minLength: 2)
   authors: [String]
+  note_types: [String]
+  likelihood: Int
   revoked: Boolean
   lang: String
   createdBy: String
@@ -2753,6 +2760,8 @@ input NoteUserAddInput {
   x_opencti_stix_ids: [String]
   attribute_abstract: String
   content: String! @constraint(minLength: 2)
+  note_types: [String]
+  likelihood: Int
   revoked: Boolean
   lang: String
   confidence: Int
@@ -12129,26 +12138,6 @@ type Query {
     search: String
     toStix: Boolean
   ): NoteConnection @auth(for: [KNOWLEDGE])
-  notesTimeSeries(
-    objectId: String
-    authorId: String
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime!
-    endDate: DateTime!
-    interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  notesNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
-  notesDistribution(
-    objectId: String
-    field: String!
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
-  noteContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
   observedData(id: String): ObservedData @auth(for: [KNOWLEDGE])
   observedDatas(
     first: Int
@@ -13447,7 +13436,7 @@ type Mutation {
   ############### Containers
   containerEdit(id: ID!): ContainerEditMutations
   noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
-  userNoteAdd(input: NoteUserAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
+  userNoteAdd(input: NoteUserAddInput!): Note @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   noteEdit(id: ID!): NoteEditMutations
   observedDataAdd(input: ObservedDataAddInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   observedDataEdit(id: ID!): ObservedDataEditMutations

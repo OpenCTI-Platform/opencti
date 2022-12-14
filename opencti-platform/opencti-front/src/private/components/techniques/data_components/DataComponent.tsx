@@ -134,6 +134,7 @@ const DataComponent: FunctionComponent<{ data: DataComponent_dataComponent$key }
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={dataComponent.id}
+        defaultMarking={(dataComponent.objectMarking?.edges ?? []).map((edge) => edge.node)}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataComponentEdition dataComponentId={dataComponent.id} />

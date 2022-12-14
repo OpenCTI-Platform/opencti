@@ -9317,7 +9317,7 @@ export type MarkingDefinitionAddInput = {
 
 export type MarkingDefinitionConnection = {
   __typename?: 'MarkingDefinitionConnection';
-  edges?: Maybe<Array<MarkingDefinitionEdge>>;
+  edges: Array<MarkingDefinitionEdge>;
   pageInfo: PageInfo;
 };
 
@@ -10914,7 +10914,7 @@ export type MutationUserEditArgs = {
 
 
 export type MutationUserNoteAddArgs = {
-  input?: InputMaybe<NoteUserAddInput>;
+  input: NoteUserAddInput;
 };
 
 
@@ -11653,7 +11653,9 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']>;
+  likelihood?: Maybe<Scalars['Int']>;
   modified?: Maybe<Scalars['DateTime']>;
+  note_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
@@ -11837,7 +11839,9 @@ export type NoteAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
+  likelihood?: InputMaybe<Scalars['Int']>;
   modified?: InputMaybe<Scalars['DateTime']>;
+  note_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -11850,7 +11854,7 @@ export type NoteAddInput = {
 
 export type NoteConnection = {
   __typename?: 'NoteConnection';
-  edges?: Maybe<Array<Maybe<NoteEdge>>>;
+  edges: Array<NoteEdge>;
   pageInfo: PageInfo;
 };
 
@@ -11901,7 +11905,9 @@ export type NoteUserAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
+  likelihood?: InputMaybe<Scalars['Int']>;
   modified?: InputMaybe<Scalars['DateTime']>;
+  note_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -11920,8 +11926,10 @@ export enum NotesFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   LabelledBy = 'labelledBy',
+  Likelihood = 'likelihood',
   MarkedBy = 'markedBy',
   Modified = 'modified',
+  NoteTypes = 'note_types',
   ObjectContains = 'objectContains',
   Revoked = 'revoked',
   UpdatedAt = 'updated_at',
@@ -11941,6 +11949,7 @@ export enum NotesOrdering {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Modified = 'modified',
+  NoteTypes = 'note_types',
   ObjectMarking = 'objectMarking',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -13869,11 +13878,7 @@ export type Query = {
   narrative?: Maybe<Narrative>;
   narratives?: Maybe<NarrativeConnection>;
   note?: Maybe<Note>;
-  noteContainsStixObjectOrStixRelationship?: Maybe<Scalars['Boolean']>;
   notes?: Maybe<NoteConnection>;
-  notesDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  notesNumber?: Maybe<Number>;
-  notesTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   observedData?: Maybe<ObservedData>;
   observedDataContainsStixObjectOrStixRelationship?: Maybe<Scalars['Boolean']>;
   observedDatas?: Maybe<ObservedDataConnection>;
@@ -14624,12 +14629,6 @@ export type QueryNoteArgs = {
 };
 
 
-export type QueryNoteContainsStixObjectOrStixRelationshipArgs = {
-  id: Scalars['String'];
-  stixObjectOrStixRelationshipId: Scalars['String'];
-};
-
-
 export type QueryNotesArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
@@ -14639,33 +14638,6 @@ export type QueryNotesArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
-};
-
-
-export type QueryNotesDistributionArgs = {
-  dateAttribute?: InputMaybe<Scalars['String']>;
-  field: Scalars['String'];
-  limit?: InputMaybe<Scalars['Int']>;
-  objectId?: InputMaybe<Scalars['String']>;
-  operation: StatsOperation;
-  order?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryNotesNumberArgs = {
-  endDate?: InputMaybe<Scalars['DateTime']>;
-  objectId?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryNotesTimeSeriesArgs = {
-  authorId?: InputMaybe<Scalars['String']>;
-  endDate: Scalars['DateTime'];
-  field: Scalars['String'];
-  interval: Scalars['String'];
-  objectId?: InputMaybe<Scalars['String']>;
-  operation: StatsOperation;
-  startDate: Scalars['DateTime'];
 };
 
 
@@ -21522,6 +21494,7 @@ export enum VocabularyCategory {
   IntegrityLevelOv = 'integrity_level_ov',
   MalwareCapabilitiesOv = 'malware_capabilities_ov',
   MalwareTypeOv = 'malware_type_ov',
+  NoteTypesOv = 'note_types_ov',
   OpinionOv = 'opinion_ov',
   PatternTypeOv = 'pattern_type_ov',
   PermissionsOv = 'permissions_ov',
@@ -23119,7 +23092,7 @@ export type ResolversTypes = ResolversObject<{
   NetworkTrafficAddInput: NetworkTrafficAddInput;
   Note: ResolverTypeWrapper<Omit<Note, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, relatedContainers?: Maybe<ResolversTypes['ContainerConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   NoteAddInput: NoteAddInput;
-  NoteConnection: ResolverTypeWrapper<Omit<NoteConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['NoteEdge']>>> }>;
+  NoteConnection: ResolverTypeWrapper<Omit<NoteConnection, 'edges'> & { edges: Array<ResolversTypes['NoteEdge']> }>;
   NoteEdge: ResolverTypeWrapper<Omit<NoteEdge, 'node'> & { node: ResolversTypes['Note'] }>;
   NoteEditMutations: ResolverTypeWrapper<Omit<NoteEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Note']>, contextPatch?: Maybe<ResolversTypes['Note']>, fieldPatch?: Maybe<ResolversTypes['Note']>, relationDelete?: Maybe<ResolversTypes['Note']> }>;
   NoteUserAddInput: NoteUserAddInput;
@@ -23721,7 +23694,7 @@ export type ResolversParentTypes = ResolversObject<{
   NetworkTrafficAddInput: NetworkTrafficAddInput;
   Note: Omit<Note, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, relatedContainers?: Maybe<ResolversParentTypes['ContainerConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   NoteAddInput: NoteAddInput;
-  NoteConnection: Omit<NoteConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['NoteEdge']>>> };
+  NoteConnection: Omit<NoteConnection, 'edges'> & { edges: Array<ResolversParentTypes['NoteEdge']> };
   NoteEdge: Omit<NoteEdge, 'node'> & { node: ResolversParentTypes['Note'] };
   NoteEditMutations: Omit<NoteEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Note']>, contextPatch?: Maybe<ResolversParentTypes['Note']>, fieldPatch?: Maybe<ResolversParentTypes['Note']>, relationDelete?: Maybe<ResolversParentTypes['Note']> };
   NoteUserAddInput: NoteUserAddInput;
@@ -26651,7 +26624,7 @@ export type MarkingDefinitionResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type MarkingDefinitionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkingDefinitionConnection'] = ResolversParentTypes['MarkingDefinitionConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinitionEdge']>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['MarkingDefinitionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -26966,7 +26939,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
   userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUserAddArgs>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
-  userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, Partial<MutationUserNoteAddArgs>>;
+  userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
   userSubscriptionAdd?: Resolver<Maybe<ResolversTypes['UserSubscription']>, ParentType, ContextType, Partial<MutationUserSubscriptionAddArgs>>;
   userSubscriptionEdit?: Resolver<Maybe<ResolversTypes['UserSubscriptionEditMutations']>, ParentType, ContextType, RequireFields<MutationUserSubscriptionEditArgs, 'id'>>;
@@ -27156,7 +27129,9 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NoteJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  likelihood?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  note_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NoteNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
@@ -27185,7 +27160,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type NoteConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NoteConnection'] = ResolversParentTypes['NoteConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['NoteEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['NoteEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -27774,11 +27749,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   narrative?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<QueryNarrativeArgs, 'id'>>;
   narratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType, Partial<QueryNarrativesArgs>>;
   note?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, Partial<QueryNoteArgs>>;
-  noteContainsStixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryNoteContainsStixObjectOrStixRelationshipArgs, 'id' | 'stixObjectOrStixRelationshipId'>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<QueryNotesArgs>>;
-  notesDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryNotesDistributionArgs, 'field' | 'operation'>>;
-  notesNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryNotesNumberArgs>>;
-  notesTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryNotesTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, Partial<QueryObservedDataArgs>>;
   observedDataContainsStixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryObservedDataContainsStixObjectOrStixRelationshipArgs, 'id' | 'stixObjectOrStixRelationshipId'>>;
   observedDatas?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<QueryObservedDatasArgs>>;

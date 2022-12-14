@@ -1,17 +1,19 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import NoteEditionContainer from './NoteEditionContainer';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionOverviewFocus } from './NoteEditionOverview';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { Theme } from '../../../../components/Theme';
+import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -41,16 +43,18 @@ export const noteEditionQuery = graphql`
   }
 `;
 
-const NoteEdition = ({ noteId }) => {
-  const [open, setOpen] = useState(false);
+const NoteEdition = ({ noteId }: { noteId: string }) => {
   const classes = useStyles();
+
+  const [open, setOpen] = useState(false);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-  const { me } = useContext(UserContext);
+  const { me } = useAuth();
   const handleOpen = () => setOpen(true);
 
+  const [commit] = useMutation(noteEditionOverviewFocus);
+
   const handleClose = () => {
-    commitMutation({
-      mutation: noteEditionOverviewFocus,
+    commit({
       variables: {
         id: noteId,
         input: { focusOn: '' },
@@ -58,15 +62,16 @@ const NoteEdition = ({ noteId }) => {
     });
     setOpen(false);
   };
+
   return (
       <div>
         <QueryRenderer
           query={noteEditionQuery}
           variables={{ id: noteId }}
-          render={({ props }) => {
-            if (props) {
+          render={({ props }: { props: NoteEditionContainerQuery$data }) => {
+            if (props && props.note) {
               // Check is user has edition rights
-              if (!userIsKnowledgeEditor && me.individual_id !== props.note.createdBy.id) {
+              if (!userIsKnowledgeEditor && me.individual_id !== props.note.createdBy?.id) {
                 return <></>;
               }
               return (
@@ -87,7 +92,7 @@ const NoteEdition = ({ noteId }) => {
                   </Drawer></>
               );
             }
-            return <Loader variant="inElement" />;
+            return <Loader variant={LoaderVariant.inElement} />;
           }}
         />
       </div>

@@ -9,6 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { truncate } from '../../../../utils/String';
@@ -44,6 +45,12 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+  },
 });
 
 class NoteLineComponent extends Component {
@@ -73,6 +80,19 @@ class NoteLineComponent extends Component {
                     : node.content,
                   50,
                 )}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.note_types.width }}
+              >
+                {node.note_types?.length > 0
+                  && <Chip
+                    classes={{ root: classes.chipInList }}
+                    color="primary"
+                    variant="outlined"
+                    label={node.note_types[0]}
+                  />
+                 }
               </div>
               <div
                 className={classes.bodyItem}
@@ -136,6 +156,7 @@ const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
       attribute_abstract
       content
       created
+      note_types
       createdBy {
         ... on Identity {
           id
@@ -189,6 +210,17 @@ class NoteLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.attribute_abstract.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.note_types.width }}
               >
                 <Skeleton
                   animation="wave"

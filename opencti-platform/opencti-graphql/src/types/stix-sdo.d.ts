@@ -202,6 +202,8 @@ interface StixNote extends StixDomainObject {
   content: string;
   authors: Array<string>;
   object_refs: Array<StixId>;
+  note_types: Array<string>;
+  likelihood: number;
   extensions: {
     [STIX_EXT_OCTI]: StixContainerExtension;
   };
