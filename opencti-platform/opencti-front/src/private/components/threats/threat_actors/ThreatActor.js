@@ -74,9 +74,7 @@ class ThreatActorComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences
-              stixCoreObjectId={threatActor.id}
-            />
+            <StixCoreObjectExternalReferences stixCoreObjectId={threatActor.id} />
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={threatActor.id} />

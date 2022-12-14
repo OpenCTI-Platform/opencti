@@ -5,11 +5,10 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { ProgressWrench } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemSecondaryAction } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import { LinkOff } from '@mui/icons-material';
+import { LinkOff, StreamOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import AddDataSources from './AddDataSources';
 import { DataComponentDataSources_dataComponent$data, DataComponentDataSources_dataComponent$key } from './__generated__/DataComponentDataSources_dataComponent.graphql';
@@ -86,7 +85,7 @@ const DataComponentDataSource: FunctionComponent<DataComponentDataSourcesProps> 
           >
             <ListItemIcon>
               <ListItemIcon>
-                <ProgressWrench color="primary" />
+                <StreamOutlined color="primary" />
               </ListItemIcon>
             </ListItemIcon>
             <ListItemText primary={data.dataSource?.name} />

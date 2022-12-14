@@ -1,7 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_DATA_SOURCE,
+  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
@@ -116,6 +116,22 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       required: false,
       multiple: true,
     }]
+  },
+  incident_type_ov: {
+    entity_types: [ENTITY_TYPE_INCIDENT],
+    fields: [{
+      key: 'incident_type',
+      required: false,
+      multiple: false,
+    }],
+  },
+  incident_severity_ov: {
+    entity_types: [ENTITY_TYPE_INCIDENT],
+    fields: [{
+      key: 'severity',
+      required: false,
+      multiple: false,
+    }],
   },
   indicator_type_ov: {
     description: 'Indicator type is an open vocabulary used to categorize Indicators. It is intended to be high-level to promote consistent practices. Indicator types should not be used to capture information that can be better captured via related Malware or Attack Pattern objects. It is better to link an Indicator to a Malware object describing Poison Ivy rather than simply providing a type or label of "poison-ivy"',

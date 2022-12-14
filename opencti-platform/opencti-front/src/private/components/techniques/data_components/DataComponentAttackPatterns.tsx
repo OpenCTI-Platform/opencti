@@ -5,7 +5,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { ProgressWrench } from 'mdi-material-ui';
+import { LockPattern } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
@@ -70,7 +70,7 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{ dataComponent: D
                 >
                   <ListItemIcon>
                     <ListItemIcon>
-                      <ProgressWrench color="primary" />
+                      <LockPattern color="primary" />
                     </ListItemIcon>
                   </ListItemIcon>
                   <ListItemText primary={attackPattern.name} />

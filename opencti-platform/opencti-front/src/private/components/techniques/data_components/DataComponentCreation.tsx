@@ -189,7 +189,7 @@ const DataComponentCreation: FunctionComponent<{
         name="name"
         label={t('Name')}
         fullWidth={true}
-        detectduplicate={['Data Component']}
+        detectDuplicate={['Data-Component']}
       />
       <ConfidenceField
         name="confidence"

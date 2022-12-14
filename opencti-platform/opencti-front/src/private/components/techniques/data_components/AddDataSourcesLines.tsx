@@ -4,9 +4,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ProgressWrench } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
+import { StreamOutlined } from '@mui/icons-material';
 import { truncate } from '../../../../utils/String';
 import { Theme } from '../../../../components/Theme';
 import { AddDataSourcesLines_data$key } from './__generated__/AddDataSourcesLines_data.graphql';
@@ -130,7 +130,7 @@ const AddDataSourcesLines: FunctionComponent<AddDataSourcesLinesContainerProps> 
                 onClick={() => addDataSource(dataSource)}
               >
                 <ListItemIcon>
-                  <ProgressWrench />
+                  <StreamOutlined />
                 </ListItemIcon>
                 <ListItemText
                   primary={dataSource.name}

@@ -4,8 +4,7 @@ import React, { FunctionComponent } from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { CheckCircle } from '@mui/icons-material';
-import { ProgressWrench } from 'mdi-material-ui';
+import { CheckCircle, SourceOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -175,7 +174,7 @@ const AddDataComponentsLines: FunctionComponent<AddDataComponentsLinesContainerP
               {alreadyAdded ? (
                 <CheckCircle classes={{ root: classes.icon }} />
               ) : (
-                <ProgressWrench />
+                <SourceOutlined />
               )}
             </ListItemIcon>
             <ListItemText

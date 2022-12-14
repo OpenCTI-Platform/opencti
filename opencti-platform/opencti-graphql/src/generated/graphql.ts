@@ -4019,7 +4019,7 @@ export type EditContext = {
 export type EditInput = {
   key: Scalars['String'];
   operation?: InputMaybe<EditOperation>;
-  value: Array<Scalars['String']>;
+  value: Array<InputMaybe<Scalars['String']>>;
 };
 
 export enum EditOperation {
@@ -20348,6 +20348,7 @@ export enum ThreatActorsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Revoked = 'revoked',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -21496,6 +21497,8 @@ export enum VocabularyCategory {
   EventTypeOv = 'event_type_ov',
   GroupingContextOv = 'grouping_context_ov',
   ImplementationLanguageOv = 'implementation_language_ov',
+  IncidentSeverityOv = 'incident_severity_ov',
+  IncidentTypeOv = 'incident_type_ov',
   IndicatorTypeOv = 'indicator_type_ov',
   InfrastructureTypeOv = 'infrastructure_type_ov',
   IntegrityLevelOv = 'integrity_level_ov',

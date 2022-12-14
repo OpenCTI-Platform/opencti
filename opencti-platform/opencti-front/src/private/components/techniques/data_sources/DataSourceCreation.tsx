@@ -199,7 +199,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
         name="name"
         label={t('Name')}
         fullWidth={true}
-        detectduplicate={['Data Source']}
+        detectDuplicate={['Data-Source']}
       />
       <ConfidenceField
         name="confidence"

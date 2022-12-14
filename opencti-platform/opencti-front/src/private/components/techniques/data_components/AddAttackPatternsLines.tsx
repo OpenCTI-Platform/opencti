@@ -5,9 +5,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { CheckCircle } from '@mui/icons-material';
-import { ProgressWrench } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
+import { LockPattern } from 'mdi-material-ui';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
@@ -175,7 +175,7 @@ const AddAttackPatternsLines: FunctionComponent<AddAttackPatternsLinesContainerP
               {alreadyAdded ? (
                 <CheckCircle classes={{ root: classes.icon }} />
               ) : (
-                <ProgressWrench />
+                <LockPattern />
               )}
             </ListItemIcon>
             <ListItemText

@@ -77,7 +77,7 @@ enum EditOperation {
 
 input EditInput {
   key: String!
-  value: [String!]!
+  value: [String]!
   operation: EditOperation
 }
 
@@ -4627,6 +4627,7 @@ enum ThreatActorsFilter {
   markedBy
   labelledBy
   x_opencti_workflow_id
+  revoked
 }
 
 input ThreatActorsFiltering {
@@ -8974,6 +8975,8 @@ enum VocabularyCategory {
   event_type_ov
   grouping_context_ov
   implementation_language_ov
+  incident_type_ov
+  incident_severity_ov
   indicator_type_ov
   infrastructure_type_ov
   integrity_level_ov

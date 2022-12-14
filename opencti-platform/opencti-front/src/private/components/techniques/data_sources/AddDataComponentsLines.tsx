@@ -4,9 +4,8 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ProgressWrench } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import { CheckCircle } from '@mui/icons-material';
+import { CheckCircle, SourceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { truncate } from '../../../../utils/String';
 import { Theme } from '../../../../components/Theme';
@@ -171,7 +170,7 @@ const AddDataComponentsLines: FunctionComponent<AddDataComponentsLinesContainerP
                   {alreadyAdded ? (
                     <CheckCircle classes={{ root: classes.icon }} />
                   ) : (
-                    <ProgressWrench />
+                    <SourceOutlined />
                   )}
                 </ListItemIcon>
                 <ListItemText

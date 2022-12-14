@@ -64,7 +64,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     {
       key: 'coercion',
       description:
-        "Being forced to act on someone else's behalf. Adversaries who are motivated by coercion are often forced through intimidation or blackmail to act illegally for someone else’s benefit. Unlike the other motivations, a coerced person does not act for personal gain, but out of fear of incurring a loss.",
+        'Being forced to act on someone else\'s behalf. Adversaries who are motivated by coercion are often forced through intimidation or blackmail to act illegally for someone else’s benefit. Unlike the other motivations, a coerced person does not act for personal gain, but out of fear of incurring a loss.',
     },
     {
       key: 'dominance',
@@ -253,6 +253,50 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
       description: 'Specifies the x86 64-bit Assembly programming language.',
     },
   ],
+  incident_type_ov: [
+    {
+      key: 'alert',
+      description: 'An alert.',
+    },
+    {
+      key: 'compromise',
+      description: 'A compromise.',
+    },
+    {
+      key: 'information-system-disruption',
+      description: 'Disruption in the information system.',
+    },
+    {
+      key: 'ransomware',
+      description: 'A ransomware.',
+    },
+    {
+      key: 'reputation-damage',
+      description: 'Damage to reputation.',
+    },
+    {
+      key: 'data-leak',
+      description: 'A data leak.',
+    },
+    {
+      key: 'typosquatting',
+      description: 'A typosquatting.',
+    },
+    {
+      key: 'phishing',
+      description: 'A phishing attack.',
+    },
+    {
+      key: 'cybercrime',
+      description: 'Related to cybercrime.',
+    },
+  ],
+  incident_severity_ov: [
+    { key: 'low', description: 'Low impact' },
+    { key: 'medium', description: 'Medium impact' },
+    { key: 'high', description: 'High impact' },
+    { key: 'critical', description: 'Critical impact' },
+  ],
   indicator_type_ov: [
     {
       key: 'anomalous-activity',
@@ -410,17 +454,17 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     {
       key: 'captures-input-peripherals',
       description:
-        "Indicates that the malware instance or family is able to capture data from a system's input peripheral devices, such as a keyboard or mouse. This includes things like keylogging.",
+        'Indicates that the malware instance or family is able to capture data from a system\'s input peripheral devices, such as a keyboard or mouse. This includes things like keylogging.',
     },
     {
       key: 'captures-output-peripherals',
       description:
-        "Indicates that the malware instance or family captures data sent to a system's output peripherals, such as a display. Examples include things like screen scraping.",
+        'Indicates that the malware instance or family captures data sent to a system\'s output peripherals, such as a display. Examples include things like screen scraping.',
     },
     {
       key: 'captures-system-state-data',
       description:
-        "Indicates that the malware instance or family is able to capture information about a system's state (e.g., data currently in its RAM).",
+        'Indicates that the malware instance or family is able to capture information about a system\'s state (e.g., data currently in its RAM).',
     },
     {
       key: 'cleans-traces-of-infection',
@@ -606,7 +650,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     {
       key: ' ransomware',
       description:
-        "A type of malware that encrypts files on a victim's system, demanding payment of ransom in return for the access codes required to unlock files.",
+        'A type of malware that encrypts files on a victim\'s system, demanding payment of ransom in return for the access codes required to unlock files.',
     },
     {
       key: 'remote-access-trojan',
@@ -616,7 +660,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     {
       key: 'resource-exploitation',
       description:
-        "A type of malware that steals a system's resources (e.g., CPU cycles), such as a malicious bitcoin miner.",
+        'A type of malware that steals a system\'s resources (e.g., CPU cycles), such as a malicious bitcoin miner.',
     },
     {
       key: 'rogue-security-software',
@@ -636,7 +680,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     {
       key: 'spyware',
       description:
-        "Software that gathers information on a user's system without their knowledge and sends it to another party. Spyware is generally used to track activities for the purpose of delivering advertising.",
+        'Software that gathers information on a user\'s system without their knowledge and sends it to another party. Spyware is generally used to track activities for the purpose of delivering advertising.',
     },
     {
       key: 'trojan',
@@ -671,11 +715,23 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
   ],
   // O
   opinion_ov: [
-    { key: 'strongly-disagree', description: 'The creator strongly disagrees with the information and believes it is inaccurate or incorrect.' },
-    { key: 'disagree', description: 'The creator disagrees with the information and believes it is inaccurate or incorrect.' },
+    {
+      key: 'strongly-disagree',
+      description: 'The creator strongly disagrees with the information and believes it is inaccurate or incorrect.'
+    },
+    {
+      key: 'disagree',
+      description: 'The creator disagrees with the information and believes it is inaccurate or incorrect.'
+    },
     { key: 'neutral', description: 'The creator is neutral about the accuracy or correctness of the information.' },
-    { key: 'agree', description: 'The creator agrees with the information and believes that it is accurate and correct.' },
-    { key: 'strongly-agree', description: 'The creator strongly agrees with the information and believes that it is accurate and correct.' },
+    {
+      key: 'agree',
+      description: 'The creator agrees with the information and believes that it is accurate and correct.'
+    },
+    {
+      key: 'strongly-agree',
+      description: 'The creator strongly agrees with the information and believes that it is accurate and correct.'
+    },
   ],
   // P
   permissions_ov: [
@@ -689,11 +745,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'windows' },
   ],
   collection_layers_ov: [
-    { key: 'duis' },
-    { key: 'laboris' },
-    { key: 'elit' },
-    { key: 'exercitation' },
-    { key: 'ea' },
+    { key: 'container' },
+    { key: 'cloud-control-plane' },
+    { key: 'host' },
+    { key: 'OSINT' },
+    { key: 'network' },
   ],
   pattern_type_ov: [
     { key: 'stix' },
@@ -894,13 +950,22 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   tool_types_ov: [
-    { key: 'denial-of-service', description: 'Tools used to perform denial of service attacks or DDoS attacks, such as Low Orbit Ion Cannon (LOIC) and DHCPig' },
+    {
+      key: 'denial-of-service',
+      description: 'Tools used to perform denial of service attacks or DDoS attacks, such as Low Orbit Ion Cannon (LOIC) and DHCPig'
+    },
     { key: 'exploitation', description: 'Tools used to exploit software and systems, such as sqlmap and Metasploit' },
     { key: 'information-gathering', description: 'Tools used to enumerate system and network information, e.g., NMAP' },
     { key: 'network-capture', description: 'Tools used to capture network traffic, such as Wireshark and Kismet' },
-    { key: 'credential-exploitation', description: 'Tools used to crack password databases or otherwise exploit/discover credentials, either locally or remotely, such as John the Ripper and NCrack' },
+    {
+      key: 'credential-exploitation',
+      description: 'Tools used to crack password databases or otherwise exploit/discover credentials, either locally or remotely, such as John the Ripper and NCrack'
+    },
     { key: 'remote-access', description: 'Tools used to access machines remotely, such as VNC and Remote Desktop' },
-    { key: 'vulnerability-scanning', description: 'Tools used to scan systems and networks for vulnerabilities, e.g., Nessus' },
+    {
+      key: 'vulnerability-scanning',
+      description: 'Tools used to scan systems and networks for vulnerabilities, e.g., Nessus'
+    },
     { key: 'unknown', description: 'There is not enough information available to determine the type of tool' },
   ]
 };
@@ -920,7 +985,10 @@ export const getVocabularyCategoryForField = (fieldName: string, entityType: str
   if (categories.length === 1) {
     return categories.at(0);
   }
-  throw UnsupportedError('You can\'t have multiple category on the same field for the same entity type', { fieldName, entityType });
+  throw UnsupportedError('You can\'t have multiple category on the same field for the same entity type', {
+    fieldName,
+    entityType
+  });
 };
 
 export const updateElasticVocabularyValue = async (oldNames: string[], name: string, category: VocabularyDefinition) => {

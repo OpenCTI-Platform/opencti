@@ -281,7 +281,8 @@ class IncidentEditionOverviewComponent extends Component {
               type="incident-type-ov"
               name="incident_type"
               onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={setFieldValue}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
@@ -292,7 +293,8 @@ class IncidentEditionOverviewComponent extends Component {
               type="incident-severity-ov"
               name="severity"
               onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={setFieldValue}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}

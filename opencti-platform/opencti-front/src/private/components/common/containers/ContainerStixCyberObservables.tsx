@@ -6,7 +6,6 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCyberObservablesLines, {
   containerStixCyberObservablesLinesQuery,
 } from './ContainerStixCyberObservablesLines';
-import { convertFilters } from '../../../../utils/ListParameters';
 import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
 import { defaultValue } from '../../../../utils/Graph';
@@ -125,7 +124,6 @@ ContainerStixCyberObservablesComponentProps
       types && types.length > 0 ? types.map((n) => ({ id: n, value: n })) : [],
     ...filters,
   };
-  const finalFilters = convertFilters(exportFilters) as unknown as Filters;
 
   const paginationOptions = localStorageToPaginationOptions<ContainerStixCyberObservablesLinesQuery$variables>(
     {
@@ -133,7 +131,7 @@ ContainerStixCyberObservablesComponentProps
       count: 25,
       id: container.id,
       types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-      filters: finalFilters,
+      filters: exportFilters,
       orderMode: orderAsc ? 'asc' : 'desc',
     },
   );

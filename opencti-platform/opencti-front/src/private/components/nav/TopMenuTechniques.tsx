@@ -139,7 +139,7 @@ const TopMenuTechniques = () => {
           classes={{ root: classes.button }}
         >
           <StreamOutlined className={classes.icon} fontSize="small" />
-          {t('Data Sources')}
+          {t('Data sources')}
         </Button>
       )}
     </div>
