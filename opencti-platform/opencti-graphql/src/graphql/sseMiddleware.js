@@ -131,8 +131,8 @@ const createSeeMiddleware = () => {
   };
   const extractQueryParameter = (req, param) => {
     const paramData = req.query[param];
-    if (paramData && Array.isArray(paramData)) {
-      return R.head(paramData);
+    if (paramData && Array.isArray(paramData) && paramData.length > 0) {
+      return paramData.at(0);
     }
     return paramData;
   };
@@ -251,12 +251,9 @@ const createSeeMiddleware = () => {
         client.sendHeartbeat(lastEventId);
       });
       await initBroadcasting(req, res, client, processor);
-      let lastEventId = extractQueryParameter(req, 'from') || req.headers['last-event-id'];
-      if (lastEventId && lastEventId.includes('T')) {
-        const startDate = utcDate(lastEventId);
-        lastEventId = startDate.isValid() ? `${startDate.toDate().getTime()}-0` : 'live';
-      }
-      await processor.start(lastEventId);
+      const paramStartFrom = extractQueryParameter(req, 'from') || req.headers['last-event-id'];
+      const startStreamId = convertParameterToStreamId(paramStartFrom);
+      await processor.start(startStreamId);
     } catch (err) {
       res.statusMessage = `Error in stream: ${err.message}`;
       res.status(500).end();
@@ -419,7 +416,7 @@ const createSeeMiddleware = () => {
       }
     }
   };
-  const resolveAndPublishDependencies = async (context, noDependencies, cache, channel, req, streamFilters, eventId, stix) => {
+  const resolveAndPublishDependencies = async (context, noDependencies, cache, channel, req, eventId, stix) => {
     // Resolving REFS
     await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
     // Resolving CORE RELATIONS
@@ -488,7 +485,7 @@ const createSeeMiddleware = () => {
       const isFromVisible = await isInstanceMatchFilters(context, fromStix, streamFilters, filterCache);
       const isToVisible = await isInstanceMatchFilters(context, toStix, streamFilters, filterCache);
       if (isFromVisible || isToVisible) {
-        await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
+        await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
         // From or to are visible, consider it as a dependency
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: stix, message, origin, version: EVENT_CURRENT_VERSION };
@@ -504,7 +501,7 @@ const createSeeMiddleware = () => {
     if (param === '0' || param === '0-0') {
       return FROM_START_STR;
     }
-    const isFromEventFormat = param && param.includes('-') && param.split('-').length === 2;
+    const isFromEventFormat = param.includes('-') && param.split('-').length === 2;
     if (isFromEventFormat) {
       const [timestamp] = param.split('-');
       return utcDate(parseInt(timestamp, 10)).toISOString();
@@ -522,7 +519,7 @@ const createSeeMiddleware = () => {
     if (param === '0' || param === '0-0') {
       return '0-0';
     }
-    const isFromEventFormat = param && param.includes('-') && param.split('-').length === 2;
+    const isFromEventFormat = param.includes('-') && param.split('-').length === 2;
     if (isFromEventFormat) {
       return param;
     }
@@ -544,7 +541,8 @@ const createSeeMiddleware = () => {
       const startIsoDate = convertParameterToDate(paramStartFrom);
       const startStreamId = convertParameterToStreamId(paramStartFrom);
       const recoverToParameter = extractQueryParameter(req, 'recover') || req.headers.recover || req.headers['recover-date'];
-      const recoverTo = convertParameterToDate(recoverToParameter);
+      const recoverIsoDate = convertParameterToDate(recoverToParameter);
+      const recoverStreamId = convertParameterToStreamId(recoverToParameter);
       const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
       const publishDependencies = noDependencies === false;
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
@@ -605,7 +603,7 @@ const createSeeMiddleware = () => {
       const { channel, client } = createSseChannel(req, res);
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
-      if (isNotEmptyField(recoverTo) && isEmptyField(startIsoDate)) {
+      if (isNotEmptyField(recoverIsoDate) && isEmptyField(startIsoDate)) {
         throw UnsupportedError('Recovery mode is only possible without a start date.');
       }
       // Init stream and broadcasting
@@ -630,10 +628,10 @@ const createSeeMiddleware = () => {
                 if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                   client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                 } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
-                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
+                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                   client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
                 } else if (isCurrentlyVisible) { // Just an update
-                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
+                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                   client.sendEvent(eventId, event, eventData);
                 } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                   // In case of relationship publication, from or to can be related to something that
@@ -668,13 +666,13 @@ const createSeeMiddleware = () => {
                     client.sendEvent(eventId, event, eventData);
                   }
                 } else { // Create and merge
-                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stix);
+                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                   client.sendEvent(eventId, event, eventData);
                 }
               } else if (isRelation && publishDependencies) { // Not an update and not visible
                 // In case of relationship publication, from or to can be related to something that
                 // is part of the filtering. We can consider this as dependencies
-                await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, element);
               }
             }
             // Delete eventual filtering cache
@@ -690,10 +688,11 @@ const createSeeMiddleware = () => {
       await initBroadcasting(req, res, client, processor);
       // After recovery start the stream listening
       const startMessage = startStreamId ? `${startStreamId} / ${startIsoDate}` : 'now';
-      const recoveringMessage = recoverTo ? ` - recovering to ${recoverTo}` : '';
+      const recoveringMessage = recoverIsoDate ? ` - recovering to ${recoverIsoDate}` : '';
       logApp.info(`[STREAM] Listening stream ${id} from ${startMessage}${recoveringMessage}`);
       // Start recovery if needed
-      if (isNotEmptyField(recoverTo)) {
+      const isRecoveryMode = isNotEmptyField(recoverIsoDate) && utcDate(recoverIsoDate).isAfter(startIsoDate);
+      if (isRecoveryMode) {
         // noinspection UnnecessaryLocalVariableJS
         const queryCallback = async (elements) => {
           for (let index = 0; index < elements.length; index += 1) {
@@ -706,7 +705,7 @@ const createSeeMiddleware = () => {
                 const eventId = `${utcDate(stixUpdatedAt).toDate().getTime()}-0`;
                 if (channel.connected()) {
                   // publish missing dependencies if needed
-                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, streamFilters, eventId, stixData);
+                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stixData);
                   // publish element
                   if (!cache.has(stixData.id)) {
                     const message = generateCreateMessage(instance);
@@ -724,12 +723,12 @@ const createSeeMiddleware = () => {
           await wait(channel.delay);
           return channel.connected();
         };
-        const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startIsoDate, before: recoverTo });
+        const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startIsoDate, before: recoverIsoDate });
         queryOptions.callback = queryCallback;
         await elList(context, user, queryIndices, queryOptions);
       }
       // noinspection ES6MissingAwait
-      processor.start(startStreamId);
+      processor.start(isRecoveryMode ? recoverStreamId : startStreamId);
     } catch (e) {
       logApp.error(`Error executing live stream ${id}`, { error: e });
       res.statusMessage = `Error in stream ${id}: ${e.message}`;
