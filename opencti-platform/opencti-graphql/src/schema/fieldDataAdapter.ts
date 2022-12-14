@@ -20,6 +20,9 @@ import { MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from './stixCyber
 import type { StixArtifact, StixFile, StixX509Certificate } from '../types/stix-sco';
 import type { HashInput } from '../generated/graphql';
 
+export const SENSITIVE_HASHES = ['SSDEEP', 'SDHASH'];
+export const FUZZY_HASH_ALGORITHMS = ['SSDEEP', 'SDHASH', 'TLSH', 'LZJD'];
+
 export const jsonAttributes = ['bookmarks', 'connector_state', 'feed_attributes'];
 export const multipleAttributes = [
   IDS_STIX,
@@ -183,20 +186,31 @@ export const isDateAttribute = (key: string): boolean => dateAttributes.includes
 export const isMultipleAttribute = (key: string): boolean => key.startsWith(RULE_PREFIX) || multipleAttributes.includes(key);
 export const isRuntimeAttribute = (key: string): boolean => runtimeAttributes.includes(key);
 
+// Extract all not fuzzy algorithm values from a hash object
+export const extractNotFuzzyHashValues = (hashes: Record<string, string>): Array<string> => {
+  return Object.entries(hashes)
+    .filter(([hashKey]) => !FUZZY_HASH_ALGORITHMS.includes(hashKey.toUpperCase()))
+    .map(([, hashValue]) => hashValue)
+    .filter((hashValue) => hashValue);
+};
+
 // Must be call as soon as possible in the according resolvers
 export const inputHashesToStix = (data: Array<HashInput>) => {
   const inputs = Array.isArray(data) ? data : [data];
   const convertedInputs = inputs.map((d) => {
-    return [d.algorithm.toUpperCase(), d.hash.toLowerCase()] as KeyValuePair<string, string>;
+    const hashAlgorithm = d.algorithm.toUpperCase().trim();
+    const hashValue = SENSITIVE_HASHES.includes(hashAlgorithm) ? d.hash : d.hash.toLowerCase();
+    return [hashAlgorithm, hashValue.trim()] as KeyValuePair<string, string>;
   });
   return R.fromPairs(convertedInputs);
 };
+
 // Must only be call in generic resolvers for data output
 export const stixHashesToInput = (instance: StixArtifact | StixFile | StixX509Certificate): Array<HashInput> => {
   const attributeValue = instance.hashes ?? {};
   const entries = Object.entries(attributeValue);
   return entries.map(([lab, val]) => {
-    return { algorithm: lab.toUpperCase(), hash: val.toLowerCase() };
+    return { algorithm: lab.toUpperCase().trim(), hash: val.trim() };
   });
 };
 
