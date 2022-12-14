@@ -161,6 +161,7 @@ const Vocabularies = () => {
               noAuthor={true}
               noMarking={true}
               noWarning={true}
+              deleteDisable={true}
               filters={{ entity_type: [{ id: 'Vocabulary' }] }}
               variant="small"
             />

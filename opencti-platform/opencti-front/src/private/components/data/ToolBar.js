@@ -1160,6 +1160,7 @@ class ToolBar extends Component {
       noAuthor,
       noMarking,
       noWarning,
+      deleteDisable,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -1243,8 +1244,6 @@ class ToolBar extends Component {
         );
       }
     }
-    const notDeletableTypes = ['Vocabulary'];
-    const deleteDisable = notDeletableTypes.includes(R.head(filters.entity_type).id);
     let paperClass;
     switch (variant) {
       case 'large':
@@ -1360,7 +1359,7 @@ class ToolBar extends Component {
               <span>
                 <IconButton
                   aria-label="enrichment"
-                  disabled={enrichDisable || this.state.processing}
+                  disabled={this.state.processing}
                   onClick={this.handleOpenEnrichment.bind(this)}
                   color="primary"
                   size="small"
@@ -1426,7 +1425,7 @@ class ToolBar extends Component {
               </Tooltip>
             </Security>
           )}
-          {!deleteDisable && (
+          {deleteDisable !== true && (
             <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
               <Tooltip title={t('Delete')}>
                 <span>
