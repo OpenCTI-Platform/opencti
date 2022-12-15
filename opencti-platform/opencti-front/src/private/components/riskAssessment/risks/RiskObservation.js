@@ -22,6 +22,7 @@ const styles = (theme) => ({
     marginTop: '2%',
     padding: '1.5rem',
     overflowY: 'scroll',
+    maxHeight: '381px',
   },
   avatar: {
     width: 24,
