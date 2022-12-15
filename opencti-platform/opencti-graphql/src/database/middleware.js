@@ -146,6 +146,7 @@ import {
   dateForEndAttributes,
   dateForLimitsAttributes,
   dateForStartAttributes,
+  extractNotFuzzyHashValues,
   isDateAttribute,
   isDictionaryAttribute,
   isModifiedObject,
@@ -233,7 +234,6 @@ import {
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
-const FUZZY_HASH_ALGORITHMS = ['SSDEEP', 'SDHASH', 'TLSH', 'LZJD'];
 // endregion
 
 // region Loader common
@@ -949,11 +949,7 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
   if (isEmptyField(hashes)) {
     return [];
   }
-  // Search hashes must filter the fuzzy hashes
-  const searchHashes = Object.entries(hashes)
-    .filter(([hashKey]) => !FUZZY_HASH_ALGORITHMS.includes(hashKey.toUpperCase()))
-    .map(([, hashValue]) => hashValue)
-    .filter((hashValue) => isNotEmptyField(hashValue));
+  const searchHashes = extractNotFuzzyHashValues(hashes); // Search hashes must filter the fuzzy hashes
   return listEntities(context, user, [type], {
     filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
     connectionFormat: false,
