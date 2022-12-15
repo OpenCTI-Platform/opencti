@@ -51,7 +51,7 @@ const styles = (theme) => ({
     },
   },
   bodyItem: {
-    height: 55,
+    height: 45,
     fontSize: 13,
     paddingLeft: 24,
     float: 'left',
@@ -102,9 +102,9 @@ class RiskObservation extends Component {
                 );
               }
               return (
-                <div style={{ height: '100%' }}>
+                <div>
                   <List>
-                    {Array.from(Array(6), (e, i) => (
+                    {Array.from(Array(4), (e, i) => (
                       <ListItem
                         key={i}
                         dense={true}
@@ -121,7 +121,7 @@ class RiskObservation extends Component {
                                   animation="wave"
                                   variant="rect"
                                   width={800}
-                                  height="100%"
+                                  height={60}
                                 />
                               </div>
                               <div
