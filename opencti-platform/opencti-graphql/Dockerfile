@@ -52,7 +52,7 @@ ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS=--max_old_space_size=8192
 ENV NODE_ENV=production
 
-# RUN rm /opt/opencti/config/schema/compiled.graphql
+RUN rm -f /opt/opencti/config/schema/compiled.graphql
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "build/index.js"]
