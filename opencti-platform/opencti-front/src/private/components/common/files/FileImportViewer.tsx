@@ -43,9 +43,8 @@ const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProp
   relay }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const { isEntityTypeAutomatic } = useHelper();
 
-  const { id, importFiles, entity_type } = entity;
+  const { id, importFiles } = entity;
 
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -69,7 +68,6 @@ const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProp
             onUploadSuccess={() => relay.refetch({ id })}
             size="medium"
             color={undefined}
-            createExternalRef={isEntityTypeAutomatic(entity_type)}
           />
           <FreeTextUploader
             entityId={id}

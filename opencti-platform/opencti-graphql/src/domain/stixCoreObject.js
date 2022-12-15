@@ -5,6 +5,7 @@ import {
   batchListThroughGetTo,
   batchLoadThroughGetTo,
   createRelation,
+  createRelationRaw,
   createRelations,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -25,6 +26,7 @@ import {
   ABSTRACT_STIX_META_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_IDENTITY,
+  INPUT_EXTERNAL_REFS,
 } from '../schema/general';
 import {
   isStixMetaRelationship,
@@ -51,13 +53,16 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
 import { elCount, elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
+import { getEntityFromCache } from '../database/cache';
+import { SYSTEM_USER } from '../utils/access';
+import { addExternalReference } from './externalReference';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -269,19 +274,37 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
     const { internal_id: internalId } = previous;
+    const { filename } = await file;
+    // 01. Upload the file
     const up = await upload(context, user, `import/${previous.entity_type}/${internalId}`, file, { entity_id: internalId }, noTriggerImport);
+    // 02. Create and link external ref if needed.
+    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const entityTypesForAutoExternalReferences = settings.platform_automatic_types ?? [];
+    const isAutoExternal = entityTypesForAutoExternalReferences.includes(previous.entity_type);
+    let addedExternalRef;
+    if (isAutoExternal) {
+      // Create external ref + link to current entity
+      const createExternal = { source_name: filename, url: `/storage/get/${up.id}`, fileId: up.id };
+      const externalRef = await addExternalReference(context, user, createExternal);
+      const relInput = { fromId: id, toId: externalRef.id, relationship_type: RELATION_EXTERNAL_REFERENCE };
+      const opts = { publishStreamEvent: false, locks: participantIds };
+      await createRelationRaw(context, user, relInput, opts);
+      addedExternalRef = externalRef;
+    }
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
-    await elUpdateElement({
-      _index: previous._index,
-      internal_id: internalId,
-      updated_at: now(),
-      x_opencti_files: files
-    });
+    await elUpdateElement({ _index: previous._index, internal_id: internalId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
-    const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
+    if (addedExternalRef) {
+      const newExternalRefs = [...(previous[INPUT_EXTERNAL_REFS] ?? []), addedExternalRef];
+      const instance = { ...previous, x_opencti_files: files, [INPUT_EXTERNAL_REFS]: newExternalRefs };
+      const message = `adds \`${up.name}\` in \`files\` | adds \`${addedExternalRef.source_name}\` in \`external_references\``;
+      await storeUpdateEvent(context, user, previous, instance, message);
+    } else {
+      const instance = { ...previous, x_opencti_files: files };
+      await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
+    }
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {

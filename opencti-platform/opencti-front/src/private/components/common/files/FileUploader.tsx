@@ -9,13 +9,6 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { FileUploaderEntityMutation$data } from './__generated__/FileUploaderEntityMutation.graphql';
 import { FileUploaderGlobalMutation$data } from './__generated__/FileUploaderGlobalMutation.graphql';
-import {
-  ExternalReferenceCreationMutation$data,
-} from '../../analysis/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
-import { externalReferenceCreationMutation } from '../../analysis/external_references/ExternalReferenceCreation';
-import {
-  externalReferenceLinesMutationRelationAdd,
-} from '../../analysis/external_references/AddExternalReferencesLines';
 
 const fileUploaderGlobalMutation = graphql`
   mutation FileUploaderGlobalMutation($file: Upload!) {
@@ -44,60 +37,15 @@ interface FileUploaderProps {
   accept?: string,
   size: 'small' | 'large' | 'medium' | undefined,
   nameInCallback?: boolean,
-  createExternalRef?: boolean,
 }
 
-const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUploadSuccess, color, accept, size, nameInCallback, createExternalRef }) => {
+const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUploadSuccess, color, accept, size, nameInCallback }) => {
   const { t } = useFormatter();
 
   const uploadRef = useRef<HTMLInputElement | null>(null);
   const [upload, setUpload] = useState<string | null>(null);
 
   const handleOpenUpload = () => uploadRef.current?.click();
-
-  const handleLinkExternalRef = (ref: ExternalReferenceCreationMutation$data) => {
-    commitMutation({
-      mutation: externalReferenceLinesMutationRelationAdd,
-      variables: {
-        id: ref.externalReferenceAdd?.id,
-        input: {
-          fromId: entityId,
-          relationship_type: 'external-reference',
-        },
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('File successfully uploaded and associated external reference successfully created');
-      },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      setSubmitting: undefined,
-      onError: undefined,
-    });
-  };
-
-  const handleCreateExternalRef = (file: File, fileId?: string) => {
-    const externalReferenceValues = {
-      source_name: file.name.length > 2 ? file.name : (t('FromFile') + file.name),
-      description: t('(file uploaded in Data)'),
-      file,
-      fileId,
-    };
-    commitMutation({
-      mutation: externalReferenceCreationMutation,
-      variables: {
-        input: externalReferenceValues,
-      },
-      onCompleted: (externalRefResult: ExternalReferenceCreationMutation$data) => {
-        handleLinkExternalRef(externalRefResult); // link the external reference to the entity
-      },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      setSubmitting: undefined,
-      onError: undefined,
-    });
-  };
 
   const handleUpload = (file: File) => {
     commitMutation({
@@ -121,9 +69,6 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
           onUploadSuccess(fileId);
         } else {
           onUploadSuccess();
-        }
-        if (createExternalRef) {
-          handleCreateExternalRef(file, fileId); // creation of the external reference associated to the file
         }
       },
       updater: undefined,
