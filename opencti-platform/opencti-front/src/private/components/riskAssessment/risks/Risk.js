@@ -23,10 +23,11 @@ const styles = () => ({
     marginBottom: 50,
   },
   gridContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
+    height: '70%',
   },
   bottomGrid: {
-    marginTop: '30px',
+    height: '30%'
   }
 });
 
