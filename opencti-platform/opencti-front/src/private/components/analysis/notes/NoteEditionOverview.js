@@ -10,11 +10,13 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
-import { convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import CreatedByField from '../../common/form/CreatedByField';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -82,6 +84,7 @@ const noteValidation = (t) => Yup.object().shape({
 const NoteEditionOverviewComponent = (props) => {
   const { note, context } = props;
   const { t } = useFormatter();
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const handleChangeFocus = (name) => {
     commitMutation({
@@ -112,6 +115,16 @@ const NoteEditionOverviewComponent = (props) => {
         });
       })
       .catch(() => false);
+  };
+
+  const handleChangeCreatedBy = (name, value) => {
+    commitMutation({
+      mutation: noteMutationFieldPatch,
+      variables: {
+        id: note.id,
+        input: { key: 'createdBy', value: value.value || '' },
+      },
+    });
   };
 
   const handleChangeObjectMarking = (name, values) => {
@@ -149,14 +162,17 @@ const NoteEditionOverviewComponent = (props) => {
   };
 
   const objectMarking = convertMarkings(note);
+  const createdBy = convertCreatedBy(note);
   const status = convertStatus(t, note);
   const initialValues = R.pipe(
     R.assoc('objectMarking', objectMarking),
+    R.assoc('createdBy', createdBy),
     R.assoc('x_opencti_workflow_id', status),
     R.assoc('created', buildDate(note.created)),
     R.pick([
       'attribute_abstract',
       'created',
+      'createdBy',
       'content',
       'confidence',
       'objectOrganization',
@@ -164,7 +180,6 @@ const NoteEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(note);
-
   return (
     <Formik
       enableReinitialize={true}
@@ -228,6 +243,12 @@ const NoteEditionOverviewComponent = (props) => {
               editContext={context}
               variant="edit"
             />
+            {userIsKnowledgeEditor && <CreatedByField
+              name="createdBy"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              onChange={handleChangeCreatedBy}
+            />}
             {note.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
@@ -280,6 +301,10 @@ const NoteEditionOverview = createFragmentContainer(
               definition_type
             }
           }
+        }
+        createdBy {
+          id
+          name
         }
         status {
           id

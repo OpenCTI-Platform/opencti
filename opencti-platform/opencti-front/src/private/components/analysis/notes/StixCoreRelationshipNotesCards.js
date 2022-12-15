@@ -23,7 +23,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AddNotes from './AddNotes';
 import { commitMutation } from '../../../../relay/environment';
-import { noteCreationMutation } from './NoteCreation';
+import { noteCreationUserMutation } from './NoteCreation';
 import { noteLinesMutationRelationAdd } from './AddNotesLines';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -101,7 +101,7 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
-      mutation: noteCreationMutation,
+      mutation: noteCreationUserMutation,
       variables: {
         input: adaptedValues,
       },

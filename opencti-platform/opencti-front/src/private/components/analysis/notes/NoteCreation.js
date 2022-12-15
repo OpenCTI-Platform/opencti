@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
-import { compose, evolve, path, pluck } from 'ramda';
+import { dissoc, evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -16,8 +14,9 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -27,8 +26,9 @@ import { dayStartDate } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -75,11 +75,20 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
+
+export const noteCreationUserMutation = graphql`
+  mutation NoteCreationUserMutation($input: NoteUserAddInput!) {
+    userNoteAdd(input: $input) {
+      id
+      ...NoteLine_node
+    }
+  }
+`;
 
 export const noteCreationMutation = graphql`
-  mutation NoteCreationMutation($input: NoteUserAddInput!) {
-    userNoteAdd(input: $input) {
+  mutation NoteCreationMutation($input: NoteAddInput!) {
+    noteAdd(input: $input) {
       id
       ...NoteLine_node
     }
@@ -105,22 +114,19 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class NoteCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+const NoteCreation = ({ inputValue, display, contextual, paginationOptions }) => {
+  const [open, setOpen] = useState(false);
+  const { t } = useFormatter();
+  const classes = useStyles();
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onResetClassic = () => handleClose();
+  const onResetContextual = () => handleClose();
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = evolve(
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
+    let adaptedValues = evolve(
       {
         confidence: () => parseInt(values.confidence, 10),
         createdBy: path(['value']),
@@ -129,45 +135,34 @@ class NoteCreation extends Component {
       },
       values,
     );
+    if (!userIsKnowledgeEditor) {
+      adaptedValues = dissoc('createdBy', adaptedValues);
+    }
     commitMutation({
-      mutation: noteCreationMutation,
+      mutation: userIsKnowledgeEditor ? noteCreationMutation : noteCreationUserMutation,
       variables: {
         input: adaptedValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('userNoteAdd');
+        const payload = store.getRootField(userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
+        sharedUpdater(store, container.getDataID(), paginationOptions, newEdge);
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  onResetClassic() {
-    this.handleClose();
-  }
-
-  onResetContextual() {
-    this.handleClose();
-  }
-
-  renderClassic() {
-    const { t, classes } = this.props;
+  const renderClassic = () => {
     return (
       <div>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -175,18 +170,18 @@ class NoteCreation extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
+              onClick={handleClose}
               size="large"
               color="primary"
             >
@@ -206,8 +201,8 @@ class NoteCreation extends Component {
                 objectLabel: [],
               }}
               validationSchema={noteValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onResetClassic.bind(this)}
+              onSubmit={onSubmit}
+              onReset={onResetClassic}
             >
               {({
                 submitForm,
@@ -249,11 +244,11 @@ class NoteCreation extends Component {
                     fullWidth={true}
                     containerStyle={fieldSpacingContainerStyle}
                   />
-                  <CreatedByField
+                  { userIsKnowledgeEditor && <CreatedByField
                     name="createdBy"
                     style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
-                  />
+                  />}
                   <ObjectLabelField
                     name="objectLabel"
                     style={fieldSpacingContainerStyle}
@@ -290,25 +285,18 @@ class NoteCreation extends Component {
         </Drawer>
       </div>
     );
-  }
+  };
 
-  renderContextual() {
-    const { t, classes, inputValue, display } = this.props;
+  const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={handleOpen}
           color="secondary"
           aria-label="Add"
-          className={classes.createButtonContextual}
-        >
+          className={classes.createButtonContextual}>
           <Add />
         </Fab>
-        <Dialog
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
-          PaperProps={{ elevation: 1 }}
-        >
+        <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
           <Formik
             enableReinitialize={true}
             initialValues={{
@@ -320,8 +308,8 @@ class NoteCreation extends Component {
               objectLabel: [],
             }}
             validationSchema={noteValidation(t)}
-            onSubmit={this.onSubmit.bind(this)}
-            onReset={this.onResetContextual.bind(this)}
+            onSubmit={onSubmit}
+            onReset={onResetContextual}
           >
             {({
               submitForm,
@@ -359,11 +347,11 @@ class NoteCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByField
+                  {userIsKnowledgeEditor && <CreatedByField
                     name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                  />
+                  />}
                   <ObjectLabelField
                     name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
@@ -393,28 +381,12 @@ class NoteCreation extends Component {
         </Dialog>
       </div>
     );
-  }
+  };
 
-  render() {
-    const { contextual } = this.props;
-    if (contextual) {
-      return this.renderContextual();
-    }
-    return this.renderClassic();
+  if (contextual) {
+    return renderContextual();
   }
-}
-
-NoteCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  contextual: PropTypes.bool,
-  display: PropTypes.bool,
-  inputValue: PropTypes.string,
+  return renderClassic();
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(NoteCreation);
+export default NoteCreation;

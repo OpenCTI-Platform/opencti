@@ -21,7 +21,7 @@ import AddNotes from './AddNotes';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { commitMutation } from '../../../../relay/environment';
-import { noteCreationMutation } from './NoteCreation';
+import { noteCreationUserMutation } from './NoteCreation';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
@@ -96,7 +96,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
-      mutation: noteCreationMutation,
+      mutation: noteCreationUserMutation,
       variables: {
         input: adaptedValues,
       },
