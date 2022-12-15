@@ -181,7 +181,14 @@ const DataComponentCreation: FunctionComponent<{
     });
   };
 
-  const fields = (setFieldValue: (field: string, value: never, shouldValidate?: (boolean | undefined)) => void, values: DataComponentAddInput) => (
+  const fields = (setFieldValue:
+  (field: string,
+    value: {
+      label?: string;
+      value: string;
+      entity?: { created: string; description: string | null; external_id: string | null; id: string; source_name: string; url: string | null; };
+    }[]
+    , shouldValidate?: (boolean | undefined)) => void, values: DataComponentAddInput) => (
     <React.Fragment>
       <Field
         component={TextField}

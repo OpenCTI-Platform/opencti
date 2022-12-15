@@ -1,5 +1,4 @@
-import React, { useContext } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent, ReactNode, useContext } from 'react';
 import { IntlProvider } from 'react-intl';
 import frLocale from 'date-fns/locale/fr';
 import esLocale from 'date-fns/locale/es';
@@ -9,37 +8,37 @@ import cnLocale from 'date-fns/locale/zh-CN';
 import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import { createFragmentContainer, graphql } from 'react-relay';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import i18n from '../utils/Localization';
 import { UserContext } from '../utils/hooks/useAuth';
+import { AppIntlProvider_settings$data } from './__generated__/AppIntlProvider_settings.graphql';
 
 const localeMap = {
   'en-us': enLocale,
   'fr-fr': frLocale,
   'es-es': esLocale,
   'ja-jp': jaLocale,
-  'zg-cn': cnLocale,
+  'zh-cn': cnLocale,
 };
 
-const AppIntlProvider = (props) => {
-  const { children } = props;
+interface AppIntlProviderProps {
+  settings: AppIntlProvider_settings$data | { platform_language: string },
+  children: ReactNode,
+}
+
+const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, children }) => {
   const { me } = useContext(UserContext);
-  const platformLanguage = pathOr(
-    null,
-    ['settings', 'platform_language'],
-    props,
-  );
+  const platformLanguage = settings.platform_language ?? null;
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
-    ? props.settings.platform_language
+    ? settings.platform_language
     : locale;
-  const lang = me
+  const lang = (me
     && me.language !== null
     && me.language !== undefined
     && me.language !== 'auto'
     ? me.language
-    : platformLang;
+    : platformLang) as ('es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us');
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG];
   if (lang === 'fr-fr') {
     moment.locale('fr-fr');
@@ -72,11 +71,6 @@ const AppIntlProvider = (props) => {
       </LocalizationProvider>
     </IntlProvider>
   );
-};
-
-AppIntlProvider.propTypes = {
-  children: PropTypes.node,
-  settings: PropTypes.object,
 };
 
 export const ConnectedIntlProvider = createFragmentContainer(AppIntlProvider, {

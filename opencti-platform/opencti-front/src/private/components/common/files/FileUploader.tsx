@@ -1,12 +1,14 @@
-import React, { useRef, useState } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
+import { File } from 'mdi-material-ui';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
+import { FileUploaderEntityMutation$data } from './__generated__/FileUploaderEntityMutation.graphql';
+import { FileUploaderGlobalMutation$data } from './__generated__/FileUploaderGlobalMutation.graphql';
 
 const fileUploaderGlobalMutation = graphql`
   mutation FileUploaderGlobalMutation($file: Upload!) {
@@ -28,12 +30,24 @@ const fileUploaderEntityMutation = graphql`
   }
 `;
 
-const FileUploader = (props) => {
-  const { entityId, onUploadSuccess, t, color, accept, size, nameInCallback } = props;
-  const uploadRef = useRef(null);
-  const [upload, setUpload] = useState(null);
-  const handleOpenUpload = () => uploadRef.current.click();
-  const handleUpload = (file) => {
+interface FileUploaderProps {
+  entityId: string,
+  onUploadSuccess: (id?: string) => unknown,
+  color: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning' | undefined,
+  accept?: string,
+  size: 'small' | 'large' | 'medium' | undefined,
+  nameInCallback?: boolean,
+}
+
+const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUploadSuccess, color, accept, size, nameInCallback }) => {
+  const { t } = useFormatter();
+
+  const uploadRef = useRef<HTMLInputElement | null>(null);
+  const [upload, setUpload] = useState<string | null>(null);
+
+  const handleOpenUpload = () => uploadRef.current?.click();
+
+  const handleUpload = (file: File) => {
     commitMutation({
       mutation: entityId
         ? fileUploaderEntityMutation
@@ -42,22 +56,28 @@ const FileUploader = (props) => {
       optimisticUpdater: () => {
         setUpload(file.name);
       },
-      onCompleted: (result) => {
-        uploadRef.current.value = null; // Reset the upload input
+      onCompleted: (result: FileUploaderEntityMutation$data | FileUploaderGlobalMutation$data) => {
+        if (uploadRef.current?.value) {
+          uploadRef.current.value = ''; // Reset the upload input
+        }
         setUpload(null);
         MESSAGING$.notifySuccess('File successfully uploaded');
+        const fileId = entityId
+          ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit?.importPush?.id
+          : (result as FileUploaderGlobalMutation$data).uploadImport?.id;
         if (nameInCallback) {
-          onUploadSuccess(
-            entityId
-              ? result.stixCoreObjectEdit.importPush.id
-              : result.uploadImport.id,
-          );
+          onUploadSuccess(fileId);
         } else {
           onUploadSuccess();
         }
       },
+      updater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
     });
   };
+
   return (
     <React.Fragment>
       {accept ? (
@@ -68,11 +88,14 @@ const FileUploader = (props) => {
           onChange={({
             target: {
               validity,
-              files: [file],
+              files,
             },
-          }) =>
-            // eslint-disable-next-line implicit-arrow-linebreak
-            validity.valid && handleUpload(file)
+          }) => {
+            const file = files?.item(0);
+            if (file && validity.valid) {
+              handleUpload(file);
+            }
+          }
           }
           accept={accept}
         />
@@ -84,11 +107,14 @@ const FileUploader = (props) => {
           onChange={({
             target: {
               validity,
-              files: [file],
+              files,
             },
-          }) =>
-            // eslint-disable-next-line implicit-arrow-linebreak
-            validity.valid && handleUpload(file)
+          }) => {
+            const file = files?.item(0);
+            if (file && validity.valid) {
+              handleUpload(file);
+            }
+          }
           }
         />
       )}
@@ -121,13 +147,4 @@ const FileUploader = (props) => {
   );
 };
 
-FileUploader.propTypes = {
-  entityId: PropTypes.string,
-  onUploadSuccess: PropTypes.func.isRequired,
-  nameInCallback: PropTypes.bool,
-  color: PropTypes.string,
-  accept: PropTypes.string,
-  size: PropTypes.string,
-};
-
-export default inject18n(FileUploader);
+export default FileUploader;

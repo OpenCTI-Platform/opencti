@@ -772,6 +772,7 @@ type FileMetadata {
   labels_text: String
   labels: [String]
   creator_id: String
+  external_reference_id: String
   creator: Creator
 }
 type File {
@@ -1031,6 +1032,7 @@ type Settings implements InternalObject & BasicObject {
   platform_reference_attachment: Boolean @auth
   platform_feature_flags: [Module!] @auth
   platform_hidden_types: [String!] @auth
+  platform_entities_files_ref: [String!] @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   # Technical
@@ -1558,6 +1560,7 @@ enum ExternalReferencesFilter {
   usedBy
   source_name
   external_id
+  fileId
 }
 input ExternalReferencesFiltering {
   key: [ExternalReferencesFilter!]!
@@ -1596,6 +1599,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   hash: String
   external_id: String
   references(types: [String]): StixObjectOrStixRelationshipConnection
+  fileId: String
   # Technical
   creator: Creator
   importFiles(first: Int): FileConnection

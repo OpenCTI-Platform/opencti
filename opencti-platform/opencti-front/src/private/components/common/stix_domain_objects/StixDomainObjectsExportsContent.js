@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Slide from '@mui/material/Slide';
 import { graphql, createRefetchContainer } from 'react-relay';
@@ -66,11 +66,8 @@ class StixDomainObjectsExportsContentComponent extends Component {
       handleToggle,
       context,
     } = this.props;
-    const stixDomainObjectsExportFiles = pathOr(
-      [],
-      ['stixDomainObjectsExportFiles', 'edges'],
-      data,
-    );
+    const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
+
     return (
       <List
         subheader={

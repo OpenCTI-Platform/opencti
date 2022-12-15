@@ -1,22 +1,22 @@
-import React, { useEffect } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { FunctionComponent, useEffect } from 'react';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
+import makeStyles from '@mui/styles/makeStyles';
 import FileLine from './FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import FileUploader from './FileUploader';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import FreeTextUploader from './FreeTextUploader';
+import { FileImportViewer_entity$data } from './__generated__/FileImportViewer_entity.graphql';
+import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 
 const interval$ = interval(TEN_SECONDS);
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -24,19 +24,27 @@ const styles = () => ({
     borderRadius: 6,
     marginTop: 2,
   },
-});
+}));
 
-const FileImportViewerBase = ({
+interface FileImportViewerComponentProps {
+  entity: FileImportViewer_entity$data,
+  disableImport: boolean,
+  handleOpenImport: (file: FileLine_file$data | undefined) => void,
+  connectors: { [p: string]: { data: { name: string, active: boolean } }[] },
+  relay: RelayRefetchProp,
+}
+
+const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProps> = ({
   entity,
   disableImport,
   handleOpenImport,
   connectors,
-  relay,
-  t,
-  classes,
-}) => {
+  relay }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+
   const { id, importFiles } = entity;
-  const { edges } = importFiles;
+
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -46,6 +54,7 @@ const FileImportViewerBase = ({
       subscription.unsubscribe();
     };
   });
+
   return (
     <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
       <div style={{ height: '100%' }} className="break">
@@ -57,6 +66,7 @@ const FileImportViewerBase = ({
             entityId={id}
             onUploadSuccess={() => relay.refetch({ id })}
             size="medium"
+            color={undefined}
           />
           <FreeTextUploader
             entityId={id}
@@ -66,16 +76,16 @@ const FileImportViewerBase = ({
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          {edges.length ? (
+          {importFiles?.edges?.length ? (
             <List>
-              {edges.map((file) => (
+              {importFiles?.edges?.map((file) => (
                 <FileLine
-                  key={file.node.id}
+                  key={file?.node.id}
                   dense={true}
                   disableImport={disableImport}
-                  file={file.node}
+                  file={file?.node}
                   connectors={
-                    connectors && connectors[file.node.metaData.mimetype]
+                    connectors && connectors[file?.node?.metaData?.mimetype ?? 0]
                   }
                   handleOpenImport={handleOpenImport}
                 />
@@ -99,11 +109,6 @@ const FileImportViewerBase = ({
     </Grid>
   );
 };
-
-const FileImportViewerComponent = compose(
-  inject18n,
-  withStyles(styles),
-)(FileImportViewerBase);
 
 const FileImportViewerRefetchQuery = graphql`
   query FileImportViewerRefetchQuery($id: String!) {
@@ -136,11 +141,5 @@ const FileImportViewer = createRefetchContainer(
   },
   FileImportViewerRefetchQuery,
 );
-
-FileImportViewer.propTypes = {
-  entity: PropTypes.object,
-  disableImport: PropTypes.bool,
-  connectors: PropTypes.object,
-};
 
 export default FileImportViewer;

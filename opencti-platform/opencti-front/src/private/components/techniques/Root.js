@@ -25,11 +25,11 @@ class Root extends Component {
             redirect = 'attack_patterns';
           } else if (!helper.isEntityTypeHidden('Narrative')) {
             redirect = 'narratives';
-          } else if (!helper.isEntityTypeHidden('Courses of Action')) {
+          } else if (!helper.isEntityTypeHidden('Course-Of-Action')) {
             redirect = 'courses_of_action';
-          } else if (!helper.isEntityTypeHidden('Data Components')) {
+          } else if (!helper.isEntityTypeHidden('Data-Component')) {
             redirect = 'data_components';
-          } else if (!helper.isEntityTypeHidden('Data Sources')) {
+          } else if (!helper.isEntityTypeHidden('Data-Source')) {
             redirect = 'data_sources';
           }
           return (

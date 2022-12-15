@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql, createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -17,7 +17,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import { ExpandMoreOutlined, ExpandLessOutlined } from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import inject18n from '../../../../components/i18n';
@@ -26,15 +26,13 @@ import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import Security from '../../../../utils/Security';
-import {
-  KNOWLEDGE_KNENRICHMENT,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import FileLine from '../../common/files/FileLine';
 import FileUploader from '../../common/files/FileUploader';
 import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import ExternalReferencePopover from './ExternalReferencePopover';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -200,9 +198,8 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
                 (externalReferenceEdge) => {
                   const externalReference = externalReferenceEdge.node;
-                  const externalReferenceId = externalReference.external_id
-                    ? `(${externalReference.external_id})`
-                    : '';
+                  const isFileAttached = isNotEmptyField(externalReference.fileId);
+                  const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
                   let externalReferenceSecondary = '';
                   if (
                     externalReference.url
@@ -237,27 +234,25 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                             secondary={truncate(externalReferenceSecondary, 90)}
                           />
                           <ListItemSecondaryAction>
-                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                            {!isFileAttached && <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                               <FileUploader
                                 entityId={externalReference.id}
                                 onUploadSuccess={() => this.props.relay.refetchConnection(200)
                                 }
                                 color="inherit"
                               />
-                            </Security>
-                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                            </Security>}
+                            {!isFileAttached && <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                               <ExternalReferenceEnrichment
                                 externalReferenceId={externalReference.id}
                               />
-                            </Security>
+                            </Security>}
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
                               <ExternalReferencePopover
                                 id={externalReference.id}
                                 entityId={stixCoreRelationshipId}
-                                handleRemove={this.handleOpenDialog.bind(
-                                  this,
-                                  externalReferenceEdge,
-                                )}
+                                isExternalReferenceAttachment={isFileAttached}
+                                handleRemove={this.handleOpenDialog.bind(this, externalReferenceEdge)}
                               />
                             </Security>
                           </ListItemSecondaryAction>
@@ -305,10 +300,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
                             <ExternalReferencePopover
                               externalReferenceId={externalReference.id}
-                              handleRemove={this.handleOpenDialog.bind(
-                                this,
-                                externalReferenceEdge,
-                              )}
+                              handleRemove={this.handleOpenDialog.bind(this, externalReferenceEdge)}
                             />
                           </Security>
                         </ListItemSecondaryAction>
@@ -403,11 +395,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
             <Button onClick={this.handleCloseExternalLink.bind(this)}>
               {t('Cancel')}
             </Button>
-            <Button
-              button={true}
-              color="secondary"
-              onClick={this.handleBrowseExternalLink.bind(this)}
-            >
+            <Button button={true} color="secondary" onClick={this.handleBrowseExternalLink.bind(this)}>
               {t('Browse the link')}
             </Button>
           </DialogActions>
@@ -456,6 +444,7 @@ const StixCoreRelationshipExternalReferencesLines = createPaginationContainer(
                 description
                 url
                 hash
+                fileId
                 external_id
                 jobs(first: 100) {
                   id
@@ -489,6 +478,7 @@ const StixCoreRelationshipExternalReferencesLines = createPaginationContainer(
                       ...FileLine_file
                       metaData {
                         mimetype
+                        external_reference_id
                       }
                     }
                   }

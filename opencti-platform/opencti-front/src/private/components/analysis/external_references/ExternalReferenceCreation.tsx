@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import React, { FunctionComponent, useState } from 'react';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -16,16 +14,24 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { SimpleFileUpload } from 'formik-mui';
 import { Add, Close } from '@mui/icons-material';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { insertNode } from '../../../../utils/store';
+import {
+  ExternalReferencesLinesPaginationQuery$variables,
+} from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import { Theme } from '../../../../components/Theme';
+import {
+  ExternalReferenceAddInput,
+  ExternalReferenceCreationMutation$data,
+} from './__generated__/ExternalReferenceCreationMutation.graphql';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -72,9 +78,9 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
 
-const externalReferenceCreationMutation = graphql`
+export const externalReferenceCreationMutation = graphql`
   mutation ExternalReferenceCreationMutation(
     $input: ExternalReferenceAddInput!
   ) {
@@ -85,11 +91,12 @@ const externalReferenceCreationMutation = graphql`
       url
       external_id
       created
+      fileId
     }
   }
 `;
 
-const externalReferenceValidation = (t) => Yup.object().shape({
+const externalReferenceValidation = (t: (value: string) => string) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string().nullable(),
   url: Yup.string().url(t('The value must be an URL')).nullable(),
@@ -97,96 +104,128 @@ const externalReferenceValidation = (t) => Yup.object().shape({
   file: Yup.object().nullable(),
 });
 
-class ExternalReferenceCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+interface ExternalReferenceCreationProps {
+  paginationOptions?: ExternalReferencesLinesPaginationQuery$variables,
+  display?: boolean,
+  contextual?: boolean,
+  inputValue?: string,
+  onCreate?: (
+    externalReference: ExternalReferenceAddInput | null,
+    onlyCreate: boolean) => void,
+  openContextual: boolean,
+  handleCloseContextual?: () => void,
+  creationCallback?: (data: ExternalReferenceCreationMutation$data) => void,
+  dryrun?: boolean,
+}
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProps> = ({
+  contextual,
+  paginationOptions,
+  display,
+  inputValue,
+  onCreate,
+  handleCloseContextual,
+  creationCallback,
+  openContextual,
+  dryrun,
+}) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
 
-  handleClose() {
-    this.setState({ open: false });
-  }
+  const [open, setOpen] = useState(false);
 
-  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
-    if (this.props.dryrun && this.props.onCreate) {
-      this.props.onCreate(values, true);
-      return this.props.handleClose();
+    if (dryrun && onCreate) {
+      onCreate(values, true);
+      handleClose();
+      return;
     }
-    return commitMutation({
+    commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
         input: finalValues,
       },
-      updater: (store) => insertNode(
+      updater: (store: RecordSourceSelectorProxy) => insertNode(
         store,
         'Pagination_externalReferences',
-        this.props.paginationOptions,
+        paginationOptions,
         'externalReferenceAdd',
       ),
-      onError: (error) => {
+      onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: (response: ExternalReferenceCreationMutation$data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
-        if (this.props.onCreate) {
-          this.props.onCreate(response.externalReferenceAdd, true);
+        handleClose();
+        if (onCreate) {
+          onCreate(response.externalReferenceAdd, true);
         }
       },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
     });
-  }
+  };
 
-  onSubmitContextual(values, { setSubmitting, setErrors, resetForm }) {
+  const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
-    if (this.props.dryrun) {
-      this.props.creationCallback({ externalReferenceAdd: values });
-      return this.props.handleClose();
+    if (dryrun && creationCallback && handleCloseContextual) {
+      creationCallback({ externalReferenceAdd: values } as ExternalReferenceCreationMutation$data);
+      handleCloseContextual();
+      return;
     }
-    return commitMutation({
+    commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
         input: finalValues,
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
       setSubmitting,
-      onCompleted: (response) => {
+      onCompleted: (response: ExternalReferenceCreationMutation$data) => {
         setSubmitting(false);
         resetForm();
-        this.props.creationCallback(response);
-        this.props.handleClose();
+        if (creationCallback && handleCloseContextual) {
+          creationCallback(response);
+          handleCloseContextual();
+        }
       },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
     });
-  }
+  };
 
-  onResetClassic() {
-    this.handleClose();
-  }
+  const onResetClassic = () => {
+    handleClose();
+  };
 
-  onResetContextual() {
-    if (this.props.handleClose) {
-      this.props.handleClose();
+  const onResetContextual = () => {
+    if (handleCloseContextual) {
+      handleCloseContextual();
     } else {
-      this.handleClose();
+      handleClose();
     }
-  }
+  };
 
-  renderClassic() {
-    const { t, classes, dryrun } = this.props;
+  const renderClassic = () => {
     return (
       <div>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -194,18 +233,18 @@ class ExternalReferenceCreation extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
+              onClick={handleClose}
               size="large"
               color="primary"
             >
@@ -225,8 +264,8 @@ class ExternalReferenceCreation extends Component {
                 file: '',
               }}
               validationSchema={externalReferenceValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onResetClassic.bind(this)}
+              onSubmit={onSubmit}
+              onReset={onResetClassic}
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
@@ -302,15 +341,14 @@ class ExternalReferenceCreation extends Component {
         </Drawer>
       </div>
     );
-  }
+  };
 
-  renderContextual() {
-    const { t, classes, inputValue, display, open, handleClose, dryrun } = this.props;
+  const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        {!handleClose && (
+        {!handleCloseContextual && (
           <Fab
-            onClick={this.handleOpen.bind(this)}
+            onClick={handleOpen}
             color="secondary"
             aria-label="Add"
             className={classes.createButtonContextual}
@@ -320,9 +358,9 @@ class ExternalReferenceCreation extends Component {
         )}
         <Dialog
           PaperProps={{ elevation: 1 }}
-          open={!handleClose ? this.state.open : open}
+          open={!handleCloseContextual ? open : openContextual}
           onClose={
-            !handleClose ? this.handleClose.bind(this) : handleClose.bind(this)
+            !handleCloseContextual ? handleClose : handleCloseContextual
           }
         >
           <Formik
@@ -336,11 +374,11 @@ class ExternalReferenceCreation extends Component {
             }}
             validationSchema={externalReferenceValidation(t)}
             onSubmit={
-              !handleClose
-                ? this.onSubmit.bind(this)
-                : this.onSubmitContextual.bind(this)
+              !handleCloseContextual
+                ? onSubmit
+                : onSubmitContextual
             }
-            onReset={this.onResetContextual.bind(this)}
+            onReset={onResetContextual}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
@@ -397,7 +435,7 @@ class ExternalReferenceCreation extends Component {
                 </DialogContent>
                 <DialogActions>
                   <Button
-                    onClick={handleClose || handleReset}
+                    onClick={handleCloseContextual || handleReset}
                     disabled={isSubmitting}
                   >
                     {t('Cancel')}
@@ -416,32 +454,9 @@ class ExternalReferenceCreation extends Component {
         </Dialog>
       </div>
     );
-  }
+  };
 
-  render() {
-    const { contextual } = this.props;
-    if (contextual) {
-      return this.renderContextual();
-    }
-    return this.renderClassic();
-  }
-}
-
-ExternalReferenceCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  contextual: PropTypes.bool,
-  display: PropTypes.bool,
-  inputValue: PropTypes.string,
-  onCreate: PropTypes.func,
-  open: PropTypes.bool,
-  handleClose: PropTypes.func,
-  creationCallback: PropTypes.func,
+  return contextual ? renderContextual() : renderClassic();
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ExternalReferenceCreation);
+export default ExternalReferenceCreation;

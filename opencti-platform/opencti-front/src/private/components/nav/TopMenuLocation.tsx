@@ -33,7 +33,7 @@ const TopMenuLocation = () => {
 
   return (
     <div>
-      {!isEntityTypeHidden('Locations') && !isEntityTypeHidden('Regions') && (
+      {!isEntityTypeHidden('Locations') && !isEntityTypeHidden('Region') && (
         <Button
           component={Link}
           to="/dashboard/locations/regions"

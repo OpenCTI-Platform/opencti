@@ -92,6 +92,7 @@ const internalObjectsAttributes = {
     'platform_login_message',
     'platform_enable_reference',
     'platform_hidden_types',
+    'platform_entities_files_ref',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',

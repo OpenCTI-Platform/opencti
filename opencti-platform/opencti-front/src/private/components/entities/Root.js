@@ -29,6 +29,8 @@ class Root extends Component {
             redirect = 'organizations';
           } else if (!helper.isEntityTypeHidden('System')) {
             redirect = 'systems';
+          } else if (!helper.isEntityTypeHidden('Individual')) {
+            redirect = 'individuals';
           }
           return (
             <Switch>

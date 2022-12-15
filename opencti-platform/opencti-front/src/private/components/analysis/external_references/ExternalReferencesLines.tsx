@@ -1,48 +1,53 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import React, { FunctionComponent } from 'react';
+import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { ExternalReferenceLine, ExternalReferenceLineDummy } from './ExternalReferenceLine';
+import { ExternalReferencesLines_data$data } from './__generated__/ExternalReferencesLines_data.graphql';
 import {
-  ExternalReferenceLine,
-  ExternalReferenceLineDummy,
-} from './ExternalReferenceLine';
+  ExternalReferencesLinesPaginationQuery$variables,
+} from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 
 const nbOfRowsToLoad = 50;
 
-class ExternalReferencesLines extends Component {
-  render() {
-    const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
-    return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['externalReferences', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['externalReferences', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={<ExternalReferenceLine />}
-        DummyLineComponent={<ExternalReferenceLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-      />
-    );
-  }
+interface ExternalReferencesLinesProps {
+  initialLoading: boolean,
+  dataColumns: {
+    source_name: {
+      label: string, width: string, isSortable: boolean
+    },
+    external_id: {
+      label: string, width: string, isSortable: boolean
+    },
+    url: {
+      label: string, width: string, isSortable: boolean
+    },
+    created: {
+      label: string,
+      width: string,
+      isSortable: boolean,
+    }
+  },
+  relay: RelayPaginationProp,
+  paginationOptions: ExternalReferencesLinesPaginationQuery$variables,
+  data: ExternalReferencesLines_data$data,
 }
 
-ExternalReferencesLines.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
-  data: PropTypes.object,
-  relay: PropTypes.object,
-  externalReferences: PropTypes.object,
-  initialLoading: PropTypes.bool,
+const ExternalReferencesLines: FunctionComponent<ExternalReferencesLinesProps> = ({ initialLoading, dataColumns, relay, paginationOptions, data }) => {
+  return (
+    <ListLinesContent
+      initialLoading={initialLoading}
+      loadMore={relay.loadMore}
+      hasMore={relay.hasMore}
+      isLoading={relay.isLoading}
+      dataList={data?.externalReferences?.edges ?? []}
+      globalCount={data?.externalReferences?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={<ExternalReferenceLine node={undefined}/>}
+      DummyLineComponent={<ExternalReferenceLineDummy />}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+    />
+  );
 };
 
 export const externalReferencesLinesQuery = graphql`

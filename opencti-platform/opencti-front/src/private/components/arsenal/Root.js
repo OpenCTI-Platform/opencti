@@ -23,9 +23,9 @@ class Root extends Component {
             redirect = 'malwares';
           } else if (!helper.isEntityTypeHidden('Channel')) {
             redirect = 'channels';
-          } else if (!helper.isEntityTypeHidden('Tools')) {
+          } else if (!helper.isEntityTypeHidden('Tool')) {
             redirect = 'tools';
-          } else if (!helper.isEntityTypeHidden('Vulnerabilities')) {
+          } else if (!helper.isEntityTypeHidden('Vulnerability')) {
             redirect = 'vulnerabilities';
           }
           return (

@@ -14,7 +14,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import { Store } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
@@ -133,7 +133,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
         input: values,
       },
       setSubmitting,
-      updater: (store: Store) => {
+      updater: (store: RecordSourceSelectorProxy) => {
         if (!contextual) {
           insertNode(
             store,
