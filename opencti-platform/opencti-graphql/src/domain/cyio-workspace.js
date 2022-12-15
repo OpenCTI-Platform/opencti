@@ -47,7 +47,7 @@ export const findById = async (user, workspaceId, dbName, dataSources, selectMap
   }
 };
 
-export const findAll = async (users, args, dbName, dataSources, selectMap) => {
+export const findAll = async (user, args, dbName, dataSources, selectMap) => {
   const sparqlQuery = selectAllWorkspacesQuery(selectMap.getNode("node"), args);
   let response;
   try {
