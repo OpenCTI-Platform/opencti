@@ -1105,6 +1105,12 @@ const poamResolvers = {
           continue
         }
 
+        // Provide default values if missing - MUST be done before converting to props
+        if ( !('false_positive' in risk)) risk.false_positive = false;
+        if ( !('accepted' in risk)) risk.accepted = false;
+        if ( !('risk_adjusted' in risk)) risk.risk_adjusted = false;
+        if ( !('vendor_dependency' in risk)) risk.vendor_dependency = false;
+        
         // if props were requested
         if (selectMap.getNode('node').includes('props')) {
           let props = convertToProperties(risk, riskPredicateMap);

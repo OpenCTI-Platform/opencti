@@ -123,6 +123,12 @@ const riskResolvers = {
             continue
           }
 
+          // Provide default values if missing - MUST be done before converting to props
+          if ( !('false_positive' in risk)) risk.false_positive = false;
+          if ( !('accepted' in risk)) risk.accepted = false;
+          if ( !('risk_adjusted' in risk)) risk.risk_adjusted = false;
+          if ( !('vendor_dependency' in risk)) risk.vendor_dependency = false;
+                
           // if props were requested
           if (selectMap.getNode('node').includes('props')) {
             let props = convertToProperties(risk, riskPredicateMap);
@@ -271,12 +277,18 @@ const riskResolvers = {
           delete risk.remediation_timestamp_values;
         }
 
-          // TODO: WORKAROUND fix up invalidate deviation values
-          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+        // TODO: WORKAROUND fix up invalidate deviation values
+        if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
           console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
           risk.risk_status = risk.risk_status.replace('_', '-');
         }
-          // END WORKAROUND
+        // END WORKAROUND
+
+        // Provide default values if missing - MUST be done before converting to props
+        if ( !('false_positive' in risk)) risk.false_positive = false;
+        if ( !('accepted' in risk)) risk.accepted = false;
+        if ( !('risk_adjusted' in risk)) risk.risk_adjusted = false;
+        if ( !('vendor_dependency' in risk)) risk.vendor_dependency = false;
 
         // if props were requested
         if (selectMap.getNode('risk').includes('props')) {
@@ -516,7 +528,7 @@ const riskResolvers = {
 
       // Handle 'dynamic' property editing separately
       for (let editItem of input) {
-        let parentIri, iriTemplate, predicateMap;
+        let parentIri, iriTemplate, classIri, predicateMap;
         if (editItem.key === 'poam_id') {
           // remove edit item so it doesn't get processed again
           input = input.filter(item => item.key != 'poam_id');
@@ -535,6 +547,7 @@ const riskResolvers = {
             let index = result.objectType.indexOf('poam-item');
             parentIri = result.parentIri[index];
             iriTemplate = objectMap[result.objectType[index]].iriTemplate;
+            classIri = objectMap[result.objectType[index]].classIri;
             predicateMap = objectMap[result.objectType[index]].predicateMap;
             break;
           }
@@ -542,7 +555,7 @@ const riskResolvers = {
           let newInput = [editItem];
           const query = updateQuery(
             parentIri,
-            iriTemplate,
+            classIri,
             newInput,
             predicateMap
           );
