@@ -386,37 +386,37 @@ export const workspaceEditField = async (user, workspaceId, input, dbName, dataS
   }
 
   //TODO: Need to test creation of an EditContext instance
-  if (user !== undefined && user !== null) {
-    let propValues = {'name': user.user_email, 'focusOn': null};
-    const { iri, id, query } = insertEditUserContextQuery(propValues);
-    try {
-      let result;
-      result = await dataSources.Stardog.create({
-          dbName,
-          sparqlQuery: query,
-          queryId: "Create EditUserContext"
-      });
-    } catch (e) {
-      console.log(e)
-      throw e
-    }
+  // if (user !== undefined && user !== null) {
+  //   let propValues = {'name': user.user_email, 'focusOn': null};
+  //   const { iri, id, query } = insertEditUserContextQuery(propValues);
+  //   try {
+  //     let result;
+  //     result = await dataSources.Stardog.create({
+  //         dbName,
+  //         sparqlQuery: query,
+  //         queryId: "Create EditUserContext"
+  //     });
+  //   } catch (e) {
+  //     console.log(e)
+  //     throw e
+  //   }
 
-    let sparqlQuery = attachToWorkspaceQuery(workspaceId, 'editContext', iri);
-    try {
-      let result;
-      result = await dataSources.Stardog.create({
-          dbName,
-          sparqlQuery: sparqlQuery,
-          queryId: "Attach EditContext to Workspace"
-      });
-    } catch (e) {
-      console.log(e)
-      throw e
-    }
-  }
+  //   let sparqlQuery = attachToWorkspaceQuery(workspaceId, 'editContext', iri);
+  //   try {
+  //     let result;
+  //     result = await dataSources.Stardog.create({
+  //         dbName,
+  //         sparqlQuery: sparqlQuery,
+  //         queryId: "Attach EditContext to Workspace"
+  //     });
+  //   } catch (e) {
+  //     console.log(e)
+  //     throw e
+  //   }
+  // }
 
   // Retrieve the updated Workspace
-  const select = selectWorkspaceQuery(id, selectMap.getNode("fieldPatch"));
+  const select = selectWorkspaceQuery(workspaceId, selectMap.getNode("fieldPatch"));
   const result = await dataSources.Stardog.queryById({
     dbName,
     sparqlQuery: select,
