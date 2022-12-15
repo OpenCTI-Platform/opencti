@@ -19,6 +19,8 @@ interface AutomaticTypesListProps {
 const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values, handleChangeFocus, handleSubmitField, id, editContext }) => {
   const { t } = useFormatter();
 
+  const platform_hidden_types = values.platform_hidden_types ?? [];
+
   return (
     <Field
       component={SelectField}
@@ -61,11 +63,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Artifact') > -1
-          }
+          checked={platform_hidden_types.indexOf('Artifact')}
         />
         {t('entity_Artifact')}
       </MenuItem>
@@ -74,11 +72,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Attack-Pattern') > -1
-          }
+          checked={platform_hidden_types.indexOf('Attack-Pattern')}
         />
         {t('entity_Attack-Pattern')}
       </MenuItem>
@@ -87,11 +81,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Campaign') > -1
-          }
+          checked={platform_hidden_types.indexOf('Campaign')}
         />
         {t('entity_Campaign')}
       </MenuItem>
@@ -100,11 +90,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Channel') > -1
-          }
+          checked={platform_hidden_types.indexOf('Channel')}
         />
         {t('entity_Channel')}
       </MenuItem>
@@ -113,11 +99,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('City') > -1
-          }
+          checked={platform_hidden_types.indexOf('City')}
         />
         {t('entity_City')}
       </MenuItem>
@@ -126,11 +108,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Country') > -1
-          }
+          checked={platform_hidden_types.indexOf('Country')}
         />
         {t('entity_Country')}
       </MenuItem>
@@ -139,11 +117,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Course-Of-Action') > -1
-          }
+          checked={platform_hidden_types.indexOf('Course-Of-Action')}
         />
         {t('entity_Course-Of-Action')}
       </MenuItem>
@@ -152,11 +126,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Event') > -1
-          }
+          checked={platform_hidden_types.indexOf('Event')}
         />
         {t('entity_Event')}
       </MenuItem>
@@ -165,11 +135,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Grouping') > -1
-          }
+          checked={platform_hidden_types.indexOf('Grouping')}
         />
         {t('entity_Grouping')}
       </MenuItem>
@@ -178,11 +144,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Incident') > -1
-          }
+          checked={platform_hidden_types.indexOf('Incident')}
         />
         {t('entity_Incident')}
       </MenuItem>
@@ -191,11 +153,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Indicator') > -1
-          }
+          checked={platform_hidden_types.indexOf('Indicator')}
         />
         {t('entity_Indicator')}
       </MenuItem>
@@ -204,11 +162,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Individual') > -1
-          }
+          checked={platform_hidden_types.indexOf('Individual')}
         />
         {t('entity_Individual')}
       </MenuItem>
@@ -217,11 +171,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Infrastructure') > -1
-          }
+          checked={platform_hidden_types.indexOf('Infrastructure')}
         />
         {t('entity_Infrastructure')}
       </MenuItem>
@@ -230,11 +180,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Intrusion-Set') > -1
-          }
+          checked={platform_hidden_types.indexOf('Intrusion-Set')}
         />
         {t('entity_Intrusion-Set')}
       </MenuItem>
@@ -243,11 +189,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Malware') > -1
-          }
+          checked={platform_hidden_types.indexOf('Malware')}
         />
         {t('entity_Malware')}
       </MenuItem>
@@ -256,11 +198,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Narrative') > -1
-          }
+          checked={platform_hidden_types.indexOf('Narrative')}
         />
         {t('entity_Narrative')}
       </MenuItem>
@@ -269,11 +207,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Note') > -1
-          }
+          checked={platform_hidden_types.indexOf('Note')}
         />
         {t('entity_Note')}
       </MenuItem>
@@ -282,11 +216,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Observable') > -1
-          }
+          checked={platform_hidden_types.indexOf('Observable')}
         />
         {t('entity_Observable')}
       </MenuItem>
@@ -295,11 +225,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Observed-Data') > -1
-          }
+          checked={platform_hidden_types.indexOf('Observed-Data')}
         />
         {t('entity_Observed-Data')}
       </MenuItem>
@@ -308,11 +234,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Opinion') > -1
-          }
+          checked={platform_hidden_types.indexOf('Opinion')}
         />
         {t('entity_Opinion')}
       </MenuItem>
@@ -321,11 +243,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Organization') > -1
-          }
+          checked={platform_hidden_types.indexOf('Organization')}
         />
         {t('entity_Organization')}
       </MenuItem>
@@ -334,11 +252,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Position') > -1
-          }
+          checked={platform_hidden_types.indexOf('Position')}
         />
         {t('entity_Position')}
       </MenuItem>
@@ -347,11 +261,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Report') > -1
-          }
+          checked={platform_hidden_types.indexOf('Report')}
         />
         {t('entity_Report')}
       </MenuItem>
@@ -360,11 +270,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Sector') > -1
-          }
+          checked={platform_hidden_types.indexOf('Sector')}
         />
         {t('entity_Sector')}
       </MenuItem>
@@ -373,11 +279,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Sighting') > -1
-          }
+          checked={platform_hidden_types.indexOf('Sighting')}
         />
         {t('entity_Sighting')}
       </MenuItem>
@@ -386,11 +288,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('System') > -1
-          }
+          checked={platform_hidden_types.indexOf('System')}
         />
         {t('entity_System')}
       </MenuItem>
@@ -399,11 +297,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Threat-Actor') > -1
-          }
+          checked={platform_hidden_types.indexOf('Threat-Actor')}
         />
         {t('entity_Threat-Actor')}
       </MenuItem>
@@ -412,11 +306,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Tool') > -1
-          }
+          checked={platform_hidden_types.indexOf('Tool')}
         />
         {t('entity_Tool')}
       </MenuItem>
@@ -425,11 +315,7 @@ const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values
         dense={true}
       >
         <Checkbox
-          checked={
-            (
-              values.platform_automatic_types || []
-            ).indexOf('Vulnerability') > -1
-          }
+          checked={platform_hidden_types.indexOf('Vulnerability')}
         />
         {t('entity_Vulnerability')}
       </MenuItem>
