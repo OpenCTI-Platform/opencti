@@ -104,10 +104,8 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const requiredResourcePopoverDeletionMutation = graphql`
-  mutation RequiredResourcePopoverDeletionMutation($id: ID!) {
-    externalReferenceEdit(id: $id) {
-      delete
-    }
+  mutation RequiredResourcePopoverDeletionMutation($id: ID!, $remediationId: ID) {
+    deleteRequiredAsset(id: $id, remediationId: $remediationId)
   }
 `;
 
@@ -238,6 +236,7 @@ class RequiredResourcePopover extends Component {
       mutation: requiredResourcePopoverDeletionMutation,
       variables: {
         id: this.props.requiredResourceId,
+        remediationId: this.props.remediationId,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
