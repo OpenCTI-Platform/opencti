@@ -128,6 +128,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<StixCore
 
   const externalReferencesEdges = data.stixCoreObject
     ? data.stixCoreObject.externalReferences?.edges : [];
+
   const firstExternalReferenceEdge = externalReferencesEdges?.map((o) => o)[0];
   type externalReferenceEdge_type = typeof firstExternalReferenceEdge;
 
@@ -301,6 +302,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<StixCore
                               id={externalReference.id}
                               entityId={stixCoreObjectId}
                               handleRemove={() => handleOpenDialog(externalReferenceEdge)}
+                              externalReferenceFileId={externalReference.fileId}
                             />
                           </Security>
                         </ListItemSecondaryAction>

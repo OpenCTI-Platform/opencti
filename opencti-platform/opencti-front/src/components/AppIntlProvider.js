@@ -10,7 +10,6 @@ import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { graphql, createFragmentContainer } from 'react-relay';
-import { pathOr } from 'ramda';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import i18n from '../utils/Localization';
 import { UserContext } from '../utils/hooks/useAuth';
@@ -26,11 +25,7 @@ const localeMap = {
 const AppIntlProvider = (props) => {
   const { children } = props;
   const { me } = useContext(UserContext);
-  const platformLanguage = pathOr(
-    null,
-    ['settings', 'platform_language'],
-    props,
-  );
+  const platformLanguage = props?.settings?.platform_language ?? null;
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? props.settings.platform_language
     : locale;

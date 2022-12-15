@@ -4951,7 +4951,6 @@ export type ExternalReferenceAddInput = {
   description?: InputMaybe<Scalars['String']>;
   external_id?: InputMaybe<Scalars['String']>;
   file?: InputMaybe<Scalars['Upload']>;
-  fileId?: InputMaybe<Scalars['String']>;
   hash?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   source_name: Scalars['String'];

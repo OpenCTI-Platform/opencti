@@ -1685,7 +1685,6 @@ input ExternalReferenceAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-  fileId: String
 }
 
 scalar source_name_String_NotNull_minLength_2

@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { isEmpty } from 'ramda';
 import moment from 'moment';
-import { createFragmentContainer, graphql, GraphQLTaggedNode, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
 import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
@@ -21,17 +21,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
-import { APP_BASE_PATH, commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
-import { externalReferencePopoverDeletionMutation } from '../../analysis/external_references/ExternalReferencePopover';
+import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
-import {
-  ExternalReferencePopoverDeletionMutation,
-} from '../../analysis/external_references/__generated__/ExternalReferencePopoverDeletionMutation.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
-import {
-  FileLineExternalReferencesSearchQuery$data,
-} from './__generated__/FileLineExternalReferencesSearchQuery.graphql';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -69,26 +61,6 @@ const FileLineAskDeleteMutation = graphql`
   }
 `;
 
-export const fileLineExternalReferencesSearchQuery = graphql`
-    query FileLineExternalReferencesSearchQuery(
-        $search: String
-        $filters: [ExternalReferencesFiltering]
-    ) {
-        externalReferences(search: $search, filters: $filters) {
-            edges {
-                node {
-                    id
-                    source_name
-                    external_id
-                    description
-                    url
-                    fileId
-                }
-            }
-        }
-    }
-`;
-
 interface FileLineComponentProps {
   file: FileLine_file$data | undefined,
   connectors?: { data: { name: string; active: boolean; }; }[],
@@ -112,15 +84,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { t, fld } = useFormatter();
-  const { isEntityTypeAutomatic } = useHelper();
 
   const [displayRemove, setDisplayRemove] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const [commitMutationDeleteExternalRef] = useMutation<ExternalReferencePopoverDeletionMutation>(externalReferencePopoverDeletionMutation);
-
-  const entity_type = file?.id.split('/')[1];
   const isFail = file?.metaData?.errors && file.metaData.errors.length > 0;
   const isProgress = file?.uploadStatus === 'progress' || file?.uploadStatus === 'wait';
   const isOutdated = file?.uploadStatus === 'timeout';
@@ -186,40 +154,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     });
   };
 
-  const externalRefDelete = (fileId: string) => {
-    fetchQuery(fileLineExternalReferencesSearchQuery, {
-      search: '',
-      filters: [{ key: ['source_name'] }],
-    })
-      .toPromise()
-      .then((data) => {
-        const edges = (data as FileLineExternalReferencesSearchQuery$data).externalReferences?.edges;
-        edges?.filter((o) => o.node.fileId === fileId);
-        const externalReferenceId = edges?.map((o) => o.node.id)[0];
-
-        if (externalReferenceId) {
-          commitMutationDeleteExternalRef({
-            variables: {
-              id: externalReferenceId,
-            },
-            onCompleted: () => {
-              MESSAGING$.notifySuccess(t('File and associated external reference successfully removed'));
-            },
-            updater: undefined,
-            optimisticUpdater: undefined,
-            optimisticResponse: undefined,
-            onError: undefined,
-          });
-        }
-      });
-  };
-
   const handleRemoveFile = (fileId: string | undefined) => {
     if (fileId) {
       executeRemove(FileLineDeleteMutation, { fileName: fileId });
-      if (entity_type && isEntityTypeAutomatic(entity_type)) {
-        externalRefDelete(fileId);
-      }
     }
   };
 

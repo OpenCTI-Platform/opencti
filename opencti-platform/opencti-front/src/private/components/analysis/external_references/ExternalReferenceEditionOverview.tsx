@@ -53,7 +53,7 @@ interface ExternalReferenceEditionOverviewComponentProps {
 const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalReferenceEditionOverviewComponentProps> = ({ externalReference, context }) => {
   const { t } = useFormatter();
 
-  const [commitMutationExternalRferenceEditionOverviewFocus] = useMutation(externalReferenceEditionOverviewFocus);
+  const [commitMutationExternalReferenceEditionOverviewFocus] = useMutation(externalReferenceEditionOverviewFocus);
   const [commitMutationExternalReferenceMutationFieldPatch] = useMutation(externalReferenceMutationFieldPatch);
 
   const initialValues = pick(
@@ -62,7 +62,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalRefer
   );
 
   const handleChangeFocus = (name: string) => {
-    commitMutationExternalRferenceEditionOverviewFocus({
+    commitMutationExternalReferenceEditionOverviewFocus({
       variables: {
         id: externalReference.id,
         input: {
@@ -128,6 +128,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalRefer
             />
             <Field
               component={TextField}
+              disabled={externalReference.fileId}
               variant="standard"
               name="url"
               label={t('URL')}
@@ -173,6 +174,7 @@ const ExternalReferenceEditionOverview = createFragmentContainer(
         url
         external_id
         description
+        fileId
         editContext {
           name
           focusOn

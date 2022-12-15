@@ -15,7 +15,7 @@ import { MoreVertOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useHistory } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { Theme } from '../../../../components/Theme';
@@ -23,13 +23,6 @@ import {
   ExternalReferencePopoverEditionQuery$data,
 } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
 import { deleteNodeFromId } from '../../../../utils/store';
-import useHelper from '../../../../utils/hooks/useHelper';
-
-const ExternalReferencePopoverFileLineDeleteMutation = graphql`
-    mutation ExternalReferencePopoverFileLineDeleteMutation($fileName: String) {
-        deleteImport(fileName: $fileName)
-    }
-`;
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -80,7 +73,6 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
   const classes = useStyles();
   const { t } = useFormatter();
   const history = useHistory();
-  const { isEntityTypeAutomatic } = useHelper();
 
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -140,30 +132,8 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
     });
   };
 
-  const executeRemoveFile = (fileId: string) => {
-    commitMutation({
-      mutation: ExternalReferencePopoverFileLineDeleteMutation,
-      variables: { fileName: fileId },
-      optimisticUpdater: (store: RecordSourceSelectorProxy) => {
-        deleteNodeFromId(store, entityId, 'Pagination_importFiles', {}, fileId);
-      },
-      updater: (store: RecordSourceSelectorProxy) => {
-        deleteNodeFromId(store, entityId, 'Pagination_importFiles', {}, fileId);
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess(t('Associated file successfully removed'));
-      },
-      optimisticResponse: undefined,
-      onError: undefined,
-      setSubmitting: undefined,
-    });
-  };
-
   const submitDeleteRefAndFile = () => {
     submitDelete();
-    if (externalReferenceFileId && isEntityTypeAutomatic(externalReferenceFileId.split('/')[1])) {
-      executeRemoveFile(externalReferenceFileId);
-    }
   };
 
   const handleOpenWarning = () => {
