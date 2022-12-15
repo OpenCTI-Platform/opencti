@@ -19,10 +19,8 @@ const styles = (theme) => ({
     height: '30%',
   },
   paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '19px 0',
+    marginTop: '2%',
+    padding: '1.5rem',
     overflowY: 'scroll',
   },
   avatar: {
