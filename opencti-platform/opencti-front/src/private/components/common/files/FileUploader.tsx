@@ -92,10 +92,9 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
             },
           }) => {
             const file = files?.item(0);
-            if (file) {
-              return validity.valid && handleUpload(file);
+            if (file && validity.valid) {
+              handleUpload(file);
             }
-            return false;
           }
           }
           accept={accept}
@@ -112,10 +111,9 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
             },
           }) => {
             const file = files?.item(0);
-            if (file) {
-              return validity.valid && handleUpload(file);
+            if (file && validity.valid) {
+              handleUpload(file);
             }
-            return false;
           }
           }
         />
