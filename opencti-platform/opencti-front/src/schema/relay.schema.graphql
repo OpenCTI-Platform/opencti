@@ -813,6 +813,7 @@ type FileMetadata {
   labels_text: String
   labels: [String]
   creator_id: String
+  external_reference_id: String
   creator: Creator
 }
 
@@ -825,7 +826,6 @@ type File {
   metaData: FileMetadata
   uploadStatus: State!
   works: [Work]
-  externalReferenceId: String
 }
 
 type FileEdge {
@@ -1086,7 +1086,7 @@ type Settings implements InternalObject & BasicObject {
   platform_reference_attachment: Boolean
   platform_feature_flags: [Module!]
   platform_hidden_types: [String!]
-  platform_automatic_types: [String!]
+  platform_entities_files_ref: [String!]
   created_at: DateTime!
   updated_at: DateTime!
   editContext: [EditUserContext!]

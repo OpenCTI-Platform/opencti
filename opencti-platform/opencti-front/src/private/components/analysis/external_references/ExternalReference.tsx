@@ -40,9 +40,7 @@ const ExternalReferenceComponent: FunctionComponent<ExternalReferenceComponentPr
     <div className={classes.container}>
       <ExternalReferenceHeader
         externalReference={externalReference}
-        PopoverComponent={<ExternalReferencePopover
-          id={''} handleRemove={undefined} entityId={''}
-          />}
+        PopoverComponent={<ExternalReferencePopover id={''} handleRemove={undefined} entityId={''} />}
       />
       <Grid
         container={true}

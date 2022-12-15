@@ -105,7 +105,7 @@ const settingsQuery = graphql`
       platform_theme_light_logo_login
       platform_enable_reference
       platform_hidden_types
-      platform_automatic_types
+      platform_entities_files_ref
       platform_organization {
         id
         name
@@ -154,7 +154,7 @@ const settingsMutationFieldPatch = graphql`
         platform_language
         platform_login_message
         platform_hidden_types
-        platform_automatic_types
+        platform_entities_files_ref
         platform_organization {
           id
           name
@@ -212,7 +212,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
   platform_hidden_types: Yup.array().nullable(),
-  platform_automatic_types: Yup.array().nullable(),
+  platform_entities_files_ref: Yup.array().nullable(),
   platform_organization: Yup.object().nullable(),
 });
 
@@ -330,14 +330,8 @@ const Settings = () => {
             const { settings } = props;
             const { id, editContext } = settings;
             const initialValues = R.pipe(
-              R.assoc(
-                'platform_hidden_types',
-                settings.platform_hidden_types ?? [],
-              ),
-              R.assoc(
-                'platform_automatic_types',
-                settings.platform_automatic_types ?? [],
-              ),
+              R.assoc('platform_hidden_types', settings.platform_hidden_types ?? []),
+              R.assoc('platform_entities_files_ref', settings.platform_entities_files_ref ?? []),
               R.assoc(
                 'platform_organization',
                 settings.platform_organization
@@ -373,7 +367,7 @@ const Settings = () => {
                 'platform_map_tile_server_dark',
                 'platform_map_tile_server_light',
                 'platform_hidden_types',
-                'platform_automatic_types',
+                'platform_entities_files_ref',
                 'platform_organization',
               ]),
             )(settings);

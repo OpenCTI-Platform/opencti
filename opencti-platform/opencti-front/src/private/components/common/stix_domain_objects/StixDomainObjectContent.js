@@ -30,6 +30,7 @@ import {
 } from '../../../../utils/ListParameters';
 import Loader from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
+import { isEmptyField } from '../../../../utils/utils';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.min.js`;
 
@@ -127,6 +128,7 @@ const getFiles = (stixDomainObject) => {
     R.map((n) => n.node.importFiles.edges),
     R.flatten,
     R.map((n) => n.node),
+    R.filter((i) => isEmptyField(i.metaData.external_reference_id)),
   )(R.pathOr([], ['externalReferences', 'edges'], stixDomainObject));
   return R.pipe(
     R.filter((n) => ['application/pdf', 'text/plain', 'text/html', 'text/markdown'].includes(
@@ -607,6 +609,7 @@ const StixDomainObjectContent = createRefetchContainer(
                     metaData {
                       mimetype
                       list_filters
+                      external_reference_id
                       messages {
                         timestamp
                         message

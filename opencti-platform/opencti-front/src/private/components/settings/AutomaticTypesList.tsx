@@ -19,304 +19,142 @@ interface AutomaticTypesListProps {
 const AutomaticTypesList: FunctionComponent<AutomaticTypesListProps> = ({ values, handleChangeFocus, handleSubmitField, id, editContext }) => {
   const { t } = useFormatter();
 
-  const platform_automatic_types = values.platform_automatic_types ?? [];
-
+  const platformEntitiesAutoRef = values.platform_entities_files_ref ?? [];
   return (
     <Field
       component={SelectField}
       variant="standard"
-      name="platform_automatic_types"
-      label={t('Automatic entity types')}
+      name="platform_entities_files_ref"
+      label={t('Entities automatic reference from files')}
       fullWidth={true}
       multiple={true}
-      containerstyle={{
-        marginTop: 20,
-        width: '100%',
-      }}
+      containerstyle={{ marginTop: 20, width: '100%' }}
       onFocus={(name: string) => handleChangeFocus(id, name)}
       onChange={(name: string, value: string[]) => handleSubmitField(id, name, value)}
       helpertext={
-        <SubscriptionFocus
-          context={editContext}
-          fieldName="platform_automatic_types"
-        />
+        <SubscriptionFocus context={editContext} fieldName="platform_entities_files_ref" />
       }
       renderValue={(selected: string[]) => (
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 0.5,
-          }}
-        >
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {selected.map((value) => (
-            <Chip
-              key={value}
-              label={t(`entity_${value}`)}
-            />
+            <Chip key={value} label={t(`entity_${value}`)} />
           ))}
         </Box>
-      )}
-    >
-      <MenuItem
-        value="Artifact"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Artifact')}
-        />
+      )}>
+      <MenuItem value="Artifact" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Artifact')} />
         {t('entity_Artifact')}
       </MenuItem>
-      <MenuItem
-        value="Attack-Pattern"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Attack-Pattern')}
-        />
+      <MenuItem value="Attack-Pattern" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Attack-Pattern')} />
         {t('entity_Attack-Pattern')}
       </MenuItem>
-      <MenuItem
-        value="Campaign"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Campaign')}
-        />
+      <MenuItem value="Campaign" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Campaign')} />
         {t('entity_Campaign')}
       </MenuItem>
-      <MenuItem
-        value="Channel"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Channel')}
-        />
+      <MenuItem value="Channel" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Channel')} />
         {t('entity_Channel')}
       </MenuItem>
-      <MenuItem
-        value="City"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('City')}
-        />
+      <MenuItem value="City" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('City')} />
         {t('entity_City')}
       </MenuItem>
-      <MenuItem
-        value="Country"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Country')}
-        />
+      <MenuItem value="Country" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Country')} />
         {t('entity_Country')}
       </MenuItem>
-      <MenuItem
-        value="Course-Of-Action"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Course-Of-Action')}
-        />
+      <MenuItem value="Course-Of-Action" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Course-Of-Action')} />
         {t('entity_Course-Of-Action')}
       </MenuItem>
-      <MenuItem
-        value="Event"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Event')}
-        />
+      <MenuItem value="Event" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Event')} />
         {t('entity_Event')}
       </MenuItem>
-      <MenuItem
-        value="Grouping"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Grouping')}
-        />
+      <MenuItem value="Grouping" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Grouping')} />
         {t('entity_Grouping')}
       </MenuItem>
-      <MenuItem
-        value="Incident"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Incident')}
-        />
+      <MenuItem value="Incident" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Incident')} />
         {t('entity_Incident')}
       </MenuItem>
-      <MenuItem
-        value="Indicator"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Indicator')}
-        />
+      <MenuItem value="Indicator" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Indicator')} />
         {t('entity_Indicator')}
       </MenuItem>
-      <MenuItem
-        value="Individual"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Individual')}
-        />
+      <MenuItem value="Individual" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Individual')} />
         {t('entity_Individual')}
       </MenuItem>
-      <MenuItem
-        value="Infrastructure"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Infrastructure')}
-        />
+      <MenuItem value="Infrastructure" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Infrastructure')} />
         {t('entity_Infrastructure')}
       </MenuItem>
-      <MenuItem
-        value="Intrusion-Set"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Intrusion-Set')}
-        />
+      <MenuItem value="Intrusion-Set" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Intrusion-Set')} />
         {t('entity_Intrusion-Set')}
       </MenuItem>
-      <MenuItem
-        value="Malware"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Malware')}
-        />
+      <MenuItem value="Malware" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Malware')} />
         {t('entity_Malware')}
       </MenuItem>
-      <MenuItem
-        value="Narrative"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Narrative')}
-        />
+      <MenuItem value="Narrative" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Narrative')} />
         {t('entity_Narrative')}
       </MenuItem>
-      <MenuItem
-        value="Note"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Note')}
-        />
+      <MenuItem value="Note" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Note')} />
         {t('entity_Note')}
       </MenuItem>
-      <MenuItem
-        value="Observable"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Observable')}
-        />
+      <MenuItem value="Observable" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Observable')} />
         {t('entity_Observable')}
       </MenuItem>
-      <MenuItem
-        value="Observed-Data"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Observed-Data')}
-        />
+      <MenuItem value="Observed-Data" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Observed-Data')} />
         {t('entity_Observed-Data')}
       </MenuItem>
-      <MenuItem
-        value="Opinion"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Opinion')}
-        />
+      <MenuItem value="Opinion" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Opinion')} />
         {t('entity_Opinion')}
       </MenuItem>
-      <MenuItem
-        value="Organization"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Organization')}
-        />
+      <MenuItem value="Organization" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Organization')} />
         {t('entity_Organization')}
       </MenuItem>
-      <MenuItem
-        value="Position"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Position')}
-        />
+      <MenuItem value="Position" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Position')} />
         {t('entity_Position')}
       </MenuItem>
-      <MenuItem
-        value="Report"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Report')}
-        />
+      <MenuItem value="Report" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Report')} />
         {t('entity_Report')}
       </MenuItem>
-      <MenuItem
-        value="Sector"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Sector')}
-        />
+      <MenuItem value="Sector" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Sector')} />
         {t('entity_Sector')}
       </MenuItem>
-      <MenuItem
-        value="Sighting"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Sighting')}
-        />
+      <MenuItem value="Sighting" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Sighting')} />
         {t('entity_Sighting')}
       </MenuItem>
-      <MenuItem
-        value="System"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('System')}
-        />
+      <MenuItem value="System" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('System')} />
         {t('entity_System')}
       </MenuItem>
-      <MenuItem
-        value="Threat-Actor"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Threat-Actor')}
-        />
+      <MenuItem value="Threat-Actor" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Threat-Actor')} />
         {t('entity_Threat-Actor')}
       </MenuItem>
-      <MenuItem
-        value="Tool"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Tool')}
-        />
+      <MenuItem value="Tool" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Tool')} />
         {t('entity_Tool')}
       </MenuItem>
-      <MenuItem
-        value="Vulnerability"
-        dense={true}
-      >
-        <Checkbox
-          checked={platform_automatic_types.indexOf('Vulnerability')}
-        />
+      <MenuItem value="Vulnerability" dense={true}>
+        <Checkbox checked={platformEntitiesAutoRef.includes('Vulnerability')} />
         {t('entity_Vulnerability')}
       </MenuItem>
     </Field>

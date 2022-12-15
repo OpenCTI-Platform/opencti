@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
+import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -66,10 +67,11 @@ interface ExternalReferencePopoverProps {
   id: string,
   handleRemove: (() => void) | undefined,
   entityId: string,
-  externalReferenceFileId?: string | null
+  isExternalReferenceAttachment?: boolean
 }
 
-const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, handleRemove, entityId, externalReferenceFileId }) => {
+const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, handleRemove, entityId,
+  isExternalReferenceAttachment }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const history = useHistory();
@@ -77,7 +79,6 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
-  const [displayWarning, setDisplayWarning] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const handleOpen = (event: React.SyntheticEvent) => {
@@ -132,28 +133,6 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
     });
   };
 
-  const submitDeleteRefAndFile = () => {
-    submitDelete();
-  };
-
-  const handleOpenWarning = () => {
-    setDisplayWarning(true);
-    setDisplayDelete(false);
-    handleClose();
-  };
-
-  const handleCloseWarning = () => {
-    setDisplayWarning(false);
-  };
-
-  const submitDeleteAttempt = () => {
-    if (externalReferenceFileId) {
-      handleOpenWarning();
-    } else {
-      submitDelete();
-    }
-  };
-
   return (
     <span className={classes.container}>
         <IconButton
@@ -172,7 +151,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
           <MenuItem onClick={handleOpenUpdate}>
             {t('Update')}
           </MenuItem>
-          {handleRemove && (
+          {(handleRemove && !isExternalReferenceAttachment) && (
             <MenuItem
               onClick={() => {
                 handleRemove();
@@ -220,6 +199,9 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this external reference?')}
+              {isExternalReferenceAttachment && <Alert severity="warning" variant="outlined" style={{ position: 'relative', marginTop: 20 }}>
+                {t('This external reference is linked to a file. If you delete it, the file will be deleted as well.')}
+              </Alert>}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -231,35 +213,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
             </Button>
             <Button
               color="secondary"
-              onClick={submitDeleteAttempt}
-              disabled={deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayWarning}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseWarning}
-      >
-          <DialogContent>
-            <DialogContentText>
-              {t('This external reference is linked to a file. If you delete it, the file will be deleted as well. Do you still want to delete this external reference?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCloseWarning}
-              disabled={deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={submitDeleteRefAndFile}
+              onClick={submitDelete}
               disabled={deleting}
             >
               {t('Delete')}

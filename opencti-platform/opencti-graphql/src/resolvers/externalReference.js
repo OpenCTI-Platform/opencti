@@ -1,5 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
+import { baseUrl, BUS_TOPICS } from '../config/conf';
 import {
   references,
   addExternalReference,
@@ -17,7 +17,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { worksForSource } from '../domain/work';
-import { filesListing } from '../database/file-storage';
+import { filesListing, loadFile } from '../database/file-storage';
 import { askElementEnrichmentForConnector, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { connectorsForEnrichment } from '../database/repository';
 
@@ -30,12 +30,26 @@ const externalReferenceResolvers = {
     usedBy: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
   },
   ExternalReference: {
+    url: (externalReference) => (externalReference.fileId ? (baseUrl + externalReference.url) : externalReference.url),
     references: (container, args, context) => references(context, context.user, container.id, args),
     editContext: (externalReference) => fetchEditContext(externalReference.id),
     jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.id, args),
     connectors: (externalReference, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),
-    importFiles: (entity, { first }, context) => filesListing(context, context.user, first, `import/${entity.entity_type}/${entity.id}/`),
-    exportFiles: (entity, { first }, context) => filesListing(context, context.user, first, `export/${entity.entity_type}/${entity.id}/`),
+    importFiles: async (entity, { first }, context) => {
+      const listing = await filesListing(context, context.user, first, `import/${entity.entity_type}/${entity.id}/`);
+      if (entity.fileId) {
+        try {
+          const refFile = await loadFile(context, context.user, entity.fileId);
+          listing.edges.unshift({ node: refFile, cursor: '' });
+        } catch {
+          // FileId is no longer available
+        }
+      }
+      return listing;
+    },
+    exportFiles: (entity, { first }, context) => {
+      return filesListing(context, context.user, first, `export/${entity.entity_type}/${entity.id}/`);
+    },
   },
   Mutation: {
     externalReferenceEdit: (_, { id }, context) => ({

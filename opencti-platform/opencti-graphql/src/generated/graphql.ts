@@ -5105,7 +5105,6 @@ export enum FeedOrdering {
 
 export type File = {
   __typename?: 'File';
-  externalReferenceId?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   lastModified?: Maybe<Scalars['DateTime']>;
   lastModifiedSinceMin?: Maybe<Scalars['Int']>;
@@ -5136,6 +5135,7 @@ export type FileMetadata = {
   entity?: Maybe<StixCoreObject>;
   entity_id?: Maybe<Scalars['String']>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
+  external_reference_id?: Maybe<Scalars['String']>;
   labels?: Maybe<Array<Maybe<Scalars['String']>>>;
   labels_text?: Maybe<Scalars['String']>;
   list_filters?: Maybe<Scalars['String']>;
@@ -16885,9 +16885,9 @@ export type Settings = BasicObject & InternalObject & {
   entity_type: Scalars['String'];
   id: Scalars['ID'];
   parent_types: Array<Scalars['String']>;
-  platform_automatic_types?: Maybe<Array<Scalars['String']>>;
   platform_email?: Maybe<Scalars['String']>;
   platform_enable_reference?: Maybe<Array<Scalars['String']>>;
+  platform_entities_files_ref?: Maybe<Array<Scalars['String']>>;
   platform_favicon?: Maybe<Scalars['String']>;
   platform_feature_flags?: Maybe<Array<Module>>;
   platform_hidden_types?: Maybe<Array<Scalars['String']>>;
@@ -25440,7 +25440,6 @@ export type FeedMappingResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type FileResolvers<ContextType = any, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = ResolversObject<{
-  externalReferenceId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastModified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   lastModifiedSinceMin?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -25471,6 +25470,7 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
   entity?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
+  external_reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   labels?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   labels_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   list_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28299,9 +28299,9 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  platform_automatic_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_enable_reference?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  platform_entities_files_ref?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_hidden_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;

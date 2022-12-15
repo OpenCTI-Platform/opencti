@@ -4,6 +4,7 @@ import {
   batchListThroughGetFrom,
   batchListThroughGetTo,
   batchLoadThroughGetTo,
+  createEntity,
   createRelation,
   createRelationRaw,
   createRelations,
@@ -56,13 +57,12 @@ import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
 import { elCount, elUpdateElement } from '../database/engine';
-import { getInstanceIds } from '../schema/identifier';
+import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
-import { addExternalReference } from './externalReference';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -191,7 +191,10 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
 
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
   const { authorId, types } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = [{
+    key: [buildRefRelationKey(RELATION_CREATED_BY, '*')],
+    values: [authorId]
+  }, ...(args.filters || [])];
   return timeSeriesEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
 };
 
@@ -223,7 +226,10 @@ export const stixCoreObjectsDistribution = async (context, user, args) => {
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
   const { relationship_type, objectId, types } = args;
-  const filters = [{ key: (relationship_type ?? [RELATION_RELATED_TO]).map((n) => buildRefRelationKey(n, '*')), values: [objectId] }, ...(args.filters || [])];
+  const filters = [{
+    key: (relationship_type ?? [RELATION_RELATED_TO]).map((n) => buildRefRelationKey(n, '*')),
+    values: [objectId]
+  }, ...(args.filters || [])];
   return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
 };
 
@@ -275,17 +281,23 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     lock = await lockResource(participantIds);
     const { internal_id: internalId } = previous;
     const { filename } = await file;
-    // 01. Upload the file
-    const up = await upload(context, user, `import/${previous.entity_type}/${internalId}`, file, { entity_id: internalId }, noTriggerImport);
-    // 02. Create and link external ref if needed.
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const entityTypesForAutoExternalReferences = settings.platform_automatic_types ?? [];
+    const entityTypesForAutoExternalReferences = settings.platform_entities_files_ref ?? [];
     const isAutoExternal = entityTypesForAutoExternalReferences.includes(previous.entity_type);
+    const filePath = `import/${previous.entity_type}/${internalId}`;
+    // 01. Upload the file
+    const meta = { entity_id: internalId };
+    if (isAutoExternal) {
+      const key = `${filePath}/${filename}`;
+      meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
+    }
+    const up = await upload(context, user, filePath, file, meta, noTriggerImport);
+    // 02. Create and link external ref if needed.
     let addedExternalRef;
     if (isAutoExternal) {
       // Create external ref + link to current entity
       const createExternal = { source_name: filename, url: `/storage/get/${up.id}`, fileId: up.id };
-      const externalRef = await addExternalReference(context, user, createExternal);
+      const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
       const relInput = { fromId: id, toId: externalRef.id, relationship_type: RELATION_EXTERNAL_REFERENCE };
       const opts = { publishStreamEvent: false, locks: participantIds };
       await createRelationRaw(context, user, relInput, opts);
@@ -294,12 +306,17 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
-    await elUpdateElement({ _index: previous._index, internal_id: internalId, updated_at: now(), x_opencti_files: files });
+    await elUpdateElement({
+      _index: previous._index,
+      internal_id: internalId,
+      updated_at: now(),
+      x_opencti_files: files
+    });
     // Stream event generation
     if (addedExternalRef) {
       const newExternalRefs = [...(previous[INPUT_EXTERNAL_REFS] ?? []), addedExternalRef];
       const instance = { ...previous, x_opencti_files: files, [INPUT_EXTERNAL_REFS]: newExternalRefs };
-      const message = `adds \`${up.name}\` in \`files\` | adds \`${addedExternalRef.source_name}\` in \`external_references\``;
+      const message = `adds \`${up.name}\` in \`files\` and \`external_references\``;
       await storeUpdateEvent(context, user, previous, instance, message);
     } else {
       const instance = { ...previous, x_opencti_files: files };
@@ -323,6 +340,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   // Get the context
   const up = await loadFile(context, user, fileId);
   const entityId = up.metaData.entity_id;
+  const externalReferenceId = up.metaData.external_reference_id;
   const previous = await storeLoadByIdWithRefs(context, user, entityId);
   if (!previous) {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
@@ -332,16 +350,19 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   try {
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
+    // If external reference attached, delete first
+    if (externalReferenceId) {
+      try {
+        await deleteElementById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+      } catch {
+        // If external reference already deleted.
+      }
+    }
     // Delete the file
     await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
     const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
-    await elUpdateElement({
-      _index: previous._index,
-      internal_id: entityId,
-      updated_at: now(),
-      x_opencti_files: files
-    });
+    await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `removes \`${up.name}\` in \`files\``);

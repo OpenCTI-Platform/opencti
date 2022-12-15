@@ -8,12 +8,13 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
-import { CheckCircle } from '@mui/icons-material';
+import { CheckCircle, DocumentScannerOutlined } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import ExternalReferenceCreation from './ExternalReferenceCreation';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const styles = (theme) => ({
   avatar: {
@@ -150,14 +151,9 @@ class AddExternalReferencesLinesContainer extends Component {
       };
       commitMutation({
         mutation: externalReferenceLinesMutationRelationAdd,
-        variables: {
-          id: externalReference.id,
-          input,
-        },
+        variables: { id: externalReference.id, input },
         updater: (store) => {
-          const payload = store
-            .getRootField('externalReferenceEdit')
-            .getLinkedRecord('relationAdd', { input });
+          const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input });
           const relationId = payload.getValue('id');
           const node = payload.getLinkedRecord('to');
           const relation = store.get(relationId);
@@ -182,48 +178,45 @@ class AddExternalReferencesLinesContainer extends Component {
       (n) => n.node.id,
       stixCoreObjectOrStixCoreRelationshipReferences,
     );
+    const computeTextItem = (externalReferenceNode) => {
+      const externalReference = externalReferenceNode.node;
+      const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
+      return <ListItemText
+        primary={`${externalReference.source_name} ${externalReferenceId}`}
+        secondary={truncate(
+          externalReference.description !== null
+          && externalReference.description.length > 0
+            ? externalReference.description
+            : externalReference.url,
+          120,
+        )}
+      />;
+    };
     return (
       <div>
         <List>
           {data.externalReferences.edges.map((externalReferenceNode) => {
             const externalReference = externalReferenceNode.node;
-            const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(
-              externalReference.id,
-            );
-            const externalReferenceId = externalReference.external_id
-              ? `(${externalReference.external_id})`
-              : '';
+            const alreadyAdded = stixCoreObjectOrStixCoreRelationshipReferencesIds.includes(externalReference.id);
+            const isLinkedRef = isNotEmptyField(externalReference.fileId);
+            if (isLinkedRef) {
+              return <ListItem key={externalReference.id} classes={{ root: classes.menuItem }} divider={true}>
+                <ListItemIcon><DocumentScannerOutlined /></ListItemIcon>
+                {computeTextItem(externalReferenceNode)}
+              </ListItem>;
+            }
             return (
-              <ListItem
-                key={externalReference.id}
-                classes={{ root: classes.menuItem }}
-                divider={true}
-                button={true}
-                onClick={this.toggleExternalReference.bind(
-                  this,
-                  externalReference,
-                  false,
-                )}
-              >
+              <ListItem key={externalReference.id}
+                classes={{ root: classes.menuItem }} divider={true} button={true}
+                onClick={this.toggleExternalReference.bind(this, externalReference, false)}>
                 <ListItemIcon>
-                  {alreadyAdded ? (
-                    <CheckCircle classes={{ root: classes.icon }} />
-                  ) : (
+                  {alreadyAdded ? (<CheckCircle classes={{ root: classes.icon }} />) : (
                     <Avatar classes={{ root: classes.avatar }}>
                       {externalReference.source_name.substring(0, 1)}
                     </Avatar>
                   )}
                 </ListItemIcon>
-                <ListItemText
-                  primary={`${externalReference.source_name} ${externalReferenceId}`}
-                  secondary={truncate(
-                    externalReference.description !== null
-                      && externalReference.description.length > 0
-                      ? externalReference.description
-                      : externalReference.url,
-                    120,
-                  )}
-                />
+                {computeTextItem(externalReferenceNode)}
               </ListItem>
             );
           })}
@@ -283,6 +276,7 @@ const AddExternalReferencesLines = createPaginationContainer(
               description
               url
               external_id
+              fileId
               connectors(onlyAlive: false) {
                 id
                 connector_type

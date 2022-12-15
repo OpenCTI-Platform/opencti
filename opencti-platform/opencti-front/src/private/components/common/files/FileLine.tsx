@@ -1,10 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
 import { isEmpty } from 'ramda';
 import moment from 'moment';
+import Alert from '@mui/material/Alert';
 import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -24,6 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -70,6 +72,7 @@ interface FileLineComponentProps {
   handleOpenImport?: (file: FileLine_file$data | undefined) => void,
   nested?: boolean,
   workNested?: boolean,
+  isExternalReferenceAttachment?: boolean,
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
@@ -81,6 +84,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   handleOpenImport,
   nested,
   workNested,
+  isExternalReferenceAttachment,
 }) => {
   const classes = useStyles();
   const { t, fld } = useFormatter();
@@ -89,6 +93,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const isContainsReference = isNotEmptyField(file?.metaData?.external_reference_id);
   const isFail = file?.metaData?.errors && file.metaData.errors.length > 0;
   const isProgress = file?.uploadStatus === 'progress' || file?.uploadStatus === 'wait';
   const isOutdated = file?.uploadStatus === 'timeout';
@@ -166,11 +171,17 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     }
   };
 
+  const generateIcon = () => {
+    return (isExternalReferenceAttachment || isContainsReference)
+      ? <DocumentScannerOutlined color='primary'/>
+      : <FileOutline color={nested ? 'primary' : 'inherit'} />;
+  };
+
   return (
     <div>
       <ListItem
         divider={true}
-        dense={dense === true}
+        dense={dense}
         classes={{ root: nested ? classes.itemNested : classes.item }}
         disabled={isProgress}
       >
@@ -189,9 +200,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               />
             </Tooltip>
           )}
-          {!isProgress && !isFail && !isOutdated && (
-            <FileOutline color={nested ? 'primary' : 'inherit'} />
-          )}
+          {!isProgress && !isFail && !isOutdated && generateIcon()}
         </ListItemIcon>
         <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
           <ListItemText
@@ -234,33 +243,35 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 </span>
             </Tooltip>
           )}
-          {isFail || isOutdated ? (
-            <Tooltip title={t('Delete this file')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress}
-                    color={nested ? 'inherit' : 'primary'}
-                    onClick={handleOpenRemove}
-                    size="large"
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </span>
-            </Tooltip>
-          ) : (
-            <Tooltip title={t('Delete this file')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress}
-                    color={nested ? 'inherit' : 'primary'}
-                    onClick={handleOpenDelete}
-                    size="large"
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </span>
-            </Tooltip>
-          )}
+          {!isExternalReferenceAttachment && <>
+            {isFail || isOutdated ? (
+              <Tooltip title={t('Delete this file')}>
+                  <span>
+                    <IconButton
+                      disabled={isProgress}
+                      color={nested ? 'inherit' : 'primary'}
+                      onClick={handleOpenRemove}
+                      size="large"
+                    >
+                      <DeleteOutlined />
+                    </IconButton>
+                  </span>
+              </Tooltip>
+            ) : (
+              <Tooltip title={t('Delete this file')}>
+                  <span>
+                    <IconButton
+                      disabled={isProgress}
+                      color={nested ? 'inherit' : 'primary'}
+                      onClick={handleOpenDelete}
+                      size="large"
+                    >
+                      <DeleteOutlined />
+                    </IconButton>
+                  </span>
+              </Tooltip>
+            )}
+          </>}
         </ListItemSecondaryAction>
       </ListItem>
       <FileWork file={file} nested={workNested} />
@@ -274,6 +285,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         <DialogContent>
           <DialogContentText>
             {t('Do you want to delete this file?')}
+            {isContainsReference && <Alert severity="warning" variant="outlined" style={{ position: 'relative', marginTop: 20 }}>
+              {t('This file is linked to an external reference. If you delete it, the reference will be deleted as well.')}
+            </Alert>}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -332,10 +346,10 @@ const FileLine = createFragmentContainer(FileLineComponent, {
       uploadStatus
       lastModified
       lastModifiedSinceMin
-      externalReferenceId
       metaData {
         mimetype
         list_filters
+        external_reference_id
         messages {
           timestamp
           message

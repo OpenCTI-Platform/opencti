@@ -85,7 +85,6 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalRefer
       })
       .catch(() => false);
   };
-
   return (
     <Formik
       enableReinitialize={true}

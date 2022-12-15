@@ -20,6 +20,7 @@ import { ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey } from '../schema/
 import { isStixMetaRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
+import { stixCoreObjectImportDelete } from './stixCoreObject';
 
 export const findById = (context, user, externalReferenceId) => {
   return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -56,6 +57,13 @@ export const addExternalReference = async (context, user, externalReference) => 
 };
 
 export const externalReferenceDelete = async (context, user, externalReferenceId) => {
+  const reference = await internalLoadById(context, user, externalReferenceId);
+  // If case of linked file reference
+  // Call the deletion of file that will also handle the external reference deletion
+  if (reference.fileId) {
+    await stixCoreObjectImportDelete(context, user, reference.fileId);
+    return externalReferenceId;
+  }
   return deleteElementById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
@@ -97,7 +105,9 @@ export const externalReferenceDeleteRelation = async (context, user, externalRef
 };
 
 export const externalReferenceEditField = async (context, user, externalReferenceId, input, opts = {}) => {
-  const { element } = await updateAttribute(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, opts);
+  const currentReference = await storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  const dataInputs = currentReference.fileId ? input.filter((i) => i.key !== 'url') : input;
+  const { element } = await updateAttribute(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, dataInputs, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, element, user);
 };
 
