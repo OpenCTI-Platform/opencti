@@ -8,6 +8,8 @@ import {
   map,
   pathOr,
   mergeAll,
+  filter,
+  propEq,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -28,6 +30,8 @@ import inject18n from '../../../../../components/i18n';
 import RequiredResourcePopover from './RequiredResourcePopover';
 import CyioCoreobjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import { fetchQuery } from '../../../../../relay/environment';
+import { itAssetFiltersAssetTypeFieldQuery } from '../../../settings/ItAssetFilters';
 
 const styles = (theme) => ({
   item: {
@@ -117,7 +121,26 @@ class RequiredResourceLineComponent extends Component {
       removing: false,
       expanded: false,
       value: false,
+      subjectType: '',
     };
+  }
+
+  componentDidMount() {
+    fetchQuery(itAssetFiltersAssetTypeFieldQuery, {
+      type: 'SubjectType',
+    })
+    .toPromise()
+    .then((data) => {
+      const subject_ref = pipe(
+        pathOr([], ['subjects']),
+        map((value) => ({
+          type: value.subject_type,
+        })),
+        mergeAll,
+      )(this.props.data);
+      const newFilter = filter(propEq('name', subject_ref.type))(data.__type.enumValues)[0];
+      this.setState({ subjectType: newFilter.description });
+    })
   }
 
   handleClick() {
@@ -159,7 +182,6 @@ class RequiredResourceLineComponent extends Component {
     const requiredResourceNode = pipe(
       pathOr([], ['subjects']),
       map((value) => ({
-        resource_type: value.subject_ref.__typename,
         resource: value.subject_ref.name,
       })),
       mergeAll,
@@ -177,7 +199,6 @@ class RequiredResourceLineComponent extends Component {
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel1a-content"
             id="panel1a-header"
-            classes={{ root: classes.summary }}
           >
             {this.state.value ? '' : (
               <CardContent style={{ display: 'flex', alignItems: 'center' }}>
@@ -191,6 +212,7 @@ class RequiredResourceLineComponent extends Component {
                       remarkPlugins={[remarkGfm, remarkParse]}
                       rehypePlugins={[rehypeRaw]}
                       parserOptions={{ commonmark: true }}
+                      style={{ margin : '0px' }}
                       className="markdown"
                     >
                       {data.description && t(data.description)}
@@ -218,8 +240,8 @@ class RequiredResourceLineComponent extends Component {
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <GroupIcon fontSize='large' color="textSecondary" />
                       <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
-                        {requiredResourceNode.resource_type
-                          && t(requiredResourceNode.resource_type)}
+                        {this.state.subjectType
+                          && t(this.state.subjectType)}
                       </Typography>
                     </div>
                   </div>

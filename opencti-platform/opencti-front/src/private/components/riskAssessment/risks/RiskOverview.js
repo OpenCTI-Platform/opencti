@@ -20,10 +20,10 @@ import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObj
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
+    height: '97%',
     minHeight: '50%',
-    margin: '10px 0 0 0',
-    padding: '24px 24px 0 24px',
+    marginTop: '2%',
+    padding: '1.5rem',
     borderRadius: 6,
   },
   chip: {
@@ -284,43 +284,15 @@ const RiskOverview = createFragmentContainer(
     risk: graphql`
       fragment RiskOverview_risk on Risk {
         __typename
-        id
-        name
         created
         modified
         description
-        statement
-        risk_status
         risk_level
-        deadline
-        accepted
-        risk_adjusted
         priority
         vendor_dependency
         impacted_control_id
         first_seen
         last_seen
-        origins {
-          origin_actors {
-            actor_type
-            actor_ref {
-              ... on AssessmentPlatform {
-                id
-                name
-              }
-              ... on Component {
-                id
-                component_type
-                name
-              }
-              ... on OscalParty {
-                id
-                party_type
-                name
-              }
-            }
-          }
-        }
         labels {
           __typename
           id

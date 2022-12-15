@@ -211,6 +211,9 @@ class InstalledAsset extends Component {
         style={style}
         helperText={helperText}
       >
+        {!multiple && <MenuItem value={''}>
+          <em>None</em>
+        </MenuItem>}
         {sortedSoftwareList.map((software) => 
           {            
             return(

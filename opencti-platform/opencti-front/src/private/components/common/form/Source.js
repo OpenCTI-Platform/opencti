@@ -45,7 +45,8 @@ const ComponentListQuery = graphql`
       key: component_type,
       values: "software"
     }
-    ]){
+    ],
+    orderedBy: name){
       edges {
         node {
           id

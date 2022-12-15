@@ -503,6 +503,7 @@ class RelatedTaskCreation extends Component {
                           name="task_type"
                           taskType='OscalTaskType'
                           fullWidth={true}
+                          required={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
