@@ -43,10 +43,10 @@ class AttackPatternComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={attackPattern} />
+            <AttackPatternDetails attackPattern={attackPattern} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <AttackPatternDetails attackPattern={attackPattern} />
+            <StixDomainObjectOverview stixDomainObject={attackPattern} />
           </Grid>
         </Grid>
         <Grid

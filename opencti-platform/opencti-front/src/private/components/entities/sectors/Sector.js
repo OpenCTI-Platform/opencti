@@ -44,10 +44,10 @@ class SectorComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={sector} />
+            <SectorDetails sector={sector} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <SectorDetails sector={sector} />
+            <StixDomainObjectOverview stixDomainObject={sector} />
           </Grid>
         </Grid>
         <Grid

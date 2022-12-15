@@ -41,12 +41,12 @@ class StixCyberObservableComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixCyberObservableOverview
+            <StixCyberObservableDetails
               stixCyberObservable={stixCyberObservable}
             />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixCyberObservableDetails
+            <StixCyberObservableOverview
               stixCyberObservable={stixCyberObservable}
             />
           </Grid>

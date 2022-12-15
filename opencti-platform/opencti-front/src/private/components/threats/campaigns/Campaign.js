@@ -43,10 +43,10 @@ class CampaignComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={campaign} />
+            <CampaignDetails campaign={campaign} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <CampaignDetails campaign={campaign} />
+            <StixDomainObjectOverview stixDomainObject={campaign} />
           </Grid>
         </Grid>
         <Grid

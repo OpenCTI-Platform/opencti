@@ -40,6 +40,13 @@ const buildParamsFromHistory = (params) => {
   if (params.filters) {
     urlParams = assoc('filters', JSON.stringify(params.filters), urlParams);
   }
+  if (params.timeLineFilters) {
+    urlParams = assoc(
+      'timeLineFilters',
+      JSON.stringify(params.timeLineFilters),
+      urlParams,
+    );
+  }
   if (params.zoom) {
     urlParams = assoc('zoom', JSON.stringify(params.zoom), urlParams);
   }
@@ -49,6 +56,7 @@ const buildParamsFromHistory = (params) => {
 const saveParamsToLocalStorage = (localStorageKey, params) => {
   const storageParams = pipe(
     dissoc('searchTerm'),
+    dissoc('timeLineSearchTerm'),
     dissoc('graphData'),
     dissoc('anchorEl'),
     dissoc('openTimeField'),
@@ -111,6 +119,12 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.notes) {
     finalParams.notes = finalParams.notes.toString() === 'true';
   }
+  if (finalParams.timeLineDisplayRelationships) {
+    finalParams.timeLineDisplayRelationships = finalParams.timeLineDisplayRelationships.toString() === 'true';
+  }
+  if (finalParams.timeLineFunctionalDate) {
+    finalParams.timeLineFunctionalDate = finalParams.timeLineFunctionalDate.toString() === 'true';
+  }
   if (finalParams.currentTab) {
     finalParams.currentTab = parseInt(finalParams.currentTab, 10);
   }
@@ -147,6 +161,11 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.filters === 'string') {
     finalParams.filters = finalParams.filters
       ? JSON.parse(finalParams.filters)
+      : {};
+  }
+  if (typeof finalParams.timeLineFilters === 'string') {
+    finalParams.timeLineFilters = finalParams.timeLineFilters
+      ? JSON.parse(finalParams.timeLineFilters)
       : {};
   }
   if (typeof finalParams.zoom === 'string') {

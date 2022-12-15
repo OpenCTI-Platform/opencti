@@ -4,16 +4,14 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import CityEdition from './CityEdition';
 import CityPopover from './CityPopover';
-import StixCoreObjectOrStixCoreRelationshipLastReports
-  from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships
-  from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { City_city$key } from './__generated__/City_city.graphql';
@@ -103,9 +101,6 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={city} />
-        </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <LocationMiniMap
             center={
               city.latitude && city.longitude
@@ -115,6 +110,9 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
             city={city}
             zoom={5}
           />
+        </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <StixDomainObjectOverview stixDomainObject={city} />
         </Grid>
       </Grid>
       <Grid

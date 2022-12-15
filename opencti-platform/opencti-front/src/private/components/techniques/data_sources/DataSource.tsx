@@ -99,10 +99,10 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={dataSource} />
+          <DataSourceDetailsComponent dataSource={dataSource}/>
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <DataSourceDetailsComponent dataSource={dataSource}/>
+          <StixDomainObjectOverview stixDomainObject={dataSource} />
         </Grid>
       </Grid>
       <Grid

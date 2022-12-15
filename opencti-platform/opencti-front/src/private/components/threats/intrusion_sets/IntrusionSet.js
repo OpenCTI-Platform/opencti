@@ -43,10 +43,10 @@ class IntrusionSetComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={intrusionSet} />
+            <IntrusionSetDetails intrusionSet={intrusionSet} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <IntrusionSetDetails intrusionSet={intrusionSet} />
+            <StixDomainObjectOverview stixDomainObject={intrusionSet} />
           </Grid>
         </Grid>
         <Grid

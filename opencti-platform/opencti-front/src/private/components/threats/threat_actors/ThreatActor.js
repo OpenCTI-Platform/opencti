@@ -43,10 +43,10 @@ class ThreatActorComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={threatActor} />
+            <ThreatActorDetails threatActor={threatActor} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ThreatActorDetails threatActor={threatActor} />
+            <StixDomainObjectOverview stixDomainObject={threatActor} />
           </Grid>
         </Grid>
         <Grid

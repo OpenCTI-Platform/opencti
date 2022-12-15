@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
-import { GraphOutline, VectorLink } from 'mdi-material-ui';
+import { GraphOutline, VectorLink, ChartTimeline } from 'mdi-material-ui';
 import {
   AddTaskOutlined,
   AssistantOutlined,
@@ -44,7 +44,9 @@ import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships
 import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -567,6 +569,20 @@ const ContainerHeader = (props) => {
                   <GraphOutline
                     fontSize="small"
                     color={currentMode === 'graph' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
+            )}
+            {modes.includes('timeline') && (
+              <Tooltip title={t('TimeLine view')}>
+                <ToggleButton
+                  component={Link}
+                  to={`${link}/timeline`}
+                  selected={currentMode === 'timeline'}
+                >
+                  <ChartTimeline
+                    fontSize="small"
+                    color={currentMode === 'timeline' ? 'secondary' : 'primary'}
                   />
                 </ToggleButton>
               </Tooltip>

@@ -49,10 +49,10 @@ class SystemComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={system} />
+            <SystemDetails system={system} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <SystemDetails system={system} />
+            <StixDomainObjectOverview stixDomainObject={system} />
           </Grid>
         </Grid>
         <Grid

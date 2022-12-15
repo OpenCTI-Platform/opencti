@@ -43,10 +43,10 @@ class CourseOfActionComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={courseOfAction} />
+            <CourseOfActionDetails courseOfAction={courseOfAction} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <CourseOfActionDetails courseOfAction={courseOfAction} />
+            <StixDomainObjectOverview stixDomainObject={courseOfAction} />
           </Grid>
         </Grid>
         <Grid

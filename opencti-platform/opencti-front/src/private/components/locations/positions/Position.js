@@ -44,9 +44,6 @@ class PositionComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={position} />
-          </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <LocationMiniMap
               center={
                 position.latitude && position.longitude
@@ -56,6 +53,9 @@ class PositionComponent extends Component {
               position={position}
               zoom={8}
             />
+          </Grid>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+            <StixDomainObjectOverview stixDomainObject={position} />
           </Grid>
         </Grid>
         <Grid

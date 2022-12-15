@@ -43,13 +43,13 @@ class IndicatorComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+            <IndicatorDetails indicator={indicator} />
+          </Grid>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview
               stixDomainObject={indicator}
               withPattern={true}
             />
-          </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <IndicatorDetails indicator={indicator} />
           </Grid>
         </Grid>
         <Grid

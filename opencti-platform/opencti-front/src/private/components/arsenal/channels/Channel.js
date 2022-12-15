@@ -43,10 +43,10 @@ class ChannelComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={channel} />
+            <ChannelDetails channel={channel} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ChannelDetails channel={channel} />
+            <StixDomainObjectOverview stixDomainObject={channel} />
           </Grid>
         </Grid>
         <Grid

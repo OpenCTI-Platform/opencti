@@ -40,10 +40,10 @@ class OpinionComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={opinion} />
+            <ContainerStixObjectsOrStixRelationships container={opinion} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ContainerStixObjectsOrStixRelationships container={opinion} />
+            <StixDomainObjectOverview stixDomainObject={opinion} />
           </Grid>
         </Grid>
         <Grid

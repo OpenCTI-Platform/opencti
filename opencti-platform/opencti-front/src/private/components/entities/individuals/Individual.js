@@ -49,10 +49,10 @@ class IndividualComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={individual} />
+            <IndividualDetails individual={individual} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <IndividualDetails individual={individual} />
+            <StixDomainObjectOverview stixDomainObject={individual} />
           </Grid>
         </Grid>
         <Grid

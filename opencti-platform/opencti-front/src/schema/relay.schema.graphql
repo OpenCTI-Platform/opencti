@@ -6809,6 +6809,10 @@ enum StixObjectOrStixRelationshipsOrdering {
   objectMarking
   objectLabel
   observable_value
+  start_time
+  created
+  modified
+  relationship_type
 }
 
 enum StixObjectOrStixRelationshipsFilter {
@@ -6818,6 +6822,7 @@ enum StixObjectOrStixRelationshipsFilter {
   markedBy
   labelledBy
   entity_type
+  relationship_type
   x_opencti_score
   x_opencti_organization_type
   created

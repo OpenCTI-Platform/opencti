@@ -37,10 +37,10 @@ class NoteComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={note} />
+            <ContainerStixObjectsOrStixRelationships container={note} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ContainerStixObjectsOrStixRelationships container={note} />
+            <StixDomainObjectOverview stixDomainObject={note} />
           </Grid>
         </Grid>
         <Grid

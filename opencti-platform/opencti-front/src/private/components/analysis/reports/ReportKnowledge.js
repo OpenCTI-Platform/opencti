@@ -5,6 +5,9 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { propOr } from 'ramda';
+import Chip from '@mui/material/Chip';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -19,15 +22,35 @@ import ReportPopover from './ReportPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
+import ReportKnowledgeTimeLine, {
+  reportKnowledgeTimeLineQuery,
+} from './ReportKnowledgeTimeLine';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import Filters from '../../common/lists/Filters';
+import { truncate } from '../../../../utils/String';
+import SearchInput from '../../../../components/SearchInput';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     width: '100%',
     height: '100%',
     margin: 0,
     padding: 0,
+  },
+  filters: {
+    float: 'left',
+    margin: '5px 0 0 10px',
+  },
+  filter: {
+    marginRight: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.background.accent,
+    marginRight: 10,
   },
 });
 
@@ -122,6 +145,14 @@ class ReportKnowledgeComponent extends Component {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
       currentColorsReversed: propOr(false, 'currentColorsReversed', params),
       currentKillChain: propOr('mitre-attack', 'currentKillChain', params),
+      timeLineDisplayRelationships: propOr(
+        false,
+        'timeLineDisplayRelationships',
+        params,
+      ),
+      timeLineFunctionalDate: propOr(false, 'timeLineFunctionalDate', params),
+      timeLineFilters: propOr({}, 'timeLineFilters', params),
+      timeLineSearchTerm: R.propOr('', 'timeLineSearchTerm', params),
     };
   }
 
@@ -153,16 +184,110 @@ class ReportKnowledgeComponent extends Component {
     this.setState({ currentKillChain: value }, () => this.saveView());
   }
 
+  handleToggleTimeLineDisplayRelationships() {
+    this.setState(
+      {
+        timeLineDisplayRelationships: !this.state.timeLineDisplayRelationships,
+      },
+      () => this.saveView(),
+    );
+  }
+
+  handleToggleTimeLineFunctionalDate() {
+    this.setState(
+      {
+        timeLineFunctionalDate: !this.state.timeLineFunctionalDate,
+      },
+      () => this.saveView(),
+    );
+  }
+
+  handleAddTimeLineFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (
+      this.state.timeLineFilters[key]
+      && this.state.timeLineFilters[key].length > 0
+    ) {
+      this.setState(
+        {
+          timeLineFilters: {
+            ...this.state.timeLineFilters,
+            [key]: isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.timeLineFilters[key],
+              ]),
+          },
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          timeLineFilters: {
+            ...this.state.timeLineFilters,
+            [key]: [{ id, value }],
+          },
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
+  handleRemoveTimeLineFilter(key) {
+    this.setState(
+      { timeLineFilters: R.dissoc(key, this.state.timeLineFilters) },
+      () => this.saveView(),
+    );
+  }
+
+  handleTimeLineSearch(value) {
+    this.setState({ timeLineSearchTerm: value }, () => this.saveView());
+  }
+
   render() {
     const {
       classes,
       report,
+      t,
       location,
       match: {
         params: { mode },
       },
     } = this.props;
-    const { currentModeOnlyActive, currentColorsReversed, currentKillChain } = this.state;
+    const {
+      currentModeOnlyActive,
+      currentColorsReversed,
+      currentKillChain,
+      timeLineFilters,
+      timeLineDisplayRelationships,
+      timeLineFunctionalDate,
+      timeLineSearchTerm,
+    } = this.state;
+    let finalFilters = convertFilters(timeLineFilters);
+    const defaultTypes = timeLineDisplayRelationships
+      ? ['stix-core-relationship']
+      : ['Stix-Core-Object'];
+    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+      || defaultTypes;
+    finalFilters = finalFilters.filter((n) => !['entity_type'].includes(n.key));
+    let orderBy = 'created_at';
+    if (timeLineFunctionalDate && timeLineDisplayRelationships) {
+      orderBy = 'start_time';
+    } else if (timeLineFunctionalDate) {
+      orderBy = 'created';
+    }
+    const timeLinePaginationOptions = {
+      types,
+      search: timeLineSearchTerm,
+      filters: finalFilters,
+      orderBy,
+      orderMode: 'desc',
+    };
     return (
       <div
         className={classes.container}
@@ -173,7 +298,7 @@ class ReportKnowledgeComponent extends Component {
             container={report}
             PopoverComponent={<ReportPopover />}
             link={`/dashboard/analysis/reports/${report.id}/knowledge`}
-            modes={['graph', 'correlation', 'matrix']}
+            modes={['graph', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
           />
@@ -194,6 +319,124 @@ class ReportKnowledgeComponent extends Component {
                 return <Loader />;
               }}
             />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/analysis/reports/:reportId/knowledge/timeline"
+          render={() => (
+            <>
+              <div style={{ float: 'left' }}>
+                <SearchInput
+                  variant="small"
+                  onSubmit={this.handleTimeLineSearch.bind(this)}
+                  keyword={timeLineSearchTerm}
+                />
+                <FormControlLabel
+                  style={{ marginLeft: 10 }}
+                  control={
+                    <Switch
+                      onChange={this.handleToggleTimeLineDisplayRelationships.bind(
+                        this,
+                      )}
+                      checked={timeLineDisplayRelationships}
+                    />
+                  }
+                  label={t('Display relationships')}
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      onChange={this.handleToggleTimeLineFunctionalDate.bind(
+                        this,
+                      )}
+                      checked={timeLineFunctionalDate}
+                    />
+                  }
+                  label={t('Use functional dates')}
+                />
+              </div>
+              <Filters
+                availableFilterKeys={[
+                  'entity_type',
+                  'markedBy',
+                  'labelledBy',
+                  'createdBy',
+                  'relationship_type',
+                ]}
+                availableEntityTypes={[
+                  'Stix-Domain-Object',
+                  'Stix-Cyber-Observable',
+                ]}
+                handleAddFilter={this.handleAddTimeLineFilter.bind(this)}
+                noDirectFilters={true}
+              />
+              <div className={classes.filters}>
+                {R.map((currentFilter) => {
+                  const label = `${truncate(
+                    t(`filter_${currentFilter[0]}`),
+                    20,
+                  )}`;
+                  const values = (
+                    <span>
+                      {R.map(
+                        (n) => (
+                          <span key={n.value}>
+                            {n.value && n.value.length > 0
+                              ? truncate(n.value, 15)
+                              : t('No label')}{' '}
+                            {R.last(currentFilter[1]).value !== n.value && (
+                              <code>OR</code>
+                            )}{' '}
+                          </span>
+                        ),
+                        currentFilter[1],
+                      )}
+                    </span>
+                  );
+                  return (
+                    <span key={currentFilter[0]}>
+                      <Chip
+                        classes={{ root: classes.filter }}
+                        label={
+                          <div>
+                            <strong>{label}</strong>: {values}
+                          </div>
+                        }
+                        onDelete={this.handleRemoveTimeLineFilter.bind(
+                          this,
+                          currentFilter[0],
+                        )}
+                      />
+                      {R.last(R.toPairs(timeLineFilters))[0]
+                        !== currentFilter[0] && (
+                        <Chip
+                          classes={{ root: classes.operator }}
+                          label={t('AND')}
+                        />
+                      )}
+                    </span>
+                  );
+                }, R.toPairs(timeLineFilters))}
+              </div>
+              <div className="clearfix" />
+              <QueryRenderer
+                query={reportKnowledgeTimeLineQuery}
+                variables={{ id: report.id, ...timeLinePaginationOptions }}
+                render={({ props }) => {
+                  if (props && props.report) {
+                    return (
+                      <ReportKnowledgeTimeLine
+                        report={props.report}
+                        dateAttribute={orderBy}
+                        displayRelationships={timeLineDisplayRelationships}
+                      />
+                    );
+                  }
+                  return <Loader />;
+                }}
+              />
+            </>
           )}
         />
         <Route

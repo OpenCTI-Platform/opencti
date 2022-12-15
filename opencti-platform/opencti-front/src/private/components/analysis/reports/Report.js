@@ -41,10 +41,10 @@ class ReportComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={report} />
+            <ReportDetails report={report} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ReportDetails report={report} />
+            <StixDomainObjectOverview stixDomainObject={report} />
           </Grid>
         </Grid>
         <Grid

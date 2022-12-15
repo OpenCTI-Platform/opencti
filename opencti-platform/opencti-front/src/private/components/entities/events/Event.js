@@ -43,10 +43,10 @@ class EventComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={event} />
+            <EventDetails event={event} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <EventDetails event={event} />
+            <StixDomainObjectOverview stixDomainObject={event} />
           </Grid>
         </Grid>
         <Grid

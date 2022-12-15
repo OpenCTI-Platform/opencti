@@ -1178,7 +1178,7 @@ class ReportKnowledgeGraphComponent extends Component {
           container={report}
           PopoverComponent={<ReportPopover />}
           link={`/dashboard/analysis/reports/${report.id}/knowledge`}
-          modes={['graph', 'correlation', 'matrix']}
+          modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
           adjust={this.handleZoomToFit.bind(this)}
           knowledge={true}

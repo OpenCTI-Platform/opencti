@@ -82,75 +82,82 @@ export const countryFragment = graphql`
   }
 `;
 
-const CountryComponent = ({ countryData }: { countryData: Country_country$key }) => {
+const CountryComponent = ({
+  countryData,
+}: {
+  countryData: Country_country$key;
+}) => {
   const classes = useStyles();
-  const country = useFragment<Country_country$key>(countryFragment, countryData);
+  const country = useFragment<Country_country$key>(
+    countryFragment,
+    countryData,
+  );
   return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          disableSharing={true}
-          stixDomainObject={country}
-          isOpenctiAlias={true}
-          PopoverComponent={CountryPopover}
-        />
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={country} />
-          </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <LocationMiniMap
-              center={
-                country.latitude && country.longitude
-                  ? [country.latitude, country.longitude]
-                  : [48.8566969, 2.3514616]
-              }
-              countries={[country]}
-              zoom={4}
-            />
-          </Grid>
+    <div className={classes.container}>
+      <StixDomainObjectHeader
+        disableSharing={true}
+        stixDomainObject={country}
+        isOpenctiAlias={true}
+        PopoverComponent={CountryPopover}
+      />
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+      >
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <LocationMiniMap
+            center={
+              country.latitude && country.longitude
+                ? [country.latitude, country.longitude]
+                : [48.8566969, 2.3514616]
+            }
+            countries={[country]}
+            zoom={4}
+          />
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={country.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/locations/countries/${country.id}/knowledge`}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={country.id}
-            />
-          </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <StixDomainObjectOverview stixDomainObject={country} />
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={country.id} />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory stixCoreObjectId={country.id} />
-          </Grid>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={6}>
+          <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+            stixObjectOrStixRelationshipId={country.id}
+            stixObjectOrStixRelationshipLink={`/dashboard/locations/countries/${country.id}/knowledge`}
+          />
         </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={country.id}
-        />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CountryEdition countryId={country.id} />
-        </Security>
-      </div>
+        <Grid item={true} xs={6}>
+          <StixCoreObjectOrStixCoreRelationshipLastReports
+            stixCoreObjectOrStixCoreRelationshipId={country.id}
+          />
+        </Grid>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={6}>
+          <StixCoreObjectExternalReferences stixCoreObjectId={country.id} />
+        </Grid>
+        <Grid item={true} xs={6}>
+          <StixCoreObjectLatestHistory stixCoreObjectId={country.id} />
+        </Grid>
+      </Grid>
+      <StixCoreObjectOrStixCoreRelationshipNotes
+        stixCoreObjectOrStixCoreRelationshipId={country.id}
+      />
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <CountryEdition countryId={country.id} />
+      </Security>
+    </div>
   );
 };
 

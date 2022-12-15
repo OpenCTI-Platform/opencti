@@ -233,6 +233,7 @@ class WorkbenchFileLineComponent extends Component {
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
                   {(file.metaData.labels || []).map((n) => (
                     <Chip
+                      key={n}
                       classes={{ root: classes.chipInList }}
                       color="primary"
                       variant="outlined"

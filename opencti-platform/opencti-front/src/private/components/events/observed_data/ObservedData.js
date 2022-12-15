@@ -42,10 +42,10 @@ class ObservedDataComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={observedData} />
+            <ObservedDataDetails observedData={observedData} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ObservedDataDetails observedData={observedData} />
+            <StixDomainObjectOverview stixDomainObject={observedData} />
           </Grid>
         </Grid>
         <Grid

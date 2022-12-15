@@ -14,7 +14,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
+    cursor: 'pointer',
   },
   itemIcon: {
     color: theme.palette.primary?.main,

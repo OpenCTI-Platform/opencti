@@ -18930,6 +18930,7 @@ export enum StixObjectOrStixRelationshipsFilter {
   Name = 'name',
   ObjectContained = 'objectContained',
   RelatedTo = 'relatedTo',
+  RelationshipType = 'relationship_type',
   SightedBy = 'sightedBy',
   UpdatedAt = 'updated_at',
   Value = 'value',
@@ -18945,13 +18946,17 @@ export type StixObjectOrStixRelationshipsFiltering = {
 };
 
 export enum StixObjectOrStixRelationshipsOrdering {
+  Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   EntityType = 'entity_type',
+  Modified = 'modified',
   Name = 'name',
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
   ObservableValue = 'observable_value',
+  RelationshipType = 'relationship_type',
+  StartTime = 'start_time',
   UpdatedAt = 'updated_at'
 }
 

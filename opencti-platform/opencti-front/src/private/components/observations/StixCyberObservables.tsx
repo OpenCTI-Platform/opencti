@@ -5,7 +5,9 @@ import { React } from 'mdi-material-ui';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
 import StixCyberObservablesRightBar from './stix_cyber_observables/StixCyberObservablesRightBar';
 import Security from '../../../utils/Security';
-import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
+import useLocalStorage, {
+  localStorageToPaginationOptions,
+} from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixCyberObservablesLines, {
   stixCyberObservablesLinesQuery,
@@ -13,9 +15,7 @@ import StixCyberObservablesLines, {
 } from './stix_cyber_observables/StixCyberObservablesLines';
 import ToolBar from '../data/ToolBar';
 import { Theme } from '../../../components/Theme';
-import {
-  StixCyberObservableLine_node$data,
-} from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
+import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import { Filters } from '../../../components/list_lines';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import {
@@ -24,9 +24,7 @@ import {
 } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import useCopy from '../../../utils/hooks/useCopy';
-import {
-  StixCyberObservablesLinesSearchQuery$data,
-} from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
+import { StixCyberObservablesLinesSearchQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
@@ -71,26 +69,17 @@ const StixCyberObservables: FunctionComponent = () => {
     handleSetNumberOfElements,
   } = helpers;
 
-  let finalType;
-  if (types && types.length > 0) {
-    finalType = types.map((n) => ({ id: n, value: n }));
-  } else {
-    finalType = [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }];
-  }
-
-  const [selectedElements, setSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
-  const [deSelectedElements, setDeSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
-
-  const finalFilters = {
-    ...viewStorage.filters,
-    entity_type: finalType,
-  };
+  const [selectedElements, setSelectedElements] = useState<
+  Record<string, StixCyberObservableLine_node$data>
+  >({});
+  const [deSelectedElements, setDeSelectedElements] = useState<
+  Record<string, StixCyberObservableLine_node$data>
+  >({});
 
   const paginationOptions = localStorageToPaginationOptions<StixCyberObservablesLinesPaginationQuery$variables>(
     {
       ...viewStorage,
       count: 25,
-      filters: finalFilters,
     },
   );
 
@@ -188,7 +177,10 @@ const StixCyberObservables: FunctionComponent = () => {
 
   const handleCopy = useCopy<StixCyberObservablesLinesSearchQuery$data>(
     {
-      filters: finalFilters,
+      filters: {
+        ...filters,
+        entity_type: types ? types.map((n) => ({ id: n, value: n })) : [],
+      },
       searchTerm: searchTerm ?? '',
       query: stixCyberObservablesLinesSearchQuery,
       selectedValues: Object.values(selectedElements).map(
@@ -231,6 +223,18 @@ const StixCyberObservables: FunctionComponent = () => {
   };
 
   const renderLines = () => {
+    let finalType;
+    if (types && types.length > 0) {
+      finalType = types.map((n) => ({ id: n, value: n }));
+    } else {
+      finalType = [
+        { id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' },
+      ];
+    }
+    const finalFilters = {
+      ...viewStorage.filters,
+      entity_type: finalType,
+    };
     let numberOfSelectedElements = Object.keys(selectedElements).length;
     if (selectAll) {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)

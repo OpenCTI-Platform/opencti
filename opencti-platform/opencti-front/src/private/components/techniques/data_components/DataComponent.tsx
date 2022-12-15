@@ -95,10 +95,10 @@ const DataComponent: FunctionComponent<{ data: DataComponent_dataComponent$key }
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={dataComponent} />
+          <DataComponentDetails dataComponent={dataComponent} />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <DataComponentDetails dataComponent={dataComponent} />
+          <StixDomainObjectOverview stixDomainObject={dataComponent} />
         </Grid>
       </Grid>
       <Grid
