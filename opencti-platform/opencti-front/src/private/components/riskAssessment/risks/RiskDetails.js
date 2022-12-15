@@ -69,6 +69,11 @@ const styles = (theme) => ({
   gridContainer: {
     marginBottom: '5%',
   },
+  textBase: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
 });
 
 const riskDetailsEditMutation = graphql`
@@ -116,7 +121,7 @@ class RiskDetailsComponent extends Component {
         commitMutation({
           mutation: riskDetailsEditMutation,
           variables: { id: this.props.risk.id, input: { key: name, value } },
-          onComplete: () => {
+          onCompleted: () => {
             this.setState({ modelName: '', open: false });
           },
         });
@@ -131,6 +136,10 @@ class RiskDetailsComponent extends Component {
       risk,
       fldt,
     } = this.props;
+    const {
+      open,
+      modelName,
+    } = this.state;
     const riskDetectionSource = R.pipe(
       R.path(['origins']),
     )(risk);
@@ -165,53 +174,54 @@ class RiskDetailsComponent extends Component {
             <Form>
               <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 5 }}
-                  >
-                    {t('First Seen')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t('First Seen')}
+                    </Typography>
                     <Tooltip
                       title={t(
                         'Identifies the date/time when the risk was first seen/observered.',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
                   {risk.first_seen && fldt(risk.first_seen)}
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 5 }}
-                  >
-                    {t('Last Seen')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t('Last Seen')}
+                    </Typography>
                     <Tooltip
                       title={t(
                         'Idetifies the date/time when the risk was last seen/observed.',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
                   {risk.last_seen && fldt(risk.last_seen)}
                 </Grid>
                 <Grid item={true} xs={12}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <div className={classes.textBase}>
                     <Typography
                       variant="h3"
                       color="textSecondary"
                       gutterBottom={true}
+                      style={{ margin: 0 }}
                     >
                       {t('Statement')}
                     </Typography>
@@ -220,17 +230,19 @@ class RiskDetailsComponent extends Component {
                         'Identifies a summary of impact for how the risk affects the system.',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                     <IconButton
                       size='small'
+                      style={{ fontSize: '15px' }}
+                      color={(open && modelName === 'statement') ? 'primary' : 'inherit'}
                       onClick={this.handleEditOpen.bind(this, 'statement')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {this.state.open && this.state.modelName === 'statement' ? (
+                  {open && modelName === 'statement' ? (
                     <Field
                       component={MarkDownField}
                       name='statement'
@@ -250,11 +262,12 @@ class RiskDetailsComponent extends Component {
                   )}
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <div className={classes.textBase}>
                     <Typography
                       variant="h3"
                       color="textSecondary"
                       gutterBottom={true}
+                      style={{ margin: 0 }}
                     >
                       {t('Risk Status')}
                     </Typography>
@@ -263,17 +276,19 @@ class RiskDetailsComponent extends Component {
                         'Identifies the status of the associated risk.',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                     <IconButton
                       size='small'
+                      style={{ fontSize: '15px' }}
+                      color={(open && modelName === 'risk_status') ? 'primary' : 'inherit'}
                       onClick={this.handleEditOpen.bind(this, 'risk_status')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {this.state.open && this.state.modelName === 'risk_status' ? (
+                  {open && modelName === 'risk_status' ? (
                     <RiskStatus
                       variant='outlined'
                       name='risk_status'
@@ -295,11 +310,12 @@ class RiskDetailsComponent extends Component {
 
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <div className={classes.textBase}>
                     <Typography
                       variant="h3"
                       color="textSecondary"
                       gutterBottom={true}
+                      style={{ margin: 0 }}
                     >
                       {t('Deadline')}
                     </Typography>
@@ -308,17 +324,19 @@ class RiskDetailsComponent extends Component {
                         'Identifies the date/time by which the risk must be resolved.',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                     <IconButton
                       size='small'
+                      style={{ fontSize: '15px' }}
+                      color={(open && modelName === 'deadline') ? 'primary' : 'inherit'}
                       onClick={this.handleEditOpen.bind(this, 'deadline')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {this.state.open && this.state.modelName === 'deadline' ? (
+                  {open && modelName === 'deadline' ? (
                     <Field
                       component={DatePickerField}
                       name='deadline'
@@ -332,21 +350,21 @@ class RiskDetailsComponent extends Component {
                   }
                 </Grid>
                 <Grid item={true} xs={12}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 5 }}
-                  >
-                    {t('Detection Source')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t('Detection Source')}
+                    </Typography>
                     <Tooltip
                       title={t(
                         'Detection Source',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
@@ -359,11 +377,12 @@ class RiskDetailsComponent extends Component {
                 </Grid>
                 <Grid item={true} xs={6}>
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                    <div className={classes.textBase}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
                         gutterBottom={true}
+                        style={{ margin: 0 }}
                       >
                         {t('False Positive')}
                       </Typography>
@@ -372,17 +391,19 @@ class RiskDetailsComponent extends Component {
                           'Identifies that the risk has been confirmed to be a false positive.',
                         )}
                       >
-                        <Information fontSize="inherit" color="disabled" />
+                        <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                       </Tooltip>
                       <IconButton
                         size='small'
+                        style={{ fontSize: '15px' }}
+                        color={(open && modelName === 'false_positive') ? 'primary' : 'inherit'}
                         onClick={this.handleEditOpen.bind(this, 'false_positive')}
                       >
                         <Edit fontSize='inherit' />
                       </IconButton>
                     </div>
                     <div className="clearfix" />
-                    {this.state.open && this.state.modelName === 'false_positive' ? (
+                    {open && modelName === 'false_positive' ? (
                       <ResourceType
                         variant='outlined'
                         name="false_positive"
@@ -404,11 +425,12 @@ class RiskDetailsComponent extends Component {
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <div className={classes.textBase}>
                     <Typography
                       variant="h3"
                       color="textSecondary"
                       gutterBottom={true}
+                      style={{ margin: 0 }}
                     >
                       {t('Operationally Required')}
                     </Typography>
@@ -417,17 +439,19 @@ class RiskDetailsComponent extends Component {
                         'Operationally Required',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                     <IconButton
                       size='small'
+                      style={{ fontSize: '15px' }}
+                      color={(open && modelName === 'accepted') ? 'primary' : 'inherit'}
                       onClick={this.handleEditOpen.bind(this, 'accepted')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {this.state.open && this.state.modelName === 'accepted' ? (
+                  {open && modelName === 'accepted' ? (
                     <ResourceType
                       variant='outlined'
                       name="accepted"
@@ -448,11 +472,12 @@ class RiskDetailsComponent extends Component {
                   )}
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <div className={classes.textBase}>
                     <Typography
                       variant="h3"
                       color="textSecondary"
                       gutterBottom={true}
+                      style={{ margin: 0 }}
                     >
                       {t('Risk Adjusted')}
                     </Typography>
@@ -461,17 +486,19 @@ class RiskDetailsComponent extends Component {
                         'Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk.',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                     <IconButton
                       size='small'
+                      style={{ fontSize: '15px' }}
+                      color={(open && modelName === 'risk_adjusted') ? 'primary' : 'inherit'}
                       onClick={this.handleEditOpen.bind(this, 'risk_adjusted')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {this.state.open && this.state.modelName === 'risk_adjusted' ? (
+                  {open && modelName === 'risk_adjusted' ? (
                     <ResourceType
                       variant='outlined'
                       name="risk_adjusted"
@@ -492,11 +519,12 @@ class RiskDetailsComponent extends Component {
                   )}
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <div className={classes.textBase}>
                     <Typography
                       variant="h3"
                       color="textSecondary"
                       gutterBottom={true}
+                      style={{ margin: 0 }}
                     >
                       {t('Vendor Dependency')}
                     </Typography>
@@ -505,17 +533,19 @@ class RiskDetailsComponent extends Component {
                         'Identifies that a vendor resolution is pending, but not yet available.',
                       )}
                     >
-                      <Information fontSize="inherit" color="disabled" />
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
                     <IconButton
                       size='small'
+                      style={{ fontSize: '15px' }}
+                      color={(open && modelName === 'vendor_dependency') ? 'primary' : 'inherit'}
                       onClick={this.handleEditOpen.bind(this, 'vendor_dependency')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {this.state.open && this.state.modelName === 'vendor_dependency' ? (
+                  {open && modelName === 'vendor_dependency' ? (
                     <ResourceType
                       variant='outlined'
                       name="vendor_dependency"

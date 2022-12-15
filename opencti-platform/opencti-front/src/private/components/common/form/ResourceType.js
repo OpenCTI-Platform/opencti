@@ -87,6 +87,9 @@ class ResourceType extends Component {
           style={style}
           helperText={helperText}
         >
+          <MenuItem value={''}>
+            <em>None</em>
+          </MenuItem>
           {ResourceTypeList.map(
             (et, key) =>
               et.label && (
