@@ -284,6 +284,7 @@ const RiskOverview = createFragmentContainer(
     risk: graphql`
       fragment RiskOverview_risk on Risk {
         __typename
+        id
         created
         modified
         description

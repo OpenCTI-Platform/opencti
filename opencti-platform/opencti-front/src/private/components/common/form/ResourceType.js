@@ -5,7 +5,6 @@ import { Field } from 'formik';
 import * as R from 'ramda';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
-import { Information } from 'mdi-material-ui';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
@@ -13,7 +12,7 @@ import { fetchQuery } from '../../../../relay/environment';
 
 const ResourceTypeQuery = graphql`
   query ResourceTypeQuery {
-    __type(name: "ResourceType") {
+    __type(name: "RiskAssertionState") {
       name
       description
       enumValues {
@@ -77,6 +76,8 @@ class ResourceType extends Component {
         <Field
           component={SelectField}
           name={name}
+          onChange={onChange}
+          onFocus={onFocus}
           label={label}
           fullWidth={true}
           containerstyle={containerstyle}

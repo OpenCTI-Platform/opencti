@@ -79,6 +79,8 @@ class RiskStatus extends Component {
           fullWidth={true}
           containerstyle={containerstyle}
           variant={variant}
+          onChange={onChange}
+          onFocus={onFocus}
           disabled={disabled || false}
           size={size}
           style={style}
