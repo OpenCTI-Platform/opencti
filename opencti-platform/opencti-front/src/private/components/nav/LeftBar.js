@@ -107,31 +107,26 @@ const LeftBar = ({ t, location, classes, theme }) => {
             && helper.isEntityTypeHidden('Campaign'));
         const hideEntities = helper.isEntityTypeHidden('Entities')
           || (helper.isEntityTypeHidden('Sector')
-            && helper.isEntityTypeHidden('Country')
-            && helper.isEntityTypeHidden('City')
-            && helper.isEntityTypeHidden('Position')
             && helper.isEntityTypeHidden('Event')
             && helper.isEntityTypeHidden('Organization')
             && helper.isEntityTypeHidden('System')
             && helper.isEntityTypeHidden('Individual'));
         const hideArsenal = helper.isEntityTypeHidden('Arsenal')
-          || (helper.isEntityTypeHidden('Channel')
-            && helper.isEntityTypeHidden('Narrative')
-            && helper.isEntityTypeHidden('Course-Of-Action')
+          || (helper.isEntityTypeHidden('Malware')
+            && helper.isEntityTypeHidden('Channel')
             && helper.isEntityTypeHidden('Tool')
             && helper.isEntityTypeHidden('Vulnerability'));
         const hideTechniques = helper.isEntityTypeHidden('Techniques')
-          || (helper.isEntityTypeHidden('Attack-Patterns')
-            && helper.isEntityTypeHidden('Narratives')
-            && helper.isEntityTypeHidden('Courses Of Action')
-            && helper.isEntityTypeHidden('Data Component')
-            && helper.isEntityTypeHidden('Data Source'));
-        const hideLocations = helper.isEntityTypeHidden('Location')
+          || (helper.isEntityTypeHidden('Attack-Pattern')
+            && helper.isEntityTypeHidden('Narrative')
+            && helper.isEntityTypeHidden('Course-Of-Action')
+            && helper.isEntityTypeHidden('Data-Component')
+            && helper.isEntityTypeHidden('Data-Source'));
+        const hideLocations = helper.isEntityTypeHidden('Locations')
           || (helper.isEntityTypeHidden('Region')
-            && helper.isEntityTypeHidden('Countries')
-            && helper.isEntityTypeHidden('Areas')
-            && helper.isEntityTypeHidden('Cities')
-            && helper.isEntityTypeHidden('Positions'));
+            && helper.isEntityTypeHidden('Country')
+            && helper.isEntityTypeHidden('City')
+            && helper.isEntityTypeHidden('Position'));
         return (
           <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
             <Toolbar />

@@ -268,12 +268,20 @@ const Settings = () => {
         finalValue = finalValue.filter(
           (n) => ![
             'Malware',
-            'Attack-Pattern',
-            'Course-Of-Action',
             'Channel',
-            'Narrative',
             'Tool',
             'Vulnerability',
+          ].includes(n),
+        );
+      }
+      if (finalValue.includes('Techniques')) {
+        finalValue = finalValue.filter(
+          (n) => ![
+            'Attack-Pattern',
+            'Course-Of-Action',
+            'Narrative',
+            'Data-Component',
+            'Data-Source',
           ].includes(n),
         );
       }
@@ -281,13 +289,20 @@ const Settings = () => {
         finalValue = finalValue.filter(
           (n) => ![
             'Sector',
-            'Country',
-            'City',
-            'Position',
             'Event',
             'Organization',
             'Individual',
             'System',
+          ].includes(n),
+        );
+      }
+      if (finalValue.includes('Locations')) {
+        finalValue = finalValue.filter(
+          (n) => ![
+            'Region',
+            'Country',
+            'City',
+            'Position',
           ].includes(n),
         );
       }
