@@ -47,7 +47,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<Contai
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const { me } = useContext(UserContext);
   const security = [KNOWLEDGE_KNUPDATE];
-  const isContainerOwner = userIsKnowledgeEditor || me?.individual_id === container?.createdBy?.id;
+  const isContainerOwner = userIsKnowledgeEditor || me?.individual_id === container.createdBy?.id;
   if (isSupportParticipation && isContainerOwner) {
     security.push(KNOWLEDGE_KNPARTICIPATE);
   }
