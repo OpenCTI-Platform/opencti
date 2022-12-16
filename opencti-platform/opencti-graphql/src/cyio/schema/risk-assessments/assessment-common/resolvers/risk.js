@@ -609,7 +609,6 @@ const riskResolvers = {
             }
           }
         }
-        if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       }
 
       const select = selectRiskQuery(id, selectMap.getNode("editRisk"));
