@@ -1,18 +1,17 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React, { useContext, useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
 import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
 import NoteEditionContainer from './NoteEditionContainer';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { noteEditionOverviewFocus } from './NoteEditionOverview';
 import Loader from '../../../../components/Loader';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -29,83 +28,70 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-});
+}));
 
 export const noteEditionQuery = graphql`
   query NoteEditionContainerQuery($id: String!) {
     note(id: $id) {
+      createdBy {
+        id
+      }
       ...NoteEditionContainer_note
     }
   }
 `;
 
-class NoteEdition extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+const NoteEdition = ({ noteId }) => {
+  const [open, setOpen] = useState(false);
+  const classes = useStyles();
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
+  const { me } = useContext(UserContext);
+  const handleOpen = () => setOpen(true);
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
+  const handleClose = () => {
     commitMutation({
       mutation: noteEditionOverviewFocus,
       variables: {
-        id: this.props.noteId,
+        id: noteId,
         input: { focusOn: '' },
       },
     });
-    this.setState({ open: false });
-  }
-
-  render() {
-    const { classes, noteId } = this.props;
-    return (
+    setOpen(false);
+  };
+  return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}>
-          <Edit />
-        </Fab>
-        <Drawer open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
-          <QueryRenderer
-            query={noteEditionQuery}
-            variables={{ id: noteId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <NoteEditionContainer
-                    note={props.note}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
+        <QueryRenderer
+          query={noteEditionQuery}
+          variables={{ id: noteId }}
+          render={({ props }) => {
+            if (props) {
+              // Check is user has edition rights
+              if (!userIsKnowledgeEditor && me.individual_id !== props.note.createdBy.id) {
+                return <></>;
               }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
+              return (
+                <>
+                  <Fab onClick={handleOpen}
+                       color="secondary"
+                       aria-label="Edit"
+                       className={classes.editButton}>
+                    <Edit />
+                  </Fab>
+                  <Drawer open={open}
+                          anchor="right"
+                          elevation={1}
+                          sx={{ zIndex: 1202 }}
+                          classes={{ paper: classes.drawerPaper }}
+                          onClose={handleClose}>
+                    <NoteEditionContainer note={props.note} handleClose={handleClose} />
+                  </Drawer></>
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
       </div>
-    );
-  }
-}
-
-NoteEdition.propTypes = {
-  noteId: PropTypes.string,
-  me: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(NoteEdition);
+export default NoteEdition;

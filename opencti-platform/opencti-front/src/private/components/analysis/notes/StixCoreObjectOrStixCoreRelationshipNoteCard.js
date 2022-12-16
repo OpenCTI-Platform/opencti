@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr, take } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import { OpenInNewOutlined } from '@mui/icons-material';

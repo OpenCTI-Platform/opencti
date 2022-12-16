@@ -37,7 +37,7 @@ class NoteComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ContainerStixObjectsOrStixRelationships container={note} />
+            <ContainerStixObjectsOrStixRelationships isSupportParticipation={true} container={note} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={note} />
@@ -94,11 +94,9 @@ const Note = createFragmentContainer(NoteComponent, {
       created_at
       updated_at
       createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
+        id
+        name
+        entity_type
       }
       creator {
         id

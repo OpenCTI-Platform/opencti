@@ -17,6 +17,8 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -184,17 +186,17 @@ class ContainerStixCoreObjectPopover extends Component {
         >
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
+        <Menu anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <MenuItem onClick={this.handleOpenRemove.bind(this)}>
             {t('Remove')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+              {t('Delete')}
+            </MenuItem>
+          </Security>
         </Menu>
         <Dialog
           PaperProps={{ elevation: 1 }}

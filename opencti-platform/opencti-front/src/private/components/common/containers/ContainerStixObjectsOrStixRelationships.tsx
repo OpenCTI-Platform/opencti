@@ -19,7 +19,7 @@ import {
   ContainerStixObjectsOrStixRelationships_container$data,
 } from './__generated__/ContainerStixObjectsOrStixRelationships_container.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -32,6 +32,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ContainerStixObjectsOrStixRelationshipsComponentProps {
+  isSupportParticipation: boolean,
   container: ContainerStixObjectsOrStixRelationships_container$data,
   paginationOptions: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
 }
@@ -39,10 +40,17 @@ interface ContainerStixObjectsOrStixRelationshipsComponentProps {
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<ContainerStixObjectsOrStixRelationshipsComponentProps> = ({
   container,
   paginationOptions,
+  isSupportParticipation = false,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
+  const { me } = useContext(UserContext);
+  const security = [KNOWLEDGE_KNUPDATE];
+  const isContainerOwner = userIsKnowledgeEditor || me?.individual_id === container.createdBy?.id;
+  if (isSupportParticipation && isContainerOwner) {
+    security.push(KNOWLEDGE_KNPARTICIPATE);
+  }
   const { helper } = useContext(UserContext);
   const isRuntimeSort = helper?.isRuntimeFieldEnable('RUNTIME_SORTING');
   const dataColumns = {
@@ -68,10 +76,10 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<Contai
   };
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+      <Typography variant="h4" gutterBottom={true} style={{ float: 'left', paddingBottom: 11 }}>
         {t('Related entities')}
       </Typography>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={security}>
         <ContainerAddStixCoreObjects
           containerId={container.id}
           containerStixCoreObjects={container.objects?.edges}
@@ -124,6 +132,9 @@ const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
     container: graphql`
       fragment ContainerStixObjectsOrStixRelationships_container on Container {
         id
+        createdBy {
+          id
+        }
         objects {
           edges {
             node {
