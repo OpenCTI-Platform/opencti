@@ -17,7 +17,7 @@ const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 const createHttpServer = async () => {
   const { app, seeMiddleware } = await createApp();
-  applyWildcard(app); // Needed in order to register prometheus metrics
+  // applyWildcard(app); // Needed in order to register prometheus metrics
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     const key = readFileSync(CERT_KEY_PATH);
