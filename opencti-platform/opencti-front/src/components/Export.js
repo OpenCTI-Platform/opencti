@@ -427,7 +427,7 @@ class Export extends Component {
                           <MenuItem value='all'>{t('all')}</MenuItem>
                         </Field>
                         <Typography>
-                          {t('Number of risk items do you to include')}
+                          {t('Number of risks to include')}
                         </Typography>
                         <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
                           <Tooltip title={t('Total Number')} >
