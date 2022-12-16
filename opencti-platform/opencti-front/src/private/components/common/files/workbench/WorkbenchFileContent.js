@@ -379,15 +379,19 @@ class WorkbenchFileContentComponent extends Component {
     ].filter((n) => !typesContainers.includes(n));
     const scoTypes = observableTypes.edges.map((n) => convertToStixType(n.node.id));
     const stixDomainObjects = objects
-      .filter((n) => sdoTypes.includes(n.type))
+      .filter((n) => sdoTypes.includes(n.type) && n.id)
       .map((n) => (typeof n.definition === 'object' && !n.name
         ? { ...n, name: R.toPairs(n.definition)[0][1] }
         : n));
-    const stixCyberObservables = objects.filter((n) => scoTypes.includes(n.type));
-    const stixCoreRelationships = objects.filter(
-      (n) => n.type === 'relationship',
+    const stixCyberObservables = objects.filter(
+      (n) => scoTypes.includes(n.type) && n.id,
     );
-    const containers = objects.filter((n) => typesContainers.includes(n.type));
+    const stixCoreRelationships = objects.filter(
+      (n) => n.type === 'relationship' && n.id,
+    );
+    const containers = objects.filter(
+      (n) => typesContainers.includes(n.type) && n.id,
+    );
     return {
       stixDomainObjects,
       stixCyberObservables,
