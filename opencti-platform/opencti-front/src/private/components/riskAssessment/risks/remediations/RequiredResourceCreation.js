@@ -28,8 +28,6 @@ import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
-import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
@@ -64,7 +62,7 @@ const styles = (theme) => ({
   },
   dialogContent: {
     overflowY: 'scroll',
-    height: '550px',
+    height: '500px',
     overflowX: 'hidden',
     padding: '8px 24px',
   },
@@ -480,28 +478,6 @@ class RequiredResourceCreation extends Component {
                         rows='3'
                         variant='outlined'
                         containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                    <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
-                      <CyioCoreObjectExternalReferences
-                        refreshQuery={refreshQuery}
-                        disableAdd={true}
-                        fieldName='links'
-                        typename='CyioExternalReference'
-                        externalReferences={[]}
-                        cyioCoreObjectId={remediationId}
-                      />
-                    </Grid>
-                    <Grid style={{ marginTop: '25px' }} xs={12} item={true}>
-                      <CyioCoreObjectOrCyioCoreRelationshipNotes
-                        refreshQuery={refreshQuery}
-                        disableAdd={true}
-                        fieldName='remarks'
-                        typename='CyioNotes'
-                        notes={[]}
-                        cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
-                        // data={props}
-                        marginTop='0px'
                       />
                     </Grid>
                   </Grid>

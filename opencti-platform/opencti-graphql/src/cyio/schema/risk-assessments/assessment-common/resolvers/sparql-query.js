@@ -5033,19 +5033,19 @@ export const riskPredicateMap = {
   },
   false_positive: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#false_positive>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "false_positive");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "false_positive");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'false-positive',
   },
   accepted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#accepted>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "accepted");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "accepted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'accepted',
   },
   risk_adjusted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_adjusted>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_adjusted");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "risk_adjusted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'risk-adjusted',
   },
@@ -5057,7 +5057,7 @@ export const riskPredicateMap = {
   },
   vendor_dependency: {
     predicate: "<http://fedramp.gov/ns/oscal#vendor_dependency>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "vendor_dependency");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "vendor_dependency");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   impacted_control_id: {
