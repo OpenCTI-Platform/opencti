@@ -174,6 +174,7 @@ const TopBar = ({
     setMenuOpen({ open: false, anchorEl: null });
   };
   const handleLogout = () => {
+    localStorage.removeItem('view-dashboard');
     commitMutation({
       mutation: logoutMutation,
       variables: {},
