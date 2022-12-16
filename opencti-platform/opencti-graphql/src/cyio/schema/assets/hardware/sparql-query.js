@@ -139,10 +139,10 @@ export const insertHardwareQuery = (propValues) => {
   const insertPredicates = [];
   insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#InventoryItem> `);
   if (propValues.asset_type !== 'hardware') {
-    insertPredicates.push(`${iri} a <${deviceMap[propValues.asset_type].iriTemplate}>`);
+    insertPredicates.push(`${iri} a <${deviceMap[propValues.asset_type].classIri}>`);
     if (deviceMap[propValues.asset_type].parent !== undefined && deviceMap[propValues.asset_type].parent !== 'hardware') {
       let parent = deviceMap[propValues.asset_type].parent;
-      insertPredicates.push(`${iri} a <${deviceMap[parent].iriTemplate}>`);
+      insertPredicates.push(`${iri} a <${deviceMap[parent].classIri}>`);
     }
   }
   insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> `);
