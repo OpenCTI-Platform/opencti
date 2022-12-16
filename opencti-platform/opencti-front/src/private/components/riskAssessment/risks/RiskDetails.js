@@ -12,13 +12,14 @@ import Typography from '@material-ui/core/Typography';
 import { Grid, Tooltip, IconButton } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import Edit from '@material-ui/icons/Edit';
+import Switch from '@material-ui/core/Switch';
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import MarkDownField from '../../../../components/MarkDownField';
 import RiskStatus from '../../common/form/RiskStatus';
 import DatePickerField from '../../../../components/DatePickerField';
-import ResourceType from '../../common/form/ResourceType';
+import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
   paper: {
@@ -69,10 +70,26 @@ const styles = (theme) => ({
   gridContainer: {
     marginBottom: '5%',
   },
+  thumb: {
+    '&.MuiSwitch-thumb': {
+      color: 'white',
+    },
+  },
   textBase: {
     display: 'flex',
     alignItems: 'center',
     marginBottom: 5,
+  },
+  switch_track: {
+    backgroundColor: '#D3134A !important',
+    opacity: '1 !important',
+  },
+  switch_base: {
+    color: 'white',
+    '&.Mui-checked + .MuiSwitch-track': {
+      backgroundColor: '#49B8FC !important',
+      opacity: 1,
+    },
   },
 });
 
@@ -403,25 +420,28 @@ class RiskDetailsComponent extends Component {
                       </IconButton>
                     </div>
                     <div className="clearfix" />
-                    {open && modelName === 'false_positive' ? (
-                      <ResourceType
-                        variant='outlined'
-                        name="false_positive"
-                        size='small'
-                        onChange={this.handleSubmitField.bind(this)}
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    ) : risk.false_positive && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        className={classes.statusButton}
-                      >
-                        {t(risk.false_positive)}
-                      </Button>
-                    )}
+                    <div style={{ display: 'flex' }}>
+                      <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
+                      {open && modelName === 'false_positive' ? (
+                        <Field
+                          component={SwitchField}
+                          name="false_positive"
+                          containerstyle={{ margin: '0 -15px 0 11px' }}
+                          onChange={this.handleSubmitField.bind(this)}
+                        />
+                      ) : (
+                        <Switch
+                          disabled
+                          defaultChecked={risk.false_positive}
+                          classes={{
+                            thumb: classes.thumb,
+                            track: classes.switch_track,
+                            switchBase: classes.switch_base,
+                          }}
+                        />
+                      )}
+                      <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
+                    </div>
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -451,25 +471,28 @@ class RiskDetailsComponent extends Component {
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {open && modelName === 'accepted' ? (
-                    <ResourceType
-                      variant='outlined'
-                      name="accepted"
-                      size='small'
-                      onChange={this.handleSubmitField.bind(this)}
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                    />
-                  ) : risk.accepted && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      className={classes.statusButton}
-                    >
-                      {t(risk.accepted)}
-                    </Button>
-                  )}
+                  <div style={{ display: 'flex' }}>
+                    <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
+                    {open && modelName === 'accepted' ? (
+                      <Field
+                        component={SwitchField}
+                        name="accepted"
+                        containerstyle={{ margin: '0 -15px 0 11px' }}
+                        onChange={this.handleSubmitField.bind(this)}
+                      />
+                    ) : (
+                      <Switch
+                        disabled
+                        defaultChecked={risk.accepted}
+                        classes={{
+                          thumb: classes.thumb,
+                          track: classes.switch_track,
+                          switchBase: classes.switch_base,
+                        }}
+                      />
+                    )}
+                    <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
+                  </div>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <div className={classes.textBase}>
@@ -498,25 +521,28 @@ class RiskDetailsComponent extends Component {
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {open && modelName === 'risk_adjusted' ? (
-                    <ResourceType
-                      variant='outlined'
-                      name="risk_adjusted"
-                      size='small'
-                      onChange={this.handleSubmitField.bind(this)}
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                    />
-                  ) : risk.risk_adjusted && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      className={classes.statusButton}
-                    >
-                      {t(risk.risk_adjusted)}
-                    </Button>
-                  )}
+                  <div style={{ display: 'flex' }}>
+                    <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
+                    {open && modelName === 'risk_adjusted' ? (
+                      <Field
+                        component={SwitchField}
+                        name="risk_adjusted"
+                        containerstyle={{ margin: '0 -15px 0 11px' }}
+                        onChange={this.handleSubmitField.bind(this)}
+                      />
+                    ) : (
+                      <Switch
+                        disabled
+                        defaultChecked={risk.risk_adjusted}
+                        classes={{
+                          thumb: classes.thumb,
+                          track: classes.switch_track,
+                          switchBase: classes.switch_base,
+                        }}
+                      />
+                    )}
+                    <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
+                  </div>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <div className={classes.textBase}>
@@ -545,25 +571,28 @@ class RiskDetailsComponent extends Component {
                     </IconButton>
                   </div>
                   <div className="clearfix" />
-                  {open && modelName === 'vendor_dependency' ? (
-                    <ResourceType
-                      variant='outlined'
-                      name="vendor_dependency"
-                      size='small'
-                      onChange={this.handleSubmitField.bind(this)}
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                    />
-                  ) : risk.vendor_dependency && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      className={classes.statusButton}
-                    >
-                      {t(risk.vendor_dependency)}
-                    </Button>
-                  )}
+                  <div style={{ display: 'flex' }}>
+                    <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
+                    {open && modelName === 'vendor_dependency' ? (
+                      <Field
+                        component={SwitchField}
+                        name="vendor_dependency"
+                        containerstyle={{ margin: '0 -15px 0 11px' }}
+                        onChange={this.handleSubmitField.bind(this)}
+                      />
+                    ) : (
+                      <Switch
+                        disabled
+                        defaultChecked={risk.vendor_dependency}
+                        classes={{
+                          thumb: classes.thumb,
+                          track: classes.switch_track,
+                          switchBase: classes.switch_base,
+                        }}
+                      />
+                    )}
+                    <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
+                  </div>
                 </Grid>
               </Grid>
             </Form>
