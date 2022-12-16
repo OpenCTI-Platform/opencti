@@ -70,33 +70,12 @@ const workspaceValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_workspaces',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class WorkspaceCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     commitMutation({
       mutation: workspaceMutation,
       variables: {
         input: assoc('type', this.props.type, values),
-      },
-      updater: (store) => {
-        const payload = store.getRootField('workspaceAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
       },
       setSubmitting,
       onCompleted: () => {

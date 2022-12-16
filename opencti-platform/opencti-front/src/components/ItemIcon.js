@@ -307,7 +307,7 @@ class ItemIcon extends Component {
     const {
       type, size, variant, color,
     } = this.props;
-    const fontSize = size || 'default';
+    const fontSize = size || 'medium';
     return iconSelector(type, variant, fontSize, color);
   }
 }

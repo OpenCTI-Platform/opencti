@@ -81,6 +81,8 @@ class AssetType extends Component {
         name={name}
         label={label}
         displayEmpty
+        onChange={onChange}
+        onFocus={onFocus}
         fullWidth={true}
         containerstyle={containerstyle}
         variant={variant}

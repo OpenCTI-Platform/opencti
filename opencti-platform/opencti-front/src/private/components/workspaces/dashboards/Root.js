@@ -9,7 +9,7 @@ import {
 import TopBar from '../../nav/TopBar';
 import CyioDashboard from './CyioDashboard';
 import Loader from '../../../../components/Loader';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const subscription = graphql`
   subscription RootDashboardSubscription($id: ID!) {
@@ -47,6 +47,11 @@ class RootDashboard extends Component {
     this.sub.dispose();
   }
 
+  handleErrorNotFound() {
+    toastGenericError('Workspace Not Found');
+    this.props.history.push('/dashboard/workspaces/dashboards');
+  }
+
   render() {
     const {
       me,
@@ -78,7 +83,7 @@ class RootDashboard extends Component {
                   </div>
                 );
               }
-              return <ErrorNotFound />;
+              return this.handleErrorNotFound();
             }
             return <Loader />;
           }}
@@ -89,6 +94,7 @@ class RootDashboard extends Component {
 }
 
 RootDashboard.propTypes = {
+  history: PropTypes.object,
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
