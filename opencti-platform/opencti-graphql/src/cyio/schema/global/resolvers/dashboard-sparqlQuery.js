@@ -77,7 +77,7 @@ export const entitiesCountQuery = (args) => {
   }
 
   // construct the IRI
-  classIri = `<${objectMap[type].iriTemplate}>`;
+  classIri = `<${objectMap[type].classIri}>`;
 
   if (('endDate' in args) && (args.endDate instanceof Date)) {
     // convert end date to string, if specified 
@@ -174,7 +174,7 @@ export const entitiesTimeSeriesQuery = (args) => {
   if ('objectId' in args) {
     classIri = `<${objectMap[type].iriTemplate}-${args.objectId}>`;
   } else {
-    classIri = `<${objectMap[type].iriTemplate}>`;
+    classIri = `<${objectMap[type].classIri}>`;
   }
 
   if (('startDate' in args) && (args.startDate instanceof Date)) {
@@ -271,7 +271,7 @@ export const entitiesDistributionQuery = (args) => {
   if ('objectId' in args) {
     classIri = `<${objectMap[type].iriTemplate}-${args.objectId}>`;
   } else {
-    classIri = `<${objectMap[type].iriTemplate}>`;
+    classIri = `<${objectMap[type].classIri}>`;
   }
 
   // build filter for start and end dates

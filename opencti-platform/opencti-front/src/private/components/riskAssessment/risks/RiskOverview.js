@@ -20,10 +20,10 @@ import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObj
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
+    height: '97%',
     minHeight: '50%',
-    margin: '10px 0 0 0',
-    padding: '24px 24px 0 24px',
+    marginTop: '2%',
+    padding: '1.5rem',
     borderRadius: 6,
   },
   chip: {
