@@ -30,6 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import CyioNotePopover from './CyioNotePopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { toastGenericError } from '../../../../utils/bakedToast';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
@@ -286,7 +287,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
                   parserOptions={{ commonmark: true }}
                   className="markdown"
                 >
-                  {t(node.content)}
+                  {node.content && truncate(t(node.content), 110)}
                 </Markdown>
               </Typography>
             )

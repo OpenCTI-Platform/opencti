@@ -1825,9 +1825,9 @@ type Risk implements BasicObject & LifecycleObject & OscalObject {
   characterizations: [Characterization]
   "Identifies one or more existing mitigating factors that may affect the overall determination of the risk, with an optional link to an implementation statement in the SSP."
   mitigating_factors: [MitigatingFactor]
-  "Identifies the date/time when the risk was first seen/observered."
+  "Identifies the date/time when the risk was first seen/observed."
   first_seen: Timestamp
-  "Idetifies the date/time when the risk was last seen/observed."
+  "Identifies the date/time when the risk was last seen/observed."
   last_seen: Timestamp
   "Identifies the date/time by which the risk must be resolved."
   deadline: Timestamp
@@ -1838,15 +1838,15 @@ type Risk implements BasicObject & LifecycleObject & OscalObject {
   "Relates the finding to a set of referenced observations that were used to determine the risk.  This would be the Component in which the risk exists and the InventoryItem(s) in which theComponent is installed"
   related_observations(first: Int, offset: Int): ObservationConnection
   "Identifies that the risk has been confirmed to be a false positive."
-  false_positive: RiskAssertionState
+  false_positive: Boolean
   "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
-  accepted: RiskAssertionState
+  accepted: Boolean
   "Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk."
-  risk_adjusted: RiskAssertionState
+  risk_adjusted: Boolean
   "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
   priority: PositiveInt
   "Identifies that a vendor resolution is pending, but not yet available."
-  vendor_dependency: RiskAssertionState
+  vendor_dependency: Boolean
   "Identifies a control impacted by this risk."
   impacted_control_id: String
   # Risk Response
@@ -1872,15 +1872,15 @@ input RiskAddInput {
   "Identifies the date/time by which the risk must be resolved."
   deadline: Timestamp
   "Identifies that the risk has been confirmed to be a false positive."
-  false_positive: RiskAssertionState
+  false_positive: Boolean = false
   "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
-  accepted: RiskAssertionState
+  accepted: Boolean = false
   "Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk."
-  risk_adjusted: RiskAssertionState
+  risk_adjusted: Boolean = false
   "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
   priority: PositiveInt
   "Identifies that a vendor resolution is pending, but not yet available."
-  vendor_dependency: RiskAssertionState
+  vendor_dependency: Boolean = false
   "Identifies a control impacted by this risk."
   impacted_control_id: String
 }

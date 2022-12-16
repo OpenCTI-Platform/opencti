@@ -408,6 +408,11 @@ const riskReducer = (item) => {
   }
   
   if (!('deadline' in item)) item.deadline = null;
+  if ( !('false_positive' in item)) item.false_positive = false;
+  if ( !('accepted' in item)) item.accepted = false;
+  if ( !('risk_adjusted' in item)) item.risk_adjusted = false;
+  if ( !('vendor_dependency' in item)) item.vendor_dependency = false;
+
   return {
     iri: item.iri,
     id: item.id,
@@ -436,11 +441,11 @@ const riskReducer = (item) => {
     ...(item.risk_log && {risk_log_iri: item.risk_log}),
     ...(item.related_observations && {related_observations_iri: item.related_observations}),
     ...(item.related_observation_ids && {related_observation_ids: item.related_observation_ids}),
-    ...(item.false_positive && {false_positive: item.false_positive}),
-    ...(item.accepted && {accepted: item.accepted}),
-    ...(item.risk_adjusted && {risk_adjusted: item.risk_adjusted}),
+    ...(item.false_positive !== undefined && {false_positive: item.false_positive}),
+    ...(item.accepted !== undefined && {accepted: item.accepted}),
+    ...(item.risk_adjusted !== undefined && {risk_adjusted: item.risk_adjusted}),
     ...(item.priority && {priority: item.priority}),
-    ...(item.vendor_dependency && {vendor_dependency: item.vendor_dependency}),
+    ...(item.vendor_dependency !== undefined && {vendor_dependency: item.vendor_dependency}),
     ...(item.impacted_control_id && {impacted_control_iri: item.impacted_control_id}),
     ...(item.response_type && {response_type: item.response_type}),
     ...(item.lifecycle && {lifecycle: item.lifecycle}),
@@ -3817,11 +3822,15 @@ export const selectSubjectByIriQuery = (iri, select) => {
   // defensive code to protect against query not supplying subject type
   if (!select.includes('subject_type')) cloneSelect.push('subject_type');
   // get the references name and version, if name is asked for
-  if (select.includes('name')) {
-    cloneSelect.push('subject_id');
-    cloneSelect.push('subject_name');
-    cloneSelect.push('subject_version');
-  }
+  if (!select.push('subject_ref')) select.push('subject_ref');
+  if (!select.push('subject_id')) select.push('subject_id');
+  if (!select.push('subject_name')) select.push('subject_name');
+  if (!select.push('subject_version')) select.push('subject_version');
+  if (!select.push('subject_asset_type')) select.push('subject_asset_type');
+  if (!select.push('subject_component_type')) select.push('subject_component_type');
+  if (!select.push('subject_location_type')) select.push('subject_location_type');
+  if (!select.push('subject_party_type')) select.push('subject_party_type');
+
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, cloneSelect);
   return `
   SELECT ?iri ${selectionClause}
@@ -3833,18 +3842,22 @@ export const selectSubjectByIriQuery = (iri, select) => {
   }
   `
 }
+
 export const selectAllSubjects = (select, args, parent) => {
   let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
   if (!select.includes('id')) select.push('id');
   // defensive code to protect against query not supplying subject type
   if (!select.includes('subject_type')) select.push('subject_type');
-  // get the references name and version, if name is asked for
-  if (select.includes('name')) {
-    select.push('subject_id');
-    select.push('subject_name');
-    select.push('subject_version');
-  }
+  // get the references id, name, version to allow easy detection of subject ref
+  if (!select.push('subject_ref')) select.push('subject_ref');
+  if (!select.push('subject_id')) select.push('subject_id');
+  if (!select.push('subject_name')) select.push('subject_name');
+  if (!select.push('subject_version')) select.push('subject_version');
+  if (!select.push('subject_asset_type')) select.push('subject_asset_type');
+  if (!select.push('subject_component_type')) select.push('subject_component_type');
+  if (!select.push('subject_location_type')) select.push('subject_location_type');
+  if (!select.push('subject_party_type')) select.push('subject_party_type');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -3911,8 +3924,7 @@ export const deleteSubjectByIriQuery = (iri) => {
       ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Subject> .
       ?iri ?p ?o
     }
-  }
-  `
+  }`
 }
 export const attachToSubjectQuery = (id, field, itemIris) => {
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-${id}>`;
@@ -5349,13 +5361,33 @@ export const subjectPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_name: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/common#name>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_version: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/common#version>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#version>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_version");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_asset_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#asset_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "subject_asset_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_component_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#component_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_component_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_location_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#location_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_location_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_party_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#party_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_party_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }

@@ -17,7 +17,9 @@ import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectL
 const styles = (theme) => ({
   item: {
     '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: theme.palette.navAlt.background,
+      background: theme.palette.dataView.selectedBackgroundColor,
+      borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+      borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
     },
     paddingLeft: 10,
     height: 50,
@@ -61,7 +63,7 @@ class SoftwareLineComponent extends Component {
     } = this.props;
     return (
       <ListItem
-        classes={{ root: classes.item }}
+         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}

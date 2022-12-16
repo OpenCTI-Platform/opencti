@@ -79,6 +79,14 @@ const taskEntityEditionQuery = graphql`
         content
         authors
       }
+      related_tasks {
+        id
+        name
+      }
+      associated_activities {
+        id
+        entity_type
+      }
     }
   }
 `;

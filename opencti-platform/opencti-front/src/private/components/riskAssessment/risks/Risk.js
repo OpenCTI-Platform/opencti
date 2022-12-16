@@ -20,11 +20,15 @@ import RiskObservation from './RiskObservation';
 
 const styles = () => ({
   container: {
-    margin: 0,
+    marginBottom: 50,
   },
   gridContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
+    height: '70%',
   },
+  bottomGrid: {
+    height: '30%'
+  }
 });
 
 class RiskComponent extends Component {
@@ -85,8 +89,7 @@ class RiskComponent extends Component {
             <Grid
               container={true}
               spacing={3}
-              classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 25, marginBottom: 30 }}
+              className={classes.bottomGrid}
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
@@ -140,14 +143,6 @@ const Risk = createFragmentContainer(RiskComponent, {
       __typename
       id
       name
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
       links {
         __typename
         id

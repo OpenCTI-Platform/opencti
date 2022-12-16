@@ -60,6 +60,9 @@ import {
   poamItemPredicateMap, attachToPOAMItemQuery, detachFromPOAMItemQuery,
   poamLocalDefinitionPredicateMap, attachToPOAMLocalDefinitionQuery, detachFromPOAMLocalDefinitionQuery,
 } from '../risk-assessments/poam/resolvers/sparql-query.js';
+import {
+  workspacePredicateMap, attachToWorkspaceQuery, detachFromWorkspaceQuery ,
+} from '../../../schema/sparql/cyio-workspace.js'
 
 
 // find IRI of parent
@@ -67,11 +70,14 @@ export const findParentIriQuery = (iri, field, predicateMap) => {
   if (!predicateMap.hasOwnProperty(field)) return null;
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   const predicate = predicateMap[field].predicate;
+
   // return the current IRI if predicate isn't a inverse property path
   if (!predicate.startsWith('^')) return iri;
+
   // remove the datatype Property portion of the inverse property path
   let index = predicate.lastIndexOf('/<');
   let idPredicate = predicate.substring(0, index);
+
   return `
   SELECT DISTINCT ?parentIri ?objectType
   FROM <tag:stardog:api:context:local>
@@ -112,12 +118,12 @@ export const selectObjectIriByIdQuery = (id, type) => {
   SELECT DISTINCT ?iri 
   FROM <tag:stardog:api:context:local>
   WHERE {
-      ?iri a <${objectMap[type].iriTemplate}> .
+      ?iri a <${objectMap[type].classIri}> .
       ?iri <http://darklight.ai/ns/common#id> "${id}" .
   }
   `
 }
-// Replacement for selectObjetByIriQuery
+// Replacement for selectObjectByIriQuery
 export const selectObjectByIriQuery = (iri, type, select) => {
   // due to a limitation in the selectMap.getNode capability, its possible to only get back 
   // a reference to the __typename meta type if all the other members are fragments.
@@ -150,7 +156,7 @@ export const selectObjectByIriQuery = (iri, type, select) => {
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
-    ?iri a <${objectMap[type].iriTemplate}> .
+    ?iri a <${objectMap[type].classIri}> .
     ${predicates}
   }
   `
@@ -163,6 +169,7 @@ export const objectMap = {
     attachQuery: attachToActivityQuery,
     detachQuery: detachFromActivityQuery,
     graphQLType: "Activity",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Activity",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Activity"
   },
   "actor": {
@@ -170,6 +177,7 @@ export const objectMap = {
     attachQuery: attachToActorQuery,
     detachQuery: detachFromActorQuery,
     graphQLType: "Actor",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Actor",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Actor"
   },
   "address": {
@@ -177,6 +185,7 @@ export const objectMap = {
     attachQuery: attachToAddressQuery,
     detachQuery: detachFromAddressQuery,
     graphQLType: "CivicAddress",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#Address",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Address"
   },
   "application-software": {
@@ -185,6 +194,7 @@ export const objectMap = {
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "ApplicationSoftwareAsset",
     parent: "software",
+    classIri: "http://scap.nist.gov/ns/asset-identification#Software",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
   },
   "assessment-asset": {
@@ -192,6 +202,7 @@ export const objectMap = {
     attachQuery: attachToAssessmentAssetQuery,
     detachQuery: detachFromAssessmentAssetQuery,
     graphQLType: "AssessmentAsset",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentAsset"
   },
   "assessment-platform": {
@@ -199,6 +210,7 @@ export const objectMap = {
     attachQuery: attachToAssessmentPlatformQuery,
     detachQuery: detachFromAssessmentPlatformQuery,
     graphQLType: "AssessmentPlatform",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform",
   },
   "assessment-subject": {
@@ -206,6 +218,7 @@ export const objectMap = {
     attachQuery: attachToAssessmentSubjectQuery,
     detachQuery: detachFromAssessmentSubjectQuery,
     graphQLType: "AssessmentSubject",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject",
   }, 
   "associated-activity": {
@@ -213,6 +226,7 @@ export const objectMap = {
     attachQuery: attachToAssociatedActivityQuery,
     detachQuery: detachFromAssociatedActivityQuery,
     graphQLType: "AssociatedActivity",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#AssociatedActivity",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssociatedActivity",
   },
   "characterization": {
@@ -220,6 +234,7 @@ export const objectMap = {
     attachQuery: attachToCharacterizationQuery,
     detachQuery: detachFromCharacterizationQuery,
     graphQLType: "Characterization",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Characterization",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Characterization"
   },
   "component": {
@@ -227,6 +242,7 @@ export const objectMap = {
     attachQuery: attachToComponentQuery,
     detachQuery: detachFromComponentQuery,
     graphQLType: "Component",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#Component",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Component"
   },
   "computing-device": {
@@ -235,6 +251,7 @@ export const objectMap = {
     detachQuery: detachFromComputingDeviceQuery,
     graphQLType: "ComputingDeviceAsset",
     parent: "hardware",
+    classIri: "http://scap.nist.gov/ns/asset-identification#ComputingDevice",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#ComputingDevice"
   },
   "evidence": {
@@ -242,6 +259,7 @@ export const objectMap = {
     attachQuery: attachToEvidenceQuery,
     detachQuery: detachFromEvidenceQuery,
     graphQLType: "Evidence",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Evidence",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Evidence"
   },
   "external-identifier": {
@@ -249,6 +267,7 @@ export const objectMap = {
     attachQuery: attachToExternalIdentifierQuery,
     detachQuery: detachFromExternalIdentifierQuery,
     graphQLType: "ExternalIdentifier",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#ExternalIdentifier",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#ExternalIdentifier"
   },
   "external-reference": {
@@ -257,6 +276,7 @@ export const objectMap = {
     detachQuery: detachFromExternalReferenceQuery,
     alternateKey: "link",
     graphQLType: "CyioExternalReference",
+    classIri: "http://darklight.ai/ns/common#ExternalReference",
     iriTemplate: "http://darklight.ai/ns/common#ExternalReference"
   },
   "facet": {
@@ -264,6 +284,7 @@ export const objectMap = {
     attachQuery: attachToFacetQuery,
     detachQuery: detachFromFacetQuery,
     graphQLType: "Facet",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Facet",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Facet"
   },
   "hardware": {
@@ -271,6 +292,7 @@ export const objectMap = {
     attachQuery: attachToHardwareQuery,
     detachQuery: detachFromHardwareQuery,
     graphQLType: "HardwareAsset",
+    classIri: "http://scap.nist.gov/ns/asset-identification#Hardware",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Hardware"
   },
   "inventory-item": {
@@ -278,6 +300,7 @@ export const objectMap = {
     attachQuery: attachToInventoryItemQuery,
     detachQuery: detachFromInventoryItemQuery,
     graphQLType: "InventoryItem",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#InventoryItem",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#InventoryItem"
   },
   "label": {
@@ -285,6 +308,7 @@ export const objectMap = {
     attachQuery: attachToLabelQuery,
     detachQuery: detachFromLabelQuery,
     graphQLType: "CyioLabel",
+    classIri: "http://darklight.ai/ns/common#Label",
     iriTemplate: "http://darklight.ai/ns/common#Label"
   },
   "log-entry-author": {
@@ -292,6 +316,7 @@ export const objectMap = {
     attachQuery: attachToLogEntryAuthorQuery,
     detachQuery: detachFromLogEntryAuthorQuery,
     graphQLType: "LogEntryAuthor",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor"
   },
   "mitigating-factor": {
@@ -299,6 +324,7 @@ export const objectMap = {
     attachQuery: attachToMitigatingFactorQuery,
     detachQuery: detachFromMitigatingFactorQuery,
     graphQLType: "actor",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor"
   },
   "network": {
@@ -306,6 +332,7 @@ export const objectMap = {
     attachQuery: attachToNetworkQuery,
     detachQuery: detachFromNetworkQuery,
     graphQLType: "NetworkAsset",
+    classIri: "http://scap.nist.gov/ns/asset-identification#Network",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Network"
   },
   "note": {
@@ -314,6 +341,7 @@ export const objectMap = {
     detachQuery: detachFromNoteQuery,
     alternateKey: "remark",
     graphQLType: "CyioNote",
+    classIri: "http://darklight.ai/ns/common#Note",
     iriTemplate: "http://darklight.ai/ns/common#Note"
   },
   "observation": {
@@ -321,6 +349,7 @@ export const objectMap = {
     attachQuery: attachToObservationQuery,
     detachQuery: detachFromObservationQuery,
     graphQLType: "Observation",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Observation",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Observation"
   },
   "operating-system": {
@@ -329,6 +358,7 @@ export const objectMap = {
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "OperatingSystemAsset",
     parent: "software",
+    classIri: "http://scap.nist.gov/ns/asset-identification#OperatingSystem",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem"
   },
   "origin": {
@@ -336,6 +366,7 @@ export const objectMap = {
     attachQuery: attachToOriginQuery,
     detachQuery: detachFromOriginQuery,
     graphQLType: "Origin",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Origin",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Origin",
   },
   "oscal-location": {
@@ -344,6 +375,7 @@ export const objectMap = {
     detachQuery: detachFromLocationQuery,
     alternateKey: "location",
     graphQLType: "OscalLocation",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#Location",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Location"
   },
   "oscal-party": {
@@ -352,6 +384,7 @@ export const objectMap = {
     detachQuery: detachFromPartyQuery,
     alternateKey: "party",
     graphQLType: "OscalParty",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#Party",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Party"
   },
   "oscal-responsible-party": {
@@ -360,6 +393,7 @@ export const objectMap = {
     detachQuery: detachFromResponsiblePartyQuery,
     alternateKey: "responsible-party",
     graphQLType: "OscalResponsibleParty",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#ResponsibleParty",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#ResponsibleParty"
   },
   "oscal-responsible-role": {
@@ -368,6 +402,7 @@ export const objectMap = {
     detachQuery: detachFromResponsibleRoleQuery,
     alternateKey: "responsible-role",
     graphQLType: "OscalResponsibleRole",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#ResponsibleRole",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#ResponsibleRole"
   },
   "oscal-role": {
@@ -376,6 +411,7 @@ export const objectMap = {
     detachQuery: detachFromRoleQuery,
     alternateKey: "role",
     graphQLType: "OscalRole",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#Role",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Role"
   },
   "oscal-task": {
@@ -384,6 +420,7 @@ export const objectMap = {
     detachQuery: detachFromOscalTaskQuery,
     alternateKey: "task",
     graphQLType: "OscalTask",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Task",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Task"
   },
   "poam": {
@@ -391,6 +428,7 @@ export const objectMap = {
     attachQuery: attachToPOAMQuery,
     detachQuery: detachFromPOAMQuery,
     graphQLType: "POAM",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#POAM",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#POAM"
   },
   "poam-item": {
@@ -398,6 +436,7 @@ export const objectMap = {
     attachQuery: attachToPOAMItemQuery,
     detachQuery: detachFromPOAMItemQuery,
     graphQLType: "POAMItem",
+    classIri: "http://csrc.nist.gov/ns/oscal/poam#Item",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/poam#Item"
   },
   "poam-local-definition": {
@@ -405,6 +444,7 @@ export const objectMap = {
     attachQuery: attachToPOAMLocalDefinitionQuery,
     detachQuery: detachFromPOAMLocalDefinitionQuery,
     graphQLType: "POAMLocalDefinition",
+    classIri: "http://csrc.nist.gov/ns/oscal/poam#LocalDefinition",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/poam#LocalDefinition"
   },
   "required-asset": {
@@ -412,6 +452,7 @@ export const objectMap = {
     attachQuery: attachToRequiredAssetQuery,
     detachQuery: detachFromRequiredAssetQuery,
     graphQLType: "RequiredAsset",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset"
   },
   "risk": {
@@ -419,6 +460,7 @@ export const objectMap = {
     attachQuery: attachToRiskQuery,
     detachQuery: detachFromRiskQuery,
     graphQLType: "Risk",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Risk",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Risk"
   },
   "risk-log-entry": {
@@ -426,6 +468,7 @@ export const objectMap = {
     attachQuery: attachToRiskLogEntryQuery,
     detachQuery: detachFromRiskLogEntryQuery,
     graphQLType: "RiskLogEntry",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry"
   },
   "risk-response": {
@@ -434,6 +477,7 @@ export const objectMap = {
     detachQuery: detachFromRiskResponseQuery,
     alternateKey: "remediation",
     graphQLType: "RiskResponse",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse"
   },
   "software": {
@@ -442,6 +486,7 @@ export const objectMap = {
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "SoftwareAsset",
     alternateKey: "tool",
+    classIri: "http://scap.nist.gov/ns/asset-identification#Software",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
   },
   "subject": {
@@ -449,6 +494,7 @@ export const objectMap = {
     attachQuery: attachToSubjectQuery,
     detachQuery: detachFromSubjectQuery,
     graphQLType: "Subject",
+    classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Subject",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Subject"
   },
   "telephone-number": {
@@ -456,6 +502,15 @@ export const objectMap = {
     attachQuery: attachToPhoneNumberQuery,
     detachQuery: detachFromPhoneNumberQuery,
     graphQLType: "TelephoneNumber",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#TelephoneNumber",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#TelephoneNumber"
+  },
+  "workspace": {
+    predicateMap: workspacePredicateMap,
+    attachQuery: attachToWorkspaceQuery,
+    detachQuery: detachFromWorkspaceQuery,
+    graphQLType: "Workspace",
+    classIri: "http://darklight.ai/ns/cyio/workspace#Workspace",
+    iriTemplate: "http://cyio.darklight.ai/workspace"
   },
 };

@@ -18,11 +18,11 @@ import FlagIcon from '@material-ui/icons/Flag';
 import Grid from '@material-ui/core/Grid';
 import CardContent from '@material-ui/core/CardContent';
 import Tooltip from '@material-ui/core/Tooltip';
+import Divider from '@material-ui/core/Divider';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
-
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
 import Markdown from 'react-markdown';
@@ -190,141 +190,103 @@ class RelatedTaskLine extends Component {
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel1a-content"
             id="panel1a-header"
+            style={{ padding: 0 }}
           >
-            {this.state.value ? '' : (
-              <CardContent className={classes.cardContent}>
-                <FlagIcon fontSize='large' color="disabled" />
-                <Grid container={true} style={{ marginLeft: '10px' }}>
-                  <Grid item={true} xs={12}>
-                    <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
-                      {data.name && t(data.name)}
-                    </Typography>
-                  </Grid>
-                  <Grid style={{ display: 'flex' }} item={true} xs={6}>
-                    <Typography align="left" color="textSecondary" variant="h3">
-                      {t('Start Date: ')}
-                    </Typography>
-                    <Typography align="left" color="textSecondary" variant="h3">
-                      {data.timing?.start_date && fldt(data.timing?.start_date)}
-                    </Typography>
-                  </Grid>
-                  <Grid style={{ display: 'flex' }} item={true} xs={6}>
-                    <Typography align="left" color="textSecondary" variant="h3">
-                      {t('End Date: ')}
-                    </Typography>
-                    <Typography align="left" color="textSecondary" variant="h3">
-                      {data.timing?.end_date && fldt(data.timing?.end_date)}
-                    </Typography>
-                  </Grid>
+            <CardContent className={classes.cardContent}>
+              <FlagIcon fontSize='large' color="disabled" />
+              <Grid container={true} style={{ marginLeft: '10px' }}>
+                <Grid item={true} xs={12}>
+                  <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
+                    {data.name && t(data.name)}
+                  </Typography>
                 </Grid>
-              </CardContent>
-            )
-            }
+                {!this.state.value ? <>
+                <Grid style={{ display: 'flex' }} item={true} xs={6}>
+                  <Typography align="left" color="textSecondary" variant="h3">
+                    {t('Start Date: ')}
+                  </Typography>
+                  <Typography align="left" color="textSecondary" variant="h3">
+                    {data.timing?.start_date && fldt(data.timing?.start_date)}
+                  </Typography>
+                </Grid>
+                <Grid style={{ display: 'flex' }} item={true} xs={6}>
+                  <Typography align="left" color="textSecondary" variant="h3">
+                    {t('End Date: ')}
+                  </Typography>
+                  <Typography align="left" color="textSecondary" variant="h3">
+                    {data.timing?.end_date && fldt(data.timing?.end_date)}
+                  </Typography>
+                </Grid>
+                </>: <Divider />}
+              </Grid>
+            </CardContent>
           </AccordionSummary>
-          <AccordionDetails classes={{ root: classes.accordionDetails }}>
+          <AccordionDetails>
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
-                <Grid style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '15px',
-                  marginLeft: '1px',
-                }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {data.name && t(data.name)}
-                    </Typography>
-                  </div>
-                </Grid>
+              <Grid item={true} xs={6} style={{ marginBottom: '10px' }}>                
+                <div>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
+                    {data.name && t(data.name)}
+                </div>                
               </Grid>
-              <Grid item={true} xs={6}>
-                <Grid style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '15px',
-                  marginLeft: '-4px',
-                }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {data.id && t(data.id)}
-                    </Typography>
+              <Grid item={true} xs={6} style={{ marginBottom: '10px' }}>                
+                <div style={{ marginLeft: '10px' }}>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
+                    {data.id && t(data.id)}
+                </div>                
+              </Grid>              
+              <Grid  item={true} xs={6} style={{ marginBottom: '10px' }}>
+                <div>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Task Type')}</Typography>
+                  <div className={classes.cardContent}>
+                    <FlagIcon fontSize='large' color="disabled" />
+                    {data.task_type && t(data.task_type)}
                   </div>
-                </Grid>
+                </div>
               </Grid>
-            </Grid>
-            <Grid container={true}>
-              <Grid item={true} xs={6}>
-                <Grid style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Task Type')}</Typography>
-                    <div className={classes.cardContent}>
-                      <FlagIcon fontSize='large' color="disabled" />
-                      <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
-                        {data.task_type && t(data.task_type)}
-                      </Typography>
-                    </div>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6} className={classes.cardContent} style={{ marginBottom: '15px' }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Start Date')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {/* {t('21 June 2021')} */}
-                      {data.timing?.start_date && fsd(data.timing?.start_date)}
-                    </Typography>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6} className={classes.cardContent} style={{ marginBottom: '15px' }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Tasks')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {t('Hello world')}
-                    </Typography>
-                  </div>
-                </Grid>
+              <Grid  item={true} xs={6} style={{ marginBottom: '10px' }}>
+                <div style={{ marginLeft: '10px' }}>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Dependency')}</Typography>
+                  {taskDependency?.name && t(taskDependency?.name)}
+                </div>
               </Grid>
-              <Grid item={true} xs={6}>
-                <Grid className={classes.cardContent} style={{ marginBottom: '20px' }}>
-                  <div style={{ marginLeft: '18px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Dependency')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {taskDependency?.name && t(taskDependency?.name)}
-                    </Typography>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '15px',
-                }}>
-                  <div style={{ marginLeft: '18px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('End Date')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {data.timing?.end_date && fsd(data.timing?.end_date)}
-                    </Typography>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{ marginLeft: '18px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Parties')}</Typography>
-                    <div className={classes.cardContent}>
-                      <PersonIcon className={classes.avatarIcon} />
-                      <div style={{ marginLeft: '10px' }}>
-                        <Typography variant="subtitle1">
-                          {data.responsible_roles && data.responsible_roles.map((role) => t(role?.name))}
-                        </Typography>
-                      </div>
-                    </div>
-                  </div>
-                </Grid>
+              <Grid item={true} xs={6} style={{ marginBottom: '10px' }}>
+                <div >
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Start Date')}</Typography>
+                  {data.timing?.start_date && fsd(data.timing?.start_date)}
+                </div>
               </Grid>
-            </Grid>
-            <Grid container={true}>
+              <Grid item={true} xs={6} style={{ marginBottom: '10px' }}>
+                <div style={{ marginLeft: '10px' }}>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('End Date')}</Typography>
+                  {data.timing?.end_date && fsd(data.timing?.end_date)}
+                </div>
+              </Grid>
+              <Grid item={true} xs={6} style={{ marginBottom: '10px' }}>
+                <div>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Related Tasks')}</Typography>
+                  {data.related_tasks && data.related_tasks.map((task) => <div style={{marginBottom: '10px'}}>
+                    <div style={{ marginBottom: '10px' }}>{t(task.name)}</div>
+                  <Divider/></div>)}                    
+                </div>
+              </Grid>                            
+              <Grid item={true} xs={6} style={{ marginBottom: '10px' }}>
+                <div style={{ marginLeft: '10px' }}>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Parties')}</Typography>
+                  <div>                    
+                    {data.responsible_roles && data.responsible_roles.map((role) => 
+                    <div style={{ display: 'flex' }}>
+                      <PersonIcon style={{ marginRight: '10px'}}/>
+                      {t(role?.name)}
+                      <Divider/>
+                    </div>)}             
+                  </div>
+                </div>
+              </Grid>       
               <Grid item={true} xs={12} style={{ marginBottom: '10px' }}>
                 <Typography
                   color="textSecondary"
+                  variant="h3"
                   gutterBottom={true}
                   style={{ float: 'left', marginTop: 20 }}
                 >
@@ -371,8 +333,8 @@ class RelatedTaskLine extends Component {
                   cyioCoreObjectOrCyioCoreRelationshipId={data.id}
                   marginTop='0px'
                 />
-              </Grid>
-            </Grid>
+              </Grid>   
+            </Grid>          
           </AccordionDetails>
         </Accordion>
         <div style={{ marginTop: '30px' }}>

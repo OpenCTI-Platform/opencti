@@ -294,9 +294,9 @@ class Export extends Component {
             enableReinitialize={true}
             initialValues={{
               purpose: '',
-              max_items: 0,
+              max_items: '5',
               db_scan: false,
-              media_type: '',
+              media_type: 'markdown',
               description: '',
               web_scan: false,
               pen_test: false,
@@ -591,6 +591,7 @@ class Export extends Component {
                           name="media_type"
                           taskType='ReportMediaType'
                           fullWidth={true}
+                          required={true}
                           style={{ height: '18.09px' }}
                           containerstyle={{ width: '100%', marginLeft: '12px' }}
                         />

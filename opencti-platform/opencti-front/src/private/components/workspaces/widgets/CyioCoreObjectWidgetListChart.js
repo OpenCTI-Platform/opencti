@@ -71,8 +71,8 @@ class CyioCoreObjectVulnerableInventoryItemList extends Component {
       field: field || null,
       limit: 10,
       operation: operation || 'count',
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
     };
     return (
       <>

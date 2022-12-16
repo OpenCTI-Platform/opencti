@@ -38,6 +38,10 @@ import Source from '../../../common/form/Source';
 import { toastGenericError } from "../../../../../utils/bakedToast";
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
+import TaskType from '../../../common/form/TaskType';
+import ResourceTypeField from '../../../common/form/ResourceTypeField';
+import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
+import ResourceNameField from '../../../common/form/ResourceNameField';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -48,8 +52,7 @@ const styles = (theme) => ({
   },
   dialogContent: {
     padding: '0 24px',
-    marginBottom: '24px',
-    overflow: 'hidden',
+    overflow: 'scroll',
     height: '650px',
   },
   dialogClosebutton: {
@@ -158,27 +161,24 @@ class TaskEntityEditionContainer extends Component {
       task,
       disabled,
       refreshQuery,
-      remediation,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
+    console.log(task);
     const initialValues = R.pipe(
-      R.assoc('name', remediation?.name || ''),
-      R.assoc('description', remediation?.description || ''),
-      R.assoc('source', remediationOriginData?.name || []),
-      R.assoc('modified', dateFormat(remediation?.modified)),
-      R.assoc('created', dateFormat(remediation?.created)),
-      R.assoc('lifecycle', remediation?.lifecycle || []),
-      R.assoc('response_type', remediation?.response_type || ''),
+      R.assoc('name', task?.name || ''),
+      R.assoc('description', task?.description || ''),
+      R.assoc('modified', dateFormat(task?.modified)),
+      R.assoc('created', dateFormat(task?.created)),
+      R.assoc('responsible_roles', task?.responsible_roles || []),
+      R.assoc('associated_activities', task?.associated_activities || ''),
       R.pick([
         'name',
         'description',
-        'source',
         'modified',
         'created',
-        'lifecycle',
-        'response_type',
+        'responsible_roles',
+        'associated_activities',
       ]),
-    )(remediation);
+    )(task);
     return (
       <>
         <Dialog
@@ -201,7 +201,7 @@ class TaskEntityEditionContainer extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Task')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -235,10 +235,10 @@ class TaskEntityEditionContainer extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Id')}
+                        {t('ID')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Id')} >
+                        <Tooltip title={t('ID')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -268,11 +268,12 @@ class TaskEntityEditionContainer extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="marking"
+                      <TaskType
+                        name="task_type"
+                        taskType='OscalTaskType'
                         fullWidth={true}
+                        required={true}
+                        variant='outlined'
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
                       />
@@ -348,11 +349,11 @@ class TaskEntityEditionContainer extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <ResourceTypeField
+                          name='resource_type'
                           fullWidth={true}
+                          variant='outlined'
+                          type='hardware'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -372,11 +373,10 @@ class TaskEntityEditionContainer extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <RelatedTaskFields
+                          name="related_tasks"
                           fullWidth={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -396,11 +396,10 @@ class TaskEntityEditionContainer extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <RelatedTaskFields
+                          name="responsible_roles"
                           fullWidth={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -450,11 +449,12 @@ class TaskEntityEditionContainer extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <ResourceNameField
+                          name='resource'
+                          resourceTypename='resource'
                           fullWidth={true}
+                          variant='outlined'
+                          type='hardware'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -474,11 +474,10 @@ class TaskEntityEditionContainer extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <RelatedTaskFields
+                          name="associated_activities"
                           fullWidth={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -498,11 +497,10 @@ class TaskEntityEditionContainer extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <RelatedTaskFields
+                          name="task_dependencies"
                           fullWidth={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />

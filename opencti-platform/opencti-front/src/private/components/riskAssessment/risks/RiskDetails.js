@@ -14,11 +14,10 @@ import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
     marginTop: '2%',
-    padding: '1.5rem 1.5rem 2rem 1.5rem',
+    padding: '1.5rem',
     borderRadius: 6,
+    height: '70%',
   },
   link: {
     fontSize: '16px',
@@ -364,18 +363,12 @@ const RiskDetails = createFragmentContainer(
   {
     risk: graphql`
       fragment RiskDetails_risk on Risk {
-        id
-        name
-        accepted
-        description
         statement
         risk_status
-        risk_level
         deadline
-        accepted
-        risk_adjusted
-        priority
         false_positive
+        risk_adjusted
+        accepted
         vendor_dependency
         impacted_control_id
         first_seen

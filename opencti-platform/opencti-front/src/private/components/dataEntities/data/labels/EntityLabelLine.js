@@ -20,7 +20,9 @@ import EntitiesLabelsPopover from './EntitiesLabelsPopover';
 const styles = (theme) => ({
   item: {
     '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: theme.palette.navAlt.background,
+      background: theme.palette.dataView.selectedBackgroundColor,
+      borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+      borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
     },
     paddingLeft: 10,
     height: 50,
