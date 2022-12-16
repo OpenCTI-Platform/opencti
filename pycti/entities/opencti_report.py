@@ -190,6 +190,24 @@ class Report:
                         ... on Incident {
                             name
                         }
+                        ... on Event {
+                            name
+                        }
+                        ... on Channel {
+                            name
+                        }
+                        ... on Narrative {
+                            name
+                        }
+                        ... on Language {
+                            name
+                        }
+                        ... on DataComponent {
+                            name
+                        }
+                        ... on DataSource {
+                            name
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
