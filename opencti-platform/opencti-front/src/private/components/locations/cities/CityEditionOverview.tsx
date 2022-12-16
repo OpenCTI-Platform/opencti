@@ -15,7 +15,6 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
-import { CityAddInput } from './__generated__/CityCreationMutation.graphql';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
 import { CityEditionOverviewRelationAddMutation } from './__generated__/CityEditionOverviewRelationAddMutation.graphql';
 import { CityEditionOverviewFieldPatchMutation } from './__generated__/CityEditionOverviewFieldPatchMutation.graphql';
@@ -121,6 +120,7 @@ const cityValidation = (t: (v: string) => string) => Yup.object().shape({
   description: Yup.string().nullable().max(5000, t('The value is too long')),
   latitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
   longitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 interface CityEditionOverviewProps {
@@ -137,6 +137,7 @@ interface CityEditionFormValues {
   message?: string
   references?: Option[]
   createdBy?: Option
+  x_opencti_workflow_id: Option
   objectMarking?: Option[]
 }
 
@@ -192,9 +193,12 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
     }
   };
 
-  const handleSubmitField = (name: keyof CityAddInput, value: Option | string) => {
+  const handleSubmitField = (name: string, value: Option | string) => {
     if (!enableReferences) {
-      const finalValue: string = value as string;
+      let finalValue: string = value as string;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = (value as Option).value;
+      }
       cityValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -228,6 +232,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
     const inputValues = Object.entries({
       ...otherValues,
       createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
@@ -250,6 +255,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
     description: city.description,
     latitude: city.latitude,
     longitude: city.longitude,
+    x_opencti_workflow_id: status,
     createdBy,
     objectMarking,
     status,
@@ -258,7 +264,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
   return (
     <Formik
       enableReinitialize={true}
-      initialValues={initialValues}
+      initialValues={initialValues as never}
       validationSchema={cityValidation(t)}
       onSubmit={onSubmit}
     >
