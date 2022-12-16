@@ -455,9 +455,11 @@ const loadElementMetaDependencies = async (context, user, element, args = {}) =>
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
   const toResolved = await elFindByIds(context, user, toResolvedIds, { toMap: true });
+  const attributeToEmbeddedRelation = fieldAttributeToEmbeddedRelation();
+  const embeddedRelationToField = stixEmbeddedRelationToField();
   if (refsRelations.length > 0) {
     // Build flatten view inside the data for stix meta
-    const grouped = R.groupBy((a) => stixEmbeddedRelationToField()[a.entity_type], refsRelations);
+    const grouped = R.groupBy((a) => embeddedRelationToField[a.entity_type], refsRelations);
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
@@ -465,7 +467,7 @@ const loadElementMetaDependencies = async (context, user, element, args = {}) =>
         const resolvedElement = toResolved[v.toId];
         return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
       }, values).filter((d) => isNotEmptyField(d));
-      const metaRefKey = fieldAttributeToEmbeddedRelation()[key];
+      const metaRefKey = attributeToEmbeddedRelation[key];
       data[key] = isSingleStixEmbeddedRelationship(metaRefKey)
         ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
     }
@@ -1806,13 +1808,14 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     // endregion
     // region metas
     const streamOpts = { publishStreamEvent: false, locks: participantIds };
+    const attributeToEmbeddedRelation = fieldAttributeToEmbeddedRelation();
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
       const key = STIX_ATTRIBUTE_TO_META_FIELD[metaKey] || metaKey;
       // ref and _refs are expecting direct identifier in the value
       // We dont care about the operation here, the only thing we can do is replace
       if (isSingleStixEmbeddedRelationshipInput(key)) {
-        const relType = fieldAttributeToEmbeddedRelation()[key];
+        const relType = attributeToEmbeddedRelation[key];
         const currentValue = updatedInstance[key];
         const { value: refIds } = meta[metaIndex];
         const targetCreated = R.head(refIds);
@@ -1842,7 +1845,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
           }
         }
       } else {
-        const relType = fieldAttributeToEmbeddedRelation()[key];
+        const relType = attributeToEmbeddedRelation[key];
         // Special access check for RELATION_GRANTED_TO meta
         if (relType === RELATION_GRANTED_TO && !userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
           throw ForbiddenAccess();

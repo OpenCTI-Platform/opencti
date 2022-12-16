@@ -166,10 +166,6 @@ export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsId
 };
 
 export const stixDomainObjectAddRelation = async (context, user, stixDomainObjectId, input) => {
-  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  if (!stixDomainObject) {
-    throw FunctionalError('Cannot add the relation, Stix-Domain-Object cannot be found.');
-  }
   if (!isStixMetaRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }

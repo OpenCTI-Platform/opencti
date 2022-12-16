@@ -39,9 +39,10 @@ export const stixEmbeddedRelationToField: () => { [k: string]: string } = () => 
     ...STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD,
   };
 };
-export const fieldAttributeToEmbeddedRelation = () => R.mergeAll(
-  Object.keys(stixEmbeddedRelationToField()).map((k) => ({ [stixEmbeddedRelationToField()[k]]: k }))
-);
+export const fieldAttributeToEmbeddedRelation = () => {
+  const relationToField = stixEmbeddedRelationToField();
+  return R.mergeAll(Object.keys(relationToField).map((k) => ({ [relationToField[k]]: k })));
+};
 
 export const isStixEmbeddedRelationship = (type: string): boolean => isStixMetaRelationship(type) || isStixCyberObservableRelationship(type);
 
