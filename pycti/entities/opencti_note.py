@@ -1,7 +1,10 @@
 # coding: utf-8
 
+import datetime
 import json
 import uuid
+
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Note:
@@ -185,6 +188,24 @@ class Note:
                         ... on Incident {
                             name
                         }
+                        ... on Event {
+                            name
+                        }
+                        ... on Channel {
+                            name
+                        }
+                        ... on Narrative {
+                            name
+                        }
+                        ... on Language {
+                            name
+                        }
+                        ... on DataComponent {
+                            name
+                        }
+                        ... on DataSource {
+                            name
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -211,8 +232,14 @@ class Note:
         """
 
     @staticmethod
-    def generate_id():
-        return "note--" + str(uuid.uuid4())
+    def generate_id(created, content):
+        content = content.lower().strip()
+        if isinstance(created, datetime.datetime):
+            created = created.isoformat()
+        data = {"content": content, "created": created}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "note--" + id
 
     """
         List Note objects
