@@ -75,7 +75,7 @@ const TopMenuLocation = () => {
           {t('Countries')}
         </Button>
       )}
-      {!isEntityTypeHidden('Cities') && (
+      {!isEntityTypeHidden('City') && (
         <Button
           component={Link}
           to="/dashboard/locations/cities"
@@ -96,7 +96,7 @@ const TopMenuLocation = () => {
           {t('Cities')}
         </Button>
       )}
-      {!isEntityTypeHidden('Positions') && (
+      {!isEntityTypeHidden('Position') && (
         <Button
           component={Link}
           to="/dashboard/locations/positions"

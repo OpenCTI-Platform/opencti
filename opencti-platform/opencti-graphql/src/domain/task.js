@@ -55,7 +55,7 @@ const buildQueryFilters = (rawFilters, search, taskPosition) => {
     types,
     first: MAX_TASK_ELEMENTS,
     orderMode: 'asc',
-    orderBy: 'internal_id',
+    orderBy: 'created_at',
     after: taskPosition,
     filters: queryFilters,
     search: search && search.length > 0 ? search : null,

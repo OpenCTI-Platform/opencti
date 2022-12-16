@@ -21,6 +21,7 @@ import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
+  ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_INDICATOR,
@@ -39,7 +40,7 @@ import { isStixMetaRelationship, RELATION_CREATED_BY } from '../schema/stixMetaR
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from '../schema/stixCyberObservableRelationship';
-import { utcDate } from '../utils/format';
+import { now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
 export const findAll = async (context, user, args) => {
@@ -137,6 +138,9 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
     if (isEmptyField(stixDomainObject.pattern) || isEmptyField(stixDomainObject.pattern_type)) {
       throw UnsupportedError('You need to specify a pattern/pattern_type to create an indicator');
     }
+  }
+  if (innerType === ENTITY_TYPE_CONTAINER_NOTE) {
+    data.created = data.created || now();
   }
   // Create the element
   const created = await createEntity(context, user, R.dissoc('type', data), innerType);

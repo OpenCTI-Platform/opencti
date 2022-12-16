@@ -15,6 +15,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
+import { now } from '../utils/format';
 
 export const findById = (context, user, noteId) => {
   return storeLoadById(context, user, noteId, ENTITY_TYPE_CONTAINER_NOTE);
@@ -91,7 +92,8 @@ export const notesDistributionByEntity = async (context, user, args) => {
 
 // region mutations
 export const addNote = async (context, user, note) => {
-  const created = await createEntity(context, user, note, ENTITY_TYPE_CONTAINER_NOTE);
+  const noteToCreate = note.created ? note : { ...note, created: now() };
+  const created = await createEntity(context, user, noteToCreate, ENTITY_TYPE_CONTAINER_NOTE);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion
