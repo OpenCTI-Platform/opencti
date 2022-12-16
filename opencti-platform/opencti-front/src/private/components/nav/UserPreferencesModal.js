@@ -28,6 +28,7 @@ import {
   getOrganizationSettings,
   updateOrganizationSettings,
 } from '../../../services/account.service';
+import { saveViewParameters } from '../../../utils/ListParameters';
 
 const customSvg = require('../../../assets/severity-scores/custom.svg').default;
 const tenableSvg =
@@ -149,13 +150,14 @@ const UserPreferencesModal = (props) => {
   const location = useLocation();
 
   const handleSubmit = () => {
-   const param = { vsa_severity_score_method: severityLevel}
-    updateOrganizationSettings(currentClient_id, param).then((results) =>{
+    const param = { vsa_severity_score_method: severityLevel }
+    updateOrganizationSettings(currentClient_id, param).then((results) => {
 
       localStorage.setItem('client_id', currentClient_id);
+      localStorage.setItem('view-dashboard', 'default');
       props.setClientId(currentClient_id);
-      if(location.pathname === '/activities/vulnerability_assessment/scans/explore results'){
-       props.history.push('/activities/vulnerability_assessment/scans');
+      if (location.pathname === '/activities/vulnerability_assessment/scans/explore results') {
+        props.history.push('/activities/vulnerability_assessment/scans');
       } else {
         props.history.push('/dashboard');
       }
@@ -172,20 +174,20 @@ const UserPreferencesModal = (props) => {
 
   useEffect(() => {
     user.clients.forEach((item) => {
-          getOrganizationSettings(item.client_id).then((result) => {
-            // eslint-disable-next-line no-param-reassign
-            if(result){
-              if(item.client_id == currentClient_id){
-                 setSeverityLevel(result.data.vsa_severity_score_method);
-              }
-               setOrgSettings(oldArray => [...oldArray, {
-                  client_id: result.data.client_id,
-                  vsa_severity_score_method: result.data.vsa_severity_score_method,
-               }]);
-             }
-          }).catch((error) => {
-            console.log(error)
-          });
+      getOrganizationSettings(item.client_id).then((result) => {
+        // eslint-disable-next-line no-param-reassign
+        if (result) {
+          if (item.client_id == currentClient_id) {
+            setSeverityLevel(result.data.vsa_severity_score_method);
+          }
+          setOrgSettings(oldArray => [...oldArray, {
+            client_id: result.data.client_id,
+            vsa_severity_score_method: result.data.vsa_severity_score_method,
+          }]);
+        }
+      }).catch((error) => {
+        console.log(error)
+      });
     });
 
     setIsLoading(false);
@@ -193,7 +195,7 @@ const UserPreferencesModal = (props) => {
 
   const handleOrgChange = (event) => {
 
-    setSeverityLevel(orgSettings.find(obj => { return obj.client_id === currentClient_id}).vsa_severity_score_method);
+    setSeverityLevel(orgSettings.find(obj => { return obj.client_id === currentClient_id }).vsa_severity_score_method);
     setCurrentClient_id(event.target.value);
   }
 
@@ -228,12 +230,12 @@ const UserPreferencesModal = (props) => {
               value={currentClient_id}
               onChange={(e) => handleOrgChange(e)}
               data-cy='org selection'
-             >
-            { user &&
-              user.clients.map((item,i) => {
-               return ( <MenuItem value={item.client_id} data-cy='an org'>{item.name}</MenuItem> )
-              })
-            }
+            >
+              {user &&
+                user.clients.map((item, i) => {
+                  return (<MenuItem value={item.client_id} data-cy='an org'>{item.name}</MenuItem>)
+                })
+              }
             </Select>
           </CardContent>
           <CardContent>
@@ -245,35 +247,35 @@ const UserPreferencesModal = (props) => {
               <img src={tenableSvg} alt="Tenable" />
             )}
             {severityLevel === 'nvd' && <img src={nvdSvg} alt="NVD" />}
-           {severityLevel &&
-            <RadioGroup
-              row
-              aria-label="severityLevel"
-              name="severityLevel"
-              defaultValue="bottom"
-              value={severityLevel}
-              onChange={(e) => handleSeverityLevelChange(e)}
-            >
-              <FormControlLabel
-                value="custom"
-                control={<Radio color="primary" />}
-                label="Custom"
-                labelPlacement="Bottom"
-              />
-              <FormControlLabel
-                value="tenable"
-                control={<Radio color="primary" />}
-                label="Tenable"
-                labelPlacement="Bottom"
-              />
-              <FormControlLabel
-                value="nvd"
-                control={<Radio color="primary" />}
-                label="NVD"
-                labelPlacement="Bottom"
-              />
-            </RadioGroup>
-          }
+            {severityLevel &&
+              <RadioGroup
+                row
+                aria-label="severityLevel"
+                name="severityLevel"
+                defaultValue="bottom"
+                value={severityLevel}
+                onChange={(e) => handleSeverityLevelChange(e)}
+              >
+                <FormControlLabel
+                  value="custom"
+                  control={<Radio color="primary" />}
+                  label="Custom"
+                  labelPlacement="Bottom"
+                />
+                <FormControlLabel
+                  value="tenable"
+                  control={<Radio color="primary" />}
+                  label="Tenable"
+                  labelPlacement="Bottom"
+                />
+                <FormControlLabel
+                  value="nvd"
+                  control={<Radio color="primary" />}
+                  label="NVD"
+                  labelPlacement="Bottom"
+                />
+              </RadioGroup>
+            }
           </CardContent>
           <CardContent>
             <Typography gutterBottom variant="caption">
@@ -285,7 +287,7 @@ const UserPreferencesModal = (props) => {
               size="small"
               color="secondary"
               onClick={() => handleCancel()}
-              >
+            >
               Cancel
             </Button>
             <Button
