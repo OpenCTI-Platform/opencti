@@ -80,20 +80,20 @@ export const buildInternalEvent = (type: string, stix: StixCoreObject): Event =>
   };
 };
 
-const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
-  const { data, context } = event;
+const ruleMergeHandler = async (context: AuthContext, event: MergeEvent): Promise<Array<Event>> => {
+  const { data, context: eventContext } = event;
   const events: Array<Event> = [];
   // region 01 - Generate events for deletion
   // -- sources
-  const sourceDeleteEvents = (context.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
+  const sourceDeleteEvents = (eventContext.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...sourceDeleteEvents);
   // -- derived deletions
-  const derivedDeleteEvents = (context.deletions || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
+  const derivedDeleteEvents = (eventContext.deletions || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...derivedDeleteEvents);
   // endregion
   // region 02 - Generate events for shifted relations
-  if ((context.shifts ?? []).length > 0) {
-    const shifts = context.shifts ?? [];
+  if ((eventContext.shifts ?? []).length > 0) {
+    const shifts = eventContext.shifts ?? [];
     for (let index = 0; index < shifts.length; index += 1) {
       const shift = shifts[index];
       const shiftedElement = await stixLoadById(context, RULE_MANAGER_USER, shift) as StixCoreObject;
@@ -109,7 +109,7 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
   // endregion
   // region 03 - Generate event for merged entity
   const updateEvent = buildInternalEvent(EVENT_TYPE_UPDATE, data) as UpdateEvent;
-  updateEvent.context = { patch: context.patch, reverse_patch: context.reverse_patch };
+  updateEvent.context = { patch: eventContext.patch, reverse_patch: eventContext.reverse_patch };
   events.push(updateEvent);
   // endregion
   return events;
@@ -211,7 +211,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
         const mergeEvent = event as MergeEvent;
-        const derivedEvents = await ruleMergeHandler(mergeEvent);
+        const derivedEvents = await ruleMergeHandler(context, mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         await rulesApplyHandler(context, user, derivedEvents);
       }
