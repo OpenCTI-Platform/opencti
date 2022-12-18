@@ -10,7 +10,7 @@ import {
   timeSeriesEntities,
 } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { notify } from '../database/redis';
 import { checkIndicatorSyntax } from '../python/pythonBridge';
 import { DatabaseError, FunctionalError } from '../config/errors';
@@ -56,8 +56,12 @@ export const createObservablesFromIndicator = async (context, user, input, indic
       externalReferences: input.externalReferences,
       update: true,
     };
-    const createdObservable = await createEntity(context, user, observableInput, observable.type);
-    observablesToLink.push(createdObservable.id);
+    try {
+      const createdObservable = await createEntity(context, user, observableInput, observable.type);
+      observablesToLink.push(createdObservable.id);
+    } catch (err) {
+      logApp.error('Unable to create observable', { error: err, input: observableInput });
+    }
   }
   await Promise.all(
     observablesToLink.map((observableToLink) => {
