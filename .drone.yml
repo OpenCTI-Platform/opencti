@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
   - name: api-tests
-    image: node:16-alpine3.14
+    image: node:18-alpine
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -46,7 +46,7 @@ steps:
         - opencti-platform/opencti-graphql/coverage
 
   - name: frontend-tests
-    image: node:16-alpine3.14
+    image: node:18-alpine
     commands:
       - cd opencti-platform/opencti-front
       - yarn install
@@ -184,7 +184,7 @@ services:
       - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - NODE_OPTIONS=--max_old_space_size=12288 yarn start
   - name: opencti-direct-worker
-    image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+    image: nikolaik/python-nodejs:python3.10-nodejs18
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -198,7 +198,7 @@ services:
       - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - python3 src/worker.py
   - name: opencti-restore-start
-    image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+    image: nikolaik/python-nodejs:python3.10-nodejs18
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
