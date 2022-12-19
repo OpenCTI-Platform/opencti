@@ -198,7 +198,7 @@ services:
       - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - python3 src/worker.py
   - name: opencti-restore-start
-    image: nikolaik/python-nodejs:python3.10-nodejs18
+    image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
