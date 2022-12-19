@@ -371,7 +371,6 @@ const executeProcessing = async (context, user, job) => {
         try {
           if (type === ACTION_TYPE_DELETE) {
             await executeDelete(context, user, element);
-            break; // You cant have multiple actions on deletion, just stopping the loop.
           }
           if (type === ACTION_TYPE_ADD) {
             await executeAdd(context, user, actionContext, element);
