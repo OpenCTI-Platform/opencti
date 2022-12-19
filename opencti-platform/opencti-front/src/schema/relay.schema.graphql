@@ -1811,6 +1811,8 @@ enum StixCoreObjectsFilter {
   malware_types
   threat_actor_types
   incident_types
+  targets
+  relatedTo
 }
 
 input StixCoreObjectsFiltering {

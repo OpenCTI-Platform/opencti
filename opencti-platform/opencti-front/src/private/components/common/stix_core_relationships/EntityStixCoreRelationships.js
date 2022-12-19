@@ -24,6 +24,9 @@ import EntityStixCoreRelationshipsLinesAll, {
   entityStixCoreRelationshipsLinesAllQuery,
 } from './EntityStixCoreRelationshipsLinesAll';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import { UserContext } from '../../../../utils/hooks/useAuth';
+import ToolBar from '../../data/ToolBar';
+import EntityStixCoreRelationshipsEntities from './EntityStixCoreRelationshipsEntities';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -60,10 +63,10 @@ class EntityStixCoreRelationships extends Component {
       );
     }
     this.state = {
-      sortBy: R.propOr('created', 'sortBy', params),
+      sortBy: R.propOr('entity_type', 'sortBy', params),
       orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('lines', 'view', params),
+      view: R.propOr('entities', 'view', params),
       filters: R.propOr({}, 'filters', params),
       numberOfElements: { number: 0, symbol: '' },
       openExports: false,
@@ -136,6 +139,10 @@ class EntityStixCoreRelationships extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
+  handleChangeView(mode) {
+    this.setState({ view: mode, sortBy: 'entity_type' }, () => this.saveView());
+  }
+
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, numberOfElements, filters, openExports } = this.state;
     const {
@@ -146,7 +153,6 @@ class EntityStixCoreRelationships extends Component {
       targetStixDomainObjectTypes,
       relationshipTypes,
       disableExport,
-      handleChangeView,
       enableNestedView,
     } = this.props;
     const dataColumns = {
@@ -214,10 +220,11 @@ class EntityStixCoreRelationships extends Component {
         openExports={openExports}
         exportEntityType="stix-core-relationship"
         noPadding={true}
-        handleChangeView={handleChangeView}
+        handleChangeView={this.props.handleChangeView ?? this.handleChangeView.bind(this)}
         enableNestedView={enableNestedView}
         disableCards={true}
         paginationOptions={paginationOptions}
+        enableEntitiesView={true}
       >
         <QueryRenderer
           query={
@@ -263,6 +270,205 @@ class EntityStixCoreRelationships extends Component {
           }
         />
       </ListLines>
+    );
+  }
+
+  handleToggleSelectEntity(entity, event, forceRemove = []) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements, deSelectedElements, selectAll } = this.state;
+    if (Array.isArray(entity)) {
+      const currentIds = R.values(selectedElements).map((n) => n.id);
+      const givenIds = entity.map((n) => n.id);
+      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
+      let newSelectedElements = {
+        ...selectedElements,
+        ...R.indexBy(
+          R.prop('id'),
+          entity.filter((n) => addedIds.includes(n.id)),
+        ),
+      };
+      if (forceRemove.length > 0) {
+        newSelectedElements = R.omit(
+          forceRemove.map((n) => n.id),
+          newSelectedElements,
+        );
+      }
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+        deSelectedElements: null,
+      });
+    } else if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else if (selectAll && entity.id in (deSelectedElements || {})) {
+      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else if (selectAll) {
+      const newDeSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        deSelectedElements || {},
+      );
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({
+      selectAll: !this.state.selectAll,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({
+      selectAll: false,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  buildColumnsEntities(helper) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      entity_type: {
+        label: 'Type',
+        width: '15%',
+        isSortable: true,
+      },
+      name: {
+        label: 'Name',
+        width: '30%',
+        isSortable: isRuntimeSort,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '20%',
+        isSortable: false,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '18%',
+        isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+      },
+    };
+  }
+
+  renderEntities(paginationOptions) {
+    const {
+      sortBy,
+      orderAsc,
+      numberOfElements,
+      openExports,
+      selectAll,
+      selectedElements,
+      deSelectedElements,
+      view,
+      filters,
+      searchTerm,
+    } = this.state;
+    const {
+      entityLink,
+      isRelationReversed,
+      disableExport,
+      targetStixDomainObjectTypes,
+    } = this.props;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original
+        - Object.keys(deSelectedElements || {}).length;
+    }
+    return (
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumnsEntities(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleChangeView={this.handleChangeView.bind(this)}
+              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              paginationOptions={paginationOptions}
+              selectAll={selectAll}
+              displayImport={true}
+              handleToggleExports={
+                disableExport ? null : this.handleToggleExports.bind(this)
+              }
+              openExports={openExports}
+              exportEntityType="stix-core-relationship"
+              iconExtension={true}
+              filters={filters}
+              availableFilterKeys={[
+                'entity_type',
+                'markedBy',
+                'createdBy',
+                'created_start_date',
+                'created_end_date',
+                'labelledBy',
+              ]}
+              availableEntityTypes={targetStixDomainObjectTypes}
+              numberOfElements={numberOfElements}
+              noPadding={true}
+              disableCards={true}
+              enableEntitiesView={true}
+              currentView={view}
+            >
+              <EntityStixCoreRelationshipsEntities
+                paginationOptions={paginationOptions}
+                entityLink={entityLink}
+                dataColumns={this.buildColumnsEntities(helper)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                isRelationReversed={isRelationReversed}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                selectAll={selectAll}
+              />
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={filters}
+              search={searchTerm}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
+              variant="medium"
+            />
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 
@@ -329,9 +535,34 @@ class EntityStixCoreRelationships extends Component {
         R.assoc('toTypes', selectedTypes),
       )(paginationOptions);
     }
+
+    let currentPaginationOptions = { ...paginationOptions };
+    if (view === 'entities') {
+      let entitiesFilters = paginationOptions.filters;
+      if (allDirections) {
+        entitiesFilters = [
+          { key: 'relatedTo', values: [entityId] },
+          ...entitiesFilters,
+        ];
+      } else {
+        entitiesFilters = [
+          { key: 'targets', values: [entityId] },
+          ...entitiesFilters,
+        ];
+      }
+      currentPaginationOptions = {
+        ...paginationOptions,
+        elementWithTargetTypes: null,
+        types: !allDirections ? targetStixDomainObjectTypes : currentPaginationOptions.elementWithTargetTypes,
+        fromTypes: null,
+        filters: entitiesFilters,
+      };
+    }
+
     return (
       <div className={classes.container}>
-        {view === 'lines' && this.renderLines(paginationOptions)}
+        {view === 'lines' && this.renderLines(currentPaginationOptions)}
+        {view === 'entities' ? this.renderEntities(currentPaginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
@@ -339,9 +570,10 @@ class EntityStixCoreRelationships extends Component {
             paddingRight={220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             allowedRelationshipTypes={relationshipTypes}
-            paginationOptions={paginationOptions}
+            paginationOptions={currentPaginationOptions}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
+            connectionKey={view === 'entities' ? 'Pagination_stixCoreObjects' : undefined}
           />
         </Security>
       </div>

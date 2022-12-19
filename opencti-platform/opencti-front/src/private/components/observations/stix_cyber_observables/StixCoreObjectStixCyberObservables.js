@@ -46,7 +46,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       sortBy: R.propOr('created_at', 'sortBy', params),
       orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('lines', 'view', params),
+      view: R.propOr('entities', 'view', params),
       filters: R.propOr({}, 'filters', params),
       openToType: false,
       toType: 'All',

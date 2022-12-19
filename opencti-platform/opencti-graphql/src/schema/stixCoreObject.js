@@ -11,7 +11,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from './stixMetaRelationship';
-import { RELATION_INDICATES } from './stixCoreRelationship';
+import { RELATION_INDICATES, RELATION_RELATED_TO, RELATION_TARGETS } from './stixCoreRelationship';
 import { RELATION_PARTICIPATE_TO } from './internalRelationship';
 
 export const INTERNAL_EXPORTABLE_TYPES = [RELATION_PARTICIPATE_TO];
@@ -34,6 +34,8 @@ export const stixCoreObjectOptions = {
     killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
     indicates: buildRefRelationKey(RELATION_INDICATES),
     creator: 'creator_id',
+    targets: buildRefRelationKey(RELATION_TARGETS),
+    relatedTo: buildRefRelationKey(RELATION_RELATED_TO),
   },
   StixCoreObjectsOrdering: {}
 };

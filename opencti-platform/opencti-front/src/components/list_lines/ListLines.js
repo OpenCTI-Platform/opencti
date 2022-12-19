@@ -288,6 +288,18 @@ class ListLines extends Component {
                     </Tooltip>
                   </ToggleButton>
                 )}
+                {typeof handleChangeView === 'function' && enableEntitiesView && (
+                  <ToggleButton value="entities" aria-label="entities">
+                    <Tooltip title={t('Entities view')}>
+                      <LibraryBooksOutlined
+                        fontSize="small"
+                        color={
+                          currentView === 'entities' ? 'secondary' : 'primary'
+                        }
+                      />
+                    </Tooltip>
+                  </ToggleButton>
+                )}
                 <ToggleButton value="lines" aria-label="lines">
                   <Tooltip title={t('Lines view')}>
                     <ViewListOutlined
@@ -311,18 +323,6 @@ class ListLines extends Component {
                   <ToggleButton value="nested" aria-label="nested">
                     <Tooltip title={t('Nested view')}>
                       <FormatListGroup fontSize="small" color="primary" />
-                    </Tooltip>
-                  </ToggleButton>
-                )}
-                {typeof handleChangeView === 'function' && enableEntitiesView && (
-                  <ToggleButton value="entities" aria-label="entities">
-                    <Tooltip title={t('Entities view')}>
-                      <LibraryBooksOutlined
-                        fontSize="small"
-                        color={
-                          currentView === 'entities' ? 'secondary' : 'primary'
-                        }
-                      />
                     </Tooltip>
                   </ToggleButton>
                 )}
