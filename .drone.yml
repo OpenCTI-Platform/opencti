@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
   - name: api-tests
-    image: node:18-alpine
+    image: node:16-alpine3.14
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -46,7 +46,7 @@ steps:
         - opencti-platform/opencti-graphql/coverage
 
   - name: frontend-tests
-    image: node:18-alpine
+    image: node:16-alpine3.14
     commands:
       - cd opencti-platform/opencti-front
       - yarn install
