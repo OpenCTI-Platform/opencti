@@ -350,7 +350,7 @@ const executeProcessing = async (context, user, job) => {
   const errors = [];
   for (let index = 0; index < job.actions.length; index += 1) {
     const { type, context: actionContext } = job.actions[index];
-    const { field, values } = actionContext;
+    const { field, values } = actionContext ?? {};
     // Containers specific operations
     // Can be done in one shot patch modification.
     if (field === ACTION_ON_CONTAINER_FIELD) {
