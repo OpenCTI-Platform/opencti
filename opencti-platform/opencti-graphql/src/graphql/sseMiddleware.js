@@ -354,7 +354,17 @@ const createSeeMiddleware = () => {
       // Labels filtering
       if (type === LABEL_FILTER) {
         const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
-        const found = values.map((v) => v.value).some((r) => labels.includes(r));
+        let found = false;
+        switch (operator) {
+          case 'uneq':
+            found = values.map((v) => v.value).some((r) => !labels.includes(r));
+            break;
+          case 'eq':
+            found = values.map((v) => v.value).some((r) => labels.includes(r));
+            break;
+          default:
+            found = values.map((v) => v.value).some((r) => labels.includes(r));
+        }
         if (!found) {
           return false;
         }

@@ -214,6 +214,9 @@ export const convertFilters = (filters) => pipe(
     } else if (key.endsWith('_lte')) {
       key = key.replace('_lte', '');
       operator = 'lte';
+    } else if (key.endsWith('_uneq')) {
+      key = key.replace('_uneq', '');
+      operator = 'uneq';
     }
     const values = last(pair);
     const valIds = map((v) => v.id, values);

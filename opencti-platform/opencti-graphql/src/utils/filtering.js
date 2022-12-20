@@ -32,6 +32,9 @@ export const convertFiltersFrontendFormat = (filters) => {
     } else if (key.endsWith('_lte')) {
       const workingKey = key.replace('_lte', '');
       adaptedFilters.push({ key: workingKey, operator: 'lte', values });
+    } else if (key.endsWith('_uneq')) {
+      const workingKey = key.replace('_uneq', '');
+      adaptedFilters.push({ key: workingKey, operator: 'uneq', values });
     } else {
       adaptedFilters.push({ key, operator: 'eq', values });
     }
@@ -54,6 +57,9 @@ export const adaptFiltersFrontendFormat = (filters) => {
     } else if (key.endsWith('_lte')) {
       const workingKey = key.replace('_lte', '');
       adaptedFilters[workingKey] = { operator: 'lte', values };
+    } else if (key.endsWith('_uneq')) {
+      const workingKey = key.replace('_uneq', '');
+      adaptedFilters[workingKey] = { operator: 'uneq', values };
     } else {
       adaptedFilters[key] = { operator: 'eq', values };
     }

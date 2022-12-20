@@ -33,6 +33,7 @@ const uniqFilters = [
   'x_opencti_score_lte',
   'toSightingId',
   'basedOn',
+  'labelledBy_uneq',
 ];
 
 export const entityTypes = [
