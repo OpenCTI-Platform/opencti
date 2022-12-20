@@ -408,6 +408,11 @@ const riskReducer = (item) => {
   }
   
   if (!('deadline' in item)) item.deadline = null;
+  if ( !('false_positive' in item)) item.false_positive = false;
+  if ( !('accepted' in item)) item.accepted = false;
+  if ( !('risk_adjusted' in item)) item.risk_adjusted = false;
+  if ( !('vendor_dependency' in item)) item.vendor_dependency = false;
+
   return {
     iri: item.iri,
     id: item.id,
@@ -436,11 +441,11 @@ const riskReducer = (item) => {
     ...(item.risk_log && {risk_log_iri: item.risk_log}),
     ...(item.related_observations && {related_observations_iri: item.related_observations}),
     ...(item.related_observation_ids && {related_observation_ids: item.related_observation_ids}),
-    ...(item.false_positive && {false_positive: item.false_positive}),
-    ...(item.accepted && {accepted: item.accepted}),
-    ...(item.risk_adjusted && {risk_adjusted: item.risk_adjusted}),
+    ...(item.false_positive !== undefined && {false_positive: item.false_positive}),
+    ...(item.accepted !== undefined && {accepted: item.accepted}),
+    ...(item.risk_adjusted !== undefined && {risk_adjusted: item.risk_adjusted}),
     ...(item.priority && {priority: item.priority}),
-    ...(item.vendor_dependency && {vendor_dependency: item.vendor_dependency}),
+    ...(item.vendor_dependency !== undefined && {vendor_dependency: item.vendor_dependency}),
     ...(item.impacted_control_id && {impacted_control_iri: item.impacted_control_id}),
     ...(item.response_type && {response_type: item.response_type}),
     ...(item.lifecycle && {lifecycle: item.lifecycle}),
@@ -5028,19 +5033,19 @@ export const riskPredicateMap = {
   },
   false_positive: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#false_positive>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "false_positive");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "false_positive");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'false-positive',
   },
   accepted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#accepted>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "accepted");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "accepted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'accepted',
   },
   risk_adjusted: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_adjusted>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_adjusted");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "risk_adjusted");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'risk-adjusted',
   },
@@ -5052,7 +5057,7 @@ export const riskPredicateMap = {
   },
   vendor_dependency: {
     predicate: "<http://fedramp.gov/ns/oscal#vendor_dependency>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "vendor_dependency");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "vendor_dependency");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   impacted_control_id: {

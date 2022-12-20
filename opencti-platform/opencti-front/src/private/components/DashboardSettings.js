@@ -109,6 +109,37 @@ class DashboardSettings extends Component {
               }}
               render={({ props }) => {
                 if (props) {
+                  if (props && props.workspaces) {
+                    return (
+                      <div>
+                        <FormControl style={{ width: '100%' }}>
+                          <InputLabel id="timeField" variant="standard">
+                            {t('Current dashboard')}
+                          </InputLabel>
+                          <Select
+                            labelId="dashboard"
+                            variant="standard"
+                            value={dashboard === null ? '' : dashboard}
+                            onChange={handleChangeDashboard.bind(this)}
+                            fullWidth={true}
+                          >
+                            <MenuItem value="default">{t('Default')}</MenuItem>
+                            {props.workspaces.edges.map((workspaceEdge) => {
+                              const workspace = workspaceEdge.node;
+                              return (
+                                <MenuItem
+                                  key={workspace.id}
+                                  value={workspace.id}
+                                >
+                                  {workspace.name}
+                                </MenuItem>
+                              );
+                            })}
+                          </Select>
+                        </FormControl>
+                      </div>
+                    );
+                  }
                   return (
                     <div>
                       <FormControl style={{ width: '100%' }}>
@@ -119,27 +150,15 @@ class DashboardSettings extends Component {
                           labelId="dashboard"
                           variant="standard"
                           value={dashboard === null ? '' : dashboard}
-                          onChange={handleChangeDashboard.bind(this)}
                           fullWidth={true}
                         >
                           <MenuItem value="default">{t('Default')}</MenuItem>
-                          {props.workspaces.edges.map((workspaceEdge) => {
-                            const workspace = workspaceEdge.node;
-                            return (
-                              <MenuItem
-                                key={workspace.id}
-                                value={workspace.id}
-                              >
-                                {workspace.name}
-                              </MenuItem>
-                            );
-                          })}
                         </Select>
                       </FormControl>
                     </div>
                   );
                 }
-                return <Loader variant="inElement"/>;
+                return <Loader variant="inElement" />;
               }}
             />
           </DialogContent>

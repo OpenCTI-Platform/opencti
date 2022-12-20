@@ -20,10 +20,10 @@ import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObj
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
+    height: '97%',
     minHeight: '50%',
-    margin: '10px 0 0 0',
-    padding: '24px 24px 0 24px',
+    marginTop: '2%',
+    padding: '1.5rem',
     borderRadius: 6,
   },
   chip: {
@@ -61,11 +61,10 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
-  statusButton: {
-    cursor: 'default',
-    background: '#075AD333',
-    marginBottom: '5px',
-    border: '1px solid #075AD3',
+  textBase: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 5,
   },
 });
 
@@ -82,80 +81,80 @@ class RiskOverviewComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("ID")}
-              </Typography>
-              <div style={{ float: "left", marginLeft: "5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("ID")}
+                </Typography>
                 <Tooltip title={t("Uniquely identifies this object")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
               <div className="clearfix" />
               {risk.id && t(risk.id)}
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Created")}
-              </Typography>
-              <div style={{ float: "left", marginLeft: "5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Created")}
+                </Typography>
                 <Tooltip
                   title={t(
                     "Indicates the date and time at which the object was originally created."
                   )}
                 >
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
               <div className="clearfix" />
               {risk.created && fldt(risk.created)}
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Modified")}
-              </Typography>
-              <div style={{ float: "left", marginLeft: "5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Modified")}
+                </Typography>
                 <Tooltip
                   title={t(
                     "Indicates the date and time that this particular version of the object was last modified."
                   )}
                 >
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
               <div className="clearfix" />
               {risk.modified && fldt(risk.modified)}
             </Grid>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Description")}
-              </Typography>
-              <div style={{ float: "left", marginLeft: "5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Description")}
+                </Typography>
                 <Tooltip
                   title={t(
                     "Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system."
                   )}
                 >
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
               <div className="clearfix" />
@@ -175,84 +174,76 @@ class RiskOverviewComponent extends Component {
               </div>
             </Grid>
             <Grid item={true} xs={6}>
-              <div>
+              <div className={classes.textBase}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: "left", marginTop: "10px" }}
+                  style={{ margin: 0 }}
                 >
                   {t("Risk Rating")}
                 </Typography>
-                <div style={{ float: "left", margin: "11px 0 0 5px" }}>
-                  <Tooltip title={t("Risk Rating")}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.risk_level && t(risk.risk_level)}
+                <Tooltip title={t("Risk Rating")}>
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                </Tooltip>
               </div>
+              <div className="clearfix" />
+              {risk.risk_level && t(risk.risk_level)}
             </Grid>
             <Grid item={true} xs={6}>
-              <div>
+              <div className={classes.textBase}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: "left", marginTop: 10 }}
+                  style={{ margin: 0 }}
                 >
                   {t("Priority")}
                 </Typography>
-                <div style={{ float: "left", margin: "11px 0 0 5px" }}>
-                  <Tooltip
-                    title={t(
-                      "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {risk.priority && t(risk.priority)}
+                <Tooltip
+                  title={t(
+                    "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
+                  )}
+                >
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                </Tooltip>
               </div>
+              <div className="clearfix" />
+              {risk.priority && t(risk.priority)}
             </Grid>
             <Grid item={true} xs={6}>
-              <div>
+              <div className={classes.textBase}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: "left" }}
+                  style={{ margin: 0 }}
                 >
                   {t("Impact")}
                 </Typography>
-                <div style={{ float: "left", marginLeft: "5px" }}>
-                  <Tooltip title={t("Version")}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {/* {risk.impact && t(risk.impact)} */}
+                <Tooltip title={t("Version")}>
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                </Tooltip>
               </div>
+              <div className="clearfix" />
+              {/* {risk.impact && t(risk.impact)} */}
             </Grid>
             <Grid item={true} xs={6}>
-              <div>
+              <div className={classes.textBase}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: "left" }}
+                  style={{ margin: 0 }}
                 >
                   {t("Likelihood")}
                 </Typography>
-                <div style={{ float: "left", marginLeft: "5px" }}>
-                  <Tooltip title={t("Likelihood")}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {/* {risk.likelihood && t(risk.likelihood)} */}
+                <Tooltip title={t("Likelihood")}>
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                </Tooltip>
               </div>
+              <div className="clearfix" />
+              {/* {risk.likelihood && t(risk.likelihood)} */}
             </Grid>
             <Grid item={true} xs={12}>
               <CyioCoreObjectLabelsView
@@ -285,42 +276,15 @@ const RiskOverview = createFragmentContainer(
       fragment RiskOverview_risk on Risk {
         __typename
         id
-        name
         created
         modified
         description
-        statement
-        risk_status
         risk_level
-        deadline
-        accepted
-        risk_adjusted
         priority
         vendor_dependency
         impacted_control_id
         first_seen
         last_seen
-        origins {
-          origin_actors {
-            actor_type
-            actor_ref {
-              ... on AssessmentPlatform {
-                id
-                name
-              }
-              ... on Component {
-                id
-                component_type
-                name
-              }
-              ... on OscalParty {
-                id
-                party_type
-                name
-              }
-            }
-          }
-        }
         labels {
           __typename
           id
