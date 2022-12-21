@@ -1078,10 +1078,12 @@ const elQueryBodyBuilder = async (context, user, options) => {
     must = R.append({ bool: { should, minimum_should_match: 1 } }, must);
   }
   let mustFilters = [];
+  let mustNotFilters = [];
   const validFilters = R.filter((f) => f?.values?.length > 0 || f?.nested?.length > 0, filters || []);
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
+      const noValuesFiltering = [];
       const { key, values, nested, operator = 'eq', filterMode: localFilterMode = 'or' } = validFilters[index];
       const validKeys = Array.isArray(key) ? key : [key];
       // const rulesKeys = getAttributesRulesFor(key);
@@ -1145,6 +1147,13 @@ const elQueryBodyBuilder = async (context, user, options) => {
                 query: values[i].toString(),
               },
             });
+          } else if (operator === 'uneq') {
+            noValuesFiltering.push({
+              multi_match: {
+                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttributes.includes(k)) ? k : `${k}.keyword`}`),
+                query: values[i].toString(),
+              },
+            });
           } else if (operator === 'match') {
             valuesFiltering.push({
               multi_match: {
@@ -1181,6 +1190,17 @@ const elQueryBodyBuilder = async (context, user, options) => {
           },
           mustFilters
         );
+        if (noValuesFiltering.length > 0) {
+          mustNotFilters = R.append(
+            {
+              bool: {
+                should: noValuesFiltering,
+                minimum_should_match: localFilterMode === 'or' ? 1 : noValuesFiltering.length,
+              },
+            },
+            mustNotFilters
+          );
+        }
       }
     }
   }
@@ -1188,6 +1208,11 @@ const elQueryBodyBuilder = async (context, user, options) => {
     must = R.append({ bool: { should: mustFilters, minimum_should_match: 1 } }, must);
   } else {
     must = [...must, ...mustFilters];
+  }
+  if (filterMode === 'or' && mustNotFilters.length > 0) {
+    mustnot = R.append({ bool: { should: mustNotFilters, minimum_should_match: 1 } }, mustnot);
+  } else {
+    mustnot = [...mustnot, ...mustNotFilters];
   }
   if (search !== null && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search);
