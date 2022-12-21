@@ -73,7 +73,7 @@ class StixCoreObjectStixCyberObservables extends Component {
   }
 
   handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
+    this.setState({ view: mode, sortBy: 'created_at' }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
@@ -405,6 +405,11 @@ class StixCoreObjectStixCyberObservables extends Component {
       [{ id: stixCoreObjectId, value: stixCoreObjectId }],
       finalFilters,
     );
+    const currentPaginationOptions = {
+      count: 25,
+      ...paginationOptions,
+      filters: convertFilters(finalFilters),
+    };
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -446,11 +451,11 @@ class StixCoreObjectStixCyberObservables extends Component {
             >
               <QueryRenderer
                 query={stixCoreObjectStixCyberObservablesEntitiesQuery}
-                variables={{ count: 25, ...paginationOptions }}
+                variables={currentPaginationOptions}
                 render={({ props }) => (
                   <StixCoreObjectStixCyberObservablesEntities
                     data={props}
-                    paginationOptions={paginationOptions}
+                    paginationOptions={currentPaginationOptions}
                     stixCoreObjectLink={stixCoreObjectLink}
                     dataColumns={this.buildColumnsEntities(helper)}
                     onToggleEntity={this.handleToggleSelectEntity.bind(this)}

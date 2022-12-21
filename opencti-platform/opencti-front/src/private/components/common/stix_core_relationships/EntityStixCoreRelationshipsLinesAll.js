@@ -81,6 +81,7 @@ export const entityStixCoreRelationshipsLinesAllQuery = graphql`
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
     $filters: [StixCoreRelationshipsFiltering]
+    $fromTypes: [String]
   ) {
     ...EntityStixCoreRelationshipsLinesAll_data
       @arguments(
@@ -93,6 +94,7 @@ export const entityStixCoreRelationshipsLinesAllQuery = graphql`
         orderBy: $orderBy
         orderMode: $orderMode
         filters: $filters
+        fromTypes: $fromTypes
       )
   }
 `;
@@ -105,6 +107,7 @@ export default createPaginationContainer(
       @argumentDefinitions(
         elementId: { type: "[String]" }
         elementWithTargetTypes: { type: "[String]" }
+        fromTypes: { type: "[String]" }
         relationship_type: { type: "[String]" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
@@ -126,6 +129,7 @@ export default createPaginationContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
+          fromTypes: $fromTypes
         ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
