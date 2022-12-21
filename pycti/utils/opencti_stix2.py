@@ -1132,6 +1132,11 @@ class OpenCTIStix2:
                 entity["region"] = entity["name"]
             entity["entity_type"] = "Location"
 
+        # Malware
+        if entity["entity_type"] == "Malware":
+            if "is_family" not in entity or not isinstance(entity["is_family"], bool):
+                entity["is_family"] = True
+
         # Files
         if entity["entity_type"] == "StixFile":
             entity["entity_type"] = "File"
