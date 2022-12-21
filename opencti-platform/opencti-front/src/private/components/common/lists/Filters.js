@@ -66,13 +66,8 @@ const Filters = ({
   };
 
   const handleChange = (filterKey, event, value) => {
-    console.log('handleChange: action when click on an element from a filter list');
-    console.log('event', event);
-    console.log('value', value);
-    console.log('filterKey', filterKey);
     if (value) {
       if (filterKey === 'labelledBy' && event.altKey && event.type === 'click') {
-        console.log('uneq');
         const filterAdd = 'labelledBy_uneq';
         defaultHandleAddFilter(filterAdd, value.value, value.label, event);
       } else {
@@ -80,7 +75,6 @@ const Filters = ({
           ? value.group
           : undefined;
         const filterAdd = `${filterKey}${group ? `_${group}` : ''}`;
-        console.log('filterAdd', filterAdd);
         defaultHandleAddFilter(filterAdd, value.value, value.label, event);
       }
     }
