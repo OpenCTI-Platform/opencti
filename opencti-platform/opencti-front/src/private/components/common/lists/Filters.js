@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
+import { useFormatter } from '../../../../components/i18n';
+import {
+  EqFilters,
+  FiltersVariant,
+  isUniqFilter,
+  onlyGroupOrganization,
+} from '../../../../utils/filters/filtersUtils';
 import {
   FiltersVariant,
   isUniqFilter,
@@ -67,8 +74,8 @@ const Filters = ({
 
   const handleChange = (filterKey, event, value) => {
     if (value) {
-      if (filterKey === 'labelledBy' && event.altKey && event.type === 'click') {
-        const filterAdd = 'labelledBy_uneq';
+      if (EqFilters.includes(filterKey) && event.altKey && event.type === 'click') {
+        const filterAdd = `${filterKey}_uneq`;
         defaultHandleAddFilter(filterAdd, value.value, value.label, event);
       } else {
         const group = !onlyGroupOrganization.includes(filterKey)
