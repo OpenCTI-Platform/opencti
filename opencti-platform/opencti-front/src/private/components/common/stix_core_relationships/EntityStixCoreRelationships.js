@@ -317,6 +317,7 @@ class EntityStixCoreRelationships extends Component {
       paginationOptions = R.pipe(
         R.assoc('elementId', entityId),
         R.assoc('elementWithTargetTypes', selectedTypes),
+        R.assoc('fromTypes', selectedTypes),
       )(paginationOptions);
     } else if (isRelationReversed) {
       paginationOptions = R.pipe(
