@@ -20,6 +20,7 @@ import Button from '@mui/material/Button';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { Link } from 'react-router-dom';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -111,6 +112,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const toolTip = history.map((s) => s?.message).filter((s) => !isEmpty(s)).join(', ');
   const encodedFilePath = encodeURIComponent(file?.id ?? '');
+  const listClick = `${APP_BASE_PATH}/storage/${directDownload ? 'get' : 'view'}/${encodedFilePath}`;
 
   const handleOpenDelete = () => {
     setDisplayDelete(true);
@@ -183,7 +185,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         divider={true}
         dense={dense}
         classes={{ root: nested ? classes.itemNested : classes.item }}
-        disabled={isProgress}
+        button={true}
+        component={Link}
+        disabled={isProgress || isOutdated}
+        to={listClick}
+        target="_blank"
+        rel="noopener noreferrer"
       >
         <ListItemIcon>
           {isProgress && (
