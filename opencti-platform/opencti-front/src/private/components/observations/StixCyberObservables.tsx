@@ -197,7 +197,7 @@ const StixCyberObservables: FunctionComponent = () => {
     return {
       entity_type: {
         label: 'Type',
-        width: '20%',
+        width: '12%',
         isSortable: true,
       },
       observable_value: {
@@ -205,9 +205,19 @@ const StixCyberObservables: FunctionComponent = () => {
         width: '25%',
         isSortable: isRuntimeSort,
       },
+      createdBy: {
+        label: 'Author',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
       objectLabel: {
         label: 'Labels',
-        width: '10%',
+        width: '15%',
         isSortable: false,
       },
       created_at: {
@@ -215,14 +225,10 @@ const StixCyberObservables: FunctionComponent = () => {
         width: '15%',
         isSortable: true,
       },
-      creator: {
-        label: 'Creator',
-        width: '12%',
-        isSortable: true,
-      },
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
   };

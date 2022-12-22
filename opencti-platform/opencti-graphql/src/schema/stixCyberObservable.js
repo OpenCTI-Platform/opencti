@@ -102,9 +102,7 @@ export const stixCyberObservableOptions = {
     hashes_SHA256: 'hashes.SHA-256',
     creator: 'creator_id',
   },
-  StixCyberObservablesOrdering: {
-    creator: 'creator_id',
-  }
+  StixCyberObservablesOrdering: {}
 };
 
 const stixCyberObservableFieldsToBeUpdated = {

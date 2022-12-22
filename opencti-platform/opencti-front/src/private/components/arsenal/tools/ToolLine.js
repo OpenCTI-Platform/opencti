@@ -7,10 +7,11 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRight, WebAssetOutlined } from '@mui/icons-material';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -55,7 +56,7 @@ class ToolLineComponent extends Component {
         to={`/dashboard/arsenal/tools/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <WebAssetOutlined />
+          <ItemIcon type="Tool" />
         </ListItemIcon>
         <ListItemText
           primary={

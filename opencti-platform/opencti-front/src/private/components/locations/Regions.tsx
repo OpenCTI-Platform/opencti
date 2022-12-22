@@ -75,7 +75,7 @@ const Regions: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense fallback={
-            <>{[0, 1, 2].map((idx) => (<RegionLineDummy key={idx} />))}</>
+            <>{Array(20).fill(0).map((idx) => (<RegionLineDummy key={idx} />))}</>
           }>
             <RegionsLines
               queryRef={queryRef}

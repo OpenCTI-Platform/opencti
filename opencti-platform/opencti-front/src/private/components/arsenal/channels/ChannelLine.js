@@ -4,11 +4,12 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRight, SurroundSoundOutlined } from '@mui/icons-material';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -54,7 +55,7 @@ const ChannelLineComponent = (props) => {
       to={`/dashboard/arsenal/channels/${node.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <SurroundSoundOutlined />
+        <ItemIcon type="Channel" />
       </ListItemIcon>
       <ListItemText
         primary={

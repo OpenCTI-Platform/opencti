@@ -6,10 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  WorkspacesOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, pathOr } from 'ramda';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
@@ -17,6 +14,7 @@ import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -90,7 +88,7 @@ class GroupingLineComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <WorkspacesOutlined />
+          <ItemIcon type="Grouping" />
         </ListItemIcon>
         <ListItemText
           primary={

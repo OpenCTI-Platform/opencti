@@ -2685,6 +2685,7 @@ enum ReportsOrdering {
   createdBy
   creator
   objectMarking
+  report_types
   x_opencti_workflow_id
 }
 
@@ -6825,6 +6826,7 @@ enum StixObjectOrStixRelationshipsOrdering {
   created
   modified
   relationship_type
+  creator
 }
 
 enum StixObjectOrStixRelationshipsFilter {

@@ -60,9 +60,6 @@ const indicatorResolvers = {
     sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
     creator: 'creator_id',
   },
-  IndicatorsOrdering: {
-    creator: 'creator_id',
-  },
   Indicator: {
     killChainPhases: (indicator, _, context) => killChainPhasesLoader.load(indicator.id, context, context.user),
     observables: (indicator, _, context) => batchObservablesLoader.load(indicator.id, context, context.user),

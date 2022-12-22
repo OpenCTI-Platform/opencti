@@ -16,7 +16,7 @@ import {
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
-  READ_ENTITIES_INDICES,
+  READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
@@ -79,7 +79,7 @@ import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelatio
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
 
 const ELK_ENGINE = 'elk';
@@ -584,12 +584,38 @@ export const RUNTIME_ATTRIBUTES = {
     `,
     getParams: async (context, user) => {
       // eslint-disable-next-line no-use-before-define
-      const identities = await elPaginate(context, user, READ_ENTITIES_INDICES, {
+      const identities = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
         types: [ENTITY_TYPE_IDENTITY],
         first: MAX_SEARCH_SIZE,
         connectionFormat: false,
       });
       return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.name })));
+    },
+  },
+  creator: {
+    field: 'creator.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('creator_id')) {
+          def creatorId = doc['creator_id.keyword'];
+          if (creatorId.size() == 1) {
+            def creatorName = params[creatorId[0]];
+            emit(creatorName != null ? creatorName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (context, user) => {
+      // eslint-disable-next-line no-use-before-define
+      const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
+        types: [ENTITY_TYPE_USER],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+\[\]()$~%.'":*?<>{}]/g, '') })));
     },
   },
   objectMarking: {

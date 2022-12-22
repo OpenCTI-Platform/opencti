@@ -181,9 +181,7 @@ export const stixDomainObjectOptions = {
     indicates: buildRefRelationKey(RELATION_INDICATES),
     creator: 'creator_id',
   },
-  StixDomainObjectsOrdering: {
-    creator: 'creator_id'
-  }
+  StixDomainObjectsOrdering: {}
 };
 
 const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {

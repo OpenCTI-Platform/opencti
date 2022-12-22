@@ -4,13 +4,14 @@ import makeStyles from '@mui/styles/makeStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRight, SourceOutlined } from '@mui/icons-material';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { DataComponentLine_node$key } from './__generated__/DataComponentLine_node.graphql';
 import { Theme } from '../../../../components/Theme';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { DataColumns } from '../../../../components/list_lines';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -92,7 +93,7 @@ const DataComponentLine: FunctionComponent<DataComponentLineProps> = ({
       to={`/dashboard/techniques/data_components/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <SourceOutlined />
+        <ItemIcon type="Data-Component" />
       </ListItemIcon>
       <ListItemText
         primary={

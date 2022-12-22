@@ -73,9 +73,6 @@ const reportResolvers = {
     objectContains: buildRefRelationKey(RELATION_OBJECT, '*'),
     creator: 'creator_id',
   },
-  ReportsOrdering: {
-    creator: 'creator_id',
-  },
   Mutation: {
     reportEdit: (_, { id }, context) => ({
       delete: ({ purgeElements }) => (purgeElements ? reportDeleteWithElements(context, context.user, id) : stixDomainObjectDelete(context, context.user, id)),

@@ -8,10 +8,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import { DiamondOutline } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -56,7 +56,7 @@ class IntrusionSetLineComponent extends Component {
         to={`/dashboard/threats/intrusion_sets/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <DiamondOutline />
+          <ItemIcon type="Intrusion-Set" />
         </ListItemIcon>
         <ListItemText
           primary={

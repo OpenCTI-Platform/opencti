@@ -43,13 +43,14 @@ import {
   Launch,
   LaptopAccount,
 } from 'mdi-material-ui';
+import { itemColor } from '../utils/Colors';
 
-const iconSelector = (type, variant, fontSize, color) => {
+const iconSelector = (type, variant, fontSize) => {
   let style = {};
   switch (variant) {
     case 'inline':
       style = {
-        color,
+        color: itemColor(type),
         width: 20,
         height: 20,
         margin: '0 7px 0 0',
@@ -58,7 +59,7 @@ const iconSelector = (type, variant, fontSize, color) => {
       break;
     default:
       style = {
-        color,
+        color: itemColor(type),
       };
   }
 
@@ -272,9 +273,9 @@ const iconSelector = (type, variant, fontSize, color) => {
 };
 
 const ItemIcon = (props) => {
-  const { type, size, variant, color } = props;
+  const { type, size, variant } = props;
   const fontSize = size || 'medium';
-  return iconSelector(type, variant, fontSize, color);
+  return iconSelector(type, variant, fontSize);
 };
 
 ItemIcon.propTypes = {

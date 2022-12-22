@@ -16437,6 +16437,7 @@ export enum ReportsOrdering {
   Name = 'name',
   ObjectMarking = 'objectMarking',
   Published = 'published',
+  ReportTypes = 'report_types',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -18959,6 +18960,7 @@ export enum StixObjectOrStixRelationshipsOrdering {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   EntityType = 'entity_type',
   Modified = 'modified',
   Name = 'name',

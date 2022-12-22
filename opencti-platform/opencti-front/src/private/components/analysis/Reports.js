@@ -213,22 +213,27 @@ class Reports extends Component {
     const dataColumns = {
       name: {
         label: 'Title',
-        width: '30%',
+        width: '25%',
+        isSortable: true,
+      },
+      report_types: {
+        label: 'Type',
+        width: '8%',
         isSortable: true,
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        width: '12%',
         isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creator',
         width: '12%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        width: '10%',
+        width: '15%',
         isSortable: false,
       },
       published: {
@@ -238,12 +243,13 @@ class Reports extends Component {
       },
       x_opencti_workflow_id: {
         label: 'Status',
-        width: '10%',
+        width: '8%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
     return (
@@ -275,9 +281,9 @@ class Reports extends Component {
             'createdBy',
             'creator',
             'markedBy',
+            'confidence',
             'published_start_date',
             'published_end_date',
-            'confidence',
           ]}
         >
           <QueryRenderer

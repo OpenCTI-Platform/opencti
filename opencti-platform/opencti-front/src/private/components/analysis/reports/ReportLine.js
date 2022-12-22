@@ -1,21 +1,21 @@
 import React from 'react';
+import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  DescriptionOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
+import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -46,22 +46,27 @@ const useStyles = makeStyles((theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+  },
 }));
 
-const ReportLineComponent = (props) => {
+const ReportLineComponent = ({
+  node,
+  dataColumns,
+  onLabelClick,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleShiftEntity,
+  index,
+}) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
-  const {
-    node,
-    dataColumns,
-    onLabelClick,
-    onToggleEntity,
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    onToggleShiftEntity,
-    index,
-  } = props;
+  const { fd, t } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -88,7 +93,7 @@ const ReportLineComponent = (props) => {
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <DescriptionOutlined />
+        <ItemIcon type="Report" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -101,6 +106,17 @@ const ReportLineComponent = (props) => {
                 {node.name}
               </div>
             </Tooltip>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.report_types.width }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                color="primary"
+                variant="outlined"
+                label={R.head(node.report_types || [t('Unknown')])}
+              />
+            </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
@@ -167,6 +183,7 @@ export const ReportLine = createFragmentContainer(ReportLineComponent, {
       name
       description
       published
+      report_types
       createdBy {
         ... on Identity {
           id
@@ -221,12 +238,7 @@ export const ReportLineDummy = (props) => {
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -234,6 +246,17 @@ export const ReportLineDummy = (props) => {
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.report_types.width }}
             >
               <Skeleton
                 animation="wave"

@@ -9,6 +9,7 @@ import { HexagonOutline } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -42,6 +43,14 @@ const useStyles = makeStyles((theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 }));
 
@@ -95,13 +104,33 @@ const StixCyberObservableLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              {t(`entity_${node.entity_type}`)}
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  backgroundColor: 'rgba(32, 58, 246, 0.08)',
+                  color: '#203af6',
+                  border: '1px solid #203af6',
+                }}
+                label={t(`entity_${node.entity_type}`)}
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.observable_value.width }}
             >
               {renderObservableValue(node)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {node.createdBy?.name}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              {node.creator?.name}
             </div>
             <div
               className={classes.bodyItem}
@@ -118,12 +147,6 @@ const StixCyberObservableLineComponent = ({
               style={{ width: dataColumns.created_at.width }}
             >
               {nsdt(node.created_at)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
-              {t(node.creator.name)}
             </div>
             <div
               className={classes.bodyItem}
@@ -155,6 +178,13 @@ export const StixCyberObservableLine = createFragmentContainer(
         parent_types
         observable_value
         created_at
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
         ... on IPv4Addr {
           countries {
             edges {
@@ -243,6 +273,28 @@ export const StixCyberObservableLineDummy = (props) => {
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
@@ -260,17 +312,6 @@ export const StixCyberObservableLineDummy = (props) => {
                 animation="wave"
                 variant="rectangular"
                 width={140}
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
                 height="100%"
               />
             </div>
