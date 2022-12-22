@@ -5,12 +5,12 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { LockPattern } from 'mdi-material-ui';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, map } from 'ramda';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {},
@@ -68,7 +68,10 @@ class AttackPatternLineComponent extends Component {
           to={`/dashboard/techniques/attack_patterns/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <LockPattern fontSize={isSubAttackPattern ? 'small' : 'medium'} />
+            <ItemIcon
+              type="Attack-Pattern"
+              size={isSubAttackPattern ? 'small' : 'medium'}
+            />
           </ListItemIcon>
           <ListItemText
             primary={

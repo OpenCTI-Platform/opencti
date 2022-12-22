@@ -8,9 +8,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { KeyboardArrowRight, PublicOutlined } from '@mui/icons-material';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -55,7 +56,7 @@ class ThreatActorLineComponent extends Component {
         to={`/dashboard/threats/threat_actors/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <PublicOutlined />
+          <ItemIcon type="Threat-Actor" />
         </ListItemIcon>
         <ListItemText
           primary={

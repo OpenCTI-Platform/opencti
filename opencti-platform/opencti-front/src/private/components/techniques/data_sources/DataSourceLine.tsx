@@ -3,10 +3,7 @@ import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  StreamOutlined,
-  KeyboardArrowRightOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -15,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import { DataSourceLine_node$key } from './__generated__/DataSourceLine_node.graphql';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -95,7 +93,7 @@ DataSourceLineProps
       to={`/dashboard/techniques/data_sources/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <StreamOutlined />
+        <ItemIcon type="Data-Source" />
       </ListItemIcon>
       <ListItemText
         primary={

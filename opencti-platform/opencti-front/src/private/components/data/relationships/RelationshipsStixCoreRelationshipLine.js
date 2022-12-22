@@ -161,9 +161,9 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
+                style={{ width: dataColumns.createdBy.width }}
               >
-                {fd(node.created_at)}
+                {pathOr('', ['createdBy', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -173,9 +173,9 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
-                {pathOr('', ['createdBy', 'name'], node)}
+                {fd(node.created_at)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -3608,34 +3608,34 @@ class RelationshipsStixCoreRelationshipLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
                   width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
                   height="100%"
                 />
               </div>

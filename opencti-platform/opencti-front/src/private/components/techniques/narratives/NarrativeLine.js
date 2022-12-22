@@ -5,14 +5,12 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  SpeakerNotesOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, map } from 'ramda';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {},
@@ -69,8 +67,9 @@ class NarrativeLineComponent extends Component {
           to={`/dashboard/techniques/narratives/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <SpeakerNotesOutlined
-              fontSize={isSubNarrative ? 'small' : 'medium'}
+            <ItemIcon
+              type="Narrative"
+              size={isSubNarrative ? 'small' : 'medium'}
             />
           </ListItemIcon>
           <ListItemText

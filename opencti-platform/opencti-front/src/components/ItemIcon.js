@@ -42,14 +42,16 @@ import {
   ServerNetwork,
   Launch,
   LaptopAccount,
+  ArchiveOutline,
 } from 'mdi-material-ui';
+import { itemColor } from '../utils/Colors';
 
-const iconSelector = (type, variant, fontSize, color) => {
+const iconSelector = (type, variant, fontSize) => {
   let style = {};
   switch (variant) {
     case 'inline':
       style = {
-        color,
+        color: itemColor(type),
         width: 20,
         height: 20,
         margin: '0 7px 0 0',
@@ -58,7 +60,7 @@ const iconSelector = (type, variant, fontSize, color) => {
       break;
     default:
       style = {
-        color,
+        color: itemColor(type),
       };
   }
 
@@ -155,6 +157,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <SourceOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Kill-Chain-Phase':
       return <Launch style={style} fontSize={fontSize} role="img" />;
+    case 'Artifact':
+      return <ArchiveOutline style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
@@ -162,7 +166,6 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Email-Addr':
     case 'Email-Message':
     case 'Email-Mime-Part-Type':
-    case 'Artifact':
     case 'StixFile':
     case 'X509-Certificate':
     case 'IPv4-Addr':
@@ -272,9 +275,9 @@ const iconSelector = (type, variant, fontSize, color) => {
 };
 
 const ItemIcon = (props) => {
-  const { type, size, variant, color } = props;
+  const { type, size, variant } = props;
   const fontSize = size || 'medium';
-  return iconSelector(type, variant, fontSize, color);
+  return iconSelector(type, variant, fontSize);
 };
 
 ItemIcon.propTypes = {

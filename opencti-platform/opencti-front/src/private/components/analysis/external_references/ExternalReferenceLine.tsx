@@ -4,7 +4,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { KeyboardArrowRightOutlined, LanguageOutlined } from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
@@ -12,6 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { ExternalReferenceLine_node$data } from './__generated__/ExternalReferenceLine_node.graphql';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -57,24 +58,32 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface ExternalReferenceLineComponentProps {
   dataColumns?: {
     source_name: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     external_id: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     url: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     created: {
-      label: string,
-      width: string,
-      isSortable: boolean,
-    }
-  },
-  node?: ExternalReferenceLine_node$data,
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
+  };
+  node?: ExternalReferenceLine_node$data;
 }
 
-const ExternalReferenceLineComponent: FunctionComponent<ExternalReferenceLineComponentProps> = ({ dataColumns, node }) => {
+const ExternalReferenceLineComponent: FunctionComponent<
+ExternalReferenceLineComponentProps
+> = ({ dataColumns, node }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
 
@@ -87,7 +96,7 @@ const ExternalReferenceLineComponent: FunctionComponent<ExternalReferenceLineCom
       to={`/dashboard/analysis/external_references/${node?.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <LanguageOutlined />
+        <ItemIcon type="External-Reference" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -148,33 +157,36 @@ export const ExternalReferenceLine = ExternalReferenceLineFragment;
 interface ExternalReferenceLineDummyComponentProps {
   dataColumns?: {
     source_name: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     external_id: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     url: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     created: {
-      label: string,
-      width: string,
-      isSortable: boolean,
-    }
-  },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
+  };
 }
 
-const ExternalReferenceLineDummyComponent: FunctionComponent<ExternalReferenceLineDummyComponentProps> = ({ dataColumns }) => {
+const ExternalReferenceLineDummyComponent: FunctionComponent<
+ExternalReferenceLineDummyComponentProps
+> = ({ dataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

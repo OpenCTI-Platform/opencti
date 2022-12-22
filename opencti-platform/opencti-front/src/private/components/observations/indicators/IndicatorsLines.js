@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { IndicatorLine, IndicatorLineDummy } from './IndicatorLine';
+import { IndicatorLine, IndicatorLineDummyComponent } from './IndicatorLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
@@ -43,7 +43,7 @@ class IndicatorsLines extends Component {
           this.props.data,
         )}
         LineComponent={<IndicatorLine />}
-        DummyLineComponent={<IndicatorLineDummy />}
+        DummyLineComponent={<IndicatorLineDummyComponent />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
@@ -118,6 +118,10 @@ export default createPaginationContainer(
           edges {
             node {
               id
+              creator {
+                id
+                name
+              }
               ...IndicatorLine_node
             }
           }

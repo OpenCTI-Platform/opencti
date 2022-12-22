@@ -100,6 +100,7 @@ export const stixCyberObservableOptions = {
     hashes_MD5: 'hashes.MD5',
     hashes_SHA1: 'hashes.SHA-1',
     hashes_SHA256: 'hashes.SHA-256',
+    creator: 'creator_id',
   },
   StixCyberObservablesOrdering: {}
 };

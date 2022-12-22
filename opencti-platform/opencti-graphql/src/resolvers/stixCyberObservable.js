@@ -65,6 +65,7 @@ const stixCyberObservableResolvers = {
     },
   },
   StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
+  StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
   HashedObservable: {
     hashes: (stixCyberObservable) => stixHashesToInput(stixCyberObservable),
   },

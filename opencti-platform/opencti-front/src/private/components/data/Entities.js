@@ -213,7 +213,7 @@ class Entities extends Component {
     return {
       entity_type: {
         label: 'Type',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       name: {
@@ -229,21 +229,22 @@ class Entities extends Component {
       creator: {
         label: 'Creator',
         width: '12%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       created_at: {
         label: 'Creation date',
-        width: '10%',
+        width: '15%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
   }
@@ -296,10 +297,10 @@ class Entities extends Component {
               availableFilterKeys={[
                 'labelledBy',
                 'markedBy',
-                'created_start_date',
-                'created_end_date',
                 'createdBy',
                 'creator',
+                'created_start_date',
+                'created_end_date',
               ]}
             >
               <QueryRenderer

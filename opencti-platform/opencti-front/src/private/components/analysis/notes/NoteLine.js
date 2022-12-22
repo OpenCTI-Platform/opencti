@@ -6,13 +6,14 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined, WorkOutline } from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -57,7 +58,7 @@ class NoteLineComponent extends Component {
         to={`/dashboard/analysis/notes/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <WorkOutline />
+          <ItemIcon type="Note" />
         </ListItemIcon>
         <ListItemText
           primary={

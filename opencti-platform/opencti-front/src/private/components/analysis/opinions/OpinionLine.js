@@ -6,15 +6,13 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  FeedbackOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -59,7 +57,7 @@ class OpinionLineComponent extends Component {
         to={`/dashboard/analysis/opinions/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <FeedbackOutlined />
+          <ItemIcon type="Opinion" />
         </ListItemIcon>
         <ListItemText
           primary={

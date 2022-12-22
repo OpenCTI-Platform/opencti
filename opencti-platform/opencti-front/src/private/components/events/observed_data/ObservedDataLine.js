@@ -7,14 +7,12 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  WifiTetheringOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -59,7 +57,7 @@ class ObservedDataLineComponent extends Component {
         to={`/dashboard/events/observed_data/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <WifiTetheringOutlined />
+          <ItemIcon type="Observed-Data" />
         </ListItemIcon>
         <ListItemText
           primary={

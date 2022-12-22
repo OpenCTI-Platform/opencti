@@ -6,10 +6,11 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined, EventOutlined } from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -54,7 +55,7 @@ class EventLineComponent extends Component {
         to={`/dashboard/entities/events/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <EventOutlined />
+          <ItemIcon type="Event" />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -35,7 +35,5 @@ export const stixCoreObjectOptions = {
     indicates: buildRefRelationKey(RELATION_INDICATES),
     creator: 'creator_id',
   },
-  StixCoreObjectsOrdering: {
-    creator: 'creator_id'
-  }
+  StixCoreObjectsOrdering: {}
 };

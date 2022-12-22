@@ -1,17 +1,21 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import CitiesLines, { citiesLinesQuery } from './cities/CitiesLines';
-import CityCreation from './cities/CityCreation';
+import VulnerabilitiesLines, {
+  vulnerabilitiesLinesQuery,
+} from './vulnerabilities/VulnerabilitiesLines';
+import VulnerabilityCreation from './vulnerabilities/VulnerabilityCreation';
 import Security from '../../../utils/Security';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { CityLineDummy } from './cities/CityLine';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { CitiesLinesPaginationQuery, CitiesLinesPaginationQuery$variables } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
 import { Filters } from '../../../components/list_lines';
+import { VulnerabilityLineDummy } from './vulnerabilities/VulnerabilityLine';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import {
+  VulnerabilitiesLinesPaginationQuery, VulnerabilitiesLinesPaginationQuery$variables,
+} from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 
-const Cities: FunctionComponent = () => {
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>('view-cities', {
+const Vulnerabilities = () => {
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>('view-vulnerabilities', {
     searchTerm: '',
     sortBy: 'name',
     orderAsc: true,
@@ -35,8 +39,18 @@ const Cities: FunctionComponent = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '60%',
+        width: '20%',
         isSortable: true,
+      },
+      x_opencti_base_severity: {
+        label: 'CVSS3 - Severity',
+        width: '15%',
+        isSortable: true,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '12%',
+        isSortable: false,
       },
       created: {
         label: 'Creation date',
@@ -48,10 +62,14 @@ const Cities: FunctionComponent = () => {
         width: '15%',
         isSortable: true,
       },
+      creator: {
+        label: 'Creator',
+        width: '12%',
+        isSortable: true,
+      },
     };
 
-    const queryRef = useQueryLoading<CitiesLinesPaginationQuery>(citiesLinesQuery, paginationOptions);
-
+    const queryRef = useQueryLoading <VulnerabilitiesLinesPaginationQuery>(vulnerabilitiesLinesQuery, paginationOptions);
     return (
       <ListLines
         sortBy={sortBy}
@@ -63,28 +81,35 @@ const Cities: FunctionComponent = () => {
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="City"
+        exportEntityType="Vulnerability"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'labelledBy',
+          'markedBy',
           'created_start_date',
           'created_end_date',
+          'x_opencti_base_score',
+          'x_opencti_base_severity',
+          'x_opencti_attack_vector',
           'createdBy',
+          'creator',
         ]}
       >
         {queryRef && (
           <React.Suspense fallback={
-            <>{Array(20).fill(0).map((idx) => (<CityLineDummy key={idx} dataColumns={dataColumns} />))}</>
+            <>{[0, 1, 2].map((idx) => (<VulnerabilityLineDummy key={idx} dataColumns={dataColumns} />))}</>
           }>
-            <CitiesLines
+            <VulnerabilitiesLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
+              onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
             />
-          </React.Suspense>
+            </React.Suspense>
         )}
       </ListLines>
     );
@@ -94,10 +119,10 @@ const Cities: FunctionComponent = () => {
     <div>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CityCreation paginationOptions={paginationOptions} />
+        <VulnerabilityCreation paginationOptions={paginationOptions} />
       </Security>
     </div>
   );
 };
 
-export default Cities;
+export default Vulnerabilities;

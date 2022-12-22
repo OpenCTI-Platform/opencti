@@ -73,7 +73,7 @@ export const multipleAttributes = [
   ...MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 ];
 export const noReferenceAttributes = ['x_opencti_graph_data'];
-export const runtimeAttributes = ['observable_value', 'createdBy', 'objectMarking'];
+export const runtimeAttributes = ['observable_value', 'createdBy', 'objectMarking', 'creator'];
 export const statsDateAttributes = [
   'created_at',
   'first_seen',

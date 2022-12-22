@@ -2683,7 +2683,9 @@ enum ReportsOrdering {
   created_at
   updated_at
   createdBy
+  creator
   objectMarking
+  report_types
   x_opencti_workflow_id
 }
 
@@ -2702,6 +2704,7 @@ enum ReportsFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  creator
 }
 
 input ReportsFiltering {
@@ -3535,6 +3538,7 @@ enum IndicatorsOrdering {
   updated_at
   x_opencti_workflow_id
   objectMarking
+  creator
 }
 
 enum IndicatorsFilter {
@@ -3560,6 +3564,7 @@ enum IndicatorsFilter {
   x_opencti_workflow_id
   sightedBy
   revoked
+  creator
 }
 
 input IndicatorsFiltering {
@@ -4856,6 +4861,7 @@ enum VulnerabilitiesOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  creator
 }
 
 enum VulnerabilitiesFilter {
@@ -4871,6 +4877,7 @@ enum VulnerabilitiesFilter {
   markedBy
   labelledBy
   x_opencti_workflow_id
+  creator
 }
 
 input VulnerabilitiesFiltering {
@@ -5104,6 +5111,7 @@ enum StixCyberObservablesOrdering {
   updated_at
   observable_value
   objectMarking
+  creator
 }
 
 enum StixCyberObservablesFilter {
@@ -5129,6 +5137,7 @@ enum StixCyberObservablesFilter {
   hashes_MD5
   hashes_SHA1
   hashes_SHA256
+  creator
 }
 
 input StixCyberObservablesFiltering {
@@ -6817,6 +6826,7 @@ enum StixObjectOrStixRelationshipsOrdering {
   created
   modified
   relationship_type
+  creator
 }
 
 enum StixObjectOrStixRelationshipsFilter {

@@ -8,10 +8,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import { ChessKnight } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -56,7 +56,7 @@ class CampaignLineComponent extends Component {
         to={`/dashboard/threats/campaigns/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ChessKnight />
+          <ItemIcon type="Campaign" />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -11,12 +11,14 @@ import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
 import { VisibilityOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -46,6 +48,14 @@ const useStyles = makeStyles((theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 }));
 
@@ -95,7 +105,15 @@ const EntitiesStixDomainObjectLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              {t(`entity_${node.entity_type}`)}
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  backgroundColor: hexToRGB(itemColor(node.entity_type), 0.08),
+                  color: itemColor(node.entity_type),
+                  border: `1px solid ${itemColor(node.entity_type)}`,
+                }}
+                label={t(`entity_${node.entity_type}`)}
+              />
             </div>
             <div
               className={classes.bodyItem}
