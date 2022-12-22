@@ -1569,6 +1569,7 @@ class ToolBar extends Component {
                                 : t(`filter_${currentFilter[0]}`),
                               20,
                             )}`;
+                            const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
                             const values = (
                               <span>
                                 {R.map(
@@ -1583,7 +1584,7 @@ class ToolBar extends Component {
                                           ? truncate(o.value, 15)
                                           : t('No label')}{' '}
                                       {R.last(currentFilter[1]).value
-                                        !== o.value && <code>OR</code>}{' '}
+                                        !== o.value && <code>{localFilterMode}</code>}{' '}
                                     </span>
                                   ),
                                   currentFilter[1],

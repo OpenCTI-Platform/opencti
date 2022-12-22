@@ -68,6 +68,7 @@ const DialogFilters = ({
                   t(`filter_${currentFilter[0]}`),
                   20,
                 )}`;
+                const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
                 const values = (
                   <span>
                       {R.map(
@@ -75,7 +76,7 @@ const DialogFilters = ({
                           <span key={n.value}>
                             {truncate(n.value, 15)}{' '}
                             {R.last(currentFilter[1]).value !== n.value && (
-                              <code style={{ marginRight: 5 }}>OR</code>
+                              <code style={{ marginRight: 5 }}>{localFilterMode}</code>
                             )}
                           </span>
                         ),

@@ -18,7 +18,7 @@ export const directFilters = [
   'note_types',
   'context',
 ];
-// filters that can have 'eq' or 'uneq' operator
+// filters that can have 'eq' or 'not_eq' operator
 export const EqFilters = [
   'labelledBy',
   'createdBy',

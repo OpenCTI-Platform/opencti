@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import { useFormatter } from '../../../../components/i18n';
-import {
-  EqFilters,
-  FiltersVariant,
-  isUniqFilter,
-  onlyGroupOrganization,
-} from '../../../../utils/filters/filtersUtils';
 import {
   FiltersVariant,
   isUniqFilter,
@@ -70,21 +63,6 @@ const Filters = ({
         keyword.length > 0 ? `/${keyword}` : ''
       }?${new URLSearchParams(urlParams).toString()}`,
     );
-  };
-
-  const handleChange = (filterKey, event, value) => {
-    if (value) {
-      if (EqFilters.includes(filterKey) && event.altKey && event.type === 'click') {
-        const filterAdd = `${filterKey}_uneq`;
-        defaultHandleAddFilter(filterAdd, value.value, value.label, event);
-      } else {
-        const group = !onlyGroupOrganization.includes(filterKey)
-          ? value.group
-          : undefined;
-        const filterAdd = `${filterKey}${group ? `_${group}` : ''}`;
-        defaultHandleAddFilter(filterAdd, value.value, value.label, event);
-      }
-    }
   };
 
   const handleChangeKeyword = (event) => setKeyword(event.target.value);

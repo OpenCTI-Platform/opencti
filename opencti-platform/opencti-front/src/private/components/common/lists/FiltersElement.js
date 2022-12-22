@@ -2,34 +2,27 @@ import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import * as R from 'ramda';
 import React from 'react';
+import { compose } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
 import { useFormatter } from '../../../../components/i18n';
 import {
   directFilters,
   FiltersVariant,
 } from '../../../../utils/filters/filtersUtils';
-
-const useStyles = makeStyles((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  helpertext: {
-    display: 'inline-block',
-    marginTop: 20,
-    color: theme.palette.primary.main,
-    size: '10px',
-  },
-}));
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
+import ItemIcon from '../../../../components/ItemIcon';
+
+const styles = (theme) => ({
+  helpertext: {
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+    marginTop: 20,
+  },
+});
 
 const FiltersElement = ({
+  classes,
   variant,
   keyword,
   availableFilterKeys,
@@ -97,10 +90,7 @@ const FiltersElement = ({
               autoHighlight={true}
               getOptionLabel={(option) => (option.label ? option.label : '')}
               noOptionsText={t('No available options')}
-              options={options}
-              onInputChange={(event) => searchEntities(filterKey, event)}
               inputValue={inputValues[filterKey] || ''}
-              onChange={(event, value) => handleChange(filterKey, event, value)}
               groupBy={
                 ['elementId', 'fromId', 'toId', 'objectContains'].includes(filterKey)
                   ? (option) => option.type
@@ -114,24 +104,16 @@ const FiltersElement = ({
                   variant="outlined"
                   size="small"
                   fullWidth={true}
-                  onFocus={(event) => searchEntities(filterKey, event)}
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: ['elementId', 'fromId', 'toId', 'objectContains'].includes(filterKey)
-                      ? renderSearchScopeSelection(filterKey)
-                      : params.InputProps.endAdornment,
-                  }}
                 />
               )}
               renderOption={(props, option) => (
                 <li {...props}>
                   <div
-                    className={classes.icon}
                     style={{ color: option.color }}
                   >
                     <ItemIcon type={option.type} />
                   </div>
-                  <div className={classes.text}>{option.label}</div>
+                  <div>{option.label}</div>
                 </li>
               )}
             />
@@ -144,4 +126,4 @@ const FiltersElement = ({
   );
 };
 
-export default FiltersElement;
+export default compose(withStyles(styles))(FiltersElement);

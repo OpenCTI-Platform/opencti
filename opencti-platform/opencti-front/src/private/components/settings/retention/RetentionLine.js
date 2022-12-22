@@ -90,6 +90,7 @@ class RetentionLineComponent extends Component {
                       t(`filter_${currentFilter[0]}`),
                       20,
                     )}`;
+                    const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
                     const values = (
                       <span>
                         {R.map(
@@ -99,7 +100,7 @@ class RetentionLineComponent extends Component {
                                 ? truncate(val.value, 15)
                                 : t('No label')}{' '}
                               {R.last(currentFilter[1]).value !== val.value && (
-                                <code>OR</code>
+                                <code>{localFilterMode}</code>
                               )}{' '}
                             </span>
                           ),

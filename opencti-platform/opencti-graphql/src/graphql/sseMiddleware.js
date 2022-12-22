@@ -356,7 +356,7 @@ const createSeeMiddleware = () => {
         const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
         let found = false;
         switch (operator) {
-          case 'uneq':
+          case 'not_eq':
             found = values.map((v) => v.value).some((r) => !labels.includes(r));
             break;
           case 'eq':

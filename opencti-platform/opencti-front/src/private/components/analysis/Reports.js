@@ -27,11 +27,11 @@ class Reports extends Component {
       `view-reports${props.objectId ? `-${props.objectId}` : ''}`,
     );
     this.state = {
-      sortBy: R.propOr('published', 'sortBy', params),
-      orderAsc: R.propOr(false, 'orderAsc', params),
-      searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('lines', 'view', params),
-      filters: R.propOr({}, 'filters', params),
+      sortBy: params?.sortBy ?? 'published',
+      orderAsc: params?.orderAsc ?? false,
+      searchTerm: params?.searchTerm ?? '',
+      view: params?.view ?? 'lines',
+      filters: params?.filters ?? {},
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
@@ -148,23 +148,20 @@ class Reports extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: R.assoc(
-            key,
-            isUniqFilter(key)
+          filters: { ...this.state.filters,
+            [key]: isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
                 ...this.state.filters[key],
-              ]),
-            this.state.filters,
-          ),
+              ]) },
         },
         () => this.saveView(),
       );
     } else {
       this.setState(
         {
-          filters: R.assoc(key, [{ id, value }], this.state.filters),
+          filters: { ...this.state.filters, [key]: [{ id, value }] },
         },
         () => this.saveView(),
       );
@@ -204,11 +201,8 @@ class Reports extends Component {
         - Object.keys(deSelectedElements || {}).length;
     }
     let finalFilters = filters;
-    finalFilters = R.assoc(
-      'entity_type',
-      [{ id: 'Report', value: 'Report' }],
-      finalFilters,
-    );
+    finalFilters = { ...finalFilters, entity_type: [{ id: 'Report', value: 'Report' }] };
+
     const isRuntimeSort = helper.isRuntimeFieldEnable();
     const dataColumns = {
       name: {

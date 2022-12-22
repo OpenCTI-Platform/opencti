@@ -1133,7 +1133,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
             }
             if (operator === 'eq') {
               noValuesFiltering.push({ exists: { field: R.head(validKeys) } });
-            } else if (operator === 'uneq') {
+            } else if (operator === 'not_eq') {
               valuesFiltering.push({ exists: { field: R.head(validKeys) } });
             }
           } else if (values[i] === 'EXISTS') {
@@ -1148,7 +1148,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
                 query: values[i].toString(),
               },
             });
-          } else if (operator === 'uneq') {
+          } else if (operator === 'not_eq') {
             noValuesFiltering.push({
               multi_match: {
                 fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttributes.includes(k)) ? k : `${k}.keyword`}`),

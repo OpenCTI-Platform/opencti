@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
-import { onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
+import { EqFilters, onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { Option } from '../form/ReferenceField';
 
@@ -81,11 +81,16 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   ].includes(filterKey);
   const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
     if (value) {
-      const group = !onlyGroupOrganization.includes(filterKey)
-        ? value.group
-        : undefined;
-      const filterAdd = `${filterKey}${group ? `_${group}` : ''}`;
-      defaultHandleAddFilter(filterAdd, value.value, value.label, event);
+      if (EqFilters.includes(filterKey) && event.altKey && event.type === 'click') {
+        const filterAdd = `${filterKey}_not_eq`;
+        defaultHandleAddFilter(filterAdd, value.value, value.label, event);
+      } else {
+        const group = !onlyGroupOrganization.includes(filterKey)
+          ? value.group
+          : undefined;
+        const filterAdd = `${filterKey}${group ? `_${group}` : ''}`;
+        defaultHandleAddFilter(filterAdd, value.value, value.label, event);
+      }
     }
   };
   const renderSearchScopeSelection = (key: string) => (
@@ -120,7 +125,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       options={options}
       onInputChange={(event) => searchEntities(filterKey, event)}
       inputValue={(inputValues[filterKey] as string) || ''}
-      onChange={(event: SyntheticEvent, value: OptionValue | null) => handleChange(event, value)
+      onChange={(event, value: OptionValue | null) => handleChange(event, value)
       }
       groupBy={
         isStixObjectTypes

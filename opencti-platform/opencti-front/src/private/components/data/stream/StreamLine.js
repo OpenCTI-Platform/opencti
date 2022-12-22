@@ -103,6 +103,7 @@ class StreamLineLineComponent extends Component {
                     t(`filter_${currentFilter[0]}`),
                     20,
                   )}`;
+                  const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
                   const values = (
                     <span>
                       {map(
@@ -112,7 +113,7 @@ class StreamLineLineComponent extends Component {
                               ? truncate(n.value, 15)
                               : t('No label')}{' '}
                             {last(currentFilter[1]).value !== n.value && (
-                              <code>OR</code>
+                              <code>{localFilterMode}</code>
                             )}{' '}
                           </span>
                         ),

@@ -223,6 +223,8 @@ class ListLines extends Component {
           <div className={classes.filters}>
             {map((currentFilter) => {
               const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const negative = currentFilter[0].endsWith('not_eq');
+              const localFilterMode = negative ? t('AND') : t('OR');
               const values = (
                 <span>
                   {map(
@@ -232,7 +234,9 @@ class ListLines extends Component {
                           ? truncate(n.value, 15)
                           : t('No label')}{' '}
                         {last(currentFilter[1]).value !== n.value && (
-                          <code>OR</code>
+                          <Chip
+                            label={localFilterMode}
+                          />
                         )}
                       </span>
                     ),
