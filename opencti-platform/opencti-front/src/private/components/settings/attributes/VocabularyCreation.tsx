@@ -87,7 +87,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
 
   const handleClose = () => setOpen(false);
 
-  interface FormInterface { name: string, description: string, aliases: Array<{ value: string }> }
+  interface FormInterface { name: string, description: string, aliases: { value: string }[] }
   const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (values, { resetForm }) => {
     const data: VocabularyAddInput = {
       name: values.name,
@@ -147,7 +147,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
             initialValues={{
               name: '',
               description: '',
-              aliases: [] as Array<{ value: string }>,
+              aliases: [] as { value: string }[],
             }}
             validationSchema={labelValidation(t)}
             onSubmit={onSubmit}

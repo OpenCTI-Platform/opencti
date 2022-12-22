@@ -10,7 +10,7 @@ export const CAPABILITY_INFORMATION = {
 
 interface SecurityProps {
   children: ReactElement;
-  needs: Array<string>;
+  needs: string[];
   matchAll?: boolean;
   placeholder?: ReactElement;
 }
@@ -20,7 +20,7 @@ interface DataSecurityProps extends SecurityProps {
 }
 
 // DEPECRATED
-export const granted = (me: RootPrivateQuery$data['me'], capabilities: Array<string>, matchAll = false) => {
+export const granted = (me: RootPrivateQuery$data['me'], capabilities: string[], matchAll = false) => {
   const userCapabilities = (me?.capabilities ?? []).map((c) => c.name);
   if (userCapabilities.includes(BYPASS)) {
     return true;

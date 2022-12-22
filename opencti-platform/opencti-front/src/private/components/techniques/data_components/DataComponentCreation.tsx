@@ -104,9 +104,9 @@ interface DataComponentAddInput {
   name: string,
   description: string,
   createdBy: Option | undefined,
-  objectMarking: Array<Option>,
-  objectLabel: Array<Option>,
-  externalReferences: Array<Option>,
+  objectMarking: Option[],
+  objectLabel: Option[],
+  externalReferences: Option[],
   confidence: number
 }
 

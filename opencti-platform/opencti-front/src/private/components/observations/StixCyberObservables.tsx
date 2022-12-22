@@ -106,9 +106,9 @@ const StixCyberObservables: FunctionComponent = () => {
   const handleToggleSelectEntity = (
     entity:
     | StixCyberObservableLine_node$data
-    | Array<StixCyberObservableLine_node$data>,
+    | StixCyberObservableLine_node$data[],
     event: React.SyntheticEvent,
-    forceRemove: Array<StixCyberObservableLine_node$data>,
+    forceRemove: StixCyberObservableLine_node$data[],
   ) => {
     event.stopPropagation();
     event.preventDefault();

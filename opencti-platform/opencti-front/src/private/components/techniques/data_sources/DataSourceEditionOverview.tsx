@@ -127,10 +127,10 @@ const dataSourceValidation = (t: (v: string) => string) => Yup.object().shape({
 
 interface DataSourceEditionOverviewProps {
   data: DataSourceEditionOverview_dataSource$key,
-  context: ReadonlyArray<{
+  context: readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null> | null
+  } | null)[] | null
   enableReferences?: boolean
   handleClose: () => void
 }
@@ -141,9 +141,9 @@ interface DataSourceEditionFormValues {
   x_opencti_workflow_id: string | { label: string, color: string, value: string, order: string }
   createdBy: Option,
   confidence: number | null,
-  x_mitre_platforms: Array<string>,
-  collection_layers: Array<string>,
-  objectMarking: Array<Option>,
+  x_mitre_platforms: string[],
+  collection_layers: string[],
+  objectMarking: Option[],
   message?: string,
   references?: Option[],
 }

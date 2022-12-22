@@ -14,7 +14,7 @@ interface SearchTypesProps {
   style: Record<string, string | number>,
   helpertext?: string,
   multiple: boolean,
-  types: Array<'Stix-Domain-Object' | 'Stix-Cyber-Observable' | 'stix-core-relationship' | 'stix-cyber-observable-relationship' | 'stix-meta-relationship'>,
+  types: ('Stix-Domain-Object' | 'Stix-Cyber-Observable' | 'stix-core-relationship' | 'stix-cyber-observable-relationship' | 'stix-meta-relationship')[],
 }
 
 interface SearchOption {
@@ -84,10 +84,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 const TypesField: FunctionComponent<SearchTypesProps> = ({ types, name, label, style, helpertext, multiple }) => {
-  const [dataTypes, setDataTypes] = useState<Array<SearchOption>>([]);
+  const [dataTypes, setDataTypes] = useState<SearchOption[]>([]);
   const classes = useStyles();
   const { t } = useFormatter();
-  const optionBuilder = (type: string, data: Array<{ node: { id: string, label: string } }>) => {
+  const optionBuilder = (type: string, data: { node: { id: string, label: string } }[]) => {
     return data.map((n) => ({
       label: t(`${type}_${n.node.label}`),
       value: n.node.id,

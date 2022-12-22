@@ -96,9 +96,9 @@ interface ContainerStixCyberObservablesLinesProps {
   onToggleEntity: (
     entity:
     | StixCyberObservableLine_node$data
-    | Array<StixCyberObservableLine_node$data>,
+    | StixCyberObservableLine_node$data[],
     event: React.SyntheticEvent,
-    forceRemove: Array<StixCyberObservableLine_node$data>
+    forceRemove: StixCyberObservableLine_node$data[]
   ) => void;
   selectedElements: Record<string, StixCyberObservableLine_node$data>;
   deSelectedElements: Record<string, StixCyberObservableLine_node$data>;
