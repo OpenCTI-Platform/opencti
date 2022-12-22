@@ -8,7 +8,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import { Fire } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
@@ -16,6 +15,7 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemSeverity from '../../../../components/ItemSeverity';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -66,7 +66,7 @@ class IncidentLineComponent extends Component {
         to={`/dashboard/events/incidents/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Fire />
+          <ItemIcon type="Incident" />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -5,7 +5,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import { HexagonOutline } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
@@ -14,6 +13,8 @@ import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { renderObservableValue } from '../../../../utils/String';
+import ItemIcon from '../../../../components/ItemIcon';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -95,7 +96,7 @@ const StixCyberObservableLineComponent = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <HexagonOutline />
+        <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -107,9 +108,9 @@ const StixCyberObservableLineComponent = ({
               <Chip
                 classes={{ root: classes.chipInList }}
                 style={{
-                  backgroundColor: 'rgba(32, 58, 246, 0.08)',
-                  color: '#203af6',
-                  border: '1px solid #203af6',
+                  backgroundColor: hexToRGB(itemColor(node.entity_type), 0.08),
+                  color: itemColor(node.entity_type),
+                  border: `1px solid ${itemColor(node.entity_type)}`,
                 }}
                 label={t(`entity_${node.entity_type}`)}
               />

@@ -5,10 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  DomainOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, map } from 'ramda';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';

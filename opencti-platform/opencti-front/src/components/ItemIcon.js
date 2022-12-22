@@ -42,6 +42,7 @@ import {
   ServerNetwork,
   Launch,
   LaptopAccount,
+  ArchiveOutline,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -156,6 +157,8 @@ const iconSelector = (type, variant, fontSize) => {
       return <SourceOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Kill-Chain-Phase':
       return <Launch style={style} fontSize={fontSize} role="img" />;
+    case 'Artifact':
+      return <ArchiveOutline style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
@@ -163,7 +166,6 @@ const iconSelector = (type, variant, fontSize) => {
     case 'Email-Addr':
     case 'Email-Message':
     case 'Email-Mime-Part-Type':
-    case 'Artifact':
     case 'StixFile':
     case 'X509-Certificate':
     case 'IPv4-Addr':

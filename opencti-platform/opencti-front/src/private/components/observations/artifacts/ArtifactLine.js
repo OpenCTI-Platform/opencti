@@ -7,13 +7,13 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import { ArchiveOutline } from 'mdi-material-ui';
 import { compose, pathOr } from 'ramda';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -91,7 +91,7 @@ class ArtifactLineComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ArchiveOutline />
+          <ItemIcon type="Artifact" />
         </ListItemIcon>
         <ListItemText
           primary={

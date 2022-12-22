@@ -5,7 +5,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import { ShieldSearch } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
@@ -13,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -85,7 +85,7 @@ const IndicatorLineComponent = (props) => {
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ShieldSearch />
+        <ItemIcon type="Indicator" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -200,12 +200,7 @@ export const IndicatorLineDummyComponent = (props) => {
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={
