@@ -170,13 +170,7 @@ const EntitiesStixDomainObjectLineComponent = ({
         }
       />
       <ListItemSecondaryAction>
-        <IconButton
-          aria-label="Go to"
-          component={Link}
-          to={link}
-          size="large"
-          color="primary"
-        >
+        <IconButton aria-label="Go to" component={Link} to={link} size="large">
           <VisibilityOutlined />
         </IconButton>
       </ListItemSecondaryAction>

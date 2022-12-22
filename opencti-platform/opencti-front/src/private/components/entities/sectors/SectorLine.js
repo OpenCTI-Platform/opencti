@@ -13,6 +13,7 @@ import { compose, map } from 'ramda';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {},
@@ -69,7 +70,7 @@ class SectorLineComponent extends Component {
           to={`/dashboard/entities/sectors/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <DomainOutlined fontSize={isSubSector ? 'small' : 'medium'} />
+            <ItemIcon type="Sector" size={isSubSector ? 'small' : 'medium'} />
           </ListItemIcon>
           <ListItemText
             primary={

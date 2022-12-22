@@ -6,14 +6,12 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  PersonOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -58,7 +56,7 @@ class IndividualLineComponent extends Component {
         to={`/dashboard/entities/individuals/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <PersonOutlined />
+          <ItemIcon type="Individual" />
         </ListItemIcon>
         <ListItemText
           primary={

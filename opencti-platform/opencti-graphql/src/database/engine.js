@@ -615,7 +615,7 @@ export const RUNTIME_ATTRIBUTES = {
         first: MAX_SEARCH_SIZE,
         connectionFormat: false,
       });
-      return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+\[\]()$~%.'":*?<>{}]/g, '') })));
+      return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
     },
   },
   objectMarking: {

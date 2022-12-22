@@ -205,24 +205,25 @@ class Relationships extends Component {
         width: '18%',
         isSortable: false,
       },
-      created_at: {
-        label: 'Creation date',
-        width: '10%',
-        isSortable: true,
+      createdBy: {
+        label: 'Author',
+        width: '7%',
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creator',
         width: '7%',
         isSortable: true,
       },
-      createdBy: {
-        label: 'Author',
-        width: '7%',
-        isSortable: isRuntimeSort,
+      created_at: {
+        label: 'Creation date',
+        width: '10%',
+        isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
   }
