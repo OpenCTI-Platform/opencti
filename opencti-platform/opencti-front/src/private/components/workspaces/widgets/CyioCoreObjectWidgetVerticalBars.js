@@ -15,7 +15,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { now } from '../../../../utils/Time';
 import {
   dashboardQueryRisksDistribution,
   dashboardQueryRisksBarDistribution,
@@ -134,7 +134,6 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
                         border: '1px solid #06102D',
                         borderRadius: 10,
                       }}
-                      labelFormatter={md}
                     />
                     <Bar
                       // fill={theme.palette.primary.main}
