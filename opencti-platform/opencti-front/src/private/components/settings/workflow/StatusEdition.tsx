@@ -39,46 +39,58 @@ const statusValidation = (t: (name: string | object) => string) => Yup.object().
 });
 
 export const StatusEditionFragment = graphql`
-    fragment StatusEdition_status on Status {
-        id
-        order
-        template {
-            id
-            name
-            color
-        }
+  fragment StatusEdition_status on Status {
+    id
+    order
+    template {
+      id
+      name
+      color
     }
+  }
 `;
 
 interface StatusEditionProps {
-  subTypeId: string,
-  handleClose: () => void,
-  open: boolean,
-  status: StatusEdition_status$key,
+  subTypeId: string;
+  handleClose: () => void;
+  open: boolean;
+  status: StatusEdition_status$key;
 }
 
-const StatusEdition: FunctionComponent<StatusEditionProps> = ({ subTypeId, handleClose, open, status }) => {
+const StatusEdition: FunctionComponent<StatusEditionProps> = ({
+  subTypeId,
+  handleClose,
+  open,
+  status,
+}) => {
   const { t } = useFormatter();
 
   const data = useFragment(StatusEditionFragment, status);
 
   const initialValues = {
-    template: data.template ? {
-      label: data.template.name,
-      value: data.template.id,
-      color: data.template.color,
-    } : null,
+    template: data.template
+      ? {
+        label: data.template.name,
+        value: data.template.id,
+        color: data.template.color,
+      }
+      : null,
     order: data.order,
   };
 
-  const handleSubmitStatusTemplate: FormikConfig<{ template: { label: string, value: string, color: string } | null, order: number }>['onSubmit'] = (values, { setSubmitting }) => {
+  const handleSubmitStatusTemplate: FormikConfig<{
+    template: { label: string; value: string; color: string } | null;
+    order: number;
+  }>['onSubmit'] = (values, { setSubmitting }) => {
     commitMutation({
       mutation: statusMutationFieldPatch,
       variables: {
         id: subTypeId,
         statusId: data.id,
-        input: [{ key: 'template_id', value: values.template?.value || '' },
-          { key: 'order', value: String(values.order) || '' }],
+        input: [
+          { key: 'template_id', value: values.template?.value || '' },
+          { key: 'order', value: String(values.order) || '' },
+        ],
       },
       setSubmitting,
       onCompleted: () => {
@@ -110,7 +122,11 @@ const StatusEdition: FunctionComponent<StatusEditionProps> = ({ subTypeId, handl
             <DialogContent>
               <QueryRenderer
                 query={statusCreationStatusTemplatesQuery}
-                render={({ props }: { props: StatusCreationStatusTemplatesQuery$data }) => {
+                render={({
+                  props,
+                }: {
+                  props: StatusCreationStatusTemplatesQuery$data;
+                }) => {
                   if (props && props.statusTemplates) {
                     return (
                       <StatusTemplateField
@@ -133,7 +149,9 @@ const StatusEdition: FunctionComponent<StatusEditionProps> = ({ subTypeId, handl
                 style={{ marginTop: 20 }}
               />
               <DialogActions>
-                <Button onClick={submitForm} disabled={isSubmitting}>{t('Close')}</Button>
+                <Button onClick={submitForm} disabled={isSubmitting}>
+                  {t('Close')}
+                </Button>
               </DialogActions>
             </DialogContent>
           </Dialog>

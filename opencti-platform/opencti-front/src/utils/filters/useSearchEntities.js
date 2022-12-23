@@ -661,6 +661,7 @@ const useSearchEntities = ({
           .then((data) => {
             const statusEntities = R.pipe(
               R.pathOr([], ['statuses', 'edges']),
+              R.filter((n) => !R.isNil(n.node.template)),
               R.map((n) => ({
                 label: n.node.template.name,
                 color: n.node.template.color,

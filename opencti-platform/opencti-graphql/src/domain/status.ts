@@ -6,7 +6,7 @@ import {
   storeLoadById,
   updateAttribute
 } from '../database/middleware';
-import { listEntitiesPaginated } from '../database/middleware-loader';
+import { listAllEntities, listEntitiesPaginated } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import type {
@@ -76,6 +76,10 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
   return findSubTypeById(subTypeId);
 };
 export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  const filters = [{ key: ['template_id'], values: [statusTemplateId] }];
+  const result = await listAllEntities(context, user, [ENTITY_TYPE_STATUS], { filters, connectionFormat: false });
+  await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id)
+    .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
   return deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
 };
 export const statusTemplateEditContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditContext) => {

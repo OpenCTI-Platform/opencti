@@ -105,11 +105,15 @@ class WorkflowLinesComponent extends Component {
     )(subTypesEdges);
     return (
       <div>
-        <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
+        <List
+          component="nav"
+          aria-labelledby="nested-list-subheader"
+          className={classes.root}
+        >
           {translatedOrderedList.map((subType) => {
             const statuses = R.pipe(R.map((n) => n.node))(
               subType.statuses.edges,
-            ).filter((currentObject) => Boolean(currentObject.template));
+            ).filter((currentObject) => !R.isNil(currentObject.template));
             return (
               <ListItem
                 key={subType.id}
@@ -126,7 +130,10 @@ class WorkflowLinesComponent extends Component {
                       <div className={classes.statuses}>
                         {statuses.length > 0 ? (
                           statuses.map((status) => (
-                            <div key={status.id} className={classes.labelContainer}>
+                            <div
+                              key={status.id}
+                              className={classes.labelContainer}
+                            >
                               <Chip
                                 classes={{ root: classes.label }}
                                 variant="outlined"
