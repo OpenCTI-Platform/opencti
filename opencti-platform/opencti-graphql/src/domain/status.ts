@@ -24,6 +24,8 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesFromCache } from '../database/cache';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { elCount } from '../database/engine';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
@@ -85,4 +87,14 @@ export const statusTemplateCleanContext = async (context: AuthContext, user: Aut
   await delEditContext(user, statusTemplateId);
   // eslint-disable-next-line max-len
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user));
+};
+export const statusTemplateUsagesNumber = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  const filters = [{ key: ['template_id'], values: [statusTemplateId] }];
+  const options = {
+    filters,
+    types: [ENTITY_TYPE_STATUS],
+  };
+  const result = elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, options);
+  const count = await Promise.all([result]);
+  return count[0];
 };

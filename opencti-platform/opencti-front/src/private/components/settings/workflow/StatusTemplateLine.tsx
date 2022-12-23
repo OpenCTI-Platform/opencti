@@ -50,6 +50,11 @@ export type DataColumnsType = {
     width: string,
     isSortable: boolean,
   },
+  usages: {
+    label: string,
+    width: string,
+    isSortable: boolean,
+  },
 };
 
 export const StatusTemplateLineFragment = graphql`
@@ -57,6 +62,7 @@ export const StatusTemplateLineFragment = graphql`
     id
     name
     color
+    usages
   }
 `;
 
@@ -84,6 +90,9 @@ const StatusTemplateLine: FunctionComponent<StatusTemplateLineProps> = ({ node, 
             </div>
             <div className={classes.bodyItem} style={{ width: dataColumns.color.width }}>
               {data.color}
+            </div>
+            <div className={classes.bodyItem} style={{ width: dataColumns.usages.width }}>
+              {data.usages}
             </div>
           </div>
         }
