@@ -72,7 +72,6 @@
   },
   "devDependencies": {
     "@testing-library/react": "13.4.0",
-    "@types/jest": "29.1.2",
     "@types/node": "18.8.5",
     "@types/ramda": "0.28.15",
     "@types/react": "18.0.21",
@@ -81,11 +80,12 @@
     "@types/react-router-dom": "5.3.3",
     "@types/react-test-renderer": "18.0.0",
     "@types/relay-test-utils": "14.1.0",
+    "@vitejs/plugin-react": "^3.0.0",
+    "@vitest/coverage-istanbul": "^0.25.1",
     "chokidar": "3.5.3",
     "compression": "1.7.4",
     "cross-env": "7.0.3",
     "esbuild": "0.15.10",
-    "esbuild-jest": "0.5.0",
     "eslint": "8.25.0",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-base": "15.0.0",
@@ -98,14 +98,16 @@
     "express": "4.18.2",
     "fs-extra": "10.1.0",
     "http-proxy-middleware": "2.0.6",
-    "jest": "29.1.2",
-    "jest-environment-jsdom": "29.1.2",
+    "jsdom": "^20.0.3",
     "prettier": "2.7.1",
     "react-test-renderer": "18.2.0",
     "relay-compiler": "14.1.0",
     "relay-test-utils": "14.1.0",
     "tap": "16.3.0",
-    "typescript": "4.8.4"
+    "typescript": "4.8.4",
+    "vite": "^4.0.1",
+    "vite-plugin-relay": "^2.0.0",
+    "vitest": "^0.25.1"
   },
   "engines": {
     "node": ">= 16.*"
@@ -118,7 +120,8 @@
     "start": "yarn relay && node builder/dev/dev.js",
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
     "control": "yarn audit --groups dependencies --summary",
-    "test": "jest",
+    "coverage": "vitest run --coverage",
+    "test": "vitest run --coverage",
     "check-ts": "tsc --noEmit"
   },
   "resolutions": {
