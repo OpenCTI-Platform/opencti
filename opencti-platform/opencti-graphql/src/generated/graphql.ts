@@ -17205,6 +17205,7 @@ export type StatusTemplate = {
   editContext?: Maybe<Array<Maybe<EditUserContext>>>;
   id: Scalars['ID'];
   name: Scalars['String'];
+  usages?: Maybe<Scalars['Int']>;
 };
 
 export type StatusTemplateAddInput = {
@@ -28428,6 +28429,7 @@ export type StatusTemplateResolvers<ContextType = any, ParentType extends Resolv
   editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  usages?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

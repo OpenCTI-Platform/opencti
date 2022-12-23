@@ -631,6 +631,7 @@ type StatusTemplate {
   name: String!
   color: String!
   editContext: [EditUserContext]
+  usages: Int
 }
 
 type StatusTemplateConnection {

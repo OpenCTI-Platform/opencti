@@ -7,7 +7,8 @@ import {
   statusTemplateCleanContext,
   statusTemplateDelete,
   statusTemplateEditContext,
-  statusTemplateEditField
+  statusTemplateEditField,
+  statusTemplateUsagesNumber
 } from '../domain/status';
 import type { Resolvers } from '../generated/graphql';
 
@@ -20,6 +21,9 @@ const statusResolvers: Resolvers = {
   },
   Status: {
     template: (current, _, context) => findTemplateById(context, context.user, current.template_id),
+  },
+  StatusTemplate: {
+    usages: (current, _, context) => statusTemplateUsagesNumber(context, context.user, current.id),
   },
   Mutation: {
     statusTemplateAdd: (_, { input }, context) => createStatusTemplate(context, context.user, input),

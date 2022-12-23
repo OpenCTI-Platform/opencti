@@ -6,7 +6,7 @@ import {
   storeLoadById,
   updateAttribute
 } from '../database/middleware';
-import { listEntitiesPaginated } from '../database/middleware-loader';
+import { listAllEntities, listEntitiesPaginated } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import type {
@@ -24,6 +24,8 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesFromCache } from '../database/cache';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { elCount } from '../database/engine';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
@@ -74,6 +76,10 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
   return findSubTypeById(subTypeId);
 };
 export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  const filters = [{ key: ['template_id'], values: [statusTemplateId] }];
+  const result = await listAllEntities(context, user, [ENTITY_TYPE_STATUS], { filters, connectionFormat: false });
+  await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id)
+    .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
   return deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
 };
 export const statusTemplateEditContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditContext) => {
@@ -85,4 +91,14 @@ export const statusTemplateCleanContext = async (context: AuthContext, user: Aut
   await delEditContext(user, statusTemplateId);
   // eslint-disable-next-line max-len
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user));
+};
+export const statusTemplateUsagesNumber = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  const filters = [{ key: ['template_id'], values: [statusTemplateId] }];
+  const options = {
+    filters,
+    types: [ENTITY_TYPE_STATUS],
+  };
+  const result = elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, options);
+  const count = await Promise.all([result]);
+  return count[0];
 };

@@ -8,9 +8,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import StatusTemplateCreation from '../../settings/workflow/StatusTemplateCreation';
 import { useFormatter } from '../../../../components/i18n';
 import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTemplateFieldSearchQuery.graphql';
-import {
-  StatusTemplateCreationContextualMutation$data,
-} from '../../settings/workflow/__generated__/StatusTemplateCreationContextualMutation.graphql';
+import { StatusTemplateCreationContextualMutation$data } from '../../settings/workflow/__generated__/StatusTemplateCreationContextualMutation.graphql';
 import { Option } from './ReferenceField';
 
 const useStyles = makeStyles(() => ({
@@ -29,45 +27,62 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StatusTemplateFieldProps {
-  name: string,
-  setFieldValue: (field: string, value: Option) => void,
-  helpertext: string,
+  name: string;
+  setFieldValue: (field: string, value: Option) => void;
+  helpertext: string;
 }
 
 const StatusTemplateFieldQuery = graphql`
-    query StatusTemplateFieldSearchQuery($search: String) {
-        statusTemplates(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    color
-                }
-            }
+  query StatusTemplateFieldSearchQuery($search: String) {
+    statusTemplates(search: $search) {
+      edges {
+        node {
+          id
+          name
+          color
         }
+      }
     }
+  }
 `;
 
-const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name, setFieldValue, helpertext }) => {
+const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
+  name,
+  setFieldValue,
+  helpertext,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
   const [statusTemplateCreation, setStatusTemplateCreation] = useState<boolean>(false);
   const [statusTemplateInput, setStatusTemplateInput] = useState<string>('');
-  const [statusTemplates, setStatusTemplates] = useState<{ label: string | undefined, value: string | undefined, color: string | undefined }[]>([]);
+  const [statusTemplates, setStatusTemplates] = useState<
+  {
+    label: string | undefined;
+    value: string | undefined;
+    color: string | undefined;
+  }[]
+  >([]);
 
   const handleOpenStatusTemplateCreation = () => setStatusTemplateCreation(true);
 
   const handleCloseStatusTemplateCreation = () => setStatusTemplateCreation(false);
 
-  const searchStatusTemplates = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setStatusTemplateInput(event && event.target.value ? event.target.value : '');
+  const searchStatusTemplates = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setStatusTemplateInput(
+      event && event.target.value ? event.target.value : '',
+    );
     fetchQuery(StatusTemplateFieldQuery, {
       search: event && event.target.value ? event.target.value : '',
     })
       .toPromise()
       .then((data) => {
-        const NewStatusTemplates = ((data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges ?? []).map((n) => ({
+        const NewStatusTemplates = (
+          (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates
+            ?.edges ?? []
+        ).map((n) => ({
           label: n?.node.name,
           value: n?.node.id,
           color: n?.node.color,
@@ -75,14 +90,16 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
         const templateValues = [...statusTemplates, ...NewStatusTemplates];
         // Keep only the unique list of options
         const uniqTemplates = templateValues.filter((item, index) => {
-          return templateValues.findIndex((e) => e.value === item.value) === index;
+          return (
+            templateValues.findIndex((e) => e.value === item.value) === index
+          );
         });
         setStatusTemplates(uniqTemplates);
       });
   };
 
   return (
-    <div style={{ marginTop: 20, width: '100%' }}>
+    <div style={{ width: '100%' }}>
       <Field
         component={AutocompleteField}
         name={name}
@@ -96,7 +113,10 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
         options={statusTemplates}
         onInputChange={searchStatusTemplates}
         openCreate={handleOpenStatusTemplateCreation}
-        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: { color: string, label: string }) => (
+        renderOption={(
+          props: React.HTMLAttributes<HTMLLIElement>,
+          option: { color: string; label: string },
+        ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <Label />
@@ -111,7 +131,9 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({ name
         inputValueContextual={statusTemplateInput}
         openContextual={statusTemplateCreation}
         handleCloseContextual={handleCloseStatusTemplateCreation}
-        creationCallback={({ statusTemplateAdd: data }: StatusTemplateCreationContextualMutation$data) => {
+        creationCallback={({
+          statusTemplateAdd: data,
+        }: StatusTemplateCreationContextualMutation$data) => {
           setFieldValue(name, {
             value: data.id,
             label: data.name,

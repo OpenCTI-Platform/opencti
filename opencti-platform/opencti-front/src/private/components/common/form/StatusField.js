@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { compose, pathOr, pipe, map, union } from 'ramda';
+import * as R from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
@@ -107,16 +107,17 @@ class StatusField extends Component {
     })
       .toPromise()
       .then((data) => {
-        const statuses = pipe(
-          pathOr([], ['statuses', 'edges']),
-          map((n) => ({
+        const statuses = R.pipe(
+          R.pathOr([], ['statuses', 'edges']),
+          R.filter((n) => !R.isNil(n.node.template)),
+          R.map((n) => ({
             label: n.node.template.name,
             value: n.node.id,
             order: n.node.order,
             color: n.node.template.color,
           })),
         )(data);
-        this.setState({ statuses: union(this.state.statuses, statuses) });
+        this.setState({ statuses: R.union(this.state.statuses, statuses) });
       });
   }
 
@@ -162,4 +163,4 @@ class StatusField extends Component {
   }
 }
 
-export default compose(inject18n, withStyles(styles))(StatusField);
+export default R.compose(inject18n, withStyles(styles))(StatusField);

@@ -30,7 +30,7 @@ const styles = () => ({
 const ItemStatus = (props) => {
   const { classes, t, status, variant, disabled } = props;
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
-  if (status) {
+  if (status && status.template) {
     return (
       <Chip
         classes={{ root: style }}
