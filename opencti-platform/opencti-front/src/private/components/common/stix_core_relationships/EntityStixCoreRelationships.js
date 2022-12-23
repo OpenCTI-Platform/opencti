@@ -286,8 +286,6 @@ class EntityStixCoreRelationships extends Component {
       } else {
         selectedTypes = filters.entity_type.map((o) => o.id);
       }
-    } else {
-      selectedTypes = targetStixDomainObjectTypes;
     }
     let selectedRelationshipTypes = [];
     if (filters.relationship_type && filters.relationship_type.length > 0) {
@@ -317,7 +315,6 @@ class EntityStixCoreRelationships extends Component {
       paginationOptions = R.pipe(
         R.assoc('elementId', entityId),
         R.assoc('elementWithTargetTypes', selectedTypes),
-        R.assoc('fromTypes', selectedTypes),
       )(paginationOptions);
     } else if (isRelationReversed) {
       paginationOptions = R.pipe(

@@ -39,7 +39,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       params = buildViewParamsFromUrlAndStorage(
         props.history,
         props.location,
-        `view-observables-${props.entityId}`,
+        `view-observables-${props.stixCoreObjectId}`,
       );
     }
     this.state = {
@@ -66,7 +66,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       saveViewParameters(
         this.props.history,
         this.props.location,
-        `view-observables-${this.props.entityId}`,
+        `view-observables-${this.props.stixCoreObjectId}`,
         this.state,
       );
     }
@@ -405,11 +405,6 @@ class StixCoreObjectStixCyberObservables extends Component {
       [{ id: stixCoreObjectId, value: stixCoreObjectId }],
       finalFilters,
     );
-    const currentPaginationOptions = {
-      count: 25,
-      ...paginationOptions,
-      filters: convertFilters(finalFilters),
-    };
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -451,11 +446,11 @@ class StixCoreObjectStixCyberObservables extends Component {
             >
               <QueryRenderer
                 query={stixCoreObjectStixCyberObservablesEntitiesQuery}
-                variables={currentPaginationOptions}
+                variables={{ count: 25, ...paginationOptions }}
                 render={({ props }) => (
                   <StixCoreObjectStixCyberObservablesEntities
                     data={props}
-                    paginationOptions={currentPaginationOptions}
+                    paginationOptions={paginationOptions}
                     stixCoreObjectLink={stixCoreObjectLink}
                     dataColumns={this.buildColumnsEntities(helper)}
                     onToggleEntity={this.handleToggleSelectEntity.bind(this)}
