@@ -509,6 +509,8 @@ class NoteTest(EntityTest):
             "content": "You would like to know that",
             "confidence": 50,
             "authors": ["you"],
+            "note_types": ["internal"],
+            "likelihood": 75,
             #    "lang": "en",
         }
 
