@@ -40,6 +40,7 @@ import {
   InformationOutline,
   Radar,
   ViewListOutline,
+  StarSettingsOutline,
 } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -178,6 +179,8 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'number',
     availableParameters: [],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'list',
@@ -185,6 +188,8 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'timeseries',
     availableParameters: [],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'vertical-bar',
@@ -192,6 +197,8 @@ const visualizationTypes = [
     dataSelectionLimit: 5,
     category: 'timeseries',
     availableParameters: ['stacked', 'legend'],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'line',
@@ -199,6 +206,8 @@ const visualizationTypes = [
     dataSelectionLimit: 5,
     category: 'timeseries',
     availableParameters: ['legend'],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'area',
@@ -206,6 +215,8 @@ const visualizationTypes = [
     dataSelectionLimit: 5,
     category: 'timeseries',
     availableParameters: ['stacked', 'legend'],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'timeline',
@@ -213,6 +224,8 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'timeline',
     availableParameters: [],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'donut',
@@ -220,6 +233,8 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'distribution',
     availableParameters: ['attribute'],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'horizontal-bar',
@@ -227,6 +242,8 @@ const visualizationTypes = [
     dataSelectionLimit: 2,
     category: 'distribution',
     availableParameters: ['attribute'],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'radar',
@@ -234,6 +251,8 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'distribution',
     availableParameters: ['attribute'],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'heatmap',
@@ -241,6 +260,8 @@ const visualizationTypes = [
     dataSelectionLimit: 5,
     category: 'timeseries',
     availableParameters: ['stacked', 'legend'],
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'tree',
@@ -248,7 +269,8 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'distribution',
     availableParameters: ['attribute', 'distributed'],
-    onlyRelationships: false,
+    isRelationships: true,
+    isEntities: true,
   },
   {
     key: 'map',
@@ -256,7 +278,17 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'distribution',
     availableParameters: ['attribute'],
-    onlyRelationships: true,
+    isRelationships: true,
+    isEntities: false,
+  },
+  {
+    key: 'bookmark',
+    name: 'Bookmark',
+    dataSelectionLimit: 1,
+    category: 'timeseries',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: true,
   },
 ];
 const indexedVisualizationTypes = R.indexBy(R.prop('key'), visualizationTypes);
@@ -317,8 +349,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     });
     handleClose();
   };
-  const getCurrentIsOnlyRelationships = () => {
-    return indexedVisualizationTypes[type]?.onlyRelationships ?? false;
+  const getCurrentIsRelationships = () => {
+    return indexedVisualizationTypes[type]?.isRelationships ?? false;
+  };
+  const getCurrentIsEntities = () => {
+    return indexedVisualizationTypes[type]?.isEntities ?? false;
   };
   const getCurrentDataSelectionLimit = () => {
     return indexedVisualizationTypes[type]?.dataSelectionLimit ?? 0;
@@ -578,6 +613,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         return <Radar fontSize="large" color="primary" />;
       case 'tree':
         return <ChartTree fontSize="large" color="primary" />;
+      case 'bookmark':
+        return <StarSettingsOutline fontSize="large" color="primary" />;
       default:
         return 'Go away';
     }
@@ -614,14 +651,15 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     );
   };
   const renderPerspective = () => {
+    const isEntitiesAndRelationships = getCurrentIsEntities() && getCurrentIsRelationships();
     return (
       <Grid
         container={true}
         spacing={3}
         style={{ marginTop: 20, marginBottom: 20 }}
       >
-        {!getCurrentIsOnlyRelationships() && (
-          <Grid item={true} xs="6">
+        {getCurrentIsEntities() && (
+          <Grid item={true} xs={isEntitiesAndRelationships ? '6' : '12'}>
             <Card variant="outlined" className={classes.card}>
               <CardActionArea
                 onClick={() => handleSelectPerspective('entities')}
@@ -645,27 +683,33 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             </Card>
           </Grid>
         )}
-        <Grid item={true} xs={getCurrentIsOnlyRelationships() ? '12' : '6'}>
-          <Card variant="outlined" className={classes.card}>
-            <CardActionArea
-              onClick={() => handleSelectPerspective('relationships')}
-              style={{ height: '100%' }}
-            >
-              <CardContent>
-                <FlaskOutline style={{ fontSize: 40 }} color="primary" />
-                <Typography gutterBottom variant="h2" style={{ marginTop: 20 }}>
-                  {t('Knowledge graph')}
-                </Typography>
-                <br />
-                <Typography variant="body1">
-                  {t(
-                    'Display specific knowledge using relationships and filters.',
-                  )}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        </Grid>
+        {getCurrentIsRelationships() && (
+          <Grid item={true} xs={isEntitiesAndRelationships ? '6' : '12'}>
+            <Card variant="outlined" className={classes.card}>
+              <CardActionArea
+                onClick={() => handleSelectPerspective('relationships')}
+                style={{ height: '100%' }}
+              >
+                <CardContent>
+                  <FlaskOutline style={{ fontSize: 40 }} color="primary" />
+                  <Typography
+                    gutterBottom
+                    variant="h2"
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Knowledge graph')}
+                  </Typography>
+                  <br />
+                  <Typography variant="body1">
+                    {t(
+                      'Display specific knowledge using relationships and filters.',
+                    )}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        )}
       </Grid>
     );
   };
