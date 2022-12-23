@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
@@ -114,7 +113,7 @@ const ReportLineComponent = ({
                 classes={{ root: classes.chipInList }}
                 color="primary"
                 variant="outlined"
-                label={R.head(node.report_types || [t('Unknown')])}
+                label={node.report_types?.at(0) ?? t('Unknown')}
               />
             </div>
             <div

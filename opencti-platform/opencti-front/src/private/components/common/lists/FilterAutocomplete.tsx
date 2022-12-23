@@ -1,4 +1,9 @@
-import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
+import React, {
+  Dispatch,
+  FunctionComponent,
+  SyntheticEvent,
+  useState,
+} from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import makeStyles from '@mui/styles/makeStyles';
@@ -25,19 +30,19 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface OptionValue extends Option {
-  type: string
-  group?: string
+  type: string;
+  group?: string;
 }
 
 interface FilterAutocompleteProps {
-  filterKey: string
-  defaultHandleAddFilter: HandleAddFilter
-  inputValues: Record<string, string | Date>
-  setInputValues: Dispatch<Record<string, string | Date>>
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
-  allEntityTypes?: boolean
-  openOnFocus?: boolean
+  filterKey: string;
+  defaultHandleAddFilter: HandleAddFilter;
+  inputValues: Record<string, string | Date>;
+  setInputValues: Dispatch<Record<string, string | Date>>;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  allEntityTypes?: boolean;
+  openOnFocus?: boolean;
 }
 
 const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
@@ -61,9 +66,17 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     availableEntityTypes,
     availableRelationshipTypes,
     allEntityTypes,
-  }) as [Record<string, OptionValue[]>, (filterKey: string, event: SyntheticEvent) => Record<string, OptionValue[]>]; // change when useSearchEntities will be in TS
+  }) as [
+    Record<string, OptionValue[]>,
+    (filterKey: string, event: SyntheticEvent) => Record<string, OptionValue[]>,
+  ]; // change when useSearchEntities will be in TS
 
-  const isStixObjectTypes = ['elementId', 'fromId', 'toId', 'objectContains'].includes(filterKey);
+  const isStixObjectTypes = [
+    'elementId',
+    'fromId',
+    'toId',
+    'objectContains',
+  ].includes(filterKey);
 
   const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
     if (value) {
@@ -103,12 +116,13 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       openOnFocus={openOnFocus}
       autoSelect={false}
       autoHighlight={true}
-      getOptionLabel={(option) => (option.label ?? '')}
+      getOptionLabel={(option) => option.label ?? ''}
       noOptionsText={t('No available options')}
       options={options}
       onInputChange={(event) => searchEntities(filterKey, event)}
-      inputValue={inputValues[filterKey] as string || ''}
-      onChange={(event: SyntheticEvent, value: OptionValue | null) => handleChange(event, value)}
+      inputValue={(inputValues[filterKey] as string) || ''}
+      onChange={(event: SyntheticEvent, value: OptionValue | null) => handleChange(event, value)
+      }
       groupBy={
         isStixObjectTypes
           ? (option) => option.type
@@ -133,11 +147,8 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       )}
       renderOption={(props, option) => (
         <li {...props}>
-          <div
-            className={classes.icon}
-            style={{ color: option.color }}
-          >
-            <ItemIcon type={option.type} />
+          <div className={classes.icon}>
+            <ItemIcon type={option.type} color={option.color} />
           </div>
           <div className={classes.text}>{option.label}</div>
         </li>

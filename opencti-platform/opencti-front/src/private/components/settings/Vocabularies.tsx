@@ -1,7 +1,6 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
-import { useTheme } from '@mui/styles';
 import { useParams } from 'react-router-dom';
 import ListLines from '../../../components/list_lines/ListLines';
 import useLocalStorage, {
@@ -14,9 +13,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { VocabulariesLines_DataQuery$variables } from './attributes/__generated__/VocabulariesLines_DataQuery.graphql';
 import { VocabulariesLinesPaginationQuery } from './attributes/__generated__/VocabulariesLinesPaginationQuery.graphql';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
-import { hexToRGB } from '../../../utils/Colors';
 import { useFormatter } from '../../../components/i18n';
-import { Theme } from '../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import VocabularyCreation from './attributes/VocabularyCreation';
@@ -40,7 +37,6 @@ const useStyles = makeStyles(() => ({
 const Vocabularies = () => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const theme = useTheme<Theme>();
   const params = useParams() as { category: string };
   const { typeToCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);
@@ -99,12 +95,8 @@ const Vocabularies = () => {
                 key={type}
                 classes={{ root: classes.label }}
                 variant="outlined"
-                label={t(type)}
-                style={{
-                  color: theme.palette.chip.main,
-                  borderColor: theme.palette.chip.main,
-                  backgroundColor: hexToRGB('transparent'),
-                }}
+                label={t(`entity_${type}`)}
+                color="primary"
               />
             ))}
           </>
@@ -112,13 +104,13 @@ const Vocabularies = () => {
       },
       aliases: {
         label: 'Aliases',
-        width: '10%',
+        width: '15%',
         isSortable: false,
         render: (node: useVocabularyCategory_Vocabularynode$data) => (node.aliases ?? []).join(', '),
       },
       description: {
         label: 'Description',
-        width: '45%',
+        width: '30%',
         isSortable: true,
         render: (node: useVocabularyCategory_Vocabularynode$data) => node.description,
       },

@@ -212,14 +212,12 @@ const useSearchEntities = ({
   const [entities, setEntities] = useState({});
   const { t } = useFormatter();
   const theme = useTheme();
-
   const unionSetEntities = (key, newEntities) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
-      ({ value }, index, arr) => arr.findIndex((v) => v.value === value) === index,
+      ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group) === index,
     ),
   }));
-
   let entitiesTypes = [];
   const searchEntities = (filterKey, event) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -703,7 +701,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('indicator_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
+            unionSetEntities(
+              'indicator_types',
+              (data?.vocabularies?.edges ?? []).map(({ node }) => ({
+                label: t(node.name),
+                value: node.name,
+                type: 'Vocabulary',
+              })),
+            );
           });
         break;
       case 'incident_type':
@@ -712,7 +717,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('indicator_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
+            unionSetEntities(
+              'indicator_types',
+              (data?.vocabularies?.edges ?? []).map(({ node }) => ({
+                label: t(node.name),
+                value: node.name,
+                type: 'Vocabulary',
+              })),
+            );
           });
         break;
       case 'report_types':
@@ -721,7 +733,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('report_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
+            unionSetEntities(
+              'report_types',
+              (data?.vocabularies?.edges ?? []).map(({ node }) => ({
+                label: t(node.name),
+                value: node.name,
+                type: 'Vocabulary',
+              })),
+            );
           });
         break;
       case 'channel_types':
@@ -730,7 +749,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('channel_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
+            unionSetEntities(
+              'channel_types',
+              (data?.vocabularies?.edges ?? []).map(({ node }) => ({
+                label: t(node.name),
+                value: node.name,
+                type: 'Vocabulary',
+              })),
+            );
           });
         break;
       case 'entity_type':
@@ -915,7 +941,14 @@ const useSearchEntities = ({
         fetchQuery(vocabCategoriesQuery)
           .toPromise()
           .then((data) => {
-            unionSetEntities('category', data.vocabularyCategories.map(({ key }) => ({ label: key, value: key, type: 'Vocabulary' })));
+            unionSetEntities(
+              'category',
+              data.vocabularyCategories.map(({ key }) => ({
+                label: key,
+                value: key,
+                type: 'Vocabulary',
+              })),
+            );
           });
         break;
       case 'fromTypes':
@@ -1132,7 +1165,6 @@ const useSearchEntities = ({
         break;
     }
   };
-
   return [entities, searchEntities];
 };
 
