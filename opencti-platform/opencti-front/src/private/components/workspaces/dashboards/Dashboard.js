@@ -68,6 +68,7 @@ import StixCoreRelationshipsMultiHeatMap from '../../common/stix_core_relationsh
 import StixCoreObjectsTreeMap from '../../common/stix_core_objects/StixCoreObjectsTreeMap';
 import StixCoreRelationshipsTreeMap from '../../common/stix_core_relationships/StixCoreRelationshipsTreeMap';
 import StixCoreRelationshipsMap from '../../common/stix_core_relationships/StixCoreRelationshipsMap';
+import StixDomainObjectBookmarksList from '../../common/stix_domain_objects/StixDomainObjectBookmarksList';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -513,6 +514,16 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       : config.startDate;
     const endDate = relativeDate ? getDayStartDate() : config.endDate;
     switch (widget.type) {
+      case 'bookmark':
+        return (
+          <StixDomainObjectBookmarksList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       case 'number':
         return (
           <StixCoreObjectsNumber
