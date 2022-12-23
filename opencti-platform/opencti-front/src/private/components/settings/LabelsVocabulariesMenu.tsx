@@ -53,13 +53,13 @@ const LabelsVocabulariesMenu: FunctionComponent = () => {
           dense={false}
         >
           <ListItemText primary={t('Kill chain phases')} />
-        </MenuItem><MenuItem
+        </MenuItem>
+        <MenuItem
           component={Link}
           to={'/dashboard/settings/vocabularies/fields'}
-          selected={
-            location.pathname
-            === '/dashboard/settings/vocabularies/fields'
-          }
+          selected={location.pathname.includes(
+            '/dashboard/settings/vocabularies/fields',
+          )}
           dense={false}
         >
           <ListItemText primary={t('Vocabularies')} />

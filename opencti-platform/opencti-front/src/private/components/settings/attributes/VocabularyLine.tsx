@@ -22,7 +22,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary?.main,
@@ -51,14 +50,19 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface VocabularyLineProps {
-  node: useVocabularyCategory_Vocabularynode$key,
-  dataColumns: DataColumns,
-  paginationOptions: LocalStorage,
-  refetch: () => void,
-  selectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
-  deSelectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
-  onToggleEntity: (entity: useVocabularyCategory_Vocabularynode$data, event: React.SyntheticEvent) => void,
-  selectAll: boolean,
+  node: useVocabularyCategory_Vocabularynode$key;
+  dataColumns: DataColumns;
+  paginationOptions: LocalStorage;
+  refetch: () => void;
+  selectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>;
+  deSelectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>;
+  onToggleEntity: (entity: useVocabularyCategory_Vocabularynode$data) => void;
+  selectAll: boolean;
+  onToggleShiftEntity: (
+    index: number,
+    entity: useVocabularyCategory_Vocabularynode$data
+  ) => void;
+  index: number;
 }
 
 export const VocabularyLine: FunctionComponent<VocabularyLineProps> = ({
@@ -70,17 +74,24 @@ export const VocabularyLine: FunctionComponent<VocabularyLineProps> = ({
   deSelectedElements,
   onToggleEntity,
   selectAll,
+  onToggleShiftEntity,
+  index,
 }) => {
   const classes = useStyles();
-
   const vocab = useFragment(vocabFragment, node);
-
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      onClick={(event) => (event.shiftKey
+        ? onToggleShiftEntity(index, vocab)
+        : onToggleEntity(vocab))
+      }
+    >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => onToggleEntity(vocab, event)}
       >
         <Checkbox
           edge="start"
@@ -120,17 +131,16 @@ export const VocabularyLine: FunctionComponent<VocabularyLineProps> = ({
   );
 };
 
-export const VocabularyLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const VocabularyLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

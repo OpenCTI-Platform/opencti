@@ -100,7 +100,7 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/vocabularies/category/:category"
+        path="/dashboard/settings/vocabularies/fields/:category"
         component={Vocabularies}
       />
     </Security>

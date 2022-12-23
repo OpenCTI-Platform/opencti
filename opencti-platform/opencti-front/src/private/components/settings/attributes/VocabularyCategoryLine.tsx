@@ -1,5 +1,8 @@
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { KeyboardArrowRightOutlined, ShortTextOutlined } from '@mui/icons-material';
+import {
+  KeyboardArrowRightOutlined,
+  ShortTextOutlined,
+} from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -28,26 +31,28 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 5,
   },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
 }));
 
 interface VocabularyCategoryLineProps {
-  node: VocabularyDefinition,
-  dataColumns: DataColumns,
+  node: VocabularyDefinition;
+  dataColumns: DataColumns;
 }
 
-export const VocabularyCategoryLine: FunctionComponent<VocabularyCategoryLineProps> = ({
-  dataColumns,
-  node,
-}) => {
+export const VocabularyCategoryLine: FunctionComponent<
+VocabularyCategoryLineProps
+> = ({ dataColumns, node }) => {
   const classes = useStyles();
-
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       button={true}
       component={Link}
-      to={`/dashboard/settings/vocabularies/category/${node.key}`}
+      to={`/dashboard/settings/vocabularies/fields/${node.key}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ShortTextOutlined />
@@ -74,7 +79,11 @@ export const VocabularyCategoryLine: FunctionComponent<VocabularyCategoryLinePro
   );
 };
 
-export const VocabularyCategoryLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const VocabularyCategoryLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

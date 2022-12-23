@@ -12,9 +12,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import { formikFieldToEditInput } from '../../../../utils/utils';
 import { Theme } from '../../../../components/Theme';
-import {
-  useVocabularyCategory_Vocabularynode$data,
-} from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
+import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
@@ -52,11 +50,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const vocabularyMutationUpdate = graphql`
-  mutation VocabularyEditionUpdateMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
-    vocabularyFieldPatch(id: $id, input: $input){
+  mutation VocabularyEditionUpdateMutation($id: ID!, $input: [EditInput!]!) {
+    vocabularyFieldPatch(id: $id, input: $input) {
       ...useVocabularyCategory_Vocabularynode
     }
   }
@@ -68,34 +63,49 @@ const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
 });
 
 interface VocabularyEditionFormikValues {
-  name: string,
-  description: string,
-  aliases: { id: string, label: string, value: string }[]
+  name: string;
+  description: string;
+  aliases: { id: string; label: string; value: string }[];
 }
 
 const VocabularyEdition = ({
   handleClose,
   vocab,
-}: { handleClose: () => void, vocab: useVocabularyCategory_Vocabularynode$data }) => {
+}: {
+  handleClose: () => void;
+  vocab: useVocabularyCategory_Vocabularynode$data;
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
   const [commitUpdateMutation] = useMutation(vocabularyMutationUpdate);
 
-  const onSubmit: FormikConfig<VocabularyEditionFormikValues>['onSubmit'] = (values, { setSubmitting }) => {
-    const input = formikFieldToEditInput({
-      ...values,
-      aliases: values.aliases.map((a) => a.value),
-    }, {
-      name: vocab.name,
-      aliases: vocab.aliases ?? [],
-      description: vocab.description ?? '',
-    });
+  const onSubmit: FormikConfig<VocabularyEditionFormikValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
+    const input = formikFieldToEditInput(
+      {
+        ...values,
+        aliases: values.aliases.map((a) => a.value),
+      },
+      {
+        name: vocab.name,
+        aliases: vocab.aliases ?? [],
+        description: vocab.description ?? '',
+      },
+    );
     if (input.length > 0) {
       commitUpdateMutation({
         variables: { id: vocab.id, input },
         onError: (error) => {
-          const { errors } = (error as unknown as { res: { errors: { data: { existingIds: string[], reason: string } }[] } }).res;
+          const { errors } = (
+            error as unknown as {
+              res: {
+                errors: { data: { existingIds: string[]; reason: string } }[];
+              };
+            }
+          ).res;
           MESSAGING$.notifyError(errors.at(0)?.data.reason);
           setSubmitting(false);
         },
@@ -136,7 +146,7 @@ const VocabularyEdition = ({
               id: n,
               value: n,
               label: n,
-            })) as { id: string, label: string, value: string }[],
+            })) as { id: string; label: string; value: string }[],
             description: vocab.description ?? '',
           }}
           validationSchema={attributeValidation(t)}
@@ -150,7 +160,6 @@ const VocabularyEdition = ({
                 name="name"
                 label={t('Name')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
                 disabled={vocab.builtIn}
               />
               <Field
@@ -168,12 +177,17 @@ const VocabularyEdition = ({
                 multiple={true}
                 createLabel={t('Add')}
                 textfieldprops={{ variant: 'standard', label: t('Aliases') }}
-                options={(vocab.aliases ?? []).map((n) => ({ id: n, value: n, label: n }))}
-                renderOption={(props: Record<string, unknown>, option: Option) => (
+                options={(vocab.aliases ?? []).map((n) => ({
+                  id: n,
+                  value: n,
+                  label: n,
+                }))}
+                renderOption={(
+                  props: Record<string, unknown>,
+                  option: Option,
+                ) => (
                   <li {...props}>
-                    <div className={classes.text}>
-                      {option.label}
-                    </div>
+                    <div className={classes.text}>{option.label}</div>
                   </li>
                 )}
                 classes={{ clearIndicator: classes.autoCompleteIndicator }}

@@ -9,20 +9,22 @@ import {
 } from './__generated__/VocabulariesLines_DataQuery.graphql';
 import { VocabulariesLines_data$key } from './__generated__/VocabulariesLines_data.graphql';
 import { VocabulariesLinesPaginationQuery } from './__generated__/VocabulariesLinesPaginationQuery.graphql';
-import {
-  useVocabularyCategory_Vocabularynode$data,
-} from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
+import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 export interface VocabulariesLinesProps {
-  paginationOptions: VocabulariesLines_DataQuery$variables,
-  dataColumns: DataColumns,
-  queryRef: PreloadedQuery<VocabulariesLinesPaginationQuery>,
-  selectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
-  deSelectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>,
-  onToggleEntity: (entity: useVocabularyCategory_Vocabularynode$data, event: React.SyntheticEvent) => void,
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
+  paginationOptions: VocabulariesLines_DataQuery$variables;
+  dataColumns: DataColumns;
+  queryRef: PreloadedQuery<VocabulariesLinesPaginationQuery>;
+  selectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>;
+  deSelectedElements: Record<string, useVocabularyCategory_Vocabularynode$data>;
+  onToggleEntity: (
+    entity: useVocabularyCategory_Vocabularynode$data,
+    event: React.SyntheticEvent
+  ) => void;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  selectAll: boolean;
 }
 
 export const vocabulariesLinesQuery = graphql`
@@ -35,14 +37,14 @@ export const vocabulariesLinesQuery = graphql`
     $category: VocabularyCategory
   ) {
     ...VocabulariesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      orderMode: $orderMode
-      orderBy: $orderBy
-      filters: $filters
-      category: $category
-    )
+      @arguments(
+        search: $search
+        count: $count
+        orderMode: $orderMode
+        orderBy: $orderBy
+        filters: $filters
+        category: $category
+      )
   }
 `;
 
@@ -57,8 +59,7 @@ export const vocabulariesLinesFragment = graphql`
     after: { type: "ID", defaultValue: "" }
     category: { type: "VocabularyCategory" }
   )
-  @refetchable(queryName: "VocabulariesLines_DataQuery")
-  {
+  @refetchable(queryName: "VocabulariesLines_DataQuery") {
     vocabularies(
       filters: $filters
       search: $search
@@ -70,6 +71,7 @@ export const vocabulariesLinesFragment = graphql`
     ) @connection(key: "Pagination_vocabularies") {
       edges {
         node {
+          id
           ...useVocabularyCategory_Vocabularynode
         }
       }
@@ -89,14 +91,13 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
   setNumberOfElements,
   selectedElements,
   deSelectedElements,
+  selectAll,
   onToggleEntity,
 }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<VocabulariesLines_DataQuery, VocabulariesLines_data$key>({
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+  VocabulariesLines_DataQuery,
+  VocabulariesLines_data$key
+  >({
     queryRef,
     linesQuery: vocabulariesLinesQuery,
     linesFragment: vocabulariesLinesFragment,
@@ -123,6 +124,7 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
       selectedElements={selectedElements}
       deSelectedElements={deSelectedElements}
       onToggleEntity={onToggleEntity}
+      selectAll={selectAll}
     />
   );
 };

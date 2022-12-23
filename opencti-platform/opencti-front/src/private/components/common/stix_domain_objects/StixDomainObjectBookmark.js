@@ -12,6 +12,7 @@ import Avatar from '@mui/material/Avatar';
 import { StarBorderOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
+import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import { commitMutation } from '../../../../relay/environment';
@@ -134,7 +135,7 @@ const styles = (theme) => ({
 
 class StixDomainObjectBookmarkComponent extends Component {
   render() {
-    const { t, fsd, classes, node } = this.props;
+    const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
@@ -147,7 +148,10 @@ class StixDomainObjectBookmarkComponent extends Component {
             classes={{ root: classes.header }}
             avatar={
               <Avatar className={classes.avatar}>
-                <ItemIcon type={node.entity_type} />
+                <ItemIcon
+                  type={node.entity_type}
+                  color={theme.palette.background.default}
+                />
               </Avatar>
             }
             title={node.name}
@@ -277,6 +281,7 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
 
 export const StixDomainObjectBookmark = R.compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixDomainObjectBookmarkFragment);
 

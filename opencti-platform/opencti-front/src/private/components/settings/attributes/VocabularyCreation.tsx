@@ -24,8 +24,8 @@ import { Option } from '../../common/form/ReferenceField';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 
 interface VocabularyCreationProps {
-  paginationOptions: VocabulariesLines_DataQuery$variables,
-  category: VocabularyCategory
+  paginationOptions: VocabulariesLines_DataQuery$variables;
+  category: VocabularyCategory;
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -78,7 +78,10 @@ const labelValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
 });
 
-const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ paginationOptions, category }) => {
+const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
+  paginationOptions,
+  category,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -87,8 +90,15 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
 
   const handleClose = () => setOpen(false);
 
-  interface FormInterface { name: string, description: string, aliases: { value: string }[] }
-  const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (values, { resetForm }) => {
+  interface FormInterface {
+    name: string;
+    description: string;
+    aliases: { value: string }[];
+  }
+  const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (
+    values,
+    { resetForm },
+  ) => {
     const data: VocabularyAddInput = {
       name: values.name,
       description: values.description,
@@ -161,7 +171,6 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
-                  style={fieldSpacingContainerStyle}
                 />
                 <Field
                   component={TextField}
@@ -181,7 +190,10 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({ pagina
                     label: t('Aliases'),
                   }}
                   options={[]}
-                  renderOption={(props: Record<string, unknown>, option: Option) => (
+                  renderOption={(
+                    props: Record<string, unknown>,
+                    option: Option,
+                  ) => (
                     <li {...props}>
                       <div className={classes.text}>{option.label}</div>
                     </li>

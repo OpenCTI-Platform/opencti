@@ -1,18 +1,43 @@
-import { React } from 'mdi-material-ui';
+import React, { useState } from 'react';
 import * as R from 'ramda';
-import { useState } from 'react';
 
 const useEntityToggle = <T extends { id: string }>(key: string) => {
-  const { numberOfElements } = JSON.parse(window.localStorage.getItem(key) ?? '{}');
-
-  const [selectedElements, setSelectedElements] = useState<Record<string, T>>({});
-  const [deSelectedElements, setDeSelectedElements] = useState<Record<string, T>>({});
+  const { numberOfElements } = JSON.parse(
+    window.localStorage.getItem(key) ?? '{}',
+  );
+  const [selectedElements, setSelectedElements] = useState<Record<string, T>>(
+    {},
+  );
+  const [deSelectedElements, setDeSelectedElements] = useState<
+  Record<string, T>
+  >({});
   const [selectAll, setSelectAll] = useState(false);
-
-  const onToggleEntity = (entity: T, event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-    if (entity.id in (selectedElements || {})) {
+  const onToggleEntity = (
+    entity: T,
+    _: React.SyntheticEvent,
+    forceRemove: T[] = [],
+  ) => {
+    if (Array.isArray(entity)) {
+      const currentIds = R.values(selectedElements).map((n) => n.id);
+      const givenIds = entity.map((n) => n.id);
+      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
+      let newSelectedElements = {
+        ...selectedElements,
+        ...R.indexBy(
+          R.prop('id'),
+          entity.filter((n) => addedIds.includes(n.id)),
+        ),
+      };
+      if (forceRemove.length > 0) {
+        newSelectedElements = R.omit(
+          forceRemove.map((n) => n.id),
+          newSelectedElements,
+        );
+      }
+      setSelectAll(false);
+      setSelectedElements(newSelectedElements);
+      setDeSelectedElements({});
+    } else if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
       setSelectAll(false);
       setSelectedElements(newSelectedElements);
@@ -34,19 +59,16 @@ const useEntityToggle = <T extends { id: string }>(key: string) => {
       setSelectedElements(newSelectedElements);
     }
   };
-
   const handleToggleSelectAll = () => {
     setSelectAll(!selectAll);
     setSelectedElements({});
     setDeSelectedElements({});
   };
-
   const handleClearSelectedElements = () => {
     setSelectAll(false);
     setSelectedElements({});
     setDeSelectedElements({});
   };
-
   let numberOfSelectedElements = Object.keys(selectedElements).length;
   if (selectAll) {
     numberOfSelectedElements = (numberOfElements?.original ?? 0)

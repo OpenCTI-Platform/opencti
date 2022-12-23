@@ -1,15 +1,18 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
-import { useTheme } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
-import { hexToRGB } from '../../../utils/Colors';
 import { useFormatter } from '../../../components/i18n';
-import { Theme } from '../../../components/Theme';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
-import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../utils/hooks/useVocabularyCategory';
+import {
+  useVocabularyCategoryAsQuery,
+  VocabularyDefinition,
+} from '../../../utils/hooks/useVocabularyCategory';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
-import { VocabularyCategoryLine, VocabularyCategoryLineDummy } from './attributes/VocabularyCategoryLine';
+import {
+  VocabularyCategoryLine,
+  VocabularyCategoryLineDummy,
+} from './attributes/VocabularyCategoryLine';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -27,17 +30,7 @@ const useStyles = makeStyles(() => ({
 const VocabularyCategories = () => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const theme = useTheme<Theme>();
-
-  const {
-    categories,
-    sortBy,
-    orderAsc,
-    searchTerm,
-    handleSort,
-    handleSearch,
-  } = useVocabularyCategoryAsQuery();
-
+  const { categories, sortBy, orderAsc, searchTerm, handleSort, handleSearch } = useVocabularyCategoryAsQuery();
   const renderLines = () => {
     const dataColumns = {
       name: {
@@ -57,12 +50,8 @@ const VocabularyCategories = () => {
                 key={type}
                 classes={{ root: classes.label }}
                 variant="outlined"
-                label={t(type)}
-                style={{
-                  color: theme.palette.chip.main,
-                  borderColor: theme.palette.chip.main,
-                  backgroundColor: hexToRGB('transparent'),
-                }}
+                label={t(`entity_${type}`)}
+                color="primary"
               />
             ))}
           </>
@@ -75,7 +64,6 @@ const VocabularyCategories = () => {
         render: (node: VocabularyDefinition) => node.description,
       },
     };
-
     return (
       <ListLines
         sortBy={sortBy}
@@ -84,7 +72,6 @@ const VocabularyCategories = () => {
         handleSort={handleSort}
         handleSearch={handleSearch}
         displayImport={false}
-        secondaryAction={true}
         keyword={searchTerm}
       >
         <ListLinesContent
@@ -101,7 +88,6 @@ const VocabularyCategories = () => {
       </ListLines>
     );
   };
-
   return (
     <div className={classes.container}>
       <LabelsVocabulariesMenu />
