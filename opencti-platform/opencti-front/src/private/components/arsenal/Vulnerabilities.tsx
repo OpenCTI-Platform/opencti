@@ -10,22 +10,26 @@ import { Filters } from '../../../components/list_lines';
 import { VulnerabilityLineDummy } from './vulnerabilities/VulnerabilityLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import {
-  VulnerabilitiesLinesPaginationQuery, VulnerabilitiesLinesPaginationQuery$variables,
+  VulnerabilitiesLinesPaginationQuery,
+  VulnerabilitiesLinesPaginationQuery$variables,
 } from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 
 const Vulnerabilities = () => {
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>('view-vulnerabilities', {
-    searchTerm: '',
-    sortBy: 'name',
-    orderAsc: true,
-    openExports: false,
-    filters: {} as Filters,
-    numberOfElements: {
-      number: 0,
-      symbol: '',
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
+    'view-vulnerabilities',
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      openExports: false,
+      filters: {} as Filters,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
     },
-  });
+  );
 
   const renderLines = () => {
     const {
@@ -69,7 +73,10 @@ const Vulnerabilities = () => {
       },
     };
 
-    const queryRef = useQueryLoading <VulnerabilitiesLinesPaginationQuery>(vulnerabilitiesLinesQuery, paginationOptions);
+    const queryRef = useQueryLoading<VulnerabilitiesLinesPaginationQuery>(
+      vulnerabilitiesLinesQuery,
+      paginationOptions,
+    );
     return (
       <ListLines
         sortBy={sortBy}
@@ -99,9 +106,20 @@ const Vulnerabilities = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense fallback={
-            <>{[0, 1, 2].map((idx) => (<VulnerabilityLineDummy key={idx} dataColumns={dataColumns} />))}</>
-          }>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <VulnerabilityLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+            }
+          >
             <VulnerabilitiesLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
@@ -109,7 +127,7 @@ const Vulnerabilities = () => {
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
             />
-            </React.Suspense>
+          </React.Suspense>
         )}
       </ListLines>
     );
