@@ -2160,6 +2160,8 @@ class StixCyberObservable:
                                     attribute_abstract
                                     content
                                     authors
+                                    note_types
+                                    likelihood
                                 }
                             }
                         }

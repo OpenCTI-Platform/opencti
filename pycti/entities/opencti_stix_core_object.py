@@ -133,6 +133,8 @@ class StixCoreObject:
                 attribute_abstract
                 content
                 authors
+                note_types
+                likelihood
             }
             ... on ObservedData {
                 first_observed

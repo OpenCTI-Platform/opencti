@@ -112,6 +112,8 @@ class Note:
             attribute_abstract
             content
             authors
+            note_types
+            likelihood
             objects {
                 edges {
                     node {
@@ -425,6 +427,8 @@ class Note:
         abstract = kwargs.get("abstract", None)
         content = kwargs.get("content", None)
         authors = kwargs.get("authors", None)
+        note_types = kwargs.get("note_types", None)
+        likelihood = kwargs.get("likelihood", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
@@ -460,6 +464,8 @@ class Note:
                         "attribute_abstract": abstract,
                         "content": content,
                         "authors": authors,
+                        "note_types": note_types,
+                        "likelihood": likelihood,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
@@ -627,6 +633,12 @@ class Note:
                 if "x_opencti_stix_ids" in stix_object
                 else None,
                 authors=stix_object["authors"] if "authors" in stix_object else None,
+                note_types=stix_object["note_types"]
+                if "note_types" in stix_object
+                else None,
+                likelihood=stix_object["likelihood"]
+                if "likelihood" in stix_object
+                else None,
                 objectOrganization=stix_object["granted_refs"]
                 if "granted_refs" in stix_object
                 else None,

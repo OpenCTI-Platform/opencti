@@ -144,6 +144,8 @@ class StixDomainObject:
                 attribute_abstract
                 content
                 authors
+                note_types
+                likelihood
                 objects {
                     edges {
                         node {
@@ -1560,6 +1562,8 @@ class StixDomainObject:
                                     attribute_abstract
                                     content
                                     authors
+                                    note_types
+                                    likelihood
                                 }
                             }
                         }
