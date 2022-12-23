@@ -10,7 +10,6 @@ import TopBar from '../../nav/TopBar';
 import ExternalReference from './ExternalReference';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { scopesConn } from '../../common/files/FileManager';
 
 const subscription = graphql`
   subscription RootExternalReferenceSubscription($id: ID!) {
@@ -75,7 +74,7 @@ class RootExternalReference extends Component {
                         <ExternalReference
                           {...routeProps}
                           externalReference={props.externalReference}
-                          connectorsImport={scopesConn(props.connectorsForImport)}
+                          connectorsImport={props.connectorsForImport}
                         />
                       )}
                     />
