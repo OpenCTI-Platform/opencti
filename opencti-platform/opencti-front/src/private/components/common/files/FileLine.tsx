@@ -2,10 +2,19 @@ import React, { FunctionComponent, useState } from 'react';
 import { isEmpty } from 'ramda';
 import moment from 'moment';
 import Alert from '@mui/material/Alert';
-import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
+import {
+  createFragmentContainer,
+  graphql,
+  GraphQLTaggedNode,
+} from 'react-relay';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
+import {
+  DeleteOutlined,
+  DocumentScannerOutlined,
+  GetAppOutlined,
+  WarningOutlined,
+} from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -20,10 +29,13 @@ import Button from '@mui/material/Button';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { Link } from 'react-router-dom';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
-import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import {
+  APP_BASE_PATH,
+  commitMutation,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -65,15 +77,15 @@ const FileLineAskDeleteMutation = graphql`
 `;
 
 interface FileLineComponentProps {
-  file: FileLine_file$data | undefined,
-  connectors?: { data: { name: string; active: boolean; }; }[],
-  dense: boolean,
-  disableImport?: boolean,
-  directDownload?: boolean,
-  handleOpenImport?: (file: FileLine_file$data | undefined) => void,
-  nested?: boolean,
-  workNested?: boolean,
-  isExternalReferenceAttachment?: boolean,
+  file: FileLine_file$data | undefined;
+  connectors?: { data: { name: string; active: boolean } }[];
+  dense: boolean;
+  disableImport?: boolean;
+  directDownload?: boolean;
+  handleOpenImport?: (file: FileLine_file$data | undefined) => void;
+  nested?: boolean;
+  workNested?: boolean;
+  isExternalReferenceAttachment?: boolean;
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
@@ -94,7 +106,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const isContainsReference = isNotEmptyField(file?.metaData?.external_reference_id);
+  const isContainsReference = isNotEmptyField(
+    file?.metaData?.external_reference_id,
+  );
   const isFail = file?.metaData?.errors && file.metaData.errors.length > 0;
   const isProgress = file?.uploadStatus === 'progress' || file?.uploadStatus === 'wait';
   const isOutdated = file?.uploadStatus === 'timeout';
@@ -102,17 +116,26 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const history = [];
 
   if (isOutdated) {
-    const time = moment.duration(file.lastModifiedSinceMin, 'minutes').humanize();
+    const time = moment
+      .duration(file.lastModifiedSinceMin, 'minutes')
+      .humanize();
     history.push({
       message: `Connector execution timeout, no activity for ${time}`,
     });
   } else if (file?.metaData?.messages && file?.metaData?.errors) {
-    history.push(...[...file.metaData.messages.map((o) => o), ...file.metaData.errors]);
+    history.push(
+      ...[...file.metaData.messages.map((o) => o), ...file.metaData.errors],
+    );
   }
 
-  const toolTip = history.map((s) => s?.message).filter((s) => !isEmpty(s)).join(', ');
+  const toolTip = history
+    .map((s) => s?.message)
+    .filter((s) => !isEmpty(s))
+    .join(', ');
   const encodedFilePath = encodeURIComponent(file?.id ?? '');
-  const listClick = `${APP_BASE_PATH}/storage/${directDownload ? 'get' : 'view'}/${encodedFilePath}`;
+  const listClick = `${APP_BASE_PATH}/storage/${
+    directDownload ? 'get' : 'view'
+  }/${encodedFilePath}`;
 
   const handleOpenDelete = () => {
     setDisplayDelete(true);
@@ -130,7 +153,10 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     setDisplayRemove(false);
   };
 
-  const executeRemove = (mutation: GraphQLTaggedNode, variables: { fileName: string } | { workId: string }) => {
+  const executeRemove = (
+    mutation: GraphQLTaggedNode,
+    variables: { fileName: string } | { workId: string },
+  ) => {
     setDeleting(true);
     commitMutation({
       mutation,
@@ -174,9 +200,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   };
 
   const generateIcon = () => {
-    return (isExternalReferenceAttachment || isContainsReference)
-      ? <DocumentScannerOutlined color='primary'/>
-      : <FileOutline color={nested ? 'primary' : 'inherit'} />;
+    return isExternalReferenceAttachment || isContainsReference ? (
+      <DocumentScannerOutlined color="primary" />
+    ) : (
+      <FileOutline color={nested ? 'primary' : 'inherit'} />
+    );
   };
 
   return (
@@ -186,10 +214,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         dense={dense}
         classes={{ root: nested ? classes.itemNested : classes.item }}
         button={true}
-        component={Link}
+        component="a"
         disabled={isProgress || isOutdated}
-        to={listClick}
-        target="_blank"
+        href={listClick}
         rel="noopener noreferrer"
       >
         <ListItemIcon>
@@ -219,40 +246,42 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         <ListItemSecondaryAction>
           {!disableImport && (
             <Tooltip title={t('Launch an import of this file')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress || !isImportActive()}
-                    onClick={() => {
-                      if (handleOpenImport && file) {
-                        handleOpenImport(file);
-                      }
-                    }}
-                    aria-haspopup="true"
-                    color={nested ? 'inherit' : 'primary'}
-                    size="large"
-                  >
-                    <ProgressUpload />
-                  </IconButton>
-                </span>
+              <span>
+                <IconButton
+                  disabled={isProgress || !isImportActive()}
+                  onClick={() => {
+                    if (handleOpenImport && file) {
+                      handleOpenImport(file);
+                    }
+                  }}
+                  aria-haspopup="true"
+                  color={nested ? 'inherit' : 'primary'}
+                  size="large"
+                >
+                  <ProgressUpload />
+                </IconButton>
+              </span>
             </Tooltip>
           )}
           {!directDownload && !isFail && (
             <Tooltip title={t('Download this file')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress}
-                    href={`${APP_BASE_PATH}/storage/get/${encodedFilePath}`}
-                    aria-haspopup="true"
-                    color={nested ? 'inherit' : 'primary'}
-                    size="large">
-                    <GetAppOutlined />
-                  </IconButton>
-                </span>
+              <span>
+                <IconButton
+                  disabled={isProgress}
+                  href={`${APP_BASE_PATH}/storage/get/${encodedFilePath}`}
+                  aria-haspopup="true"
+                  color={nested ? 'inherit' : 'primary'}
+                  size="large"
+                >
+                  <GetAppOutlined />
+                </IconButton>
+              </span>
             </Tooltip>
           )}
-          {!isExternalReferenceAttachment && <>
-            {isFail || isOutdated ? (
-              <Tooltip title={t('Delete this file')}>
+          {!isExternalReferenceAttachment && (
+            <>
+              {isFail || isOutdated ? (
+                <Tooltip title={t('Delete this file')}>
                   <span>
                     <IconButton
                       disabled={isProgress}
@@ -263,9 +292,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                       <DeleteOutlined />
                     </IconButton>
                   </span>
-              </Tooltip>
-            ) : (
-              <Tooltip title={t('Delete this file')}>
+                </Tooltip>
+              ) : (
+                <Tooltip title={t('Delete this file')}>
                   <span>
                     <IconButton
                       disabled={isProgress}
@@ -276,9 +305,10 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                       <DeleteOutlined />
                     </IconButton>
                   </span>
-              </Tooltip>
-            )}
-          </>}
+                </Tooltip>
+              )}
+            </>
+          )}
         </ListItemSecondaryAction>
       </ListItem>
       <FileWork file={file} nested={workNested} />
@@ -292,16 +322,21 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         <DialogContent>
           <DialogContentText>
             {t('Do you want to delete this file?')}
-            {isContainsReference && <Alert severity="warning" variant="outlined" style={{ position: 'relative', marginTop: 20 }}>
-              {t('This file is linked to an external reference. If you delete it, the reference will be deleted as well.')}
-            </Alert>}
+            {isContainsReference && (
+              <Alert
+                severity="warning"
+                variant="outlined"
+                style={{ position: 'relative', marginTop: 20 }}
+              >
+                {t(
+                  'This file is linked to an external reference. If you delete it, the reference will be deleted as well.',
+                )}
+              </Alert>
+            )}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
           <Button
@@ -326,10 +361,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseRemove}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseRemove} disabled={deleting}>
             {t('Cancel')}
           </Button>
           <Button
