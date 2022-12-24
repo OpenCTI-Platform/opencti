@@ -90,16 +90,14 @@ const dataSourceMutation = graphql`
   }
 `;
 
-const dataSourceValidation = (t: (message: string) => string) => Yup.object()
-  .shape({
-    name: Yup.string()
-      .required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-    confidence: Yup.number(),
-  });
+const dataSourceValidation = (t: (message: string) => string) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
+  description: Yup.string()
+    .min(3, t('The value is too short'))
+    .max(5000, t('The value is too long'))
+    .required(t('This field is required')),
+  confidence: Yup.number(),
+});
 
 interface DataSourceAddInput {
   name: string,
@@ -268,28 +266,6 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
     </React.Fragment>
   );
 
-  const button = (handleReset: () => void, isSubmitting: boolean, submitForm: () => Promise<void>) => (
-    <React.Fragment>
-      <Button
-        variant="contained"
-        onClick={handleReset}
-        disabled={isSubmitting}
-        classes={{ root: classes.button }}
-      >
-        {t('Cancel')}
-      </Button>
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={submitForm}
-        disabled={isSubmitting}
-        classes={{ root: classes.button }}
-      >
-        {t('Create')}
-      </Button>
-    </React.Fragment>
-  );
-
   const renderClassic = () => (
     <div>
       <Fab
@@ -337,7 +313,23 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
               <div style={{ margin: '20px 0 20px 0' }}>
                 {fields(setFieldValue, values)}
                 <div className={classes.buttons}>
-                  {button(handleReset, isSubmitting, submitForm)}
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
                 </div>
               </div>
             )}
@@ -367,7 +359,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
           validationSchema={dataSourceValidation(t)}
           onSubmit={onSubmit}
           onReset={onReset}
-          >
+        >
           {({
             submitForm,
             handleReset,
@@ -381,7 +373,19 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
                 {fields(setFieldValue, values)}
               </DialogContent>
               <DialogActions classes={{ root: classes.dialogActions }}>
-                {button(handleReset, isSubmitting, submitForm)}
+                <Button
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {t('Create')}
+                </Button>
               </DialogActions>
             </div>
           )}

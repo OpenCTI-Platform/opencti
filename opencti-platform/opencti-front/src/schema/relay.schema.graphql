@@ -1503,7 +1503,7 @@ input MarkingDefinitionsFiltering {
 
 type MarkingDefinitionConnection {
   pageInfo: PageInfo!
-  edges: [MarkingDefinitionEdge!]
+  edges: [MarkingDefinitionEdge!]!
 }
 
 type MarkingDefinitionEdge {
@@ -2325,6 +2325,7 @@ enum NotesOrdering {
   createdBy
   x_opencti_workflow_id
   objectMarking
+  note_types
 }
 
 enum NotesFilter {
@@ -2341,6 +2342,8 @@ enum NotesFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  note_types
+  likelihood
 }
 
 input NotesFiltering {
@@ -2352,7 +2355,7 @@ input NotesFiltering {
 
 type NoteConnection {
   pageInfo: PageInfo!
-  edges: [NoteEdge]
+  edges: [NoteEdge!]!
 }
 
 type NoteEdge {
@@ -2395,6 +2398,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   attribute_abstract: String
   content: String!
   authors: [String]
+  note_types: [String]
+  likelihood: Int
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -2413,6 +2418,8 @@ input NoteAddInput {
   attribute_abstract: String
   content: content_String_NotNull_minLength_2!
   authors: [String]
+  note_types: [String]
+  likelihood: Int
   revoked: Boolean
   lang: String
   createdBy: String
@@ -2435,6 +2442,8 @@ input NoteUserAddInput {
   x_opencti_stix_ids: [String]
   attribute_abstract: String
   content: content_String_NotNull_minLength_2!
+  note_types: [String]
+  likelihood: Int
   revoked: Boolean
   lang: String
   confidence: Int
@@ -7435,10 +7444,6 @@ type Query {
   containersObjectsOfObject(id: String!, types: [String], filters: [ContainersFiltering], filterMode: FilterMode, search: String): StixObjectOrStixRelationshipConnection
   note(id: String): Note
   notes(first: Int, after: ID, orderBy: NotesOrdering, orderMode: OrderingMode, filters: [NotesFiltering], filterMode: FilterMode, search: String, toStix: Boolean): NoteConnection
-  notesTimeSeries(objectId: String, authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
-  notesNumber(objectId: String, endDate: DateTime): Number
-  notesDistribution(objectId: String, field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String): [Distribution]
-  noteContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   observedData(id: String): ObservedData
   observedDatas(first: Int, after: ID, orderBy: ObservedDatasOrdering, orderMode: OrderingMode, filters: [ObservedDatasFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ObservedDataConnection
   observedDatasTimeSeries(objectId: String, authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
@@ -8093,7 +8098,7 @@ type Mutation {
   campaignEdit(id: ID!): CampaignEditMutations
   containerEdit(id: ID!): ContainerEditMutations
   noteAdd(input: NoteAddInput): Note
-  userNoteAdd(input: NoteUserAddInput): Note
+  userNoteAdd(input: NoteUserAddInput!): Note
   noteEdit(id: ID!): NoteEditMutations
   observedDataAdd(input: ObservedDataAddInput): ObservedData
   observedDataEdit(id: ID!): ObservedDataEditMutations
@@ -9015,6 +9020,7 @@ enum VocabularyCategory {
   threat_actor_role_ov
   threat_actor_sophistication_ov
   tool_types_ov
+  note_types_ov
 }
 
 type VocabularyFieldDefinition {

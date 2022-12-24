@@ -90,6 +90,7 @@ class SystemComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={system.id}
+          defaultMarking={(system.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <SystemEdition systemId={system.id} />

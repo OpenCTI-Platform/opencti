@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+// -- CONVERTOR --
+
 export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null
   ? ''
   : {
@@ -28,3 +30,16 @@ export const convertCreatedBy = (element) => (R.pathOr(null, ['createdBy', 'name
     label: element?.createdBy?.name ?? null,
     value: element?.createdBy?.id ?? null,
   });
+
+// -- EXTRACTOR --
+
+export const handleChangesObjectMarking = (element, values) => {
+  const currentMarkingDefinitions = convertMarkings(element);
+  const added = values.filter((v) => !currentMarkingDefinitions.map((c) => c.value)
+    .includes(v.value))
+    .at(0);
+  const removed = currentMarkingDefinitions.filter((c) => !values.map((v) => v.value)
+    .includes(c.value))
+    .at(0);
+  return { added, removed };
+};

@@ -315,6 +315,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_base_score: number;
   x_opencti_score: number;
   usages: number;
+  note_types: Array<string>;
+  likelihood: number;
 }
 
 interface StoreEntity extends BasicStoreEntity, StoreCommon {

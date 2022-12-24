@@ -235,6 +235,7 @@ const useSearchEntities = ({
       '100',
     ];
     const confidences = ['0', '15', '50', '75', '85'];
+    const likelihoods = ['0', '15', '50', '75', '85'];
     if (!event) {
       return;
     }
@@ -509,6 +510,38 @@ const useSearchEntities = ({
           type: 'Vocabulary',
         }));
         unionSetEntities('confidence_lte', confidenceLteEntities);
+        break;
+      // endregion
+      // region likelihood
+      case 'likelihood':
+        // eslint-disable-next-line no-case-declarations
+        const likelihoodEntities = ['lte', 'gt'].flatMap((group) => likelihoods.map((n) => ({
+          label: n,
+          value: n,
+          type: 'Vocabulary',
+          group,
+        })));
+        unionSetEntities('likelihood', likelihoodEntities);
+        break;
+      case 'likelihood_gt':
+        // eslint-disable-next-line no-case-declarations
+        const likelihoodEntitiesGt = R.pipe(
+          R.map((n) => ({
+            label: t(`likelihood_${n.toString()}`),
+            value: n,
+            type: 'Vocabulary',
+          })),
+        )(likelihoods);
+        unionSetEntities('likelihood_gt', likelihoodEntitiesGt);
+        break;
+      case 'likelihood_lte':
+        // eslint-disable-next-line no-case-declarations
+        const likelihoodLteEntities = likelihoods.map((n) => ({
+          label: n,
+          value: n,
+          type: 'Vocabulary',
+        }));
+        unionSetEntities('likelihood_lte', likelihoodLteEntities);
         break;
       // endregion
       // region x_opencti_score
@@ -1161,6 +1194,15 @@ const useSearchEntities = ({
           type: 'Vocabulary',
         }));
         unionSetEntities('x_opencti_negative', negativeValue);
+        break;
+      case 'note_types':
+        fetchQuery(vocabularySearchQuery, {
+          category: 'note_types_ov',
+        })
+          .toPromise()
+          .then((data) => {
+            unionSetEntities('note_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
+          });
         break;
       default:
         break;

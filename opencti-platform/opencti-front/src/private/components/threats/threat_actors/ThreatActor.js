@@ -82,6 +82,7 @@ class ThreatActorComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={threatActor.id}
+          defaultMarking={(threatActor.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorEdition threatActorId={threatActor.id} />

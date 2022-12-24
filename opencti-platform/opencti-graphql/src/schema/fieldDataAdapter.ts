@@ -63,6 +63,7 @@ export const multipleAttributes = [
   'platform_hidden_types',
   'platform_entities_files_ref',
   'descriptions',
+  'note_types',
   // meta
   INPUT_OBJECTS,
   INPUT_MARKINGS,

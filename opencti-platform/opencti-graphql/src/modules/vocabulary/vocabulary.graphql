@@ -27,6 +27,7 @@ enum VocabularyCategory {
   threat_actor_role_ov
   threat_actor_sophistication_ov
   tool_types_ov
+  note_types_ov
 }
 
 type VocabularyFieldDefinition {

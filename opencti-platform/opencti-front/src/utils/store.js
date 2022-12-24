@@ -18,7 +18,13 @@ export const insertNode = (store, key, filters, rootField) => {
   delete params.count;
   delete params.id;
 
-  const conn = ConnectionHandler.getConnection(record, key, params);
+  let conn;
+  if (Object.keys(params).length === 0) {
+    conn = ConnectionHandler.getConnection(record, key);
+  } else {
+    conn = ConnectionHandler.getConnection(record, key, params);
+  }
+
   if (conn) {
     // Build the payload to add
     const payload = store.getRootField(rootField);

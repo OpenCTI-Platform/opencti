@@ -82,6 +82,7 @@ class ToolComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={tool.id}
+          defaultMarking={(tool.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ToolEdition toolId={tool.id} />

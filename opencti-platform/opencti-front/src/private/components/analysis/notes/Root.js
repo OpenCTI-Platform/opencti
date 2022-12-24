@@ -100,7 +100,7 @@ class RootNote extends Component {
                       exact
                       path="/dashboard/analysis/notes/:noteId/files"
                       render={(routeProps) => (
-                        <React.Fragment>
+                        <>
                           <ContainerHeader
                             container={props.note}
                             PopoverComponent={<ReportPopover />}
@@ -112,14 +112,14 @@ class RootNote extends Component {
                             connectorsImport={props.connectorsForImport}
                             entity={props.note}
                           />
-                        </React.Fragment>
+                        </>
                       )}
                     />
                     <Route
                       exact
                       path="/dashboard/analysis/notes/:noteId/history"
                       render={(routeProps) => (
-                        <React.Fragment>
+                        <>
                           <ContainerHeader
                             container={props.note}
                             PopoverComponent={<ReportPopover />}
@@ -129,7 +129,7 @@ class RootNote extends Component {
                             stixCoreObjectId={noteId}
                             withoutRelations={true}
                           />
-                        </React.Fragment>
+                        </>
                       )}
                     />
                   </div>

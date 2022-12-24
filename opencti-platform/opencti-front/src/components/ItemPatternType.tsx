@@ -25,10 +25,10 @@ const styles = makeStyles(() => ({
 
 interface InlineStyle {
   [k: string]: {
-    backgroundColor: string,
-    color: string,
-    border: string
-  }
+    backgroundColor: string;
+    color: string;
+    border: string;
+  };
 }
 
 const inlineStyles: InlineStyle = {
@@ -85,17 +85,24 @@ const inlineStyles: InlineStyle = {
 };
 
 interface ItemPatternTypeProps {
-  label: string,
-  variant?: 'inList',
+  label: string;
+  variant?: 'inList';
 }
 
-const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({ variant, label }) => {
+const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
+  variant,
+  label,
+}) => {
   const { t } = useFormatter();
   const classes = styles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   const hasPredefinedStyle = Object.keys(inlineStyles).includes(label);
   return (
-    <Chip className={style} style={hasPredefinedStyle ? inlineStyles[label] : inlineStyles.stix} label={t(label)} />
+    <Chip
+      className={style}
+      style={hasPredefinedStyle ? inlineStyles[label] : inlineStyles.stix}
+      label={t(label)}
+    />
   );
 };
 export default ItemPatternType;

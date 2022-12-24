@@ -1,8 +1,7 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
-import { now } from '../../../src/utils/format';
 
 const LIST_QUERY = gql`
   query notes(
@@ -29,60 +28,8 @@ const LIST_QUERY = gql`
           attribute_abstract
           content
           authors
-        }
-      }
-    }
-  }
-`;
-
-const TIMESERIES_QUERY = gql`
-  query notesTimeSeries(
-    $objectId: String
-    $authorId: String
-    $field: String!
-    $operation: StatsOperation!
-    $startDate: DateTime!
-    $endDate: DateTime!
-    $interval: String!
-  ) {
-    notesTimeSeries(
-      objectId: $objectId
-      authorId: $authorId
-      field: $field
-      operation: $operation
-      startDate: $startDate
-      endDate: $endDate
-      interval: $interval
-    ) {
-      date
-      value
-    }
-  }
-`;
-
-const NUMBER_QUERY = gql`
-  query notesNumber($objectId: String, $endDate: DateTime!) {
-    notesNumber(objectId: $objectId, endDate: $endDate) {
-      total
-      count
-    }
-  }
-`;
-
-const DISTRIBUTION_QUERY = gql`
-  query notesDistribution(
-    $objectId: String
-    $field: String!
-    $operation: StatsOperation!
-    $limit: Int
-    $order: String
-  ) {
-    notesDistribution(objectId: $objectId, field: $field, operation: $operation, limit: $limit, order: $order) {
-      label
-      value
-      entity {
-        ... on Identity {
-          name
+          likelihood
+          confidence
         }
       }
     }
@@ -98,6 +45,8 @@ const READ_QUERY = gql`
       content
       authors
       toStix
+      likelihood
+      confidence
     }
   }
 `;
@@ -115,6 +64,8 @@ describe('Note resolver standard behavior', () => {
           attribute_abstract
           content
           authors
+          likelihood
+          confidence
         }
       }
     `;
@@ -129,6 +80,8 @@ describe('Note resolver standard behavior', () => {
           'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
         ],
         createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
+        likelihood: 90,
+        confidence: 20,
       },
     };
     const note = await queryAsAdmin({
@@ -138,6 +91,8 @@ describe('Note resolver standard behavior', () => {
     expect(note).not.toBeNull();
     expect(note.data.noteAdd).not.toBeNull();
     expect(note.data.noteAdd.attribute_abstract).toEqual('Note');
+    expect(note.data.noteAdd.likelihood).toEqual(90);
+    expect(note.data.noteAdd.confidence).toEqual(20);
     noteInternalId = note.data.noteAdd.id;
   });
   it('should note loaded by internal id', async () => {
@@ -186,135 +141,9 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.note).not.toBeNull();
     expect(queryResult.data.note.objects.edges.length).toEqual(5);
   });
-  it('should note contains stix object or stix relationship accurate', async () => {
-    const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const stixRelationship = await elLoadById(testContext, ADMIN_USER, 'relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
-    const NOTE_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP = gql`
-      query noteContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
-        noteContainsStixObjectOrStixRelationship(
-          id: $id
-          stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId
-        )
-      }
-    `;
-    let queryResult = await queryAsAdmin({
-      query: NOTE_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
-      variables: {
-        id: datasetNoteInternalId,
-        stixObjectOrStixRelationshipId: intrusionSet.internal_id,
-      },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.noteContainsStixObjectOrStixRelationship).not.toBeNull();
-    expect(queryResult.data.noteContainsStixObjectOrStixRelationship).toBeTruthy();
-    queryResult = await queryAsAdmin({
-      query: NOTE_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
-      variables: {
-        id: datasetNoteInternalId,
-        stixObjectOrStixRelationshipId: stixRelationship.internal_id,
-      },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.noteContainsStixObjectOrStixRelationship).not.toBeNull();
-    expect(queryResult.data.noteContainsStixObjectOrStixRelationship).toBeTruthy();
-  });
   it('should list notes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.notes.edges.length).toEqual(2);
-  });
-  it('should timeseries notes to be accurate', async () => {
-    const queryResult = await queryAsAdmin({
-      query: TIMESERIES_QUERY,
-      variables: {
-        field: 'created',
-        operation: 'count',
-        startDate: '2020-01-01T00:00:00+00:00',
-        endDate: '2021-01-01T00:00:00+00:00',
-        interval: 'month',
-      },
-    });
-    expect(queryResult.data.notesTimeSeries.length).toEqual(13);
-    expect(queryResult.data.notesTimeSeries[2].value).toEqual(1);
-    expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
-  });
-  it('should timeseries notes for entity to be accurate', async () => {
-    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const queryResult = await queryAsAdmin({
-      query: TIMESERIES_QUERY,
-      variables: {
-        objectId: malware.internal_id,
-        field: 'created',
-        operation: 'count',
-        startDate: '2020-01-01T00:00:00+00:00',
-        endDate: '2021-01-01T00:00:00+00:00',
-        interval: 'month',
-      },
-    });
-    expect(queryResult.data.notesTimeSeries.length).toEqual(13);
-    expect(queryResult.data.notesTimeSeries[2].value).toEqual(1);
-    expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
-  });
-  it('should timeseries notes for author to be accurate', async () => {
-    const identity = await elLoadById(testContext, ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
-    const queryResult = await queryAsAdmin({
-      query: TIMESERIES_QUERY,
-      variables: {
-        authorId: identity.internal_id,
-        field: 'created',
-        operation: 'count',
-        startDate: '2020-01-01T00:00:00+00:00',
-        endDate: '2021-01-01T00:00:00+00:00',
-        interval: 'month',
-      },
-    });
-    expect(queryResult.data.notesTimeSeries.length).toEqual(13);
-    expect(queryResult.data.notesTimeSeries[2].value).toEqual(1);
-    expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
-  });
-  it('should notes number to be accurate', async () => {
-    const queryResult = await queryAsAdmin({
-      query: NUMBER_QUERY,
-      variables: {
-        endDate: now(),
-      },
-    });
-    expect(queryResult.data.notesNumber.total).toEqual(2);
-    expect(queryResult.data.notesNumber.count).toEqual(2);
-  });
-  it('should notes number by entity to be accurate', async () => {
-    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const queryResult = await queryAsAdmin({
-      query: NUMBER_QUERY,
-      variables: {
-        objectId: malware.internal_id,
-        endDate: now(),
-      },
-    });
-    expect(queryResult.data.notesNumber.total).toEqual(1);
-    expect(queryResult.data.notesNumber.count).toEqual(1);
-  });
-  it('should notes distribution to be accurate', async () => {
-    const queryResult = await queryAsAdmin({
-      query: DISTRIBUTION_QUERY,
-      variables: {
-        field: 'created-by.name',
-        operation: 'count',
-      },
-    });
-    expect(queryResult.data.notesDistribution.length).toEqual(0);
-  });
-  it('should notes distribution by entity to be accurate', async () => {
-    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const queryResult = await queryAsAdmin({
-      query: DISTRIBUTION_QUERY,
-      variables: {
-        objectId: malware.internal_id,
-        field: 'created-by.internal_id',
-        operation: 'count',
-      },
-    });
-    expect(queryResult.data.notesDistribution[0].entity.name).toEqual('ANSSI');
-    expect(queryResult.data.notesDistribution[0].value).toEqual(1);
   });
   it('should update note', async () => {
     const UPDATE_QUERY = gql`

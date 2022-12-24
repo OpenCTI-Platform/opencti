@@ -713,6 +713,14 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
         'A self-replicating, self-contained program that usually executes itself without user intervention.',
     },
   ],
+  // N
+  note_types_ov: [
+    { key: 'internal' },
+    { key: 'assessment' },
+    { key: 'analysis' },
+    { key: 'feedback' },
+    { key: 'external' },
+  ],
   // O
   opinion_ov: [
     {

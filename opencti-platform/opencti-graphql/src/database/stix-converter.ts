@@ -598,6 +598,8 @@ const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote =>
     content: instance.content,
     authors: instance.authors,
     object_refs: convertObjectReferences(instance),
+    note_types: instance.note_types,
+    likelihood: instance.likelihood,
   };
 };
 const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {

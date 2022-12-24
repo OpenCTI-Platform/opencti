@@ -83,6 +83,7 @@ class InfrastructureComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={infrastructure.id}
+          defaultMarking={(infrastructure.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <InfrastructureEdition infrastructureId={infrastructure.id} />

@@ -197,7 +197,7 @@ const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } = {
     'aliases',
   ],
   [ENTITY_TYPE_CAMPAIGN]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'confidence', 'aliases'],
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence', 'attribute_abstract'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence', 'attribute_abstract', 'note_types', 'likelihood'],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description', 'confidence'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence', 'explanation'],
   [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description', 'confidence', 'report_types'],
@@ -363,6 +363,8 @@ const stixDomainObjectsAttributes: { [k: string]: Array<string> } = {
     'authors',
     'x_opencti_graph_data',
     'x_opencti_workflow_id',
+    'note_types',
+    'likelihood'
   ],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
     'internal_id',

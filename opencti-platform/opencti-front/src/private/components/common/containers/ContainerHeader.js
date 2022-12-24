@@ -413,6 +413,7 @@ const ContainerHeader = (props) => {
   const {
     container,
     PopoverComponent,
+    popoverSecurity,
     link,
     modes,
     currentMode,
@@ -541,7 +542,7 @@ const ContainerHeader = (props) => {
           )}
         </Typography>
       </Tooltip>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE]}>
         <div className={classes.popover}>
           {React.cloneElement(PopoverComponent, { id: container.id })}
         </div>

@@ -100,7 +100,7 @@ export const applyMigration = (context) => {
       // Filter migration to apply. Should be > lastRun
       const [lastMigrationTime] = state.lastRun.split('-');
       const lastMigrationDate = new Date(parseInt(lastMigrationTime, 10));
-      const migrationToApply = R.filter((file) => new Date(file.timestamp) > lastMigrationDate, filesMigrationSet);
+      const migrationToApply = filesMigrationSet.filter((file) => new Date(file.timestamp) > lastMigrationDate);
       const alreadyAppliedMigrations = new Map(state.migrations ? state.migrations.map((i) => [i.title, i]) : null);
       /** Match the files migrations to the database migrations.
        Plays migrations that does not have matching name / timestamp */

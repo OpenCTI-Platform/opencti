@@ -15,6 +15,7 @@ export const directFilters = [
   'fromId',
   'toId',
   'elementId',
+  'note_types',
 ];
 const uniqFilters = [
   'revoked',
@@ -24,6 +25,8 @@ const uniqFilters = [
   'x_opencti_base_score_lte',
   'confidence_gt',
   'confidence_lte',
+  'likelihood_gt',
+  'likelihood_lte',
   'x_opencti_negative',
   'x_opencti_score_gt',
   'x_opencti_score_lte',

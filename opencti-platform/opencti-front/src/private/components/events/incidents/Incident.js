@@ -81,6 +81,7 @@ class IncidentComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={incident.id}
+          defaultMarking={(incident.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IncidentEdition incidentId={incident.id} />
