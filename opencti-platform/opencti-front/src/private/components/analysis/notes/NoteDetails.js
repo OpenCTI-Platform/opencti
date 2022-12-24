@@ -4,12 +4,14 @@ import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
+import ItemLikelihood from '../../../../components/ItemLikelihood';
 
 const styles = (theme) => ({
   paper: {
@@ -39,53 +41,58 @@ class NoteDetailsComponent extends Component {
           {t('Entity details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Abstract')}
-          </Typography>
-          <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
-            parserOptions={{ commonmark: true }}
-            className="markdown"
-          >
-            {note.attribute_abstract}
-          </Markdown>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Content')}
-          </Typography>
-          <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
-            parserOptions={{ commonmark: true }}
-            className="markdown"
-          >
-            {note.content}
-          </Markdown>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Note types')}
-          </Typography>
-          {note.note_types?.map((noteType) => (
-            <Chip
-              key={noteType}
-              classes={{ root: classes.chip }}
-              label={noteType}
-            />
-          ))}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}>
-            {t('Likelihood')}
-          </Typography>
-          {note.likelihood
-            && <>{note.likelihood} %</>
-          }
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={9}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Abstract')}
+              </Typography>
+              <Markdown
+                remarkPlugins={[remarkGfm, remarkParse]}
+                parserOptions={{ commonmark: true }}
+                className="markdown"
+              >
+                {note.attribute_abstract}
+              </Markdown>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Content')}
+              </Typography>
+              <Markdown
+                remarkPlugins={[remarkGfm, remarkParse]}
+                parserOptions={{ commonmark: true }}
+                className="markdown"
+              >
+                {note.content}
+              </Markdown>
+            </Grid>
+            <Grid item={true} xs={3}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+              >
+                {t('Note types')}
+              </Typography>
+              {note.note_types?.map((noteType) => (
+                <Chip
+                  key={noteType}
+                  classes={{ root: classes.chip }}
+                  label={noteType}
+                  color="primary"
+                />
+              ))}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Likelihood')}
+              </Typography>
+              <ItemLikelihood likelihood={note.likelihood} />
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );

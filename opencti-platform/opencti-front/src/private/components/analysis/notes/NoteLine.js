@@ -157,6 +157,8 @@ const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
       content
       created
       note_types
+      likelihood
+      confidence
       createdBy {
         ... on Identity {
           id

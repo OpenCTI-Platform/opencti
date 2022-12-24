@@ -5,7 +5,11 @@ import { FormikConfig } from 'formik/dist/types';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
-import { EditOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
+import {
+  EditOutlined,
+  ExpandMoreOutlined,
+  RateReviewOutlined,
+} from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -29,11 +33,11 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import {
-  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery, StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
+  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
-import {
-  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
+import SliderField from '../../../../components/SliderField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -58,16 +62,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
-  query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery($count: Int!, $filters: [NotesFiltering!]) {
-    ...StixCoreObjectOrStixCoreRelationshipNotesCards_data @arguments(count: $count, filters: $filters)
+  query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
+    $count: Int!
+    $filters: [NotesFiltering!]
+  ) {
+    ...StixCoreObjectOrStixCoreRelationshipNotesCards_data
+      @arguments(count: $count, filters: $filters)
   }
 `;
 
 const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
   fragment StixCoreObjectOrStixCoreRelationshipNotesCards_data on Query
-  @argumentDefinitions(count: { type: "Int", defaultValue: 25 }, filters: { type: "[NotesFiltering!]" }) {
+  @argumentDefinitions(
+    count: { type: "Int", defaultValue: 25 }
+    filters: { type: "[NotesFiltering!]" }
+  ) {
     notes(first: $count, filters: $filters)
-    @connection(key: "Pagination_notes") {
+      @connection(key: "Pagination_notes") {
       edges {
         node {
           id
@@ -90,69 +101,66 @@ const toFinalValues = (values: NoteAddInput, id: string) => {
   return {
     attribute_abstract: values.attribute_abstract,
     content: values.content,
-    confidence: () => parseInt(String(values.confidence), 10),
+    confidence: parseInt(String(values.confidence), 10),
     note_types: values.note_types,
-    likelihood: () => parseInt(String(values.likelihood), 10),
+    likelihood: parseInt(String(values.likelihood), 10),
     objectMarking: values.objectMarking.map((v) => v.value),
     objectLabel: values.objectLabel.map((v) => v.value),
     objects: [id],
   };
 };
 
-const toOptions = (objectMarkings: { id: string, definition: string | null }[]) => objectMarkings.map((objectMarking) => ({
+const toOptions = (
+  objectMarkings: { id: string; definition: string | null }[],
+) => objectMarkings.map((objectMarking) => ({
   label: objectMarking.definition ?? objectMarking.id,
   value: objectMarking.id,
 }));
 
 export interface NoteAddInput {
-  attribute_abstract: string,
-  content: string,
-  confidence: number,
-  note_types: string[],
-  likelihood?: number
-  objectMarking: Option[],
-  objectLabel: Option[],
+  attribute_abstract: string;
+  content: string;
+  confidence: number;
+  note_types: string[];
+  likelihood?: number;
+  objectMarking: Option[];
+  objectLabel: Option[];
 }
 
 interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
-  id: string,
-  marginTop?: number,
-  queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>,
-  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
-  defaultMarking: { id: string, definition: string | null }[],
-  title: string
+  id: string;
+  marginTop?: number;
+  queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>;
+  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
+  defaultMarking: { id: string; definition: string | null }[];
+  title: string;
 }
 
-const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<StixCoreObjectOrStixCoreRelationshipNotesCardsProps> = ({
-  id,
-  marginTop,
-  queryRef,
-  paginationOptions,
-  defaultMarking,
-  title,
-}) => {
+const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
+StixCoreObjectOrStixCoreRelationshipNotesCardsProps
+> = ({ id, marginTop, queryRef, paginationOptions, defaultMarking, title }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
-  const data = usePreloadedFragment<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery, StixCoreObjectOrStixCoreRelationshipNotesCards_data$key>({
+  const data = usePreloadedFragment<
+  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
+  >({
     linesQuery: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
     linesFragment: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,
     queryRef,
   });
-
   const notes = data?.notes?.edges ?? [];
-
   const bottomRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<boolean>(false);
   const initialValues: NoteAddInput = {
     attribute_abstract: '',
     content: '',
+    likelihood: 50,
     confidence: 75,
     note_types: [],
     objectMarking: toOptions(defaultMarking),
     objectLabel: [],
   };
-
   const scrollToBottom = () => {
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -167,23 +175,18 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<StixCore
       return newValue;
     });
   };
-
   const [commit] = useMutation(noteCreationUserMutation);
-
-  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     const finalValues = toFinalValues(values, id);
-
     commit({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_notes',
-          paginationOptions,
-          'userNoteAdd',
-        );
+        insertNode(store, 'Pagination_notes', paginationOptions, 'userNoteAdd');
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -191,9 +194,8 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<StixCore
       },
     });
   };
-
   return (
-    <div style={{ marginTop: marginTop || 40 }}>
+    <div style={{ marginTop: marginTop || 50 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {title}
       </Typography>
@@ -203,7 +205,8 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<StixCore
             color="secondary"
             onClick={handleToggleWrite}
             classes={{ root: classes.createButton }}
-            size="large">
+            size="large"
+          >
             <EditOutlined fontSize="small" />
           </IconButton>
           <AddNotes
@@ -213,27 +216,28 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<StixCore
         </>
       </Security>
       <div className="clearfix" />
-      {
-        notes.map(({ node }) => node)
-          .map((note) => {
-            return (
-              <StixCoreObjectOrStixCoreRelationshipNoteCard
-                key={note.id}
-                data={note}
-                stixCoreObjectOrStixCoreRelationshipId={id}
-                paginationOptions={paginationOptions}
-              />
-            );
-          })
-      }
+      {notes
+        .map(({ node }) => node)
+        .map((note) => {
+          return (
+            <StixCoreObjectOrStixCoreRelationshipNoteCard
+              key={note.id}
+              data={note}
+              stixCoreObjectOrStixCoreRelationshipId={id}
+              paginationOptions={paginationOptions}
+            />
+          );
+        })}
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <Accordion
           style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
           expanded={open}
-          variant="outlined">
+          variant="outlined"
+        >
           <AccordionSummary
             expandIcon={<ExpandMoreOutlined />}
-            onClick={handleToggleWrite}>
+            onClick={handleToggleWrite}
+          >
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;
@@ -286,7 +290,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<StixCore
                     containerStyle={fieldSpacingContainerStyle}
                   />
                   <Field
-                    component={TextField}
+                    component={SliderField}
                     variant="standard"
                     name="likelihood"
                     label={t('Likelihood')}
@@ -295,7 +299,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<StixCore
                   />
                   <ObjectLabelField
                     name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={{ marginTop: 10, width: '100%' }}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                   />

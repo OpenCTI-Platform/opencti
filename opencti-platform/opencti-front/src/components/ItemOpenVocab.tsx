@@ -33,9 +33,7 @@ interface ItemOpenVocabProps {
 }
 
 const itemOpenVocabQuery = graphql`
-  query ItemOpenVocabQuery(
-    $category: VocabularyCategory
-  ) {
+  query ItemOpenVocabQuery($category: VocabularyCategory) {
     vocabularies(category: $category) {
       edges {
         node {
@@ -47,14 +45,15 @@ const itemOpenVocabQuery = graphql`
   }
 `;
 
-const ItemOpenVocabComponent: FunctionComponent<Omit<ItemOpenVocabProps, 'type'>> = ({
-  value,
-  small = true,
-  queryRef,
-}) => {
+const ItemOpenVocabComponent: FunctionComponent<
+Omit<ItemOpenVocabProps, 'type'>
+> = ({ value, small = true, queryRef }) => {
   const { t } = useFormatter();
 
-  const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(itemOpenVocabQuery, queryRef);
+  const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
+    itemOpenVocabQuery,
+    queryRef,
+  );
   const openVocabList = (vocabularies?.edges ?? []).map(({ node }) => node);
 
   const classes = useStyles();
@@ -75,7 +74,9 @@ const ItemOpenVocabComponent: FunctionComponent<Omit<ItemOpenVocabProps, 'type'>
     );
   }
   const openVocab = R.head(openVocabList.filter((n) => n.name === value));
-  const description = openVocab && openVocab.description ? openVocab.description : t('No description');
+  const description = openVocab && openVocab.description
+    ? openVocab.description
+    : t('No description');
   const preStyle = small
     ? { margin: 0, paddingTop: 7, paddingBottom: 4 }
     : { marginTop: 7 };
@@ -93,14 +94,20 @@ const ItemOpenVocabComponent: FunctionComponent<Omit<ItemOpenVocabProps, 'type'>
   );
 };
 
-const ItemOpenVocab: FunctionComponent<Omit<ItemOpenVocabProps, 'queryRef'>> = (props) => {
+const ItemOpenVocab: FunctionComponent<Omit<ItemOpenVocabProps, 'queryRef'>> = (
+  props,
+) => {
   const { typeToCategory } = useVocabularyCategory();
-  const queryRef = useQueryLoading<ItemOpenVocabQuery>(itemOpenVocabQuery, { category: typeToCategory(props.type) });
+  const queryRef = useQueryLoading<ItemOpenVocabQuery>(itemOpenVocabQuery, {
+    category: typeToCategory(props.type),
+  });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <ItemOpenVocabComponent {...props} queryRef={queryRef} />
     </React.Suspense>
-  ) : <Loader variant={LoaderVariant.inElement} />;
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
+  );
 };
 
 export default ItemOpenVocab;

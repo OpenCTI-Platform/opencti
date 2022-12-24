@@ -24,12 +24,15 @@ import { dayStartDate } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
+import SliderField from '../../../../components/SliderField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -110,22 +113,22 @@ const noteValidation = (t: (message: string) => string) => Yup.object().shape({
 });
 
 interface NoteAddInput {
-  created: Date,
-  attribute_abstract: string,
-  content: string,
-  confidence: number,
-  note_types: string[],
-  likelihood?: number
-  createdBy: Option | undefined,
-  objectMarking: Option[],
-  objectLabel: Option[],
+  created: Date;
+  attribute_abstract: string;
+  content: string;
+  confidence: number;
+  note_types: string[];
+  likelihood?: number;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
 }
 
 interface NoteCreationProps {
-  inputValue?: string,
-  display?: boolean,
-  contextual?: boolean,
-  paginationOptions: NotesLinesPaginationQuery$variables
+  inputValue?: string;
+  display?: boolean;
+  contextual?: boolean;
+  paginationOptions: NotesLinesPaginationQuery$variables;
 }
 
 const NoteCreation: FunctionComponent<NoteCreationProps> = ({
@@ -136,35 +139,36 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
   const [open, setOpen] = useState(false);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-
   const initialValues: NoteAddInput = {
     created: dayStartDate(),
     attribute_abstract: '',
     content: inputValue || '',
+    likelihood: 50,
     confidence: 75,
     note_types: [],
     createdBy: '' as unknown as Option,
     objectMarking: [],
     objectLabel: [],
   };
-
-  const [commit] = userIsKnowledgeEditor ? useMutation(noteCreationMutation) : useMutation(noteCreationUserMutation);
-
-  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const [commit] = userIsKnowledgeEditor
+    ? useMutation(noteCreationMutation)
+    : useMutation(noteCreationUserMutation);
+  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     const finalValues = {
       created: values.created,
       attribute_abstract: values.attribute_abstract,
       content: values.content,
-      confidence: () => parseInt(String(values.confidence), 10),
+      confidence: parseInt(String(values.confidence), 10),
       note_types: values.note_types,
-      likelihood: () => parseInt(String(values.likelihood), 10),
+      likelihood: parseInt(String(values.likelihood), 10),
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
@@ -191,8 +195,14 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
       },
     });
   };
-
-  const fields = (setFieldValue: (field: string, value: unknown, shouldValidate?: (boolean | undefined)) => void, values: NoteAddInput) => (
+  const fields = (
+    setFieldValue: (
+      field: string,
+      value: unknown,
+      shouldValidate?: boolean | undefined
+    ) => void,
+    values: NoteAddInput,
+  ) => (
     <>
       <Field
         component={DateTimePickerField}
@@ -235,21 +245,23 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
         containerStyle={fieldSpacingContainerStyle}
       />
       <Field
-        component={TextField}
+        component={SliderField}
         variant="standard"
         name="likelihood"
         label={t('Likelihood')}
         fullWidth={true}
         style={{ marginTop: 20 }}
       />
-      {userIsKnowledgeEditor && <CreatedByField
-        name="createdBy"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-      />}
+      {userIsKnowledgeEditor && (
+        <CreatedByField
+          name="createdBy"
+          style={{ marginTop: 10 }}
+          setFieldValue={setFieldValue}
+        />
+      )}
       <ObjectLabelField
         name="objectLabel"
-        style={fieldSpacingContainerStyle}
+        style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
         setFieldValue={setFieldValue}
         values={values.objectLabel}
       />
@@ -259,7 +271,6 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
       />
     </>
   );
-
   const renderClassic = () => {
     return (
       <div>
@@ -334,14 +345,15 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
       </div>
     );
   };
-
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab onClick={handleOpen}
+        <Fab
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
-          className={classes.createButtonContextual}>
+          className={classes.createButtonContextual}
+        >
           <Add />
         </Fab>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
@@ -361,9 +373,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
             }) => (
               <Form>
                 <DialogTitle>{t('Create a note')}</DialogTitle>
-                <DialogContent>
-                  {fields(setFieldValue, values)}
-                </DialogContent>
+                <DialogContent>{fields(setFieldValue, values)}</DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
@@ -383,7 +393,6 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
       </div>
     );
   };
-
   if (contextual) {
     return renderContextual();
   }

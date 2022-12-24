@@ -19,10 +19,13 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatedByField from '../../common/form/CreatedByField';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
+import SliderField from '../../../../components/SliderField';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -85,24 +88,27 @@ const noteValidation = (t: (v: string) => string) => Yup.object().shape({
   content: Yup.string().required(t('This field is required')),
   confidence: Yup.number(),
   note_types: Yup.array(),
-  likelihood: Yup.number().min(0).max(100)
+  likelihood: Yup.number()
+    .min(0)
+    .max(100)
     .transform((value) => (Number.isNaN(value) ? null : value))
     .nullable(true),
   x_opencti_workflow_id: Yup.object(),
 });
 
 interface NoteEditionOverviewProps {
-  note: NoteEditionOverview_note$data,
-  context: readonly ({
+  note: NoteEditionOverview_note$data;
+  context:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
+  } | null)[]
+  | null;
 }
 
-const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> = ({
-  note,
-  context,
-}) => {
+const NoteEditionOverviewComponent: FunctionComponent<
+NoteEditionOverviewProps
+> = ({ note, context }) => {
   const { t } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -123,7 +129,10 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[]) => {
+  const handleSubmitField = (
+    name: string,
+    value: Option | string | string[],
+  ) => {
     let finalValue = value ?? '';
     if (name === 'x_opencti_workflow_id') {
       finalValue = (value as Option).value;
@@ -192,7 +201,8 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={noteValidation(t)}
-      onSubmit={() => {}}>
+      onSubmit={() => {}}
+    >
       {({ setFieldValue }) => (
         <div>
           <div style={{ margin: '0px 0 20px 0' }}>
@@ -240,7 +250,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
                 <SubscriptionFocus context={context} fieldName="content" />
               }
             />
-             <OpenVocabField
+            <OpenVocabField
               label={t('Note types')}
               type="note_types_ov"
               name="note_types"
@@ -250,7 +260,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
               variant="edit"
               multiple={true}
               editContext={context}
-             />
+            />
             <ConfidenceField
               name="confidence"
               onFocus={handleChangeFocus}
@@ -262,7 +272,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
               variant="edit"
             />
             <Field
-              component={TextField}
+              component={SliderField}
               variant="standard"
               name="likelihood"
               type="number"
@@ -272,18 +282,17 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="likelihood"
-                />
+                <SubscriptionFocus context={context} fieldName="likelihood" />
               }
             />
-            {userIsKnowledgeEditor && <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              onChange={handleChangeCreatedBy}
-            />}
+            {userIsKnowledgeEditor && (
+              <CreatedByField
+                name="createdBy"
+                style={{ marginTop: 10, width: '100%' }}
+                setFieldValue={setFieldValue}
+                onChange={handleChangeCreatedBy}
+              />
+            )}
             {note.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
@@ -291,7 +300,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
+                style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
                 helpertext={
                   <SubscriptionFocus
                     context={context}
@@ -302,7 +311,11 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             )}
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={{
+                marginTop:
+                  note.workflowEnabled || userIsKnowledgeEditor ? 20 : 10,
+                width: '100%',
+              }}
               helpertext={
                 <SubscriptionFocus
                   context={context}

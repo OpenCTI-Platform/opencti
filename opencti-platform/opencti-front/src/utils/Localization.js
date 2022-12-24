@@ -2954,6 +2954,7 @@ const i18n = {
       'Reset filters': 'Réinitialiser les filtres',
       reversed: 'inversé',
       Limit: 'Limite',
+      on: 'le',
       // Time
       '24h': '24h',
       // Types
