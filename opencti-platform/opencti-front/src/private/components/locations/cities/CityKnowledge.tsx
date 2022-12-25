@@ -11,8 +11,6 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CityPopover from './CityPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectStixCyberObservables
-  from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CityKnowledge_city$key } from './__generated__/CityKnowledge_city.graphql';
 
@@ -34,7 +32,10 @@ const cityKnowledgeFragment = graphql`
 const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
   const classes = useStyles();
 
-  const city = useFragment<CityKnowledge_city$key>(cityKnowledgeFragment, cityData);
+  const city = useFragment<CityKnowledge_city$key>(
+    cityKnowledgeFragment,
+    cityData,
+  );
   const link = `/dashboard/locations/cities/${city.id}/knowledge`;
 
   return (
@@ -238,10 +239,12 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           exact
           path="/dashboard/locations/cities/:cityId/knowledge/observables"
           render={(routeProps: any) => (
-            <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={city.id}
-              stixCoreObjectLink={link}
-              noRightBar={true}
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+              entityLink={link}
+              allDirections={true}
               {...routeProps}
             />
           )}

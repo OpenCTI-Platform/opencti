@@ -12,7 +12,6 @@ import IncidentPopover from './IncidentPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import StixSightingRelationship from '../stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
@@ -195,12 +194,14 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/observables"
           render={(routeProps) => (
-            <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={incident.id}
-              stixCoreObjectLink={link}
-              noRightBar={true}
+            <EntityStixCoreRelationships
+              entityId={incident.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+              entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
+              allDirections={true}
               {...routeProps}
             />
           )}

@@ -10,7 +10,6 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EventPopover from './EventPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
@@ -209,10 +208,12 @@ class EventKnowledgeComponent extends Component {
             exact
             path="/dashboard/entities/events/:eventId/knowledge/observables"
             render={(routeProps) => (
-              <StixCoreObjectStixCyberObservables
-                stixCoreObjectId={event.id}
-                stixCoreObjectLink={link}
-                noRightBar={true}
+              <EntityStixCoreRelationships
+                entityId={event.id}
+                relationshipTypes={['related-to']}
+                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                entityLink={link}
+                allDirections={true}
                 {...routeProps}
               />
             )}

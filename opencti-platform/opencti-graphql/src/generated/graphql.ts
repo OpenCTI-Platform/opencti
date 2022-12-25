@@ -14980,11 +14980,13 @@ export type QueryStixCoreObjectRawArgs = {
 
 export type QueryStixCoreObjectsArgs = {
   after?: InputMaybe<Scalars['ID']>;
+  elementId?: InputMaybe<Scalars['String']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };

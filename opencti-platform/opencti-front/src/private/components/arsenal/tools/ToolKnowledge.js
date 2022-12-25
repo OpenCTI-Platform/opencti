@@ -9,7 +9,6 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ToolPopover from './ToolPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
@@ -196,10 +195,12 @@ class ToolKnowledgeComponent extends Component {
             exact
             path="/dashboard/arsenal/tools/:toolId/knowledge/observables"
             render={(routeProps) => (
-              <StixCoreObjectStixCyberObservables
-                stixCoreObjectId={tool.id}
-                stixCoreObjectLink={link}
-                noRightBar={true}
+              <EntityStixCoreRelationships
+                entityId={tool.id}
+                relationshipTypes={['related-to']}
+                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                entityLink={link}
+                allDirections={true}
                 {...routeProps}
               />
             )}

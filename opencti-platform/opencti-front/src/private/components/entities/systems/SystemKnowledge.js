@@ -10,7 +10,6 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import SystemPopover from './SystemPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
@@ -236,10 +235,12 @@ class SystemKnowledgeComponent extends Component {
             exact
             path="/dashboard/entities/systems/:systemId/knowledge/observables"
             render={(routeProps) => (
-              <StixCoreObjectStixCyberObservables
-                stixCoreObjectId={system.id}
-                stixCoreObjectLink={link}
-                noRightBar={true}
+              <EntityStixCoreRelationships
+                entityId={system.id}
+                relationshipTypes={['related-to']}
+                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                entityLink={link}
+                allDirections={true}
                 {...routeProps}
               />
             )}

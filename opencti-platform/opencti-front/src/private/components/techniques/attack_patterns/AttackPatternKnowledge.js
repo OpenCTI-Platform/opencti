@@ -11,8 +11,6 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import AttackPatternPopover from './AttackPatternPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
-import StixCoreObjectStixCyberObservables
-  from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 
 const styles = () => ({
   container: {
@@ -196,10 +194,12 @@ class AttackPatternKnowledgeComponent extends Component {
             exact
             path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/observables"
             render={(routeProps) => (
-              <StixCoreObjectStixCyberObservables
-                stixCoreObjectId={attackPattern.id}
-                stixCoreObjectLink={link}
-                noRightBar={true}
+              <EntityStixCoreRelationships
+                entityId={attackPattern.id}
+                relationshipTypes={['related-to']}
+                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                entityLink={link}
+                allDirections={true}
                 {...routeProps}
               />
             )}

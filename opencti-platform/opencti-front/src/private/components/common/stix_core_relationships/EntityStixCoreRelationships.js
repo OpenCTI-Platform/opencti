@@ -143,7 +143,7 @@ class EntityStixCoreRelationships extends Component {
     this.setState({ view: mode, sortBy: 'entity_type' }, () => this.saveView());
   }
 
-  renderLines(paginationOptions) {
+  renderRelationships(paginationOptions) {
     const { sortBy, orderAsc, numberOfElements, filters, openExports } = this.state;
     const {
       entityLink,
@@ -220,7 +220,9 @@ class EntityStixCoreRelationships extends Component {
         openExports={openExports}
         exportEntityType="stix-core-relationship"
         noPadding={true}
-        handleChangeView={this.props.handleChangeView ?? this.handleChangeView.bind(this)}
+        handleChangeView={
+          this.props.handleChangeView ?? this.handleChangeView.bind(this)
+        }
         enableNestedView={enableNestedView}
         disableCards={true}
         paginationOptions={paginationOptions}
@@ -463,7 +465,9 @@ class EntityStixCoreRelationships extends Component {
               selectAll={selectAll}
               filters={filters}
               search={searchTerm}
-              handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
               variant="medium"
             />
           </div>
@@ -485,15 +489,20 @@ class EntityStixCoreRelationships extends Component {
       defaultStopTime,
     } = this.props;
     const { view, searchTerm, sortBy, orderAsc, filters } = this.state;
-    let selectedTypes = [];
+    let selectedTypes;
     if (filters.entity_type && filters.entity_type.length > 0) {
       if (R.filter((o) => o.id === 'all', filters.entity_type).length > 0) {
         selectedTypes = [];
       } else {
         selectedTypes = filters.entity_type.map((o) => o.id);
       }
+    } else {
+      selectedTypes = Array.isArray(targetStixDomainObjectTypes)
+        && targetStixDomainObjectTypes.length > 0
+        ? targetStixDomainObjectTypes
+        : [];
     }
-    let selectedRelationshipTypes = [];
+    let selectedRelationshipTypes;
     if (filters.relationship_type && filters.relationship_type.length > 0) {
       if (
         R.filter((o) => o.id === 'all', filters.relationship_type).length > 0
@@ -508,61 +517,54 @@ class EntityStixCoreRelationships extends Component {
         : [];
     }
     const finalFilters = convertFilters(
-      R.pipe(R.dissoc('relationship_type'), R.dissoc('entity_type'))(filters),
+      R.omit(['relationship_type', 'entity_type'], filters),
     );
-    let paginationOptions = {
-      relationship_type: selectedRelationshipTypes,
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-      filters: finalFilters,
-    };
-    if (allDirections) {
-      paginationOptions = R.pipe(
-        R.assoc('elementId', entityId),
-        R.assoc('elementWithTargetTypes', selectedTypes),
-      )(paginationOptions);
-    } else if (isRelationReversed) {
-      paginationOptions = R.pipe(
-        R.assoc('fromTypes', selectedTypes),
-        R.assoc('toId', entityId),
-        R.assoc('toRole', role || null),
-      )(paginationOptions);
-    } else {
-      paginationOptions = R.pipe(
-        R.assoc('fromId', entityId),
-        R.assoc('fromRole', role || null),
-        R.assoc('toTypes', selectedTypes),
-      )(paginationOptions);
-    }
-
-    let currentPaginationOptions = { ...paginationOptions };
+    let paginationOptions;
     if (view === 'entities') {
-      let entitiesFilters = paginationOptions.filters;
-      if (allDirections) {
-        entitiesFilters = [
-          { key: 'relatedTo', values: [entityId] },
-          ...entitiesFilters,
-        ];
-      } else {
-        entitiesFilters = [
-          { key: 'targets', values: [entityId] },
-          ...entitiesFilters,
-        ];
-      }
-      currentPaginationOptions = {
-        ...paginationOptions,
-        elementWithTargetTypes: null,
-        types: !allDirections ? targetStixDomainObjectTypes : currentPaginationOptions.elementWithTargetTypes,
-        fromTypes: null,
-        filters: entitiesFilters,
+      paginationOptions = {
+        types: selectedTypes,
+        relationship_type: selectedRelationshipTypes,
+        elementId: entityId,
+        search: searchTerm,
+        orderBy: sortBy,
+        orderMode: orderAsc ? 'asc' : 'desc',
+        filters: finalFilters,
       };
+    } else {
+      paginationOptions = {
+        relationship_type: selectedRelationshipTypes,
+        search: searchTerm,
+        orderBy: sortBy,
+        orderMode: orderAsc ? 'asc' : 'desc',
+        filters: finalFilters,
+      };
+      if (allDirections) {
+        paginationOptions = {
+          ...paginationOptions,
+          elementId: entityId,
+          elementWithTargetTypes: selectedTypes,
+        };
+      } else if (isRelationReversed) {
+        paginationOptions = {
+          ...paginationOptions,
+          toId: entityId,
+          toRole: role || null,
+          fromTypes: selectedTypes,
+        };
+      } else {
+        paginationOptions = {
+          ...paginationOptions,
+          fromId: entityId,
+          fromRole: role || null,
+          toTypes: selectedTypes,
+        };
+      }
     }
-
     return (
       <div className={classes.container}>
-        {view === 'lines' && this.renderLines(currentPaginationOptions)}
-        {view === 'entities' ? this.renderEntities(currentPaginationOptions) : ''}
+        {view === 'relationships'
+          && this.renderRelationships(paginationOptions)}
+        {view === 'entities' && this.renderEntities(paginationOptions)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
@@ -570,10 +572,12 @@ class EntityStixCoreRelationships extends Component {
             paddingRight={220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             allowedRelationshipTypes={relationshipTypes}
-            paginationOptions={currentPaginationOptions}
+            paginationOptions={paginationOptions}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
-            connectionKey={view === 'entities' ? 'Pagination_stixCoreObjects' : undefined}
+            connectionKey={
+              view === 'entities' ? 'Pagination_stixCoreObjects' : undefined
+            }
           />
         </Security>
       </div>

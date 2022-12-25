@@ -2,7 +2,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
-import { HexagonOutline } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import { pathOr } from 'ramda';
 import { KeyboardArrowRight } from '@mui/icons-material';
@@ -17,15 +16,13 @@ import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import { UseEntityToggle } from '../../../../utils/hooks/useEntityToggle';
-import {
-  EntityStixCoreRelationshipsEntitiesLine_node$key,
-} from './__generated__/EntityStixCoreRelationshipsEntitiesLine_node.graphql';
+import { EntityStixCoreRelationshipsEntitiesLine_node$key } from './__generated__/EntityStixCoreRelationshipsEntitiesLine_node.graphql';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary?.main,
@@ -207,16 +204,18 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
 `;
 
 interface EntityStixCoreRelationshipsEntitiesLineProps {
-  node: EntityStixCoreRelationshipsEntitiesLine_node$key
-  dataColumns: DataColumns
-  onLabelClick: () => void
-  onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity']
-  selectedElements: UseEntityToggle<{ id: string }>['selectedElements']
-  deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements']
-  selectAll: UseEntityToggle<{ id: string }>['selectAll']
+  node: EntityStixCoreRelationshipsEntitiesLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: () => void;
+  onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
+  selectedElements: UseEntityToggle<{ id: string }>['selectedElements'];
+  deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements'];
+  selectAll: UseEntityToggle<{ id: string }>['selectAll'];
 }
 
-export const EntityStixCoreRelationshipsEntitiesLine: FunctionComponent<EntityStixCoreRelationshipsEntitiesLineProps> = ({
+export const EntityStixCoreRelationshipsEntitiesLine: FunctionComponent<
+EntityStixCoreRelationshipsEntitiesLineProps
+> = ({
   node,
   dataColumns,
   onToggleEntity,
@@ -227,9 +226,10 @@ export const EntityStixCoreRelationshipsEntitiesLine: FunctionComponent<EntitySt
 }) => {
   const classes = useStyles();
   const { t, nsdt } = useFormatter();
-
-  const stixCoreObject = useFragment(entityStixCoreRelationshipsEntitiesFragment, node);
-
+  const stixCoreObject = useFragment(
+    entityStixCoreRelationshipsEntitiesFragment,
+    node,
+  );
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -253,7 +253,7 @@ export const EntityStixCoreRelationshipsEntitiesLine: FunctionComponent<EntitySt
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <HexagonOutline />
+        <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -309,7 +309,11 @@ export const EntityStixCoreRelationshipsEntitiesLine: FunctionComponent<EntitySt
     </ListItem>
   );
 };
-export const EntityStixCoreRelationshipsEntitiesLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -320,12 +324,7 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({ dataColumns }: { 
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

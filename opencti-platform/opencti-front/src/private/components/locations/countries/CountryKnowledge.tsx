@@ -10,7 +10,6 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CountryPopover from './CountryPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CountryKnowledge_country$key } from './__generated__/CountryKnowledge_country.graphql';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -30,9 +29,16 @@ const countryKnowledgeFragment = graphql`
   }
 `;
 
-const CountryKnowledgeComponent = ({ countryData }: { countryData: CountryKnowledge_country$key }) => {
+const CountryKnowledgeComponent = ({
+  countryData,
+}: {
+  countryData: CountryKnowledge_country$key;
+}) => {
   const classes = useStyles();
-  const country = useFragment<CountryKnowledge_country$key>(countryKnowledgeFragment, countryData);
+  const country = useFragment<CountryKnowledge_country$key>(
+    countryKnowledgeFragment,
+    countryData,
+  );
   const link = `/dashboard/locations/countries/${country.id}/knowledge`;
 
   return (
@@ -236,10 +242,12 @@ const CountryKnowledgeComponent = ({ countryData }: { countryData: CountryKnowle
           exact
           path="/dashboard/locations/countries/:countryId/knowledge/observables"
           render={(routeProps) => (
-            <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={country.id}
-              stixCoreObjectLink={link}
-              noRightBar={true}
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+              entityLink={link}
+              allDirections={true}
               {...routeProps}
             />
           )}

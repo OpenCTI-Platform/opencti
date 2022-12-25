@@ -9,7 +9,6 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ChannelPopover from './ChannelPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
@@ -222,11 +221,12 @@ class ChannelKnowledgeComponent extends Component {
             exact
             path="/dashboard/arsenal/channels/:channelId/knowledge/observables"
             render={(routeProps) => (
-              <StixCoreObjectStixCyberObservables
-                stixCoreObjectId={channel.id}
-                stixCoreObjectLink={link}
-                noRightBar={true}
-                isRelationReversed={true}
+              <EntityStixCoreRelationships
+                entityId={channel.id}
+                relationshipTypes={['related-to']}
+                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                entityLink={link}
+                allDirections={true}
                 {...routeProps}
               />
             )}

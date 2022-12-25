@@ -14,14 +14,18 @@ import {
   ViewListOutlined,
   ViewModuleOutlined,
   FileDownloadOutlined,
-  LibraryBooksOutlined,
+  GrainOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import { GraphOutline, FormatListGroup } from 'mdi-material-ui';
+import {
+  GraphOutline,
+  FormatListGroup,
+  RelationManyToMany,
+} from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -288,30 +292,47 @@ class ListLines extends Component {
                     </Tooltip>
                   </ToggleButton>
                 )}
-                {typeof handleChangeView === 'function' && enableEntitiesView && (
-                  <ToggleButton value="entities" aria-label="entities">
-                    <Tooltip title={t('Entities view')}>
-                      <LibraryBooksOutlined
+                {typeof handleChangeView === 'function'
+                  && enableEntitiesView && (
+                    <ToggleButton value="entities" aria-label="entities">
+                      <Tooltip title={t('Entities view')}>
+                        <GrainOutlined
+                          fontSize="small"
+                          color={
+                            currentView === 'entities' ? 'secondary' : 'primary'
+                          }
+                        />
+                      </Tooltip>
+                    </ToggleButton>
+                )}
+                {enableEntitiesView && (
+                  <ToggleButton value="relationships" aria-label="relationships">
+                    <Tooltip title={t('Relationships view')}>
+                      <RelationManyToMany
                         fontSize="small"
                         color={
-                          currentView === 'entities' ? 'secondary' : 'primary'
+                          currentView === 'relationships' || !currentView
+                            ? 'secondary'
+                            : 'primary'
                         }
                       />
                     </Tooltip>
                   </ToggleButton>
                 )}
-                <ToggleButton value="lines" aria-label="lines">
-                  <Tooltip title={t('Lines view')}>
-                    <ViewListOutlined
-                      fontSize="small"
-                      color={
-                        currentView === 'lines' || !currentView
-                          ? 'secondary'
-                          : 'primary'
-                      }
-                    />
-                  </Tooltip>
-                </ToggleButton>
+                {!enableEntitiesView && (
+                  <ToggleButton value="lines" aria-label="lines">
+                    <Tooltip title={t('Lines view')}>
+                      <ViewListOutlined
+                        fontSize="small"
+                        color={
+                          currentView === 'lines' || !currentView
+                            ? 'secondary'
+                            : 'primary'
+                        }
+                      />
+                    </Tooltip>
+                  </ToggleButton>
+                )}
                 {typeof handleChangeView === 'function' && enableGraph && (
                   <ToggleButton value="graph" aria-label="graph">
                     <Tooltip title={t('Graph view')}>

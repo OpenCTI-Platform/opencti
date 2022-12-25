@@ -7421,7 +7421,7 @@ type Query {
   killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, filters: [KillChainPhasesFiltering], filterMode: FilterMode, search: String): KillChainPhaseConnection
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
-  stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): StixCoreObjectConnection
+  stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String, relationship_type: [String], elementId: String): StixCoreObjectConnection
   stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   stixCoreObjectsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]): [MultiTimeSeries]

@@ -11,7 +11,6 @@ import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/St
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
-import StixCoreObjectStixCyberObservables from '../stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
@@ -114,13 +113,14 @@ class InfrastructureKnowledgeComponent extends Component {
           exact
           path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/observables"
           render={(routeProps) => (
-            <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={infrastructure.id}
-              stixCoreObjectLink={link}
+            <EntityStixCoreRelationships
+              entityId={infrastructure.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+              entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
-              noRightBar={true}
-              isRelationReversed={true}
+              allDirections={true}
               {...routeProps}
             />
           )}

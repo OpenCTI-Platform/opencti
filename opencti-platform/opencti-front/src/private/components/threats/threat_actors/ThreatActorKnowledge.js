@@ -12,7 +12,6 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
@@ -237,12 +236,14 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/observables"
           render={(routeProps) => (
-            <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={threatActor.id}
-              stixCoreObjectLink={link}
-              noRightBar={true}
+            <EntityStixCoreRelationships
+              entityId={threatActor.id}
+              relationshipTypes={['related-to']}
+              targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+              entityLink={link}
               defaultStartTime={threatActor.first_seen}
               defaultStopTime={threatActor.last_seen}
+              allDirections={true}
               {...routeProps}
             />
           )}

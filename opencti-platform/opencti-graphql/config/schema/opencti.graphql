@@ -11965,6 +11965,8 @@ type Query {
     filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
+    relationship_type: [String]
+    elementId: String
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(

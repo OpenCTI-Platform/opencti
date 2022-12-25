@@ -1,4 +1,4 @@
-import { pathOr } from 'ramda';
+import * as R from 'ramda';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -20,16 +20,16 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 const nbOfRowsToLoad = 50;
 
 interface EntityStixCoreRelationshipsEntitiesProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsEntitiesPaginationQuery>
-  dataColumns: DataColumns
-  entityLink: string,
-  paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesPaginationQuery$variables>
-  isRelationReversed: boolean
-  onLabelClick: () => void
-  onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity']
-  selectedElements: UseEntityToggle<{ id: string }>['selectedElements']
-  deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements']
-  selectAll: UseEntityToggle<{ id: string }>['selectAll']
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsEntitiesPaginationQuery>;
+  dataColumns: DataColumns;
+  entityLink: string;
+  paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesPaginationQuery$variables>;
+  isRelationReversed: boolean;
+  onLabelClick: () => void;
+  onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
+  selectedElements: UseEntityToggle<{ id: string }>['selectedElements'];
+  deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements'];
+  selectAll: UseEntityToggle<{ id: string }>['selectAll'];
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
@@ -39,14 +39,14 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixCoreObjectsOrdering"
-      defaultValue: created_at
-    }
+    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "[StixCoreObjectsFiltering]" }
-    types: { type : "[String]"}
-  ) @refetchable(queryName: "EntityStixCoreRelationshipsEntities_refetch") {
+    types: { type: "[String]" }
+    relationship_type: { type: "[String]" }
+    elementId: { type: "String" }
+  )
+  @refetchable(queryName: "EntityStixCoreRelationshipsEntities_refetch") {
     stixCoreObjects(
       search: $search
       first: $count
@@ -55,6 +55,8 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
       orderMode: $orderMode
       filters: $filters
       types: $types
+      relationship_type: $relationship_type
+      elementId: $elementId
     ) @connection(key: "Pagination_stixCoreObjects") {
       edges {
         node {
@@ -79,21 +81,27 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
     $orderMode: OrderingMode
     $filters: [StixCoreObjectsFiltering]
     $types: [String]
+    $relationship_type: [String]
+    $elementId: String
   ) {
     ...EntityStixCoreRelationshipsEntities_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      types: $types
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+        types: $types
+        relationship_type: $relationship_type
+        elementId: $elementId
+      )
   }
 `;
 
-const EntityStixCoreRelationshipsEntitiesComponent: FunctionComponent<EntityStixCoreRelationshipsEntitiesProps> = ({
+const EntityStixCoreRelationshipsEntitiesComponent: FunctionComponent<
+EntityStixCoreRelationshipsEntitiesProps
+> = ({
   queryRef,
   dataColumns,
   entityLink,
@@ -106,12 +114,7 @@ const EntityStixCoreRelationshipsEntitiesComponent: FunctionComponent<EntityStix
   selectAll,
   setNumberOfElements,
 }) => {
-  const {
-    data,
-    loadMore,
-    hasMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment({
+  const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment({
     queryRef,
     linesQuery: entityStixCoreRelationshipsEntitiesQuery,
     linesFragment: entityStixCoreRelationshipsEntitiesFragment,
@@ -125,12 +128,8 @@ const EntityStixCoreRelationshipsEntitiesComponent: FunctionComponent<EntityStix
       loadMore={loadMore}
       hasMore={hasMore}
       isLoading={isLoadingMore}
-      dataList={pathOr(
-        [],
-        ['stixCoreObjects', 'edges'],
-        data,
-      )}
-      globalCount={pathOr(
+      dataList={R.pathOr([], ['stixCoreObjects', 'edges'], data)}
+      globalCount={R.pathOr(
         nbOfRowsToLoad,
         ['stixCoreObjects', 'pageInfo', 'globalCount'],
         data,
@@ -151,13 +150,23 @@ const EntityStixCoreRelationshipsEntitiesComponent: FunctionComponent<EntityStix
   );
 };
 
-const EntityStixCoreRelationshipsEntities: FunctionComponent<Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>> = (props) => {
-  const queryRef = useQueryLoading<EntityStixCoreRelationshipsEntitiesPaginationQuery>(entityStixCoreRelationshipsEntitiesQuery, { count: 25, ...props.paginationOptions });
+const EntityStixCoreRelationshipsEntities: FunctionComponent<
+Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
+> = (props) => {
+  const queryRef = useQueryLoading<EntityStixCoreRelationshipsEntitiesPaginationQuery>(
+    entityStixCoreRelationshipsEntitiesQuery,
+    { count: 25, ...props.paginationOptions },
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <EntityStixCoreRelationshipsEntitiesComponent {...props} queryRef={queryRef} />
+      <EntityStixCoreRelationshipsEntitiesComponent
+        {...props}
+        queryRef={queryRef}
+      />
     </React.Suspense>
-  ) : <Loader variant={LoaderVariant.inElement} />;
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
+  );
 };
 
 export default EntityStixCoreRelationshipsEntities;
