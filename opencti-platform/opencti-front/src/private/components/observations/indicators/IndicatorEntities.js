@@ -125,7 +125,7 @@ class IndicatorEntities extends Component {
             paginationOptions={paginationOptions}
             entityId={indicatorId}
             isRelationReversed={false}
-            stixCoreObjectTypes={[
+            targetStixDomainObjectTypes={[
               'Threat-Actor',
               'Intrusion-Set',
               'Campaign',

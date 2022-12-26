@@ -80,18 +80,6 @@ class StixCoreObjectKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText primary={t('Overview')} />
           </MenuItem>
-          <MenuItem
-            component={Link}
-            to={`${stixCoreObjectLink}/related`}
-            selected={location.pathname === `${stixCoreObjectLink}/related`}
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <LinkOutlined />
-            </ListItemIcon>
-            <ListItemText primary={t('Related entities')} />
-          </MenuItem>
           {isInAvailableSection(['sectors', 'organizations', 'individuals']) ? (
             <MenuList
               style={{ paddingBottom: 0 }}
@@ -679,6 +667,26 @@ class StixCoreObjectKnowledgeBar extends Component {
         ) : (
           ''
         )}
+        <MenuList
+          style={{ paddingBottom: 0 }}
+          component="nav"
+          subheader={
+            <ListSubheader style={{ height: 35 }}>{t('Other')}</ListSubheader>
+          }
+        >
+          <MenuItem
+            component={Link}
+            to={`${stixCoreObjectLink}/related`}
+            selected={location.pathname === `${stixCoreObjectLink}/related`}
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <LinkOutlined />
+            </ListItemIcon>
+            <ListItemText primary={t('Related entities')} />
+          </MenuItem>
+        </MenuList>
       </Drawer>
     );
   }

@@ -73,22 +73,6 @@ class ThreatActorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={threatActor.id}
               relationshipTypes={['related-to', 'part-of']}
-              stixCoreObjectTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-                'Tool',
-                'Vulnerability',
-                'Individual',
-                'Organization',
-                'Sector',
-                'Region',
-                'Country',
-                'City',
-                'Position',
-              ]}
               entityLink={link}
               defaultStartTime={threatActor.first_seen}
               defaultStopTime={threatActor.last_seen}

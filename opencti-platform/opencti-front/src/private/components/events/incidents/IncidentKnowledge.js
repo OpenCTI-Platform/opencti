@@ -72,22 +72,6 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['related-to']}
-              stixCoreObjectTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-                'Tool',
-                'Vulnerability',
-                'Individual',
-                'Organization',
-                'Sector',
-                'Region',
-                'Country',
-                'City',
-                'Position',
-              ]}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}

@@ -84,22 +84,6 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['related-to']}
-                stixCoreObjectTypes={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                  'Tool',
-                  'Vulnerability',
-                  'Individual',
-                  'Organization',
-                  'Sector',
-                  'Region',
-                  'Country',
-                  'City',
-                  'Position',
-                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

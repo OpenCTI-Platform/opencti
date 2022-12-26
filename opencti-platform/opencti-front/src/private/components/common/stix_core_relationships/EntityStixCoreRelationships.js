@@ -350,7 +350,10 @@ class EntityStixCoreRelationships extends Component {
 
   buildColumnsEntities(helper) {
     const { stixCoreObjectTypes } = this.props;
-    const isObservables = R.head(stixCoreObjectTypes || []) === 'Stix-Cyber-Observable';
+    const isObservables = stixCoreObjectTypes?.includes(
+      'Stix-Cyber-Observable',
+    );
+    const isStixCoreObjects = !stixCoreObjectTypes || stixCoreObjectTypes.includes('Stix-Core-Object');
     const isRuntimeSort = helper.isRuntimeFieldEnable();
     return {
       entity_type: {
@@ -361,7 +364,12 @@ class EntityStixCoreRelationships extends Component {
       [isObservables ? 'observable_value' : 'name']: {
         label: isObservables ? 'Value' : 'Name',
         width: '25%',
-        isSortable: isObservables ? isRuntimeSort : true,
+        // eslint-disable-next-line no-nested-ternary
+        isSortable: isStixCoreObjects
+          ? false
+          : isObservables
+            ? isRuntimeSort
+            : true,
       },
       createdBy: {
         label: 'Author',
@@ -409,6 +417,7 @@ class EntityStixCoreRelationships extends Component {
       isRelationReversed,
       disableExport,
       stixCoreObjectTypes,
+      relationshipTypes,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -451,6 +460,7 @@ class EntityStixCoreRelationships extends Component {
                 'created_end_date',
               ]}
               availableEntityTypes={stixCoreObjectTypes}
+              availableRelationshipTypes={relationshipTypes}
               numberOfElements={numberOfElements}
               noPadding={true}
               disableCards={true}
@@ -571,6 +581,17 @@ class EntityStixCoreRelationships extends Component {
         };
       }
     }
+    const finalStixCoreObjectTypes = stixCoreObjectTypes || [
+      'Stix-Core-Object',
+    ];
+    const targetStixCyberObservableTypes = finalStixCoreObjectTypes.includes('Stix-Core-Object')
+      || finalStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+      ? ['Stix-Cyber-Observable']
+      : null;
+    const stixCoreObjectTypesWithoutObservables = finalStixCoreObjectTypes.filter((n) => n !== 'Stix-Cyber-Observable');
+    const targetStixDomainObjectTypes = stixCoreObjectTypesWithoutObservables.includes('Stix-Core-Object')
+      ? ['Stix-Domain-Object']
+      : stixCoreObjectTypesWithoutObservables;
     return (
       <div className={classes.container}>
         {view === 'relationships'
@@ -581,7 +602,8 @@ class EntityStixCoreRelationships extends Component {
             entityId={entityId}
             isRelationReversed={isRelationReversed}
             paddingRight={220}
-            stixCoreObjectTypes={stixCoreObjectTypes}
+            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+            targetStixCyberObservableTypes={targetStixCyberObservableTypes}
             allowedRelationshipTypes={relationshipTypes}
             paginationOptions={paginationOptions}
             defaultStartTime={defaultStartTime}

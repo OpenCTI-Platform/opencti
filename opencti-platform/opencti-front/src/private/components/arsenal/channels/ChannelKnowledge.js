@@ -72,22 +72,6 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['related-to']}
-                stixCoreObjectTypes={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                  'Channel',
-                  'Vulnerability',
-                  'Individual',
-                  'Organization',
-                  'Sector',
-                  'Region',
-                  'Country',
-                  'City',
-                  'Position',
-                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

@@ -178,7 +178,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
           }
         }
         from {
-          ... on StixDomainObject {
+          ... on StixCoreObject {
             id
             entity_type
             parent_types
@@ -193,6 +193,28 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 }
               }
             }
+            createdBy {
+              ... on Identity {
+                name
+              }
+            }
+            objectMarking {
+              edges {
+                node {
+                  id
+                  definition
+                  x_opencti_color
+                }
+              }
+            }
+            creator {
+              id
+              name
+            }
+          }
+          ... on StixDomainObject {
+            created
+            modified
           }
           ... on AttackPattern {
             name
@@ -204,23 +226,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                   id
                   phase_name
                   x_opencti_order
-                }
-              }
-            }
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
                 }
               }
             }
@@ -297,32 +302,31 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             name
             description
           }
+          ... on Event {
+            name
+            description
+          }
+          ... on Channel {
+            name
+            description
+          }
+          ... on Narrative {
+            name
+            description
+          }
+          ... on Language {
+            name
+          }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
           ... on StixCyberObservable {
-            id
-            entity_type
-            parent_types
             observable_value
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
           }
           ... on Indicator {
-            id
-            name
             pattern_type
             pattern_version
             description
@@ -330,24 +334,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             valid_until
             x_opencti_score
             x_opencti_main_observable_type
-            created
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
           }
           ... on StixCoreRelationship {
             id
@@ -356,7 +342,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             created
             created_at
             from {
-              ... on StixDomainObject {
+              ... on StixCoreObject {
                 id
                 entity_type
                 parent_types
@@ -371,6 +357,28 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                     }
                   }
                 }
+                createdBy {
+                  ... on Identity {
+                    name
+                  }
+                }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                      x_opencti_color
+                    }
+                  }
+                }
+                creator {
+                  id
+                  name
+                }
+              }
+              ... on StixDomainObject {
+                created
+                modified
               }
               ... on AttackPattern {
                 name
@@ -382,23 +390,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                       id
                       phase_name
                       x_opencti_order
-                    }
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
                     }
                   }
                 }
@@ -475,32 +466,31 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
                 description
               }
+              ... on Event {
+                name
+                description
+              }
+              ... on Channel {
+                name
+                description
+              }
+              ... on Narrative {
+                name
+                description
+              }
+              ... on Language {
+                name
+              }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
+                name
+              }
               ... on StixCyberObservable {
-                id
-                entity_type
-                parent_types
                 observable_value
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
-                }
               }
               ... on Indicator {
-                id
-                name
                 pattern_type
                 pattern_version
                 description
@@ -508,24 +498,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 valid_until
                 x_opencti_score
                 x_opencti_main_observable_type
-                created
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
-                }
               }
               ... on StixCoreRelationship {
                 id
@@ -536,7 +508,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
               }
             }
             to {
-              ... on StixDomainObject {
+              ... on StixCoreObject {
                 id
                 entity_type
                 parent_types
@@ -551,6 +523,28 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                     }
                   }
                 }
+                createdBy {
+                  ... on Identity {
+                    name
+                  }
+                }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                      x_opencti_color
+                    }
+                  }
+                }
+                creator {
+                  id
+                  name
+                }
+              }
+              ... on StixDomainObject {
+                created
+                modified
               }
               ... on AttackPattern {
                 name
@@ -562,23 +556,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                       id
                       phase_name
                       x_opencti_order
-                    }
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
                     }
                   }
                 }
@@ -655,32 +632,31 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
                 description
               }
+              ... on Event {
+                name
+                description
+              }
+              ... on Channel {
+                name
+                description
+              }
+              ... on Narrative {
+                name
+                description
+              }
+              ... on Language {
+                name
+              }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
+                name
+              }
               ... on StixCyberObservable {
-                id
-                entity_type
-                parent_types
                 observable_value
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
-                }
               }
               ... on Indicator {
-                id
-                name
                 pattern_type
                 pattern_version
                 description
@@ -688,24 +664,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 valid_until
                 x_opencti_score
                 x_opencti_main_observable_type
-                created
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
-                }
               }
               ... on StixCoreRelationship {
                 id
@@ -718,7 +676,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
           }
         }
         to {
-          ... on StixDomainObject {
+          ... on StixCoreObject {
             id
             entity_type
             parent_types
@@ -733,6 +691,28 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 }
               }
             }
+            createdBy {
+              ... on Identity {
+                name
+              }
+            }
+            objectMarking {
+              edges {
+                node {
+                  id
+                  definition
+                  x_opencti_color
+                }
+              }
+            }
+            creator {
+              id
+              name
+            }
+          }
+          ... on StixDomainObject {
+            created
+            modified
           }
           ... on AttackPattern {
             name
@@ -744,23 +724,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                   id
                   phase_name
                   x_opencti_order
-                }
-              }
-            }
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
                 }
               }
             }
@@ -837,32 +800,31 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             name
             description
           }
+          ... on Event {
+            name
+            description
+          }
+          ... on Channel {
+            name
+            description
+          }
+          ... on Narrative {
+            name
+            description
+          }
+          ... on Language {
+            name
+          }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
           ... on StixCyberObservable {
-            id
-            entity_type
-            parent_types
             observable_value
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
           }
           ... on Indicator {
-            id
-            name
             pattern_type
             pattern_version
             description
@@ -870,24 +832,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             valid_until
             x_opencti_score
             x_opencti_main_observable_type
-            created
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
-            }
           }
           ... on StixCoreRelationship {
             id
@@ -896,7 +840,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             created_at
             parent_types
             from {
-              ... on StixDomainObject {
+              ... on StixCoreObject {
                 id
                 entity_type
                 parent_types
@@ -911,6 +855,28 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                     }
                   }
                 }
+                createdBy {
+                  ... on Identity {
+                    name
+                  }
+                }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                      x_opencti_color
+                    }
+                  }
+                }
+                creator {
+                  id
+                  name
+                }
+              }
+              ... on StixDomainObject {
+                created
+                modified
               }
               ... on AttackPattern {
                 name
@@ -922,23 +888,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                       id
                       phase_name
                       x_opencti_order
-                    }
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
                     }
                   }
                 }
@@ -1037,31 +986,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
               }
               ... on StixCyberObservable {
-                id
-                entity_type
-                parent_types
                 observable_value
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
-                }
               }
               ... on Indicator {
-                id
-                name
                 pattern_type
                 pattern_version
                 description
@@ -1069,24 +996,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 valid_until
                 x_opencti_score
                 x_opencti_main_observable_type
-                created
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
-                }
               }
               ... on StixCoreRelationship {
                 id
@@ -1097,7 +1006,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
               }
             }
             to {
-              ... on StixDomainObject {
+              ... on StixCoreObject {
                 id
                 entity_type
                 parent_types
@@ -1112,6 +1021,28 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                     }
                   }
                 }
+                createdBy {
+                  ... on Identity {
+                    name
+                  }
+                }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                      x_opencti_color
+                    }
+                  }
+                }
+                creator {
+                  id
+                  name
+                }
+              }
+              ... on StixDomainObject {
+                created
+                modified
               }
               ... on AttackPattern {
                 name
@@ -1123,23 +1054,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                       id
                       phase_name
                       x_opencti_order
-                    }
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
                     }
                   }
                 }
@@ -1238,31 +1152,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
               }
               ... on StixCyberObservable {
-                id
-                entity_type
-                parent_types
                 observable_value
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
-                }
               }
               ... on Indicator {
-                id
-                name
                 pattern_type
                 pattern_version
                 description
@@ -1270,24 +1162,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 valid_until
                 x_opencti_score
                 x_opencti_main_observable_type
-                created
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition
-                    }
-                  }
-                }
-                objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
-                }
               }
               ... on StixCoreRelationship {
                 id

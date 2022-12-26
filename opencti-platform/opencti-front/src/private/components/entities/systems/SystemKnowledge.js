@@ -85,22 +85,6 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['related-to']}
-                stixCoreObjectTypes={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                  'Tool',
-                  'Vulnerability',
-                  'System',
-                  'Organization',
-                  'Sector',
-                  'Region',
-                  'Country',
-                  'City',
-                  'Position',
-                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

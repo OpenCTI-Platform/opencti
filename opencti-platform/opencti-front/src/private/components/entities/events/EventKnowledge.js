@@ -70,22 +70,6 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['related-to']}
-                stixCoreObjectTypes={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                  'Tool',
-                  'Vulnerability',
-                  'Individual',
-                  'Organization',
-                  'Sector',
-                  'Region',
-                  'Country',
-                  'Event',
-                  'Position',
-                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

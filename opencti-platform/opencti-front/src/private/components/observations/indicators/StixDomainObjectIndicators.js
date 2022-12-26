@@ -416,7 +416,7 @@ class StixDomainObjectIndicators extends Component {
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
             isRelationReversed={true}
-            stixCoreObjectTypes={['Indicator']}
+            targetStixDomainObjectTypes={['Indicator']}
             paginationOptions={paginationOptions}
             openExports={openExports}
             paddingRight={270}
