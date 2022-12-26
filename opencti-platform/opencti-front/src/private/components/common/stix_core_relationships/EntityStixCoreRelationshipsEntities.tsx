@@ -121,7 +121,6 @@ EntityStixCoreRelationshipsEntitiesProps
     nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
-
   return (
     <ListLinesContent
       initialLoading={false}

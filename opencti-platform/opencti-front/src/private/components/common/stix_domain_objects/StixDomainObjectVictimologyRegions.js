@@ -110,7 +110,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
             isRelationReversed={false}
             paddingRight={220}
             onCreate={this.props.relay.refetch.bind(this)}
-            targetStixDomainObjectTypes={['Region', 'Country', 'City']}
+            stixCoreObjectTypes={['Region', 'Country', 'City']}
             allowedRelationshipTypes={['targets']}
             paginationOptions={paginationOptions}
             defaultStartTime={defaultStartTime}

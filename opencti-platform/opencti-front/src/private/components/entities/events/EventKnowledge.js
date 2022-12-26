@@ -70,7 +70,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
@@ -99,7 +99,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['located-at']}
-                targetStixDomainObjectTypes={['City', 'Country', 'Region']}
+                stixCoreObjectTypes={['City', 'Country', 'Region']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -113,7 +113,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -127,7 +127,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Intrusion-Set']}
+                stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -141,7 +141,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Campaign']}
+                stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -155,7 +155,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Incident']}
+                stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -169,7 +169,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Malware']}
+                stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -183,7 +183,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Attack-Pattern']}
+                stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -197,7 +197,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Tool']}
+                stixCoreObjectTypes={['Tool']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -211,7 +211,7 @@ class EventKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

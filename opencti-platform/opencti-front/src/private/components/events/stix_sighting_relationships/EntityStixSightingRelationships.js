@@ -48,7 +48,7 @@ class EntityStixSightingRelationships extends Component {
         props.location,
         `view-sightings-${
           props.entityId
-        }-${props.targetStixDomainObjectTypes?.join('-')}`,
+        }-${props.stixCoreObjectTypes?.join('-')}`,
       );
     }
     this.state = {
@@ -69,7 +69,7 @@ class EntityStixSightingRelationships extends Component {
         this.props.location,
         `view-sightings-${
           this.props.entityId
-        }-${this.props.targetStixDomainObjectTypes?.join('-')}`,
+        }-${this.props.stixCoreObjectTypes?.join('-')}`,
         this.state,
       );
     }
@@ -124,7 +124,7 @@ class EntityStixSightingRelationships extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, openExports, disableExport, filters } = this.state;
-    const { entityLink, isTo, targetStixDomainObjectTypes } = this.props;
+    const { entityLink, isTo, stixCoreObjectTypes } = this.props;
     // sort only when inferences are disabled or inferences are resolved
     const dataColumns = {
       x_opencti_negative: {
@@ -187,7 +187,7 @@ class EntityStixSightingRelationships extends Component {
         ]}
         openExports={openExports}
         exportEntityType="stix-sighting-relationship"
-        availableEntityTypes={targetStixDomainObjectTypes}
+        availableEntityTypes={stixCoreObjectTypes}
         displayImport={true}
         secondaryAction={true}
       >
@@ -210,7 +210,7 @@ class EntityStixSightingRelationships extends Component {
   }
 
   render() {
-    const { classes, targetStixDomainObjectTypes, entityId, isTo, noPadding } = this.props;
+    const { classes, stixCoreObjectTypes, entityId, isTo, noPadding } = this.props;
     const { view, searchTerm, sortBy, orderAsc, filters } = this.state;
     let finalFilters = convertFilters(filters);
     const toTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
@@ -235,7 +235,7 @@ class EntityStixSightingRelationships extends Component {
             <StixSightingRelationshipCreationFromEntity
               entityId={entityId}
               isTo={true}
-              targetStixDomainObjectTypes={[
+              stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
@@ -251,7 +251,7 @@ class EntityStixSightingRelationships extends Component {
           ) : (
             <StixSightingRelationshipCreationFromEntity
               entityId={entityId}
-              targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+              stixCoreObjectTypes={stixCoreObjectTypes}
               paddingRight={noPadding ? null : 220}
               paginationOptions={paginationOptions}
             />
@@ -264,7 +264,7 @@ class EntityStixSightingRelationships extends Component {
 
 EntityStixSightingRelationships.propTypes = {
   entityId: PropTypes.string,
-  targetStixDomainObjectTypes: PropTypes.array,
+  stixCoreObjectTypes: PropTypes.array,
   entityLink: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -128,7 +128,7 @@ class StixDomainObjectVictimology extends Component {
               <EntityStixCoreRelationships
                 entityLink={entityLink}
                 entityId={stixDomainObjectId}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'System',
                   'Individual',
                   'Organization',

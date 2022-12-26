@@ -72,7 +72,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={[
+              stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
@@ -103,7 +103,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['attributed-to']}
-              targetStixDomainObjectTypes={[
+              stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
@@ -149,7 +149,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
-              targetStixDomainObjectTypes={['Malware']}
+              stixCoreObjectTypes={['Malware']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
@@ -165,7 +165,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
-              targetStixDomainObjectTypes={['Tool']}
+              stixCoreObjectTypes={['Tool']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
@@ -181,7 +181,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Vulnerability']}
+              stixCoreObjectTypes={['Vulnerability']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
@@ -197,7 +197,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+              stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}

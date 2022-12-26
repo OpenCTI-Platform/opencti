@@ -57,7 +57,7 @@ class EntityStixCoreRelationships extends Component {
         props.location,
         `view-relationships-${
           props.entityId
-        }-${props.targetStixDomainObjectTypes?.join(
+        }-${props.stixCoreObjectTypes?.join(
           '-',
         )}-${props.relationshipTypes?.join('-')}`,
       );
@@ -80,7 +80,7 @@ class EntityStixCoreRelationships extends Component {
         this.props.location,
         `view-relationships-${
           this.props.entityId
-        }-${this.props.targetStixDomainObjectTypes?.join(
+        }-${this.props.stixCoreObjectTypes?.join(
           '-',
         )}-${this.props.relationshipTypes?.join('-')}`,
         this.state,
@@ -150,7 +150,7 @@ class EntityStixCoreRelationships extends Component {
       entityId,
       isRelationReversed,
       allDirections,
-      targetStixDomainObjectTypes,
+      stixCoreObjectTypes,
       relationshipTypes,
       disableExport,
       enableNestedView,
@@ -212,7 +212,7 @@ class EntityStixCoreRelationships extends Component {
           'created_start_date',
           'created_end_date',
         ]}
-        availableEntityTypes={targetStixDomainObjectTypes}
+        availableEntityTypes={stixCoreObjectTypes}
         availableRelationshipTypes={relationshipTypes}
         handleToggleExports={
           disableExport ? null : this.handleToggleExports.bind(this)
@@ -356,27 +356,38 @@ class EntityStixCoreRelationships extends Component {
     return {
       entity_type: {
         label: 'Type',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '30%',
+        width: '25%',
+        isSortable: isRuntimeSort,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
         isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       created_at: {
         label: 'Creation date',
-        width: '18%',
+        width: '15%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
   }
@@ -398,7 +409,7 @@ class EntityStixCoreRelationships extends Component {
       entityLink,
       isRelationReversed,
       disableExport,
-      targetStixDomainObjectTypes,
+      stixCoreObjectTypes,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -438,7 +449,7 @@ class EntityStixCoreRelationships extends Component {
                 'created_end_date',
                 'labelledBy',
               ]}
-              availableEntityTypes={targetStixDomainObjectTypes}
+              availableEntityTypes={stixCoreObjectTypes}
               numberOfElements={numberOfElements}
               noPadding={true}
               disableCards={true}
@@ -479,7 +490,7 @@ class EntityStixCoreRelationships extends Component {
   render() {
     const {
       classes,
-      targetStixDomainObjectTypes,
+      stixCoreObjectTypes,
       entityId,
       role,
       relationshipTypes,
@@ -497,9 +508,9 @@ class EntityStixCoreRelationships extends Component {
         selectedTypes = filters.entity_type.map((o) => o.id);
       }
     } else {
-      selectedTypes = Array.isArray(targetStixDomainObjectTypes)
-        && targetStixDomainObjectTypes.length > 0
-        ? targetStixDomainObjectTypes
+      selectedTypes = Array.isArray(stixCoreObjectTypes)
+        && stixCoreObjectTypes.length > 0
+        ? stixCoreObjectTypes
         : [];
     }
     let selectedRelationshipTypes;
@@ -570,7 +581,7 @@ class EntityStixCoreRelationships extends Component {
             entityId={entityId}
             isRelationReversed={isRelationReversed}
             paddingRight={220}
-            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+            stixCoreObjectTypes={stixCoreObjectTypes}
             allowedRelationshipTypes={relationshipTypes}
             paginationOptions={paginationOptions}
             defaultStartTime={defaultStartTime}
@@ -588,7 +599,7 @@ class EntityStixCoreRelationships extends Component {
 EntityStixCoreRelationships.propTypes = {
   entityId: PropTypes.string,
   role: PropTypes.string,
-  targetStixDomainObjectTypes: PropTypes.array,
+  stixCoreObjectTypes: PropTypes.array,
   relationshipTypes: PropTypes.array,
   entityLink: PropTypes.string,
   classes: PropTypes.object,

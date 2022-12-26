@@ -337,7 +337,7 @@ class StixDomainObjectCreation extends Component {
   }
 
   renderEntityTypesList() {
-    const { t, targetStixDomainObjectTypes } = this.props;
+    const { t, stixCoreObjectTypes } = this.props;
     return (
       <QueryRenderer
         query={stixDomainObjectCreationAllTypesQuery}
@@ -361,14 +361,14 @@ class StixDomainObjectCreation extends Component {
             );
             const availableEntityTypes = R.filter((n) => {
               if (
-                !targetStixDomainObjectTypes
-                || targetStixDomainObjectTypes.length === 0
-                || targetStixDomainObjectTypes.includes('Stix-Domain-Object')
+                !stixCoreObjectTypes
+                || stixCoreObjectTypes.length === 0
+                || stixCoreObjectTypes.includes('Stix-Domain-Object')
               ) {
                 return true;
               }
               if (
-                targetStixDomainObjectTypes.includes('Identity')
+                stixCoreObjectTypes.includes('Identity')
                 && [
                   'Sector',
                   'Organization',
@@ -380,12 +380,12 @@ class StixDomainObjectCreation extends Component {
                 return true;
               }
               if (
-                targetStixDomainObjectTypes.includes('Location')
+                stixCoreObjectTypes.includes('Location')
                 && ['Region', 'Country', 'City', 'Location'].includes(n.value)
               ) {
                 return true;
               }
-              return !!targetStixDomainObjectTypes.includes(n.value);
+              return !!stixCoreObjectTypes.includes(n.value);
             }, entitiesTypes);
             return (
               <Field
@@ -420,10 +420,10 @@ class StixDomainObjectCreation extends Component {
       defaultCreatedBy,
       defaultMarkingDefinitions,
       confidence,
-      targetStixDomainObjectTypes,
+      stixCoreObjectTypes,
     } = this.props;
     const initialValues = {
-      type: (targetStixDomainObjectTypes ?? []).at(0),
+      type: (stixCoreObjectTypes ?? []).at(0),
       name: inputValue,
       confidence: confidence || 15,
       description: '',
@@ -497,7 +497,7 @@ class StixDomainObjectCreation extends Component {
                     label={t('Name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
-                    detectDuplicate={targetStixDomainObjectTypes || []}
+                    detectDuplicate={stixCoreObjectTypes || []}
                   />
                   {!includes(values.type, typesWithoutAliases) && (
                     <Field
@@ -609,7 +609,7 @@ class StixDomainObjectCreation extends Component {
 StixDomainObjectCreation.propTypes = {
   paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
-  targetStixDomainObjectTypes: PropTypes.array,
+  stixCoreObjectTypes: PropTypes.array,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

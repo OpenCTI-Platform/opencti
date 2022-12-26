@@ -122,7 +122,7 @@ class RootIndicator extends Component {
                             {...routeProps}
                             entityId={indicatorId}
                             noPadding={true}
-                            targetStixDomainObjectTypes={[
+                            stixCoreObjectTypes={[
                               'Region',
                               'Country',
                               'City',

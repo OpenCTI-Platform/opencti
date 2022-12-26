@@ -72,7 +72,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
@@ -112,7 +112,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -126,7 +126,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Intrusion-Set']}
+                stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -140,7 +140,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Campaign']}
+                stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -154,7 +154,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Attack-Pattern']}
+                stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -168,7 +168,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['amplifies']}
-                targetStixDomainObjectTypes={['Channel']}
+                stixCoreObjectTypes={['Channel']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -182,7 +182,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Malware']}
+                stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -196,7 +196,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Vulnerability']}
+                stixCoreObjectTypes={['Vulnerability']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -210,7 +210,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Incident']}
+                stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -224,7 +224,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}
@@ -239,7 +239,7 @@ class ChannelKnowledgeComponent extends Component {
                 entityId={channel.id}
                 entityLink={link}
                 noRightBar={true}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Region',
                   'Country',
                   'City',

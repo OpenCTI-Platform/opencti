@@ -142,7 +142,7 @@ class RootStixCyberObservable extends Component {
                             entityLink={link}
                             noRightBar={true}
                             noPadding={true}
-                            targetStixDomainObjectTypes={[
+                            stixCoreObjectTypes={[
                               'Region',
                               'Country',
                               'City',

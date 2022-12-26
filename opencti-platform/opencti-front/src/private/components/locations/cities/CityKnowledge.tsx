@@ -87,7 +87,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={[
+              stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
@@ -116,7 +116,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['located-at']}
-              targetStixDomainObjectTypes={['Organization']}
+              stixCoreObjectTypes={['Organization']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -130,7 +130,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['located-at']}
-              targetStixDomainObjectTypes={['Country']}
+              stixCoreObjectTypes={['Country']}
               entityLink={link}
               isRelationReversed={false}
               {...routeProps}
@@ -144,7 +144,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Threat-Actor']}
+              stixCoreObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -158,7 +158,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Intrusion-Set']}
+              stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -172,7 +172,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Campaign']}
+              stixCoreObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -186,7 +186,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Incident']}
+              stixCoreObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -200,7 +200,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Malware']}
+              stixCoreObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -214,7 +214,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Attack-Pattern']}
+              stixCoreObjectTypes={['Attack-Pattern']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -228,7 +228,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Tool']}
+              stixCoreObjectTypes={['Tool']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -242,7 +242,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+              stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               allDirections={true}
               {...routeProps}

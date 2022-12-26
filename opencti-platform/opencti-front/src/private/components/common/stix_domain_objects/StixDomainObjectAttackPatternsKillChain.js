@@ -335,7 +335,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               isRelationReversed={false}
               paddingRight={220}
               onCreate={this.props.relay.refetch.bind(this)}
-              targetStixDomainObjectTypes={['Attack-Pattern']}
+              stixCoreObjectTypes={['Attack-Pattern']}
               paginationOptions={paginationOptions}
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}

@@ -520,12 +520,12 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     const {
       classes,
       t,
-      targetStixDomainObjectTypes,
+      stixCoreObjectTypes,
       targetStixCyberObservableTypes,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search,
-      types: targetStixDomainObjectTypes,
+      types: stixCoreObjectTypes,
       orderBy: search.length > 0 ? null : 'created_at',
       orderMode: search.length > 0 ? null : 'desc',
     };
@@ -559,8 +559,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.containerList}>
-          {targetStixDomainObjectTypes
-            && targetStixDomainObjectTypes.length > 0 && (
+          {stixCoreObjectTypes
+            && stixCoreObjectTypes.length > 0 && (
               <QueryRenderer
                 query={
                   stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery
@@ -594,15 +594,15 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                   if (props) {
                     return (
                       <StixCoreRelationshipCreationFromEntityStixCyberObservablesLines
-                        noPadding={!!targetStixDomainObjectTypes}
+                        noPadding={!!stixCoreObjectTypes}
                         targetEntities={targetEntities}
                         handleSelect={this.handleSelectEntity.bind(this)}
                         data={props}
                       />
                     );
                   }
-                  return !targetStixDomainObjectTypes
-                    || targetStixDomainObjectTypes.length === 0 ? (
+                  return !stixCoreObjectTypes
+                    || stixCoreObjectTypes.length === 0 ? (
                       this.renderFakeList()
                     ) : (
                     <div> &nbsp; </div>
@@ -612,17 +612,17 @@ class StixCoreRelationshipCreationFromEntity extends Component {
           )}
           {targetEntities.length === 0
             && !targetStixCyberObservableTypes
-            && targetStixDomainObjectTypes
-            && targetStixDomainObjectTypes.length > 0 && (
+            && stixCoreObjectTypes
+            && stixCoreObjectTypes.length > 0 && (
               <StixDomainObjectCreation
                 display={this.state.open}
                 inputValue={this.state.search}
                 paginationOptions={stixDomainObjectsPaginationOptions}
-                targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+                stixCoreObjectTypes={stixCoreObjectTypes}
               />
           )}
           {targetEntities.length === 0
-            && !targetStixDomainObjectTypes
+            && !stixCoreObjectTypes
             && targetStixCyberObservableTypes
             && targetStixCyberObservableTypes.length > 0 && (
               <StixCyberObservableCreation
@@ -631,7 +631,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 inputValue={this.state.search}
                 paginationKey="Pagination_stixCyberObservables"
                 paginationOptions={stixCyberObservablesPaginationOptions}
-                targetStixDomainObjectTypes={targetStixCyberObservableTypes}
+                stixCoreObjectTypes={targetStixCyberObservableTypes}
               />
           )}
           {targetEntities.length > 0 && (
@@ -991,7 +991,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 StixCoreRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isRelationReversed: PropTypes.bool,
-  targetStixDomainObjectTypes: PropTypes.array,
+  stixCoreObjectTypes: PropTypes.array,
   targetStixCyberObservableTypes: PropTypes.array,
   allowedRelationshipTypes: PropTypes.array,
   paginationOptions: PropTypes.object,

@@ -84,7 +84,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
@@ -114,7 +114,7 @@ class OrganizationKnowledgeComponent extends Component {
                 entityId={organization.id}
                 relationshipTypes={['part-of']}
                 role="part-of_to"
-                targetStixDomainObjectTypes={['Organization']}
+                stixCoreObjectTypes={['Organization']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -128,7 +128,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['part-of']}
-                targetStixDomainObjectTypes={['Individual']}
+                stixCoreObjectTypes={['Individual']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -142,7 +142,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['located-at']}
-                targetStixDomainObjectTypes={['Location']}
+                stixCoreObjectTypes={['Location']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -156,7 +156,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['part-of']}
-                targetStixDomainObjectTypes={['Sector']}
+                stixCoreObjectTypes={['Sector']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -170,7 +170,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Tool']}
+                stixCoreObjectTypes={['Tool']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -184,7 +184,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -198,7 +198,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Intrusion-Set']}
+                stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -212,7 +212,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Campaign']}
+                stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -226,7 +226,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Incident']}
+                stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -240,7 +240,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Malware']}
+                stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -254,7 +254,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Attack-Pattern']}
+                stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -268,7 +268,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Tool']}
+                stixCoreObjectTypes={['Tool']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -282,7 +282,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

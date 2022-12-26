@@ -73,7 +73,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
@@ -104,7 +104,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['attributed-to']}
-                targetStixDomainObjectTypes={['Threat-Actor', 'Intrusion-Set']}
+                stixCoreObjectTypes={['Threat-Actor', 'Intrusion-Set']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
@@ -146,7 +146,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Malware']}
+                stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
@@ -162,7 +162,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Tool']}
+                stixCoreObjectTypes={['Tool']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
@@ -178,7 +178,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Vulnerability']}
+                stixCoreObjectTypes={['Vulnerability']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
@@ -194,7 +194,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['attributed-to']}
-                targetStixDomainObjectTypes={['Incident']}
+                stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
@@ -210,7 +210,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
@@ -226,7 +226,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['uses', 'compromises']}
-                targetStixDomainObjectTypes={['Infrastructure']}
+                stixCoreObjectTypes={['Infrastructure']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
@@ -243,7 +243,7 @@ class CampaignKnowledgeComponent extends Component {
                 entityId={campaign.id}
                 entityLink={link}
                 noRightBar={true}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Region',
                   'Country',
                   'City',

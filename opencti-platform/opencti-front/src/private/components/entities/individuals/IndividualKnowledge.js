@@ -84,7 +84,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
@@ -113,7 +113,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['part-of']}
-                targetStixDomainObjectTypes={['Organization']}
+                stixCoreObjectTypes={['Organization']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -127,7 +127,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['located-at']}
-                targetStixDomainObjectTypes={['City', 'Country', 'Region']}
+                stixCoreObjectTypes={['City', 'Country', 'Region']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -140,7 +140,7 @@ class IndividualKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={individual.id}
-                targetStixDomainObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -153,7 +153,7 @@ class IndividualKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={individual.id}
-                targetStixDomainObjectTypes={['Intrusion-Set']}
+                stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -167,7 +167,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Campaign']}
+                stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -181,7 +181,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Incident']}
+                stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -195,7 +195,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Malware']}
+                stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -209,7 +209,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Attack-Pattern']}
+                stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -223,7 +223,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Tool']}
+                stixCoreObjectTypes={['Tool']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -237,7 +237,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}

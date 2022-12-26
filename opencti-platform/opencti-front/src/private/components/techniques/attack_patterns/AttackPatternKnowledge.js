@@ -69,7 +69,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
@@ -98,7 +98,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -112,7 +112,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Intrusion-Set']}
+                stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -126,7 +126,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Campaign']}
+                stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -141,7 +141,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Incident']}
+                stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -155,7 +155,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Malware']}
+                stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -169,7 +169,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Tool']}
+                stixCoreObjectTypes={['Tool']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -183,7 +183,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Vulnerability']}
+                stixCoreObjectTypes={['Vulnerability']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -197,7 +197,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={attackPattern.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+                stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}
