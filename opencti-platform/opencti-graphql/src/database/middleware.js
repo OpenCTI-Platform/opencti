@@ -1945,6 +1945,7 @@ const getAllRulesField = (instance, field) => {
   return Object.keys(instance)
     .filter((key) => key.startsWith(RULE_PREFIX))
     .map((key) => instance[key])
+    .filter((rule) => isNotEmptyField(rule)) // Rule can have been already reset
     .flat()
     .map((rule) => rule.data?.[field])
     .flat()
