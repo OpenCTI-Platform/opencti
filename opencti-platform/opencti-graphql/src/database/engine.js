@@ -163,12 +163,12 @@ export const searchEngineInit = async () => {
     .then((info) => {
       /* istanbul ignore if */
       if (info.meta.connection.status !== 'alive') {
-        throw ConfigurationError('ElasticSearch seems down (status not alive)');
+        throw ConfigurationError('[SEARCH] Search engine seems down (status not alive)');
       }
     })
     .catch(
       /* istanbul ignore next */ (e) => {
-        throw ConfigurationError('ElasticSearch seems down', { error: e.message });
+        throw ConfigurationError('[SEARCH] Search engine seems down', { error: e.message });
       }
     );
   // endregion
@@ -180,13 +180,13 @@ export const searchEngineInit = async () => {
   // Look for the right client to use
   if (searchPlatform === ELK_ENGINE) {
     logApp.info(
-      `[SEARCH ENGINE] Elasticsearch (${searchVersion}) client selected / runtime sorting ${
+      `[SEARCH] Elasticsearch (${searchVersion}) client selected / runtime sorting ${
         isRuntimeSortingEnable ? 'enabled' : 'disabled'
       }`
     );
     engine = elasticSearchClient;
   } else {
-    logApp.info(`[SEARCH ENGINE] OpenSearch (${searchVersion}) client selected / runtime sorting disabled`);
+    logApp.info(`[SEARCH] OpenSearch (${searchVersion}) client selected / runtime sorting disabled`);
     engine = openSearchClient;
   }
   // Everything is fine, return true
@@ -217,7 +217,7 @@ export const elRawBulk = (args) => engine.bulk(args).then((r) => oebp(r));
 export const elRawUpdateByQuery = (query) => engine.updateByQuery(query).then((r) => oebp(r));
 const elGetTask = (taskId) => engine.tasks.get({ task_id: taskId }).then((r) => oebp(r));
 export const elUpdateByQueryForMigration = async (message, index, body) => {
-  logApp.info(`${message} started`);
+  logApp.info(`[SEARCH] ${message} started`);
   // Execute the update by query in async mode
   const queryAsync = await elRawUpdateByQuery({
     index,
@@ -225,7 +225,7 @@ export const elUpdateByQueryForMigration = async (message, index, body) => {
     wait_for_completion: false,
     body
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
+    throw DatabaseError('[SEARCH] Error updating elastic (migration)', { error: err });
   });
   // Wait 10 seconds for task to initialize
   await waitInSec(10);
@@ -233,12 +233,12 @@ export const elUpdateByQueryForMigration = async (message, index, body) => {
   let taskStatus = await elGetTask(queryAsync.task);
   while (!taskStatus.completed) {
     const { total, updated } = taskStatus.task.status;
-    logApp.info(`${message} in progress - ${updated}/${total}`);
+    logApp.info(`[SEARCH] ${message} in progress - ${updated}/${total}`);
     await waitInSec(5);
     taskStatus = await elGetTask(queryAsync.task);
   }
   const timeSec = Math.round(taskStatus.task.running_time_in_nanos / 1e9);
-  logApp.info(`${message} done in ${timeSec} seconds`);
+  logApp.info(`[SEARCH] ${message} done in ${timeSec} seconds`);
 };
 
 const buildDataRestrictions = async (context, user) => {
@@ -378,7 +378,7 @@ const elCreateIndexTemplate = async () => {
       },
     },
   }).catch((e) => {
-    throw DatabaseError('Error creating opencti component', { error: e });
+    throw DatabaseError('[SEARCH] Error creating component template', { error: e });
   });
   await engine.indices.putIndexTemplate({
     name: `${ES_INDEX_PREFIX}-index-template`,
@@ -526,7 +526,7 @@ const elCreateIndexTemplate = async () => {
       },
     },
   }).catch((e) => {
-    throw DatabaseError('Error creating opencti template', { error: e });
+    throw DatabaseError('[SEARCH] Error creating index template', { error: e });
   });
 };
 export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
@@ -551,7 +551,7 @@ export const elDeleteIndexes = async (indexesToDelete) => {
         .catch((err) => {
           /* istanbul ignore next */
           if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-            logApp.error('[SEARCH ENGINE] Delete indices fail', { error: err });
+            logApp.error('[SEARCH] Delete indices fail', { error: err });
           }
         });
     })
@@ -658,7 +658,7 @@ const elBuildRelation = (type, connection) => {
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
   if (!fromConnection || !toConnection) {
-    throw DatabaseError('[ELASTIC] Something fail in reconstruction of the relation', concept.internal_id);
+    throw DatabaseError('[SEARCH] Something fail in reconstruction of the relation', concept.internal_id);
   }
   const from = elBuildRelation('from', fromConnection);
   from.source_ref = `${convertEntityTypeToStixType(from.fromType)}--temporary`;
@@ -691,7 +691,7 @@ const elDataConverter = (esHit) => {
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
     if (key.startsWith(RULE_PREFIX)) {
-      const rule = key.substr(RULE_PREFIX.length);
+      const rule = key.substring(RULE_PREFIX.length);
       const ruleDefinitions = Object.values(val);
       for (let rIndex = 0; rIndex < ruleDefinitions.length; rIndex += 1) {
         const { inferred, explanation } = ruleDefinitions[rIndex];
@@ -701,7 +701,7 @@ const elDataConverter = (esHit) => {
       data[key] = val;
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
       // Rebuild rel to stix attributes
-      const rel = key.substr(REL_INDEX_PREFIX.length);
+      const rel = key.substring(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
       data[relType] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
     } else {
@@ -765,7 +765,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
     },
   };
   const data = await elRawSearch(context, user, relationshipType, query).catch((e) => {
-    throw DatabaseError('Find by from and to fail', { error: e, query });
+    throw DatabaseError('[SEARCH] Find by from and to fail', { error: e, query });
   });
   const hits = [];
   for (let index = 0; index < data.hits.hits.length; index += 1) {
@@ -863,10 +863,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
           },
         },
       };
-      logApp.debug('[SEARCH ENGINE] elInternalLoadById', { query });
+      logApp.debug('[SEARCH] elInternalLoadById', { query });
       const searchType = `${ids} (${type !== null ? type : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-        throw DatabaseError('Error loading ids', { error: err, query });
+        throw DatabaseError('[SEARCH] Error loading ids', { error: err, query });
       });
       for (let j = 0; j < data.hits.hits.length; j += 1) {
         const hit = data.hits.hits[j];
@@ -885,7 +885,7 @@ export const elLoadById = async (context, user, id, type = null, indices = READ_
   /* istanbul ignore if */
   if (hits.length > 1) {
     const errorMeta = { id, type, hits: hits.length };
-    throw DatabaseError('Expect only one response', errorMeta);
+    throw DatabaseError('[SEARCH] Expect only one response', errorMeta);
   }
   return R.head(hits);
 };
@@ -1086,7 +1086,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       // TODO IF KEY is PART OF Rule we need to add extra fields search
       if (nested) {
         if (validKeys.length > 1) {
-          throw UnsupportedError('Must have only one field', validKeys);
+          throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
         }
         const nestedMust = [];
         for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
@@ -1128,12 +1128,12 @@ const elQueryBodyBuilder = async (context, user, options) => {
         for (let i = 0; i < values.length; i += 1) {
           if (values[i] === null) {
             if (validKeys.length > 1) {
-              throw UnsupportedError('Must have only one field', validKeys);
+              throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
             }
             mustnot = R.append({ exists: { field: R.head(validKeys) } }, mustnot);
           } else if (values[i] === 'EXISTS') {
             if (validKeys.length > 1) {
-              throw UnsupportedError('Must have only one field', validKeys);
+              throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
             }
             valuesFiltering.push({ exists: { field: R.head(validKeys) } });
           } else if (operator === 'eq') {
@@ -1165,7 +1165,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
             });
           } else {
             if (validKeys.length > 1) {
-              throw UnsupportedError('Must have only one field', validKeys);
+              throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
             }
             valuesFiltering.push({ range: { [R.head(validKeys)]: { [operator]: values[i] } } });
           }
@@ -1224,7 +1224,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (isRuntimeAttribute(orderBy)) {
     const runtime = RUNTIME_ATTRIBUTES[orderBy];
     if (isEmptyField(runtime)) {
-      throw UnsupportedError(`Unsupported runtime field ${orderBy}`);
+      throw UnsupportedError(`[SEARCH] Unsupported runtime field ${orderBy}`);
     }
     const source = await runtime.getSource();
     const params = await runtime.getParams(context, user);
@@ -1253,7 +1253,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (isNotEmptyField(runtimeMappings)) {
     const isRuntimeSortFeatureEnable = isRuntimeSortEnable();
     if (!isRuntimeSortFeatureEnable) {
-      throw UnsupportedError(`Sorting of field ${orderBy} is only possible with elastic >=7.12`);
+      throw UnsupportedError(`[SEARCH] Sorting of field ${orderBy} is only possible with elastic >=7.12`);
     }
     body.runtime_mappings = runtimeMappings;
   }
@@ -1264,11 +1264,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
 };
 export const elCount = async (context, user, indexName, options = {}) => {
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
-  const query = {
-    index: indexName,
-    body,
-  };
-  logApp.debug('[SEARCH ENGINE] countEntities', { query });
+  const query = { index: indexName, body };
+  logApp.debug('[SEARCH] countEntities', { query });
   return engine.count(query)
     .then((data) => {
       return oebp(data).count;
@@ -1282,13 +1279,13 @@ export const elCount = async (context, user, indexName, options = {}) => {
 export const elQueryCount = async (context, user, indexName, options = {}) => {
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const query = { index: indexName, body: { query: body.query } };
-  logApp.debug('[SEARCH ENGINE] elQueryCount', { query });
+  logApp.debug('[SEARCH] elQueryCount', { query });
   return engine.count(query)
     .then((data) => {
       return oebp(data).count;
     })
     .catch((err) => {
-      throw DatabaseError('Count data fail', { error: err, query });
+      throw DatabaseError('[SEARCH] Count data fail', { error: err, query });
     });
 };
 export const elHistogramCount = async (context, user, indexName, options = {}) => {
@@ -1311,7 +1308,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
       dateFormat = 'yyyy-MM-dd hh:ii:ss';
       break;
     default:
-      throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', interval);
+      throw FunctionalError('[SEARCH] Unsupported interval, please choose between year, quarter, month, week, day or hour', interval);
   }
   body.aggs = {
     count_over_time: {
@@ -1338,7 +1335,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
     _source_excludes: '*', // Dont need to get anything
     body,
   };
-  logApp.debug('[SEARCH ENGINE] histogramCount', { query });
+  logApp.debug('[SEARCH] histogramCount', { query });
   return elRawSearch(context, user, types, query).then((data) => {
     const { buckets } = data.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
@@ -1370,7 +1367,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     index: indexName,
     body,
   };
-  logApp.debug('[SEARCH ENGINE] aggregationCount', { query });
+  logApp.debug('[SEARCH] aggregationCount', { query });
   return elRawSearch(context, user, types, query)
     .then((data) => {
       const { buckets } = data.aggregations.genres;
@@ -1385,14 +1382,14 @@ export const elAggregationCount = async (context, user, indexName, options = {})
       }, buckets);
     })
     .catch((err) => {
-      throw DatabaseError('Aggregation fail', { error: err, query });
+      throw DatabaseError('[SEARCH] Aggregation fail', { error: err, query });
     });
 };
 // field can be "entity_type" or "internal_id"
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
   const { types = [], field = null, elementId = null, elementWithTargetTypes = null, fromId = null, fromTypes = null, toId = null, toTypes = null, isTo = false } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
-    throw FunctionalError('Unsupported field', field);
+    throw FunctionalError('[SEARCH] Unsupported field', field);
   }
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const roleFilter = { query_string: { query: fromId || !isTo ? '*_to' : '*_from', fields: ['connections.role'] } };
@@ -1450,12 +1447,8 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       },
     },
   };
-  const query = {
-    index: indexName,
-    ignore_throttled: ES_IGNORE_THROTTLED,
-    body,
-  };
-  logApp.debug('[SEARCH ENGINE] aggregationRelationsCount', { query });
+  const query = { index: indexName, ignore_throttled: ES_IGNORE_THROTTLED, body };
+  logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
       let targetId = null;
@@ -1523,7 +1516,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
     })
     .catch((e) => {
-      throw DatabaseError('Fail processing AggregationRelationsCount', { error: e });
+      throw DatabaseError('[SEARCH] Fail processing AggregationRelationsCount', { error: e });
     });
 };
 export const elPaginate = async (context, user, indexName, options = {}) => {
@@ -1532,7 +1525,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION) {
-    const message = `You cannot ask for more than ${ES_MAX_PAGINATION} results. If you need more, please use pagination`;
+    const message = `[SEARCH] You cannot ask for more than ${ES_MAX_PAGINATION} results. If you need more, please use pagination`;
     throw DatabaseError(message, { body });
   }
   const query = {
@@ -1542,7 +1535,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     _source: baseData ? BASE_FIELDS : true,
     body,
   };
-  logApp.debug('[SEARCH ENGINE] paginate', { query });
+  logApp.debug('[SEARCH] paginate', { query });
   return elRawSearch(context, user, types !== null ? types : 'Any', query)
     .then((data) => {
       const convertedHits = R.map((n) => elDataConverter(n), data.hits.hits);
@@ -1557,17 +1550,16 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
         // Because we create the mapping at element creation
         // We log the error only if its not a mapping not found error
         let isTechnicalError = true;
-        if (isNotEmptyField(err.meta.body)) {
-          const numberOfCauses = err.meta.body.error.root_cause.length;
-          const invalidMappingCauses = R.pipe(
-            R.map((r) => r.reason ?? ''),
-            R.filter((r) => R.includes('No mapping found for', r) || R.includes('no such index', r))
-          )(err.meta.body.error.root_cause);
-          isTechnicalError = numberOfCauses > invalidMappingCauses.length;
+        if (isNotEmptyField(err.meta?.body)) {
+          const errorCauses = err.meta.body?.error?.root_cause ?? [];
+          const invalidMappingCauses = errorCauses.map((r) => r.reason ?? '')
+            .filter((r) => R.includes('No mapping found for', r) || R.includes('no such index', r));
+          const numberOfCauses = errorCauses.length;
+          isTechnicalError = numberOfCauses === 0 || numberOfCauses > invalidMappingCauses.length;
         }
         // If uncontrolled error, log and propagate
         if (isTechnicalError) {
-          logApp.error('[SEARCH ENGINE] Paginate fail', { error: err, query });
+          logApp.error('[SEARCH] Paginate fail', { error: err, query });
           throw err;
         } else {
           return connectionFormat ? buildPagination(0, null, [], 0) : [];
@@ -1610,7 +1602,7 @@ export const elList = async (context, user, indexName, options = {}) => {
 export const elLoadBy = async (context, user, field, value, type = null, indices = READ_DATA_INDICES) => {
   const opts = { filters: [{ key: field, values: [value] }], connectionFormat: false, types: type ? [type] : [] };
   const hits = await elPaginate(context, user, indices, opts);
-  if (hits.length > 1) throw UnsupportedError(`Expected only one response, found ${hits.length}`);
+  if (hits.length > 1) throw UnsupportedError(`[SEARCH] Expected only one response, found ${hits.length}`);
   return R.head(hits);
 };
 export const elAttributeValues = async (context, user, field, opts = {}) => {
@@ -1663,11 +1655,9 @@ export const elBulk = async (args) => {
   return elRawBulk(args).then((data) => {
     if (data.errors) {
       const errors = data.items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
-      throw DatabaseError('Error executing bulk indexing', { errors });
+      throw DatabaseError('[SEARCH] Error updating elastic (bulk indexing)', { errors });
     }
     return data;
-  }).catch((e) => {
-    throw DatabaseError('Error updating elastic', { error: e });
   });
 };
 /* istanbul ignore next */
@@ -1691,7 +1681,7 @@ export const elReindex = async (indices) => {
 export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-  logApp.debug(`[SEARCH ENGINE] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
+  logApp.debug(`[SEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
   await engine.index({
     index: indexName,
     id: documentBody.internal_id,
@@ -1699,7 +1689,7 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
     timeout: '60m',
     body: R.dissoc('_index', documentBody),
   }).catch((err) => {
-    throw DatabaseError('Error indexing elastic', { error: err, body: documentBody });
+    throw DatabaseError('[SEARCH] Error updating elastic (index)', { error: err, body: documentBody });
   });
   return documentBody;
 };
@@ -1713,7 +1703,7 @@ export const elUpdate = (indexName, documentId, documentBody, retry = ES_RETRY_O
     refresh: true,
     body: documentBody,
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
+    throw DatabaseError('[SEARCH] Error updating elastic (update)', { error: err, documentId, body: documentBody });
   });
 };
 export const elReplace = (indexName, documentId, documentBody) => {
@@ -1768,7 +1758,7 @@ export const getRelationsToRemove = async (context, user, elements) => {
 export const elDeleteInstances = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
   if (instances.length > 0) {
-    logApp.debug(`[SEARCH ENGINE] Deleting ${instances.length} instances`);
+    logApp.debug(`[SEARCH] Deleting ${instances.length} instances`);
     const bodyDelete = instances.flatMap((doc) => {
       return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
     });
@@ -1857,7 +1847,7 @@ export const elDeleteElements = async (context, user, elements, stixLoadById) =>
   const concurrentDeletions = async (deletions) => {
     await elDeleteInstances(deletions);
     currentRelationsDelete += deletions.length;
-    logApp.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
+    logApp.debug(`[SEARCH] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
   };
   await BluePromise.map(groupsOfDeletions, concurrentDeletions, opts);
   // Remove the elements
@@ -1868,7 +1858,7 @@ export const elDeleteElements = async (context, user, elements, stixLoadById) =>
   const concurrentRelsFromTo = async (relsToClean) => {
     await elRemoveRelationConnection(context, user, relsToClean);
     currentRelationsCount += relsToClean.length;
-    logApp.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
+    logApp.debug(`[SEARCH] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
   };
   await BluePromise.map(groupsOfRelsFromTo, concurrentRelsFromTo, opts);
   // Return the relations deleted because of the entity deletion
@@ -1893,11 +1883,11 @@ export const prepareElementForIndexing = (element) => {
 };
 const prepareRelation = (thing) => {
   if (thing.fromRole === undefined || thing.toRole === undefined) {
-    throw DatabaseError(`[ELASTIC] Cant index relation ${thing.internal_id} connections without from or to`, thing);
+    throw DatabaseError(`[SEARCH] Cant index relation ${thing.internal_id} connections without from or to`, thing);
   }
   const connections = [];
   if (!thing.from || !thing.to) {
-    throw DatabaseError(`[ELASTIC] Cant index relation ${thing.internal_id}, error resolving dependency IDs`, {
+    throw DatabaseError(`[SEARCH] Cant index relation ${thing.internal_id}, error resolving dependency IDs`, {
       fromId: thing.fromId,
       toId: thing.toId,
     });
@@ -2057,7 +2047,7 @@ export const elUpdateAttributeValue = async (context, key, previousValue, value)
   };
   const cachePromise = cachePurge();
   const updatePromise = elRawUpdateByQuery(params).catch((err) => {
-    throw DatabaseError('Updating attribute value fail', { error: err, key, value });
+    throw DatabaseError('[SEARCH] Updating attribute value fail', { error: err, key, value });
   });
   await Promise.all([cachePromise, updatePromise]);
 };
@@ -2122,6 +2112,7 @@ export const elUpdateConnectionsOfElement = async (documentId, documentBody) => 
   return elRawUpdateByQuery({
     index: READ_RELATIONSHIPS_INDICES,
     refresh: true,
+    conflicts: 'proceed',
     body: {
       script: { source, params: { id: documentId, changes: documentBody } },
       query: {
@@ -2136,7 +2127,7 @@ export const elUpdateConnectionsOfElement = async (documentId, documentBody) => 
       },
     },
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
+    throw DatabaseError('[SEARCH] Error updating elastic (connections)', { error: err, documentId, body: documentBody });
   });
 };
 export const elUpdateElement = async (instance) => {
@@ -2150,7 +2141,7 @@ export const elUpdateElement = async (instance) => {
   if (esData.name && isStixObject(instance.entity_type)) {
     connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name });
   }
-  await Promise.all([cachePromise, replacePromise, connectionPromise]);
+  return Promise.all([cachePromise, replacePromise, connectionPromise]);
 };
 
 export const getStats = () => {
