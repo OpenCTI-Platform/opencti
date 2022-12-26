@@ -14,11 +14,11 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -119,10 +119,7 @@ const EntitiesStixDomainObjectLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
-              {node.name
-                || node.attribute_abstract
-                || truncate(node.content, 30)
-                || node.opinion}
+              {defaultValue(node)}
             </div>
             <div
               className={classes.bodyItem}

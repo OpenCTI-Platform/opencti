@@ -55,9 +55,7 @@ class EntityStixCoreRelationships extends Component {
       params = buildViewParamsFromUrlAndStorage(
         props.history,
         props.location,
-        `view-relationships-${
-          props.entityId
-        }-${props.stixCoreObjectTypes?.join(
+        `view-relationships-${props.entityId}-${props.stixCoreObjectTypes?.join(
           '-',
         )}-${props.relationshipTypes?.join('-')}`,
       );
@@ -350,8 +348,9 @@ class EntityStixCoreRelationships extends Component {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   buildColumnsEntities(helper) {
+    const { stixCoreObjectTypes } = this.props;
+    const isObservables = R.head(stixCoreObjectTypes || []) === 'Stix-Cyber-Observable';
     const isRuntimeSort = helper.isRuntimeFieldEnable();
     return {
       entity_type: {
@@ -359,10 +358,10 @@ class EntityStixCoreRelationships extends Component {
         width: '12%',
         isSortable: true,
       },
-      name: {
-        label: 'Name',
+      [isObservables ? 'observable_value' : 'name']: {
+        label: isObservables ? 'Value' : 'Name',
         width: '25%',
-        isSortable: isRuntimeSort,
+        isSortable: isObservables ? isRuntimeSort : true,
       },
       createdBy: {
         label: 'Author',
@@ -442,12 +441,14 @@ class EntityStixCoreRelationships extends Component {
               iconExtension={true}
               filters={filters}
               availableFilterKeys={[
+                'relationship_type',
                 'entity_type',
                 'markedBy',
+                'labelledBy',
                 'createdBy',
+                'creator',
                 'created_start_date',
                 'created_end_date',
-                'labelledBy',
               ]}
               availableEntityTypes={stixCoreObjectTypes}
               numberOfElements={numberOfElements}
@@ -508,8 +509,7 @@ class EntityStixCoreRelationships extends Component {
         selectedTypes = filters.entity_type.map((o) => o.id);
       }
     } else {
-      selectedTypes = Array.isArray(stixCoreObjectTypes)
-        && stixCoreObjectTypes.length > 0
+      selectedTypes = Array.isArray(stixCoreObjectTypes) && stixCoreObjectTypes.length > 0
         ? stixCoreObjectTypes
         : [];
     }

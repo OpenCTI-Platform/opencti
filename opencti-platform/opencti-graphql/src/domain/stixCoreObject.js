@@ -77,7 +77,7 @@ export const findAll = async (context, user, args) => {
     const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
     filters = [...filters, { key: relationshipFilterKeys.at(0), values: [args.elementId] }];
   }
-  return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type', args]), filters });
+  return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {

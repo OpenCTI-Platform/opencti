@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -6,9 +7,10 @@ import ListItemText from '@mui/material/ListItemText';
 import { pathOr } from 'ramda';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
-import React, { FunctionComponent } from 'react';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
+import Chip from '@mui/material/Chip';
+import * as R from 'ramda';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { Theme } from '../../../../components/Theme';
@@ -18,6 +20,8 @@ import { DataColumns } from '../../../../components/list_lines';
 import { UseEntityToggle } from '../../../../utils/hooks/useEntityToggle';
 import { EntityStixCoreRelationshipsEntitiesLine_node$key } from './__generated__/EntityStixCoreRelationshipsEntitiesLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
+import { defaultValue } from '../../../../utils/Graph';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -47,6 +51,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey?.[700],
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 }));
 
@@ -180,25 +192,30 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     }
     createdBy {
       ... on Identity {
-        id
         name
-        entity_type
-      }
-    }
-    objectLabel {
-      edges {
-        node {
-          value
-          color
-        }
       }
     }
     objectMarking {
       edges {
         node {
+          id
           definition
+          x_opencti_color
         }
       }
+    }
+    objectLabel {
+      edges {
+        node {
+          id
+          value
+          color
+        }
+      }
+    }
+    creator {
+      id
+      name
     }
   }
 `;
@@ -262,13 +279,40 @@ EntityStixCoreRelationshipsEntitiesLineProps
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              {t(`entity_${stixCoreObject.entity_type}`)}
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  backgroundColor: hexToRGB(
+                    itemColor(stixCoreObject.entity_type),
+                    0.08,
+                  ),
+                  color: itemColor(stixCoreObject.entity_type),
+                  border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
+                }}
+                label={t(`entity_${stixCoreObject.entity_type}`)}
+              />
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
+              style={{
+                width: dataColumns.name
+                  ? dataColumns.name.width
+                  : dataColumns.observable_value.width,
+              }}
             >
-              {stixCoreObject.name}
+              {defaultValue(stixCoreObject)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {R.pathOr('', ['createdBy', 'name'], stixCoreObject)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              {R.pathOr('', ['creator', 'name'], stixCoreObject)}
             </div>
             <div
               className={classes.bodyItem}
@@ -294,7 +338,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
                 markingDefinitions={pathOr(
                   [],
                   ['objectMarking', 'edges'],
-                  node,
+                  stixCoreObject,
                 )}
                 limit={1}
                 variant="inList"
@@ -342,7 +386,33 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
+              style={{
+                width: dataColumns.name
+                  ? dataColumns.name.width
+                  : dataColumns.observable_value.width,
+              }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
             >
               <Skeleton
                 animation="wave"

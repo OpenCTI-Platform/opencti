@@ -21,6 +21,7 @@ import inject18n from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
+import { itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   container: {
@@ -178,7 +179,14 @@ class StixDomainObjectsTimeline extends Component {
                         </TimelineOppositeContent>
                         <TimelineSeparator>
                           <Link to={link}>
-                            <TimelineDot color="primary" variant="outlined">
+                            <TimelineDot
+                              sx={{
+                                borderColor: itemColor(
+                                  stixDomainObject.entity_type,
+                                ),
+                              }}
+                              variant="outlined"
+                            >
                               <ItemIcon type={stixDomainObject.entity_type} />
                             </TimelineDot>
                           </Link>
