@@ -6,26 +6,10 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import * as R from 'ramda';
-import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
-
-const useStyles = makeStyles((theme) => ({
-  filtersDialog: {
-    margin: '0 0 20px 0',
-  },
-  filter: {
-    margin: '0 10px 10px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.paper,
-    margin: '0 10px 10px 0',
-  },
-}));
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const DialogFilters = ({
   handleOpenFilters,
@@ -40,7 +24,6 @@ const DialogFilters = ({
   filterElement,
 }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   return (
     <React.Fragment>
       <Tooltip title={t('Advanced search')}>
@@ -62,49 +45,12 @@ const DialogFilters = ({
         <DialogTitle>{t('Advanced search')}</DialogTitle>
         <DialogContent style={{ paddingTop: 10 }}>
           {!R.isEmpty(filters) && (
-            <div className={classes.filtersDialog}>
-              {R.map((currentFilter) => {
-                const label = `${truncate(
-                  t(`filter_${currentFilter[0]}`),
-                  20,
-                )}`;
-                const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
-                const values = (
-                  <span>
-                      {R.map(
-                        (n) => (
-                          <span key={n.value}>
-                            {truncate(n.value, 15)}{' '}
-                            {R.last(currentFilter[1]).value !== n.value && (
-                              <code style={{ marginRight: 5 }}>{localFilterMode}</code>
-                            )}
-                          </span>
-                        ),
-                        currentFilter[1],
-                      )}
-                    </span>
-                );
-                return (
-                  <span key={currentFilter[0]}>
-                      <Chip
-                        classes={{ root: classes.filter }}
-                        label={
-                          <div>
-                            <strong>{label}</strong>: {values}
-                          </div>
-                        }
-                        onDelete={() => handleRemoveFilter(currentFilter[0])}
-                      />
-                    {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
-                      <Chip
-                        classes={{ root: classes.operator }}
-                        label={t('AND')}
-                      />
-                    )}
-                    </span>
-                );
-              }, R.toPairs(filters))}
-            </div>
+            <FilterIconButton
+              filters={filters}
+              handleRemoveFilter={handleRemoveFilter}
+              classNameNumber={4}
+              styleNumber={2}
+            />
           )}
           {filterElement}
         </DialogContent>

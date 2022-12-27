@@ -14,7 +14,6 @@ import { Add, Close } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import Chip from '@mui/material/Chip';
 import Fab from '@mui/material/Fab';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -23,11 +22,11 @@ import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import Filters from '../common/lists/Filters';
-import { truncate } from '../../../utils/String';
 import StixDomainObjectsField from '../common/form/StixDomainObjectsField';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
+import FilterIconButton from '../../../components/FilterIconButton';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -69,17 +68,6 @@ const styles = (theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  filters: {
-    marginTop: 20,
-  },
-  filter: {
-    margin: '0 10px 10px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '0 10px 10px 0',
   },
 });
 
@@ -596,55 +584,12 @@ class UserSubscriptionCreation extends Component {
                     />
                   </div>
                   <div className="clearfix" />
-                  <div className={classes.filters}>
-                    {R.map((currentFilter) => {
-                      const label = `${truncate(
-                        t(`filter_${currentFilter[0]}`),
-                        20,
-                      )}`;
-                      const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
-                      const values = (
-                        <span>
-                          {R.map(
-                            (n) => (
-                              <span key={n.value}>
-                                {n.value && n.value.length > 0
-                                  ? truncate(n.value, 15)
-                                  : t('No label')}{' '}
-                                {R.last(currentFilter[1]).value !== n.value && (
-                                  <code>{localFilterMode}</code>
-                                )}{' '}
-                              </span>
-                            ),
-                            currentFilter[1],
-                          )}
-                        </span>
-                      );
-                      return (
-                        <span key={currentFilter[0]}>
-                          <Chip
-                            classes={{ root: classes.filter }}
-                            label={
-                              <div>
-                                <strong>{label}</strong>: {values}
-                              </div>
-                            }
-                            onDelete={this.handleRemoveFilter.bind(
-                              this,
-                              currentFilter[0],
-                            )}
-                          />
-                          {R.last(R.toPairs(filters))[0]
-                            !== currentFilter[0] && (
-                            <Chip
-                              classes={{ root: classes.operator }}
-                              label={t('AND')}
-                            />
-                          )}
-                        </span>
-                      );
-                    }, R.toPairs(filters))}
-                  </div>
+                  <FilterIconButton
+                    filters={filters}
+                    handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+                    classNameNumber={2}
+                    styleNumber={2}
+                  />
                   <div className="clearfix" />
                   <div className={classes.buttons}>
                     <Button

@@ -1,8 +1,8 @@
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import * as R from 'ramda';
-import React from 'react';
 import { compose } from 'ramda';
+import React from 'react';
 import withStyles from '@mui/styles/withStyles';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -11,7 +11,6 @@ import {
 } from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
-import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   helpertext: {
@@ -86,36 +85,6 @@ const FiltersElement = ({
               availableRelationFilterTypes={availableRelationFilterTypes}
               allEntityTypes={allEntityTypes}
               openOnFocus={true}
-              autoSelect={false}
-              autoHighlight={true}
-              getOptionLabel={(option) => (option.label ? option.label : '')}
-              noOptionsText={t('No available options')}
-              inputValue={inputValues[filterKey] || ''}
-              groupBy={
-                ['elementId', 'fromId', 'toId', 'objectContains'].includes(filterKey)
-                  ? (option) => option.type
-                  : (option) => t(option.group ? option.group : `filter_${filterKey}`)
-              }
-              isOptionEqualToValue={(option, value) => option.value === value.value}
-              renderInput={(params) => (
-                <TextField
-                  {...R.dissoc('InputProps', params)}
-                  label={t(`filter_${filterKey}`)}
-                  variant="outlined"
-                  size="small"
-                  fullWidth={true}
-                />
-              )}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  <div
-                    style={{ color: option.color }}
-                  >
-                    <ItemIcon type={option.type} />
-                  </div>
-                  <div>{option.label}</div>
-                </li>
-              )}
             />
           </Grid>
         );

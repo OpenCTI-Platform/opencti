@@ -11,9 +11,9 @@ import * as R from 'ramda';
 import Chip from '@mui/material/Chip';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
-import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -49,19 +49,6 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
-  filter: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    marginRight: 7,
-    borderRadius: 10,
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    height: 20,
-    marginRight: 10,
-  },
 });
 
 class RetentionLineComponent extends Component {
@@ -83,52 +70,15 @@ class RetentionLineComponent extends Component {
               >
                 {node.name}
               </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
-                {filterPairs.length > 0 ? (
-                  R.map((currentFilter) => {
-                    const label = `${truncate(
-                      t(`filter_${currentFilter[0]}`),
-                      20,
-                    )}`;
-                    const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
-                    const values = (
-                      <span>
-                        {R.map(
-                          (val) => (
-                            <span key={val.value}>
-                              {val.value && val.value.length > 0
-                                ? truncate(val.value, 15)
-                                : t('No label')}{' '}
-                              {R.last(currentFilter[1]).value !== val.value && (
-                                <code>{localFilterMode}</code>
-                              )}{' '}
-                            </span>
-                          ),
-                          currentFilter[1],
-                        )}
-                      </span>
-                    );
-                    return (
-                      <span>
-                        <Chip
-                          key={currentFilter[0]}
-                          classes={{ root: classes.filter }}
-                          label={
-                            <div>
-                              <strong>{label}</strong>: {values}
-                            </div>
-                          }
-                        />
-                        {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
-                          <Chip
-                            classes={{ root: classes.operator }}
-                            label={t('AND')}
-                          />
-                        )}
-                      </span>
-                    );
-                  }, filterPairs)
-                ) : (
+              {filterPairs.length > 0
+                ? <FilterIconButton
+                filters={filters}
+                dataColumns={dataColumns}
+                classNameNumber={3}
+                styleNumber={3}
+                />
+                : (
+                  <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                   <span>
                     <Chip
                       classes={{ root: classes.filter }}
@@ -139,8 +89,9 @@ class RetentionLineComponent extends Component {
                       }
                     />
                   </span>
-                )}
-              </div>
+                  </div>
+                )
+              }
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.retention.width }}

@@ -15,7 +15,6 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MuiTextField from '@mui/material/TextField';
-import Chip from '@mui/material/Chip';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
@@ -24,12 +23,14 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
-import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesAttributesQuery,
+} from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
-import { truncate } from '../../../../utils/String';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import { ignoredAttributesInFeeds } from '../../../../utils/Entity';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const styles = (theme) => ({
   header: {
@@ -104,17 +105,6 @@ const styles = (theme) => ({
   buttonAdd: {
     width: '100%',
     height: 20,
-  },
-  filters: {
-    marginTop: 20,
-  },
-  filter: {
-    margin: '0 10px 10px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '0 10px 10px 0',
   },
 });
 
@@ -404,52 +394,12 @@ const FeedEditionContainer = (props) => {
                         />
                       </div>
                       <div className="clearfix" />
-                      <div className={classes.filters}>
-                        {R.map((currentFilter) => {
-                          const label = `${truncate(
-                            t(`filter_${currentFilter[0]}`),
-                            20,
-                          )}`;
-                          const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
-                          const values = (
-                            <span>
-                              {R.map(
-                                (n) => (
-                                  <span key={n.value}>
-                                    {n.value && n.value.length > 0
-                                      ? truncate(n.value, 15)
-                                      : t('No label')}{' '}
-                                    {R.last(currentFilter[1]).value
-                                      !== n.value && <code>{localFilterMode}</code>}{' '}
-                                  </span>
-                                ),
-                                currentFilter[1],
-                              )}
-                            </span>
-                          );
-                          return (
-                            <span key={currentFilter[0]}>
-                              <Chip
-                                classes={{ root: classes.filter }}
-                                label={
-                                  <div>
-                                    <strong>{label}</strong>: {values}
-                                  </div>
-                                }
-                                onDelete={() => handleRemoveFilter(currentFilter[0])
-                                }
-                              />
-                              {R.last(R.toPairs(filters))[0]
-                                !== currentFilter[0] && (
-                                <Chip
-                                  classes={{ root: classes.operator }}
-                                  label={t('AND')}
-                                />
-                              )}
-                            </span>
-                          );
-                        }, R.toPairs(filters))}
-                      </div>
+                      <FilterIconButton
+                        filters={filters}
+                        handleRemoveFilter={handleRemoveFilter}
+                        classNameNumber={2}
+                        styleNumber={2}
+                      />
                       {selectedTypes.length > 0 && (
                         <div
                           className={classes.container}

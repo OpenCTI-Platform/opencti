@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, last, map, toPairs } from 'ramda';
+import { compose, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
@@ -11,14 +11,13 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import {
   ArrowDropDown,
   ArrowDropUp,
-  ViewListOutlined,
-  ViewModuleOutlined,
   FileDownloadOutlined,
   LibraryBooksOutlined,
+  ViewListOutlined,
+  ViewModuleOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
 import {
@@ -32,10 +31,12 @@ import StixDomainObjectsExports from '../../private/components/common/stix_domai
 import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import Filters from '../../private/components/common/lists/Filters';
-import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import { truncate } from '../../utils/String';
-import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
+import StixCyberObservablesExports
+  from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import StixCoreRelationshipsExports
+  from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
+import FilterIconButton from '../FilterIconButton';
 
 const styles = (theme) => ({
   container: {
@@ -94,18 +95,6 @@ const styles = (theme) => ({
     fontSize: 12,
     fontWeight: '700',
     cursor: 'pointer',
-  },
-  filters: {
-    float: 'left',
-    margin: '5px 0 0 10px',
-  },
-  filter: {
-    marginRight: 10,
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    marginRight: 10,
   },
   info: {
     paddingTop: 10,
@@ -220,52 +209,10 @@ class ListLines extends Component {
           {(!availableFilterKeys || availableFilterKeys.length === 0)
             && !noHeaders
             && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
-          <div className={classes.filters}>
-            {map((currentFilter) => {
-              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const negative = currentFilter[0].endsWith('not_eq');
-              const localFilterMode = negative ? t('AND') : t('OR');
-              const values = (
-                <span>
-                  {map(
-                    (n) => (
-                      <span key={n.value}>
-                        {n.value && n.value.length > 0
-                          ? truncate(n.value, 15)
-                          : t('No label')}{' '}
-                        {last(currentFilter[1]).value !== n.value && (
-                          <Chip
-                            label={localFilterMode}
-                          />
-                        )}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span>
-                  <Chip
-                    key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
-                  />
-                  {last(toPairs(filters))[0] !== currentFilter[0] && (
-                    <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
-                    />
-                  )}
-                </span>
-              );
-            }, toPairs(filters))}
-          </div>
+          <FilterIconButton
+            filters={filters}
+            handleRemoveFilter={handleRemoveFilter}
+          />
         </div>
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
