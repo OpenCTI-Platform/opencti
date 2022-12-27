@@ -6,7 +6,7 @@ export interface UseEntityToggle<T> {
   deSelectedElements: Record<string, T>
   selectAll: boolean
   numberOfSelectedElements: number
-  onToggleEntity: (entity: T, event: React.SyntheticEvent) => void
+  onToggleEntity: (entity: T, _?: React.SyntheticEvent, forceRemove?: T[]) => void
   handleClearSelectedElements: () => void
   handleToggleSelectAll: () => void
 }
@@ -24,9 +24,13 @@ const useEntityToggle = <T extends { id: string }>(key: string): UseEntityToggle
   const [selectAll, setSelectAll] = useState(false);
   const onToggleEntity = (
     entity: T,
-    _: React.SyntheticEvent,
+    event?: React.SyntheticEvent,
     forceRemove: T[] = [],
   ) => {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     if (Array.isArray(entity)) {
       const currentIds = R.values(selectedElements).map((n) => n.id);
       const givenIds = entity.map((n) => n.id);

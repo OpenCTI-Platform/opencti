@@ -12,11 +12,16 @@ import { MoreVertOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { AutoFix } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
+import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import { pathOr } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
-import { defaultType, defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/Graph';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   item: {
@@ -43,19 +48,32 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: 0,
+  },
 });
 
 class EntityStixCoreRelationshipLineAllComponent extends Component {
   render() {
     const {
+      entityId,
       fsd,
       t,
       classes,
       dataColumns,
       node,
       paginationOptions,
-      entityId,
       entityLink,
+      onToggleEntity,
+      selectAll,
+      deSelectedElements,
+      selectedElements,
+      onToggleShiftEntity,
+      index,
     } = this.props;
     const remoteNode = node.from && node.from.id === entityId ? node.to : node.from;
     const restricted = node.from === null || node.to === null;
@@ -69,10 +87,25 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
         to={link}
         disabled={restricted}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon
-            type={!restricted ? remoteNode.entity_type : 'restricted'}
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={(event) => (event.shiftKey
+            ? onToggleShiftEntity(index, node)
+            : onToggleEntity(node, event))
+          }
+        >
+          <Checkbox
+            edge="start"
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
+            disableRipple={true}
           />
+        </ListItemIcon>
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -81,19 +114,63 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.relationship_type.width }}
               >
-                {t(`relationship_${node.relationship_type}`)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {!restricted ? defaultValue(remoteNode) : t('Restricted')}
+                <Chip
+                  variant="outlined"
+                  classes={{ root: classes.chipInList }}
+                  style={{ width: 120 }}
+                  color="primary"
+                  label={t(`relationship_${node.relationship_type}`)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {!restricted ? defaultType(remoteNode, t) : t('Restricted')}
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  style={{
+                    width: 140,
+                    backgroundColor: hexToRGB(
+                      itemColor(
+                        !restricted ? remoteNode.entity_type : 'Restricted',
+                      ),
+                      0.08,
+                    ),
+                    color: itemColor(
+                      !restricted ? remoteNode.entity_type : 'Restricted',
+                    ),
+                    border: `1px solid ${itemColor(
+                      !restricted ? remoteNode.entity_type : 'Restricted',
+                    )}`,
+                  }}
+                  label={
+                    !restricted
+                      ? t(`entity_${remoteNode.entity_type}`)
+                      : t('Restricted')
+                  }
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{
+                  width: dataColumns.name
+                    ? dataColumns.name.width
+                    : dataColumns.observable_value.width,
+                }}
+              >
+                {!restricted ? defaultValue(remoteNode) : t('Restricted')}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {R.pathOr('', ['createdBy', 'name'], node)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                {R.pathOr('', ['creator', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -109,15 +186,29 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
-                {fsd(node.created)}
+                {fsd(node.created_at)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence confidence={node.confidence} variant="inList" />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
+              >
+                <ItemMarkings
+                  markingDefinitions={pathOr(
+                    [],
+                    ['objectMarking', 'edges'],
+                    node,
+                  )}
+                  limit={1}
+                  variant="inList"
+                />
               </div>
             </div>
           }
@@ -171,10 +262,38 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
         description
         is_inferred
         created
+        created_at
         x_opencti_inferences {
           rule {
             id
             name
+          }
+        }
+        createdBy {
+          ... on Identity {
+            name
+          }
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+              x_opencti_color
+            }
+          }
+        }
+        creator {
+          id
+          name
+        }
+        killChainPhases {
+          edges {
+            node {
+              id
+              phase_name
+              x_opencti_order
+            }
           }
         }
         from {
@@ -1173,15 +1292,6 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             }
           }
         }
-        killChainPhases {
-          edges {
-            node {
-              id
-              phase_name
-              x_opencti_order
-            }
-          }
-        }
       }
     `,
   },
@@ -1197,7 +1307,13 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"
             variant="circular"
@@ -1221,7 +1337,7 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: dataColumns.entity_type.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -1232,7 +1348,33 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
+                style={{
+                  width: dataColumns.name
+                    ? dataColumns.name.width
+                    : dataColumns.observable_value.width,
+                }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -1265,7 +1407,7 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -1277,6 +1419,17 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={100}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <Skeleton
                   animation="wave"

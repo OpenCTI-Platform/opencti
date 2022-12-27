@@ -29,6 +29,10 @@ class EntityStixCoreRelationshipsLinesAll extends Component {
       entityLink,
       entityId,
       paginationOptions,
+      onToggleEntity,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
     } = this.props;
     return (
       <ListLinesContent
@@ -53,6 +57,10 @@ class EntityStixCoreRelationshipsLinesAll extends Component {
         paginationOptions={paginationOptions}
         entityLink={entityLink}
         entityId={entityId}
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity}
       />
     );
   }
@@ -133,6 +141,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
+              id
               ...EntityStixCoreRelationshipLineAll_node
             }
           }

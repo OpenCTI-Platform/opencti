@@ -19,7 +19,12 @@ import { elCount, elFindByIds } from '../database/engine';
 import { upload } from '../database/file-storage';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { isEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  READ_INDEX_INFERRED_ENTITIES,
+  READ_INDEX_STIX_DOMAIN_OBJECTS
+} from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -51,7 +56,12 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
-  return listEntities(context, user, types, args);
+  let filters = args.filters ?? [];
+  if (isNotEmptyField(args.elementId) && isNotEmptyField(args.relationship_type)) {
+    const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
+    filters = [...filters, { key: relationshipFilterKeys.at(0), values: [args.elementId] }];
+  }
+  return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
 
 export const findById = async (context, user, stixDomainObjectId) => storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -88,8 +98,8 @@ export const stixDomainObjectsDistributionByEntity = async (context, user, args)
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
   const { format, type, exportType, maxMarkingDefinition } = args;
-  const { search, orderBy, orderMode, filters, filterMode } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId };
   const filtersOpts = stixDomainObjectOptions.StixDomainObjectsFilter;
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
   const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);

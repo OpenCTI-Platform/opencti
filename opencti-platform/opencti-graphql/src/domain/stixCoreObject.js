@@ -249,8 +249,8 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
   const { format, type, exportType, maxMarkingDefinition } = args;
-  const { search, orderBy, orderMode, filters, filterMode } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId };
   const filtersOpts = stixCoreObjectOptions.StixCoreObjectsFilter;
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
   const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);

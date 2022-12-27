@@ -61,7 +61,7 @@ class EntityStixCoreRelationships extends Component {
       );
     }
     this.state = {
-      sortBy: R.propOr('entity_type', 'sortBy', params),
+      sortBy: R.propOr('created_at', 'sortBy', params),
       orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('entities', 'view', params),
@@ -141,142 +141,12 @@ class EntityStixCoreRelationships extends Component {
     this.setState({ view: mode, sortBy: 'entity_type' }, () => this.saveView());
   }
 
-  renderRelationships(paginationOptions) {
-    const { sortBy, orderAsc, numberOfElements, filters, openExports } = this.state;
-    const {
-      entityLink,
-      entityId,
-      isRelationReversed,
-      allDirections,
-      stixCoreObjectTypes,
-      relationshipTypes,
-      disableExport,
-      enableNestedView,
-    } = this.props;
-    const dataColumns = {
-      relationship_type: {
-        label: 'Relationship type',
-        width: '12%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: false,
-      },
-      entity_type: {
-        label: 'Entity type',
-        width: '15%',
-        isSortable: false,
-      },
-      start_time: {
-        label: 'Start time',
-        width: '13%',
-        isSortable: true,
-      },
-      stop_time: {
-        label: 'Stop time',
-        width: '13%',
-        isSortable: true,
-      },
-      created: {
-        label: 'Creation date',
-        width: '13%',
-        isSortable: true,
-      },
-      confidence: {
-        label: 'Confidence',
-        isSortable: true,
-      },
-    };
-    return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
-        secondaryAction={true}
-        numberOfElements={numberOfElements}
-        filters={filters}
-        availableFilterKeys={[
-          'relationship_type',
-          'entity_type',
-          'markedBy',
-          'createdBy',
-          'created_start_date',
-          'created_end_date',
-        ]}
-        availableEntityTypes={stixCoreObjectTypes}
-        availableRelationshipTypes={relationshipTypes}
-        handleToggleExports={
-          disableExport ? null : this.handleToggleExports.bind(this)
-        }
-        openExports={openExports}
-        exportEntityType="stix-core-relationship"
-        noPadding={true}
-        handleChangeView={
-          this.props.handleChangeView ?? this.handleChangeView.bind(this)
-        }
-        enableNestedView={enableNestedView}
-        disableCards={true}
-        paginationOptions={paginationOptions}
-        enableEntitiesView={true}
-      >
-        <QueryRenderer
-          query={
-            // eslint-disable-next-line no-nested-ternary
-            allDirections
-              ? entityStixCoreRelationshipsLinesAllQuery
-              : isRelationReversed
-                ? entityStixCoreRelationshipsLinesToQuery
-                : entityStixCoreRelationshipsLinesFromQuery
-          }
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) =>
-            /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
-            (allDirections ? (
-              <EntityStixCoreRelationshipsLinesAll
-                data={props}
-                paginationOptions={paginationOptions}
-                entityLink={entityLink}
-                entityId={entityId}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            ) : isRelationReversed ? (
-              <EntityStixCoreRelationshipsLinesTo
-                data={props}
-                paginationOptions={paginationOptions}
-                entityLink={entityLink}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            ) : (
-              <EntityStixCoreRelationshipsLinesFrom
-                data={props}
-                paginationOptions={paginationOptions}
-                entityLink={entityLink}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            ))
-          }
-        />
-      </ListLines>
-    );
-  }
-
-  handleToggleSelectEntity(entity, event, forceRemove = []) {
-    event.stopPropagation();
-    event.preventDefault();
+  handleToggleSelectEntity(entity, event = null, forceRemove = []) {
     const { selectedElements, deSelectedElements, selectAll } = this.state;
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     if (Array.isArray(entity)) {
       const currentIds = R.values(selectedElements).map((n) => n.id);
       const givenIds = entity.map((n) => n.id);
@@ -348,6 +218,210 @@ class EntityStixCoreRelationships extends Component {
     });
   }
 
+  buildColumnRelationships(helper) {
+    const { stixCoreObjectTypes } = this.props;
+    const isObservables = stixCoreObjectTypes?.includes(
+      'Stix-Cyber-Observable',
+    );
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    return {
+      relationship_type: {
+        label: 'Relationship type',
+        width: '8%',
+        isSortable: true,
+      },
+      entity_type: {
+        label: 'Entity type',
+        width: '10%',
+        isSortable: false,
+      },
+      [isObservables ? 'observable_value' : 'name']: {
+        label: isObservables ? 'Value' : 'Name',
+        width: '20%',
+        isSortable: false,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '10%',
+        isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creator',
+        width: '10%',
+        isSortable: isRuntimeSort,
+      },
+      start_time: {
+        label: 'Start time',
+        width: '8%',
+        isSortable: true,
+      },
+      stop_time: {
+        label: 'Stop time',
+        width: '8%',
+        isSortable: true,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '8%',
+        isSortable: true,
+      },
+      confidence: {
+        label: 'Confidence',
+        isSortable: true,
+        width: '6%',
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+        width: '8%',
+      },
+    };
+  }
+
+  renderRelationships(paginationOptions) {
+    const {
+      sortBy,
+      orderAsc,
+      numberOfElements,
+      openExports,
+      selectAll,
+      selectedElements,
+      deSelectedElements,
+      filters,
+      searchTerm,
+    } = this.state;
+    const {
+      entityLink,
+      entityId,
+      isRelationReversed,
+      allDirections,
+      stixCoreObjectTypes,
+      relationshipTypes,
+      disableExport,
+      enableNestedView,
+    } = this.props;
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original
+        - Object.keys(deSelectedElements || {}).length;
+    }
+    return (
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumnRelationships(helper)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              displayImport={true}
+              secondaryAction={true}
+              iconExtension={true}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              numberOfElements={numberOfElements}
+              filters={filters}
+              availableFilterKeys={[
+                'relationship_type',
+                'entity_type',
+                'markedBy',
+                'createdBy',
+                'created_start_date',
+                'created_end_date',
+              ]}
+              availableEntityTypes={stixCoreObjectTypes}
+              availableRelationshipTypes={relationshipTypes}
+              handleToggleExports={
+                disableExport ? null : this.handleToggleExports.bind(this)
+              }
+              openExports={openExports}
+              exportEntityType="stix-core-relationship"
+              noPadding={true}
+              handleChangeView={
+                this.props.handleChangeView ?? this.handleChangeView.bind(this)
+              }
+              enableNestedView={enableNestedView}
+              disableCards={true}
+              paginationOptions={paginationOptions}
+              enableEntitiesView={true}
+            >
+              <QueryRenderer
+                query={
+                  // eslint-disable-next-line no-nested-ternary
+                  allDirections
+                    ? entityStixCoreRelationshipsLinesAllQuery
+                    : isRelationReversed
+                      ? entityStixCoreRelationshipsLinesToQuery
+                      : entityStixCoreRelationshipsLinesFromQuery
+                }
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) =>
+                  /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
+                  (allDirections ? (
+                    <EntityStixCoreRelationshipsLinesAll
+                      data={props}
+                      paginationOptions={paginationOptions}
+                      entityLink={entityLink}
+                      entityId={entityId}
+                      dataColumns={this.buildColumnRelationships(helper)}
+                      initialLoading={props === null}
+                      setNumberOfElements={this.setNumberOfElements.bind(this)}
+                      onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                      selectedElements={selectedElements}
+                      deSelectedElements={deSelectedElements}
+                      selectAll={selectAll}
+                    />
+                  ) : isRelationReversed ? (
+                    <EntityStixCoreRelationshipsLinesTo
+                      data={props}
+                      paginationOptions={paginationOptions}
+                      entityLink={entityLink}
+                      dataColumns={this.buildColumnRelationships(helper)}
+                      initialLoading={props === null}
+                      setNumberOfElements={this.setNumberOfElements.bind(this)}
+                      onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                      selectedElements={selectedElements}
+                      deSelectedElements={deSelectedElements}
+                      selectAll={selectAll}
+                    />
+                  ) : (
+                    <EntityStixCoreRelationshipsLinesFrom
+                      data={props}
+                      paginationOptions={paginationOptions}
+                      entityLink={entityLink}
+                      dataColumns={this.buildColumnRelationships(helper)}
+                      initialLoading={props === null}
+                      setNumberOfElements={this.setNumberOfElements.bind(this)}
+                      onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                      selectedElements={selectedElements}
+                      deSelectedElements={deSelectedElements}
+                      selectAll={selectAll}
+                    />
+                  ))
+                }
+              />
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              filters={filters}
+              search={searchTerm}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                this,
+              )}
+              variant="medium"
+            />
+          </div>
+        )}
+      </UserContext.Consumer>
+    );
+  }
+
   buildColumnsEntities(helper) {
     const { stixCoreObjectTypes } = this.props;
     const isObservables = stixCoreObjectTypes?.includes(
@@ -399,7 +473,7 @@ class EntityStixCoreRelationships extends Component {
     };
   }
 
-  renderEntities(paginationOptions) {
+  renderEntities(paginationOptions, backgroundTaskFilters) {
     const {
       sortBy,
       orderAsc,
@@ -446,7 +520,7 @@ class EntityStixCoreRelationships extends Component {
                 disableExport ? null : this.handleToggleExports.bind(this)
               }
               openExports={openExports}
-              exportEntityType="stix-core-relationship"
+              exportEntityType="Stix-Core-Object"
               iconExtension={true}
               filters={filters}
               availableFilterKeys={[
@@ -485,7 +559,7 @@ class EntityStixCoreRelationships extends Component {
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
-              filters={filters}
+              filters={backgroundTaskFilters}
               search={searchTerm}
               handleClearSelectedElements={this.handleClearSelectedElements.bind(
                 this,
@@ -536,6 +610,19 @@ class EntityStixCoreRelationships extends Component {
       selectedRelationshipTypes = Array.isArray(relationshipTypes) && relationshipTypes.length > 0
         ? relationshipTypes
         : [];
+    }
+    let backgroundTaskFilters = filters;
+    if (selectedRelationshipTypes.length > 0) {
+      backgroundTaskFilters = {
+        ...filters,
+        entity_type:
+          selectedTypes.length > 0
+            ? selectedTypes.map((n) => ({ id: n, value: n }))
+            : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+        [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
+          { id: entityId, value: entityId },
+        ],
+      };
     }
     const finalFilters = convertFilters(
       R.omit(['relationship_type', 'entity_type'], filters),
@@ -596,7 +683,8 @@ class EntityStixCoreRelationships extends Component {
       <div className={classes.container}>
         {view === 'relationships'
           && this.renderRelationships(paginationOptions)}
-        {view === 'entities' && this.renderEntities(paginationOptions)}
+        {view === 'entities'
+          && this.renderEntities(paginationOptions, backgroundTaskFilters)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={entityId}

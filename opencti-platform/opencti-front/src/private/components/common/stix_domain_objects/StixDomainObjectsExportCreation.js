@@ -77,6 +77,8 @@ export const StixDomainObjectsExportCreationMutation = graphql`
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
     $filters: [StixDomainObjectsFiltering]
+    $relationship_type: [String]
+    $elementId: String
   ) {
     stixDomainObjectsExportAsk(
       type: $type
@@ -88,6 +90,8 @@ export const StixDomainObjectsExportCreationMutation = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      relationship_type: $relationship_type
+      elementId: $elementId
     ) {
       edges {
         node {

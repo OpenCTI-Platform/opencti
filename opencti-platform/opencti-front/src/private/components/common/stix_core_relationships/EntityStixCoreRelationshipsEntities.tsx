@@ -60,6 +60,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     ) @connection(key: "Pagination_stixCoreObjects") {
       edges {
         node {
+          id
           ...EntityStixCoreRelationshipsEntitiesLine_node
         }
       }

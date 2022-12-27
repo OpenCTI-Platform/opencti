@@ -14,7 +14,7 @@ import {
   ViewListOutlined,
   ViewModuleOutlined,
   FileDownloadOutlined,
-  GrainOutlined,
+  LibraryBooksOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -296,7 +296,7 @@ class ListLines extends Component {
                   && enableEntitiesView && (
                     <ToggleButton value="entities" aria-label="entities">
                       <Tooltip title={t('Entities view')}>
-                        <GrainOutlined
+                        <LibraryBooksOutlined
                           fontSize="small"
                           color={
                             currentView === 'entities' ? 'secondary' : 'primary'

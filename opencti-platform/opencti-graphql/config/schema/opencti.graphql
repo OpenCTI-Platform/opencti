@@ -12044,6 +12044,8 @@ type Query {
     filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     search: String
+    relationship_type: [String]
+    elementId: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
@@ -13409,6 +13411,8 @@ type Mutation {
     maxMarkingDefinition: String
     context: String
     search: String
+    relationship_type: [String]
+    elementId: String
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: [StixCoreObjectsFiltering]
@@ -13426,6 +13430,8 @@ type Mutation {
     maxMarkingDefinition: String
     context: String
     search: String
+    relationship_type: [String]
+    elementId: String
     orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
     filters: [StixDomainObjectsFiltering]

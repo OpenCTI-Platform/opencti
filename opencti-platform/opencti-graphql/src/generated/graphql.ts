@@ -10611,6 +10611,7 @@ export type MutationStixCoreObjectEditArgs = {
 
 export type MutationStixCoreObjectsExportAskArgs = {
   context?: InputMaybe<Scalars['String']>;
+  elementId?: InputMaybe<Scalars['String']>;
   exportType: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
@@ -10618,6 +10619,7 @@ export type MutationStixCoreObjectsExportAskArgs = {
   maxMarkingDefinition?: InputMaybe<Scalars['String']>;
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   type: Scalars['String'];
 };
@@ -10766,6 +10768,7 @@ export type MutationStixDomainObjectsDeleteArgs = {
 
 export type MutationStixDomainObjectsExportAskArgs = {
   context?: InputMaybe<Scalars['String']>;
+  elementId?: InputMaybe<Scalars['String']>;
   exportType: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixDomainObjectsFiltering>>>;
@@ -10773,6 +10776,7 @@ export type MutationStixDomainObjectsExportAskArgs = {
   maxMarkingDefinition?: InputMaybe<Scalars['String']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   type: Scalars['String'];
 };
@@ -15312,11 +15316,13 @@ export type QueryStixDomainObjectArgs = {
 
 export type QueryStixDomainObjectsArgs = {
   after?: InputMaybe<Scalars['ID']>;
+  elementId?: InputMaybe<Scalars['String']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixDomainObjectsFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };

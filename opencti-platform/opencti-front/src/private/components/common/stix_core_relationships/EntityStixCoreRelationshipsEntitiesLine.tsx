@@ -18,7 +18,10 @@ import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import { UseEntityToggle } from '../../../../utils/hooks/useEntityToggle';
-import { EntityStixCoreRelationshipsEntitiesLine_node$key } from './__generated__/EntityStixCoreRelationshipsEntitiesLine_node.graphql';
+import {
+  EntityStixCoreRelationshipsEntitiesLine_node$data,
+  EntityStixCoreRelationshipsEntitiesLine_node$key,
+} from './__generated__/EntityStixCoreRelationshipsEntitiesLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { defaultValue } from '../../../../utils/Graph';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
@@ -228,6 +231,11 @@ interface EntityStixCoreRelationshipsEntitiesLineProps {
   selectedElements: UseEntityToggle<{ id: string }>['selectedElements'];
   deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements'];
   selectAll: UseEntityToggle<{ id: string }>['selectAll'];
+  onToggleShiftEntity: (
+    index: number,
+    entity: EntityStixCoreRelationshipsEntitiesLine_node$data
+  ) => void;
+  index: number;
 }
 
 export const EntityStixCoreRelationshipsEntitiesLine: FunctionComponent<
@@ -240,6 +248,8 @@ EntityStixCoreRelationshipsEntitiesLineProps
   deSelectedElements,
   selectedElements,
   onLabelClick,
+  onToggleShiftEntity,
+  index,
 }) => {
   const classes = useStyles();
   const { t, nsdt } = useFormatter();
@@ -258,7 +268,10 @@ EntityStixCoreRelationshipsEntitiesLineProps
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => onToggleEntity(stixCoreObject, event)}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, stixCoreObject)
+          : onToggleEntity(stixCoreObject, event))
+        }
       >
         <Checkbox
           edge="start"
