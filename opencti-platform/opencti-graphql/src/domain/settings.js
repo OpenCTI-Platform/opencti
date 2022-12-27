@@ -54,7 +54,6 @@ export const getSettings = async (context) => {
   return {
     ...platformSettings,
     platform_url: baseUrl,
-    platform_enable_reference: conf.get('app:enforce_references'),
     platform_reference_attachment: conf.get('app:reference_attachment'),
     platform_feature_flags: featureFlags,
   };

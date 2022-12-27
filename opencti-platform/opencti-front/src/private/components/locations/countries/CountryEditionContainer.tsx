@@ -10,6 +10,7 @@ import CountryEditionOverview from './CountryEditionOverview';
 import { Theme } from '../../../../components/Theme';
 import { CountryEditionContainerQuery } from './__generated__/CountryEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -54,9 +55,6 @@ export const countryEditionQuery = graphql`
         focusOn
       }
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -88,7 +86,7 @@ const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> =
         <div className={classes.container}>
           <CountryEditionOverview
             countryRef={queryData.country}
-            enableReferences={queryData.settings.platform_enable_reference?.includes('Country')}
+            enableReferences={useIsEnforceReference('Country')}
             context={queryData.country.editContext}
             handleClose={handleClose}
           />

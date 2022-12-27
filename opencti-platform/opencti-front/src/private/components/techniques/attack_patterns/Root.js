@@ -56,9 +56,6 @@ const attackPatternQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -150,9 +147,6 @@ class RootAttackPattern extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.attackPattern}
                             PopoverComponent={<AttackPatternPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Attack-Pattern',
-                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}

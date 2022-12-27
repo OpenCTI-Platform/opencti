@@ -29,6 +29,7 @@ class IntrusionSetKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Intrusion-Set'}
           stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
         />

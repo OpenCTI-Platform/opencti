@@ -53,9 +53,6 @@ const positionQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -119,9 +116,6 @@ class RootPosition extends Component {
                         <Position
                           {...routeProps}
                           position={props.position}
-                          enableReferences={props.settings.platform_enable_reference?.includes(
-                            'Position',
-                          )}
                         />
                       )}
                     />
@@ -149,12 +143,10 @@ class RootPosition extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Position'}
                             disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Position',
-                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -184,12 +176,10 @@ class RootPosition extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Position'}
                             disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Position',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -207,12 +197,10 @@ class RootPosition extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Position'}
                             disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Position',
-                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

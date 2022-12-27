@@ -30,6 +30,7 @@ class IndividualKnowledgeComponent extends Component {
         style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}
       >
         <StixDomainObjectHeader
+          entityType={'Individual'}
           disableSharing={true}
           stixDomainObject={individual}
           PopoverComponent={<IndividualPopover />}

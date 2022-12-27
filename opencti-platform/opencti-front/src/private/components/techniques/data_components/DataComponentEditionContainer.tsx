@@ -10,6 +10,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import DataComponentEditionOverview from './DataComponentEditionOverview';
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -48,9 +49,6 @@ export const dataComponentEditionQuery = graphql`
         name
         focusOn
       }
-    }
-    settings {
-      platform_enable_reference
     }
   }
 `;
@@ -91,7 +89,7 @@ const DataComponentEditionContainer: FunctionComponent<DataComponentEditionConta
         <div className={classes.container}>
           <DataComponentEditionOverview
             data={queryData.dataComponent}
-            enableReferences={queryData.settings.platform_enable_reference?.includes('Data-Component')}
+            enableReferences={useIsEnforceReference('Data-Component')}
             context={queryData.dataComponent.editContext}
             handleClose={handleClose}
           />

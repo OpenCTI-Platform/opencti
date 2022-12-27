@@ -1,0 +1,61 @@
+type EntitySetting implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String! @auth
+  standard_id: String! @auth
+  parent_types: [String!]! @auth
+  # EntitySetting
+  target_type: String! @auth
+  platform_entity_files_ref: Boolean @auth
+  platform_hidden_type: Boolean @auth
+  enforce_reference: Boolean @auth
+  created_at: DateTime! @auth
+  updated_at: DateTime! @auth
+}
+
+# Ordering
+enum EntitySettingsOrdering {
+  target_type
+}
+
+# Filtering
+enum EntitySettingsFilter {
+  target_type
+}
+
+input EntitySettingsFiltering {
+  key: [EntitySettingsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+# Relay connections
+type EntitySettingConnection {
+  pageInfo: PageInfo!
+  edges: [EntitySettingEdge!]!
+}
+type EntitySettingEdge {
+  cursor: String!
+  node: EntitySetting!
+}
+
+# Queries
+type Query {
+  entitySetting(id: String!): EntitySetting @auth(for: [SETTINGS])
+  entitySettingByType(targetType: String!): EntitySetting @auth(for: [SETTINGS])
+  entitySettings(
+    first: Int
+    after: ID
+    orderBy: EntitySettingsOrdering
+    orderMode: OrderingMode
+    filters: [EntitySettingsFiltering!]
+    filterMode: FilterMode
+    search: String
+  ): EntitySettingConnection @auth(for: [SETTINGS])
+}
+
+# Mutations
+type Mutation {
+  entitySettingFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): EntitySetting @auth(for: [SETTINGS])
+  entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting] @auth(for: [SETTINGS])
+}

@@ -53,9 +53,6 @@ const eventQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -140,6 +137,7 @@ class RootEvent extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Event'}
                             stixDomainObject={props.event}
                             PopoverComponent={<EventPopover />}
                           />
@@ -169,6 +167,7 @@ class RootEvent extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Event'}
                             stixDomainObject={props.event}
                             PopoverComponent={<EventPopover />}
                           />
@@ -188,6 +187,7 @@ class RootEvent extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Event'}
                             stixDomainObject={props.event}
                             PopoverComponent={<EventPopover />}
                           />

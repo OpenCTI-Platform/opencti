@@ -95,7 +95,6 @@ import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
@@ -137,7 +136,12 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { ENTITY_TYPE_STATUS, isDatedInternalObject, isInternalObject, } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_ENTITY_SETTING,
+  ENTITY_TYPE_STATUS,
+  isDatedInternalObject,
+  isInternalObject,
+} from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
@@ -172,14 +176,14 @@ import {
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
 } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import {
   dayFormat,
   FROM_START,
@@ -230,7 +234,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesFromCache } from './cache';
+import { getEntitiesFromCache, getEntitiesMapFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import {
@@ -259,38 +263,6 @@ export const batchLoader = (loader) => {
       return dataLoader.load({ id, context, user, args });
     },
   };
-};
-export const querySubType = async (subTypeId) => {
-  const attributes = schemaTypes.getAttributes(subTypeId);
-  if (attributes.length > 0) {
-    return { id: subTypeId, label: subTypeId };
-  }
-  return null;
-};
-export const queryDefaultSubTypes = async (search = null) => {
-  const sortByLabel = R.sortBy(R.toLower);
-  const types = schemaTypes.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((n) => n.includes(search ?? ''));
-  const finalResult = R.pipe(
-    sortByLabel,
-    R.map((n) => ({ node: { id: n, label: n } })),
-    R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP } }),
-    R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } }),
-    R.uniqBy(R.path(['node', 'id'])),
-  )(types);
-  return buildPagination(0, null, finalResult, finalResult.length);
-};
-export const querySubTypes = async ({ type = null, search = null }) => {
-  if (type === null) {
-    return queryDefaultSubTypes(search);
-  }
-  const sortByLabel = R.sortBy(R.toLower);
-  const types = schemaTypes.get(type).filter((n) => n.includes(search ?? ''));
-  const finalResult = R.pipe(
-    sortByLabel,
-    R.map((n) => ({ node: { id: n, label: n } })),
-    R.uniqBy(R.path(['node', 'id'])),
-  )(types);
-  return buildPagination(0, null, finalResult, finalResult.length);
 };
 export const queryAttributes = async (types) => {
   const attributes = R.uniq(types.map((type) => schemaTypes.getAttributes(type)).flat());
@@ -1706,9 +1678,9 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     return { element: initial };
   }
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
-  const enforceReferences = conf.get('app:enforce_references') || [];
+  const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
   const keys = R.map((t) => t.key, attributes);
-  if (enforceReferences.includes(initial.entity_type) || (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(initial.entity_type))) {
+  if (entitySettings.get(initial.entity_type)?.enforce_reference || (entitySettings.get('stix-core-relationship')?.enforce_reference && isStixCoreRelationship(initial.entity_type))) {
     const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
     if (!isNoReferenceKey && isEmptyField(opts.references)) {
       throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
@@ -2658,8 +2630,8 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   const { fromId, toId, relationship_type: relationshipType } = input;
   // Enforce reference controls
   if (isStixCoreRelationship(relationshipType)) {
-    const enforceReferences = conf.get('app:enforce_references');
-    if (enforceReferences && enforceReferences.includes('stix-core-relationship')) {
+    const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
+    if (entitySettings.get('stix-core-relationship')?.enforce_reference) {
       if (isEmptyField(input.externalReferences)) {
         throw ValidationError('externalReferences', {
           message: 'You must provide at least one external reference to create a relationship',
@@ -3004,9 +2976,9 @@ const userHaveCapability = (user, capability) => {
   return userCapabilities.includes(BYPASS) || userCapabilities.includes(capability);
 };
 export const createEntityRaw = async (context, user, input, type, opts = {}) => {
-  const enforceReferences = conf.get('app:enforce_references');
+  const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
   const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
-  if (!isAllowedToByPass && enforceReferences && enforceReferences.includes(type)) {
+  if (!isAllowedToByPass && entitySettings.get(type)?.enforce_reference) {
     if (isEmptyField(input.externalReferences)) {
       throw ValidationError('externalReferences', {
         message: 'You must provide at least one external reference for this type of entity',

@@ -5,6 +5,7 @@ import { registerStixDomainAliased, registerStixDomainType, resolveAliasesField 
 import { registerGraphqlSchema } from '../graphql/schema';
 import { registerModelIdentifier } from '../schema/identifier';
 import {
+  ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_OBJECT,
   DEPS_KEYS,
@@ -35,6 +36,7 @@ import {
   STIX_META_RELATION_TO_FIELD
 } from '../schema/stixMetaRelationship';
 import { STIX_ATTRIBUTE_TO_META_FIELD } from '../schema/stixEmbeddedRelationship';
+import { registerInternalObject } from '../schema/internalObject';
 
 export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json';
 export interface ModuleDefinition<T extends StoreEntity> {
@@ -42,7 +44,7 @@ export interface ModuleDefinition<T extends StoreEntity> {
     id: string;
     name: string;
     aliased: boolean;
-    category: 'Container' | 'Stix-Domain-Object' | 'Stix-Meta-Object';
+    category: 'Container' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object';
   };
   graphql: {
     schema: any,
@@ -96,6 +98,10 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
       case ABSTRACT_STIX_META_OBJECT:
         schemaTypes.add(ABSTRACT_STIX_META_OBJECT, definition.type.name);
         registerStixMetaConverter(definition.type.name, definition.converter);
+        break;
+      case ABSTRACT_INTERNAL_OBJECT:
+        schemaTypes.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);
+        registerInternalObject(definition.type.name);
         break;
       default:
         throw UnsupportedError('Unsupported category');

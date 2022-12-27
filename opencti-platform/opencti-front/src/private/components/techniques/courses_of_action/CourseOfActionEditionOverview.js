@@ -15,6 +15,7 @@ import {
   split,
 } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -28,6 +29,7 @@ import {
   convertStatus,
 } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -58,9 +60,15 @@ const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     courseOfActionEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...CourseOfActionEditionOverview_courseOfAction
         ...CourseOfAction_courseOfAction
       }
@@ -136,26 +144,61 @@ class CourseOfActionEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: courseOfActionMutationFieldPatch,
+      variables: {
+        id: this.props.courseOfAction.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'x_opencti_log_sources') {
-      finalValue = split('\n', value);
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_log_sources') {
+        finalValue = split('\n', value);
+      }
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
+      courseOfActionValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: courseOfActionMutationFieldPatch,
+            variables: {
+              id: this.props.courseOfAction.id,
+              input: { key: name, value: finalValue ?? '' },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    if (name === 'x_opencti_workflow_id') {
-      finalValue = value.value;
-    }
-    courseOfActionValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: courseOfActionMutationFieldPatch,
-          variables: {
-            id: this.props.courseOfAction.id,
-            input: { key: name, value: finalValue ?? '' },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   handleChangeCreatedBy(name, value) {
@@ -171,40 +214,42 @@ class CourseOfActionEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { courseOfAction } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(courseOfAction);
+    if (!this.props.enableReferences) {
+      const { courseOfAction } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(courseOfAction);
 
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: courseOfActionMutationRelationAdd,
-        variables: {
-          id: this.props.courseOfAction.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: courseOfActionMutationRelationAdd,
+          variables: {
+            id: this.props.courseOfAction.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: courseOfActionMutationRelationDelete,
+          variables: {
+            id: this.props.courseOfAction.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: courseOfActionMutationRelationDelete,
-        variables: {
-          id: this.props.courseOfAction.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 
@@ -235,7 +280,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={courseOfActionValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>

@@ -671,7 +671,7 @@ type Status {
 
 type StatusConnection {
   pageInfo: PageInfo!
-  edges: [StatusEdge]
+  edges: [StatusEdge!]!
 }
 
 type StatusEdge {
@@ -1087,11 +1087,8 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
-  platform_enable_reference: [String!]
   platform_reference_attachment: Boolean
   platform_feature_flags: [Module!]
-  platform_hidden_types: [String!]
-  platform_entities_files_ref: [String!]
   created_at: DateTime!
   updated_at: DateTime!
   editContext: [EditUserContext!]
@@ -4800,7 +4797,7 @@ type ToolEdge {
   node: Tool!
 }
 
-type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
+type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -4916,7 +4913,7 @@ type VulnerabilityEdge {
   node: Vulnerability!
 }
 
-type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
+type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -6894,9 +6891,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | Case
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | Case | EntitySetting
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | Case
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | Case | EntitySetting
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7561,6 +7558,9 @@ type Query {
   vocabularies(category: VocabularyCategory, first: Int, after: ID, orderBy: VocabularyOrdering, orderMode: OrderingMode, filters: [VocabularyFiltering!], filterMode: FilterMode, search: String): VocabularyConnection
   case(id: String!): Case
   cases(first: Int, after: ID, orderBy: CasesOrdering, orderMode: OrderingMode, filters: [CasesFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseConnection
+  entitySetting(id: String!): EntitySetting
+  entitySettingByType(targetType: String!): EntitySetting
+  entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: [EntitySettingsFiltering!], filterMode: FilterMode, search: String): EntitySettingConnection
 }
 
 type Subscription {
@@ -8224,6 +8224,8 @@ type Mutation {
   caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case
   caseContextPatch(id: ID!, input: EditContext!): Case
   caseContextClean(id: ID!): Case
+  entitySettingFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): EntitySetting
+  entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -9238,4 +9240,42 @@ input CaseAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
+}
+
+type EntitySetting implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  target_type: String!
+  platform_entity_files_ref: Boolean
+  platform_hidden_type: Boolean
+  enforce_reference: Boolean
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+enum EntitySettingsOrdering {
+  target_type
+}
+
+enum EntitySettingsFilter {
+  target_type
+}
+
+input EntitySettingsFiltering {
+  key: [EntitySettingsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type EntitySettingConnection {
+  pageInfo: PageInfo!
+  edges: [EntitySettingEdge!]!
+}
+
+type EntitySettingEdge {
+  cursor: String!
+  node: EntitySetting!
 }

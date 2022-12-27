@@ -1,4 +1,4 @@
-type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDomainObject { # API model
+type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
     # Basic Object
     id: ID! # internal_id
     standard_id: String!

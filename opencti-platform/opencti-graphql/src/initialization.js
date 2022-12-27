@@ -30,6 +30,7 @@ import {
 import { VocabularyCategory } from './generated/graphql';
 import { addVocabulary } from './modules/vocabulary/vocabulary-domain';
 import { builtInOv, openVocabularies } from './modules/vocabulary/vocabulary-utils';
+import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -364,11 +365,13 @@ const platformInit = async (withMarkings = true) => {
       await initializeMigration(context);
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
+      await initCreateEntitySettings(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       await initializeInternalQueues();
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);
+      await initCreateEntitySettings(context);
       await alignMigrationLastRun(context);
       await applyMigration(context);
     }

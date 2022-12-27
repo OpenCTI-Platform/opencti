@@ -5,7 +5,6 @@ export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
   isFeatureEnable: (id: string) => boolean;
   isRuntimeFieldEnable: () => boolean;
-  isEntityTypeHidden: (id: string) => boolean;
   isRuleEngineEnable: () => boolean;
 }
 
@@ -27,13 +26,6 @@ const isModuleEnable = (
   return module !== undefined && module.enable === true;
 };
 
-const isEntityTypeHidden = (
-  settings: RootPrivateQuery$data['settings'],
-  id: string,
-): boolean => {
-  return (settings.platform_hidden_types ?? []).includes(id);
-};
-
 const platformModuleHelper = (
   settings: RootPrivateQuery$data['settings'],
 ): ModuleHelper => ({
@@ -41,7 +33,6 @@ const platformModuleHelper = (
   isRuleEngineEnable: () => isModuleEnable(settings, 'RULE_ENGINE'),
   isFeatureEnable: (id: string) => isFeatureEnable(settings, id),
   isRuntimeFieldEnable: () => isFeatureEnable(settings, 'RUNTIME_SORTING'),
-  isEntityTypeHidden: (id: string) => isEntityTypeHidden(settings, id),
 });
 
 export default platformModuleHelper;

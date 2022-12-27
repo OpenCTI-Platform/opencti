@@ -36,6 +36,7 @@ class SystemComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'System'}
           disableSharing={true}
           stixDomainObject={system}
           isOpenctiAlias={true}

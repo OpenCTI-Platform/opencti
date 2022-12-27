@@ -13,6 +13,7 @@ import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import CampaignEditionOverview from './CampaignEditionOverview';
 import CampaignEditionDetails from './CampaignEditionDetails';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const styles = (theme) => ({
   header: {
@@ -79,7 +80,7 @@ class CampaignEditionContainer extends Component {
           {this.state.currentTab === 0 && (
             <CampaignEditionOverview
               campaign={campaign}
-              enableReferences={this.props.enableReferences}
+              enableReferences={useIsEnforceReference('Campaign')}
               context={editContext}
               handleClose={handleClose.bind(this)}
             />
@@ -87,7 +88,7 @@ class CampaignEditionContainer extends Component {
           {this.state.currentTab === 1 && (
             <CampaignEditionDetails
               campaign={campaign}
-              enableReferences={this.props.enableReferences}
+              enableReferences={useIsEnforceReference('Campaign')}
               context={editContext}
               handleClose={handleClose.bind(this)}
             />

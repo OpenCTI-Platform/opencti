@@ -36,9 +36,6 @@ export const channelEditionQuery = graphql`
     channel(id: $id) {
       ...ChannelEditionContainer_channel
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -89,13 +86,7 @@ class ChannelEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ChannelEditionContainer
-                    channel={props.channel}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Channel',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <ChannelEditionContainer channel={props.channel} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

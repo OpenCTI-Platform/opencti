@@ -31,7 +31,6 @@ interface DataSourceKnowledgeComponentProps {
 
 const DataSourceKnowledgeComponent: FunctionComponent<DataSourceKnowledgeComponentProps> = ({
   data,
-  enableReferences,
 }) => {
   const classes = styles();
 
@@ -40,9 +39,9 @@ const DataSourceKnowledgeComponent: FunctionComponent<DataSourceKnowledgeCompone
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'Data-Source'}
         stixDomainObject={dataSource}
         PopoverComponent={<DataSourcePopover id={dataSource.id} />}
-        enableReferences={enableReferences}
       />
       <Switch>
         <Route

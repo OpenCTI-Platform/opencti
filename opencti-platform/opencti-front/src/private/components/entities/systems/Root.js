@@ -57,9 +57,6 @@ const systemQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -197,13 +194,11 @@ class RootSystem extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
                             PopoverComponent={<SystemPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'System',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -221,12 +216,10 @@ class RootSystem extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
                             PopoverComponent={<SystemPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'System',
-                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

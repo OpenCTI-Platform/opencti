@@ -1,20 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
-import * as Yup from 'yup';
 import * as R from 'ramda';
+import { assoc, compose, difference, head, map, pathOr, pick, pipe } from 'ramda';
+import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -24,11 +15,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -59,9 +47,15 @@ const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     attackPatternEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...AttackPatternEditionOverview_attackPattern
         ...AttackPattern_attackPattern
       }
@@ -134,23 +128,55 @@ class AttackPatternEditionOverviewComponent extends Component {
     });
   }
 
+  onSubmit(values, { setSubmitting }) {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+      R.toPairs,
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
+    )(values);
+    commitMutation({
+      mutation: attackPatternMutationFieldPatch,
+      variables: {
+        id: this.props.attackPattern.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        this.props.handleClose();
+      },
+    });
+  }
+
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'x_opencti_workflow_id') {
-      finalValue = value.value;
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
+      attackPatternValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: attackPatternMutationFieldPatch,
+            variables: {
+              id: this.props.attackPattern.id,
+              input: { key: name, value: finalValue ?? '' },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    attackPatternValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: attackPatternMutationFieldPatch,
-          variables: {
-            id: this.props.attackPattern.id,
-            input: { key: name, value: finalValue ?? '' },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   handleChangeCreatedBy(name, value) {
@@ -166,40 +192,42 @@ class AttackPatternEditionOverviewComponent extends Component {
   }
 
   handleChangeKillChainPhases(name, values) {
-    const { attackPattern } = this.props;
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(attackPattern);
+    if (!this.props.enableReferences) {
+      const { attackPattern } = this.props;
+      const currentKillChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        map((n) => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(attackPattern);
 
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
+      const added = difference(values, currentKillChainPhases);
+      const removed = difference(currentKillChainPhases, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: attackPatternMutationRelationAdd,
-        variables: {
-          id: this.props.attackPattern.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: attackPatternMutationRelationAdd,
+          variables: {
+            id: this.props.attackPattern.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'kill-chain-phase',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: attackPatternMutationRelationDelete,
+          variables: {
+            id: this.props.attackPattern.id,
+            toId: head(removed).value,
             relationship_type: 'kill-chain-phase',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: attackPatternMutationRelationDelete,
-        variables: {
-          id: this.props.attackPattern.id,
-          toId: head(removed).value,
-          relationship_type: 'kill-chain-phase',
-        },
-      });
+        });
+      }
     }
   }
 
@@ -272,7 +300,7 @@ class AttackPatternEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={attackPatternValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>

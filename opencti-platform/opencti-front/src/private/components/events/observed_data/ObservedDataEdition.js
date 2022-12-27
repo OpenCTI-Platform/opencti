@@ -36,9 +36,6 @@ export const observedDataEditionQuery = graphql`
     observedData(id: $id) {
       ...ObservedDataEditionContainer_observedData
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -89,13 +86,7 @@ class ObservedDataEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ObservedDataEditionContainer
-                    observedData={props.observedData}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Observed-Data',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <ObservedDataEditionContainer observedData={props.observedData} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

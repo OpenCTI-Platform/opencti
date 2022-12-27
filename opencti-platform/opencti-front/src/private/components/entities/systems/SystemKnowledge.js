@@ -31,6 +31,7 @@ class SystemKnowledgeComponent extends Component {
         style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}
       >
         <StixDomainObjectHeader
+          entityType={'System'}
           disableSharing={true}
           stixDomainObject={system}
           PopoverComponent={<SystemPopover />}

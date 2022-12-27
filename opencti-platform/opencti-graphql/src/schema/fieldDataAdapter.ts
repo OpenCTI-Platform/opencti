@@ -58,10 +58,7 @@ export const multipleAttributes = [
   'options',
   'entities_ids',
   'x_opencti_files',
-  'platform_enable_reference',
   'feed_types',
-  'platform_hidden_types',
-  'platform_entities_files_ref',
   'descriptions',
   'note_types',
   // meta
@@ -167,7 +164,6 @@ export const booleanAttributes = [
   'can_escalate_privs',
   'is_disabled',
   'is_self_signed',
-  'platform_enable_references',
   'auto_new_marking',
   'listen_deletion',
   'no_dependencies',

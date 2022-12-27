@@ -57,7 +57,6 @@
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/luatix-dark/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png",
-    "enforce_references": [],
     "reference_attachment": false,
     "python_execution": "native",
     "admin": {

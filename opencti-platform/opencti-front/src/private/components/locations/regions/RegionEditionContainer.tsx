@@ -10,6 +10,7 @@ import RegionEditionOverview from './RegionEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import { Theme } from '../../../../components/Theme';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -54,9 +55,6 @@ export const regionEditionQuery = graphql`
         focusOn
       }
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -88,7 +86,7 @@ const RegionEditionContainer: FunctionComponent<RegionEditionContainerProps> = (
         <div className={classes.container}>
           <RegionEditionOverview
             regionRef={queryData.region}
-            enableReferences={queryData.settings.platform_enable_reference?.includes('Region')}
+            enableReferences={useIsEnforceReference('Region')}
             context={queryData.region.editContext}
             handleClose={handleClose}
           />

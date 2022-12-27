@@ -5,11 +5,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import StatusTemplateCreation from '../../settings/workflow/StatusTemplateCreation';
+import StatusTemplateCreation from '../../settings/status_templates/StatusTemplateCreation';
 import { useFormatter } from '../../../../components/i18n';
 import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTemplateFieldSearchQuery.graphql';
-import { StatusTemplateCreationContextualMutation$data } from '../../settings/workflow/__generated__/StatusTemplateCreationContextualMutation.graphql';
 import { Option } from './ReferenceField';
+import {
+  StatusTemplateCreationContextualMutation$data,
+} from '../../settings/status_templates/__generated__/StatusTemplateCreationContextualMutation.graphql';
 
 const useStyles = makeStyles(() => ({
   icon: {

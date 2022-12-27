@@ -1,16 +1,15 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import ChannelEditionOverview from './ChannelEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -37,19 +36,22 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
-});
+}));
 
-class ChannelEditionContainer extends Component {
-  render() {
-    const { t, classes, handleClose, channel } = this.props;
-    const { editContext } = channel;
-    return (
+const ChannelEditionContainer = (props) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+
+  const { handleClose, channel } = props;
+  const { editContext } = channel;
+
+  return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
+            onClick={handleClose}
             size="large"
             color="primary"
           >
@@ -63,23 +65,14 @@ class ChannelEditionContainer extends Component {
         </div>
         <div className={classes.container}>
           <ChannelEditionOverview
-            channel={this.props.channel}
-            enableReferences={this.props.enableReferences}
+            channel={channel}
+            enableReferences={useIsEnforceReference('Channel')}
             context={editContext}
-            handleClose={handleClose.bind(this)}
+            handleClose={handleClose}
           />
         </div>
       </div>
-    );
-  }
-}
-
-ChannelEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  channel: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
 const ChannelEditionFragment = createFragmentContainer(ChannelEditionContainer, {
@@ -95,7 +88,4 @@ const ChannelEditionFragment = createFragmentContainer(ChannelEditionContainer, 
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ChannelEditionFragment);
+export default ChannelEditionFragment;

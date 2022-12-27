@@ -92,6 +92,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'City'}
         disableSharing={true}
         stixDomainObject={city}
         isOpenctiAlias={true}

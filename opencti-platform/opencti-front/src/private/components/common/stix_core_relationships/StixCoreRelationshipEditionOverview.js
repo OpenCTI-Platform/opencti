@@ -1,27 +1,20 @@
 import React, { useEffect } from 'react';
-import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import { createFragmentContainer, graphql, requestSubscription } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import makeStyles from '@mui/styles/makeStyles';
 import { buildDate, parse } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
-import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 import MarkDownField from '../../../../components/MarkDownField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import SelectField from '../../../../components/SelectField';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
@@ -29,15 +22,12 @@ import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -81,7 +71,7 @@ const styles = (theme) => ({
     float: 'right',
     margin: '20px 0 0 10px',
   },
-});
+}));
 
 const subscription = graphql`
   subscription StixCoreRelationshipEditionOverviewSubscription($id: ID!) {
@@ -170,15 +160,16 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
 });
 
 const StixCoreRelationshipEditionContainer = ({
-  t,
-  classes,
   handleClose,
   handleDelete,
   stixCoreRelationship,
   stixDomainObject,
-  enableReferences,
   noStoreUpdate,
 }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+
+  const enableReferences = useIsEnforceReference('stix-core-relationship');
   const { editContext } = stixCoreRelationship;
   useEffect(() => {
     const sub = requestSubscription({
@@ -191,6 +182,7 @@ const StixCoreRelationshipEditionContainer = ({
       sub.dispose();
     };
   });
+
   const handleChangeKillChainPhases = (name, values) => {
     if (!enableReferences) {
       const currentKillChainPhases = R.pipe(
@@ -558,17 +550,6 @@ const StixCoreRelationshipEditionContainer = ({
   );
 };
 
-StixCoreRelationshipEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  handleDelete: PropTypes.func,
-  classes: PropTypes.object,
-  stixDomainObject: PropTypes.object,
-  stixCoreRelationship: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  noStoreUpdate: PropTypes.bool,
-};
-
 const StixCoreRelationshipEditionFragment = createFragmentContainer(
   StixCoreRelationshipEditionContainer,
   {
@@ -627,7 +608,4 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(StixCoreRelationshipEditionFragment);
+export default StixCoreRelationshipEditionFragment;

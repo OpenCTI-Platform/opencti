@@ -58,9 +58,6 @@ const individualQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -211,13 +208,11 @@ class RootIndividual extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
                             PopoverComponent={<IndividualPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Individual',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -235,6 +230,7 @@ class RootIndividual extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
                             PopoverComponent={<IndividualPopover />}

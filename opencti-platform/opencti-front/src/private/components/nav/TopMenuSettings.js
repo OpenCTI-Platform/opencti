@@ -65,21 +65,21 @@ const TopMenuSettings = ({ t, location, classes }) => (
     </Security>
     <Button
       component={Link}
-      to="/dashboard/settings/workflow"
+      to="/dashboard/settings/entity_types"
       variant={
-        location.pathname.includes('/dashboard/settings/workflow')
+        location.pathname.includes('/dashboard/settings/entity_types')
           ? 'contained'
           : 'text'
       }
       size="small"
       color={
-        location.pathname.includes('/dashboard/settings/workflow')
+        location.pathname.includes('/dashboard/settings/entity_types')
           ? 'secondary'
           : 'primary'
       }
       classes={{ root: classes.button }}
     >
-      {t('Workflows')}
+      {t('Entity types')}
     </Button>
     <Button
       component={Link}
