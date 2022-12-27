@@ -18,6 +18,14 @@ export class CyioError extends ApolloError {
   }
 }
 
+// Check if string is valid UUID
+export function checkIfValidUUID(str) {
+  // Regular expression to check if string is a valid UUID
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
+  return regexExp.test(str);
+}
+
 // converts string to Pascal case (aka UpperCamelCase)
 export function toPascalCase(string) {
   return `${string}`
@@ -193,6 +201,25 @@ export const buildSelectVariables = (predicateMap, selects) => {
   const selectionClause = predicateMatches.map((s) => `?${s}`).join(" ")
   const predicates = predicateMatches.map((s) => predicateMap[s]?.optional()).join(" \n")
   return {selectionClause, predicates}
+}
+
+// validateEnumValue 
+//
+// this function is responsible for validating if the specific value is 
+// is one of the defined values for a specific enumeration type
+//
+export const validateEnumValue = (suppliedValue, enumType, schema) => {
+  if (Object.prototype.hasOwnProperty.call(schema._typeMap, enumType)) {
+    for (let valueItem of schema._typeMap[enumType]._values ) {
+      if ( valueItem.name === suppliedValue ) return true;
+    }
+
+    // value was not valid for specified enumeration type
+    return false;
+  }
+
+  // unknown enumeration type
+  return false
 }
 
 export const updateQuery = (iri, type, input, predicateMap) => {

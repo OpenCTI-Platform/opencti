@@ -1,5 +1,5 @@
 import { UserInputError } from "apollo-server-express";
-import { compareValues, filterValues, updateQuery, CyioError } from '../cyio/schema/utils.js';
+import { compareValues, filterValues, updateQuery, checkIfValidUUID, CyioError } from '../cyio/schema/utils.js';
 import { selectObjectIriByIdQuery } from '../cyio/schema/global/global-utils.js';
 import { 
   singularizeSchema, 
@@ -19,6 +19,7 @@ import {
 
 
 export const findById = async (user, workspaceId, dbName, dataSources, selectMap) => {
+  if (!checkIfValidUUID(workspaceId)) throw new CyioError(`Invalid workspace identifier: ${workspaceId}`);  
   const sparqlQuery = selectWorkspaceQuery(workspaceId, selectMap.getNode("workspace"));
   let response;
   try {
@@ -207,6 +208,8 @@ export const addWorkspace = async (user, input, dbName, dataSources, selectMap) 
 };
 
 export const workspaceDelete = async (user, workspaceId, dbName, dataSources) => {
+  if (!checkIfValidUUID(workspaceId)) throw new CyioError(`Invalid workspace identifier: ${workspaceId}`);  
+
   // check that the Workspace exists
   const sparqlQuery = selectWorkspaceQuery(workspaceId, null);
   let response;
@@ -272,6 +275,8 @@ export const workspaceDelete = async (user, workspaceId, dbName, dataSources) =>
 };
 
 export const workspaceEditField = async (user, workspaceId, input, dbName, dataSources, selectMap) => {
+  if (!checkIfValidUUID(workspaceId)) throw new CyioError(`Invalid workspace identifier: ${workspaceId}`);  
+
   // make sure there is input data containing what is to be edited
   if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
 

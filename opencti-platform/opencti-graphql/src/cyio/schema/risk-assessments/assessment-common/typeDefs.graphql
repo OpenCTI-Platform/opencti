@@ -469,7 +469,7 @@ type AssessmentAssetEdge {
 }
 
 ## AssessmentPlatform
-"Defines the identifying information about the toolset used to perform aspects of the assessment."
+"Defines the identifying information about the tool set used to perform aspects of the assessment."
 type AssessmentPlatform implements BasicObject & LifecycleObject & OscalObject {
   # BasicObject
   "Uniquely identifies this object."
@@ -762,7 +762,7 @@ input DateRangeTimingAddInput {
 }
 ## FrequencyTiming
 #
-"Defines identifying information abotu an Event Timing that occurs at a specified frequence"
+"Defines identifying information about an Event Timing that occurs at a specified frequency"
 type FrequencyTiming {
   "Identifies the specified period of time that must elapse before the task must occur."
   period: Int!
@@ -1094,7 +1094,7 @@ type AssessmentLogEntry implements BasicObject & LifecycleObject & OscalObject &
 }
 "Defines identifying information about a log entry of all assessment-related actions taken."
 input AssessmentLogEntryAddInput {
-  "Indentifies a reference to the Result for which this is a log entry so that it can be attached."
+  "Identifies a reference to the Result for which this is a log entry so that it can be attached."
   result_id: ID
   # Entry
   "Identifies the name for the risk log entry."
@@ -1463,7 +1463,7 @@ enum ObservationsOrdering {
   name
   "Observation Method"
   methods
-  "Obsevation Type"
+  "Observation Type"
   observation_types
   "Collection Date"
   collected
@@ -2497,7 +2497,7 @@ enum Cvss2FacetName {
   "Temporal: Exploitability (E)"
   exploitability
   "Temporal: Remediation Level (RL)"
-  remediaton_level
+  remediation_level
   "Temporal: Report Confidence (RC)"
   report_confidence
   "Environmental: Collateral Damage Potential (CDP)"
@@ -2589,7 +2589,7 @@ enum Cvss2Exploitability {
 "Defines valid CVSS 2.0 Remediation Level values"
 enum Cvss2RemediationLevel {
   "A complete vendor solution is available."
-  offical_fix
+  official_fix
   "There is an official but temporary fix available."
   temporary_fix
   "There is an unofficial, non-vendor solution available."
@@ -2677,7 +2677,7 @@ enum Cvss3FacetName {
   "Temporal: Exploit Code Maturity (E)"
   exploit_code_maturity
   "Temporal: Remediation Level (RL)"
-  remediaton_level
+  remediation_level
   "Temporal: Report Confidence (RC)"
   report_confidence
   "Environmental: Confidentiality Requirement (CR)"
@@ -2724,7 +2724,7 @@ enum Cvss3AttackComplexity {
   low
 }
 
-"Defines valid CVSS 3.* Privileges Requid values"
+"Defines valid CVSS 3.* Privileges Required values"
 enum Cvss3PrivilegesRequired {
   "The attacker is unauthorized prior to attack, and therefore does not require any access to settings or files of the vulnerable system to carry out an attack."
   none
@@ -2797,7 +2797,7 @@ enum Cvss3EXploitCodeMaturity {
 "Defines valid CVSS 3.* Remediation Level values"
 enum Cvss3RemediationLevel {
   "A complete vendor solution is available."
-  offical_fix
+  official_fix
   "There is an official but temporary fix available."
   temporary_fix
   "There is an unofficial, non-vendor solution available. "
