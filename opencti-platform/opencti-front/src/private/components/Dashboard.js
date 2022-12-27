@@ -186,7 +186,10 @@ const TotalEntitiesCard = ({ title, options, Icon }) => {
     <CardContent>
       <div className={classes.title}>{t(title)}</div>
       <div className={classes.number}>{n(total)}</div>
-      <ItemNumberDifference difference={difference} description={t('24 hours')}/>
+      <ItemNumberDifference
+        difference={difference}
+        description={t('24 hours')}
+      />
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
       </div>
@@ -201,7 +204,10 @@ const TotalRelationshipsCard = ({ title, options, Icon }) => {
       $relationship_type: [String]
       $endDate: DateTime
     ) {
-      stixCoreRelationshipsNumber(relationship_type: $relationship_type, endDate: $endDate) {
+      stixCoreRelationshipsNumber(
+        relationship_type: $relationship_type
+        endDate: $endDate
+      ) {
         total
         count
       }
@@ -362,12 +368,16 @@ const IngestedEntitiesGraph = () => {
       }
     }
   `;
-  const data = useLazyLoadQuery(dashboardStixDomainObjectsTimeSeriesQuery, {
-    field: 'created_at',
-    operation: 'count',
-    startDate: yearsAgo(1),
-    interval: 'month',
-  }, { fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery(
+    dashboardStixDomainObjectsTimeSeriesQuery,
+    {
+      field: 'created_at',
+      operation: 'count',
+      startDate: yearsAgo(1),
+      interval: 'month',
+    },
+    { fetchPolicy: 'network-only' },
+  );
   const chartData = data.stixDomainObjectsTimeSeries.map((entry) => {
     const date = new Date(entry.date);
     date.setDate(date.getDate() + 15);
@@ -472,7 +482,6 @@ const TargetedCountries = ({ timeField }) => {
 };
 const LastIngestedAnalysis = () => {
   const classes = useStyles();
-  const theme = useTheme();
   const { t, fsd } = useFormatter();
   const dashboardLastStixDomainObjectsQuery = graphql`
     query DashboardLastStixDomainObjectsQuery(
@@ -515,12 +524,16 @@ const LastIngestedAnalysis = () => {
       }
     }
   `;
-  const data = useLazyLoadQuery(dashboardLastStixDomainObjectsQuery, {
-    first: 8,
-    orderBy: 'created_at',
-    orderMode: 'desc',
-    types: ['Report'],
-  }, { fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery(
+    dashboardLastStixDomainObjectsQuery,
+    {
+      first: 8,
+      orderBy: 'created_at',
+      orderMode: 'desc',
+      types: ['Report'],
+    },
+    { fetchPolicy: 'network-only' },
+  );
   const objects = data.stixDomainObjects;
   if (objects.edges.length === 0) {
     return <NoTableElement />;
@@ -543,10 +556,7 @@ const LastIngestedAnalysis = () => {
             to={stixDomainObjectLink}
           >
             <ListItemIcon>
-              <ItemIcon
-                type={stixDomainObject.entity_type}
-                color={theme.palette.primary.main}
-              />
+              <ItemIcon type={stixDomainObject.entity_type} />
             </ListItemIcon>
             <div className={classes.itemType}>
               {t(`entity_${stixDomainObject.entity_type}`)}
@@ -640,9 +650,13 @@ const WorkspaceDashboard = ({ dashboard, timeField }) => {
       }
     }
   `;
-  const data = useLazyLoadQuery(dashboardCustomDashboardQuery, {
-    id: dashboard,
-  }, { fetchPolicy: 'network-only' });
+  const data = useLazyLoadQuery(
+    dashboardCustomDashboardQuery,
+    {
+      id: dashboard,
+    },
+    { fetchPolicy: 'network-only' },
+  );
   if (data.workspace) {
     return (
       <DashboardView
@@ -693,7 +707,10 @@ const DefaultDashboard = ({ timeField }) => {
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalRelationshipsCard
                 title={'Total relationships'}
-                options={{ relationship_type: ['stix-core-relationship'], endDate: dayAgo() }}
+                options={{
+                  relationship_type: ['stix-core-relationship'],
+                  endDate: dayAgo(),
+                }}
                 Icon={GraphOutline}
                 classes={classes}
               />

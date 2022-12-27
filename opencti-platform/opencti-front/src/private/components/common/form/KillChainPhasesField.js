@@ -11,11 +11,11 @@ import {
 } from 'ramda';
 import { Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import { Launch } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = () => ({
   icon: {
@@ -78,7 +78,7 @@ class KillChainPhasesField extends Component {
         renderOption={(props, option) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
-              <Launch />
+              <ItemIcon type="Kill-Chain-Phase" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>

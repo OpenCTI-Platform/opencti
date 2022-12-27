@@ -12,17 +12,14 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
-import {
-  DescriptionOutlined,
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-} from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import ItemMarking from '../../../../components/ItemMarking';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -150,7 +147,11 @@ const ReportDetailsComponent = (props) => {
             </Typography>
             {fldt(report.published)}
           </Grid>
-          <Grid item={true} xs={6} style={{ minHeight: 200, maxHeight: height }}>
+          <Grid
+            item={true}
+            xs={6}
+            style={{ minHeight: 200, maxHeight: height }}
+          >
             <EntityStixCoreRelationshipsHorizontalBars
               title={t('Entities distribution')}
               variant="inEntity"
@@ -186,7 +187,7 @@ const ReportDetailsComponent = (props) => {
                   to={`/dashboard/analysis/reports/${relatedContainer.id}`}
                 >
                   <ListItemIcon>
-                    <DescriptionOutlined color="primary" />
+                    <ItemIcon type={relatedContainer.entity_type} />
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -257,6 +258,7 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
         edges {
           node {
             id
+            entity_type
             ... on Report {
               name
               description

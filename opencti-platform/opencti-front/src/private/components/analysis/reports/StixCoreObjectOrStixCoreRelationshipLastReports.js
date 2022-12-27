@@ -10,11 +10,11 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { DescriptionOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import { QueryRenderer } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -84,6 +84,7 @@ const stixCoreObjectOrStixCoreRelationshipLastReportsQuery = graphql`
       edges {
         node {
           id
+          entity_type
           name
           description
           published
@@ -161,7 +162,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                             to={`/dashboard/analysis/reports/${report.id}`}
                           >
                             <ListItemIcon>
-                              <DescriptionOutlined color="primary" />
+                              <ItemIcon type={report.entity_type} />
                             </ListItemIcon>
                             <ListItemText
                               primary={

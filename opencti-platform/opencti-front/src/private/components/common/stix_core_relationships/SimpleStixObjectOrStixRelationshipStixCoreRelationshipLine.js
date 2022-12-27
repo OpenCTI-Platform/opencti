@@ -9,7 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVertOutlined } from '@mui/icons-material';
-import { AutoFix, VectorRadius } from 'mdi-material-ui';
+import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
@@ -18,6 +18,7 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -74,9 +75,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <VectorRadius
-            style={{ transform: isReversed ? 'rotate(-90deg)' : 'none' }}
-          />
+          <ItemIcon type={node.entity_type} isReversed={isReversed} />
         </ListItemIcon>
         <ListItemText
           primary={

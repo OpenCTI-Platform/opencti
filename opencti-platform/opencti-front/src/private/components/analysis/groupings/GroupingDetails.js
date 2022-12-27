@@ -12,17 +12,14 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
-import {
-  DescriptionOutlined,
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-} from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import ItemMarking from '../../../../components/ItemMarking';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -172,7 +169,7 @@ const GroupingDetailsComponent = (props) => {
                   to={`/dashboard/analysis/groupings/${relatedContainer.id}`}
                 >
                   <ListItemIcon>
-                    <DescriptionOutlined color="primary" />
+                    <ItemIcon type={relatedContainer.entity_type} />
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -242,6 +239,7 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
         edges {
           node {
             id
+            entity_type
             ... on Grouping {
               name
               context

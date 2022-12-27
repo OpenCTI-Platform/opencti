@@ -9,11 +9,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { Launch } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   paper: {
@@ -66,7 +66,14 @@ class ToolDetailsComponent extends Component {
                 <List>
                   {tool.tool_types.map((tool_type) => (
                     <ListItem key={tool_type} dense={true} divider={true}>
-                      <ListItemText primary={<ItemOpenVocab type="tool_types_ov" value={tool_type} />} />
+                      <ListItemText
+                        primary={
+                          <ItemOpenVocab
+                            type="tool_types_ov"
+                            value={tool_type}
+                          />
+                        }
+                      />
                     </ListItem>
                   ))}
                 </List>
@@ -88,7 +95,7 @@ class ToolDetailsComponent extends Component {
                       divider={true}
                     >
                       <ListItemIcon>
-                        <Launch />
+                        <ItemIcon type={killChainPhase.entity_type} />
                       </ListItemIcon>
                       <ListItemText primary={killChainPhase.phase_name} />
                     </ListItem>
@@ -121,6 +128,7 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
         edges {
           node {
             id
+            entity_type
             kill_chain_name
             phase_name
             x_opencti_order
