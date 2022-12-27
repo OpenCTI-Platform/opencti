@@ -52,8 +52,7 @@ const inlineStyles = {
   },
 };
 
-const ItemLikelihood = (props) => {
-  const { likelihood, classes, variant, t, theme } = props;
+const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   if (!likelihood) {
     return (

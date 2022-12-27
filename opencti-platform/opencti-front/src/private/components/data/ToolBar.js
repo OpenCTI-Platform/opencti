@@ -246,9 +246,10 @@ const maxNumberOfObservablesToCopy = 1000;
 
 const toolBarContainersQuery = graphql`
   query ToolBarContainersQuery($search: String) {
-    containers(search: $search, filters: [
-      { key: entity_type, values: ["Report", "Grouping"] }
-    ]) {
+    containers(
+      search: $search
+      filters: [{ key: entity_type, values: ["Report", "Grouping"] }]
+    ) {
       edges {
         node {
           id
@@ -460,7 +461,12 @@ class ToolBar extends Component {
   }
 
   handleLaunchRemove() {
-    const actions = [{ type: 'REMOVE', context: { field: 'container-object', values: [this.props.container] } }];
+    const actions = [
+      {
+        type: 'REMOVE',
+        context: { field: 'container-object', values: [this.props.container] },
+      },
+    ];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
@@ -692,7 +698,11 @@ class ToolBar extends Component {
       .toPromise()
       .then((data) => {
         const elements = data.containers.edges.map((e) => e.node);
-        const containers = elements.map((n) => ({ label: n.name, type: n.entity_type, value: n.id }));
+        const containers = elements.map((n) => ({
+          label: n.name,
+          type: n.entity_type,
+          value: n.id,
+        }));
         this.setState({ containers });
       });
   }
@@ -848,63 +858,67 @@ class ToolBar extends Component {
     const disabled = R.isNil(actionsInputs[i]?.field) || R.isEmpty(actionsInputs[i]?.field);
     switch (actionsInputs[i]?.field) {
       case 'container-object':
-        return <>
-          <StixDomainObjectCreation
-            inputValue={actionsInputs[i]?.inputValue || ''}
-            open={this.state.containerCreation}
-            display={true}
-            speeddial={true}
-            targetStixDomainObjectTypes={['Report', 'Grouping']}
-            handleClose={() => this.setState({ containerCreation: false })}
-            creationCallback={(data) => {
-              const element = {
-                label: data.stixDomainObjectAdd.name,
-                value: data.stixDomainObjectAdd.id,
-                type: data.stixDomainObjectAdd.entity_type,
-              };
-              this.handleChangeActionInputValues(i, null, element);
-            }}
-          />
-          <Autocomplete
-            disabled={disabled}
-            size="small"
-            fullWidth={true}
-            selectOnFocus={true}
-            autoHighlight={true}
-            getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values || []}
-            multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchContainers.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
-            options={this.state.containers}
-            onInputChange={this.searchContainers.bind(this, i)}
-            inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
-                  <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
-            )}
-          />
-          <IconButton onClick={() => this.setState({ containerCreation: true }) }
-            edge="end"
-            style={{ position: 'absolute', top: 22, right: 48 }}
-            size="large">
-            <Add />
-          </IconButton>
-        </>;
+        return (
+          <>
+            <StixDomainObjectCreation
+              inputValue={actionsInputs[i]?.inputValue || ''}
+              open={this.state.containerCreation}
+              display={true}
+              speeddial={true}
+              stixCoreObjectTypes={['Report', 'Grouping']}
+              handleClose={() => this.setState({ containerCreation: false })}
+              creationCallback={(data) => {
+                const element = {
+                  label: data.stixDomainObjectAdd.name,
+                  value: data.stixDomainObjectAdd.id,
+                  type: data.stixDomainObjectAdd.entity_type,
+                };
+                this.handleChangeActionInputValues(i, null, element);
+              }}
+            />
+            <Autocomplete
+              disabled={disabled}
+              size="small"
+              fullWidth={true}
+              selectOnFocus={true}
+              autoHighlight={true}
+              getOptionLabel={(option) => (option.label ? option.label : '')}
+              value={actionsInputs[i]?.values || []}
+              multiple={true}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  label={t('Values')}
+                  fullWidth={true}
+                  onFocus={this.searchContainers.bind(this, i)}
+                  style={{ marginTop: 3 }}
+                />
+              )}
+              noOptionsText={t('No available options')}
+              options={this.state.containers}
+              onInputChange={this.searchContainers.bind(this, i)}
+              inputValue={actionsInputs[i]?.inputValue || ''}
+              onChange={this.handleChangeActionInputValues.bind(this, i)}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={option.type} />
+                  </div>
+                  <div className={classes.text}>{option.label}</div>
+                </li>
+              )}
+            />
+            <IconButton
+              onClick={() => this.setState({ containerCreation: true })}
+              edge="end"
+              style={{ position: 'absolute', top: 22, right: 48 }}
+              size="large"
+            >
+              <Add />
+            </IconButton>
+          </>
+        );
       case 'object-marking':
         return (
           <Autocomplete
@@ -1295,20 +1309,19 @@ class ToolBar extends Component {
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             {!typesAreNotUpdatable && (
               <Tooltip title={t('Update')}>
-              <span>
-                <IconButton
-                  aria-label="update"
-                  disabled={
-                    numberOfSelectedElements === 0
-                    || this.state.processing
-                  }
-                  onClick={this.handleOpenUpdate.bind(this)}
-                  color="primary"
-                  size="small"
-                >
-                  <BrushOutlined fontSize="small" />
-                </IconButton>
-              </span>
+                <span>
+                  <IconButton
+                    aria-label="update"
+                    disabled={
+                      numberOfSelectedElements === 0 || this.state.processing
+                    }
+                    onClick={this.handleOpenUpdate.bind(this)}
+                    color="primary"
+                    size="small"
+                  >
+                    <BrushOutlined fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
             )}
             <UserContext.Consumer>
@@ -1355,33 +1368,33 @@ class ToolBar extends Component {
               </Tooltip>
             )}
             {!enrichDisable && (
-            <Tooltip title={t('Enrichment')}>
-              <span>
-                <IconButton
-                  aria-label="enrichment"
-                  disabled={this.state.processing}
-                  onClick={this.handleOpenEnrichment.bind(this)}
-                  color="primary"
-                  size="small"
-                >
-                  <CloudRefresh fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
+              <Tooltip title={t('Enrichment')}>
+                <span>
+                  <IconButton
+                    aria-label="enrichment"
+                    disabled={this.state.processing}
+                    onClick={this.handleOpenEnrichment.bind(this)}
+                    color="primary"
+                    size="small"
+                  >
+                    <CloudRefresh fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
             )}
             {!promoteDisable && (
-            <Tooltip title={t('Indicators/observables generation')}>
-              <span>
-                <IconButton
-                  aria-label="promote"
-                  disabled={this.state.processing}
-                  onClick={this.handleOpenPromote.bind(this)}
-                  color="primary"
-                  size="small"
-                >
-                  <TransformOutlined fontSize="small" />
-                </IconButton>
-              </span>
+              <Tooltip title={t('Indicators/observables generation')}>
+                <span>
+                  <IconButton
+                    aria-label="promote"
+                    disabled={this.state.processing}
+                    onClick={this.handleOpenPromote.bind(this)}
+                    color="primary"
+                    size="small"
+                  >
+                    <TransformOutlined fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
             )}
             {!typesAreNotMergable && (
@@ -1531,7 +1544,14 @@ class ToolBar extends Component {
                           )}
                           {R.map((currentFilter) => {
                             const label = `${truncate(
-                              t(`filter_${currentFilter[0]}`),
+                              currentFilter[0].startsWith('rel_')
+                                ? t(
+                                  `relationship_${
+                                    currentFilter[0]
+                                      .replace('rel_', '')
+                                      .replace('.*', '')}`,
+                                )
+                                : t(`filter_${currentFilter[0]}`),
                               20,
                             )}`;
                             const values = (
@@ -1567,10 +1587,10 @@ class ToolBar extends Component {
                                 />
                                 {R.last(R.toPairs(filters))[0]
                                   !== currentFilter[0] && (
-                                    <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
-                                    />
+                                  <Chip
+                                    classes={{ root: classes.operator }}
+                                    label={t('AND')}
+                                  />
                                 )}
                               </span>
                             );
@@ -1788,8 +1808,8 @@ class ToolBar extends Component {
                     primary={defaultValue(element)}
                     secondary={truncate(
                       element.description
-                      || element.x_opencti_description
-                      || '',
+                        || element.x_opencti_description
+                        || '',
                       60,
                     )}
                   />
@@ -1853,54 +1873,60 @@ class ToolBar extends Component {
               {t('Aliases')}
             </Typography>
             {newAliases.map((label) => (label.length > 0 ? (
-              <Chip
-                key={label}
-                classes={{ root: classes.aliases }}
-                label={label}
-              />
+                <Chip
+                  key={label}
+                  classes={{ root: classes.aliases }}
+                  label={label}
+                />
             ) : (
               ''
             )))}
-            {noAuthor !== true && <>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Author')}
-              </Typography>
-              {R.pathOr('', ['createdBy', 'name'], keptElement)}
-            </>}
-            {noMarking !== true && <>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Marking')}
-              </Typography>
-              {R.pathOr([], ['markingDefinitions', 'edges'], keptElement).length
-              > 0 ? (
-                  R.map(
-                    (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      label={markingDefinition.node.definition}
-                    />
-                    ),
-                    R.pathOr([], ['objectMarking', 'edges'], keptElement),
-                  )
-                ) : (
-                <ItemMarking label="TLP:CLEAR" />
-                )}
-            </>}
-            {noWarning !== true && <>
-              <Alert severity="warning" style={{ marginTop: 20 }}>
-                {t(
-                  'The relations attached to selected entities will be copied to the merged entity.',
-                )}
-              </Alert>
-            </>}
+            {noAuthor !== true && (
+              <>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Author')}
+                </Typography>
+                {R.pathOr('', ['createdBy', 'name'], keptElement)}
+              </>
+            )}
+            {noMarking !== true && (
+              <>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Marking')}
+                </Typography>
+                {R.pathOr([], ['markingDefinitions', 'edges'], keptElement)
+                  .length > 0 ? (
+                    R.map(
+                      (markingDefinition) => (
+                      <ItemMarking
+                        key={markingDefinition.node.id}
+                        label={markingDefinition.node.definition}
+                      />
+                      ),
+                      R.pathOr([], ['objectMarking', 'edges'], keptElement),
+                    )
+                  ) : (
+                  <ItemMarking label="TLP:CLEAR" />
+                  )}
+              </>
+            )}
+            {noWarning !== true && (
+              <>
+                <Alert severity="warning" style={{ marginTop: 20 }}>
+                  {t(
+                    'The relations attached to selected entities will be copied to the merged entity.',
+                  )}
+                </Alert>
+              </>
+            )}
             <div className={classes.buttons}>
               <Button
                 variant="contained"

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pipe, map, assoc } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Timeline from '@mui/lab/Timeline';
@@ -20,6 +21,7 @@ import inject18n from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
 import { defaultSecondaryValue, defaultValue } from '../../../../utils/Graph';
+import { itemColor } from '../../../../utils/Colors';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -43,6 +45,7 @@ class StixDomainObjectTimelineComponent extends Component {
     const {
       fldt,
       classes,
+      theme,
       data,
       stixDomainObjectId,
       entityLink,
@@ -85,7 +88,16 @@ class StixDomainObjectTimelineComponent extends Component {
                             : t('Restricted')
                         }
                       >
-                        <TimelineDot color="primary" variant="outlined">
+                        <TimelineDot
+                          sx={{
+                            borderColor: !restricted
+                              ? itemColor(
+                                stixRelationship.targetEntity.entity_type,
+                              )
+                              : theme.palette.primary.main,
+                          }}
+                          variant="outlined"
+                        >
                           <ItemIcon
                             type={
                               !restricted
@@ -434,4 +446,8 @@ const StixDomainObjectTimeline = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectTimeline);
+export default compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(StixDomainObjectTimeline);

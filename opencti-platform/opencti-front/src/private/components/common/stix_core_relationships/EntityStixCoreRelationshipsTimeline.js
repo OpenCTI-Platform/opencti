@@ -22,6 +22,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
+import { itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   container: {
@@ -1262,7 +1263,14 @@ class EntityStixCoreRelationshipsTimeline extends Component {
                           </TimelineOppositeContent>
                           <TimelineSeparator>
                             <Link to={link}>
-                              <TimelineDot color="primary" variant="outlined">
+                              <TimelineDot
+                                sx={{
+                                  borderColor: itemColor(
+                                    remoteNode.entity_type,
+                                  ),
+                                }}
+                                variant="outlined"
+                              >
                                 <ItemIcon type={remoteNode.entity_type} />
                               </TimelineDot>
                             </Link>

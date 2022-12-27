@@ -52,10 +52,11 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'inline':
       style = {
         color: color ?? itemColor(type),
-        width: 20,
-        height: 20,
+        width: 15,
+        height: 15,
         margin: '0 7px 0 0',
         float: 'left',
+        paddingTop: 2,
       };
       break;
     default:

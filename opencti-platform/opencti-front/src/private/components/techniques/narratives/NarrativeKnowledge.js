@@ -8,7 +8,6 @@ import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
@@ -74,7 +73,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
@@ -103,7 +102,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -117,7 +116,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Intrusion-Set']}
+                stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -131,7 +130,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Campaign']}
+                stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -145,7 +144,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Attack-Pattern']}
+                stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -159,7 +158,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Malware']}
+                stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -173,7 +172,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Channel']}
+                stixCoreObjectTypes={['Channel']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -187,7 +186,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Vulnerability']}
+                stixCoreObjectTypes={['Vulnerability']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -201,7 +200,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                targetStixDomainObjectTypes={['Incident']}
+                stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -212,10 +211,12 @@ class NarrativeKnowledgeComponent extends Component {
             exact
             path="/dashboard/techniques/narratives/:narrativeId/knowledge/observables"
             render={(routeProps) => (
-              <StixCoreObjectStixCyberObservables
-                stixCoreObjectId={narrative.id}
-                stixCoreObjectLink={link}
-                noRightBar={true}
+              <EntityStixCoreRelationships
+                entityId={narrative.id}
+                relationshipTypes={['related-to']}
+                stixCoreObjectTypes={['Stix-Cyber-Observable']}
+                entityLink={link}
+                allDirections={true}
                 {...routeProps}
               />
             )}
@@ -228,7 +229,7 @@ class NarrativeKnowledgeComponent extends Component {
                 entityId={narrative.id}
                 entityLink={link}
                 noRightBar={true}
-                targetStixDomainObjectTypes={[
+                stixCoreObjectTypes={[
                   'Region',
                   'Country',
                   'City',

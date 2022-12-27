@@ -10611,6 +10611,7 @@ export type MutationStixCoreObjectEditArgs = {
 
 export type MutationStixCoreObjectsExportAskArgs = {
   context?: InputMaybe<Scalars['String']>;
+  elementId?: InputMaybe<Scalars['String']>;
   exportType: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
@@ -10618,6 +10619,7 @@ export type MutationStixCoreObjectsExportAskArgs = {
   maxMarkingDefinition?: InputMaybe<Scalars['String']>;
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   type: Scalars['String'];
 };
@@ -10766,6 +10768,7 @@ export type MutationStixDomainObjectsDeleteArgs = {
 
 export type MutationStixDomainObjectsExportAskArgs = {
   context?: InputMaybe<Scalars['String']>;
+  elementId?: InputMaybe<Scalars['String']>;
   exportType: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixDomainObjectsFiltering>>>;
@@ -10773,6 +10776,7 @@ export type MutationStixDomainObjectsExportAskArgs = {
   maxMarkingDefinition?: InputMaybe<Scalars['String']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   type: Scalars['String'];
 };
@@ -14980,11 +14984,13 @@ export type QueryStixCoreObjectRawArgs = {
 
 export type QueryStixCoreObjectsArgs = {
   after?: InputMaybe<Scalars['ID']>;
+  elementId?: InputMaybe<Scalars['String']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -15310,11 +15316,13 @@ export type QueryStixDomainObjectArgs = {
 
 export type QueryStixDomainObjectsArgs = {
   after?: InputMaybe<Scalars['ID']>;
+  elementId?: InputMaybe<Scalars['String']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixDomainObjectsFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -17473,8 +17481,10 @@ export enum StixCoreObjectsFilter {
   ObjectContains = 'objectContains',
   PatternType = 'pattern_type',
   Published = 'published',
+  RelatedTo = 'relatedTo',
   ReportTypes = 'report_types',
   Subject = 'subject',
+  Targets = 'targets',
   ThreatActorTypes = 'threat_actor_types',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',

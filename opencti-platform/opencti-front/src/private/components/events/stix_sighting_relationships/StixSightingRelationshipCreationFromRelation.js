@@ -482,13 +482,13 @@ class StixSightingRelationshipCreationFromRelation extends Component {
   }
 
   renderSelectEntity() {
-    const { classes, t, targetStixDomainObjectTypes, onlyObservables } = this.props;
+    const { classes, t, stixCoreObjectTypes, onlyObservables } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
-      types: targetStixDomainObjectTypes
+      types: stixCoreObjectTypes
         ? filter(
           (n) => n !== 'Stix-Cyber-Observable',
-          targetStixDomainObjectTypes,
+          stixCoreObjectTypes,
         )
         : null,
       orderBy: 'created_at',
@@ -545,7 +545,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
             }
             variables={{
               search: this.state.search,
-              types: targetStixDomainObjectTypes,
+              types: stixCoreObjectTypes,
               count: 50,
               orderBy: 'created_at',
               orderMode: 'desc',
@@ -570,7 +570,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
             display={this.state.open}
             inputValue={this.state.search}
             paginationOptions={stixDomainObjectsPaginationOptions}
-            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+            stixCoreObjectTypes={stixCoreObjectTypes}
           />
         </div>
       </div>
@@ -908,7 +908,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
 StixSightingRelationshipCreationFromRelation.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
-  targetStixDomainObjectTypes: PropTypes.array,
+  stixCoreObjectTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

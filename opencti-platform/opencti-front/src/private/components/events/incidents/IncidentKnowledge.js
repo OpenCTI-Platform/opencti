@@ -12,7 +12,6 @@ import IncidentPopover from './IncidentPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import StixSightingRelationship from '../stix_sighting_relationships/StixSightingRelationship';
 
 const styles = () => ({
@@ -73,22 +72,6 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-                'Tool',
-                'Vulnerability',
-                'Individual',
-                'Organization',
-                'Sector',
-                'Region',
-                'Country',
-                'City',
-                'Position',
-              ]}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
@@ -104,7 +87,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['attributed-to']}
-              targetStixDomainObjectTypes={[
+              stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
@@ -150,7 +133,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
-              targetStixDomainObjectTypes={['Malware']}
+              stixCoreObjectTypes={['Malware']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
@@ -166,7 +149,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
-              targetStixDomainObjectTypes={['Tool']}
+              stixCoreObjectTypes={['Tool']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
@@ -182,7 +165,7 @@ class IncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['targets']}
-              targetStixDomainObjectTypes={['Vulnerability']}
+              stixCoreObjectTypes={['Vulnerability']}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
@@ -195,12 +178,14 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/observables"
           render={(routeProps) => (
-            <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={incident.id}
-              stixCoreObjectLink={link}
-              noRightBar={true}
+            <EntityStixCoreRelationships
+              entityId={incident.id}
+              relationshipTypes={['related-to']}
+              stixCoreObjectTypes={['Stix-Cyber-Observable']}
+              entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
+              allDirections={true}
               {...routeProps}
             />
           )}

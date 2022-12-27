@@ -10,7 +10,6 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import SystemPopover from './SystemPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
@@ -86,22 +85,6 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['related-to']}
-                targetStixDomainObjectTypes={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                  'Tool',
-                  'Vulnerability',
-                  'System',
-                  'Organization',
-                  'Sector',
-                  'Region',
-                  'Country',
-                  'City',
-                  'Position',
-                ]}
                 entityLink={link}
                 allDirections={true}
                 {...routeProps}
@@ -115,7 +98,7 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['part-of']}
-                targetStixDomainObjectTypes={['System']}
+                stixCoreObjectTypes={['System']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -129,7 +112,7 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['localization']}
-                targetStixDomainObjectTypes={['City', 'Country', 'Region']}
+                stixCoreObjectTypes={['City', 'Country', 'Region']}
                 entityLink={link}
                 isRelationReversed={false}
                 {...routeProps}
@@ -142,7 +125,7 @@ class SystemKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={system.id}
-                targetStixDomainObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -155,7 +138,7 @@ class SystemKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={system.id}
-                targetStixDomainObjectTypes={['Intrusion-Set']}
+                stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -169,7 +152,7 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Campaign']}
+                stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -183,7 +166,7 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Incident']}
+                stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -197,7 +180,7 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Malware']}
+                stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -211,7 +194,7 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Attack-Pattern']}
+                stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -225,7 +208,7 @@ class SystemKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['targets']}
-                targetStixDomainObjectTypes={['Tool']}
+                stixCoreObjectTypes={['Tool']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
@@ -236,10 +219,12 @@ class SystemKnowledgeComponent extends Component {
             exact
             path="/dashboard/entities/systems/:systemId/knowledge/observables"
             render={(routeProps) => (
-              <StixCoreObjectStixCyberObservables
-                stixCoreObjectId={system.id}
-                stixCoreObjectLink={link}
-                noRightBar={true}
+              <EntityStixCoreRelationships
+                entityId={system.id}
+                relationshipTypes={['related-to']}
+                stixCoreObjectTypes={['Stix-Cyber-Observable']}
+                entityLink={link}
+                allDirections={true}
                 {...routeProps}
               />
             )}

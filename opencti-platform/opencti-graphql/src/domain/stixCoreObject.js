@@ -59,20 +59,25 @@ import { deleteFile, loadFile, storeFileConverter, upload } from '../database/fi
 import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 
 export const findAll = async (context, user, args) => {
   let types = [];
-  if (args.types && args.types.length > 0) {
+  if (isNotEmptyField(args.types)) {
     types = R.filter((type) => isStixCoreObject(type), args.types);
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  return listEntities(context, user, types, args);
+  let filters = args.filters ?? [];
+  if (isNotEmptyField(args.elementId) && isNotEmptyField(args.relationship_type)) {
+    const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
+    filters = [...filters, { key: relationshipFilterKeys.at(0), values: [args.elementId] }];
+  }
+  return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {
@@ -244,8 +249,8 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
   const { format, type, exportType, maxMarkingDefinition } = args;
-  const { search, orderBy, orderMode, filters, filterMode } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId };
   const filtersOpts = stixCoreObjectOptions.StixCoreObjectsFilter;
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
   const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);

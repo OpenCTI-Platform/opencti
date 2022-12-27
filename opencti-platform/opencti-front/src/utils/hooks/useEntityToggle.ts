@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
 
-const useEntityToggle = <T extends { id: string }>(key: string) => {
+export interface UseEntityToggle<T> {
+  selectedElements: Record<string, T>
+  deSelectedElements: Record<string, T>
+  selectAll: boolean
+  numberOfSelectedElements: number
+  onToggleEntity: (entity: T, _?: React.SyntheticEvent, forceRemove?: T[]) => void
+  handleClearSelectedElements: () => void
+  handleToggleSelectAll: () => void
+}
+
+const useEntityToggle = <T extends { id: string }>(key: string): UseEntityToggle<T> => {
   const { numberOfElements } = JSON.parse(
     window.localStorage.getItem(key) ?? '{}',
   );
@@ -14,9 +24,13 @@ const useEntityToggle = <T extends { id: string }>(key: string) => {
   const [selectAll, setSelectAll] = useState(false);
   const onToggleEntity = (
     entity: T,
-    _: React.SyntheticEvent,
+    event?: React.SyntheticEvent,
     forceRemove: T[] = [],
   ) => {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     if (Array.isArray(entity)) {
       const currentIds = R.values(selectedElements).map((n) => n.id);
       const givenIds = entity.map((n) => n.id);

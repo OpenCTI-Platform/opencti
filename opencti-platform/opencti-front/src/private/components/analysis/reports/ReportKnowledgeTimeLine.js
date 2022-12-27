@@ -17,6 +17,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
+import { itemColor } from '../../../../utils/Colors';
 
 export const reportKnowledgeTimeLineQuery = graphql`
   query ReportKnowledgeTimeLineQuery(
@@ -93,7 +94,10 @@ const ReportKnowledgeTimeLineComponent = ({
               </TimelineOppositeContent>
               <TimelineSeparator>
                 <Link to={link}>
-                  <TimelineDot color="primary" variant="outlined">
+                  <TimelineDot
+                    sx={{ borderColor: itemColor(node.entity_type) }}
+                    variant="outlined"
+                  >
                     <ItemIcon type={node.entity_type} />
                   </TimelineDot>
                 </Link>

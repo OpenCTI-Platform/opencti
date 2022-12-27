@@ -21,6 +21,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { itemColor } from '../../../../utils/Colors';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -1292,7 +1293,14 @@ const StixCoreRelationshipsTimeline = ({
                           </TimelineOppositeContent>
                           <TimelineSeparator>
                             <Link to={link}>
-                              <TimelineDot color="primary" variant="outlined">
+                              <TimelineDot
+                                sx={{
+                                  borderColor: itemColor(
+                                    remoteNode.entity_type,
+                                  ),
+                                }}
+                                variant="outlined"
+                              >
                                 <ItemIcon type={remoteNode.entity_type} />
                               </TimelineDot>
                             </Link>

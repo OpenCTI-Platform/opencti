@@ -21,6 +21,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { truncate } from '../../../../utils/String';
+import { itemColor } from '../../../../utils/Colors';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -278,7 +279,14 @@ const StixCoreObjectsTimeline = ({
                         </TimelineOppositeContent>
                         <TimelineSeparator>
                           <Link to={link}>
-                            <TimelineDot color="primary" variant="outlined">
+                            <TimelineDot
+                              sx={{
+                                borderColor: itemColor(
+                                  stixCoreObject.entity_type,
+                                ),
+                              }}
+                              variant="outlined"
+                            >
                               <ItemIcon type={stixCoreObject.entity_type} />
                             </TimelineDot>
                           </Link>

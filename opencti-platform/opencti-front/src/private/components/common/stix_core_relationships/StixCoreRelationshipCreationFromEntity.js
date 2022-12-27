@@ -369,6 +369,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
               ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
               : payload;
             const connKey = connectionKey || 'Pagination_stixCoreRelationships';
+            // When using connectionKey we use less props of PaginationOptions, we need to filter them
             const { paginationOptions } = this.props;
             const conn = ConnectionHandler.getConnection(
               userProxy,

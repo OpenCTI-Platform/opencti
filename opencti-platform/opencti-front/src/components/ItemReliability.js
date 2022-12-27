@@ -52,8 +52,7 @@ const inlineStyles = {
   },
 };
 
-const ItemReliability = (props) => {
-  const { classes, label, reliability, variant } = props;
+const ItemReliability = ({ classes, label, reliability, variant }) => {
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   switch (reliability) {
     case 'A':

@@ -11,7 +11,6 @@ import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/St
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
-import StixCoreObjectStixCyberObservables from '../stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 
@@ -86,7 +85,7 @@ class InfrastructureKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
               relationshipTypes={['related-to']}
-              targetStixDomainObjectTypes={[
+              stixCoreObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
@@ -114,13 +113,14 @@ class InfrastructureKnowledgeComponent extends Component {
           exact
           path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/observables"
           render={(routeProps) => (
-            <StixCoreObjectStixCyberObservables
-              stixCoreObjectId={infrastructure.id}
-              stixCoreObjectLink={link}
+            <EntityStixCoreRelationships
+              entityId={infrastructure.id}
+              relationshipTypes={['related-to']}
+              stixCoreObjectTypes={['Stix-Cyber-Observable']}
+              entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
-              noRightBar={true}
-              isRelationReversed={true}
+              allDirections={true}
               {...routeProps}
             />
           )}
@@ -131,7 +131,7 @@ class InfrastructureKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
-              targetStixDomainObjectTypes={['Observed-Data']}
+              stixCoreObjectTypes={['Observed-Data']}
               relationshipTypes={['consists-of']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}
@@ -147,7 +147,7 @@ class InfrastructureKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
-              targetStixDomainObjectTypes={['Intrusion-Set']}
+              stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
@@ -162,7 +162,7 @@ class InfrastructureKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
-              targetStixDomainObjectTypes={['Campaign']}
+              stixCoreObjectTypes={['Campaign']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
@@ -177,7 +177,7 @@ class InfrastructureKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
-              targetStixDomainObjectTypes={['Malware']}
+              stixCoreObjectTypes={['Malware']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
@@ -192,7 +192,7 @@ class InfrastructureKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
-              targetStixDomainObjectTypes={['Tool']}
+              stixCoreObjectTypes={['Tool']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
@@ -208,7 +208,7 @@ class InfrastructureKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
               relationshipTypes={['has']}
-              targetStixDomainObjectTypes={['Vulnerability']}
+              stixCoreObjectTypes={['Vulnerability']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
@@ -225,7 +225,7 @@ class InfrastructureKnowledgeComponent extends Component {
               entityId={infrastructure.id}
               entityLink={link}
               noRightBar={true}
-              targetStixDomainObjectTypes={[
+              stixCoreObjectTypes={[
                 'Region',
                 'Country',
                 'City',
