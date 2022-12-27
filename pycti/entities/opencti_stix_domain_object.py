@@ -509,6 +509,8 @@ class StixDomainObject:
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
+        relationship_type = kwargs.get("relationship_type", None)
+        element_id = kwargs.get("elementId", None)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
@@ -524,8 +526,8 @@ class StixDomainObject:
         )
         query = (
             """
-                query StixDomainObjects($types: [String], $filters: [StixDomainObjectsFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
-                    stixDomainObjects(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query StixDomainObjects($types: [String], $filters: [StixDomainObjectsFiltering], $search: String, $relationship_type: [String], $elementId: String, $first: Int, $after: ID, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
+                    stixDomainObjects(types: $types, filters: $filters, search: $search, relationship_type: $relationship_type, elementId: $elementId, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
                                 """
@@ -550,6 +552,8 @@ class StixDomainObject:
                 "types": types,
                 "filters": filters,
                 "search": search,
+                "relationship_type": relationship_type,
+                "elementId": element_id,
                 "first": first,
                 "after": after,
                 "orderBy": order_by,
@@ -570,6 +574,8 @@ class StixDomainObject:
                         "types": types,
                         "filters": filters,
                         "search": search,
+                        "relationship_type": relationship_type,
+                        "elementId": element_id,
                         "first": first,
                         "after": after,
                         "orderBy": order_by,

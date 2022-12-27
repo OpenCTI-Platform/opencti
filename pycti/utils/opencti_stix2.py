@@ -1805,6 +1805,8 @@ class OpenCTIStix2:
         toId: str = None,
         fromTypes: [str] = None,
         toTypes: [str] = None,
+        relationship_type: [str] = None,
+        elementId: str = None,
     ) -> Dict:
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
@@ -1886,6 +1888,8 @@ class OpenCTIStix2:
             toId=toId,
             fromTypes=fromTypes,
             toTypes=toTypes,
+            relationship_type=relationship_type,
+            elementId=elementId,
         )
         if entities_list is not None:
             uuids = []
