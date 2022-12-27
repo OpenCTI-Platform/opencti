@@ -57,9 +57,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>({});
-
   const [entities, searchEntities] = useSearchEntities({
     searchScope,
     setInputValues,
@@ -70,14 +68,12 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     Record<string, OptionValue[]>,
     (filterKey: string, event: SyntheticEvent) => Record<string, OptionValue[]>,
   ]; // change when useSearchEntities will be in TS
-
   const isStixObjectTypes = [
     'elementId',
     'fromId',
     'toId',
     'objectContains',
   ].includes(filterKey);
-
   const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
     if (value) {
       const group = !onlyGroupOrganization.includes(filterKey)
@@ -87,7 +83,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       defaultHandleAddFilter(filterAdd, value.value, value.label, event);
     }
   };
-
   const renderSearchScopeSelection = (key: string) => (
     <SearchScopeElement
       name={key}
@@ -95,7 +90,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       setSearchScope={setSearchScope}
     />
   );
-
   let options: OptionValue[] = [];
   if (isStixObjectTypes) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
@@ -108,7 +102,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   } else if (entities[filterKey]) {
     options = entities[filterKey];
   }
-
   return (
     <Autocomplete
       key={filterKey}

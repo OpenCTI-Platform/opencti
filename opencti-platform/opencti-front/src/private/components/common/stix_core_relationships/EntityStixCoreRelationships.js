@@ -138,7 +138,7 @@ class EntityStixCoreRelationships extends Component {
   }
 
   handleChangeView(mode) {
-    this.setState({ view: mode, sortBy: 'entity_type' }, () => this.saveView());
+    this.setState({ view: mode, sortBy: 'created_at' }, () => this.saveView());
   }
 
   handleToggleSelectEntity(entity, event = null, forceRemove = []) {
@@ -289,6 +289,7 @@ class EntityStixCoreRelationships extends Component {
       deSelectedElements,
       filters,
       searchTerm,
+      view,
     } = this.state;
     const {
       entityLink,
@@ -299,12 +300,15 @@ class EntityStixCoreRelationships extends Component {
       relationshipTypes,
       disableExport,
       enableNestedView,
+      currentView,
+      handleChangeView,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original
         - Object.keys(deSelectedElements || {}).length;
     }
+    const finalView = currentView || view;
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -341,12 +345,15 @@ class EntityStixCoreRelationships extends Component {
               exportEntityType="stix-core-relationship"
               noPadding={true}
               handleChangeView={
-                this.props.handleChangeView ?? this.handleChangeView.bind(this)
+                handleChangeView
+                  ? handleChangeView.bind(this)
+                  : this.handleChangeView.bind(this)
               }
               enableNestedView={enableNestedView}
               disableCards={true}
               paginationOptions={paginationOptions}
               enableEntitiesView={true}
+              currentView={finalView}
             >
               <QueryRenderer
                 query={
@@ -492,12 +499,16 @@ class EntityStixCoreRelationships extends Component {
       disableExport,
       stixCoreObjectTypes,
       relationshipTypes,
+      handleChangeView,
+      currentView,
+      enableNestedView,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original
         - Object.keys(deSelectedElements || {}).length;
     }
+    const finalView = currentView || view;
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -510,7 +521,11 @@ class EntityStixCoreRelationships extends Component {
               handleSearch={this.handleSearch.bind(this)}
               handleAddFilter={this.handleAddFilter.bind(this)}
               handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-              handleChangeView={this.handleChangeView.bind(this)}
+              handleChangeView={
+                handleChangeView
+                  ? handleChangeView.bind(this)
+                  : this.handleChangeView.bind(this)
+              }
               onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               paginationOptions={paginationOptions}
@@ -539,7 +554,8 @@ class EntityStixCoreRelationships extends Component {
               noPadding={true}
               disableCards={true}
               enableEntitiesView={true}
-              currentView={view}
+              enableNestedView={enableNestedView}
+              currentView={finalView}
             >
               <EntityStixCoreRelationshipsEntities
                 paginationOptions={paginationOptions}
@@ -583,8 +599,10 @@ class EntityStixCoreRelationships extends Component {
       allDirections,
       defaultStartTime,
       defaultStopTime,
+      currentView,
     } = this.props;
     const { view, searchTerm, sortBy, orderAsc, filters } = this.state;
+    const finalView = currentView || view;
     let selectedTypes;
     if (filters.entity_type && filters.entity_type.length > 0) {
       if (R.filter((o) => o.id === 'all', filters.entity_type).length > 0) {
@@ -616,7 +634,7 @@ class EntityStixCoreRelationships extends Component {
       R.omit(['relationship_type', 'entity_type'], filters),
     );
     let paginationOptions;
-    if (view === 'entities') {
+    if (finalView === 'entities') {
       paginationOptions = {
         types: selectedTypes,
         relationship_type: selectedRelationshipTypes,
@@ -717,9 +735,9 @@ class EntityStixCoreRelationships extends Component {
       : stixCoreObjectTypesWithoutObservables;
     return (
       <div className={classes.container}>
-        {view === 'relationships'
+        {finalView === 'relationships'
           && this.renderRelationships(paginationOptions, backgroundTaskFilters)}
-        {view === 'entities'
+        {finalView === 'entities'
           && this.renderEntities(paginationOptions, backgroundTaskFilters)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
@@ -733,7 +751,9 @@ class EntityStixCoreRelationships extends Component {
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
             connectionKey={
-              view === 'entities' ? 'Pagination_stixCoreObjects' : undefined
+              finalView === 'entities'
+                ? 'Pagination_stixCoreObjects'
+                : undefined
             }
           />
         </Security>
@@ -758,6 +778,7 @@ EntityStixCoreRelationships.propTypes = {
   noState: PropTypes.bool,
   disableExport: PropTypes.bool,
   handleChangeView: PropTypes.func,
+  currentView: PropTypes.string,
   enableNestedView: PropTypes.func,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,

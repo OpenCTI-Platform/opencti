@@ -4,7 +4,6 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
-import Loader from '../../../../components/Loader';
 import StixDomainObjectVictimologySectors, {
   stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery,
 } from './StixDomainObjectVictimologySectors';
@@ -35,7 +34,7 @@ class StixDomainObjectVictimology extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      viewMode: 'lines',
+      viewMode: 'entities',
     };
   }
 
@@ -124,7 +123,7 @@ class StixDomainObjectVictimology extends Component {
           </Grid>
           <Divider style={{ marginTop: 50 }} />
           <div className={classes.container} id="container">
-            {viewMode === 'lines' && (
+            {(viewMode === 'entities' || viewMode === 'relationships') && (
               <EntityStixCoreRelationships
                 entityLink={entityLink}
                 entityId={stixDomainObjectId}
@@ -142,6 +141,7 @@ class StixDomainObjectVictimology extends Component {
                 relationshipTypes={['targets']}
                 isRelationReversed={false}
                 enableExport={true}
+                currentView={viewMode}
                 handleChangeView={this.handleChangeView.bind(this)}
                 enableNestedView={true}
                 defaultStartTime={defaultStartTime}
@@ -166,7 +166,7 @@ class StixDomainObjectVictimology extends Component {
                       />
                     );
                   }
-                  return <Loader withRightPadding={true} />;
+                  return <div />;
                 }}
               />
             )}

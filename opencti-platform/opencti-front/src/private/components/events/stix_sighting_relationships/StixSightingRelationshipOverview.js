@@ -14,6 +14,7 @@ import { ArrowRightAlt, Edit } from '@mui/icons-material';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -28,16 +29,18 @@ import { stixSightingRelationshipEditionFocus } from './StixSightingRelationship
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixSightingRelationshipInference from './StixSightingRelationshipInference';
-import StixSightingRelationshipExternalReferences
-  from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
+import StixSightingRelationshipExternalReferences from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = (theme) => ({
   container: {
+    margin: 0,
     position: 'relative',
   },
   editButton: {
@@ -101,6 +104,13 @@ const styles = (theme) => ({
     padding: '15px',
     borderRadius: 6,
   },
+  paperWithoutPadding: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: 0,
+    borderRadius: 6,
+  },
   paperReports: {
     minHeight: '100%',
     margin: '10px 0 0 0',
@@ -132,6 +142,12 @@ const styles = (theme) => ({
     color: '#4caf50',
     textTransform: 'uppercase',
     borderRadius: '0',
+  },
+  chipInList: {
+    fontSize: 15,
+    height: 30,
+    textTransform: 'uppercase',
+    borderRadius: 0,
   },
 });
 
@@ -183,7 +199,6 @@ class StixSightingRelationshipContainer extends Component {
       fldt,
       nsdt,
       classes,
-      theme,
       stixSightingRelationship,
       paddingRight,
     } = this.props;
@@ -199,128 +214,225 @@ class StixSightingRelationshipContainer extends Component {
       : resolveLink(to.entity_type);
     return (
       <div className={classes.container}>
-        <Link to={`${linkFrom}/${from.id}`}>
-          <div
-            className={classes.item}
-            style={{
-              border: `2px solid ${itemColor(from.entity_type)}`,
-              top: 10,
-              left: 0,
-            }}
-          >
-            <div
-              className={classes.itemHeader}
-              style={{
-                borderBottom: `1px solid ${itemColor(from.entity_type)}`,
-              }}
-            >
-              <div className={classes.icon}>
-                <ItemIcon
-                  type={from.entity_type}
-                  color={itemColor(from.entity_type)}
-                  size="small"
-                />
-              </div>
-              <div className={classes.type}>
-                {from.relationship_type
-                  ? t('Relationship')
-                  : t(`entity_${from.entity_type}`)}
-              </div>
-            </div>
-            <div className={classes.content}>
-              <span className={classes.name}>
-                {truncate(
-                  from.name
-                    || from.observable_value
-                    || from.attribute_abstract
-                    || from.content
-                    || t(`relationship_${from.entity_type}`),
-                  50,
-                )}
-              </span>
-            </div>
-          </div>
-        </Link>
-        <div className={classes.middle}>
-          <ArrowRightAlt fontSize="large" />
-          <br />
-          <div
-            style={{
-              padding: '5px 8px 5px 8px',
-              backgroundColor: theme.palette.background.accent,
-              color: theme.palette.text.primary,
-              fontSize: 12,
-              display: 'inline-block',
-            }}
-          >
-            <strong>{t('sighted in/at')}</strong>
-          </div>
-        </div>
-        <Link to={`${linkTo}/${to.id}`}>
-          <div
-            className={classes.item}
-            style={{
-              border: `2px solid ${itemColor(to.entity_type)}`,
-              top: 10,
-              right: 0,
-            }}
-          >
-            <div
-              className={classes.itemHeader}
-              style={{
-                borderBottom: `1px solid ${itemColor(to.entity_type)}`,
-              }}
-            >
-              <div className={classes.icon}>
-                <ItemIcon
-                  type={to.entity_type}
-                  color={itemColor(to.entity_type)}
-                  size="small"
-                />
-              </div>
-              <div className={classes.type}>
-                {to.relationship_type
-                  ? t('Relationship')
-                  : t(`entity_${to.entity_type}`)}
-              </div>
-            </div>
-            <div className={classes.content}>
-              <span className={classes.name}>
-                {truncate(
-                  to.name
-                    || to.observable_value
-                    || to.attribute_abstract
-                    || to.content
-                    || t(`relationship_${to.entity_type}`),
-                  50,
-                )}
-              </span>
-            </div>
-          </div>
-        </Link>
-        <div className="clearfix" style={{ height: 40 }} />
-        <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+        >
+          <Grid item={true} xs={6}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Information')}
+              {t('Relationship')}
+            </Typography>
+            <Paper
+              classes={{ root: classes.paperWithoutPadding }}
+              variant="outlined"
+              style={{ position: 'relative' }}
+            >
+              <Link to={`${linkFrom}/${from.id}`}>
+                <div
+                  className={classes.item}
+                  style={{
+                    border: `2px solid ${itemColor(from.entity_type)}`,
+                    top: 20,
+                    left: 20,
+                  }}
+                >
+                  <div
+                    className={classes.itemHeader}
+                    style={{
+                      borderBottom: `1px solid ${itemColor(from.entity_type)}`,
+                    }}
+                  >
+                    <div className={classes.icon}>
+                      <ItemIcon
+                        type={from.entity_type}
+                        color={itemColor(from.entity_type)}
+                        size="small"
+                      />
+                    </div>
+                    <div className={classes.type}>
+                      {from.relationship_type
+                        ? t('Relationship')
+                        : t(`entity_${from.entity_type}`)}
+                    </div>
+                  </div>
+                  <div className={classes.content}>
+                    <span className={classes.name}>
+                      {truncate(
+                        from.name
+                          || from.observable_value
+                          || from.attribute_abstract
+                          || from.content
+                          || t(`relationship_${from.entity_type}`),
+                        50,
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+              <div className={classes.middle}>
+                <ArrowRightAlt fontSize="large" />
+                <br />
+                <Chip
+                  variant="outlined"
+                  classes={{ root: classes.chipInList }}
+                  color="primary"
+                  label={t('sighted in/at')}
+                />
+              </div>
+              <Link to={`${linkTo}/${to.id}`}>
+                <div
+                  className={classes.item}
+                  style={{
+                    border: `2px solid ${itemColor(to.entity_type)}`,
+                    top: 20,
+                    right: 20,
+                  }}
+                >
+                  <div
+                    className={classes.itemHeader}
+                    style={{
+                      borderBottom: `1px solid ${itemColor(to.entity_type)}`,
+                    }}
+                  >
+                    <div className={classes.icon}>
+                      <ItemIcon
+                        type={to.entity_type}
+                        color={itemColor(to.entity_type)}
+                        size="small"
+                      />
+                    </div>
+                    <div className={classes.type}>
+                      {to.relationship_type
+                        ? t('Relationship')
+                        : t(`entity_${to.entity_type}`)}
+                    </div>
+                  </div>
+                  <div className={classes.content}>
+                    <span className={classes.name}>
+                      {truncate(
+                        to.name
+                          || to.observable_value
+                          || to.attribute_abstract
+                          || to.content
+                          || t(`relationship_${to.entity_type}`),
+                        50,
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+              <Divider style={{ marginTop: 30 }} />
+              <div style={{ padding: 15 }}>
+                <Grid container={true} spacing={3}>
+                  <Grid item={true} xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t('Marking')}
+                    </Typography>
+                    {stixSightingRelationship.objectMarking?.edges?.length
+                      > 0
+                      && R.map(
+                        (markingDefinition) => (
+                          <ItemMarking
+                            key={markingDefinition.node.id}
+                            label={markingDefinition.node.definition}
+                            color={markingDefinition.node.x_opencti_color}
+                          />
+                        ),
+                        stixSightingRelationship.objectMarking.edges,
+                      )}
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('First seen')}
+                    </Typography>
+                    {nsdt(stixSightingRelationship.first_seen)}
+                    <Typography
+                      variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Last seen')}
+                    </Typography>
+                    {nsdt(stixSightingRelationship.last_seen)}
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <div>
+                      <StixSightingRelationshipSharing
+                        elementId={stixSightingRelationship.id}
+                        disabled={
+                          stixSightingRelationship.x_opencti_inferences !== null
+                        }
+                      />
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('filter_x_opencti_negative')}
+                      </Typography>
+                      <Chip
+                        classes={{
+                          root: stixSightingRelationship.x_opencti_negative
+                            ? classes.negative
+                            : classes.positive,
+                        }}
+                        label={
+                          stixSightingRelationship.x_opencti_negative
+                            ? t('False positive')
+                            : t('Malicious')
+                        }
+                      />
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Count')}
+                      </Typography>
+                      <span className={classes.number}>
+                        {n(stixSightingRelationship.attribute_count)}
+                      </span>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
+                        className="markdown"
+                      >
+                        {stixSightingRelationship.x_opencti_inferences
+                        !== null ? (
+                          <i>{t('Inferred knowledge')}</i>
+                          ) : (
+                            stixSightingRelationship.description
+                          )}
+                      </Markdown>
+                    </div>
+                  </Grid>
+                </Grid>
+              </div>
+            </Paper>
+          </Grid>
+          <Grid item={true} xs={6}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Marking')}
+                    {t('Confidence level')}
                   </Typography>
-                  {stixSightingRelationship.objectMarking?.edges?.length > 0
-                    && R.map(
-                      (markingDefinition) => (
-                        <ItemMarking
-                          key={markingDefinition.node.id}
-                          label={markingDefinition.node.definition}
-                          color={markingDefinition.node.x_opencti_color}
-                        />
-                      ),
-                      stixSightingRelationship.objectMarking.edges,
-                    )}
+                  <ItemConfidence
+                    confidence={stixSightingRelationship.confidence}
+                  />
                   {stixSightingRelationship.x_opencti_inferences === null && (
                     <div>
                       <Typography
@@ -369,94 +481,17 @@ class StixSightingRelationshipContainer extends Component {
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Confidence level')}
-                  </Typography>
-                  <ItemConfidence
-                    confidence={stixSightingRelationship.confidence}
-                  />
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
                     {t('Creation date (in this platform)')}
                   </Typography>
                   {fldt(stixSightingRelationship.created_at)}
                   <Typography
                     variant="h3"
                     gutterBottom={true}
-                    style={{
-                      marginTop:
-                        stixSightingRelationship.x_opencti_inferences === null
-                          ? 20
-                          : 0,
-                    }}
-                  >
-                    {t('filter_x_opencti_negative')}
-                  </Typography>
-                  <Chip
-                    classes={{
-                      root: stixSightingRelationship.x_opencti_negative
-                        ? classes.negative
-                        : classes.positive,
-                    }}
-                    label={
-                      stixSightingRelationship.x_opencti_negative
-                        ? t('False positive')
-                        : t('Malicious')
-                    }
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Details')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
-              <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ fontWeight: 500 }}
-                  >
-                    {t('First seen')}
-                  </Typography>
-                  {nsdt(stixSightingRelationship.first_seen)}
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Last seen')}
+                    {t('Creator')}
                   </Typography>
-                  {nsdt(stixSightingRelationship.last_seen)}
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t('Count')}
-                  </Typography>
-                  <span>{n(stixSightingRelationship.attribute_count)}</span>
-                  {stixSightingRelationship.x_opencti_inferences === null && (
-                    <div>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Description')}
-                      </Typography>
-                      <Markdown
-                        remarkPlugins={[remarkGfm, remarkParse]}
-                        parserOptions={{ commonmark: true }}
-                        className="markdown"
-                      >
-                        {stixSightingRelationship.description}
-                      </Markdown>
-                    </div>
-                  )}
+                  <ItemCreator creator={stixSightingRelationship.creator} />
                 </Grid>
               </Grid>
             </Paper>
@@ -480,7 +515,7 @@ class StixSightingRelationshipContainer extends Component {
               )}
             </div>
           ) : (
-            <div style={{ margin: '40px 0 0px 0' }}>
+            <div style={{ margin: '30px 0 0px 0' }}>
               <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
                 <Grid item={true} xs={6}>
                   <StixSightingRelationshipExternalReferences
@@ -495,9 +530,13 @@ class StixSightingRelationshipContainer extends Component {
               </Grid>
               <StixCoreObjectOrStixCoreRelationshipNotes
                 marginTop={55}
-                stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationship.id}
+                stixCoreObjectOrStixCoreRelationshipId={
+                  stixSightingRelationship.id
+                }
                 isRelationship={true}
-                defaultMarking={(stixSightingRelationship.objectMarking?.edges ?? []).map((edge) => edge.node)}
+                defaultMarking={(
+                  stixSightingRelationship.objectMarking?.edges ?? []
+                ).map((edge) => edge.node)}
               />
             </div>
           )}

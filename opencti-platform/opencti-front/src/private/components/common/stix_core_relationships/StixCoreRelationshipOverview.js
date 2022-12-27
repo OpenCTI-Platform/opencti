@@ -20,6 +20,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
+import Chip from '@mui/material/Chip';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -148,6 +149,12 @@ const styles = (theme) => ({
           : 'rgba(0, 0, 0, .2)',
     },
   },
+  chipInList: {
+    fontSize: 15,
+    height: 30,
+    textTransform: 'uppercase',
+    borderRadius: 0,
+  },
 });
 
 class StixCoreRelationshipContainer extends Component {
@@ -207,7 +214,6 @@ class StixCoreRelationshipContainer extends Component {
       fldt,
       nsdt,
       classes,
-      theme,
       stixCoreRelationship,
       paddingRight,
     } = this.props;
@@ -304,17 +310,14 @@ class StixCoreRelationshipContainer extends Component {
               <div className={classes.middle}>
                 <ArrowRightAlt fontSize="large" />
                 <br />
-                <div
-                  style={{
-                    padding: '5px 8px 5px 8px',
-                    backgroundColor: theme.palette.background.accent,
-                    color: theme.palette.text.primary,
-                    fontSize: 18,
-                    display: 'inline-block',
-                  }}
-                >
-                  {t(`relationship_${stixCoreRelationship.relationship_type}`)}
-                </div>
+                <Chip
+                  variant="outlined"
+                  classes={{ root: classes.chipInList }}
+                  color="primary"
+                  label={t(
+                    `relationship_${stixCoreRelationship.relationship_type}`,
+                  )}
+                />
               </div>
               <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
                 <div
@@ -405,27 +408,32 @@ class StixCoreRelationshipContainer extends Component {
                     {nsdt(stixCoreRelationship.stop_time)}
                   </Grid>
                   <Grid item={true} xs={6}>
-                    {stixCoreRelationship.x_opencti_inferences === null && (
-                      <div>
-                        <StixCoreRelationshipSharing
-                          elementId={stixCoreRelationship.id}
-                        />
-                        <Typography
-                          variant="h3"
-                          gutterBottom={true}
-                          style={{ marginTop: 20 }}
-                        >
-                          {t('Description')}
-                        </Typography>
-                        <Markdown
-                          remarkPlugins={[remarkGfm, remarkParse]}
-                          parserOptions={{ commonmark: true }}
-                          className="markdown"
-                        >
-                          {stixCoreRelationship.description}
-                        </Markdown>
-                      </div>
-                    )}
+                    <div>
+                      <StixCoreRelationshipSharing
+                        elementId={stixCoreRelationship.id}
+                        disabled={
+                          stixCoreRelationship.x_opencti_inferences !== null
+                        }
+                      />
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
+                        className="markdown"
+                      >
+                        {stixCoreRelationship.x_opencti_inferences !== null ? (
+                          <i>{t('Inferred knowledge')}</i>
+                        ) : (
+                          stixCoreRelationship.description
+                        )}
+                      </Markdown>
+                    </div>
                   </Grid>
                 </Grid>
               </div>
@@ -577,7 +585,9 @@ class StixCoreRelationshipContainer extends Component {
                 marginTop={55}
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
                 isRelationship={true}
-                defaultMarking={(stixCoreRelationship.objectMarking?.edges ?? []).map((edge) => edge.node)}
+                defaultMarking={(
+                  stixCoreRelationship.objectMarking?.edges ?? []
+                ).map((edge) => edge.node)}
               />
             </div>
           )}

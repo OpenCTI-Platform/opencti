@@ -11,23 +11,22 @@ import { Link } from 'react-router-dom';
 import { VisibilityOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
-import { AutoFix, VectorRadius } from 'mdi-material-ui';
+import { AutoFix } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
   },
   bodyItem: {
     height: 20,
@@ -49,6 +48,13 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: 0,
   },
 });
 
@@ -98,7 +104,7 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
             disableRipple={true}
           />
         </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon>
           {node.is_inferred ? (
             <Tooltip
               title={
@@ -106,10 +112,10 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                 + R.head(node.x_opencti_inferences).rule.name
               }
             >
-              <AutoFix fontSize="small" />
+              <AutoFix style={{ color: itemColor(node.entity_type) }} />
             </Tooltip>
           ) : (
-            <VectorRadius fontSize="small" role="img" />
+            <ItemIcon type={node.entity_type} />
           )}
         </ListItemIcon>
         <ListItemText
@@ -119,45 +125,91 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.fromType.width, display: 'flex' }}
               >
-                <ItemIcon
-                  type={node.from && node.from.entity_type}
-                  variant="inline"
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  style={{
+                    width: 140,
+                    backgroundColor: hexToRGB(
+                      itemColor(
+                        node.from ? node.from.entity_type : 'Restricted',
+                      ),
+                      0.08,
+                    ),
+                    color: itemColor(
+                      node.from ? node.from.entity_type : 'Restricted',
+                    ),
+                    border: `1px solid ${itemColor(
+                      node.from ? node.from.entity_type : 'Restricted',
+                    )}`,
+                  }}
+                  label={
+                    <>
+                      <ItemIcon
+                        variant="inline"
+                        type={node.from ? node.from.entity_type : 'restricted'}
+                      />
+                      {node.from
+                        ? t(`entity_${node.from.entity_type}`)
+                        : t('Restricted')}
+                    </>
+                  }
                 />
-                {node.from
-                  ? t(`entity_${node.from.entity_type}`)
-                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.fromName.width }}
               >
-                <code>
-                  {node.from ? defaultValue(node.from, true) : t('Restricted')}
-                </code>
+                {node.from ? defaultValue(node.from, true) : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.relationship_type.width }}
               >
-                <i>{t(`relationship_${node.relationship_type}`)}</i>
+                <Chip
+                  variant="outlined"
+                  classes={{ root: classes.chipInList }}
+                  style={{ width: 120 }}
+                  color="primary"
+                  label={t(`relationship_${node.relationship_type}`)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.toType.width, display: 'flex' }}
               >
-                <ItemIcon
-                  type={node.to && node.to.entity_type}
-                  variant="inline"
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  style={{
+                    width: 140,
+                    backgroundColor: hexToRGB(
+                      itemColor(node.to ? node.to.entity_type : 'Restricted'),
+                      0.08,
+                    ),
+                    color: itemColor(
+                      node.to ? node.to.entity_type : 'Restricted',
+                    ),
+                    border: `1px solid ${itemColor(
+                      node.to ? node.to.entity_type : 'Restricted',
+                    )}`,
+                  }}
+                  label={
+                    <>
+                      <ItemIcon
+                        variant="inline"
+                        type={node.to ? node.to.entity_type : 'restricted'}
+                      />
+                      {node.to
+                        ? t(`entity_${node.to.entity_type}`)
+                        : t('Restricted')}
+                    </>
+                  }
                 />
-                {node.to ? t(`entity_${node.to.entity_type}`) : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.toName.width }}
               >
-                <code>
-                  {node.to ? defaultValue(node.to, true) : t('Restricted')}
-                </code>
+                {node.to ? defaultValue(node.to, true) : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}

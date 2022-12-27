@@ -144,9 +144,17 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                     )}`,
                   }}
                   label={
-                    !restricted
-                      ? t(`entity_${remoteNode.entity_type}`)
-                      : t('Restricted')
+                    <>
+                      <ItemIcon
+                        variant="inline"
+                        type={
+                          !restricted ? remoteNode.entity_type : 'restricted'
+                        }
+                      />
+                      {!restricted
+                        ? t(`entity_${remoteNode.entity_type}`)
+                        : t('Restricted')}
+                    </>
                   }
                 />
               </div>

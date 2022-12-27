@@ -16,13 +16,13 @@ import {
   ExpandLess,
   ExpandMore,
   FileDownloadOutlined,
-  ViewListOutlined,
+  LibraryBooksOutlined,
 } from '@mui/icons-material';
+import { AutoFix, FormatListGroup, RelationManyToMany } from 'mdi-material-ui';
 import { graphql, createRefetchContainer } from 'react-relay';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Tooltip from '@mui/material/Tooltip';
-import { AutoFix, FormatListGroup } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { yearFormat } from '../../../../utils/Time';
@@ -32,13 +32,17 @@ import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/S
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
+import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 
 const styles = (theme) => ({
   container: {
@@ -330,9 +334,14 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                 }}
                 style={{ margin: '7px 0 0 5px' }}
               >
-                <ToggleButton value="lines" aria-label="lines">
-                  <Tooltip title={t('Lines view')}>
-                    <ViewListOutlined fontSize="small" color="primary" />
+                <ToggleButton value="entities" aria-label="lines">
+                  <Tooltip title={t('Entities view')}>
+                    <LibraryBooksOutlined fontSize="small" color="primary" />
+                  </Tooltip>
+                </ToggleButton>
+                <ToggleButton value="relationships" aria-label="lines">
+                  <Tooltip title={t('Relationships view')}>
+                    <RelationManyToMany fontSize="small" color="primary" />
                   </Tooltip>
                 </ToggleButton>
                 <ToggleButton value="nested" aria-label="nested">
@@ -651,6 +660,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
             );
           })}
         </List>
+        <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+          <StixCoreRelationshipsExports
+            open={openExports}
+            handleToggle={this.handleToggleExports.bind(this)}
+            paginationOptions={paginationOptions}
+          />
+        </Security>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}

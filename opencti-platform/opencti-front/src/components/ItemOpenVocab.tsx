@@ -49,13 +49,11 @@ const ItemOpenVocabComponent: FunctionComponent<
 Omit<ItemOpenVocabProps, 'type'>
 > = ({ value, small = true, queryRef }) => {
   const { t } = useFormatter();
-
   const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
     itemOpenVocabQuery,
     queryRef,
   );
   const openVocabList = (vocabularies?.edges ?? []).map(({ node }) => node);
-
   const classes = useStyles();
   if (!value) {
     return (

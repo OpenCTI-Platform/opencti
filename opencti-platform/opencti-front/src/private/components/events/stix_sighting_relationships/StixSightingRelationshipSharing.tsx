@@ -14,12 +14,14 @@ import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import ObjectOrganizationField from '../form/ObjectOrganizationField';
-import { StixCoreRelationshipSharingQuery$data } from './__generated__/StixCoreRelationshipSharingQuery.graphql';
+import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import { StixSightingRelationshipSharingQuery$data } from './__generated__/StixSightingRelationshipSharingQuery.graphql';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/hooks/useGranted';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -51,8 +53,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 const containerHeaderSharedQuery = graphql`
-  query StixCoreRelationshipSharingQuery($id: String!) {
-    stixCoreRelationship(id: $id) {
+  query StixSightingRelationshipSharingQuery($id: String!) {
+    stixSightingRelationship(id: $id) {
       objectOrganization {
         edges {
           node {
@@ -66,11 +68,11 @@ const containerHeaderSharedQuery = graphql`
 `;
 
 const containerHeaderSharedQueryGroupDeleteMutation = graphql`
-  mutation StixCoreRelationshipSharingGroupDeleteMutation(
+  mutation StixSightingRelationshipSharingGroupDeleteMutation(
     $id: ID!
     $organizationId: ID!
   ) {
-    stixCoreRelationshipEdit(id: $id) {
+    stixSightingRelationshipEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
         id
         objectOrganization {
@@ -87,11 +89,11 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
 `;
 
 const containerHeaderSharedGroupAddMutation = graphql`
-  mutation StixCoreRelationshipSharingGroupAddMutation(
+  mutation StixSightingRelationshipSharingGroupAddMutation(
     $id: ID!
     $organizationId: ID!
   ) {
-    stixCoreRelationshipEdit(id: $id) {
+    stixSightingRelationshipEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
         id
         objectOrganization {
@@ -107,7 +109,7 @@ const containerHeaderSharedGroupAddMutation = graphql`
   }
 `;
 
-const StixCoreRelationshipSharing: FunctionComponent<
+const StixSightingRelationshipSharing: FunctionComponent<
 ContainerHeaderSharedProps
 > = ({ elementId, variant, disabled }) => {
   const classes = useStyles();
@@ -160,9 +162,9 @@ ContainerHeaderSharedProps
     }
   };
   const render = ({
-    stixCoreRelationship,
-  }: StixCoreRelationshipSharingQuery$data) => {
-    const edges = stixCoreRelationship?.objectOrganization?.edges ?? [];
+    stixSightingRelationship,
+  }: StixSightingRelationshipSharingQuery$data) => {
+    const edges = stixSightingRelationship?.objectOrganization?.edges ?? [];
     if (variant === 'header') {
       return (
         <React.Fragment>
@@ -304,7 +306,9 @@ ContainerHeaderSharedProps
     <QueryRenderer
       query={containerHeaderSharedQuery}
       variables={{ id: elementId }}
-      render={(result: { props: StixCoreRelationshipSharingQuery$data }) => {
+      render={(result: {
+        props: StixSightingRelationshipSharingQuery$data;
+      }) => {
         if (result.props) {
           return render(result.props);
         }
@@ -314,4 +318,4 @@ ContainerHeaderSharedProps
   );
 };
 
-export default StixCoreRelationshipSharing;
+export default StixSightingRelationshipSharing;
