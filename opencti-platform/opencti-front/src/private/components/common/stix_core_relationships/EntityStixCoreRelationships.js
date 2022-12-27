@@ -278,7 +278,7 @@ class EntityStixCoreRelationships extends Component {
     };
   }
 
-  renderRelationships(paginationOptions) {
+  renderRelationships(paginationOptions, backgroundTaskFilters) {
     const {
       sortBy,
       orderAsc,
@@ -409,7 +409,7 @@ class EntityStixCoreRelationships extends Component {
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
-              filters={filters}
+              filters={backgroundTaskFilters}
               search={searchTerm}
               handleClearSelectedElements={this.handleClearSelectedElements.bind(
                 this,
@@ -612,18 +612,6 @@ class EntityStixCoreRelationships extends Component {
         : [];
     }
     let backgroundTaskFilters = filters;
-    if (selectedRelationshipTypes.length > 0) {
-      backgroundTaskFilters = {
-        ...filters,
-        entity_type:
-          selectedTypes.length > 0
-            ? selectedTypes.map((n) => ({ id: n, value: n }))
-            : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-        [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
-          { id: entityId, value: entityId },
-        ],
-      };
-    }
     const finalFilters = convertFilters(
       R.omit(['relationship_type', 'entity_type'], filters),
     );
@@ -638,6 +626,18 @@ class EntityStixCoreRelationships extends Component {
         orderMode: orderAsc ? 'asc' : 'desc',
         filters: finalFilters,
       };
+      if (selectedRelationshipTypes.length > 0) {
+        backgroundTaskFilters = {
+          ...filters,
+          entity_type:
+            selectedTypes.length > 0
+              ? selectedTypes.map((n) => ({ id: n, value: n }))
+              : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+          [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
+            { id: entityId, value: entityId },
+          ],
+        };
+      }
     } else {
       paginationOptions = {
         relationship_type: selectedRelationshipTypes,
@@ -646,11 +646,31 @@ class EntityStixCoreRelationships extends Component {
         orderMode: orderAsc ? 'asc' : 'desc',
         filters: finalFilters,
       };
+      backgroundTaskFilters = {
+        ...R.omit(['relationship_type', 'entity_type'], filters),
+        entity_type:
+          selectedRelationshipTypes.length > 0
+            ? selectedRelationshipTypes.map((n) => ({ id: n, value: n }))
+            : [
+              {
+                id: 'stix-core-relationship',
+                value: 'stix-core-relationship',
+              },
+            ],
+      };
       if (allDirections) {
         paginationOptions = {
           ...paginationOptions,
           elementId: entityId,
           elementWithTargetTypes: selectedTypes,
+        };
+        backgroundTaskFilters = {
+          ...backgroundTaskFilters,
+          elementId: [{ id: entityId, value: entityId }],
+          elementWithTargetTypes:
+            selectedTypes.length > 0
+              ? selectedTypes.map((n) => ({ id: n, value: n }))
+              : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
         };
       } else if (isRelationReversed) {
         paginationOptions = {
@@ -659,12 +679,28 @@ class EntityStixCoreRelationships extends Component {
           toRole: role || null,
           fromTypes: selectedTypes,
         };
+        backgroundTaskFilters = {
+          ...backgroundTaskFilters,
+          toId: [{ id: entityId, value: entityId }],
+          fromTypes:
+            selectedTypes.length > 0
+              ? selectedTypes.map((n) => ({ id: n, value: n }))
+              : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+        };
       } else {
         paginationOptions = {
           ...paginationOptions,
           fromId: entityId,
           fromRole: role || null,
           toTypes: selectedTypes,
+        };
+        backgroundTaskFilters = {
+          ...backgroundTaskFilters,
+          fromId: [{ id: entityId, value: entityId }],
+          toTypes:
+            selectedTypes.length > 0
+              ? selectedTypes.map((n) => ({ id: n, value: n }))
+              : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
         };
       }
     }
@@ -682,7 +718,7 @@ class EntityStixCoreRelationships extends Component {
     return (
       <div className={classes.container}>
         {view === 'relationships'
-          && this.renderRelationships(paginationOptions)}
+          && this.renderRelationships(paginationOptions, backgroundTaskFilters)}
         {view === 'entities'
           && this.renderEntities(paginationOptions, backgroundTaskFilters)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

@@ -38,13 +38,47 @@ const buildQueryFilters = (rawFilters, search, taskPosition) => {
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
   if (filters) {
     const adaptedFilters = convertFiltersFrontendFormat(filters);
+    const nestedFrom = [];
+    const nestedTo = [];
+    let nestedFromRole = false;
+    let nestedToRole = false;
     for (let index = 0; index < adaptedFilters.length; index += 1) {
       const { key, operator, values } = adaptedFilters[index];
       if (key === TYPE_FILTER) {
         types.push(...values.map((v) => v.id));
+      } else if (key === 'elementId') {
+        const nestedElement = [{ key: 'internal_id', values: values.map((v) => v.id) }];
+        queryFilters.push({ key: 'connections', nested: nestedElement });
+      } else if (key === 'elementWithTargetTypes') {
+        const nestedElementTypes = [{ key: 'types', values: values.map((v) => v.id) }];
+        queryFilters.push({ key: 'connections', nested: nestedElementTypes });
+      } else if (key === 'fromId') {
+        nestedFrom.push({ key: 'internal_id', values: values.map((v) => v.id) });
+        nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+        nestedFromRole = true;
+      } else if (key === 'fromTypes') {
+        nestedFrom.push({ key: 'types', values: values.map((v) => v.id) });
+        if (!nestedFromRole) {
+          nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+        }
+      } else if (key === 'toId') {
+        nestedTo.push({ key: 'internal_id', values: values.map((v) => v.id) });
+        nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+        nestedToRole = true;
+      } else if (key === 'toTypes') {
+        nestedTo.push({ key: 'types', values: values.map((v) => v.id) });
+        if (!nestedToRole) {
+          nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+        }
       } else {
         queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator });
       }
+    }
+    if (nestedFrom.length > 0) {
+      queryFilters.push({ key: 'connections', nested: nestedFrom });
+    }
+    if (nestedTo.length > 0) {
+      queryFilters.push({ key: 'connections', nested: nestedTo });
     }
   }
   // Avoid empty type which will target internal objects and relationships as well
