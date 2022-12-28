@@ -83,7 +83,7 @@ import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainOb
 
 const styles = (theme) => ({
   bottomNav: {
-    padding: '0 0 0 50px',
+    padding: 0,
     zIndex: 1100,
     display: 'flex',
     height: 50,
@@ -91,21 +91,21 @@ const styles = (theme) => ({
   },
   bottomNavWithLargePadding: {
     zIndex: 1100,
-    padding: '0 230px 0 50px',
+    padding: '0 230px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithMediumPadding: {
     zIndex: 1100,
-    padding: '0 200px 0 50px',
+    padding: '0 200px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithSmallPadding: {
     zIndex: 1100,
-    padding: '0 180px 0 50px',
+    padding: '0 180px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -293,7 +293,18 @@ class ToolBar extends Component {
       externalReferences: [],
       enrichConnectors: [],
       enrichSelected: [],
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
+  }
+
+  componentDidMount() {
+    this.subscription = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleOpenTask() {
@@ -1176,7 +1187,7 @@ class ToolBar extends Component {
       noWarning,
       deleteDisable,
     } = this.props;
-    const { actions, keptEntityId, mergingElement, actionsInputs } = this.state;
+    const { actions, keptEntityId, mergingElement, actionsInputs, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
     const selectedTypes = R.uniq(
       R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1278,7 +1289,11 @@ class ToolBar extends Component {
         variant="persistent"
         classes={{ paper: paperClass }}
         open={isOpen}
-        PaperProps={{ variant: 'elevation', elevation: 1 }}
+        PaperProps={{
+          variant: 'elevation',
+          elevation: 1,
+          style: { paddingLeft: navOpen ? 185 : 60 },
+        }}
       >
         <Toolbar style={{ minHeight: 54 }}>
           <Typography
@@ -1546,10 +1561,9 @@ class ToolBar extends Component {
                             const label = `${truncate(
                               currentFilter[0].startsWith('rel_')
                                 ? t(
-                                  `relationship_${
-                                    currentFilter[0]
-                                      .replace('rel_', '')
-                                      .replace('.*', '')}`,
+                                  `relationship_${currentFilter[0]
+                                    .replace('rel_', '')
+                                    .replace('.*', '')}`,
                                 )
                                 : t(`filter_${currentFilter[0]}`),
                               20,

@@ -38,6 +38,7 @@ class StixDomainObjectContentBar extends Component {
       handleDownload,
       directDownload,
       handleDownloadPdf,
+      navOpen,
     } = this.props;
     return (
       <Drawer
@@ -57,7 +58,7 @@ class StixDomainObjectContentBar extends Component {
           <div
             style={{
               float: 'left',
-              marginLeft: 195,
+              marginLeft: navOpen ? 195 : 70,
               height: '100%',
               display: 'flex',
             }}
@@ -133,6 +134,7 @@ StixDomainObjectContentBar.propTypes = {
   handleDownloadPdf: PropTypes.func,
   currentZoom: PropTypes.number,
   theme: PropTypes.object,
+  navOpen: PropTypes.bool,
 };
 
 export default R.compose(

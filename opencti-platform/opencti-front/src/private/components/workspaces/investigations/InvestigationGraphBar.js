@@ -60,6 +60,7 @@ import { dateFormat } from '../../../../utils/Time';
 import { parseDomain } from '../../../../utils/Graph';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import SearchInput from '../../../../components/SearchInput';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 const styles = () => ({
   bottomNav: {
@@ -98,7 +99,18 @@ class InvestigationGraphBar extends Component {
       displayRemove: false,
       relationReversed: false,
       openCreatedRelation: false,
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
+  }
+
+  componentDidMount() {
+    this.subscription = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleOpenRemove() {
@@ -260,6 +272,7 @@ class InvestigationGraphBar extends Component {
       openEditEntity,
       relationReversed,
       openCreatedRelation,
+      navOpen,
     } = this.state;
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
@@ -364,7 +377,7 @@ class InvestigationGraphBar extends Component {
             <div
               style={{
                 float: 'left',
-                marginLeft: 185,
+                marginLeft: navOpen ? 185 : 60,
                 height: '100%',
                 display: 'flex',
               }}

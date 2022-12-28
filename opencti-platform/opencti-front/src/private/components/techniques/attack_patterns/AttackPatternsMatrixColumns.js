@@ -17,9 +17,49 @@ import { attackPatternsLinesQuery } from './AttackPatternsLines';
 import { computeLevel } from '../../../../utils/Number';
 import AttackPtternsMatrixBar from './AttackPtternsMatrixBar';
 import { truncate } from '../../../../utils/String';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
+    margin: '15px 0 -24px 0',
+    overflow: 'scroll',
+    whiteSpace: 'nowrap',
+    paddingBottom: 20,
+    minWidth: 'calc(100vw - 110px)',
+    minHeight: 'calc(100vh - 220px)',
+    width: 'calc(100vw - 110px)',
+    height: 'calc(100vh - 220px)',
+    maxWidth: 'calc(100vw - 110px)',
+    maxHeight: 'calc(100vh - 220px)',
+    position: 'relative',
+  },
+  containerWithMarginRight: {
+    margin: '15px 0 -24px 0',
+    overflow: 'scroll',
+    whiteSpace: 'nowrap',
+    paddingBottom: 20,
+    minWidth: 'calc(100vw - 305px)',
+    minHeight: 'calc(100vh - 200px)',
+    width: 'calc(100vw - 305px)',
+    height: 'calc(100vh - 200px)',
+    maxWidth: 'calc(100vw - 305px)',
+    maxHeight: 'calc(100vh - 200px)',
+    position: 'relative',
+  },
+  containerWithMarginRightNoBar: {
+    margin: '15px 0 -24px 0',
+    overflow: 'scroll',
+    whiteSpace: 'nowrap',
+    paddingBottom: 20,
+    minWidth: 'calc(100vw - 305px)',
+    minHeight: 'calc(100vh - 200px)',
+    width: 'calc(100vw - 305px)',
+    height: 'calc(100vh - 200px)',
+    maxWidth: 'calc(100vw - 305px)',
+    maxHeight: 'calc(100vh - 200px)',
+    position: 'relative',
+  },
+  containerNavOpen: {
     margin: '15px 0 -24px 0',
     overflow: 'scroll',
     whiteSpace: 'nowrap',
@@ -32,7 +72,7 @@ const styles = (theme) => ({
     maxHeight: 'calc(100vh - 220px)',
     position: 'relative',
   },
-  containerWithMarginRight: {
+  containerWithMarginRightNavOpen: {
     margin: '15px 0 -24px 0',
     overflow: 'scroll',
     whiteSpace: 'nowrap',
@@ -45,7 +85,7 @@ const styles = (theme) => ({
     maxHeight: 'calc(100vh - 200px)',
     position: 'relative',
   },
-  containerWithMarginRightNoBar: {
+  containerWithMarginRightNoBarNavOpen: {
     margin: '15px 0 -24px 0',
     overflow: 'scroll',
     whiteSpace: 'nowrap',
@@ -100,6 +140,16 @@ const styles = (theme) => ({
   },
   switchKillChain: {
     position: 'fixed',
+    left: 75,
+    bottom: 40,
+    backgroundColor: theme.palette.background.paper,
+    padding: '0 10px 2px 10px',
+    zIndex: 1000,
+    borderRadius: 5,
+    border: `1px solid ${theme.palette.primary.main}`,
+  },
+  switchKillChainNavOpen: {
+    position: 'fixed',
     left: 200,
     bottom: 40,
     backgroundColor: theme.palette.background.paper,
@@ -150,7 +200,18 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       hover: {},
       anchorEl: null,
       menuElement: null,
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
+  }
+
+  componentDidMount() {
+    this.subscription = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleOpen(element, event) {
@@ -220,7 +281,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       hideBar,
       handleAdd,
     } = this.props;
-    const { hover, menuElement } = this.state;
+    const { hover, menuElement, navOpen } = this.state;
     let changeKillChain = handleChangeKillChain;
     if (typeof changeKillChain !== 'function') {
       changeKillChain = this.handleChangeKillChain;
@@ -324,19 +385,26 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       }),
       killChainPhases,
     );
+    let className = navOpen ? classes.containerNavOpen : classes.container;
+    if (marginRight) {
+      if (hideBar) {
+        className = navOpen
+          ? classes.containerWithMarginRightNoBarNavOpen
+          : classes.containerWithMarginRightNoBar;
+      } else {
+        className = navOpen
+          ? classes.containerWithMarginRightNavOpen
+          : classes.containerWithMarginRight;
+      }
+    }
     return (
-      <div
-        className={
-          // eslint-disable-next-line no-nested-ternary
-          marginRight
-            ? hideBar
-              ? classes.containerWithMarginRightNoBar
-              : classes.containerWithMarginRight
-            : classes.container
-        }
-      >
+      <div className={className}>
         {hideBar ? (
-          <div className={classes.switchKillChain}>
+          <div
+            className={
+              navOpen ? classes.switchKillChainNavOpen : classes.switchKillChain
+            }
+          >
             <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
               <InputLabel>{t('Kill chain')}</InputLabel>
               <Select
@@ -361,6 +429,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
             currentKillChain={killChain}
             handleChangeKillChain={changeKillChain.bind(this)}
             killChains={killChains}
+            navOpen={navOpen}
           />
         )}
         <div

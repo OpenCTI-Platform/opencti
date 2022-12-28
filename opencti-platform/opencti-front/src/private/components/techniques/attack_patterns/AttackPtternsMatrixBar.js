@@ -45,6 +45,7 @@ class AttackPtternsMatrixBar extends Component {
       handleToggleModeOnlyActive,
       handleToggleColorsReversed,
       killChains,
+      navOpen,
     } = this.props;
     return (
       <Drawer
@@ -71,7 +72,7 @@ class AttackPtternsMatrixBar extends Component {
             <div
               style={{
                 float: 'left',
-                margin: '8px 10px 0 190px',
+                margin: navOpen ? '7px 10px 0 200px' : '7px 10px 0 70px',
                 display: 'flex',
               }}
             >

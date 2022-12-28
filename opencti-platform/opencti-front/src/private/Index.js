@@ -51,6 +51,7 @@ const Index = () => {
             easing: theme.transitions.easing.easeInOut,
             duration: theme.transitions.duration.enteringScreen,
           }),
+          overflowX: 'hidden',
         }}
       >
         <div className={classes.toolbar} />

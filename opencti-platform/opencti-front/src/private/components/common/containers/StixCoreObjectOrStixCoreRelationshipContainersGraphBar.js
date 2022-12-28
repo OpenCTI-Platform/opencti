@@ -44,6 +44,7 @@ import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 const styles = () => ({
   bottomNav: {
@@ -81,7 +82,18 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       openEditRelation: false,
       openEditEntity: false,
       displayRemove: false,
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
+  }
+
+  componentDidMount() {
+    this.subscription = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleOpenStixCoreObjectsTypes(event) {
@@ -175,6 +187,17 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       disabled,
       theme,
     } = this.props;
+    const {
+      openStixCoreObjectsTypes,
+      anchorElStixCoreObjectsTypes,
+      openMarkedBy,
+      anchorElMarkedBy,
+      openCreatedBy,
+      anchorElCreatedBy,
+      openSelectByType,
+      anchorElSelectByType,
+      navOpen,
+    } = this.state;
     if (disabled) {
       return (
         <Drawer
@@ -201,7 +224,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
               <div
                 style={{
                   float: 'left',
-                  marginLeft: 185,
+                  marginLeft: navOpen ? 185 : 60,
                   height: '100%',
                   display: 'flex',
                 }}
@@ -367,16 +390,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
         </Drawer>
       );
     }
-    const {
-      openStixCoreObjectsTypes,
-      anchorElStixCoreObjectsTypes,
-      openMarkedBy,
-      anchorElMarkedBy,
-      openCreatedBy,
-      anchorElCreatedBy,
-      openSelectByType,
-      anchorElSelectByType,
-    } = this.state;
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
     let viewLink = null;
@@ -425,7 +438,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
             <div
               style={{
                 float: 'left',
-                marginLeft: 190,
+                marginLeft: navOpen ? 185 : 60,
                 height: '100%',
                 display: 'flex',
               }}

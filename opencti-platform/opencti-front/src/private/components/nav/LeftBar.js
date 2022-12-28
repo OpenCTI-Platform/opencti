@@ -314,7 +314,7 @@ const LeftBar = () => {
           )}
           {!hideEntities && (
             <StyledTooltip
-              title={!navOpen && t('Techniques')}
+              title={!navOpen && t('Entities')}
               placement="right"
             >
               <MenuItem

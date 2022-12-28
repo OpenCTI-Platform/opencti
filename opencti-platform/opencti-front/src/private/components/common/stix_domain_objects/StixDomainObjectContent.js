@@ -25,7 +25,11 @@ import inject18n from '../../../../components/i18n';
 import StixDomainObjectContentFiles, {
   stixDomainObjectContentFilesUploadStixDomainObjectMutation,
 } from './StixDomainObjectContentFiles';
-import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
+import {
+  APP_BASE_PATH,
+  commitMutation,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
@@ -49,6 +53,33 @@ const styles = () => ({
     margin: '15px 0 0 0',
     overflow: 'scroll',
     whiteSpace: 'nowrap',
+    minWidth: 'calc(100vw - 455px)',
+    minHeight: 'calc(100vh - 240px)',
+    width: 'calc(100vw - 455px)',
+    height: 'calc(100vh - 240px)',
+    maxWidth: 'calc(100vw - 455px)',
+    maxHeight: 'calc(100vh - 240px)',
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  adjustedContainer: {
+    margin: '15px 0 0 0',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    minWidth: 'calc(100vw - 465px)',
+    minHeight: 'calc(100vh - 240px)',
+    width: 'calc(100vw - 465px)',
+    height: 'calc(100vh - 240px)',
+    maxWidth: 'calc(100vw - 465px)',
+    maxHeight: 'calc(100vh - 240px)',
+    display: 'flex',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  documentContainerNavOpen: {
+    margin: '15px 0 0 0',
+    overflow: 'scroll',
+    whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 580px)',
     minHeight: 'calc(100vh - 240px)',
     width: 'calc(100vw - 580px)',
@@ -58,7 +89,7 @@ const styles = () => ({
     display: 'flex',
     justifyContent: 'center',
   },
-  adjustedContainer: {
+  adjustedContainerNavOpen: {
     margin: '15px 0 0 0',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
@@ -151,6 +182,7 @@ class StixDomainObjectContentComponent extends Component {
       markdownSelectedTab: 'write',
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
   }
 
@@ -196,11 +228,15 @@ class StixDomainObjectContentComponent extends Component {
     this.subscription = SAVE$.subscribe({
       next: () => this.saveFile(),
     });
+    this.subscriptionToggle = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
+    });
     this.loadFileContent();
   }
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
+    this.subscriptionToggle.unsubscribe();
   }
 
   handleSelectFile(fileId) {
@@ -372,6 +408,7 @@ class StixDomainObjectContentComponent extends Component {
       isLoading,
       currentContent,
       markdownSelectedTab,
+      navOpen,
     } = this.state;
     const files = getFiles(stixDomainObject);
     const currentUrl = currentFileId
@@ -396,6 +433,7 @@ class StixDomainObjectContentComponent extends Component {
             <StixDomainObjectContentBar
               directDownload={currentGetUrl}
               handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+              navOpen={navOpen}
             />
             <div
               className={classes.editorContainer}
@@ -423,6 +461,7 @@ class StixDomainObjectContentComponent extends Component {
             <StixDomainObjectContentBar
               directDownload={currentGetUrl}
               handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+              navOpen={navOpen}
             />
             <div
               className={classes.editorContainer}
@@ -451,6 +490,7 @@ class StixDomainObjectContentComponent extends Component {
             <StixDomainObjectContentBar
               directDownload={currentGetUrl}
               handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+              navOpen={navOpen}
             />
             <div
               className={classes.editorContainer}
@@ -494,8 +534,15 @@ class StixDomainObjectContentComponent extends Component {
               handleZoomOut={this.handleZoomOut.bind(this)}
               directDownload={currentGetUrl}
               currentZoom={this.state.pdfViewerZoom}
+              navOpen={navOpen}
             />
-            <div className={classes.documentContainer}>
+            <div
+              className={
+                navOpen
+                  ? classes.documentContainerNavOpen
+                  : classes.documentContainer
+              }
+            >
               <Document
                 onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                 loading={<Loader variant="inElement" />}
@@ -514,7 +561,13 @@ class StixDomainObjectContentComponent extends Component {
           </div>
         )}
         {!currentFile && (
-          <div className={classes.adjustedContainer}>
+          <div
+            className={
+              navOpen
+                ? classes.adjustedContainerNavOpen
+                : classes.adjustedContainer
+            }
+          >
             <div
               style={{
                 display: 'table',
