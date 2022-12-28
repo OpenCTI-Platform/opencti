@@ -55,7 +55,7 @@ const inlineStyles = {
 const ItemScore = (props) => {
   const { score, classes, variant, t, theme } = props;
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
-  if (!score) {
+  if (score === null) {
     return (
       <Chip
         classes={{ root: style }}
