@@ -21,7 +21,6 @@ const styles = (theme) => ({
     width: 250,
     right: 0,
     padding: '0 0 20px 0',
-
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -32,7 +31,6 @@ const styles = (theme) => ({
     width: 250,
     right: 310,
     padding: '0 0 20px 0',
-
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.leavingScreen,

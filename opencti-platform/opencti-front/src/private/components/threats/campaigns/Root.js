@@ -79,7 +79,6 @@ class RootCampaign extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { campaignId },
       },
@@ -87,7 +86,7 @@ class RootCampaign extends Component {
     const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/threats/campaigns/:campaignId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -246,7 +245,6 @@ class RootCampaign extends Component {
 RootCampaign.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootCampaign);

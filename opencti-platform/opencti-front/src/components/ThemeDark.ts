@@ -1,11 +1,13 @@
 import { ExtendedThemeOptions } from './Theme';
 import LogoText from '../static/images/logo_text.png';
+import LogoCollapsed from '../static/images/logo.png';
 import { fileUri } from '../relay/environment';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = '#0a1929';
 
 const ThemeDark = (
   logo: string | null = null,
+  logo_collapsed: string | null = null,
   background: string | null = null,
   paper: string | null = null,
   nav: string | null = null,
@@ -14,6 +16,7 @@ const ThemeDark = (
   accent: string | null = null,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
+  logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
   palette: {
     mode: 'dark',
     error: { main: '#f44336' },

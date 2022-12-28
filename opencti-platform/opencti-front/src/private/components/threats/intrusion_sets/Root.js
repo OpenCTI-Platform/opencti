@@ -79,7 +79,6 @@ class RootIntrusionSet extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { intrusionSetId },
       },
@@ -87,7 +86,7 @@ class RootIntrusionSet extends Component {
     const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -248,7 +247,6 @@ class RootIntrusionSet extends Component {
 RootIntrusionSet.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootIntrusionSet);

@@ -76,7 +76,6 @@ class RootPosition extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { positionId },
       },
@@ -84,7 +83,7 @@ class RootPosition extends Component {
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/locations/positions/:positionId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -234,7 +233,6 @@ class RootPosition extends Component {
 RootPosition.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootPosition);

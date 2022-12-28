@@ -40,14 +40,13 @@ class RootUser extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { userId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={userQuery}
           variables={{ id: userId }}
@@ -79,7 +78,6 @@ class RootUser extends Component {
 RootUser.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootUser);

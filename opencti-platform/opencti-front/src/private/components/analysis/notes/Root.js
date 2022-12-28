@@ -73,14 +73,13 @@ class RootNote extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { noteId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={noteQuery}
           variables={{ id: noteId }}
@@ -148,7 +147,6 @@ class RootNote extends Component {
 RootNote.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootNote);

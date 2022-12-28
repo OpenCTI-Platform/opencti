@@ -82,7 +82,6 @@ class RootThreatActor extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { threatActorId },
       },
@@ -90,7 +89,7 @@ class RootThreatActor extends Component {
     const link = `/dashboard/threats/threat_actors/${threatActorId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/threats/threat_actors/:threatActorId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -255,7 +254,6 @@ class RootThreatActor extends Component {
 RootThreatActor.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootThreatActor);

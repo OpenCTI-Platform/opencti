@@ -50,14 +50,13 @@ class RootInvestigation extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { workspaceId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={investigationQuery}
           variables={{ id: workspaceId }}
@@ -90,7 +89,6 @@ class RootInvestigation extends Component {
 RootInvestigation.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootInvestigation);

@@ -78,7 +78,6 @@ class RootVulnerability extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { vulnerabilityId },
       },
@@ -86,7 +85,7 @@ class RootVulnerability extends Component {
     const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -238,7 +237,6 @@ class RootVulnerability extends Component {
 RootVulnerability.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootVulnerability);

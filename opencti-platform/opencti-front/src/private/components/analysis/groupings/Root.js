@@ -77,14 +77,13 @@ class RootGrouping extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { groupingId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={groupingQuery}
           variables={{ id: groupingId }}
@@ -191,7 +190,6 @@ class RootGrouping extends Component {
 RootGrouping.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootGrouping);

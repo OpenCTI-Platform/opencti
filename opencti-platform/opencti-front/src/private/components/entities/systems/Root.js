@@ -107,7 +107,6 @@ class RootSystem extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { systemId },
       },
@@ -116,7 +115,7 @@ class RootSystem extends Component {
     const link = `/dashboard/entities/systems/${systemId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/entities/systems/:systemId/knowledge">
           {viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar
@@ -248,7 +247,6 @@ class RootSystem extends Component {
 RootSystem.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootSystem);

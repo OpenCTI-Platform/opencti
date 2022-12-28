@@ -12,8 +12,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import CityPopover from './CityPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers
-  from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -63,16 +62,16 @@ const cityQuery = graphql`
 const RootCityComponent = ({ queryRef }) => {
   const { cityId } = useParams() as { cityId: string };
   const link = `/dashboard/locations/cities/${cityId}/knowledge`;
-
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCitiesSubscription>>(() => ({
-    subscription,
-    variables: { id: cityId },
-  }), [cityId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCitiesSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: cityId },
+    }),
+    [cityId],
+  );
   useSubscription(subConfig);
-
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForExport } = data;
-
   return (
     <div>
       <TopBar />
@@ -100,7 +99,7 @@ const RootCityComponent = ({ queryRef }) => {
             <Route
               exact
               path="/dashboard/locations/cities/:cityId"
-              render={() => (<City cityData={city} />)}
+              render={() => <City cityData={city} />}
             />
             <Route
               exact
@@ -113,7 +112,7 @@ const RootCityComponent = ({ queryRef }) => {
             />
             <Route
               path="/dashboard/locations/cities/:cityId/knowledge"
-              render={() => (<CityKnowledge cityData={city} />)}
+              render={() => <CityKnowledge cityData={city} />}
             />
             <Route
               exact
@@ -183,7 +182,9 @@ const RootCityComponent = ({ queryRef }) => {
               )}
             />
           </Switch>
-        ) : <ErrorNotFound />}
+        ) : (
+          <ErrorNotFound />
+        )}
       </>
     </div>
   );
@@ -191,13 +192,14 @@ const RootCityComponent = ({ queryRef }) => {
 
 const RootCity = () => {
   const { cityId } = useParams() as { cityId: string };
-
   const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <RootCityComponent queryRef={queryRef} />
     </React.Suspense>
-  ) : <Loader variant={LoaderVariant.inElement} />;
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
+  );
 };
 
 export default RootCity;

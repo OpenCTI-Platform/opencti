@@ -8,7 +8,11 @@ export interface UserContextType {
   helper: ModuleHelper | undefined;
 }
 
-const defaultContext = { me: undefined, settings: undefined, helper: undefined };
+const defaultContext = {
+  me: undefined,
+  settings: undefined,
+  helper: undefined,
+};
 export const UserContext = React.createContext<UserContextType>(defaultContext);
 
 const useAuth = () => {

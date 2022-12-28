@@ -78,7 +78,6 @@ class RootTool extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { toolId },
       },
@@ -86,7 +85,7 @@ class RootTool extends Component {
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/arsenal/tools/:toolId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -232,7 +231,6 @@ class RootTool extends Component {
 RootTool.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootTool);

@@ -72,14 +72,13 @@ class RootCourseOfAction extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { courseOfActionId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={courseOfActionQuery}
           variables={{ id: courseOfActionId }}
@@ -158,7 +157,6 @@ class RootCourseOfAction extends Component {
 RootCourseOfAction.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootCourseOfAction);

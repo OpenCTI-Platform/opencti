@@ -1,6 +1,5 @@
 import React from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import CssBaseline from '@mui/material/CssBaseline';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
@@ -56,9 +55,8 @@ const Root = () => {
     <UserContext.Provider value={{ me, settings, helper }}>
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
-          <CssBaseline />
           <ConnectedIntlProvider settings={settings}>
-            <Index me={me} />
+            <Index />
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>

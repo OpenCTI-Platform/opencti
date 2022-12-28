@@ -74,14 +74,13 @@ class RootObservedData extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { observedDataId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={observedDataQuery}
           variables={{ id: observedDataId }}
@@ -180,7 +179,6 @@ class RootObservedData extends Component {
 RootObservedData.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootObservedData);

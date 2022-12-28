@@ -71,7 +71,6 @@ class StixCoreObjectOrStixCoreRelationship extends Component {
         params: { id },
       },
     } = this.props;
-
     return (
       <div className={classes.container}>
         <QueryRenderer
@@ -118,7 +117,6 @@ class StixCoreObjectOrStixCoreRelationship extends Component {
 StixCoreObjectOrStixCoreRelationship.propTypes = {
   match: PropTypes.object,
   history: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default compose(

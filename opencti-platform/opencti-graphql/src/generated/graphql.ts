@@ -16888,6 +16888,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_theme_dark_accent?: Maybe<Scalars['String']>;
   platform_theme_dark_background?: Maybe<Scalars['String']>;
   platform_theme_dark_logo?: Maybe<Scalars['String']>;
+  platform_theme_dark_logo_collapsed?: Maybe<Scalars['String']>;
   platform_theme_dark_logo_login?: Maybe<Scalars['String']>;
   platform_theme_dark_nav?: Maybe<Scalars['String']>;
   platform_theme_dark_paper?: Maybe<Scalars['String']>;
@@ -16896,6 +16897,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_theme_light_accent?: Maybe<Scalars['String']>;
   platform_theme_light_background?: Maybe<Scalars['String']>;
   platform_theme_light_logo?: Maybe<Scalars['String']>;
+  platform_theme_light_logo_collapsed?: Maybe<Scalars['String']>;
   platform_theme_light_logo_login?: Maybe<Scalars['String']>;
   platform_theme_light_nav?: Maybe<Scalars['String']>;
   platform_theme_light_paper?: Maybe<Scalars['String']>;
@@ -28309,6 +28311,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_theme_dark_accent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_background?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_theme_dark_logo_collapsed?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_logo_login?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_nav?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_paper?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28317,6 +28320,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_theme_light_accent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_light_background?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_light_logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_theme_light_logo_collapsed?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_light_logo_login?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_light_nav?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_light_paper?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

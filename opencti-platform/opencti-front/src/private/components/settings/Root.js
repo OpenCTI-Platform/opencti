@@ -35,7 +35,7 @@ const Root = () => (
       />
       <BoundaryRoute
         path="/dashboard/settings/accesses/users/:userId"
-        render={(routeProps) => <RootUser {...routeProps} />}
+        component={RootUser}
       />
       <BoundaryRoute
         exact

@@ -82,7 +82,6 @@ class RootIncident extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { incidentId },
       },
@@ -90,7 +89,7 @@ class RootIncident extends Component {
     const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/events/incidents/:incidentId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -236,7 +235,6 @@ class RootIncident extends Component {
 RootIncident.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootIncident);

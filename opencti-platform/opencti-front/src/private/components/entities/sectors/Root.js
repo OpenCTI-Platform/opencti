@@ -78,7 +78,6 @@ class RootSector extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { sectorId },
       },
@@ -86,7 +85,7 @@ class RootSector extends Component {
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/entities/sectors/:sectorId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -221,7 +220,6 @@ class RootSector extends Component {
 RootSector.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootSector);

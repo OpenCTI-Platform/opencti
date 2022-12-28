@@ -78,7 +78,6 @@ class RootChannel extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { channelId },
       },
@@ -86,7 +85,7 @@ class RootChannel extends Component {
     const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/arsenal/channels/:channelId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -239,7 +238,6 @@ class RootChannel extends Component {
 RootChannel.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootChannel);

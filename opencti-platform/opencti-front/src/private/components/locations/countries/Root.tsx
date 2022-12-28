@@ -16,10 +16,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-import useAuth from '../../../../utils/hooks/useAuth';
-import {
-  RootCountriesSubscription,
-} from './__generated__/RootCountriesSubscription.graphql';
+import { RootCountriesSubscription } from './__generated__/RootCountriesSubscription.graphql';
 import { RootCountryQuery } from './__generated__/RootCountryQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -63,143 +60,150 @@ const countryQuery = graphql`
 `;
 
 const RootCountryComponent = ({ queryRef }) => {
-  const { me } = useAuth();
   const { countryId } = useParams() as { countryId: string };
-
   const link = `/dashboard/locations/countries/${countryId}/knowledge`;
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCountriesSubscription>>(() => ({
-    subscription,
-    variables: { id: countryId },
-  }), [countryId]);
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootCountriesSubscription>
+  >(
+    () => ({
+      subscription,
+      variables: { id: countryId },
+    }),
+    [countryId],
+  );
   useSubscription(subConfig);
-
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForExport } = data;
-
   return (
-      <div>
-        <TopBar me={me} />
-        <Route path="/dashboard/locations/countries/:countryId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'cities',
-              'organizations',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'tools',
-              'observables',
-            ]}
-          />
-        </Route>
-        <>
-          {country ? (
-            <Switch>
-              <Route
-                exact
-                path="/dashboard/locations/countries/:countryId"
-                render={() => (<Country countryData={country} />)}
-              />
-              <Route
-                exact
-                path="/dashboard/locations/countries/:countryId/knowledge"
-                render={() => (
-                  <Redirect
-                    to={`/dashboard/locations/countries/${countryId}/knowledge/overview`}
+    <div>
+      <TopBar />
+      <Route path="/dashboard/locations/countries/:countryId/knowledge">
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'cities',
+            'organizations',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'attack_patterns',
+            'tools',
+            'observables',
+          ]}
+        />
+      </Route>
+      <>
+        {country ? (
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/locations/countries/:countryId"
+              render={() => <Country countryData={country} />}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/countries/:countryId/knowledge"
+              render={() => (
+                <Redirect
+                  to={`/dashboard/locations/countries/${countryId}/knowledge/overview`}
+                />
+              )}
+            />
+            <Route
+              path="/dashboard/locations/countries/:countryId/knowledge"
+              render={() => <CountryKnowledge countryData={country} />}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/countries/:countryId/analysis"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={country}
+                    PopoverComponent={CountryPopover}
                   />
-                )}
-              />
-              <Route
-                path="/dashboard/locations/countries/:countryId/knowledge"
-                render={() => (<CountryKnowledge countryData={country} />)}
-              />
-              <Route
-                exact
-                path="/dashboard/locations/countries/:countryId/analysis"
-                render={(routeProps) => (
-                  <React.Fragment>
-                    <StixDomainObjectHeader
-                      disableSharing={true}
-                      stixDomainObject={country}
-                      PopoverComponent={CountryPopover}
-                    />
-                    <StixCoreObjectOrStixCoreRelationshipContainers
-                      {...routeProps}
-                      stixDomainObjectOrStixCoreRelationship={country}
-                    />
-                  </React.Fragment>
-                )}
-              />
-              <Route
-                exact
-                path="/dashboard/locations/countries/:countryId/sightings"
-                render={(routeProps) => (
-                  <EntityStixSightingRelationships
-                    entityId={country.id}
-                    entityLink={link}
-                    noPadding={true}
-                    isTo={true}
+                  <StixCoreObjectOrStixCoreRelationshipContainers
                     {...routeProps}
+                    stixDomainObjectOrStixCoreRelationship={country}
                   />
-                )}
-              />
-              <Route
-                exact
-                path="/dashboard/locations/countries/:countryId/files"
-                render={(routeProps) => (
-                  <React.Fragment>
-                    <StixDomainObjectHeader
-                      disableSharing={true}
-                      stixDomainObject={country}
-                      PopoverComponent={CountryPopover}
-                    />
-                    <FileManager
-                      {...routeProps}
-                      id={countryId}
-                      connectorsImport={[]}
-                      connectorsExport={connectorsForExport}
-                      entity={country}
-                    />
-                  </React.Fragment>
-                )}
-              />
-              <Route
-                exact
-                path="/dashboard/locations/countries/:countryId/history"
-                render={(routeProps) => (
-                  <React.Fragment>
-                    <StixDomainObjectHeader
-                      disableSharing={true}
-                      stixDomainObject={country}
-                      PopoverComponent={CountryPopover}
-                    />
-                    <StixCoreObjectHistory
-                      {...routeProps}
-                      stixCoreObjectId={countryId}
-                    />
-                  </React.Fragment>
-                )}
-              />
-            </Switch>
-          ) : <ErrorNotFound />}
-        </>
-      </div>
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/countries/:countryId/sightings"
+              render={(routeProps) => (
+                <EntityStixSightingRelationships
+                  entityId={country.id}
+                  entityLink={link}
+                  noPadding={true}
+                  isTo={true}
+                  {...routeProps}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/countries/:countryId/files"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={country}
+                    PopoverComponent={CountryPopover}
+                  />
+                  <FileManager
+                    {...routeProps}
+                    id={countryId}
+                    connectorsImport={[]}
+                    connectorsExport={connectorsForExport}
+                    entity={country}
+                  />
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/countries/:countryId/history"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={country}
+                    PopoverComponent={CountryPopover}
+                  />
+                  <StixCoreObjectHistory
+                    {...routeProps}
+                    stixCoreObjectId={countryId}
+                  />
+                </React.Fragment>
+              )}
+            />
+          </Switch>
+        ) : (
+          <ErrorNotFound />
+        )}
+      </>
+    </div>
   );
 };
 
 const RootCountry = () => {
   const { countryId } = useParams() as { countryId: string };
 
-  const queryRef = useQueryLoading<RootCountryQuery>(countryQuery, { id: countryId });
+  const queryRef = useQueryLoading<RootCountryQuery>(countryQuery, {
+    id: countryId,
+  });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <RootCountryComponent queryRef={queryRef} />
     </React.Suspense>
-  ) : <Loader variant={LoaderVariant.inElement} />;
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
+  );
 };
 
 export default RootCountry;

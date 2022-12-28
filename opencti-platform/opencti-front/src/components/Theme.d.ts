@@ -28,6 +28,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
 
 interface ExtendedThemeOptions extends ThemeOptions {
   logo: string | null
+  logo_collapsed: string | null
   palette: ExtendedPaletteOptions
 }
 

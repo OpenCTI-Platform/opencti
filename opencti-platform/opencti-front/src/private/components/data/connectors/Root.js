@@ -10,14 +10,13 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 class RootConnector extends Component {
   render() {
     const {
-      me,
       match: {
         params: { connectorId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={connectorQuery}
           variables={{ id: connectorId }}
@@ -52,7 +51,6 @@ class RootConnector extends Component {
 RootConnector.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootConnector);

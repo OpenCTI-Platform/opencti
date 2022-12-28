@@ -95,7 +95,7 @@
     "moment": "2.29.4",
     "moment-range": "4.0.2",
     "nconf": "0.12.0",
-    "node-calls-python": "1.7.5",
+    "node-calls-python": "1.7.4",
     "node-fetch": "3.3.0",
     "nodemailer": "6.8.0",
     "openid-client": "5.3.1",

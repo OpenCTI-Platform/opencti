@@ -76,14 +76,13 @@ class RootIndicator extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { indicatorId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={indicatorQuery}
           variables={{ id: indicatorId, relationship_type: 'indicates' }}
@@ -254,7 +253,6 @@ class RootIndicator extends Component {
 RootIndicator.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootIndicator);

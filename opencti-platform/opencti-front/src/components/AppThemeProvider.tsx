@@ -1,6 +1,10 @@
 import React, { FunctionComponent, useContext } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { createTheme, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
+import {
+  createTheme,
+  StyledEngineProvider,
+  ThemeProvider,
+} from '@mui/material/styles';
 import { ThemeOptions } from '@mui/material/styles/createTheme';
 import { UserContext, UserContextType } from '../utils/hooks/useAuth';
 import themeDark from './ThemeDark';
@@ -13,21 +17,26 @@ import {
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 
 interface AppThemeProviderProps {
-  children: React.ReactNode
-  settings: AppThemeProvider_settings$data
+  children: React.ReactNode;
+  settings: AppThemeProvider_settings$data;
 }
 
-const themeBuilder = (settings: AppThemeProvider_settings$data, themeColor: string) => {
+const themeBuilder = (
+  settings: AppThemeProvider_settings$data,
+  themeColor: string,
+) => {
   if (themeColor === 'light') {
-    const platformThemeLightLogo = settings?.platform_theme_light_logo;
-    const platformThemeLightBackground = settings?.platform_theme_light_background;
-    const platformThemeLightPaper = settings?.platform_theme_light_paper;
-    const platformThemeLightNav = settings?.platform_theme_light_nav;
-    const platformThemeLightPrimary = settings?.platform_theme_light_primary;
-    const platformThemeLightSecondary = settings?.platform_theme_light_secondary;
-    const platformThemeLightAccent = settings?.platform_theme_light_accent;
+    const platformThemeLightLogo = settings?.platform_theme_light_logo ?? null;
+    const platformThemeLightLogoCollapsed = settings?.platform_theme_light_logo_collapsed ?? null;
+    const platformThemeLightBackground = settings?.platform_theme_light_background ?? null;
+    const platformThemeLightPaper = settings?.platform_theme_light_paper ?? null;
+    const platformThemeLightNav = settings?.platform_theme_light_nav ?? null;
+    const platformThemeLightPrimary = settings?.platform_theme_light_primary ?? null;
+    const platformThemeLightSecondary = settings?.platform_theme_light_secondary ?? null;
+    const platformThemeLightAccent = settings?.platform_theme_light_accent ?? null;
     return themeLight(
       platformThemeLightLogo,
+      platformThemeLightLogoCollapsed,
       platformThemeLightBackground,
       platformThemeLightPaper,
       platformThemeLightNav,
@@ -37,6 +46,7 @@ const themeBuilder = (settings: AppThemeProvider_settings$data, themeColor: stri
     );
   }
   const platformThemeDarkLogo = settings?.platform_theme_dark_logo ?? null;
+  const platformThemeDarkLogoCollapsed = settings?.platform_theme_dark_logo_collapsed ?? null;
   const platformThemeDarkBackground = settings?.platform_theme_dark_background ?? null;
   const platformThemeDarkPaper = settings?.platform_theme_dark_paper ?? null;
   const platformThemeDarkNav = settings?.platform_theme_dark_nav ?? null;
@@ -45,6 +55,7 @@ const themeBuilder = (settings: AppThemeProvider_settings$data, themeColor: stri
   const platformThemeDarkAccent = settings?.platform_theme_dark_accent ?? null;
   return themeDark(
     platformThemeDarkLogo,
+    platformThemeDarkLogoCollapsed,
     platformThemeDarkBackground,
     platformThemeDarkPaper,
     platformThemeDarkNav,
@@ -54,7 +65,10 @@ const themeBuilder = (settings: AppThemeProvider_settings$data, themeColor: stri
   );
 };
 
-const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({ children, settings }) => {
+const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
+  children,
+  settings,
+}) => {
   const { me } = useContext<UserContextType>(UserContext);
   const platformTitle = settings?.platform_title ?? 'OpenCTI - Cyber Threat Intelligence Platform';
   useDocumentModifier(platformTitle);
@@ -78,25 +92,27 @@ export const ConnectedThemeProvider = createFragmentContainer(
   AppThemeProvider,
   {
     settings: graphql`
-        fragment AppThemeProvider_settings on Settings {
-            platform_title
-            platform_favicon
-            platform_theme
-            platform_theme_dark_background
-            platform_theme_dark_paper
-            platform_theme_dark_nav
-            platform_theme_dark_primary
-            platform_theme_dark_secondary
-            platform_theme_dark_accent
-            platform_theme_dark_logo
-            platform_theme_light_background
-            platform_theme_light_paper
-            platform_theme_light_nav
-            platform_theme_light_primary
-            platform_theme_light_secondary
-            platform_theme_light_accent
-            platform_theme_light_logo
-        }
+      fragment AppThemeProvider_settings on Settings {
+        platform_title
+        platform_favicon
+        platform_theme
+        platform_theme_dark_background
+        platform_theme_dark_paper
+        platform_theme_dark_nav
+        platform_theme_dark_primary
+        platform_theme_dark_secondary
+        platform_theme_dark_accent
+        platform_theme_dark_logo
+        platform_theme_dark_logo_collapsed
+        platform_theme_light_background
+        platform_theme_light_paper
+        platform_theme_light_nav
+        platform_theme_light_primary
+        platform_theme_light_secondary
+        platform_theme_light_accent
+        platform_theme_light_logo
+        platform_theme_light_logo_collapsed
+      }
     `,
   },
 );

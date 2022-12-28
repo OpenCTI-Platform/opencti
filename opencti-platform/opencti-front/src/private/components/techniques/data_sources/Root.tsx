@@ -14,7 +14,6 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-import useAuth from '../../../../utils/hooks/useAuth';
 import { RootDataSourceQuery } from './__generated__/RootDataSourceQuery.graphql';
 import { RootDataSourcesSubscription } from './__generated__/RootDataSourcesSubscription.graphql';
 import DataSourcePopover from './DataSourcePopover';
@@ -60,22 +59,23 @@ const dataSourceQuery = graphql`
 `;
 
 const RootDataSourceComponent = ({ queryRef }) => {
-  const { me } = useAuth();
   const { dataSourceId } = useParams() as { dataSourceId: string };
-
   const link = `/dashboard/techniques/data_sources/${dataSourceId}/knowledge`;
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootDataSourcesSubscription>>(() => ({
-    subscription,
-    variables: { id: dataSourceId },
-  }), [dataSourceId]);
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootDataSourcesSubscription>
+  >(
+    () => ({
+      subscription,
+      variables: { id: dataSourceId },
+    }),
+    [dataSourceId],
+  );
   useSubscription(subConfig);
-
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForExport } = data;
-
   return (
     <div>
-      <TopBar me={me} />
+      <TopBar />
       <Route path="/dashboard/techniques/data_sources/:dataSourceId/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
@@ -99,7 +99,7 @@ const RootDataSourceComponent = ({ queryRef }) => {
             <Route
               exact
               path="/dashboard/techniques/data_sources/:dataSourceId"
-              render={() => (<DataSource data={dataSource} />)}
+              render={() => <DataSource data={dataSource} />}
             />
             <Route
               exact
@@ -122,7 +122,7 @@ const RootDataSourceComponent = ({ queryRef }) => {
                   <StixDomainObjectHeader
                     disableSharing={true}
                     stixDomainObject={dataSource}
-                    PopoverComponent={<DataSourcePopover id={dataSource.id} /> }
+                    PopoverComponent={<DataSourcePopover id={dataSource.id} />}
                   />
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     {...routeProps}
@@ -182,7 +182,9 @@ const RootDataSourceComponent = ({ queryRef }) => {
               )}
             />
           </Switch>
-        ) : <ErrorNotFound />}
+        ) : (
+          <ErrorNotFound />
+        )}
       </>
     </div>
   );
@@ -190,13 +192,16 @@ const RootDataSourceComponent = ({ queryRef }) => {
 
 const RootDataSource = () => {
   const { dataSourceId } = useParams() as { dataSourceId: string };
-
-  const queryRef = useQueryLoading<RootDataSourceQuery>(dataSourceQuery, { id: dataSourceId });
+  const queryRef = useQueryLoading<RootDataSourceQuery>(dataSourceQuery, {
+    id: dataSourceId,
+  });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <RootDataSourceComponent queryRef={queryRef} />
     </React.Suspense>
-  ) : <Loader variant={LoaderVariant.inElement} />;
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
+  );
 };
 
 export default RootDataSource;

@@ -74,7 +74,6 @@ class RootStixCyberObservable extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { observableId },
       },
@@ -82,7 +81,7 @@ class RootStixCyberObservable extends Component {
     const link = `/dashboard/observations/observables/${observableId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={stixCyberObservableQuery}
           variables={{ id: observableId, relationship_type: 'indicates' }}
@@ -235,7 +234,6 @@ class RootStixCyberObservable extends Component {
 RootStixCyberObservable.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootStixCyberObservable);

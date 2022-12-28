@@ -1017,6 +1017,7 @@ type Settings implements InternalObject & BasicObject {
   platform_theme_dark_secondary: String
   platform_theme_dark_accent: String
   platform_theme_dark_logo: String
+  platform_theme_dark_logo_collapsed: String
   platform_theme_dark_logo_login: String
   platform_theme_light_background: String
   platform_theme_light_paper: String
@@ -1025,6 +1026,7 @@ type Settings implements InternalObject & BasicObject {
   platform_theme_light_secondary: String
   platform_theme_light_accent: String
   platform_theme_light_logo: String
+  platform_theme_light_logo_collapsed: String
   platform_theme_light_logo_login: String
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String

@@ -50,14 +50,13 @@ class RootDashboard extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { workspaceId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={dashboardQuery}
           variables={{ id: workspaceId }}
@@ -92,7 +91,6 @@ class RootDashboard extends Component {
 RootDashboard.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootDashboard);

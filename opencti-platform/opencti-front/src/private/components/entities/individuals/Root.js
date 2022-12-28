@@ -108,7 +108,6 @@ class RootIndividual extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { individualId },
       },
@@ -117,7 +116,7 @@ class RootIndividual extends Component {
     const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/entities/individuals/:individualId/knowledge">
           {viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar
@@ -259,7 +258,6 @@ class RootIndividual extends Component {
 RootIndividual.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootIndividual);

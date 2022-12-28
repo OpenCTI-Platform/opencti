@@ -78,7 +78,6 @@ class RootNarrative extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { narrativeId },
       },
@@ -86,7 +85,7 @@ class RootNarrative extends Component {
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/techniques/narratives/:narrativeId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -238,7 +237,6 @@ class RootNarrative extends Component {
 RootNarrative.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootNarrative);

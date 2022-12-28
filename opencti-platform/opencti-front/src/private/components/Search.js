@@ -7,12 +7,18 @@ import * as R from 'ramda';
 import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
-import { buildViewParamsFromUrlAndStorage, convertFilters, saveViewParameters } from '../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  convertFilters,
+  saveViewParameters,
+} from '../../utils/ListParameters';
 import { isUniqFilter } from '../../utils/filters/filtersUtils';
 import { UserContext } from '../../utils/hooks/useAuth';
 import ListLines from '../../components/list_lines/ListLines';
 import ToolBar from './data/ToolBar';
-import SearchStixCoreObjectsLines, { searchStixCoreObjectsLinesQuery } from './search/SearchStixCoreObjectsLines';
+import SearchStixCoreObjectsLines, {
+  searchStixCoreObjectsLinesQuery,
+} from './search/SearchStixCoreObjectsLines';
 
 const styles = () => ({
   container: {
@@ -291,7 +297,6 @@ class Search extends Component {
 
   render() {
     const {
-      me,
       t,
       match: {
         params: { keyword },
@@ -313,7 +318,7 @@ class Search extends Component {
     };
     return (
       <div>
-        <TopBar me={me || null} keyword={searchTerm} />
+        <TopBar keyword={searchTerm} />
         <Typography
           variant="h1"
           gutterBottom={true}
@@ -333,7 +338,6 @@ Search.propTypes = {
   t: PropTypes.func,
   match: PropTypes.object,
   history: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter, withStyles(styles))(Search);

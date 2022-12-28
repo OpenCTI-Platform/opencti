@@ -79,7 +79,6 @@ class RootAttackPattern extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { attackPatternId },
       },
@@ -87,7 +86,7 @@ class RootAttackPattern extends Component {
     const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <Route path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -239,7 +238,6 @@ class RootAttackPattern extends Component {
 RootAttackPattern.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootAttackPattern);

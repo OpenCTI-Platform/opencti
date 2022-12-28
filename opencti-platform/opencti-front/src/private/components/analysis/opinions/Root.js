@@ -73,14 +73,13 @@ class RootOpinion extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { opinionId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={opinionQuery}
           variables={{ id: opinionId }}
@@ -147,7 +146,6 @@ class RootOpinion extends Component {
 RootOpinion.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootOpinion);

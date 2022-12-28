@@ -79,14 +79,13 @@ class RootReport extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { reportId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={reportQuery}
           variables={{ id: reportId }}
@@ -210,7 +209,6 @@ class RootReport extends Component {
 RootReport.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootReport);

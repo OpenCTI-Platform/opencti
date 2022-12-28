@@ -73,7 +73,6 @@ class RootArtifact extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { observableId },
       },
@@ -81,7 +80,7 @@ class RootArtifact extends Component {
     const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={rootArtifactQuery}
           variables={{ id: observableId, relationship_type: 'indicates' }}
@@ -217,7 +216,6 @@ class RootArtifact extends Component {
 RootArtifact.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootArtifact);

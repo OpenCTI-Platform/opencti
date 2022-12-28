@@ -51,14 +51,13 @@ class RootExternalReference extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { externalReferenceId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={externalReferenceQuery}
           variables={{ id: externalReferenceId }}
@@ -94,7 +93,6 @@ class RootExternalReference extends Component {
 RootExternalReference.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootExternalReference);

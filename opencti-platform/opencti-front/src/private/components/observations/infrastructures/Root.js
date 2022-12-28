@@ -78,14 +78,13 @@ class RootInfrastructure extends Component {
 
   render() {
     const {
-      me,
       match: {
         params: { infrastructureId },
       },
     } = this.props;
     return (
       <div>
-        <TopBar me={me || null} />
+        <TopBar />
         <QueryRenderer
           query={infrastructureQuery}
           variables={{ id: infrastructureId }}
@@ -230,7 +229,6 @@ class RootInfrastructure extends Component {
 RootInfrastructure.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
-  me: PropTypes.object,
 };
 
 export default withRouter(RootInfrastructure);

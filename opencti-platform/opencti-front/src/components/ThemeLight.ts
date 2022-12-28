@@ -1,9 +1,11 @@
 import { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text.png';
+import LogoCollapsed from '../static/images/logo.png';
 
 const ThemeLight = (
   logo: string | null,
+  logo_collapsed: string | null,
   background: string | null,
   paper: string | null,
   nav: string | null,
@@ -12,6 +14,7 @@ const ThemeLight = (
   accent: string | null,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
+  logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
   palette: {
     mode: 'light',
     error: { main: '#f44336' },

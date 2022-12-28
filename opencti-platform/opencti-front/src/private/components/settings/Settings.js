@@ -94,6 +94,7 @@ const settingsQuery = graphql`
       platform_theme_dark_secondary
       platform_theme_dark_accent
       platform_theme_dark_logo
+      platform_theme_dark_logo_collapsed
       platform_theme_dark_logo_login
       platform_theme_light_background
       platform_theme_light_paper
@@ -102,6 +103,7 @@ const settingsQuery = graphql`
       platform_theme_light_secondary
       platform_theme_light_accent
       platform_theme_light_logo
+      platform_theme_light_logo_collapsed
       platform_theme_light_logo_login
       platform_enable_reference
       platform_hidden_types
@@ -142,6 +144,7 @@ const settingsMutationFieldPatch = graphql`
         platform_theme_dark_secondary
         platform_theme_dark_accent
         platform_theme_dark_logo
+        platform_theme_dark_logo_collapsed
         platform_theme_dark_logo_login
         platform_theme_light_background
         platform_theme_light_paper
@@ -150,6 +153,7 @@ const settingsMutationFieldPatch = graphql`
         platform_theme_light_secondary
         platform_theme_light_accent
         platform_theme_light_logo
+        platform_theme_light_logo_collapsed
         platform_theme_light_logo_login
         platform_language
         platform_login_message
@@ -200,6 +204,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_dark_secondary: Yup.string().nullable(),
   platform_theme_dark_accent: Yup.string().nullable(),
   platform_theme_dark_logo: Yup.string().nullable(),
+  platform_theme_dark_logo_collapsed: Yup.string().nullable(),
   platform_theme_dark_logo_login: Yup.string().nullable(),
   platform_theme_light_background: Yup.string().nullable(),
   platform_theme_light_paper: Yup.string().nullable(),
@@ -208,6 +213,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_secondary: Yup.string().nullable(),
   platform_theme_light_accent: Yup.string().nullable(),
   platform_theme_light_logo: Yup.string().nullable(),
+  platform_theme_light_logo_collapsed: Yup.string().nullable(),
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
@@ -355,6 +361,7 @@ const Settings = () => {
                 'platform_theme_dark_secondary',
                 'platform_theme_dark_accent',
                 'platform_theme_dark_logo',
+                'platform_theme_dark_logo_collapsed',
                 'platform_theme_dark_logo_login',
                 'platform_theme_light_background',
                 'platform_theme_light_paper',
@@ -363,6 +370,7 @@ const Settings = () => {
                 'platform_theme_light_secondary',
                 'platform_theme_light_accent',
                 'platform_theme_light_logo',
+                'platform_theme_light_logo_collapsed',
                 'platform_theme_light_logo_login',
                 'platform_map_tile_server_dark',
                 'platform_map_tile_server_light',
@@ -756,10 +764,31 @@ const Settings = () => {
                               }
                             />
                             <Field
+                                component={TextField}
+                                variant="standard"
+                                name="platform_theme_dark_logo_collapsed"
+                                label={t('Logo URL (collapsed)')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={(name) => handleChangeFocus(id, name)}
+                                onSubmit={(name, value) => handleSubmitField(id, name, value)
+                                }
+                                helperText={
+                                  <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_theme_dark_logo_collapsed"
+                                  />
+                                }
+                            />
+                            <Field
                               component={TextField}
                               variant="standard"
                               name="platform_theme_dark_logo_login"
-                              label={t('Logo URL for login page')}
+                              label={t('Logo URL (login)')}
                               placeholder={t('Default')}
                               InputLabelProps={{
                                 shrink: true,
@@ -941,10 +970,31 @@ const Settings = () => {
                               }
                             />
                             <Field
+                                component={TextField}
+                                variant="standard"
+                                name="platform_theme_light_logo_collapsed"
+                                label={t('Logo URL (collapsed)')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={(name) => handleChangeFocus(id, name)}
+                                onSubmit={(name, value) => handleSubmitField(id, name, value)
+                                }
+                                helperText={
+                                  <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_theme_light_logo_collapsed"
+                                  />
+                                }
+                            />
+                            <Field
                               component={TextField}
                               variant="standard"
                               name="platform_theme_light_logo_login"
-                              label={t('Logo URL for login page')}
+                              label={t('Logo URL (login)')}
                               placeholder={t('Default')}
                               InputLabelProps={{
                                 shrink: true,

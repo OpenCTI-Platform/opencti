@@ -15,7 +15,6 @@ import DataComponentPopover from './DataComponentPopover';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import useAuth from '../../../../utils/hooks/useAuth';
 import { RootDataComponentQuery$data } from './__generated__/RootDataComponentQuery.graphql';
 import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
@@ -59,17 +58,19 @@ const dataComponentQuery = graphql`
 
 const RootDataComponent = () => {
   const { dataComponentId } = useParams() as { dataComponentId: string };
-  const { me } = useAuth();
-
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootDataComponentSubscription>>(() => ({
-    subscription,
-    variables: { id: dataComponentId },
-  }), [dataComponentId]);
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootDataComponentSubscription>
+  >(
+    () => ({
+      subscription,
+      variables: { id: dataComponentId },
+    }),
+    [dataComponentId],
+  );
   useSubscription(subConfig);
-
   return (
     <div>
-      <TopBar me={me} />
+      <TopBar />
       <QueryRenderer
         query={dataComponentQuery}
         variables={{ id: dataComponentId }}
@@ -107,7 +108,11 @@ const RootDataComponent = () => {
                       <React.Fragment>
                         <StixDomainObjectHeader
                           stixDomainObject={props.dataComponent}
-                          PopoverComponent={<DataComponentPopover dataComponentId={dataComponentId} />}
+                          PopoverComponent={
+                            <DataComponentPopover
+                              dataComponentId={dataComponentId}
+                            />
+                          }
                         />
                         <FileManager
                           {...routeProps}
@@ -126,7 +131,11 @@ const RootDataComponent = () => {
                       <React.Fragment>
                         <StixDomainObjectHeader
                           stixDomainObject={props.dataComponent}
-                          PopoverComponent={<DataComponentPopover dataComponentId={dataComponentId} />}
+                          PopoverComponent={
+                            <DataComponentPopover
+                              dataComponentId={dataComponentId}
+                            />
+                          }
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
