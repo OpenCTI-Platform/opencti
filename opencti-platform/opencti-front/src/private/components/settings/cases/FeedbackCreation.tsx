@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
+import { SimpleFileUpload } from 'formik-mui';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -75,10 +76,11 @@ const caseValidation = () => Yup.object().shape({
   rating: Yup.number(),
 });
 
-interface CaseAddInput {
+interface FormikCaseAddInput {
   description: string,
   rating: number,
   objects: { value: string }[],
+  file: File | undefined,
 }
 
 const FeedbackCreation: FunctionComponent<{
@@ -93,7 +95,7 @@ const FeedbackCreation: FunctionComponent<{
   const { me } = useAuth();
   const [commit] = useMutation(caseMutation);
 
-  const onSubmit: FormikConfig<CaseAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues : FeedbackCreationMutation$variables['input'] = {
       name: `Feedback from ${me.user_email}`,
       type: 'feedback',
@@ -101,6 +103,9 @@ const FeedbackCreation: FunctionComponent<{
       rating: parseInt(String(values.rating), 6),
       objects: values.objects.map((o) => o.value),
     };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
     commit({
       variables: {
         input: finalValues,
@@ -137,7 +142,7 @@ const FeedbackCreation: FunctionComponent<{
           <Typography variant="h6">{t('Submit a Feedback')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<CaseAddInput>
+          <Formik<FormikCaseAddInput>
             initialValues={{
               rating: 5,
               description: '',
