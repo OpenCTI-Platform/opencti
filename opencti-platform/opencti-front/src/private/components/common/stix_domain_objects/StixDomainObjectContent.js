@@ -14,6 +14,7 @@ import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
 import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -56,7 +57,6 @@ const styles = () => ({
     maxHeight: 'calc(100vh - 240px)',
     display: 'flex',
     justifyContent: 'center',
-    position: 'relative',
   },
   adjustedContainer: {
     margin: '15px 0 0 0',
@@ -505,6 +505,7 @@ class StixDomainObjectContentComponent extends Component {
                   <Page
                     key={`page_${index + 1}`}
                     pageNumber={index + 1}
+                    height={height}
                     scale={this.state.pdfViewerZoom}
                   />
                 ))}
