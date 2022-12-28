@@ -59,7 +59,7 @@ type DataSource implements BasicObject & LifecycleObject {
   auto: Boolean!
   "Identifies the types of information represented in the ingested data"
   scope: [String]
-  "Indicates the frequency at which the Connector should attempt to ingest data from an externa source"
+  "Indicates the frequency at which the Connector should attempt to ingest data from an external source"
   update_frequency: FrequencyTiming!
   "Identifies the Information Exchange Policy that must be applied to any data ingested."
   iep: IEPMarking
@@ -100,7 +100,16 @@ input DataSourceInput {
 """
 ConnectionInformation contains the information necessary to successfully make a connection to the external source.
 """
-type ConnectionInformation {
+type ConnectionInformation implements BasicObject {
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # Connection Information
   "Identifies the name of the connection"
   name: String!
   "Identifies the name used to display to users"
@@ -112,11 +121,11 @@ type ConnectionInformation {
   "Indicates the name of the host or IP address of the connection"
   host: String!
   "Indications the port number to be used by the connection"
-  port: Int!
+  port: Int
   "Indicates the query or body to be used by the connection on subsequent queries."
-  query: String
+  query: String!
   "Indicates the query or body to be used by the connection on an initial retrieval or reset."
-  query_initial: String
+  query_initial: String!
   "Indicates the field/header to be used as the value of the index when required to make multiple queries to pagination through larger result sets."
   query_index_field: String
   "Indicates the required minimum time, in seconds, between consecutive queries."
@@ -176,7 +185,7 @@ enum DataSourceStatus {
   ACTIVE
   "Indicates the data source is Inactive"
   INACTIVE
-  "Indicates the data source isnot applicable"
+  "Indicates the data source is not applicable"
   NOT_APPLICABLE
 }
 
