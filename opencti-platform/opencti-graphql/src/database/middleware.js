@@ -77,6 +77,7 @@ import {
   STOP_TIME,
   VALID_FROM,
   VALID_UNTIL,
+  VALUE_FIELD,
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
@@ -1395,8 +1396,9 @@ const innerUpdateAttribute = (instance, rawInput) => {
   }
   return updatedInputs;
 };
-const prepareAttributes = (instanceType, elements) => {
-  return R.map((input) => {
+const prepareAttributes = (instance, elements) => {
+  const instanceType = instance.entity_type;
+  return elements.map((input) => {
     // Check integer
     if (R.includes(input.key, numericAttributes)) {
       return {
@@ -1417,14 +1419,24 @@ const prepareAttributes = (instanceType, elements) => {
       };
     }
     // Specific case for Label
-    if (instanceType === ENTITY_TYPE_LABEL && input.key === 'value') {
+    if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
       return {
         key: input.key,
         value: input.value.map((v) => v.toLowerCase())
       };
     }
+    // Specific case for name in aliased entities
+    // If name change already inside aliases, name must be kep untouched
+    if (input.key === NAME_FIELD && isStixObjectAliased(instanceType)) {
+      const aliasField = resolveAliasesField(instanceType);
+      const name = normalizeName(input.value.at(0));
+      if ((instance[aliasField] ?? []).includes(name)) {
+        return null;
+      }
+    }
+    // No need to rework the input
     return input;
-  }, elements);
+  }).filter((i) => isNotEmptyField(i));
 };
 
 const getPreviousInstanceValue = (key, instance) => {
@@ -1454,7 +1466,7 @@ export const updateAttributeRaw = async (context, user, instance, inputs, opts =
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const instanceType = instance.entity_type;
   // Prepare attributes
-  const preparedElements = prepareAttributes(instanceType, elements);
+  const preparedElements = prepareAttributes(instance, elements);
   // region Check date range
   const inputKeys = inputs.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
