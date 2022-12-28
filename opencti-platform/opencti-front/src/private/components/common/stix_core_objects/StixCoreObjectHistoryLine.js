@@ -278,6 +278,8 @@ class StixCoreObjectHistoryLineComponent extends Component {
     return (
       <Avatar
         style={{
+          width: 30,
+          height: 30,
           backgroundColor: yellow[800],
           color: '#ffffff',
           cursor: commit ? 'pointer' : 'auto',
