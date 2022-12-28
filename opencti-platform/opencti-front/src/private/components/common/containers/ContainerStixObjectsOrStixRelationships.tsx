@@ -34,7 +34,7 @@ const useStyles = makeStyles(() => ({
 interface ContainerStixObjectsOrStixRelationshipsComponentProps {
   isSupportParticipation: boolean,
   container: ContainerStixObjectsOrStixRelationships_container$data,
-  paginationOptions: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
+  paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
 }
 
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<ContainerStixObjectsOrStixRelationshipsComponentProps> = ({

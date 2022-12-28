@@ -230,6 +230,7 @@ import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabu
 import {
   getVocabulariesCategories,
   getVocabularyCategoryForField,
+  isEntityFieldAnOpenVocabulary,
   updateElasticVocabularyValue
 } from '../modules/vocabulary/vocabulary-utils';
 
@@ -629,12 +630,14 @@ const inputResolveRefs = async (context, user, input, type) => {
   let forceAliases = false;
   const dependencyKeys = depsKeys();
   for (let index = 0; index < dependencyKeys.length; index += 1) {
-    const { src, dst } = dependencyKeys[index];
+    const { src, dst, types } = dependencyKeys[index];
+    const depTypes = types ?? [];
     const destKey = dst || src;
     const id = input[src];
-    if (!R.isNil(id) && !R.isEmpty(id)) {
+    const isValidType = depTypes.length > 0 ? depTypes.includes(type) : true;
+    if (isValidType && !R.isNil(id) && !R.isEmpty(id)) {
       const isListing = Array.isArray(id);
-      const hasOpenVocab = Object.values(vocabularyDefinitions).some(({ fields }) => fields.some(({ key }) => key === src));
+      const hasOpenVocab = isEntityFieldAnOpenVocabulary(destKey, type);
       // Handle specific case of object label that can be directly the value instead of the key.
       if (src === INPUT_LABELS) {
         const elements = R.uniq(id.map((label) => idLabel(label)))

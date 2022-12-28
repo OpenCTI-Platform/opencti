@@ -64,7 +64,8 @@ const STIX_DOMAIN_OBJECT_CONTAINERS: Array<string> = [
 
 schemaTypes.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
 export const isStixDomainObjectContainer = (type: string): boolean => {
-  return R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
+  const containerEntities = schemaTypes.get(ENTITY_TYPE_CONTAINER);
+  return R.includes(type, containerEntities) || type === ENTITY_TYPE_CONTAINER;
 };
 
 const STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS: Array<string> = [

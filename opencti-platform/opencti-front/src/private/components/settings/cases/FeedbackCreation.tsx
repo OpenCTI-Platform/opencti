@@ -9,20 +9,15 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import Rating, { IconContainerProps } from '@mui/material/Rating';
-import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
-import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
-import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
-import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined';
-import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
-import { styled } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import { MESSAGING$ } from '../../../../relay/environment';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import RatingField from '../../../../components/RatingField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -67,45 +62,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const StyledRating = styled(Rating)(({ theme }) => ({
-  '& .MuiRating-iconEmpty .MuiSvgIcon-root': {
-    color: theme.palette.action.disabled,
-  },
-}));
-
-export const customIcons: {
-  [index: string]: {
-    icon: React.ReactElement;
-    label: string;
-  };
-} = {
-  1: {
-    icon: <SentimentVeryDissatisfiedIcon color="error" />,
-    label: 'Very Dissatisfied',
-  },
-  2: {
-    icon: <SentimentDissatisfiedIcon color="error" />,
-    label: 'Dissatisfied',
-  },
-  3: {
-    icon: <SentimentSatisfiedIcon color="warning" />,
-    label: 'Neutral',
-  },
-  4: {
-    icon: <SentimentSatisfiedAltIcon color="success" />,
-    label: 'Satisfied',
-  },
-  5: {
-    icon: <SentimentVerySatisfiedIcon color="success" />,
-    label: 'Very Satisfied',
-  },
-};
-
-export function IconContainer(props: IconContainerProps) {
-  const { value, ...other } = props;
-  return <span {...other}>{customIcons[value].icon}</span>;
-}
-
 const caseMutation = graphql`
   mutation FeedbackCreationMutation($input: CaseAddInput!) {
     caseAdd(input: $input) {
@@ -114,17 +70,15 @@ const caseMutation = graphql`
   }
 `;
 
-const caseValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+const caseValidation = () => Yup.object().shape({
   description: Yup.string().nullable(),
   rating: Yup.number(),
 });
 
 interface CaseAddInput {
-  name: string,
   description: string,
   rating: number,
-  objects: [],
+  objects: { value: string }[],
 }
 
 const FeedbackCreation: FunctionComponent<{
@@ -136,21 +90,16 @@ const FeedbackCreation: FunctionComponent<{
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
+  const { me } = useAuth();
   const [commit] = useMutation(caseMutation);
 
-  const onSubmit: FormikConfig<CaseAddInput>['onSubmit'] = (
-    values,
-    {
-      setSubmitting,
-      resetForm,
-    },
-  ) => {
+  const onSubmit: FormikConfig<CaseAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues : FeedbackCreationMutation$variables['input'] = {
-      name: values.name,
+      name: `Feedback from ${me.user_email}`,
       type: 'feedback',
       description: values.description,
       rating: parseInt(String(values.rating), 6),
+      objects: values.objects.map((o) => o.value),
     };
     commit({
       variables: {
@@ -190,12 +139,11 @@ const FeedbackCreation: FunctionComponent<{
         <div className={classes.container}>
           <Formik<CaseAddInput>
             initialValues={{
-              name: '',
-              description: '',
               rating: 5,
+              description: '',
               objects: [],
             }}
-            validationSchema={caseValidation(t)}
+            validationSchema={caseValidation()}
             onSubmit={onSubmit}
             onReset={handleCloseDrawer}
           >
@@ -207,12 +155,8 @@ const FeedbackCreation: FunctionComponent<{
               values,
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
+                <RatingField rating={values.rating} size="large"
+                  handleOnChange={(newValue) => { setFieldValue('rating', newValue); }}
                 />
                 <Field
                   component={MarkDownField}
@@ -221,40 +165,26 @@ const FeedbackCreation: FunctionComponent<{
                   fullWidth={true}
                   multiline={true}
                   rows="4"
-                  style={{ marginTop: 20 }}
-                />
-                <StyledRating
-                  name='highlight-selected-only'
-                  value={values.rating}
-                  IconContainerComponent={IconContainer}
-                  onChange={(_, newValue) => {
-                    setFieldValue('rating', newValue);
-                  }}
-                  highlightSelectedOnly
-                  style={{ marginTop: 20 }}
+                  style={fieldSpacingContainerStyle}
                 />
                 <StixCoreObjectsField
                   name="objects"
-                  style={{ width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.objects}
                 />
                 <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
+                  <Button variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                    classes={{ root: classes.button }}>
                     {t('Cancel')}
                   </Button>
-                  <Button
-                    variant="contained"
+                  <Button variant="contained"
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                    classes={{ root: classes.button }}>
                     {t('Create')}
                   </Button>
                 </div>

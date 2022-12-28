@@ -4,11 +4,6 @@ import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined, StreamOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
-import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/hooks/useGranted';
 import { Theme } from '../../../components/Theme';
 
 const styles = makeStyles<Theme>((theme) => ({

@@ -8,7 +8,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseDetails_case$data, CaseDetails_case$key } from './__generated__/CaseDetails_case.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import { IconContainer, StyledRating } from './FeedbackCreation';
+import RatingField from '../../../../components/RatingField';
 
 const styles = makeStyles(() => ({
   paper: {
@@ -82,13 +82,7 @@ const CaseDetails: FunctionComponent<CaseDetailsProps> = ({ caseData }) => {
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>{t('Rating')}</Typography>
-            <StyledRating
-              name='highlight-selected-only'
-              value={data.rating}
-              IconContainerComponent={IconContainer}
-              highlightSelectedOnly
-              readOnly
-            />
+            <RatingField rating={data.rating} size="small" readOnly={true} />
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>{t('Priority')}</Typography>

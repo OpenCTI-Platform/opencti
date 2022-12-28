@@ -5,12 +5,13 @@ import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
 import caseResolvers from './case-resolvers';
 import { ENTITY_TYPE_CONTAINER_CASE, StoreEntityCase } from './case-types';
+import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 
 const CASE_DEFINITION: ModuleDefinition<StoreEntityCase> = {
   type: {
     id: 'cases',
     name: ENTITY_TYPE_CONTAINER_CASE,
-    category: 'StixDomainEntity',
+    category: ENTITY_TYPE_CONTAINER,
     aliased: false
   },
   graphql: {

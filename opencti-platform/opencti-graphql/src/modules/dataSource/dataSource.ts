@@ -6,12 +6,13 @@ import dataSourceResolvers from './dataSource-resolvers';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import convertDataSourceToStix from './dataSource-converter';
 import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource> = {
   type: {
     id: 'datasources',
     name: ENTITY_TYPE_DATA_SOURCE,
-    category: 'StixDomainEntity',
+    category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
   graphql: {

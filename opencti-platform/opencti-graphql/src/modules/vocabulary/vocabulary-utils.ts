@@ -1002,6 +1002,12 @@ export const getVocabulariesCategories = (): VocabularyDefinition[] => {
     .sort();
 };
 
+export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: string) => {
+  return Object.entries(vocabularyDefinitions)
+    .filter(([, { entity_types }]) => entity_types.includes(entityType))
+    .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName)).length > 0;
+};
+
 export const getVocabularyCategoryForField = (fieldName: string, entityType: string) => {
   const categories = Object.entries(vocabularyDefinitions)
     .filter(([, { entity_types }]) => entity_types.includes(entityType))

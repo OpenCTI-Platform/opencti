@@ -7,6 +7,7 @@ import { Case_case$key } from './__generated__/Case_case.graphql';
 import CasePopover from './CasePopover';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -70,6 +71,7 @@ const caseFragment = graphql`
     workflowEnabled
     ...CaseDetails_case
     ...ContainerHeader_container
+    ...ContainerStixObjectsOrStixRelationships_container
   }
 `;
 
@@ -97,12 +99,10 @@ const CaseComponent:FunctionComponent<CaseProps> = ({ data }) => {
           <StixDomainObjectOverview stixDomainObject={caseData} />
         </Grid>
       </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }} style={{ marginTop: 25 }}>
+        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+          <ContainerStixObjectsOrStixRelationships isSupportParticipation={false} container={caseData} />
+        </Grid>
       </Grid>
     </div>
   );

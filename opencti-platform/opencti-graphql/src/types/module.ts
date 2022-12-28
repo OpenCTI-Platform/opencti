@@ -4,7 +4,14 @@ import { registerStixDomainConverter, registerStixMetaConverter } from '../datab
 import { registerStixDomainAliased, registerStixDomainType, resolveAliasesField } from '../schema/stixDomainObject';
 import { registerGraphqlSchema } from '../graphql/schema';
 import { registerModelIdentifier } from '../schema/identifier';
-import { ABSTRACT_STIX_META_OBJECT, DEPS_KEYS, schemaTypes, STIX_META_RELATIONSHIPS_INPUTS } from '../schema/general';
+import {
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_OBJECT,
+  DEPS_KEYS,
+  ENTITY_TYPE_CONTAINER,
+  schemaTypes,
+  STIX_META_RELATIONSHIPS_INPUTS
+} from '../schema/general';
 import {
   booleanAttributes,
   dateAttributes,
@@ -35,7 +42,7 @@ export interface ModuleDefinition<T extends StoreEntity> {
     id: string;
     name: string;
     aliased: boolean;
-    category: string;
+    category: 'Container' | 'Stix-Domain-Object' | 'Stix-Meta-Object';
   };
   graphql: {
     schema: any,
@@ -67,7 +74,7 @@ export interface ModuleDefinition<T extends StoreEntity> {
     checker: (fromType: string, toType: string) => boolean;
   }>;
   converter: ConvertFn<T>;
-  depsKeys?: string[]
+  depsKeys?: { src: string, types?: string[] }[]
 }
 
 export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefinition<T>) => {
@@ -77,7 +84,12 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
     // Register types
   if (definition.type.category) {
     switch (definition.type.category) {
-      case 'StixDomainEntity':
+      case ENTITY_TYPE_CONTAINER:
+        schemaTypes.add(ENTITY_TYPE_CONTAINER, definition.type.name);
+        registerStixDomainType(definition.type.name);
+        registerStixDomainConverter(definition.type.name, definition.converter);
+        break;
+      case ABSTRACT_STIX_DOMAIN_OBJECT:
         registerStixDomainType(definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter);
         break;
@@ -102,13 +114,13 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   if (definition.type.aliased) {
     attributes.push(...[resolveAliasesField(definition.type.name), 'i_aliases_ids']);
   }
-  if (definition.type.category === 'StixDomainEntity') {
+  if (definition.type.category === ABSTRACT_STIX_DOMAIN_OBJECT) {
     attributes.push(...['x_opencti_stix_ids', 'revoked', 'confidence', 'lang']);
   }
   schemaTypes.registerAttributes(definition.type.name, attributes);
   // Register upsert attributes
   const upsertAttributes = definition.attributes.filter((attr) => attr.upsert).map((attr) => attr.name);
-  if (definition.type.category === 'StixDomainEntity') {
+  if (definition.type.category === ABSTRACT_STIX_DOMAIN_OBJECT) {
     upsertAttributes.push(...['x_opencti_stix_ids', 'revoked', 'confidence']);
   }
   schemaTypes.registerUpsertAttributes(definition.type.name, upsertAttributes);
@@ -123,7 +135,7 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   jsonAttributes.push(...attrsForType('json')); // --- jsonAttributes
 
   // Register dependency keys for input resolved refs
-  schemaTypes.add(DEPS_KEYS, (definition.depsKeys ?? []).map((src) => ({ src })));
+  schemaTypes.add(DEPS_KEYS, definition.depsKeys ?? []);
 
   // Register relations
   definition.relations.forEach((source) => {

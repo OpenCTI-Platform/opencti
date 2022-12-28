@@ -5,12 +5,13 @@ import languageResolvers from './language-resolver';
 import { ENTITY_TYPE_LANGUAGE, StoreEntityLanguage } from './language-types';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage> = {
   type: {
     id: 'languages',
     name: ENTITY_TYPE_LANGUAGE,
-    category: 'StixDomainEntity',
+    category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
   graphql: {

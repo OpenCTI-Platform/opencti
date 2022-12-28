@@ -17,6 +17,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
+import RatingField from '../../../../components/RatingField';
 
 const caseMutationFieldPatch = graphql`
   mutation CaseEditionOverviewFieldPatchMutation(
@@ -177,7 +178,7 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[]) => {
+  const handleSubmitField = (name: string, value: Option | string | string[] | null) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
@@ -285,6 +286,10 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
             style={fieldSpacingContainerStyle}
             helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             onChange={editor.changeMarking}
+          />
+          <RatingField rating={caseData.rating} size="small"
+            style={fieldSpacingContainerStyle}
+            handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))}
           />
         </Form>
       )}
