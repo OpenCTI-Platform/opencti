@@ -142,6 +142,7 @@ const FeedbackCreation: FunctionComponent<{
               rating: 5,
               description: '',
               objects: [],
+              file: undefined,
             }}
             validationSchema={caseValidation()}
             onSubmit={onSubmit}
@@ -172,6 +173,20 @@ const FeedbackCreation: FunctionComponent<{
                   style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.objects}
+                />
+                <Field
+                  component={SimpleFileUpload}
+                  name="file"
+                  label={t('Associated file')}
+                  FormControlProps={{
+                    style: { marginTop: 20, width: '100%' },
+                  }}
+                  InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                  InputProps={{
+                    fullWidth: true,
+                    variant: 'standard',
+                  }}
+                  fullWidth={true}
                 />
                 <div className={classes.buttons}>
                   <Button variant="contained"

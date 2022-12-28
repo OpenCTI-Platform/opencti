@@ -74,6 +74,26 @@ const TopMenuCase: FunctionComponent = () => {
       </Button>
         <Button
           component={Link}
+          to={`/dashboard/settings/managements/feedback/${caseId}/content`}
+          variant={
+            location.pathname
+            === `/dashboard/settings/managements/feedback/${caseId}/content`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/settings/managements/feedback/${caseId}/content`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Content')}
+        </Button>
+        <Button
+          component={Link}
           to={`/dashboard/settings/managements/feedback/${caseId}/files`}
           variant={
             location.pathname

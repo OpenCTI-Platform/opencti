@@ -211,6 +211,7 @@ input CaseAddInput {
   createdBy: String
   created: DateTime
   modified: DateTime
+  file: Upload
 }
 
 type Mutation {

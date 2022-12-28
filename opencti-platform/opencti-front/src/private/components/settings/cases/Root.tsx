@@ -18,6 +18,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import FileManager from '../../common/files/FileManager';
 import CasePopover from './CasePopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 
 const subscription = graphql`
   subscription RootCasesSubscription($id: ID!) {
@@ -43,6 +44,7 @@ const caseQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixDomainObjectContent_stixDomainObject
     }
     connectorsForExport {
       ...FileManager_connectorsExport
@@ -83,6 +85,23 @@ const RootCaseComponent = ({ queryRef }) => {
                 <Redirect
                   to={`/dashboard/settings/managements/feedback/${caseId}/knowledge/overview`}
                 />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/settings/managements/feedback/:caseId/content"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <ContainerHeader
+                    container={caseData}
+                    PopoverComponent={<CasePopover id={caseData.id} />}
+                    disableSharing={true}
+                  />
+                  <StixDomainObjectContent
+                    {...routeProps}
+                    stixDomainObject={caseData}
+                  />
+                </React.Fragment>
               )}
             />
             <Route

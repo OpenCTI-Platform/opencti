@@ -1548,6 +1548,7 @@ export type CaseAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
