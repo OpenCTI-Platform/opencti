@@ -1837,16 +1837,18 @@ type Risk implements BasicObject & LifecycleObject & OscalObject {
   risk_log(first: Int, offset: Int): RiskLogEntryConnection
   "Relates the finding to a set of referenced observations that were used to determine the risk.  This would be the Component in which the risk exists and the InventoryItem(s) in which theComponent is installed"
   related_observations(first: Int, offset: Int): ObservationConnection
-  "Identifies that the risk has been confirmed to be a false positive."
-  false_positive: Boolean
-  "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
+  "Identifies a deviation that the risk cannot be remediated without impact to the system and must be accepted."
   accepted: Boolean
-  "Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk."
+  "Identifies a deviation that the risk has been confirmed to be a false positive."
+  false_positive: Boolean
+  "Identifies a deviation that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk."
   risk_adjusted: Boolean
-  "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
-  priority: PositiveInt
+  "Identifies the justification for a requested deviation such as such as false positive, risk reduction, or operational requirement"
+  justification: String
   "Identifies that a vendor resolution is pending, but not yet available."
   vendor_dependency: Boolean
+  "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
+  priority: PositiveInt
   "Identifies a control impacted by this risk."
   impacted_control_id: String
   # Risk Response
@@ -1871,16 +1873,18 @@ input RiskAddInput {
   risk_status: RiskStatus!
   "Identifies the date/time by which the risk must be resolved."
   deadline: Timestamp
-  "Identifies that the risk has been confirmed to be a false positive."
-  false_positive: Boolean = false
-  "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
+  "Identifies a deviation that the risk cannot be remediated without impact to the system and must be accepted."
   accepted: Boolean = false
-  "Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk."
+  "Identifies a deviation that the risk has been confirmed to be a false positive."
+  false_positive: Boolean = false
+  "Identifies a deviation that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk."
   risk_adjusted: Boolean = false
-  "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
-  priority: PositiveInt
+  "Identifies the justification for a requested deviation such as such as false positive, risk reduction, or operational requirement"
+  justification: String
   "Identifies that a vendor resolution is pending, but not yet available."
   vendor_dependency: Boolean = false
+  "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
+  priority: PositiveInt
   "Identifies a control impacted by this risk."
   impacted_control_id: String
 }

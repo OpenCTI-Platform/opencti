@@ -232,18 +232,11 @@ export const updateQuery = (iri, type, input, predicateMap) => {
     }
     let itr;
     for(itr of value) {
-      if (key === 'description' || key === 'statement') {
+      if (key === 'description' || key === 'statement' || key === 'justification') {
         // escape any special characters (e.g., newline)
-        if (key === 'description') {
-          if (itr.includes('\n')) itr = itr.replace(/\n/g, '\\n');
-          if (itr.includes('\"')) itr = itr.replace(/\"/g, '\\"');
-          if (itr.includes("\'")) itr = itr.replace(/\'/g, "\\'");
-        }
-        if (key === 'statement') {
-          if (itr.includes('\n')) itr = itr.replace(/\n/g, '\\n');
-          if (itr.includes('\"')) itr = itr.replace(/\"/g, '\\"');
-          if (itr.includes("\'")) itr = itr.replace(/\'/g, "\\'");
-        }
+        if (itr.includes('\n')) itr = itr.replace(/\n/g, '\\n');
+        if (itr.includes('\"')) itr = itr.replace(/\"/g, '\\"');
+        if (itr.includes("\'")) itr = itr.replace(/\'/g, "\\'");
       }
       let predicate = predicateMap[key].binding(`<${iri}>`, itr) + ' .';
 
