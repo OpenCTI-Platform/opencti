@@ -437,7 +437,7 @@ const StixCyberObservableCreation = ({ contextual, open, handleClose, type, disp
             return (
               <Formik
                 initialValues={initialValues}
-                validationSchema={stixCyberObservableValidation(t)}
+                validationSchema={stixCyberObservableValidation()}
                 onSubmit={onSubmit}
                 onReset={onReset}
               >
