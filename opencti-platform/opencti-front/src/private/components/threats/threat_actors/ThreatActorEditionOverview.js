@@ -15,7 +15,11 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 
 const threatActorMutationFieldPatch = graphql`
@@ -239,7 +243,7 @@ class ThreatActorEditionOverviewComponent extends Component {
     return (
       <Formik
         enableReinitialize={true}
-        initialValues={initialValues}
+        initialValues={{ ...initialValues, references: [] }}
         validationSchema={threatActorValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >

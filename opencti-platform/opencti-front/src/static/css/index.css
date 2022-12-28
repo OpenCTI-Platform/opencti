@@ -106,7 +106,3 @@ div.markdown p:last-child {
 input[type="file"] {
   width: 100% !important;
 }
-
-.react-pdf__Page__canvas {
-  margin: 0 auto !important;
-}
