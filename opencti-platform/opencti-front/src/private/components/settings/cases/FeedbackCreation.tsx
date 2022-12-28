@@ -80,7 +80,7 @@ interface FormikCaseAddInput {
   description: string,
   rating: number,
   objects: { value: string }[],
-  file: File | undefined,
+  file: File | undefined
 }
 
 const FeedbackCreation: FunctionComponent<{
