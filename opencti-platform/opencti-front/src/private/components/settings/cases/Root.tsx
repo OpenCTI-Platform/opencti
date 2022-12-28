@@ -14,6 +14,10 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Case from './Case';
 import { RootCasesSubscription } from './__generated__/RootCasesSubscription.graphql';
 import { RootCaseQuery } from './__generated__/RootCaseQuery.graphql';
+import ContainerHeader from '../../common/containers/ContainerHeader';
+import FileManager from '../../common/files/FileManager';
+import CasePopover from './CasePopover';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootCasesSubscription($id: ID!) {
@@ -21,6 +25,10 @@ const subscription = graphql`
       ... on Case {
         ...Case_case
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
     }
   }
 `;
@@ -28,7 +36,19 @@ const subscription = graphql`
 const caseQuery = graphql`
   query RootCaseQuery($id: String!) {
     case(id: $id) {
+      id
+      name
       ...Case_case
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
+    }
+    connectorsForImport {
+      ...FileManager_connectorsImport
     }
   }
 `;
@@ -43,7 +63,7 @@ const RootCaseComponent = ({ queryRef }) => {
   }), [caseId]);
   useSubscription(subConfig);
 
-  const { case: caseData } = usePreloadedQuery<RootCaseQuery>(caseQuery, queryRef);
+  const { case: caseData, connectorsForExport, connectorsForImport } = usePreloadedQuery<RootCaseQuery>(caseQuery, queryRef);
 
   return (
     <div>
@@ -63,6 +83,45 @@ const RootCaseComponent = ({ queryRef }) => {
                 <Redirect
                   to={`/dashboard/settings/managements/feedback/${caseId}/knowledge/overview`}
                 />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/settings/managements/feedback/:caseId/files"
+              render={(routeProps: any) => (
+                <React.Fragment>
+                  <ContainerHeader
+                    container={caseData}
+                    PopoverComponent={<CasePopover id={caseData.id} />}
+                    enableSuggestions={false}
+                    disableSharing={true}
+                  />
+                  <FileManager
+                    {...routeProps}
+                    id={caseId}
+                    connectorsExport={connectorsForExport}
+                    connectorsImport={connectorsForImport}
+                    entity={caseData}
+                  />
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/settings/managements/feedback/:caseId/history"
+              render={(routeProps: any) => (
+                <React.Fragment>
+                  <ContainerHeader
+                    container={caseData}
+                    PopoverComponent={<CasePopover id={caseData.id} />}
+                    enableSuggestions={false}
+                    disableSharing={true}
+                  />
+                  <StixCoreObjectHistory
+                    {...routeProps}
+                    stixCoreObjectId={caseId}
+                  />
+                </React.Fragment>
               )}
             />
           </Switch>

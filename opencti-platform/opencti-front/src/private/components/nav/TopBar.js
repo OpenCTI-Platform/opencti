@@ -71,6 +71,7 @@ import TopMenuLocation from './TopMenuLocation';
 import TopMenuDataComponent from './TopMenuDataComponent';
 import TopMenuDataSource from './TopMenuDataSource';
 import FeedbackCreation from '../settings/cases/FeedbackCreation';
+import TopMenuCase from "./TopMenuCase";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -342,6 +343,9 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
+          )}
+          {location.pathname.includes('/dashboard/settings/managements/feedback') && (
+            <TopMenuCase />
           )}
           {location.pathname.includes('/dashboard/workspaces/dashboards') && (
             <TopMenuWorkspacesDashboards />
