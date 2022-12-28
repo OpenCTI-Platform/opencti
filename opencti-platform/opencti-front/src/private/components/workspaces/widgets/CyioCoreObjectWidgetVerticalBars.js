@@ -246,7 +246,6 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
                         border: '1px solid #06102D',
                         borderRadius: 10,
                       }}
-                      labelFormatter={md}
                     />
                     <Bar
                       // fill={theme.palette.primary.main}
