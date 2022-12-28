@@ -1,22 +1,21 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
-import inject18n from '../../../components/i18n';
-import { ReceiptOutline } from "mdi-material-ui";
 import {
   CenterFocusStrongOutlined,
   GroupOutlined,
   PermIdentityOutlined,
   ReceiptOutlined,
-  Security
-} from "@mui/icons-material";
-import ListItemIcon from "@mui/material/ListItemIcon";
+  Security,
+} from '@mui/icons-material';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
   drawer: {

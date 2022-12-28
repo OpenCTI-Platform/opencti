@@ -2,12 +2,11 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import CaseDetails from './CaseDetails';
 import { Case_case$key } from './__generated__/Case_case.graphql';
 import CasePopover from './CasePopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import { CaseDetails_case$data } from './__generated__/CaseDetails_case.graphql';
+import ContainerHeader from '../../common/containers/ContainerHeader';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -21,12 +20,14 @@ const useStyles = makeStyles(() => ({
 const caseFragment = graphql`
   fragment Case_case on Case {
     id
+    name
     standard_id
     x_opencti_stix_ids
     created
     modified
     created_at
     rating
+    revoked
     description
     createdBy {
       ... on Identity {
@@ -57,7 +58,6 @@ const caseFragment = graphql`
         }
       }
     }
-    name
     x_opencti_stix_ids
     status {
       id
@@ -69,6 +69,7 @@ const caseFragment = graphql`
     }
     workflowEnabled
     ...CaseDetails_case
+    ...ContainerHeader_container
   }
 `;
 
@@ -82,19 +83,18 @@ const CaseComponent:FunctionComponent<CaseProps> = ({ data }) => {
 
   return (
     <div className={classes.container}>
-      <StixDomainObjectHeader
+      <ContainerHeader
+        container={caseData}
+        PopoverComponent={<CasePopover id={caseData.id} />}
+        enableSuggestions={false}
         disableSharing={true}
-        stixDomainObject={caseData}
-        isOpenctiAlias={false}
-        PopoverComponent={CasePopover}
       />
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <CaseDetails caseData={caseData}/>
+        </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <StixDomainObjectOverview stixDomainObject={caseData} />
         </Grid>
       </Grid>
       <Grid

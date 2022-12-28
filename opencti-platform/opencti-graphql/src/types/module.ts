@@ -112,6 +112,7 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
     upsertAttributes.push(...['x_opencti_stix_ids', 'revoked', 'confidence']);
   }
   schemaTypes.registerUpsertAttributes(definition.type.name, upsertAttributes);
+
   // Register attribute types
   dateAttributes.push(...attrsForType('date')); // --- dateAttributes
   numericAttributes.push(...attrsForType('numeric')); // --- numericAttributes
@@ -121,7 +122,8 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
   multipleAttributes.push(...multipleAttrs); // --- multipleAttributes
   jsonAttributes.push(...attrsForType('json')); // --- jsonAttributes
 
-  schemaTypes.register(DEPS_KEYS, (definition.depsKeys ?? []).map((src) => ({ src })));
+  // Register dependency keys for input resolved refs
+  schemaTypes.add(DEPS_KEYS, (definition.depsKeys ?? []).map((src) => ({ src })));
 
   // Register relations
   definition.relations.forEach((source) => {

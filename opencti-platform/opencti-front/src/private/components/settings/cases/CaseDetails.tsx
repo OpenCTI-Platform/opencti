@@ -7,8 +7,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseDetails_case$data, CaseDetails_case$key } from './__generated__/CaseDetails_case.graphql';
-import ItemStatus from '../../../../components/ItemStatus';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import { IconContainer, StyledRating } from './FeedbackCreation';
 
 const styles = makeStyles(() => ({
   paper: {
@@ -25,6 +25,9 @@ const CaseDetailsFragment = graphql`
     id
     name
     description
+    type
+    priority
+    severity
     rating
     created
     modified
@@ -61,7 +64,7 @@ interface CaseDetailsProps {
 }
 
 const CaseDetails: FunctionComponent<CaseDetailsProps> = ({ caseData }) => {
-  const { t, fldt } = useFormatter();
+  const { t } = useFormatter();
   const classes = styles();
 
   const data: CaseDetails_case$data = useFragment(CaseDetailsFragment, caseData);
@@ -73,70 +76,31 @@ const CaseDetails: FunctionComponent<CaseDetailsProps> = ({ caseData }) => {
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
-            </Typography>
-            {data.description && (
-              <ExpandableMarkdown
-                source={data.description}
-                limit={300}
-              />
-            )}
+          <Grid item={true} xs={6}>
+            <Typography variant="h3" gutterBottom={true}>{t('Type')}</Typography>
+            <ItemOpenVocab key="type" small={true} type="case_types_ov" value={data.type} />
           </Grid>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Rating')}
-              </Typography>
-              {data.rating}
-            </Grid>
-            <Grid item={true} xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
-              {t('Processing status')}
-            </Typography>
-            <ItemStatus
-              status={data?.status}
-              disabled={!data?.workflowEnabled}
+          <Grid item={true} xs={6}>
+            <Typography variant="h3" gutterBottom={true}>{t('Rating')}</Typography>
+            <StyledRating
+              name='highlight-selected-only'
+              value={data.rating}
+              IconContainerComponent={IconContainer}
+              highlightSelectedOnly
+              readOnly
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
-              {t('Creation date')}
-            </Typography>
-            {fldt(data.created)}
-          </Grid>
-            <Grid item={true} xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
-              {t('Modification date')}
-            </Typography>
-            {fldt(data.modified)}
+            <Typography variant="h3" gutterBottom={true}>{t('Priority')}</Typography>
+            <ItemOpenVocab key="type" small={true} type="case_priority_ov" value={data.priority} />
           </Grid>
           <Grid item={true} xs={6}>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-            >
-              {t('Creation date (in this platform)')}
-            </Typography>
-            {fldt(data.created_at)}
+            <Typography variant="h3" gutterBottom={true}>{t('Severity')}</Typography>
+            <ItemOpenVocab key="type" small={true} type="case_severity_ov" value={data.severity} />
           </Grid>
-          <Grid item={true} xs={6}>
-            <Typography
-                variant="h3"
-                gutterBottom={true}
-              >
-                {t('Creator')}
-              </Typography>
-              <ItemCreator creator={data.creator} />
+          <Grid item={true} xs={12}>
+            <Typography variant="h3" gutterBottom={true}>{t('Description')}</Typography>
+            {data.description && (<ExpandableMarkdown source={data.description} limit={300} />)}
           </Grid>
         </Grid>
       </Paper>

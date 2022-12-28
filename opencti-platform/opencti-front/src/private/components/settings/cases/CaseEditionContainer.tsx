@@ -79,7 +79,7 @@ const CaseEditionContainer: FunctionComponent<CaseEditionContainerProps> = ({ qu
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a status')}
+          {t('Update a case')}
         </Typography>
         <SubscriptionAvatars context={queryData.case.editContext} />
         <div className="clearfix" />

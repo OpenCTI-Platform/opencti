@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, Link, useLocation } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import {
   AccountCircleOutlined,
+  ContentPasteSearchOutlined,
   ExploreOutlined,
   InsertChartOutlined,
-  ContentPasteSearchOutlined,
 } from '@mui/icons-material';
 import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@mui/material/Menu';
@@ -58,11 +58,7 @@ import TopMenuProfile from './TopMenuProfile';
 import TopMenuTechniques from './TopMenuTechniques';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
-  EXPLORE,
-} from '../../../utils/hooks/useGranted';
+import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
@@ -74,7 +70,7 @@ import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
 import TopMenuDataComponent from './TopMenuDataComponent';
 import TopMenuDataSource from './TopMenuDataSource';
-import CaseCreation from '../settings/cases/CaseCreation';
+import FeedbackCreation from '../settings/cases/FeedbackCreation';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -504,7 +500,7 @@ const TopBar = ({
           </div>
         </div>
       </Toolbar>
-      <CaseCreation
+      <FeedbackCreation
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />

@@ -3,8 +3,9 @@ import { addCase, findAll, findById } from './case-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
 import {
+  stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
+  stixDomainObjectDelete, stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -31,6 +32,12 @@ const caseResolvers: Resolvers = {
     },
     caseFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+    },
+    caseRelationAdd: (_, { id, input }, context) => {
+      return stixDomainObjectAddRelation(context, context.user, id, input);
+    },
+    caseRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
     caseContextPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditContext(context, context.user, id, input);

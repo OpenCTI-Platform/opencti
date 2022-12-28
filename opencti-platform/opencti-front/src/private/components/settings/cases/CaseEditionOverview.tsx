@@ -1,15 +1,22 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { graphql, useFragment } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { CaseEditionOverview_case$key } from './__generated__/CaseEditionOverview_case.graphql';
+import TextField from '../../../../components/TextField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const caseMutationFieldPatch = graphql`
   mutation CaseEditionOverviewFieldPatchMutation(
@@ -42,6 +49,10 @@ const caseEditionOverviewFragment = graphql`
   fragment CaseEditionOverview_case on Case {
     id
     name
+    type
+    priority
+    severity
+    revoked
     description
     rating
     creator {
@@ -65,11 +76,51 @@ const caseEditionOverviewFragment = graphql`
       }
     }
     workflowEnabled
+    objectMarking {
+      edges {
+        node {
+          id
+          definition
+          definition_type
+        }
+      }
+    }
+  }
+`;
+
+const caseMutationRelationAdd = graphql`
+  mutation CaseEditionOverviewRelationAddMutation(
+    $id: ID!
+    $input: StixMetaRelationshipAddInput!
+  ) {
+    caseRelationAdd(id: $id, input: $input) {
+      from {
+        ...CaseEditionOverview_case
+      }
+    }
+  }
+`;
+
+const caseMutationRelationDelete = graphql`
+  mutation CaseEditionOverviewRelationDeleteMutation(
+    $id: ID!
+    $toId: StixRef!
+    $relationship_type: String!
+  ) {
+    caseRelationDelete(
+      id: $id
+      toId: $toId
+      relationship_type: $relationship_type
+    ) {
+      ...CaseEditionOverview_case
+    }
   }
 `;
 
 const caseValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  priority: Yup.string().nullable(),
+  severity: Yup.string().nullable(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -80,10 +131,10 @@ const caseValidation = (t: (v: string) => string) => Yup.object().shape({
 
 interface CaseEditionOverviewProps {
   caseRef: CaseEditionOverview_case$key,
-  context: ReadonlyArray<{
+  context: readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null> | null
+  } | null)[] | null
   enableReferences?: boolean
   handleClose: () => void
 }
@@ -101,32 +152,24 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
   const { t } = useFormatter();
   const caseData = useFragment(caseEditionOverviewFragment, caseRef);
 
+  const createdBy = convertCreatedBy(caseData);
+  const objectMarking = convertMarkings(caseData);
   const status = convertStatus(t, caseData);
 
-  const [commitFieldPatch] = useMutation(caseMutationFieldPatch);
-  const [commitEditionFocus] = useMutation(caseEditionOverviewFocus);
-
-  const handleChangeFocus = (name: string) => {
-    commitEditionFocus({
-      variables: {
-        id: caseData.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
+  const queries = {
+    fieldPatch: caseMutationFieldPatch,
+    relationAdd: caseMutationRelationAdd,
+    relationDelete: caseMutationRelationDelete,
+    editionFocus: caseEditionOverviewFocus,
   };
+  const editor = useFormEditor(caseData, enableReferences, queries);
 
   const onSubmit: FormikConfig<CaseEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const inputValues = Object.entries({
       x_opencti_workflow_id: values.x_opencti_workflow_id,
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
-
-    commitFieldPatch({
-      variables: {
-        id: caseData.id,
-        input: inputValues,
-      },
+    editor.fieldPatch({
+      variables: { id: caseData.id, input: inputValues },
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -143,7 +186,7 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
       caseValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitFieldPatch({
+          editor.fieldPatch({
             variables: {
               id: caseData.id,
               input: { key: name, value: finalValue || '' },
@@ -157,9 +200,13 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
   const initialValues = {
     name: caseData.name,
     description: caseData.description,
+    type: caseData.type,
+    priority: caseData.priority,
+    severity: caseData.severity,
     rating: caseData.rating,
-    status,
-    x_opencti_workflow_id: caseData.x_opencti_stix_ids,
+    createdBy,
+    objectMarking,
+    x_opencti_workflow_id: status,
   };
 
   return (
@@ -167,28 +214,78 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={caseValidation(t)}
-      onSubmit={onSubmit}
-    >
-      {({
-        setFieldValue,
-      }) => (
+      onSubmit={onSubmit}>
+      {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <OpenVocabField
+            label={t('Case priority')}
+            type="case_priority_ov"
+            name="priority"
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            variant="edit"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            editContext={context}
+          />
+          <OpenVocabField
+            label={t('Case severity')}
+            type="case_severity_ov"
+            name="severity"
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            variant="edit"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            editContext={context}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            style={fieldSpacingContainerStyle}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={fieldSpacingContainerStyle}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
+          />
           {caseData?.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Workflow Feedback"
-              onFocus={handleChangeFocus}
+              type="Case"
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
-              style={{ marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              }
+              style={fieldSpacingContainerStyle}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
+            onChange={editor.changeMarking}
+          />
         </Form>
       )}
     </Formik>

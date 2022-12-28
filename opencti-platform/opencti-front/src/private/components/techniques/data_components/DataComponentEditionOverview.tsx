@@ -214,16 +214,12 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
 
   const handleChangeObjectMarking = (name: string, values: Option[]) => {
     if (!enableReferences) {
-      const currentMarkingDefinitions = (dataComponent?.objectMarking?.edges ?? []).map((n) => ({
+      const currentMarkings = (dataComponent?.objectMarking?.edges ?? []).map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       }));
-
-      const added = values.filter((v) => !currentMarkingDefinitions.map((c) => c.value)
-        .includes(v.value));
-      const removed = currentMarkingDefinitions.filter((c) => !values.map((v) => v.value)
-        .includes(c.value));
-
+      const added = values.filter((v) => !currentMarkings.map((c) => c.value).includes(v.value));
+      const removed = currentMarkings.filter((c) => !values.map((v) => v.value).includes(c.value));
       if (added.length > 0) {
         commitRelationAdd({
           variables: {
@@ -235,7 +231,6 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
           },
         });
       }
-
       if (removed.length > 0) {
         commitRelationDelete({
           variables: {
@@ -261,11 +256,10 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
       ...otherValues,
       createdBy: values.createdBy?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
-    })
-      .map(([key, value]) => ({
-        key,
-        value: adaptFieldValue(value),
-      }));
+    }).map(([key, value]) => ({
+      key,
+      value: adaptFieldValue(value),
+    }));
 
     commitFieldPatch({
       variables: {

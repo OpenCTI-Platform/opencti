@@ -12,7 +12,6 @@ import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { CaseLine_node$key } from './__generated__/CaseLine_node.graphql';
 import ItemStatus from '../../../../components/ItemStatus';
-import { IconContainer, StyledRating } from './CaseCreation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {

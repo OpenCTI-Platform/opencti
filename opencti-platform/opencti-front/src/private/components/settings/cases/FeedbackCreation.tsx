@@ -20,8 +20,9 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
-import { CaseCreationMutation$variables } from './__generated__/CaseCreationMutation.graphql';
+import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import { MESSAGING$ } from '../../../../relay/environment';
+import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -106,7 +107,7 @@ export function IconContainer(props: IconContainerProps) {
 }
 
 const caseMutation = graphql`
-  mutation CaseCreationMutation($input: CaseAddInput!) {
+  mutation FeedbackCreationMutation($input: CaseAddInput!) {
     caseAdd(input: $input) {
       ...CaseLine_node
     }
@@ -123,9 +124,10 @@ interface CaseAddInput {
   name: string,
   description: string,
   rating: number,
+  objects: [],
 }
 
-const CaseCreation: FunctionComponent<{
+const FeedbackCreation: FunctionComponent<{
   openDrawer: boolean,
   handleCloseDrawer: () => void,
 }> = ({
@@ -144,8 +146,9 @@ const CaseCreation: FunctionComponent<{
       resetForm,
     },
   ) => {
-    const finalValues : CaseCreationMutation$variables['input'] = {
+    const finalValues : FeedbackCreationMutation$variables['input'] = {
       name: values.name,
+      type: 'feedback',
       description: values.description,
       rating: parseInt(String(values.rating), 6),
     };
@@ -190,6 +193,7 @@ const CaseCreation: FunctionComponent<{
               name: '',
               description: '',
               rating: 5,
+              objects: [],
             }}
             validationSchema={caseValidation(t)}
             onSubmit={onSubmit}
@@ -229,6 +233,12 @@ const CaseCreation: FunctionComponent<{
                   highlightSelectedOnly
                   style={{ marginTop: 20 }}
                 />
+                <StixCoreObjectsField
+                  name="objects"
+                  style={{ width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objects}
+                />
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"
@@ -257,4 +267,4 @@ const CaseCreation: FunctionComponent<{
   );
 };
 
-export default CaseCreation;
+export default FeedbackCreation;

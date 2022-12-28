@@ -11,7 +11,6 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-
   # Stix Core Object
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
@@ -83,7 +82,6 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-
   # Stix Domain Object
   revoked: Boolean!
   confidence: Int
@@ -91,7 +89,6 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-
   # Container
   objects(
     first: Int
@@ -115,9 +112,11 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-
   # Cases
   name: String!
+  type: String!
+  severity: String
+  priority: String
   description: String
   rating: Int!
   # Technical
@@ -126,7 +125,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -201,9 +200,13 @@ input CaseAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
+  type: String!
+  severity: String
+  priority: String
   rating: Int!
   description: String
   lang: String
+  objects: [String]
   objectMarking: [String]
   createdBy: String
   created: DateTime
@@ -213,6 +216,8 @@ input CaseAddInput {
 type Mutation {
   caseAdd(input: CaseAddInput!): Case @auth
   caseDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [SETTINGS_SETACCESSES])
+  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case @auth(for: [SETTINGS_SETACCESSES])
   caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [SETTINGS_SETACCESSES])
   caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [SETTINGS_SETACCESSES])
   caseContextClean(id: ID!): Case @auth(for: [SETTINGS_SETACCESSES])

@@ -2,6 +2,9 @@ enum VocabularyCategory {
   account_type_ov
   attack_motivation_ov
   attack_resource_level_ov
+  case_types_ov
+  case_severity_ov
+  case_priority_ov
   channel_types_ov
   collection_layers_ov
   event_type_ov

@@ -19,7 +19,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase> = {
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_CASE]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_CONTAINER_CASE]: [{ src: NAME_FIELD }, { src: 'type' }, { src: 'created' }]
     },
     resolvers: {
       name(data: object) {
@@ -30,6 +30,10 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase> = {
   attributes: [
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
+    { name: 'type', type: 'string', multiple: false, upsert: true },
+    { name: 'severity', type: 'string', multiple: false, upsert: true },
+    { name: 'priority', type: 'string', multiple: false, upsert: true },
+    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
     { name: 'rating', type: 'numeric', multiple: false, upsert: true },
   ],
   relations: [],

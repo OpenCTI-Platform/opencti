@@ -102,7 +102,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection
     exportFiles(first: Int): FileConnection
-    editContext: [EditUserContext]
+    editContext: [EditUserContext!]
     connectors(onlyAlive: Boolean): [Connector]
     jobs(first: Int): [Work]
     status: Status

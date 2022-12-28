@@ -6,6 +6,7 @@ import { READ_ENTITIES_INDICES } from '../../database/utils';
 
 export const builtInOv = [
   'pattern_type_ov',
+  'case_types_ov',
 ];
 
 export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string }>> = {
@@ -108,6 +109,23 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   // C
+  case_types_ov: [
+    { key: 'feedback', description: 'Give your feedback.' },
+    { key: 'incident', description: 'Open an incident' },
+    { key: 'rfi', description: 'Request for information' },
+  ],
+  case_severity_ov: [
+    { key: '01 - low', description: 'Low impact' },
+    { key: '02 - medium', description: 'Medium impact' },
+    { key: '03 - high', description: 'High impact' },
+    { key: '04 - critical', description: 'Critical impact' },
+  ],
+  case_priority_ov: [
+    { key: 'P1', description: 'Low priority' },
+    { key: 'P2', description: 'Medium priority' },
+    { key: 'P3', description: 'High priority' },
+    { key: 'P4', description: 'Critical priority' },
+  ],
   channel_types_ov: [
     { key: 'Twitter' },
     { key: 'Facebook' },
@@ -430,7 +448,6 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
       description:
         'Indicates that the malware instance or family is able to prevent itself from being disassembled or make disassembly more difficult.',
     },
-
     {
       key: 'anti-emulation',
       description:

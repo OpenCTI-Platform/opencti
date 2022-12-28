@@ -1366,7 +1366,8 @@ const checkAttributeConsistency = (entityType, key) => {
     const [firstPart] = key.split('.');
     masterKey = firstPart;
   }
-  if (!R.includes(masterKey, schemaTypes.getAttributes(entityType))) {
+  const entityAttributes = schemaTypes.getAttributes(entityType);
+  if (!R.includes(masterKey, entityAttributes)) {
     throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}`);
   }
 };

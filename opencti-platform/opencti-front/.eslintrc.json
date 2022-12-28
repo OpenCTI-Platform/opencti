@@ -48,9 +48,6 @@
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_"
       }
-    ],
-    "@typescript-eslint/array-type": ["error", {
-      "default": "array"
-    }]
+    ]
   }
 }

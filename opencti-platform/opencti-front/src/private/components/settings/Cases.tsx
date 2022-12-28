@@ -11,7 +11,6 @@ import {
 import CasesLines, { casesLinesQuery } from './cases/CasesLines';
 import { CaseLineDummy } from './cases/CaseLine';
 import ManagementsMenu from './ManagementsMenu';
-import CaseCreation from './cases/CaseCreation';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -21,13 +20,11 @@ const useStyles = makeStyles(() => ({
 
 interface CasesProps {
   inputValue?: string,
-  openDrawer: boolean,
-  handleCloseDrawer: () => void;
 }
 
 export const LOCAL_STORAGE_KEY_CASE = 'view-cases';
 
-const Cases: FunctionComponent<CasesProps> = ({ openDrawer, handleCloseDrawer }) => {
+const Cases: FunctionComponent<CasesProps> = () => {
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CasesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY_CASE, {
     searchTerm: '',
@@ -127,11 +124,6 @@ const Cases: FunctionComponent<CasesProps> = ({ openDrawer, handleCloseDrawer })
     <div className={classes.container}>
       {renderLines()}
       <ManagementsMenu />
-      <CaseCreation
-        paginationOptions={paginationOptions}
-        openDrawer={openDrawer}
-        handleCloseDrawer={handleCloseDrawer}
-      />
     </div>
   );
 };
