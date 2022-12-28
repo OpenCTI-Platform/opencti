@@ -83,29 +83,29 @@ import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainOb
 
 const styles = (theme) => ({
   bottomNav: {
+    padding: '0 0 0 50px',
     zIndex: 1100,
-    padding: '0 0 0 180px',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithLargePadding: {
     zIndex: 1100,
-    padding: '0 230px 0 180px',
+    padding: '0 230px 0 50px',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithMediumPadding: {
     zIndex: 1100,
-    padding: '0 200px 0 180px',
+    padding: '0 200px 0 50px',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithSmallPadding: {
     zIndex: 1100,
-    padding: '0 180px 0 180px',
+    padding: '0 180px 0 50px',
     display: 'flex',
     height: 50,
     overflow: 'hidden',

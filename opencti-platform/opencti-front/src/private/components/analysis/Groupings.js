@@ -215,22 +215,27 @@ class Groupings extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '30%',
+        width: '25%',
         isSortable: true,
       },
       context: {
-        label: 'Context',
-        width: '15%',
+        label: 'Type',
+        width: '8%',
         isSortable: true,
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
         isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       created: {
@@ -238,9 +243,15 @@ class Groupings extends Component {
         width: '10%',
         isSortable: true,
       },
+      x_opencti_workflow_id: {
+        label: 'Status',
+        width: '8%',
+        isSortable: true,
+      },
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
     return (
@@ -270,10 +281,11 @@ class Groupings extends Component {
             'x_opencti_workflow_id',
             'labelledBy',
             'createdBy',
+            'creator',
             'markedBy',
+            'confidence',
             'created_start_date',
             'created_end_date',
-            'confidence',
           ]}
         >
           <QueryRenderer

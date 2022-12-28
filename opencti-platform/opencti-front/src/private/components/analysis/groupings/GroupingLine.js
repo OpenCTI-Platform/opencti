@@ -11,10 +11,12 @@ import { compose, pathOr } from 'ramda';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = (theme) => ({
   item: {
@@ -44,6 +46,12 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
   },
 });
 
@@ -106,14 +114,25 @@ class GroupingLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.context.width }}
                 >
-                  {node.context}
+                  <Chip
+                    classes={{ root: classes.chipInList }}
+                    color="primary"
+                    variant="outlined"
+                    label={node.context}
+                  />
                 </div>
               </Tooltip>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdBy', 'name'], node)}
+                {node.createdBy?.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                {node.creator?.name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -130,6 +149,16 @@ class GroupingLineComponent extends Component {
                 style={{ width: dataColumns.created.width }}
               >
                 {fd(node.created)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.x_opencti_workflow_id.width }}
+              >
+                <ItemStatus
+                  status={node.status}
+                  variant="inList"
+                  disabled={!node.workflowEnabled}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -202,6 +231,10 @@ const GroupingLineFragment = createFragmentContainer(GroupingLineComponent, {
             color
           }
         }
+      }
+      creator {
+        id
+        name
       }
       status {
         id
@@ -278,6 +311,17 @@ class GroupingLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
                 <Skeleton
@@ -290,6 +334,17 @@ class GroupingLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.x_opencti_workflow_id.width }}
               >
                 <Skeleton
                   animation="wave"

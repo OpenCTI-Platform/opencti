@@ -93,6 +93,11 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
     height: 35,
   },
+  logoCollapsed: {
+    cursor: 'pointer',
+    height: 35,
+    marginRight: 10,
+  },
   menuContainer: {
     float: 'left',
     marginLeft: 30,
@@ -181,7 +186,7 @@ const TopBar = ({
             <img
               src={navOpen ? theme.logo : theme.logo_collapsed}
               alt="logo"
-              className={classes.logo}
+              className={navOpen ? classes.logo : classes.logoCollapsed}
             />
           </Link>
         </div>

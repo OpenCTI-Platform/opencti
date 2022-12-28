@@ -16,6 +16,7 @@ export const directFilters = [
   'toId',
   'elementId',
   'note_types',
+  'context',
 ];
 const uniqFilters = [
   'revoked',

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import { FiltersVariant, isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  FiltersVariant,
+  isUniqFilter,
+} from '../../../../utils/filters/filtersUtils';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
@@ -20,13 +23,11 @@ const Filters = ({
   type,
 }) => {
   const navigate = useNavigate();
-
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [inputValues, setInputValues] = useState({});
   const [filters, setFilters] = useState({});
   const [keyword, setKeyword] = useState('');
-
   const handleOpenFilters = (event) => {
     setOpen(true);
     setAnchorEl(event.currentTarget);
@@ -35,7 +36,6 @@ const Filters = ({
     setOpen(false);
     setAnchorEl(null);
   };
-
   const defaultHandleAddFilter = handleAddFilter
     || ((key, id, value, event = null) => {
       if (event) {
@@ -54,7 +54,6 @@ const Filters = ({
       }
     });
   const handleRemoveFilter = (key) => setFilters((c) => R.dissoc(key, c));
-
   const handleSearch = () => {
     handleCloseFilters();
     const urlParams = { filters: JSON.stringify(filters) };

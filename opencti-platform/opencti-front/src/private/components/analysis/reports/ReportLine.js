@@ -225,9 +225,8 @@ export const ReportLine = createFragmentContainer(ReportLineComponent, {
   `,
 });
 
-export const ReportLineDummy = (props) => {
+export const ReportLineDummy = ({ dataColumns }) => {
   const classes = useStyles();
-  const { dataColumns } = props;
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon

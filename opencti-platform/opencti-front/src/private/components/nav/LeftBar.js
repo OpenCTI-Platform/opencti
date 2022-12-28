@@ -63,9 +63,6 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 500,
     fontSize: 14,
   },
-  menuItemIcon: {
-    minWidth: 20,
-  },
   menuCollapseOpen: {
     width: 180,
     height: 35,

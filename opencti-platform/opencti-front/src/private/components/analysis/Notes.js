@@ -13,9 +13,13 @@ import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import inject18n from '../../../components/i18n';
 import NoteCreation from './notes/NoteCreation';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
+import ToolBar from '../data/ToolBar';
 
 class Notes extends Component {
   constructor(props) {
@@ -33,6 +37,9 @@ class Notes extends Component {
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      deSelectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -58,6 +65,81 @@ class Notes extends Component {
       if (typeof this.props.onChangeOpenExports === 'function') {
         this.props.onChangeOpenExports(this.state.openExports);
       }
+    });
+  }
+
+  handleToggleSelectEntity(entity, event, forceRemove = []) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements, deSelectedElements, selectAll } = this.state;
+    if (Array.isArray(entity)) {
+      const currentIds = R.values(selectedElements).map((n) => n.id);
+      const givenIds = entity.map((n) => n.id);
+      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
+      let newSelectedElements = {
+        ...selectedElements,
+        ...R.indexBy(
+          R.prop('id'),
+          entity.filter((n) => addedIds.includes(n.id)),
+        ),
+      };
+      if (forceRemove.length > 0) {
+        newSelectedElements = R.omit(
+          forceRemove.map((n) => n.id),
+          newSelectedElements,
+        );
+      }
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+        deSelectedElements: null,
+      });
+    } else if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else if (selectAll && entity.id in (deSelectedElements || {})) {
+      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else if (selectAll) {
+      const newDeSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        deSelectedElements || {},
+      );
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({
+      selectAll: !this.state.selectAll,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({
+      selectAll: false,
+      selectedElements: null,
+      deSelectedElements: null,
     });
   }
 
@@ -108,6 +190,9 @@ class Notes extends Component {
       filters,
       openExports,
       numberOfElements,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
     } = this.state;
     const { objectId, authorId } = this.props;
     let exportContext = null;
@@ -116,26 +201,42 @@ class Notes extends Component {
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original
+        - Object.keys(deSelectedElements || {}).length;
+    }
+    let finalFilters = filters;
+    finalFilters = R.assoc(
+      'entity_type',
+      [{ id: 'Note', value: 'Note' }],
+      finalFilters,
+    );
     const isRuntimeSort = helper.isRuntimeFieldEnable();
     const dataColumns = {
       attribute_abstract: {
         label: 'Abstract',
-        width: '30%',
+        width: '25%',
         isSortable: true,
       },
       note_types: {
-        label: 'Note type',
-        width: '15%',
+        label: 'Type',
+        width: '8%',
         isSortable: true,
       },
       createdBy: {
         label: 'Author',
-        width: '10%',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
         isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       created: {
@@ -143,55 +244,84 @@ class Notes extends Component {
         width: '10%',
         isSortable: true,
       },
+      x_opencti_workflow_id: {
+        label: 'Status',
+        width: '8%',
+        isSortable: true,
+      },
       objectMarking: {
         label: 'Marking',
-        width: '15%',
         isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        noPadding={typeof this.props.onChangeOpenExports === 'function'}
-        exportEntityType="Note"
-        exportContext={exportContext}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'labelledBy',
-          'createdBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'likelihood',
-          'note_types',
-        ]}
-      >
-        <QueryRenderer
-          query={notesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <NotesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
+      <div>
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={this.handleSort.bind(this)}
+          handleSearch={this.handleSearch.bind(this)}
+          handleAddFilter={this.handleAddFilter.bind(this)}
+          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+          handleToggleExports={this.handleToggleExports.bind(this)}
+          openExports={openExports}
+          handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+          selectAll={selectAll}
+          noPadding={typeof this.props.onChangeOpenExports === 'function'}
+          exportEntityType="Note"
+          exportContext={exportContext}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          iconExtension={true}
+          availableFilterKeys={[
+            'note_types',
+            'x_opencti_workflow_id',
+            'labelledBy',
+            'createdBy',
+            'creator',
+            'markedBy',
+            'likelihood',
+            'confidence',
+            'created_start_date',
+            'created_end_date',
+          ]}
+        >
+          <QueryRenderer
+            query={notesLinesQuery}
+            variables={{ count: 25, ...paginationOptions }}
+            render={({ props }) => (
+              <NotesLines
+                data={props}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                selectAll={selectAll}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            )}
+          />
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          search={searchTerm}
+          filters={finalFilters}
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(
+            this,
           )}
+          type="Note"
         />
-      </ListLines>
+      </div>
     );
   }
 
@@ -226,7 +356,9 @@ class Notes extends Component {
       <UserContext.Consumer>
         {({ helper }) => (
           <div>
-            {view === 'lines' ? this.renderLines(paginationOptions, helper) : ''}
+            {view === 'lines'
+              ? this.renderLines(paginationOptions, helper)
+              : ''}
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <NoteCreation paginationOptions={paginationOptions} />
             </Security>

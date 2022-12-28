@@ -19,7 +19,16 @@ class NotesLines extends Component {
   }
 
   render() {
-    const { initialLoading, dataColumns, relay, onLabelClick } = this.props;
+    const {
+      initialLoading,
+      dataColumns,
+      relay,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -37,6 +46,10 @@ class NotesLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
@@ -53,6 +66,10 @@ NotesLines.propTypes = {
   searchTerm: PropTypes.string,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const notesLinesQuery = graphql`
