@@ -5,6 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Chip from '@mui/material/Chip';
 import inject18n from './i18n';
+import { isEmptyField } from '../utils/utils';
 
 const styles = () => ({
   chip: {
@@ -55,7 +56,7 @@ const inlineStyles = {
 const ItemScore = (props) => {
   const { score, classes, variant, t, theme } = props;
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
-  if (score === null) {
+  if (isEmptyField(score)) {
     return (
       <Chip
         classes={{ root: style }}
