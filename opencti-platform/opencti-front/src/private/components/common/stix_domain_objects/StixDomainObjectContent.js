@@ -13,6 +13,7 @@ import Editor from 'ckeditor5-custom-build/build/ckeditor';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
 import { pdfjs, Document, Page } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -32,7 +33,7 @@ import Loader from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.js`;
 
 const SAVE$ = new Subject().pipe(debounce(() => timer(2000)));
 
@@ -77,11 +78,6 @@ const styles = () => ({
     margin: '20px 0 0 0',
     padding: '0 0 15px 0',
     borderRadius: 6,
-  },
-  pdfViewer: {
-    margin: '0 auto',
-    textAlign: 'center',
-    position: 'relative',
   },
 });
 
@@ -501,7 +497,6 @@ class StixDomainObjectContentComponent extends Component {
             />
             <div className={classes.documentContainer}>
               <Document
-                className={classes.pdfViewer}
                 onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                 loading={<Loader variant="inElement" />}
                 file={currentUrl}
@@ -509,9 +504,7 @@ class StixDomainObjectContentComponent extends Component {
                 {Array.from(new Array(totalPdfPageNumber), (el, index) => (
                   <Page
                     key={`page_${index + 1}`}
-                    style={{ position: 'absolute', top: '50%', left: '50%' }}
                     pageNumber={index + 1}
-                    height={height}
                     scale={this.state.pdfViewerZoom}
                   />
                 ))}
