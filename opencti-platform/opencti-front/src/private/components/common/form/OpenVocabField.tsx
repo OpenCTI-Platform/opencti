@@ -91,7 +91,7 @@ Omit<OpenVocabProps, 'type'>
   }
   const renderOption: RenderOption = (optionProps, { value, description }) => (
     <Tooltip {...optionProps} key={value} title={description}>
-      <MenuItem value={value}>{t(value)}</MenuItem>
+      <MenuItem value={value}>{value}</MenuItem>
     </Tooltip>
   );
   const renderTags = (

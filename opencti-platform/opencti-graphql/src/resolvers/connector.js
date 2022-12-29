@@ -1,5 +1,4 @@
 import {
-  batchConnectorForWork,
   computeWorkStatus,
   connectorDelete,
   connectorForWork,
@@ -28,7 +27,7 @@ import {
   reportExpectation,
   updateExpectationsNumber,
   updateProcessedTime,
-  updateReceivedTime,
+  updateReceivedTime, worksForConnector,
 } from '../domain/work';
 import { batchUsers } from '../domain/user';
 import { now } from '../utils/format';
@@ -36,7 +35,6 @@ import { connectors, connectorsForImport, connectorsForWorker } from '../databas
 import { batchLoader } from '../database/middleware';
 
 const usersLoader = batchLoader(batchUsers);
-const connectorWorkLoader = batchLoader(batchConnectorForWork);
 
 const connectorResolvers = {
   Query: {
@@ -51,7 +49,7 @@ const connectorResolvers = {
     synchronizers: (_, args, context) => findAllSync(context, context.user, args),
   },
   Connector: {
-    works: (connector, args, context) => connectorWorkLoader.load(connector.id, context, context.user),
+    works: (connector, args, context) => worksForConnector(context, context.user, connector.id, args),
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
