@@ -231,7 +231,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.occurrences.width }}
+                style={{ width: dataColumns.occurrences.width, display: 'grid', placeContent: 'center' }}
               >
                 {node.occurrences && t(node.occurrences)}
               </div>
