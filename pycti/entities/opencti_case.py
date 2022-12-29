@@ -8,7 +8,7 @@ from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
 
-class Report:
+class Case:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -112,8 +112,10 @@ class Report:
             modified
             name
             description
-            report_types
-            published
+            case_type
+            severity
+            priority
+            rating
             objects {
                 edges {
                     node {
@@ -208,9 +210,6 @@ class Report:
                         ... on DataSource {
                             name
                         }
-                        ... on Case {
-                            name
-                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -243,23 +242,24 @@ class Report:
         """
 
     @staticmethod
-    def generate_id(name, published):
+    def generate_id(name, case_type, created):
         name = name.lower().strip()
-        if isinstance(published, datetime.datetime):
-            published = published.isoformat()
-        data = {"name": name, "published": published}
+        case_type = case_type.lower().strip()
+        if isinstance(created, datetime.datetime):
+            created = created.isoformat()
+        data = {"name": name, "case_type": case_type, "created": created}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
-        return "report--" + id
+        return "case--" + id
 
     """
-        List Report objects
+        List Cases objects
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Report objects
+        :return List of Case objects
     """
 
     def list(self, **kwargs):
@@ -276,12 +276,12 @@ class Report:
             first = 100
 
         self.opencti.log(
-            "info", "Listing Reports with filters " + json.dumps(filters) + "."
+            "info", "Listing Cases with filters " + json.dumps(filters) + "."
         )
         query = (
             """
-            query Reports($filters: [ReportsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
-                reports(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query Cases($filters: [CasesFiltering], $search: String, $first: Int, $after: ID, $orderBy: CasesOrdering, $orderMode: OrderingMode) {
+                cases(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -313,11 +313,11 @@ class Report:
         )
         if get_all:
             final_data = []
-            data = self.opencti.process_multiple(result["data"]["reports"])
+            data = self.opencti.process_multiple(result["data"]["cases"])
             final_data = final_data + data
-            while result["data"]["reports"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["reports"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Reports after " + after)
+            while result["data"]["cases"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["cases"]["pageInfo"]["endCursor"]
+                self.opencti.log("info", "Listing Cases after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -329,20 +329,20 @@ class Report:
                         "orderMode": order_mode,
                     },
                 )
-                data = self.opencti.process_multiple(result["data"]["reports"])
+                data = self.opencti.process_multiple(result["data"]["cases"])
                 final_data = final_data + data
             return final_data
         else:
             return self.opencti.process_multiple(
-                result["data"]["reports"], with_pagination
+                result["data"]["cases"], with_pagination
             )
 
     """
-        Read a Report object
+        Read a Case object
 
-        :param id: the id of the Report
+        :param id: the id of the Case
         :param filters: the filters to apply if no id provided
-        :return Report object
+        :return Case object
     """
 
     def read(self, **kwargs):
@@ -350,11 +350,11 @@ class Report:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Report {" + id + "}.")
+            self.opencti.log("info", "Reading Case {" + id + "}.")
             query = (
                 """
-                query Report($id: String!) {
-                    report(id: $id) {
+                query Case($id: String!) {
+                    case(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -367,7 +367,7 @@ class Report:
             """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["report"])
+            return self.opencti.process_multiple_fields(result["data"]["case"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -376,7 +376,7 @@ class Report:
                 return None
 
     """
-        Read a Report object by stix_id or name
+        Read a Case object by stix_id or name
 
         :param type: the Stix-Domain-Entity type
         :param stix_id: the STIX ID of the Stix-Domain-Entity
@@ -387,26 +387,26 @@ class Report:
     def get_by_stix_id_or_name(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
-        published = kwargs.get("published", None)
+        created = kwargs.get("created", None)
         custom_attributes = kwargs.get("customAttributes", None)
         object_result = None
         if stix_id is not None:
             object_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if object_result is None and name is not None and published is not None:
-            published_final = parse(published).strftime("%Y-%m-%d")
+        if object_result is None and name is not None and created is not None:
+            created_final = parse(created).strftime("%Y-%m-%d")
             object_result = self.read(
                 filters=[
                     {"key": "name", "values": [name]},
-                    {"key": "published_day", "values": [published_final]},
+                    {"key": "created_day", "values": [created_final]},
                 ],
                 customAttributes=custom_attributes,
             )
         return object_result
 
     """
-        Check if a report already contains a thing (Stix Object or Stix Relationship)
+        Check if a case already contains a thing (Stix Object or Stix Relationship)
 
-        :param id: the id of the Report
+        :param id: the id of the Case
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
@@ -421,13 +421,13 @@ class Report:
                 "info",
                 "Checking StixObjectOrStixRelationship {"
                 + stix_object_or_stix_relationship_id
-                + "} in Report {"
+                + "} in Case {"
                 + id
                 + "}",
             )
             query = """
-                query ReportContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
-                    reportContainsStixObjectOrStixRelationship(id: $id, stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId)
+                query CaseContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
+                    caseContainsStixObjectOrStixRelationship(id: $id, stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId)
                 }
             """
             result = self.opencti.query(
@@ -437,18 +437,18 @@ class Report:
                     "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
                 },
             )
-            return result["data"]["reportContainsStixObjectOrStixRelationship"]
+            return result["data"]["caseContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.log(
                 "error",
-                "[opencti_report] Missing parameters: id or stixObjectOrStixRelationshipId",
+                "[opencti_case] Missing parameters: id or stixObjectOrStixRelationshipId",
             )
 
     """
-        Create a Report object
+        Create a Case object
 
-        :param name: the name of the Report
-        :return Report object
+        :param name: the name of the Case
+        :return Case object
     """
 
     def create(self, **kwargs):
@@ -465,17 +465,19 @@ class Report:
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", "")
-        report_types = kwargs.get("report_types", None)
-        published = kwargs.get("published", None)
+        case_type = kwargs.get("case_type", None)
+        severity = kwargs.get("severity", None)
+        priority = kwargs.get("priority", None)
+        rating = kwargs.get("rating", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
-        if name is not None and description is not None and published is not None:
-            self.opencti.log("info", "Creating Report {" + name + "}.")
+        if name is not None and description is not None and case_type is not None:
+            self.opencti.log("info", "Creating Case {" + name + "}.")
             query = """
-                mutation ReportAdd($input: ReportAddInput) {
-                    reportAdd(input: $input) {
+                mutation CaseAdd($input: CaseAddInput!) {
+                    caseAdd(input: $input) {
                         id
                         standard_id
                         entity_type
@@ -501,24 +503,26 @@ class Report:
                         "modified": modified,
                         "name": name,
                         "description": description,
-                        "report_types": report_types,
-                        "published": published,
+                        "case_type": case_type,
+                        "severity": severity,
+                        "priority": priority,
+                        "rating": rating,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
                 },
             )
-            return self.opencti.process_multiple_fields(result["data"]["reportAdd"])
+            return self.opencti.process_multiple_fields(result["data"]["caseAdd"])
         else:
             self.opencti.log(
                 "error",
-                "[opencti_report] Missing parameters: name and description and published and report_class",
+                "[opencti_case] Missing parameters: name and description and case_type",
             )
 
     """
-        Add a Stix-Entity object to Report object (object_refs)
+        Add a Stix-Entity object to Case object (object_refs)
 
-        :param id: the id of the Report
+        :param id: the id of the Case
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
@@ -533,13 +537,13 @@ class Report:
                 "info",
                 "Adding StixObjectOrStixRelationship {"
                 + stix_object_or_stix_relationship_id
-                + "} to Report {"
+                + "} to Case {"
                 + id
                 + "}",
             )
             query = """
-               mutation ReportEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
-                   reportEdit(id: $id) {
+               mutation CaseEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   caseEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
                         }
@@ -560,14 +564,14 @@ class Report:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId",
+                "[opencti_case] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
 
     """
-        Remove a Stix-Entity object to Report object (object_refs)
+        Remove a Stix-Entity object to Case object (object_refs)
 
-        :param id: the id of the Report
+        :param id: the id of the Case
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
@@ -582,13 +586,13 @@ class Report:
                 "info",
                 "Removing StixObjectOrStixRelationship {"
                 + stix_object_or_stix_relationship_id
-                + "} to Report {"
+                + "} to Case {"
                 + id
                 + "}",
             )
             query = """
-               mutation ReportEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                   reportEdit(id: $id) {
+               mutation CaseEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
+                   caseEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
                         }
@@ -607,15 +611,15 @@ class Report:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId",
+                "[opencti_case] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
 
     """
-        Import a Report object from a STIX2 object
+        Import a Case object from a STIX2 object
 
-        :param stixObject: the Stix-Object Report
-        :return Report object
+        :param stixObject: the Stix-Object Case
+        :return Case object
     """
 
     def import_from_stix2(self, **kwargs):
@@ -662,12 +666,12 @@ class Report:
                 )
                 if "description" in stix_object
                 else "",
-                report_types=stix_object["report_types"]
-                if "report_types" in stix_object
+                case_type=stix_object["case_type"]
+                if "case_type" in stix_object
                 else None,
-                published=stix_object["published"]
-                if "published" in stix_object
-                else None,
+                severity=stix_object["severity"] if "severity" in stix_object else None,
+                priority=stix_object["priority"] if "priority" in stix_object else None,
+                rating=stix_object["rating"] if "rating" in stix_object else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,
@@ -677,4 +681,4 @@ class Report:
                 update=update,
             )
         else:
-            self.opencti.log("error", "[opencti_report] Missing parameters: stixObject")
+            self.opencti.log("error", "[opencti_case] Missing parameters: stixObject")

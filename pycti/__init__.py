@@ -11,6 +11,7 @@ from .connector.opencti_connector_helper import (
 )
 from .entities.opencti_attack_pattern import AttackPattern
 from .entities.opencti_campaign import Campaign
+from .entities.opencti_case import Case
 from .entities.opencti_course_of_action import CourseOfAction
 from .entities.opencti_data_component import DataComponent
 from .entities.opencti_data_source import DataSource
@@ -56,6 +57,7 @@ from .utils.opencti_stix2_utils import OpenCTIStix2Utils
 __all__ = [
     "AttackPattern",
     "Campaign",
+    "Case",
     "ConnectorType",
     "CourseOfAction",
     "DataComponent",

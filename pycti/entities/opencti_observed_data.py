@@ -205,6 +205,9 @@ class ObservedData:
                         ... on DataSource {
                             name
                         }
+                        ... on Case {
+                            name
+                        }                             
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version

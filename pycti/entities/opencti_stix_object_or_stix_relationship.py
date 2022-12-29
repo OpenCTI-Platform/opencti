@@ -349,6 +349,9 @@ class StixObjectOrStixRelationship:
                 name
                 description
             }
+            ... on Case {
+                name
+            }            
             ... on StixCyberObservable {
                 observable_value
             }

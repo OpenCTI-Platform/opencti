@@ -139,6 +139,10 @@ class EntityTestCases:
     def data_source(api_client):
         return DataSourceTest(api_client)
 
+    @staticmethod
+    def case(api_client):
+        return CaseTest(api_client)
+
 
 class EntityTest:
     def __init__(self, api_client):
@@ -915,3 +919,11 @@ class DataSourceTest(EntityTest):
 
     def own_class(self):
         return self.api_client.data_source
+
+
+class CaseTest(EntityTest):
+    def data(self) -> Dict:
+        return {"type": "Case", "name": "Case 1", "description": "Case 2"}
+
+    def own_class(self):
+        return self.api_client.case
