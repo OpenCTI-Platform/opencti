@@ -205,7 +205,7 @@ input CaseAddInput {
   case_type: String!
   severity: String
   priority: String
-  rating: Int!
+  rating: Int
   description: String
   lang: String
   objects: [String]

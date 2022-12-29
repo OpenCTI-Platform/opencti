@@ -47,7 +47,7 @@ const READ_QUERY = gql`
 
 describe('Case resolver standard behavior', () => {
   let caseInternalId;
-  const caseStixId = 'data-source--934ab9db-49a9-4adb-9f1f-823d586928c0';
+  const caseStixId = 'case--f505027c-997d-4243-b67c-471f994e20d5';
   it('should case created', async () => {
     const CREATE_QUERY = gql`
       mutation CaseAdd($input: CaseAddInput!) {
