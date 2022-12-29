@@ -23,6 +23,7 @@ export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const SYSTEM_USER: AuthUser = {
   id: OPENCTI_SYSTEM_UUID,
   internal_id: OPENCTI_SYSTEM_UUID,
+  individual_id: undefined,
   name: 'SYSTEM',
   user_email: 'SYSTEM',
   inside_platform_organization: true,
@@ -38,6 +39,7 @@ export const SYSTEM_USER: AuthUser = {
 export const RETENTION_MANAGER_USER: AuthUser = {
   id: RETENTION_MANAGER_USER_UUID,
   internal_id: RETENTION_MANAGER_USER_UUID,
+  individual_id: undefined,
   name: 'RETENTION MANAGER',
   user_email: 'RETENTION MANAGER',
   inside_platform_organization: true,
@@ -53,6 +55,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
 export const RULE_MANAGER_USER: AuthUser = {
   id: RULE_MANAGER_USER_UUID,
   internal_id: RULE_MANAGER_USER_UUID,
+  individual_id: undefined,
   name: 'RULE MANAGER',
   user_email: 'RULE MANAGER',
   inside_platform_organization: true,

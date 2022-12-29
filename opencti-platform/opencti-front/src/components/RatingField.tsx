@@ -86,9 +86,11 @@ const RatingField: FunctionComponent<RatingProps> = ({
   }
   return (
     <div style={style}>
-      <InputLabel id="input-slider" shrink={true} variant="standard">
-        {label}
-      </InputLabel>
+      {!readOnly && (
+        <InputLabel id="input-slider" shrink={true} variant="standard">
+          {label}
+        </InputLabel>
+      )}
       <StyledRating
         name="highlight-selected-only"
         value={rating}

@@ -53,6 +53,7 @@ export const executeExternalQuery = async (uri: string, query: unknown, variable
 export const ADMIN_USER: AuthUser = {
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+  individual_id: undefined,
   organizations: [],
   name: 'admin',
   user_email: 'admin@opencti.io',
