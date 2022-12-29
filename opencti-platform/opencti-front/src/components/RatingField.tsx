@@ -59,7 +59,7 @@ const StyledRating = styled(Rating)(({ theme }) => ({
 }));
 
 interface RatingProps {
-  label: string;
+  label?: string;
   rating: number;
   readOnly?: boolean;
   style?: Record<string, unknown>;
