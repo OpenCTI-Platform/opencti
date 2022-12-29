@@ -38,42 +38,55 @@ node {
 
   // Check version, yarn install, etc.
   stage('Setup') {
-    docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
-      dir('opencti-platform') {
-        dir('opencti-graphql') { // GraphQL
-          version = readJSON(file: 'package.json')['version']
-          switch (branch) {
-            case 'develop':
-              version = "${version}-dev+" + "${commit}"[0..7]
-              sh label: 'updating version', script: """
-                tmp=\$(mktemp)
-                jq '.version = "${version}"' package.json > \$tmp
-                mv -f \$tmp package.json
-              """
-              break
-            case 'staging':
-              version = "${version}-RC+" + "${commit}"[0..7]
-              sh label: 'updating version', script: """
-                tmp=\$(mktemp)
-                jq '.version = "${version}"' package.json > \$tmp
-                mv -f \$tmp package.json
-              """
-              break
-            default:
-              break
-          }
-
-          if (fileExists('config/schema/compiled.graphql')) {
-            sh 'rm config/schema/compiled.graphql'
-          }
-          sh 'yarn install'
-        }
-        dir('opencti-front') { // Frontend
-          sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
-          sh 'yarn install'
-          sh 'yarn run schema-compile'
+    // Update version and API endpoint
+    dir('opencti-platform') {
+      dir('opencti-graphql') {
+        version = readJSON(file: 'package.json')['version']
+        switch (branch) {
+          case 'develop':
+            version = "${version}-dev+" + "${commit}"[0..7]
+            sh label: 'updating version', script: """
+              tmp=\$(mktemp)
+              jq '.version = "${version}"' package.json > \$tmp
+              mv -f \$tmp package.json
+            """
+            break
+          case 'staging':
+            version = "${version}-RC+" + "${commit}"[0..7]
+            sh label: 'updating version', script: """
+              tmp=\$(mktemp)
+              jq '.version = "${version}"' package.json > \$tmp
+              mv -f \$tmp package.json
+            """
+            break
+          default:
+            break
         }
       }
+      dir('opencti-front') {
+        sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
+      }
+    }
+
+    // Install dependencies
+    try {
+      docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
+        dir('opencti-platform') {
+          dir('opencti-graphql') { // GraphQL
+            if (fileExists('config/schema/compiled.graphql')) {
+              sh 'rm config/schema/compiled.graphql'
+            }
+            sh 'yarn install'
+          }
+          dir('opencti-front') { // Frontend
+            sh 'yarn install'
+            sh 'yarn run schema-compile'
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw e
+    } finally {
       sh 'chown -R 997:995 .'
     }
   }
