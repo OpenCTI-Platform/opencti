@@ -9,7 +9,10 @@ const convertCaseToStix = (instance: StoreEntityCase): StixCase => {
     ...cases,
     name: instance.name,
     description: instance.description,
-    context: instance.context,
+    case_type: instance.type,
+    severity: instance.severity,
+    priority: instance.priority,
+    rating: instance.rating,
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

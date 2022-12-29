@@ -70,8 +70,9 @@ import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
 import TopMenuDataComponent from './TopMenuDataComponent';
 import TopMenuDataSource from './TopMenuDataSource';
-import FeedbackCreation from '../settings/cases/FeedbackCreation';
-import TopMenuCase from './TopMenuCase';
+import TopMenuFeedback from './TopMenuFeedback';
+import FeedbackCreation from '../cases/FeedbackCreation';
+import TopMenuCases from './TopMenuCases';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -213,6 +214,13 @@ const TopBar = ({
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
             <TopMenuAnalysis />
           )}
+          {(location.pathname === '/dashboard/cases'
+            || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
+            <TopMenuCases />
+          )}
+          {location.pathname.includes('/dashboard/cases/feedbacks/') && (
+            <TopMenuFeedback />
+          )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -343,9 +351,6 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
-          )}
-          {location.pathname.includes('/dashboard/settings/managements/feedback') && (
-            <TopMenuCase />
           )}
           {location.pathname.includes('/dashboard/workspaces/dashboards') && (
             <TopMenuWorkspacesDashboards />

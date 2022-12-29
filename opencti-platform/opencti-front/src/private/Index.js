@@ -25,6 +25,7 @@ import { NoMatch, BoundaryRoute } from './components/Error';
 import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
 import SearchBulk from './components/SearchBulk';
 import TopBar from './components/nav/TopBar';
+import RootCases from './components/cases/Root';
 
 const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
@@ -80,6 +81,7 @@ const Index = () => {
             render={(routeProps) => <SearchBulk {...routeProps} />}
           />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
+          <BoundaryRoute path="/dashboard/cases" component={RootCases} />
           <BoundaryRoute path="/dashboard/events" component={RootEvents} />
           <Route path="/dashboard/observations" component={RootObservations} />
           <BoundaryRoute path="/dashboard/threats" component={RootThreats} />

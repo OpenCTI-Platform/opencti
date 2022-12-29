@@ -18,8 +18,6 @@ import { SETTINGS } from '../../../utils/hooks/useGranted';
 import StatusTemplates from './workflow/StatusTemplates';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
-import Cases from './Cases';
-import RootCase from './cases/Root';
 
 const Root = () => (
   <Switch>
@@ -58,15 +56,6 @@ const Root = () => (
         exact
         path="/dashboard/settings/managements/marking"
         component={MarkingDefinitions}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/managements/feedback"
-        component={Cases}
-      />
-      <BoundaryRoute
-        path="/dashboard/settings/managements/feedback/:caseId"
-        render={(routeProps) => <RootCase {...routeProps} />}
       />
       <BoundaryRoute
         exact

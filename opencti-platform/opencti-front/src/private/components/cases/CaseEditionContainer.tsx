@@ -4,10 +4,10 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
-import { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { SubscriptionAvatars } from '../../../components/Subscription';
+import { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import ErrorNotFound from '../../../components/ErrorNotFound';
 import CaseEditionOverview from './CaseEditionOverview';
 import { CaseEditionContainerQuery } from './__generated__/CaseEditionContainerQuery.graphql';
 

@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { DataColumns } from '../../../../components/list_lines';
-import type { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import ListLinesContent from '../../../components/list_lines/ListLinesContent';
+import { DataColumns } from '../../../components/list_lines';
+import type { UseLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import usePreloadedPaginationFragment from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { CaseLine, CaseLineDummy } from './CaseLine';
 import {
   CasesLinesPaginationQuery,
@@ -63,6 +63,7 @@ const casesLinesFragment = graphql`
         node {
           id
           name
+          type
           description
           rating
           creator {

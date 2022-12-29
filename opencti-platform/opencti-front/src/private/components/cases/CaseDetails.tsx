@@ -4,11 +4,11 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import { useFormatter } from '../../../../components/i18n';
+import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
+import { useFormatter } from '../../../components/i18n';
 import { CaseDetails_case$data, CaseDetails_case$key } from './__generated__/CaseDetails_case.graphql';
-import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import RatingField from '../../../../components/RatingField';
+import ItemOpenVocab from '../../../components/ItemOpenVocab';
+import RatingField from '../../../components/RatingField';
 
 const styles = makeStyles(() => ({
   paper: {

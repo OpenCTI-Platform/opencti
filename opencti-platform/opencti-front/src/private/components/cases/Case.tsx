@@ -5,9 +5,12 @@ import makeStyles from '@mui/styles/makeStyles';
 import CaseDetails from './CaseDetails';
 import { Case_case$key } from './__generated__/Case_case.graphql';
 import CasePopover from './CasePopover';
-import ContainerHeader from '../../common/containers/ContainerHeader';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
+import ContainerHeader from '../common/containers/ContainerHeader';
+import StixDomainObjectOverview from '../common/stix_domain_objects/StixDomainObjectOverview';
+import ContainerStixObjectsOrStixRelationships from '../common/containers/ContainerStixObjectsOrStixRelationships';
+import Security from '../../../utils/Security';
+import { SETTINGS } from '../../../utils/hooks/useGranted';
+import CaseEdition from './CaseEdition';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -104,6 +107,9 @@ const CaseComponent:FunctionComponent<CaseProps> = ({ data }) => {
           <ContainerStixObjectsOrStixRelationships isSupportParticipation={false} container={caseData} />
         </Grid>
       </Grid>
+      <Security needs={[SETTINGS]}>
+        <CaseEdition caseId={caseData.id} />
+      </Security>
     </div>
   );
 };

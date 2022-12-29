@@ -182,7 +182,7 @@ type CaseEdge {
 
 # Queries
 type Query {
-  case(id: String!): Case @auth(for: [SETTINGS_SETACCESSES])
+  case(id: String!): Case @auth(for: [SETTINGS])
   cases(
     first: Int
     after: ID
@@ -192,7 +192,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CaseConnection @auth(for: [SETTINGS_SETACCESSES])
+  ): CaseConnection @auth(for: [SETTINGS])
 }
 
 # Mutations
@@ -216,10 +216,10 @@ input CaseAddInput {
 
 type Mutation {
   caseAdd(input: CaseAddInput!): Case @auth
-  caseDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
-  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [SETTINGS_SETACCESSES])
-  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case @auth(for: [SETTINGS_SETACCESSES])
-  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [SETTINGS_SETACCESSES])
-  caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [SETTINGS_SETACCESSES])
-  caseContextClean(id: ID!): Case @auth(for: [SETTINGS_SETACCESSES])
+  caseDelete(id: ID!): ID @auth(for: [SETTINGS])
+  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [SETTINGS])
+  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case @auth(for: [SETTINGS])
+  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [SETTINGS])
+  caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [SETTINGS])
+  caseContextClean(id: ID!): Case @auth(for: [SETTINGS])
 }

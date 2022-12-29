@@ -6,19 +6,19 @@ import React, { useMemo } from 'react';
 import { Route, Redirect, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useAuth from '../../../../utils/hooks/useAuth';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import TopBar from '../nav/TopBar';
+import ErrorNotFound from '../../../components/ErrorNotFound';
+import useAuth from '../../../utils/hooks/useAuth';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 import Case from './Case';
 import { RootCasesSubscription } from './__generated__/RootCasesSubscription.graphql';
 import { RootCaseQuery } from './__generated__/RootCaseQuery.graphql';
-import ContainerHeader from '../../common/containers/ContainerHeader';
-import FileManager from '../../common/files/FileManager';
+import ContainerHeader from '../common/containers/ContainerHeader';
+import FileManager from '../common/files/FileManager';
 import CasePopover from './CasePopover';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import StixCoreObjectHistory from '../common/stix_core_objects/StixCoreObjectHistory';
+import StixDomainObjectContent from '../common/stix_domain_objects/StixDomainObjectContent';
 
 const subscription = graphql`
   subscription RootCasesSubscription($id: ID!) {
@@ -75,21 +75,21 @@ const RootCaseComponent = ({ queryRef }) => {
           <Switch>
             <Route
               exact
-              path="/dashboard/settings/managements/feedback/:caseId"
+              path="/dashboard/cases/feedbacks/:caseId"
               render={() => (<Case data={caseData} />)}
             />
             <Route
               exact
-              path="/dashboard/settings/managements/feedback/:caseId/knowledge"
+              path="/dashboard/cases/feedbacks/:caseId/knowledge"
               render={() => (
                 <Redirect
-                  to={`/dashboard/settings/managements/feedback/${caseId}/knowledge/overview`}
+                  to={`/dashboard/cases/feedbacks/${caseId}/knowledge/overview`}
                 />
               )}
             />
             <Route
               exact
-              path="/dashboard/settings/managements/feedback/:caseId/content"
+              path="/dashboard/cases/feedbacks/:caseId/content"
               render={(routeProps) => (
                 <React.Fragment>
                   <ContainerHeader
@@ -106,7 +106,7 @@ const RootCaseComponent = ({ queryRef }) => {
             />
             <Route
               exact
-              path="/dashboard/settings/managements/feedback/:caseId/files"
+              path="/dashboard/cases/feedbacks/:caseId/files"
               render={(routeProps: any) => (
                 <React.Fragment>
                   <ContainerHeader
@@ -127,7 +127,7 @@ const RootCaseComponent = ({ queryRef }) => {
             />
             <Route
               exact
-              path="/dashboard/settings/managements/feedback/:caseId/history"
+              path="/dashboard/cases/feedbacks/:caseId/history"
               render={(routeProps: any) => (
                 <React.Fragment>
                   <ContainerHeader

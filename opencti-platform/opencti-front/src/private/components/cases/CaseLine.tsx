@@ -3,15 +3,15 @@ import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined, ReceiptOutlined } from '@mui/icons-material';
+import { KeyboardArrowRightOutlined, FeedbackOutlined, WorkOutline } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { Link } from 'react-router-dom';
-import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { useFormatter } from '../../../components/i18n';
+import { Theme } from '../../../components/Theme';
+import { DataColumns } from '../../../components/list_lines';
 import { CaseLine_node$key } from './__generated__/CaseLine_node.graphql';
-import ItemStatus from '../../../../components/ItemStatus';
+import ItemStatus from '../../../components/ItemStatus';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -32,7 +32,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 210,
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
@@ -53,6 +53,7 @@ const caseFragment = graphql`
   fragment CaseLine_node on Case {
     id
     name
+    type
     description
     rating
     created
@@ -79,58 +80,32 @@ export const CaseLine: FunctionComponent<CaseLineComponentProps> = ({ dataColumn
   const data = useFragment(caseFragment, node);
 
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-      button={true}
-      component={Link}
-      to={`/dashboard/settings/managements/feedback/${data.id}`}
-    >
+    <ListItem classes={{ root: classes.item }}
+      divider={true} button={true}
+      component={Link} to={`/dashboard/cases/feedbacks/${data.id}`}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ReceiptOutlined fontSize="medium" />
+        { data.type === 'feedback' ? <FeedbackOutlined fontSize="medium" /> : <WorkOutline fontSize="medium" />}
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
               {fd(data.created)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.rating.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.rating.width }}>
               {data.rating}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.description.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
               {data.description}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.creator.width }}>
               {data.creator?.name}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.x_opencti_workflow_id.width }}
-            >
-              <ItemStatus
-                status={data.status}
-                variant="inList"
-                disabled={data.workflowEnabled}
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.x_opencti_workflow_id.width }}>
+              <ItemStatus status={data.status} variant="inList" disabled={data.workflowEnabled} />
             </div>
           </div>
         }

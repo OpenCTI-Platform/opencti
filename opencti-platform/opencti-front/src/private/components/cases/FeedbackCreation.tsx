@@ -10,15 +10,15 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
-import { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import MarkDownField from '../../../components/MarkDownField';
+import { Theme } from '../../../components/Theme';
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
-import { MESSAGING$ } from '../../../../relay/environment';
-import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import RatingField from '../../../../components/RatingField';
+import { MESSAGING$ } from '../../../relay/environment';
+import StixCoreObjectsField from '../common/form/StixCoreObjectsField';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
+import RatingField from '../../../components/RatingField';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

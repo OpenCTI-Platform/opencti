@@ -99,19 +99,6 @@ const SettingsMenu = (props) => {
           </ListItemIcon>
           <ListItemText primary={t('Sessions')} />
         </MenuItem>
-        <MenuItem
-          component={Link}
-          to={'/dashboard/settings/managements/feedback'}
-          selected={
-            location.pathname === '/dashboard/settings/managements/feedback'
-          }
-          dense={false}
-        >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ReceiptOutlined fontSize="medium" />
-          </ListItemIcon>
-          <ListItemText primary={t('Feedback')} />
-        </MenuItem>
       </MenuList>
     </Drawer>
   );

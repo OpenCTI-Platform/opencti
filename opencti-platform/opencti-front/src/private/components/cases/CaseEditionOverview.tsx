@@ -3,21 +3,21 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionFocus } from '../../../../components/Subscription';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
-import StatusField from '../../common/form/StatusField';
-import { Option } from '../../common/form/ReferenceField';
-import { adaptFieldValue } from '../../../../utils/String';
+import { useFormatter } from '../../../components/i18n';
+import { SubscriptionFocus } from '../../../components/Subscription';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../utils/edition';
+import StatusField from '../common/form/StatusField';
+import { Option } from '../common/form/ReferenceField';
+import { adaptFieldValue } from '../../../utils/String';
 import { CaseEditionOverview_case$key } from './__generated__/CaseEditionOverview_case.graphql';
-import TextField from '../../../../components/TextField';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import MarkDownField from '../../../../components/MarkDownField';
-import RatingField from '../../../../components/RatingField';
+import TextField from '../../../components/TextField';
+import OpenVocabField from '../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
+import CreatedByField from '../common/form/CreatedByField';
+import ObjectMarkingField from '../common/form/ObjectMarkingField';
+import useFormEditor from '../../../utils/hooks/useFormEditor';
+import MarkDownField from '../../../components/MarkDownField';
+import RatingField from '../../../components/RatingField';
 
 const caseMutationFieldPatch = graphql`
   mutation CaseEditionOverviewFieldPatchMutation(

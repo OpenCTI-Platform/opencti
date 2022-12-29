@@ -7,10 +7,9 @@ import { Filters } from '../../../components/list_lines';
 import {
   CasesLinesPaginationQuery,
   CasesLinesPaginationQuery$variables,
-} from './cases/__generated__/CasesLinesPaginationQuery.graphql';
-import CasesLines, { casesLinesQuery } from './cases/CasesLines';
-import { CaseLineDummy } from './cases/CaseLine';
-import ManagementsMenu from './ManagementsMenu';
+} from './__generated__/CasesLinesPaginationQuery.graphql';
+import CasesLines, { casesLinesQuery } from './CasesLines';
+import { CaseLineDummy } from './CaseLine';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -50,7 +49,7 @@ const Cases: FunctionComponent<CasesProps> = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '20%',
+        width: '40%',
         isSortable: true,
       },
       created: {
@@ -123,7 +122,6 @@ const Cases: FunctionComponent<CasesProps> = () => {
   return (
     <div className={classes.container}>
       {renderLines()}
-      <ManagementsMenu />
     </div>
   );
 };

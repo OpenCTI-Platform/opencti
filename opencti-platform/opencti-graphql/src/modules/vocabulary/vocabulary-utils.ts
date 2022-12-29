@@ -121,10 +121,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: '04 - critical', description: 'Critical impact' },
   ],
   case_priority_ov: [
-    { key: 'P1', description: 'Low priority' },
-    { key: 'P2', description: 'Medium priority' },
-    { key: 'P3', description: 'High priority' },
-    { key: 'P4', description: 'Critical priority' },
+    { key: 'P1', description: 'Critical priority' },
+    { key: 'P2', description: 'High priority' },
+    { key: 'P3', description: 'Medium priority' },
+    { key: 'P4', description: 'Low priority' },
   ],
   channel_types_ov: [
     { key: 'Twitter' },
@@ -310,10 +310,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   incident_severity_ov: [
-    { key: 'low', description: 'Low impact' },
-    { key: 'medium', description: 'Medium impact' },
-    { key: 'high', description: 'High impact' },
-    { key: 'critical', description: 'Critical impact' },
+    { key: '01 - low', description: 'Low impact' },
+    { key: '02 - medium', description: 'Medium impact' },
+    { key: '03 - high', description: 'High impact' },
+    { key: '04 - critical', description: 'Critical impact' },
   ],
   indicator_type_ov: [
     {
@@ -426,10 +426,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   integrity_level_ov: [
-    { key: 'low', description: 'A low level of integrity.' },
-    { key: 'medium', description: 'A medium level of integrity.' },
-    { key: 'high', description: 'A high level of integrity.' },
-    { key: 'system', description: 'A system level of integrity.' },
+    { key: '01 - low', description: 'A low level of integrity.' },
+    { key: '02 - medium', description: 'A medium level of integrity.' },
+    { key: '03 - high', description: 'A high level of integrity.' },
+    { key: '04 - system', description: 'A system level of integrity.' },
   ],
   // M
   malware_capabilities_ov: [

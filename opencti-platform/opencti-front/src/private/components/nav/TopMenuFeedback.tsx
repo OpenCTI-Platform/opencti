@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, StreamOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined, FeedbackOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
@@ -29,7 +29,7 @@ const styles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuCase: FunctionComponent = () => {
+const TopMenuFeedback: FunctionComponent = () => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = styles();
@@ -39,14 +39,14 @@ const TopMenuCase: FunctionComponent = () => {
     <div>
       <Button
         component={Link}
-        to="/dashboard/settings/managements/feedback"
+        to="/dashboard/cases/feedbacks"
         variant="contained"
         size="small"
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <StreamOutlined className={classes.icon} fontSize="small" />
-        {t('Feedback')}
+        <FeedbackOutlined className={classes.icon} fontSize="small" />
+        {t('Feedbacks')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"
@@ -54,17 +54,17 @@ const TopMenuCase: FunctionComponent = () => {
       />
       <Button
         component={Link}
-        to={`/dashboard/settings/managements/feedback/${caseId}`}
+        to={`/dashboard/cases/feedbacks/${caseId}`}
         variant={
           location.pathname
-          === `/dashboard/settings/managements/feedback/${caseId}`
+          === `/dashboard/cases/feedbacks/${caseId}`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/settings/managements/feedback/${caseId}`
+          === `/dashboard/cases/feedbacks/${caseId}`
             ? 'secondary'
             : 'primary'
         }
@@ -74,17 +74,17 @@ const TopMenuCase: FunctionComponent = () => {
       </Button>
         <Button
           component={Link}
-          to={`/dashboard/settings/managements/feedback/${caseId}/content`}
+          to={`/dashboard/cases/feedbacks/${caseId}/content`}
           variant={
             location.pathname
-            === `/dashboard/settings/managements/feedback/${caseId}/content`
+            === `/dashboard/cases/feedbacks/${caseId}/content`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/settings/managements/feedback/${caseId}/content`
+            === `/dashboard/cases/feedbacks/${caseId}/content`
               ? 'secondary'
               : 'primary'
           }
@@ -94,17 +94,17 @@ const TopMenuCase: FunctionComponent = () => {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/settings/managements/feedback/${caseId}/files`}
+          to={`/dashboard/cases/feedbacks/${caseId}/files`}
           variant={
             location.pathname
-            === `/dashboard/settings/managements/feedback/${caseId}/files`
+            === `/dashboard/cases/feedbacks/${caseId}/files`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/settings/managements/feedback/${caseId}/files`
+            === `/dashboard/cases/feedbacks/${caseId}/files`
               ? 'secondary'
               : 'primary'
           }
@@ -114,17 +114,17 @@ const TopMenuCase: FunctionComponent = () => {
         </Button>
       <Button
         component={Link}
-        to={`/dashboard/settings/managements/feedback/${caseId}/history`}
+        to={`/dashboard/cases/feedbacks/${caseId}/history`}
         variant={
           location.pathname
-          === `/dashboard/settings/managements/feedback/${caseId}/history`
+          === `/dashboard/cases/feedbacks/${caseId}/history`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/settings/managements/feedback/${caseId}/history`
+          === `/dashboard/cases/feedbacks/${caseId}/history`
             ? 'secondary'
             : 'primary'
         }
@@ -136,4 +136,4 @@ const TopMenuCase: FunctionComponent = () => {
   );
 };
 
-export default TopMenuCase;
+export default TopMenuFeedback;
