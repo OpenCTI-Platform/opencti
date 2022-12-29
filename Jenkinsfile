@@ -87,7 +87,9 @@ node {
     } catch (Exception e) {
       throw e
     } finally {
-      sh 'chown -R 997:995 .'
+      docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
+        sh 'chown -R 997:995 .'
+      }
     }
   }
 
