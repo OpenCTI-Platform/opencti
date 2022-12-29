@@ -308,7 +308,7 @@ class Risks extends Component {
         isSortable: true,
       },
       risk_level: {
-        label: 'Risk',
+        label: 'Severity',
         width: '12%',
         isSortable: true,
       },
