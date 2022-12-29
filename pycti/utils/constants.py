@@ -72,6 +72,7 @@ class ContainerTypes(Enum):
     OPINION = "Opinion"
     REPORT = "Report"
     GROUPING = "Grouping"
+    CASE = "Case"
 
     @classmethod
     def has_value(cls, value):
