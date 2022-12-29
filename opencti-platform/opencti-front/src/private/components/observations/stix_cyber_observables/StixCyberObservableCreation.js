@@ -31,7 +31,11 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
-import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+  QueryRenderer,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -238,7 +242,7 @@ const stixCyberObservableMutation = graphql`
         }
       }
       creator {
-        id 
+        id
         name
       }
     }
@@ -251,7 +255,17 @@ const stixCyberObservableValidation = () => Yup.object().shape({
   createIndicator: Yup.boolean(),
 });
 
-const StixCyberObservableCreation = ({ contextual, open, handleClose, type, display, speeddial, paginationKey, paginationOptions, openExports }) => {
+const StixCyberObservableCreation = ({
+  contextual,
+  open,
+  handleClose,
+  type,
+  display,
+  speeddial,
+  paginationKey,
+  paginationOptions,
+  openExports,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
@@ -322,7 +336,10 @@ const StixCyberObservableCreation = ({ contextual, open, handleClose, type, disp
     )(adaptedValues);
     const finalValues = {
       type: status.type,
-      x_opencti_description: values.x_opencti_description.length > 0 ? values.x_opencti_description : null,
+      x_opencti_description:
+        values.x_opencti_description.length > 0
+          ? values.x_opencti_description
+          : null,
       x_opencti_score: parseInt(values.x_opencti_score, 10),
       createdBy: propOr(null, 'value', values.createdBy),
       objectMarking: pluck('value', values.objectMarking),
@@ -337,7 +354,12 @@ const StixCyberObservableCreation = ({ contextual, open, handleClose, type, disp
     commitMutation({
       mutation: stixCyberObservableMutation,
       variables: finalValues,
-      updater: (store) => insertNode(store, paginationKey, paginationOptions, 'stixCyberObservableAdd'),
+      updater: (store) => insertNode(
+        store,
+        paginationKey,
+        paginationOptions,
+        'stixCyberObservableAdd',
+      ),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -448,7 +470,11 @@ const StixCyberObservableCreation = ({ contextual, open, handleClose, type, disp
                   setFieldValue,
                   values,
                 }) => (
-                  <Form style={{ margin: contextual ? '10px 0 0 0' : '0px 0 20px 0' }}>
+                  <Form
+                    style={{
+                      margin: contextual ? '10px 0 0 0' : '20px 0 20px 0',
+                    }}
+                  >
                     <div>
                       <Field
                         component={TextField}
@@ -503,9 +529,13 @@ const StixCyberObservableCreation = ({ contextual, open, handleClose, type, disp
                             <OpenVocabField
                               key={attribute.value}
                               label={t(attribute.value)}
-                              type={fieldToCategory(status.type, attribute.value)}
+                              type={fieldToCategory(
+                                status.type,
+                                attribute.value,
+                              )}
                               name={attribute.value}
-                              onChange={(name, value) => setFieldValue(name, value)}
+                              onChange={(name, value) => setFieldValue(name, value)
+                              }
                               containerStyle={fieldSpacingContainerStyle}
                               multiple={false}
                             />
@@ -660,7 +690,8 @@ const StixCyberObservableCreation = ({ contextual, open, handleClose, type, disp
               className={classes.closeButton}
               onClick={localHandleClose}
               size="large"
-              color="primary">
+              color="primary"
+            >
               <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Create an observable')}</Typography>
@@ -681,7 +712,8 @@ const StixCyberObservableCreation = ({ contextual, open, handleClose, type, disp
             onClick={handleOpen}
             color="secondary"
             aria-label="Add"
-            className={classes.createButtonContextual}>
+            className={classes.createButtonContextual}
+          >
             <Add />
           </Fab>
         )}
@@ -689,7 +721,8 @@ const StixCyberObservableCreation = ({ contextual, open, handleClose, type, disp
           open={speeddial ? open : status.open}
           PaperProps={{ elevation: 1 }}
           onClose={speeddial ? handleClose : localHandleClose}
-          fullWidth={true}>
+          fullWidth={true}
+        >
           <DialogTitle>{t('Create an observable')}</DialogTitle>
           <DialogContent style={{ paddingTop: 0 }}>
             {!status.type ? renderList() : renderForm()}

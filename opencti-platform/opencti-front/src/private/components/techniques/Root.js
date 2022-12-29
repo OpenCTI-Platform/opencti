@@ -77,7 +77,7 @@ const Root = () => {
       />
       <BoundaryRoute
         path="/dashboard/techniques/data_sources/:dataSourceId"
-        compoent={RootDataSource}
+        component={RootDataSource}
       />
     </Switch>
   );

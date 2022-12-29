@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field, Formik } from 'formik';
+import { Field, Formik, Form } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -293,7 +293,7 @@ const DataComponentCreation: FunctionComponent<{
               setFieldValue,
               values,
             }) => (
-              <div style={{ margin: '20px 0 20px 0' }}>
+              <Form style={{ margin: '20px 0 20px 0' }}>
                 {fields(setFieldValue, values)}
                 <div className={classes.buttons}>
                   <Button
@@ -314,7 +314,7 @@ const DataComponentCreation: FunctionComponent<{
                     {t('Create')}
                   </Button>
                 </div>
-              </div>
+              </Form>
             )}
           </Formik>
         </div>

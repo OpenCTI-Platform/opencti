@@ -6,25 +6,32 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataSourceCreation from './data_sources/DataSourceCreation';
-import DataSourcesLines, { dataSourcesLinesQuery } from './data_sources/DataSourcesLines';
-import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
+import DataSourcesLines, {
+  dataSourcesLinesQuery,
+} from './data_sources/DataSourcesLines';
+import {
+  DataSourcesLinesPaginationQuery,
+  DataSourcesLinesPaginationQuery$variables,
+} from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-data_sources';
 
 const DataSources: FunctionComponent = () => {
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY_DATA_SOURCES, {
-    searchTerm: '',
-    sortBy: 'name',
-    orderAsc: true,
-    openExports: false,
-    filters: {} as Filters,
-    numberOfElements: {
-      number: 0,
-      symbol: '',
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY_DATA_SOURCES,
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      openExports: false,
+      filters: {} as Filters,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
     },
-  });
-
+  );
   const renderLines = () => {
     const {
       searchTerm,
@@ -56,8 +63,10 @@ const DataSources: FunctionComponent = () => {
         isSortable: true,
       },
     };
-    const queryRef = useQueryLoading<DataSourcesLinesPaginationQuery>(dataSourcesLinesQuery, paginationOptions);
-
+    const queryRef = useQueryLoading<DataSourcesLinesPaginationQuery>(
+      dataSourcesLinesQuery,
+      paginationOptions,
+    );
     return (
       <ListLines
         sortBy={sortBy}
@@ -84,9 +93,17 @@ const DataSources: FunctionComponent = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense fallback={
-            <>{[0, 1, 2].map((idx) => (<DataSourceLineDummy key={idx} dataColumns={dataColumns} />))}</>
-          }>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <DataSourceLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
             <DataSourcesLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}

@@ -58,27 +58,21 @@ const Index = () => {
         <div className={classes.toolbar} />
         <Switch>
           <BoundaryRoute exact path="/dashboard" component={Dashboard} />
+          <BoundaryRoute exact path="/dashboard/search" component={Search} />
           <BoundaryRoute
             exact
-            path="/dashboard/search"
-            render={(routeProps) => <Search {...routeProps} />}
+            path="/dashboard/search/:keyword"
+            component={Search}
           />
           <BoundaryRoute
             exact
             path="/dashboard/id/:id"
-            render={(routeProps) => (
-              <StixCoreObjectOrStixCoreRelationship {...routeProps} />
-            )}
-          />
-          <BoundaryRoute
-            exact
-            path="/dashboard/search/:keyword"
-            render={(routeProps) => <Search {...routeProps} />}
+            component={StixCoreObjectOrStixCoreRelationship}
           />
           <BoundaryRoute
             exact
             path="/dashboard/search_bulk"
-            render={(routeProps) => <SearchBulk {...routeProps} />}
+            component={SearchBulk}
           />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/cases" component={RootCases} />

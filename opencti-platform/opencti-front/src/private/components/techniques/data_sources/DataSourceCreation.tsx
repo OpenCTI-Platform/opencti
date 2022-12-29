@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field, Formik } from 'formik';
+import { Field, Formik, Form } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -100,22 +100,22 @@ const dataSourceValidation = (t: (message: string) => string) => Yup.object().sh
 });
 
 interface DataSourceAddInput {
-  name: string,
-  description: string,
-  createdBy: Option | undefined,
-  objectMarking: Option[],
-  objectLabel: Option[],
-  externalReferences: Option[],
-  confidence: number,
-  x_mitre_platforms: string[],
-  collection_layers: string[],
+  name: string;
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  confidence: number;
+  x_mitre_platforms: string[];
+  collection_layers: string[];
 }
 
 interface DataSourceCreationProps {
-  contextual?: boolean,
-  display?: boolean,
-  inputValue?: string,
-  paginationOptions: DataSourcesLinesPaginationQuery$variables,
+  contextual?: boolean;
+  display?: boolean;
+  inputValue?: string;
+  paginationOptions: DataSourcesLinesPaginationQuery$variables;
 }
 
 const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
@@ -148,11 +148,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 
   const onSubmit: FormikConfig<DataSourceAddInput>['onSubmit'] = (
     values: DataSourceAddInput,
-    {
-      setSubmitting,
-      setErrors,
-      resetForm,
-    }: FormikHelpers<DataSourceAddInput>,
+    { setSubmitting, setErrors, resetForm }: FormikHelpers<DataSourceAddInput>,
   ) => {
     const finalValues = {
       name: values.name,
@@ -189,7 +185,14 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
     });
   };
 
-  const fields = (setFieldValue: (field: string, value: unknown, shouldValidate?: (boolean | undefined)) => void, values: DataSourceAddInput) => (
+  const fields = (
+    setFieldValue: (
+      field: string,
+      value: unknown,
+      shouldValidate?: boolean | undefined
+    ) => void,
+    values: DataSourceAddInput,
+  ) => (
     <React.Fragment>
       <Field
         component={TextField}
@@ -310,7 +313,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
               setFieldValue,
               values,
             }) => (
-              <div style={{ margin: '20px 0 20px 0' }}>
+              <Form style={{ margin: '20px 0 20px 0' }}>
                 {fields(setFieldValue, values)}
                 <div className={classes.buttons}>
                   <Button
@@ -331,7 +334,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
                     {t('Create')}
                   </Button>
                 </div>
-              </div>
+              </Form>
             )}
           </Formik>
         </div>
@@ -349,11 +352,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
       >
         <Add />
       </Fab>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{ elevation: 1 }}
-      >
+      <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
         <Formik
           initialValues={initialValues}
           validationSchema={dataSourceValidation(t)}
@@ -369,14 +368,9 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
           }) => (
             <div>
               <DialogTitle>{t('Create a data source')}</DialogTitle>
-              <DialogContent>
-                {fields(setFieldValue, values)}
-              </DialogContent>
+              <DialogContent>{fields(setFieldValue, values)}</DialogContent>
               <DialogActions classes={{ root: classes.dialogActions }}>
-                <Button
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={handleReset} disabled={isSubmitting}>
                   {t('Cancel')}
                 </Button>
                 <Button

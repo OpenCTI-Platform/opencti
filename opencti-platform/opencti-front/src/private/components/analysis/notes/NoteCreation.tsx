@@ -316,7 +316,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
                 setFieldValue,
                 values,
               }) => (
-                <div style={{ margin: '0px 0 20px 0' }}>
+                <Form style={{ margin: '20px 0 20px 0' }}>
                   {fields(setFieldValue, values)}
                   <div className={classes.buttons}>
                     <Button
@@ -337,7 +337,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
                       {t('Create')}
                     </Button>
                   </div>
-                </div>
+                </Form>
               )}
             </Formik>
           </div>

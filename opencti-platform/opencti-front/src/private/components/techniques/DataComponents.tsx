@@ -1,12 +1,17 @@
 import React, { FunctionComponent } from 'react';
-import DataComponentLines, { dataComponentsLinesQuery } from './data_components/DataComponentsLines';
+import DataComponentLines, {
+  dataComponentsLinesQuery,
+} from './data_components/DataComponentsLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import DataComponentCreation from './data_components/DataComponentCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import { Filters } from '../../../components/list_lines';
-import { DataComponentsLinesPaginationQuery, DataComponentsLinesPaginationQuery$variables } from './data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
+import {
+  DataComponentsLinesPaginationQuery,
+  DataComponentsLinesPaginationQuery$variables,
+} from './data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataComponentLineDummy from './data_components/DataComponentLineDummy';
 
@@ -60,7 +65,10 @@ const DataComponents: FunctionComponent = () => {
       },
     };
 
-    const queryRef = useQueryLoading<DataComponentsLinesPaginationQuery>(dataComponentsLinesQuery, paginationOptions);
+    const queryRef = useQueryLoading<DataComponentsLinesPaginationQuery>(
+      dataComponentsLinesQuery,
+      paginationOptions,
+    );
 
     return (
       <ListLines
@@ -88,9 +96,20 @@ const DataComponents: FunctionComponent = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense fallback={
-            <>{[0, 1, 2].map((idx) => (<DataComponentLineDummy key={idx} dataColumns={dataColumns} />))}</>
-          }>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <DataComponentLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+            }
+          >
             <DataComponentLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}

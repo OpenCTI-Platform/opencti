@@ -187,7 +187,7 @@ class IntrusionSetCreation extends Component {
                 setFieldValue,
                 values,
               }) => (
-                <Form style={{ margin: '0px 0 20px 0' }}>
+                <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
                     variant="standard"

@@ -85,7 +85,6 @@ const dataSourceFragment = graphql`
 const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
   const classes = useStyles();
   const dataSource = useFragment(dataSourceFragment, data);
-
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
