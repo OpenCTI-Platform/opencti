@@ -41,7 +41,6 @@ import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
-import { batchUsers } from '../domain/user';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 
@@ -54,7 +53,6 @@ const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
 const observedDataLoader = batchLoader(batchObservedData);
 const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
-const creatorsLoader = batchLoader(batchUsers);
 
 const stixCoreObjectResolvers = {
   Query: {
@@ -91,7 +89,6 @@ const stixCoreObjectResolvers = {
       return 'Unknown';
     },
     toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
-    creator: (stixCoreObject, _, context) => creatorsLoader.load(stixCoreObject.creator_id, context, context.user),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     stixCoreObjectsDistribution: (stixCoreObject, args, context) => stixCoreObjectsDistributionByEntity(context, context.user, { ...args, objectId: stixCoreObject.id }),
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),

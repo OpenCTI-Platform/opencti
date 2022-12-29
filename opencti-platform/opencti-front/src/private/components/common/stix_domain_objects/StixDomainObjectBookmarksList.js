@@ -284,7 +284,7 @@ const StixDomainObjectBookmarksList = ({
                     const bookmark = bookmarkEdge.node;
                     const link = resolveLink(bookmark.entity_type);
                     return (
-                      <Grid item={true} xs={4}>
+                      <Grid item={true} xs={4} key={bookmark.id}>
                         <Card
                           classes={{ root: classes.card }}
                           variant="outlined"

@@ -11,7 +11,10 @@ import NoteEdition from './NoteEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import Security, { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import NotePopover from './NotePopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -30,13 +33,21 @@ class NoteComponent extends Component {
     const { classes, note } = this.props;
     return (
       <div className={classes.container}>
-        <CollaborativeSecurity data={note}
-                               needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-                               placeholder={<ContainerHeader container={note}
-                                                             PopoverComponent={<NotePopover note={note} />}/>}>
-          <ContainerHeader container={note}
-                           PopoverComponent={<NotePopover note={note} />}
-                           popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}/>
+        <CollaborativeSecurity
+          data={note}
+          needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+          placeholder={
+            <ContainerHeader
+              container={note}
+              PopoverComponent={<NotePopover note={note} />}
+            />
+          }
+        >
+          <ContainerHeader
+            container={note}
+            PopoverComponent={<NotePopover note={note} />}
+            popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}
+          />
         </CollaborativeSecurity>
         <Grid
           container={true}
@@ -44,7 +55,7 @@ class NoteComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ContainerStixObjectsOrStixRelationships isSupportParticipation={true} container={note} />
+            <NoteDetails note={note} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={note} />
@@ -57,7 +68,10 @@ class NoteComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={12}>
-            <NoteDetails note={note} />
+            <ContainerStixObjectsOrStixRelationships
+              isSupportParticipation={true}
+              container={note}
+            />
           </Grid>
         </Grid>
         <Grid

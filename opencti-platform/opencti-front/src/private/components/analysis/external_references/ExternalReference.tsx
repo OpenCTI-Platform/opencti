@@ -23,24 +23,31 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ExternalReferenceComponentProps {
-  externalReference: ExternalReference_externalReference$data,
+  externalReference: ExternalReference_externalReference$data;
   connectorsImport: {
-    id: string,
-    name: string,
-    active: boolean,
-    connector_scope: string[],
-    updated_at: string,
-  }[],
+    id: string;
+    name: string;
+    active: boolean;
+    connector_scope: string[];
+    updated_at: string;
+  }[];
 }
 
-const ExternalReferenceComponent: FunctionComponent<ExternalReferenceComponentProps> = ({ externalReference, connectorsImport }) => {
+const ExternalReferenceComponent: FunctionComponent<
+ExternalReferenceComponentProps
+> = ({ externalReference, connectorsImport }) => {
   const classes = useStyles();
-
   return (
     <div className={classes.container}>
       <ExternalReferenceHeader
         externalReference={externalReference}
-        PopoverComponent={<ExternalReferencePopover id={''} handleRemove={undefined} entityId={''} />}
+        PopoverComponent={
+          <ExternalReferencePopover
+            id={''}
+            handleRemove={undefined}
+            entityId={''}
+          />
+        }
       />
       <Grid
         container={true}
@@ -73,9 +80,7 @@ const ExternalReferenceComponent: FunctionComponent<ExternalReferenceComponentPr
         </Grid>
       </Grid>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ExternalReferenceEdition
-          externalReferenceId={externalReference.id}
-        />
+        <ExternalReferenceEdition externalReferenceId={externalReference.id} />
       </Security>
     </div>
   );

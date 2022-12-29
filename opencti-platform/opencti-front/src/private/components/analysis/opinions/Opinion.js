@@ -40,7 +40,7 @@ class OpinionComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <ContainerStixObjectsOrStixRelationships container={opinion} />
+            <OpinionDetails opinion={opinion} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={opinion} />
@@ -53,7 +53,7 @@ class OpinionComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={12}>
-            <OpinionDetails opinion={opinion} />
+            <ContainerStixObjectsOrStixRelationships container={opinion} />
           </Grid>
         </Grid>
         <Grid

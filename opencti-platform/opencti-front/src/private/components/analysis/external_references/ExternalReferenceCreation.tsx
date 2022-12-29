@@ -17,14 +17,15 @@ import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { insertNode } from '../../../../utils/store';
-import {
-  ExternalReferencesLinesPaginationQuery$variables,
-} from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import {
   ExternalReferenceAddInput,
@@ -92,6 +93,10 @@ export const externalReferenceCreationMutation = graphql`
       external_id
       created
       fileId
+      creator {
+        id
+        name
+      }
     }
   }
 `;
@@ -105,20 +110,23 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
 });
 
 interface ExternalReferenceCreationProps {
-  paginationOptions?: ExternalReferencesLinesPaginationQuery$variables,
-  display?: boolean,
-  contextual?: boolean,
-  inputValue?: string,
+  paginationOptions?: ExternalReferencesLinesPaginationQuery$variables;
+  display?: boolean;
+  contextual?: boolean;
+  inputValue?: string;
   onCreate?: (
     externalReference: ExternalReferenceAddInput | null,
-    onlyCreate: boolean) => void,
-  openContextual: boolean,
-  handleCloseContextual?: () => void,
-  creationCallback?: (data: ExternalReferenceCreationMutation$data) => void,
-  dryrun?: boolean,
+    onlyCreate: boolean
+  ) => void;
+  openContextual: boolean;
+  handleCloseContextual?: () => void;
+  creationCallback?: (data: ExternalReferenceCreationMutation$data) => void;
+  dryrun?: boolean;
 }
 
-const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProps> = ({
+const ExternalReferenceCreation: FunctionComponent<
+ExternalReferenceCreationProps
+> = ({
   contextual,
   paginationOptions,
   display,
@@ -131,18 +139,17 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
     setOpen(false);
   };
-
-  const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     if (dryrun && onCreate) {
       onCreate(values, true);
@@ -177,11 +184,12 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       optimisticResponse: undefined,
     });
   };
-
   const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     if (dryrun && creationCallback && handleCloseContextual) {
-      creationCallback({ externalReferenceAdd: values } as ExternalReferenceCreationMutation$data);
+      creationCallback({
+        externalReferenceAdd: values,
+      } as ExternalReferenceCreationMutation$data);
       handleCloseContextual();
       return;
     }
@@ -208,11 +216,9 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       optimisticResponse: undefined,
     });
   };
-
   const onResetClassic = () => {
     handleClose();
   };
-
   const onResetContextual = () => {
     if (handleCloseContextual) {
       handleCloseContextual();
@@ -220,7 +226,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       handleClose();
     }
   };
-
   const renderClassic = () => {
     return (
       <div>
@@ -342,7 +347,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       </div>
     );
   };
-
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -359,9 +363,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={!handleCloseContextual ? open : openContextual}
-          onClose={
-            !handleCloseContextual ? handleClose : handleCloseContextual
-          }
+          onClose={!handleCloseContextual ? handleClose : handleCloseContextual}
         >
           <Formik
             enableReinitialize={true}
@@ -373,11 +375,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               file: '',
             }}
             validationSchema={externalReferenceValidation(t)}
-            onSubmit={
-              !handleCloseContextual
-                ? onSubmit
-                : onSubmitContextual
-            }
+            onSubmit={!handleCloseContextual ? onSubmit : onSubmitContextual}
             onReset={onResetContextual}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -455,7 +453,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       </div>
     );
   };
-
   return contextual ? renderContextual() : renderClassic();
 };
 

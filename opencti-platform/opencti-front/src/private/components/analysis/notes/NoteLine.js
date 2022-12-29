@@ -200,6 +200,7 @@ const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
   node: graphql`
     fragment NoteLine_node on Note {
       id
+      entity_type
       attribute_abstract
       content
       created

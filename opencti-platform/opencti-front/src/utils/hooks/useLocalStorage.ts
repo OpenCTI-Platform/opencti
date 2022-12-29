@@ -39,7 +39,8 @@ export const localStorageToPaginationOptions = <U>({
   const localOptions = { ...props };
   delete localOptions.openExports;
   delete localOptions.numberOfElements;
-
+  delete localOptions.view;
+  delete localOptions.zoom;
   return ({
     ...localOptions,
     search: searchTerm,

@@ -223,6 +223,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
             >
               {(note.note_types ?? [t('Unknown')]).map((type) => (
                 <Chip
+                  key={type}
                   classes={{ root: classes.chipInList }}
                   color="primary"
                   variant="outlined"

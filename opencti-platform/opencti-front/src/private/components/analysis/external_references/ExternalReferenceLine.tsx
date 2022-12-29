@@ -72,6 +72,11 @@ interface ExternalReferenceLineComponentProps {
       width: string;
       isSortable: boolean;
     };
+    creator: {
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     created: {
       label: string;
       width: string;
@@ -86,7 +91,6 @@ ExternalReferenceLineComponentProps
 > = ({ dataColumns, node }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
-
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -123,6 +127,12 @@ ExternalReferenceLineComponentProps
             </Tooltip>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns?.creator.width }}
+            >
+              {node?.creator?.name}
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns?.created.width }}
             >
               {fd(node?.created)}
@@ -143,10 +153,15 @@ const ExternalReferenceLineFragment = createFragmentContainer(
     node: graphql`
       fragment ExternalReferenceLine_node on ExternalReference {
         id
+        entity_type
         source_name
         external_id
         url
         created
+        creator {
+          id
+          name
+        }
       }
     `,
   },
@@ -167,6 +182,11 @@ interface ExternalReferenceLineDummyComponentProps {
       isSortable: boolean;
     };
     url: {
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
+    creator: {
       label: string;
       width: string;
       isSortable: boolean;
@@ -221,6 +241,17 @@ ExternalReferenceLineDummyComponentProps
                 animation="wave"
                 variant="rectangular"
                 width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns?.creator.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
                 height="100%"
               />
             </div>

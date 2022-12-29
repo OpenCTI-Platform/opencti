@@ -1,6 +1,9 @@
 import { stixDelete, stixObjectMerge } from '../domain/stix';
-import { stixLoadByIdStringify } from '../database/middleware';
+import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
+import { batchUsers } from '../domain/user';
+
+const creatorsLoader = batchLoader(batchUsers);
 
 const stixResolvers = {
   Query: {
@@ -22,6 +25,7 @@ const stixResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
+    creator: (stix, _, context) => creatorsLoader.load(stix.creator_id, context, context.user),
   }
 };
 

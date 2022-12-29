@@ -326,24 +326,9 @@ class Notes extends Component {
   }
 
   render() {
-    const {
-      match: {
-        params: { noteType },
-      },
-      objectId,
-      authorId,
-    } = this.props;
+    const { objectId, authorId } = this.props;
     const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
-    const noteFilterClass = noteType !== 'all' && noteType !== undefined
-      ? noteType.replace(/_/g, ' ')
-      : '';
     const finalFilters = convertFilters(filters);
-    if (noteFilterClass) {
-      finalFilters.push({
-        key: 'note_types',
-        values: [noteFilterClass],
-      });
-    }
     if (authorId) finalFilters.push({ key: 'createdBy', values: [authorId] });
     if (objectId) finalFilters.push({ key: 'objectContains', values: [objectId] });
     const paginationOptions = {
@@ -356,9 +341,7 @@ class Notes extends Component {
       <UserContext.Consumer>
         {({ helper }) => (
           <div>
-            {view === 'lines'
-              ? this.renderLines(paginationOptions, helper)
-              : ''}
+            {view === 'lines' && this.renderLines(paginationOptions, helper)}
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <NoteCreation paginationOptions={paginationOptions} />
             </Security>

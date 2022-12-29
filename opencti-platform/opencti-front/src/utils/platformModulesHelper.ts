@@ -4,7 +4,7 @@ import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery
 export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
   isFeatureEnable: (id: string) => boolean;
-  isRuntimeFieldEnable: (id: string) => boolean;
+  isRuntimeFieldEnable: () => boolean;
   isEntityTypeHidden: (id: string) => boolean;
   isRuleEngineEnable: () => boolean;
 }
