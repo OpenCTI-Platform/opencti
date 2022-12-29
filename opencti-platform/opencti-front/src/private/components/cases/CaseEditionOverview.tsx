@@ -218,7 +218,7 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
       onSubmit={onSubmit}>
       {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
-          {caseData?.workflowEnabled && (
+          {caseData.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Case"
