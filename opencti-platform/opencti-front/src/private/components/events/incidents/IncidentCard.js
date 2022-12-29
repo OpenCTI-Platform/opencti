@@ -16,6 +16,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import { itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   card: {
@@ -38,7 +39,6 @@ const styles = (theme) => ({
   icon: {
     margin: '10px 20px 0 0',
     fontSize: 40,
-    color: '#242d30',
   },
   area: {
     width: '100%',
@@ -104,7 +104,12 @@ class IncidentCardComponent extends Component {
             }
             title={node.name}
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}
-            action={<Fire className={classes.icon} />}
+            action={
+              <Fire
+                className={classes.icon}
+                style={{ color: itemColor('Incident') }}
+              />
+            }
           />
           <CardContent className={classes.content}>
             <div className={classes.description}>

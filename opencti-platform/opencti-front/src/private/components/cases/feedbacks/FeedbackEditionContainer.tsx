@@ -4,12 +4,12 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { SubscriptionAvatars } from '../../../components/Subscription';
-import { Theme } from '../../../components/Theme';
-import { useFormatter } from '../../../components/i18n';
-import ErrorNotFound from '../../../components/ErrorNotFound';
-import CaseEditionOverview from './CaseEditionOverview';
-import { CaseEditionContainerQuery } from './__generated__/CaseEditionContainerQuery.graphql';
+import { SubscriptionAvatars } from '../../../../components/Subscription';
+import { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import CaseEditionOverview from './FeedbackEditionOverview';
+import { FeedbackEditionContainerQuery } from './__generated__/FeedbackEditionContainerQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -41,14 +41,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CaseEditionContainerProps {
-  queryRef: PreloadedQuery<CaseEditionContainerQuery>
-  handleClose: () => void,
+  queryRef: PreloadedQuery<FeedbackEditionContainerQuery>;
+  handleClose: () => void;
 }
 
-export const caseEditionQuery = graphql`
-  query CaseEditionContainerQuery($id: String!) {
+export const feedbackEditionQuery = graphql`
+  query FeedbackEditionContainerQuery($id: String!) {
     case(id: $id) {
-      ...CaseEditionOverview_case
+      ...FeedbackEditionOverview_case
       editContext {
         name
         focusOn
@@ -57,14 +57,14 @@ export const caseEditionQuery = graphql`
   }
 `;
 
-const CaseEditionContainer: FunctionComponent<CaseEditionContainerProps> = ({ queryRef, handleClose }) => {
+const FeedbackEditionContainer: FunctionComponent<
+CaseEditionContainerProps
+> = ({ queryRef, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const queryData = usePreloadedQuery(caseEditionQuery, queryRef);
-
+  const queryData = usePreloadedQuery(feedbackEditionQuery, queryRef);
   if (queryData.case === null) {
-    return (<ErrorNotFound />);
+    return <ErrorNotFound />;
   }
   return (
     <div>
@@ -79,7 +79,7 @@ const CaseEditionContainer: FunctionComponent<CaseEditionContainerProps> = ({ qu
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a case')}
+          {t('Update a feedback')}
         </Typography>
         <SubscriptionAvatars context={queryData.case.editContext} />
         <div className="clearfix" />
@@ -95,4 +95,4 @@ const CaseEditionContainer: FunctionComponent<CaseEditionContainerProps> = ({ qu
   );
 };
 
-export default CaseEditionContainer;
+export default FeedbackEditionContainer;

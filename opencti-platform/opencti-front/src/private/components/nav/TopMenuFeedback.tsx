@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, FeedbackOutlined } from '@mui/icons-material';
+import {
+  ArrowForwardIosOutlined,
+  TipsAndUpdatesOutlined,
+} from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
@@ -34,7 +37,6 @@ const TopMenuFeedback: FunctionComponent = () => {
   const { t } = useFormatter();
   const classes = styles();
   const { caseId } = useParams() as { caseId: string };
-
   return (
     <div>
       <Button
@@ -45,7 +47,7 @@ const TopMenuFeedback: FunctionComponent = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <FeedbackOutlined className={classes.icon} fontSize="small" />
+        <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
         {t('Feedbacks')}
       </Button>
       <ArrowForwardIosOutlined
@@ -56,15 +58,13 @@ const TopMenuFeedback: FunctionComponent = () => {
         component={Link}
         to={`/dashboard/cases/feedbacks/${caseId}`}
         variant={
-          location.pathname
-          === `/dashboard/cases/feedbacks/${caseId}`
+          location.pathname === `/dashboard/cases/feedbacks/${caseId}`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname
-          === `/dashboard/cases/feedbacks/${caseId}`
+          location.pathname === `/dashboard/cases/feedbacks/${caseId}`
             ? 'secondary'
             : 'primary'
         }
@@ -72,59 +72,53 @@ const TopMenuFeedback: FunctionComponent = () => {
       >
         {t('Overview')}
       </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/cases/feedbacks/${caseId}/content`}
-          variant={
-            location.pathname
-            === `/dashboard/cases/feedbacks/${caseId}/content`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/cases/feedbacks/${caseId}/content`
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Content')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/cases/feedbacks/${caseId}/files`}
-          variant={
-            location.pathname
-            === `/dashboard/cases/feedbacks/${caseId}/files`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/cases/feedbacks/${caseId}/files`
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Data')}
-        </Button>
       <Button
         component={Link}
-        to={`/dashboard/cases/feedbacks/${caseId}/history`}
+        to={`/dashboard/cases/feedbacks/${caseId}/content`}
         variant={
-          location.pathname
-          === `/dashboard/cases/feedbacks/${caseId}/history`
+          location.pathname === `/dashboard/cases/feedbacks/${caseId}/content`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname
-          === `/dashboard/cases/feedbacks/${caseId}/history`
+          location.pathname === `/dashboard/cases/feedbacks/${caseId}/content`
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Content')}
+      </Button>
+      <Button
+        component={Link}
+        to={`/dashboard/cases/feedbacks/${caseId}/files`}
+        variant={
+          location.pathname === `/dashboard/cases/feedbacks/${caseId}/files`
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === `/dashboard/cases/feedbacks/${caseId}/files`
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Data')}
+      </Button>
+      <Button
+        component={Link}
+        to={`/dashboard/cases/feedbacks/${caseId}/history`}
+        variant={
+          location.pathname === `/dashboard/cases/feedbacks/${caseId}/history`
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === `/dashboard/cases/feedbacks/${caseId}/history`
             ? 'secondary'
             : 'primary'
         }

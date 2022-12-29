@@ -6,9 +6,9 @@ import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import {
   LanguageOutlined,
-  WorkOutline,
+  SubjectOutlined,
   DescriptionOutlined,
-  FeedbackOutlined,
+  ReviewsOutlined,
   WorkspacesOutlined,
 } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
@@ -85,7 +85,7 @@ class TopMenuAnalysis extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <WorkOutline className={classes.icon} fontSize="small" />
+          <SubjectOutlined className={classes.icon} fontSize="small" />
           {t('Notes')}
         </Button>
         <Button
@@ -104,7 +104,7 @@ class TopMenuAnalysis extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <FeedbackOutlined className={classes.icon} fontSize="small" />
+          <ReviewsOutlined className={classes.icon} fontSize="small" />
           {t('Opinions')}
         </Button>
         <Button

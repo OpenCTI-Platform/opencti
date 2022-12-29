@@ -4,10 +4,13 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, FeedbackOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined, ReviewsOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -52,7 +55,7 @@ class TopMenuOpinion extends Component {
           color="primary"
           classes={{ root: classes.buttonHome }}
         >
-          <FeedbackOutlined className={classes.icon} fontSize="small" />
+          <ReviewsOutlined className={classes.icon} fontSize="small" />
           {t('Opinions')}
         </Button>
         <ArrowForwardIosOutlined

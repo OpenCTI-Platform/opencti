@@ -71,7 +71,7 @@ import TopMenuLocation from './TopMenuLocation';
 import TopMenuDataComponent from './TopMenuDataComponent';
 import TopMenuDataSource from './TopMenuDataSource';
 import TopMenuFeedback from './TopMenuFeedback';
-import FeedbackCreation from '../cases/FeedbackCreation';
+import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
 
 const useStyles = makeStyles((theme) => ({

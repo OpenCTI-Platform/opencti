@@ -13,16 +13,18 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
-import { useFormatter } from '../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../components/Loader';
-import Security from '../../../utils/Security';
-import { Theme } from '../../../components/Theme';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import Transition from '../../../components/Transition';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
-import useDeletion from '../../../utils/hooks/useDeletion';
-import CaseEditionContainer, { caseEditionQuery } from './CaseEditionContainer';
-import { CaseEditionContainerQuery } from './__generated__/CaseEditionContainerQuery.graphql';
+import { useFormatter } from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import Security from '../../../../utils/Security';
+import { Theme } from '../../../../components/Theme';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Transition from '../../../../components/Transition';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import FeedbackEditionContainer, {
+  feedbackEditionQuery,
+} from './FeedbackEditionContainer';
+import { FeedbackEditionContainerQuery } from './__generated__/FeedbackEditionContainerQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -41,13 +43,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const CasePopoverDeletionMutation = graphql`
-  mutation CasePopoverDeletionMutation($id: ID!) {
+const feedbackPopoverDeletionMutation = graphql`
+  mutation FeedbackPopoverDeletionMutation($id: ID!) {
     caseDelete(id: $id)
   }
 `;
 
-const CasePopover = ({ id }: { id: string }) => {
+const FeedbackPopover = ({ id }: { id: string }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -56,8 +58,11 @@ const CasePopover = ({ id }: { id: string }) => {
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
 
-  const [commit] = useMutation(CasePopoverDeletionMutation);
-  const queryRef = useQueryLoading<CaseEditionContainerQuery>(caseEditionQuery, { id });
+  const [commit] = useMutation(feedbackPopoverDeletionMutation);
+  const queryRef = useQueryLoading<FeedbackEditionContainerQuery>(
+    feedbackEditionQuery,
+    { id },
+  );
 
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
@@ -108,18 +113,10 @@ const CasePopover = ({ id }: { id: string }) => {
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenEdit}>
-          {t('Update')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
       <Dialog
@@ -135,17 +132,10 @@ const CasePopover = ({ id }: { id: string }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>
@@ -159,8 +149,10 @@ const CasePopover = ({ id }: { id: string }) => {
         onClose={handleCloseEdit}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <CaseEditionContainer
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <FeedbackEditionContainer
               queryRef={queryRef}
               handleClose={handleClose}
             />
@@ -171,4 +163,4 @@ const CasePopover = ({ id }: { id: string }) => {
   );
 };
 
-export default CasePopover;
+export default FeedbackPopover;

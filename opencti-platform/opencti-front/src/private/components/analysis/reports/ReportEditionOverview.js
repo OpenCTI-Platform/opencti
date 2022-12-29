@@ -18,7 +18,11 @@ import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
@@ -284,124 +288,122 @@ class ReportEditionOverviewComponent extends Component {
                     setFieldValue,
                     values,
                   }) => (
-                    <div>
-                      <Form style={{ margin: '0px 0 20px 0' }}>
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name="name"
-                          label={t('Name')}
-                          fullWidth={true}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
+                    <Form style={{ margin: '0px 0 20px 0' }}>
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        name="name"
+                        label={t('Name')}
+                        fullWidth={true}
+                        onFocus={this.handleChangeFocus.bind(this)}
+                        onSubmit={this.handleSubmitField.bind(this)}
+                        helperText={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldName="name"
+                          />
+                        }
+                      />
+                      <OpenVocabField
+                        label={t('Report types')}
+                        type="report_types_ov"
+                        name="report_types"
+                        onSubmit={this.handleSubmitField.bind(this)}
+                        onChange={(name, value) => setFieldValue(name, value)}
+                        containerStyle={fieldSpacingContainerStyle}
+                        variant="edit"
+                        multiple={true}
+                        editContext={context}
+                      />
+                      <ConfidenceField
+                        name="confidence"
+                        onFocus={this.handleChangeFocus.bind(this)}
+                        onChange={this.handleSubmitField.bind(this)}
+                        label={t('Confidence')}
+                        fullWidth={true}
+                        containerStyle={fieldSpacingContainerStyle}
+                        editContext={context}
+                        variant="edit"
+                      />
+                      <Field
+                        component={DateTimePickerField}
+                        name="published"
+                        onFocus={this.handleChangeFocus.bind(this)}
+                        onSubmit={this.handleSubmitField.bind(this)}
+                        TextFieldProps={{
+                          label: t('Publication date'),
+                          variant: 'standard',
+                          fullWidth: true,
+                          style: { marginTop: 20 },
+                          helperText: (
                             <SubscriptionFocus
                               context={context}
-                              fieldName="name"
+                              fieldName="published"
                             />
-                          }
-                        />
-                        <OpenVocabField
-                          label={t('Report types')}
-                          type="report_types_ov"
-                          name="report_types"
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          onChange={(name, value) => setFieldValue(name, value)}
-                          containerStyle={fieldSpacingContainerStyle}
-                          variant="edit"
-                          multiple={true}
-                          editContext={context}
-                        />
-                        <ConfidenceField
-                          name="confidence"
+                          ),
+                        }}
+                      />
+                      <Field
+                        component={MarkDownField}
+                        name="description"
+                        label={t('Description')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={{ marginTop: 20 }}
+                        onFocus={this.handleChangeFocus.bind(this)}
+                        onSubmit={this.handleSubmitField.bind(this)}
+                      />
+                      {report.workflowEnabled && (
+                        <StatusField
+                          name="x_opencti_workflow_id"
+                          type="Report"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
-                          label={t('Confidence')}
-                          fullWidth={true}
-                          containerStyle={fieldSpacingContainerStyle}
-                          editContext={context}
-                          variant="edit"
-                        />
-                        <Field
-                          component={DateTimePickerField}
-                          name="published"
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          TextFieldProps={{
-                            label: t('Publication date'),
-                            variant: 'standard',
-                            fullWidth: true,
-                            style: { marginTop: 20 },
-                            helperText: (
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName="published"
-                              />
-                            ),
-                          }}
-                        />
-                        <Field
-                          component={MarkDownField}
-                          name="description"
-                          label={t('Description')}
-                          fullWidth={true}
-                          multiline={true}
-                          rows="4"
-                          style={{ marginTop: 20 }}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                        />
-                        {report.workflowEnabled && (
-                          <StatusField
-                            name="x_opencti_workflow_id"
-                            type="Report"
-                            onFocus={this.handleChangeFocus.bind(this)}
-                            onChange={this.handleSubmitField.bind(this)}
-                            setFieldValue={setFieldValue}
-                            style={{ marginTop: 20 }}
-                            helpertext={
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName="x_opencti_workflow_id"
-                              />
-                            }
-                          />
-                        )}
-                        <CreatedByField
-                          name="createdBy"
-                          style={{ marginTop: 20, width: '100%' }}
                           setFieldValue={setFieldValue}
+                          style={{ marginTop: 20 }}
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="createdBy"
+                              fieldName="x_opencti_workflow_id"
                             />
                           }
-                          onChange={this.handleChangeCreatedBy.bind(this)}
                         />
-                        <ObjectMarkingField
-                          name="objectMarking"
-                          style={{ marginTop: 20, width: '100%' }}
-                          helpertext={
-                            <SubscriptionFocus
-                              context={context}
-                              fieldname="objectMarking"
-                            />
-                          }
-                          onChange={this.handleChangeObjectMarking.bind(this)}
-                        />
-                        {enableReferences && (
-                          <CommitMessage
-                            submitForm={submitForm}
-                            disabled={isSubmitting}
-                            validateForm={validateForm}
-                            setFieldValue={setFieldValue}
-                            values={values}
-                            id={report.id}
+                      )}
+                      <CreatedByField
+                        name="createdBy"
+                        style={{ marginTop: 20, width: '100%' }}
+                        setFieldValue={setFieldValue}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldName="createdBy"
                           />
-                        )}
-                      </Form>
-                    </div>
+                        }
+                        onChange={this.handleChangeCreatedBy.bind(this)}
+                      />
+                      <ObjectMarkingField
+                        name="objectMarking"
+                        style={{ marginTop: 20, width: '100%' }}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldname="objectMarking"
+                          />
+                        }
+                        onChange={this.handleChangeObjectMarking.bind(this)}
+                      />
+                      {enableReferences && (
+                        <CommitMessage
+                          submitForm={submitForm}
+                          disabled={isSubmitting}
+                          validateForm={validateForm}
+                          setFieldValue={setFieldValue}
+                          values={values}
+                          id={report.id}
+                        />
+                      )}
+                    </Form>
                   )}
                 </Formik>
               );

@@ -1575,6 +1575,7 @@ export type CaseEdge = {
 };
 
 export enum CasesFilter {
+  CaseType = 'case_type',
   Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -1596,6 +1597,7 @@ export type CasesFiltering = {
 };
 
 export enum CasesOrdering {
+  CaseType = 'case_type',
   Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',

@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { FeedbackOutlined } from '@mui/icons-material';
+import {
+  BiotechOutlined,
+  TipsAndUpdatesOutlined,
+  TaskAltOutlined,
+} from '@mui/icons-material';
+import { Brain } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
 
@@ -23,17 +28,87 @@ const TopMenuCases = () => {
   const location = useLocation();
   const classes = useStyles();
   return (
-      <div>
-        <Button component={Link}
-          to="/dashboard/cases/feedbacks"
-          variant={location.pathname === '/dashboard/cases/feedbacks' ? 'contained' : 'text'}
-          size="small"
-          color={location.pathname === '/dashboard/cases/feedbacks' ? 'secondary' : 'primary'}
-          classes={{ root: classes.button }}>
-          <FeedbackOutlined className={classes.icon} fontSize="small" />
-          {t('Feedbacks')}
-        </Button>
-      </div>
+    <div>
+      <Button
+        component={Link}
+        to="/dashboard/cases/feedbacks"
+        variant={
+          location.pathname === '/dashboard/cases/incidents'
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === '/dashboard/cases/incidents'
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+        disabled={true}
+      >
+        <BiotechOutlined className={classes.icon} fontSize="small" />
+        {t('Incident response')}
+      </Button>
+      <Button
+        component={Link}
+        to="/dashboard/cases/feedbacks"
+        variant={
+          location.pathname === '/dashboard/cases/rfis'
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === '/dashboard/cases/rfis'
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+        disabled={true}
+      >
+        <Brain className={classes.icon} fontSize="small" />
+        {t('RFIs')}
+      </Button>
+      <Button
+        component={Link}
+        to="/dashboard/cases/feedbacks"
+        variant={
+          location.pathname === '/dashboard/cases/feedbacks'
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === '/dashboard/cases/feedbacks'
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
+        {t('Feedbacks')}
+      </Button>
+      <Button
+        component={Link}
+        to="/dashboard/cases/feedbacks"
+        variant={
+          location.pathname === '/dashboard/cases/tasks'
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === '/dashboard/cases/tasks'
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+        disabled={true}
+      >
+        <TaskAltOutlined className={classes.icon} fontSize="small" />
+        {t('Tasks')}
+      </Button>
+    </div>
   );
 };
 

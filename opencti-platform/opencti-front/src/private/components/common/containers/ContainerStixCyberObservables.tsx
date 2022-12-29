@@ -248,7 +248,7 @@ ContainerStixCyberObservablesComponentProps
   };
 
   const buildColumns = (helper: ModuleHelper | undefined) => {
-    const isRuntimeSort = helper?.isRuntimeFieldEnable('RUNTIME_SORTING');
+    const isRuntimeSort = helper?.isRuntimeFieldEnable();
     return {
       entity_type: {
         label: 'Type',

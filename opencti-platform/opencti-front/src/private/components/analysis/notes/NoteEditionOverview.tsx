@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
-import { Field, Formik } from 'formik';
+import { Field, Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -204,128 +204,123 @@ NoteEditionOverviewProps
       onSubmit={() => {}}
     >
       {({ setFieldValue }) => (
-        <div>
-          <div style={{ margin: '0px 0 20px 0' }}>
-            <Field
-              component={DateTimePickerField}
-              name="created"
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('Publication date'),
-                variant: 'standard',
-                fullWidth: true,
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="created" />
-                ),
-              }}
+        <Form style={{ margin: '0px 0 20px 0' }}>
+          <Field
+            component={DateTimePickerField}
+            name="created"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Publication date'),
+              variant: 'standard',
+              fullWidth: true,
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="created" />
+              ),
+            }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="attribute_abstract"
+            label={t('Abstract')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus
+                context={context}
+                fieldName="attribute_abstract"
+              />
+            }
+          />
+          <Field
+            component={MarkDownField}
+            name="content"
+            label={t('Content')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="content" />
+            }
+          />
+          <OpenVocabField
+            label={t('Note types')}
+            type="note_types_ov"
+            name="note_types"
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={true}
+            editContext={context}
+          />
+          <ConfidenceField
+            name="confidence"
+            onFocus={handleChangeFocus}
+            onChange={handleSubmitField}
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
+          />
+          <Field
+            component={SliderField}
+            variant="standard"
+            name="likelihood"
+            type="number"
+            label={t('Likelihood')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="likelihood" />
+            }
+          />
+          {userIsKnowledgeEditor && (
+            <CreatedByField
+              name="createdBy"
+              style={{ marginTop: 10, width: '100%' }}
+              setFieldValue={setFieldValue}
+              onChange={handleChangeCreatedBy}
             />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="attribute_abstract"
-              label={t('Abstract')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="attribute_abstract"
-                />
-              }
-            />
-            <Field
-              component={MarkDownField}
-              name="content"
-              label={t('Content')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="content" />
-              }
-            />
-            <OpenVocabField
-              label={t('Note types')}
-              type="note_types_ov"
-              name="note_types"
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
-            <ConfidenceField
-              name="confidence"
+          )}
+          {note.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Note"
               onFocus={handleChangeFocus}
               onChange={handleSubmitField}
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={fieldSpacingContainerStyle}
-              editContext={context}
-              variant="edit"
-            />
-            <Field
-              component={SliderField}
-              variant="standard"
-              name="likelihood"
-              type="number"
-              label={t('Likelihood')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="likelihood" />
-              }
-            />
-            {userIsKnowledgeEditor && (
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 10, width: '100%' }}
-                setFieldValue={setFieldValue}
-                onChange={handleChangeCreatedBy}
-              />
-            )}
-            {note.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Note"
-                onFocus={handleChangeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                }
-              />
-            )}
-            <ObjectMarkingField
-              name="objectMarking"
-              style={{
-                marginTop:
-                  note.workflowEnabled || userIsKnowledgeEditor ? 20 : 10,
-                width: '100%',
-              }}
+              setFieldValue={setFieldValue}
+              style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldname="objectMarking"
+                  fieldName="x_opencti_workflow_id"
                 />
               }
-              onChange={handleChangeObjectMarking}
             />
-          </div>
-        </div>
+          )}
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{
+              marginTop:
+                note.workflowEnabled || userIsKnowledgeEditor ? 20 : 10,
+              width: '100%',
+            }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
+            onChange={handleChangeObjectMarking}
+          />
+        </Form>
       )}
     </Formik>
   );

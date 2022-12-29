@@ -10,15 +10,15 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import { useFormatter } from '../../../components/i18n';
-import MarkDownField from '../../../components/MarkDownField';
-import { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
+import MarkDownField from '../../../../components/MarkDownField';
+import { Theme } from '../../../../components/Theme';
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
-import { MESSAGING$ } from '../../../relay/environment';
-import StixCoreObjectsField from '../common/form/StixCoreObjectsField';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
-import RatingField from '../../../components/RatingField';
-import useAuth from '../../../utils/hooks/useAuth';
+import { MESSAGING$ } from '../../../../relay/environment';
+import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import RatingField from '../../../../components/RatingField';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -63,10 +63,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const caseMutation = graphql`
+const feedbackMutation = graphql`
   mutation FeedbackCreationMutation($input: CaseAddInput!) {
     caseAdd(input: $input) {
-      ...CaseLine_node
+      ...FeedbackLine_node
     }
   }
 `;
@@ -77,26 +77,25 @@ const caseValidation = () => Yup.object().shape({
 });
 
 interface FormikCaseAddInput {
-  description: string,
-  rating: number,
-  objects: { value: string }[],
-  file: File | undefined
+  description: string;
+  rating: number;
+  objects: { value: string }[];
+  file: File | undefined;
 }
 
 const FeedbackCreation: FunctionComponent<{
-  openDrawer: boolean,
-  handleCloseDrawer: () => void,
-}> = ({
-  openDrawer,
-  handleCloseDrawer,
-}) => {
+  openDrawer: boolean;
+  handleCloseDrawer: () => void;
+}> = ({ openDrawer, handleCloseDrawer }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { me } = useAuth();
-  const [commit] = useMutation(caseMutation);
-
-  const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const finalValues : FeedbackCreationMutation$variables['input'] = {
+  const [commit] = useMutation(feedbackMutation);
+  const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
+    const finalValues: FeedbackCreationMutation$variables['input'] = {
       name: `Feedback from ${me.user_email}`,
       case_type: 'feedback',
       description: values.description,
@@ -114,11 +113,10 @@ const FeedbackCreation: FunctionComponent<{
         setSubmitting(false);
         resetForm();
         handleCloseDrawer();
-        MESSAGING$.notifySuccess('Thank you for your feedback !');
+        MESSAGING$.notifySuccess('Thank you for your feedback!');
       },
     });
   };
-
   return (
     <div>
       <Drawer
@@ -139,7 +137,7 @@ const FeedbackCreation: FunctionComponent<{
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Submit a Feedback')}</Typography>
+          <Typography variant="h6">{t('Submit a feedback')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik<FormikCaseAddInput>
@@ -160,10 +158,7 @@ const FeedbackCreation: FunctionComponent<{
               setFieldValue,
               values,
             }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <RatingField rating={values.rating} size="large"
-                  handleOnChange={(newValue) => { setFieldValue('rating', newValue); }}
-                />
+              <Form style={{ margin: '0x 0 20px 0' }}>
                 <Field
                   component={MarkDownField}
                   name="description"
@@ -171,6 +166,14 @@ const FeedbackCreation: FunctionComponent<{
                   fullWidth={true}
                   multiline={true}
                   rows="4"
+                />
+                <RatingField
+                  label={t('Rating')}
+                  rating={values.rating}
+                  size="small"
+                  handleOnChange={(newValue) => {
+                    setFieldValue('rating', newValue);
+                  }}
                   style={fieldSpacingContainerStyle}
                 />
                 <StixCoreObjectsField
@@ -189,17 +192,21 @@ const FeedbackCreation: FunctionComponent<{
                   fullWidth={true}
                 />
                 <div className={classes.buttons}>
-                  <Button variant="contained"
+                  <Button
+                    variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}>
+                    classes={{ root: classes.button }}
+                  >
                     {t('Cancel')}
                   </Button>
-                  <Button variant="contained"
+                  <Button
+                    variant="contained"
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}>
+                    classes={{ root: classes.button }}
+                  >
                     {t('Create')}
                   </Button>
                 </div>

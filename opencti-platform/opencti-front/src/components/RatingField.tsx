@@ -6,6 +6,8 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import Rating, { IconContainerProps } from '@mui/material/Rating';
 import { styled } from '@mui/material/styles';
+import * as R from 'ramda';
+import InputLabel from '@mui/material/InputLabel';
 
 type CustomIcon = {
   [index: string]: {
@@ -36,7 +38,12 @@ export const customIcons = (fontSize: number): CustomIcon => ({
   },
 });
 
-export function IconContainer(props: IconContainerProps) {
+export function TinyIconContainer(props: IconContainerProps) {
+  const { value, ...other } = props;
+  return <span {...other}>{customIcons(15)[value].icon}</span>;
+}
+
+export function SmallIconContainer(props: IconContainerProps) {
   const { value, ...other } = props;
   return <span {...other}>{customIcons(30)[value].icon}</span>;
 }
@@ -53,24 +60,45 @@ const StyledRating = styled(Rating)(({ theme }) => ({
 }));
 
 interface RatingProps {
-  rating: number
-  readOnly?: boolean
-  style?: Record<string, unknown>
-  size: 'small' | 'large'
-  handleOnChange?: (value: number | null) => void
+  label: string;
+  rating: number;
+  readOnly?: boolean;
+  style?: Record<string, unknown>;
+  size: 'tiny' | 'small' | 'large';
+  handleOnChange?: (value: number | null) => void;
 }
 
-const RatingField: FunctionComponent<RatingProps> = ({ style, rating, handleOnChange, readOnly, size }) => {
-  return <div style={style}>
-    <StyledRating
-      name='highlight-selected-only'
-      value={rating}
-      IconContainerComponent={size === 'small' ? IconContainer : LargeIconContainer}
-      onChange={(_, value) => handleOnChange && handleOnChange(value)}
-      highlightSelectedOnly
-      readOnly={readOnly === true}
-    />
-  </div>;
+const RatingField: FunctionComponent<RatingProps> = ({
+  label,
+  style,
+  rating,
+  handleOnChange,
+  readOnly,
+  size,
+}) => {
+  let IconContainer;
+  if (size === 'tiny') {
+    IconContainer = TinyIconContainer;
+  } else if (size === 'small') {
+    IconContainer = SmallIconContainer;
+  } else {
+    IconContainer = LargeIconContainer;
+  }
+  return (
+    <div style={style}>
+      <InputLabel id="input-slider" shrink={true} variant="standard">
+        {label}
+      </InputLabel>
+      <StyledRating
+        name="highlight-selected-only"
+        value={rating}
+        IconContainerComponent={IconContainer}
+        onChange={(_, value) => handleOnChange && handleOnChange(value)}
+        highlightSelectedOnly
+        readOnly={readOnly === true}
+      />
+    </div>
+  );
 };
 
 export default RatingField;
