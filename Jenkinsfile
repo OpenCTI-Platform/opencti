@@ -65,13 +65,13 @@ node {
         if (fileExists('config/schema/compiled.graphql')) {
           sh 'rm config/schema/compiled.graphql'
         }
-        docker.image('node:16.19.0-alpine3.16').inside() {
+        docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
           sh 'yarn install'
         }
       }
       dir('opencti-front') { // Frontend
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
-        docker.image('node:16.19.0-alpine3.16').inside() {
+        docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
           sh 'yarn install'
           sh 'yarn run schema-compile'
         }
