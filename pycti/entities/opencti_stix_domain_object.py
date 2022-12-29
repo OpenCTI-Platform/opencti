@@ -461,6 +461,10 @@ class StixDomainObject:
                 name
                 description
             }
+            ... on Case {
+                name
+                description
+            }
             ... on Vulnerability {
                 name
                 description
