@@ -74,6 +74,7 @@ node {
           sh 'yarn run schema-compile'
         }
       }
+      sh 'chown -R 997:995 .'
     }
   }
 
