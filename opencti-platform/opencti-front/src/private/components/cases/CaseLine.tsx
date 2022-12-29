@@ -53,7 +53,7 @@ const caseFragment = graphql`
   fragment CaseLine_node on Case {
     id
     name
-    type
+    case_type
     description
     rating
     created
@@ -84,7 +84,7 @@ export const CaseLine: FunctionComponent<CaseLineComponentProps> = ({ dataColumn
       divider={true} button={true}
       component={Link} to={`/dashboard/cases/feedbacks/${data.id}`}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        { data.type === 'feedback' ? <FeedbackOutlined fontSize="medium" /> : <WorkOutline fontSize="medium" />}
+        { data.case_type === 'feedback' ? <FeedbackOutlined fontSize="medium" /> : <WorkOutline fontSize="medium" />}
       </ListItemIcon>
       <ListItemText
         primary={

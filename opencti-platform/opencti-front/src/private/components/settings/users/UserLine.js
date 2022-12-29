@@ -58,7 +58,7 @@ class UserLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/settings/managements/users/${node.id}`}
+        to={`/dashboard/settings/accesses/users/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {external ? <PermIdentityOutlined /> : <PersonOutlined />}

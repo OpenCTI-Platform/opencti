@@ -40,8 +40,8 @@ const SettingsMenu = (props) => {
       <MenuList component="nav">
         <MenuItem
           component={Link}
-          to={'/dashboard/settings/managements/roles'}
-          selected={location.pathname === '/dashboard/settings/managements/roles'}
+          to={'/dashboard/settings/accesses/roles'}
+          selected={location.pathname === '/dashboard/settings/accesses/roles'}
           dense={false}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -51,7 +51,7 @@ const SettingsMenu = (props) => {
         </MenuItem>
         <MenuItem
           component={Link}
-          to={'/dashboard/settings/managements/users'}
+          to={'/dashboard/settings/accesses/users'}
           selected={location.pathname.includes(
             '/dashboard/settings/management/users',
           )}
@@ -64,8 +64,8 @@ const SettingsMenu = (props) => {
         </MenuItem>
         <MenuItem
           component={Link}
-          to={'/dashboard/settings/managements/groups'}
-          selected={location.pathname === '/dashboard/settings/managements/groups'}
+          to={'/dashboard/settings/accesses/groups'}
+          selected={location.pathname === '/dashboard/settings/accesses/groups'}
           dense={false}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -75,9 +75,9 @@ const SettingsMenu = (props) => {
         </MenuItem>
         <MenuItem
           component={Link}
-          to={'/dashboard/settings/managements/marking'}
+          to={'/dashboard/settings/accesses/marking'}
           selected={
-            location.pathname === '/dashboard/settings/managements/marking'
+            location.pathname === '/dashboard/settings/accesses/marking'
           }
           dense={false}
         >
@@ -88,9 +88,9 @@ const SettingsMenu = (props) => {
         </MenuItem>
         <MenuItem
           component={Link}
-          to={'/dashboard/settings/managements/sessions'}
+          to={'/dashboard/settings/accesses/sessions'}
           selected={
-            location.pathname === '/dashboard/settings/managements/sessions'
+            location.pathname === '/dashboard/settings/accesses/sessions'
           }
           dense={false}
         >

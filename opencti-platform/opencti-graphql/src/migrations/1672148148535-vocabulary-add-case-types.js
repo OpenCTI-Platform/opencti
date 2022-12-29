@@ -10,8 +10,12 @@ export const up = async (next) => {
     const category = categories[indexCategory];
     const vocabularies = openVocabularies[category] ?? [];
     for (let i = 0; i < vocabularies.length; i += 1) {
-      const { key, description } = vocabularies[i];
-      const data = { name: key, description, category, builtIn: builtInOv.includes(category) };
+      const { key, description, aliases } = vocabularies[i];
+      const data = { name: key,
+        description: description ?? '',
+        aliases: aliases ?? [],
+        category,
+        builtIn: builtInOv.includes(category) };
       await addVocabulary(context, SYSTEM_USER, data);
     }
   }

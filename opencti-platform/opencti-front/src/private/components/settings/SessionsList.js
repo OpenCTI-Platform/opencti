@@ -160,7 +160,7 @@ class SessionsListComponent extends Component {
                   divider={true}
                   button={true}
                   component={Link}
-                  to={`/dashboard/settings/managements/users/${user.id}`}
+                  to={`/dashboard/settings/accesses/users/${user.id}`}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
                     <PersonOutlined fontSize="medium" />

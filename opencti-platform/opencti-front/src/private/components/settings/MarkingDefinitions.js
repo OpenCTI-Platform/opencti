@@ -14,7 +14,7 @@ import MarkingDefinitionsLines, {
   markingDefinitionsLinesQuery,
 } from './marking_definitions/MarkingDefinitionsLines';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
-import ManagementsMenu from './ManagementsMenu';
+import AccessesMenu from './AccessesMenu';
 
 const styles = () => ({
   container: {
@@ -122,7 +122,7 @@ class MarkingDefinitions extends Component {
     };
     return (
       <div className={classes.container}>
-        <ManagementsMenu />
+        <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <MarkingDefinitionCreation paginationOptions={paginationOptions} />
       </div>

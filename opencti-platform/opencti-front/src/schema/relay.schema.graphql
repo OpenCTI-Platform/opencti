@@ -9152,7 +9152,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
-  type: String!
+  case_type: String!
   severity: String
   priority: String
   description: String
@@ -9218,7 +9218,7 @@ input CaseAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
-  type: String!
+  case_type: String!
   severity: String
   priority: String
   rating: Int!

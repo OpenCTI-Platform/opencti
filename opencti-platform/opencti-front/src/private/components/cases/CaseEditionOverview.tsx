@@ -50,7 +50,7 @@ const caseEditionOverviewFragment = graphql`
   fragment CaseEditionOverview_case on Case {
     id
     name
-    type
+    case_type
     priority
     severity
     revoked
@@ -201,7 +201,6 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
   const initialValues = {
     name: caseData.name,
     description: caseData.description,
-    type: caseData.type,
     priority: caseData.priority,
     severity: caseData.severity,
     rating: caseData.rating,

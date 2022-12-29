@@ -25,7 +25,7 @@ const CaseDetailsFragment = graphql`
     id
     name
     description
-    type
+    case_type
     priority
     severity
     rating
@@ -78,7 +78,7 @@ const CaseDetails: FunctionComponent<CaseDetailsProps> = ({ caseData }) => {
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>{t('Type')}</Typography>
-            <ItemOpenVocab key="type" small={true} type="case_types_ov" value={data.type} />
+            <ItemOpenVocab key="type" small={true} type="case_types_ov" value={data.case_type} />
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>{t('Rating')}</Typography>

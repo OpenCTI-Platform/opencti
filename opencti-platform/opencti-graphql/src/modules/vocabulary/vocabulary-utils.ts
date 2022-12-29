@@ -9,7 +9,7 @@ export const builtInOv = [
   'case_types_ov',
 ];
 
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string }>> = {
+export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string, aliases?: string[] }>> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },
@@ -115,10 +115,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'rfi', description: 'Request for information' },
   ],
   case_severity_ov: [
-    { key: '01 - low', description: 'Low impact' },
-    { key: '02 - medium', description: 'Medium impact' },
-    { key: '03 - high', description: 'High impact' },
-    { key: '04 - critical', description: 'Critical impact' },
+    { key: '01 - low', description: 'Low impact', aliases: ['low'] },
+    { key: '02 - medium', description: 'Medium impact', aliases: ['medium'] },
+    { key: '03 - high', description: 'High impact', aliases: ['high'] },
+    { key: '04 - critical', description: 'Critical impact', aliases: ['critical'] },
   ],
   case_priority_ov: [
     { key: 'P1', description: 'Critical priority' },
@@ -310,10 +310,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   incident_severity_ov: [
-    { key: '01 - low', description: 'Low impact' },
-    { key: '02 - medium', description: 'Medium impact' },
-    { key: '03 - high', description: 'High impact' },
-    { key: '04 - critical', description: 'Critical impact' },
+    { key: '01 - low', description: 'Low impact', aliases: ['low'] },
+    { key: '02 - medium', description: 'Medium impact', aliases: ['medium'] },
+    { key: '03 - high', description: 'High impact', aliases: ['high'] },
+    { key: '04 - critical', description: 'Critical impact', aliases: ['critical'] },
   ],
   indicator_type_ov: [
     {
@@ -426,10 +426,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   integrity_level_ov: [
-    { key: '01 - low', description: 'A low level of integrity.' },
-    { key: '02 - medium', description: 'A medium level of integrity.' },
-    { key: '03 - high', description: 'A high level of integrity.' },
-    { key: '04 - system', description: 'A system level of integrity.' },
+    { key: '01 - low', description: 'A low level of integrity.', aliases: ['low'] },
+    { key: '02 - medium', description: 'A medium level of integrity.', aliases: ['medium'] },
+    { key: '03 - high', description: 'A high level of integrity.', aliases: ['high'] },
+    { key: '04 - system', description: 'A system level of integrity.', aliases: ['critical'] },
   ],
   // M
   malware_capabilities_ov: [

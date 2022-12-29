@@ -71,7 +71,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   case_types_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_CASE],
     fields: [{
-      key: 'type',
+      key: 'case_type',
       required: true,
       multiple: false,
     }]

@@ -93,7 +93,7 @@ const CasePopover = ({ id }: { id: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/settings/managements/feedback');
+        navigate('/dashboard/cases/feedbacks');
       },
     });
   };

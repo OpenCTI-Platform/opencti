@@ -11,7 +11,7 @@ import {
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
-import ManagementsMenu from './ManagementsMenu';
+import AccessesMenu from './AccessesMenu';
 import RoleCreation from './roles/RoleCreation';
 
 const styles = () => ({
@@ -115,7 +115,7 @@ class Roles extends Component {
     };
     return (
       <div className={classes.container}>
-        <ManagementsMenu />
+        <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <RoleCreation paginationOptions={paginationOptions} />
       </div>

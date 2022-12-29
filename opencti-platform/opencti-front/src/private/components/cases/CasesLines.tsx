@@ -63,7 +63,7 @@ const casesLinesFragment = graphql`
         node {
           id
           name
-          type
+          case_type
           description
           rating
           creator {

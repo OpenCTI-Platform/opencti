@@ -12,7 +12,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import UsersLines, { usersLinesQuery } from './users/UsersLines';
 import UserCreation from './users/UserCreation';
-import ManagementsMenu from './ManagementsMenu';
+import AccessesMenu from './AccessesMenu';
 
 const styles = () => ({
   container: {
@@ -125,7 +125,7 @@ class Users extends Component {
     };
     return (
       <div className={classes.container}>
-        <ManagementsMenu />
+        <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <UserCreation paginationOptions={paginationOptions} />
       </div>

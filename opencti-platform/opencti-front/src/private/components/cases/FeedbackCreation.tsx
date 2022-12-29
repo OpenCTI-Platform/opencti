@@ -98,7 +98,7 @@ const FeedbackCreation: FunctionComponent<{
   const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues : FeedbackCreationMutation$variables['input'] = {
       name: `Feedback from ${me.user_email}`,
-      type: 'feedback',
+      case_type: 'feedback',
       description: values.description,
       rating: parseInt(String(values.rating), 6),
       objects: values.objects.map((o) => o.value),
@@ -183,14 +183,9 @@ const FeedbackCreation: FunctionComponent<{
                   component={SimpleFileUpload}
                   name="file"
                   label={t('Associated file')}
-                  FormControlProps={{
-                    style: { marginTop: 20, width: '100%' },
-                  }}
+                  FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
                   InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                  InputProps={{
-                    fullWidth: true,
-                    variant: 'standard',
-                  }}
+                  InputProps={{ fullWidth: true, variant: 'standard' }}
                   fullWidth={true}
                 />
                 <div className={classes.buttons}>

@@ -25,36 +25,36 @@ const Root = () => (
       <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/managements"
-        render={() => <Redirect to="/dashboard/settings/managements/roles" />}
+        path="/dashboard/settings/accesses"
+        render={() => <Redirect to="/dashboard/settings/accesses/roles" />}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/managements/users"
+        path="/dashboard/settings/accesses/users"
         component={Users}
       />
       <BoundaryRoute
-        path="/dashboard/settings/managements/users/:userId"
+        path="/dashboard/settings/accesses/users/:userId"
         component={RootUser}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/managements/roles"
+        path="/dashboard/settings/accesses/roles"
         component={Roles}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/managements/groups"
+        path="/dashboard/settings/accesses/groups"
         component={Groups}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/managements/sessions"
+        path="/dashboard/settings/accesses/sessions"
         component={Sessions}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/managements/marking"
+        path="/dashboard/settings/accesses/marking"
         component={MarkingDefinitions}
       />
       <BoundaryRoute

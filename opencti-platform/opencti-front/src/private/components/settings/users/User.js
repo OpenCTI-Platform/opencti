@@ -36,7 +36,7 @@ import Chart from 'react-apexcharts';
 import inject18n from '../../../../components/i18n';
 import UserEdition from './UserEdition';
 import UserPopover, { userEditionQuery } from './UserPopover';
-import ManagementsMenu from '../ManagementsMenu';
+import AccessesMenu from '../AccessesMenu';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import { FIVE_SECONDS, now, timestamp, yearsAgo } from '../../../../utils/Time';
@@ -249,7 +249,7 @@ class UserComponent extends Component {
     );
     return (
       <div className={classes.container}>
-        <ManagementsMenu />
+        <AccessesMenu />
         <div>
           <Typography
             variant="h1"

@@ -26,7 +26,7 @@ const ItemCreator = (props) => {
             variant="outlined"
             size="small"
             component={Link}
-            to={`/dashboard/settings/managements/users/${creator.id}`}
+            to={`/dashboard/settings/accesses/users/${creator.id}`}
           >
             {creator.name}
           </Button>
