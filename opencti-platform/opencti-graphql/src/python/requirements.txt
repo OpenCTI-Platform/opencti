@@ -1,4 +1,4 @@
-pycti==5.5.0
+pycti==5.5.1
 parsuricata==0.3.2
 plyara==2.1.1
 sigmatools==0.19.1

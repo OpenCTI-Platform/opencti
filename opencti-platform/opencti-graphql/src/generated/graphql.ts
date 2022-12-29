@@ -1546,19 +1546,26 @@ export type CaseStixCoreRelationshipsDistributionArgs = {
 
 export type CaseAddInput = {
   case_type: Scalars['String'];
+  clientMutationId?: InputMaybe<Scalars['String']>;
+  confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   priority?: InputMaybe<Scalars['String']>;
-  rating: Scalars['Int'];
+  rating?: InputMaybe<Scalars['Int']>;
+  revoked?: InputMaybe<Scalars['Boolean']>;
   severity?: InputMaybe<Scalars['String']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
+  update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 

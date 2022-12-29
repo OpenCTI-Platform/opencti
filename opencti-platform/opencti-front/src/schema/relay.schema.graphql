@@ -9223,13 +9223,20 @@ input CaseAddInput {
   case_type: String!
   severity: String
   priority: String
-  rating: Int!
+  rating: Int
   description: String
+  confidence: Int
+  revoked: Boolean
   lang: String
   objects: [String]
-  objectMarking: [String]
   createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
   created: DateTime
   modified: DateTime
   file: Upload
+  clientMutationId: String
+  update: Boolean
 }

@@ -36,6 +36,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase> = {
     { name: 'priority', type: 'string', multiple: false, upsert: true },
     { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
     { name: 'rating', type: 'numeric', multiple: false, upsert: true },
+    { name: 'x_opencti_stix_ids', type: 'string', multiple: true, upsert: true },
   ],
   relations: [],
   converter: convertCaseToStix

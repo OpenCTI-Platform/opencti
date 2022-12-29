@@ -207,13 +207,20 @@ input CaseAddInput {
   priority: String
   rating: Int
   description: String
+  confidence: Int
+  revoked: Boolean
   lang: String
   objects: [String]
-  objectMarking: [String]
   createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
   created: DateTime
   modified: DateTime
   file: Upload
+  clientMutationId: String
+  update: Boolean
 }
 
 type Mutation {
