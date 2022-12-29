@@ -6,7 +6,6 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import Rating, { IconContainerProps } from '@mui/material/Rating';
 import { styled } from '@mui/material/styles';
-import * as R from 'ramda';
 import InputLabel from '@mui/material/InputLabel';
 
 type CustomIcon = {

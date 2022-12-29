@@ -14,7 +14,7 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 707;
+export const RAW_EVENTS_SIZE = 710;
 export const SYNC_LIVE_EVENTS_SIZE = 510;
 
 export const PYTHON_PATH = './src/python/testing';
