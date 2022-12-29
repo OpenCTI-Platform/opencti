@@ -218,6 +218,17 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
       onSubmit={onSubmit}>
       {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {caseData?.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Case"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
+              style={fieldSpacingContainerStyle}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
+            />
+          )}
           <OpenVocabField
             label={t('Case priority')}
             type="case_priority_ov"
@@ -263,17 +274,6 @@ const CaseEditionOverviewComponent: FunctionComponent<CaseEditionOverviewProps> 
             onSubmit={handleSubmitField}
             helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
-          {caseData?.workflowEnabled && (
-            <StatusField
-              name="x_opencti_workflow_id"
-              type="Case"
-              onFocus={editor.changeFocus}
-              onChange={handleSubmitField}
-              setFieldValue={setFieldValue}
-              style={fieldSpacingContainerStyle}
-              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
-            />
-          )}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}
