@@ -5138,6 +5138,7 @@ type LocationEdge {
 }
 enum LocationType {
   City
+  AdministrativeArea
   Country
   Region
   Position
@@ -11316,6 +11317,7 @@ union StixObjectOrStixRelationship =
   | IntrusionSet
   | Language
   | City
+  | AdministrativeArea
   | Country
   | Region
   | Position
@@ -11382,6 +11384,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | IntrusionSet
   | Language
   | City
+  | AdministrativeArea
   | Country
   | Region
   | Position

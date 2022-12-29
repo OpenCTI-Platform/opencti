@@ -7,6 +7,7 @@ import './narrative/narrative';
 import './dataComponent/dataComponent';
 import './dataSource/dataSource';
 import './vocabulary/vocabulary';
+import './administrativeArea/administrativeArea';
 import './case/case';
 import './entitySetting/entitySetting';
 // endregion

@@ -124,6 +124,7 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
+import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrativeArea/administrativeArea-types';
 import type { StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
 import {
@@ -589,6 +590,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_LOCATION_CITY}_${ENTITY_TYPE_LOCATION_REGION}`]: [
+    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_LOCATION_CITY}_${ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
   // endregion

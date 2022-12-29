@@ -4067,6 +4067,7 @@ type LocationEdge {
 
 enum LocationType {
   City
+  AdministrativeArea
   Country
   Region
   Position
@@ -7060,9 +7061,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | Case | EntitySetting
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | Case | EntitySetting
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | Case | EntitySetting
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | Case | EntitySetting
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7729,6 +7730,8 @@ type Query {
   vocabulary(id: String!): Vocabulary
   vocabularyCategories: [VocabularyDefinition!]!
   vocabularies(category: VocabularyCategory, first: Int, after: ID, orderBy: VocabularyOrdering, orderMode: OrderingMode, filters: [VocabularyFiltering!], filterMode: FilterMode, search: String): VocabularyConnection
+  administrativeArea(id: String!): AdministrativeArea
+  administrativeAreas(first: Int, after: ID, orderBy: AdministrativeAreasOrdering, orderMode: OrderingMode, filters: [AdministrativeAreasFiltering!], filterMode: FilterMode, search: String): AdministrativeAreaConnection
   case(id: String!): Case
   cases(first: Int, after: ID, orderBy: CasesOrdering, orderMode: OrderingMode, filters: [CasesFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseConnection
   entitySetting(id: String!): EntitySetting
@@ -8391,6 +8394,13 @@ type Mutation {
   vocabularyAdd(input: VocabularyAddInput!): Vocabulary
   vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary
   vocabularyDelete(id: ID!): ID
+  administrativeAreaAdd(input: AdministrativeAreaAddInput!): AdministrativeArea
+  administrativeAreaDelete(id: ID!): ID
+  administrativeAreaFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): AdministrativeArea
+  administrativeAreaContextPatch(id: ID!, input: EditContext!): AdministrativeArea
+  administrativeAreaContextClean(id: ID!): AdministrativeArea
+  administrativeAreaRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea
   caseAdd(input: CaseAddInput!): Case
   caseDelete(id: ID!): ID
   caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
@@ -9314,6 +9324,121 @@ input VocabularyAddInput {
 }
 
 scalar name_String_NotNull_minLength_1
+
+type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObject & StixObject & Location {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  latitude: Float
+  longitude: Float
+  precision: Float
+  x_opencti_aliases: [String]
+  name: String!
+  description: String
+  administrativeArea_types: [String]
+  aliases: [String]
+  country: AdministrativeAreaConnection
+  creator: Creator
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+
+enum AdministrativeAreasOrdering {
+  name
+  administrativeArea_types
+  created
+  modified
+  created_at
+  updated_at
+  objectMarking
+  objectLabel
+  x_opencti_workflow_id
+}
+
+enum AdministrativeAreasFilter {
+  name
+  aliases
+  administrativeArea_types
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+  x_opencti_workflow_id
+}
+
+input AdministrativeAreasFiltering {
+  key: [AdministrativeAreasFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type AdministrativeAreaConnection {
+  pageInfo: PageInfo!
+  edges: [AdministrativeAreaEdge]
+}
+
+type AdministrativeAreaEdge {
+  cursor: String!
+  node: AdministrativeArea!
+}
+
+input AdministrativeAreaAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_2!
+  description: String!
+  administrativeArea_types: [String]
+  aliases: [String]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+}
 
 type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   id: ID!

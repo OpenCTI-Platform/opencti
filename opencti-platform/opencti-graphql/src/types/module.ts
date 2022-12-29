@@ -9,7 +9,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_OBJECT,
   DEPS_KEYS,
-  ENTITY_TYPE_CONTAINER,
+  ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION,
   schemaTypes,
   STIX_META_RELATIONSHIPS_INPUTS
 } from '../schema/general';
@@ -44,7 +44,7 @@ export interface ModuleDefinition<T extends StoreEntity> {
     id: string;
     name: string;
     aliased: boolean;
-    category: 'Container' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object';
+    category: 'Container' | 'Location' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object';
   };
   graphql: {
     schema: any,
@@ -86,6 +86,11 @@ export const registerDefinition = <T extends StoreEntity>(definition: ModuleDefi
     // Register types
   if (definition.type.category) {
     switch (definition.type.category) {
+      case ENTITY_TYPE_LOCATION:
+        schemaTypes.add(ENTITY_TYPE_LOCATION, definition.type.name);
+        registerStixDomainType(definition.type.name);
+        registerStixDomainConverter(definition.type.name, definition.converter);
+        break;
       case ENTITY_TYPE_CONTAINER:
         schemaTypes.add(ENTITY_TYPE_CONTAINER, definition.type.name);
         registerStixDomainType(definition.type.name);

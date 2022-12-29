@@ -1,0 +1,204 @@
+type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObject & StixObject & Location {
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    # StixObject
+    x_opencti_stix_ids: [StixId]
+    is_inferred: Boolean!
+    spec_version: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    # inferences
+    x_opencti_inferences: [Inference]
+    # StixCoreObject
+    createdBy: Identity
+    objectMarking: MarkingDefinitionConnection
+    objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+    objectLabel: LabelConnection
+    externalReferences(first: Int): ExternalReferenceConnection
+    reports(first: Int): ReportConnection
+    notes(first: Int): NoteConnection
+    opinions(first: Int): OpinionConnection
+    observedData(first: Int): ObservedDataConnection
+    groupings(first: Int): GroupingConnection
+    stixCoreRelationships(
+        first: Int
+        after: ID
+        orderBy: StixCoreRelationshipsOrdering
+        orderMode: OrderingMode
+        fromId: StixRef
+        toId: StixRef
+        fromTypes: [String]
+        toTypes: [String]
+        relationship_type: String
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): StixCoreRelationshipConnection
+    stixCoreObjectsDistribution(
+        relationship_type: [String]
+        toTypes: [String]
+        field: String!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        operation: StatsOperation!
+        limit: Int
+        order: String
+        types: [String]
+        filters: [StixCoreObjectsFiltering]
+        filterMode: FilterMode
+        search: String
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    stixCoreRelationshipsDistribution(
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        isTo: Boolean
+        limit: Int
+        order: String
+        elementWithTargetTypes: [String]
+        fromId: [String]
+        fromRole: String
+        fromTypes: [String]
+        toId: [String]
+        toRole: String
+        toTypes: [String]
+        relationship_type: [String]
+        confidences: [Int]
+        search: String
+        filters: [StixCoreRelationshipsFiltering]
+        filterMode: FilterMode
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    # StixDomainObject
+    revoked: Boolean!
+    confidence: Int
+    lang: String
+    created: DateTime
+    modified: DateTime
+    x_opencti_graph_data: String
+    # Location
+    latitude: Float
+    longitude: Float
+    precision: Float
+    x_opencti_aliases: [String]
+    # AdministrativeArea
+    name: String!
+    description: String
+    administrativeArea_types: [String]
+    aliases: [String]
+    country: AdministrativeAreaConnection
+    # Technical
+    creator: Creator
+    toStix: String
+    importFiles(first: Int): FileConnection
+    pendingFiles(first: Int): FileConnection
+    exportFiles(first: Int): FileConnection
+    editContext: [EditUserContext!]
+    connectors(onlyAlive: Boolean): [Connector]
+    jobs(first: Int): [Work]
+    status: Status
+    workflowEnabled: Boolean
+}
+
+# Ordering
+enum AdministrativeAreasOrdering {
+    name
+    administrativeArea_types
+    created
+    modified
+    created_at
+    updated_at
+    objectMarking
+    objectLabel
+    x_opencti_workflow_id
+}
+
+# Filtering
+enum AdministrativeAreasFilter {
+    name
+    aliases
+    administrativeArea_types
+    created
+    modified
+    created_at
+    updated_at
+    createdBy
+    markedBy
+    labelledBy
+    x_opencti_workflow_id
+}
+input AdministrativeAreasFiltering {
+    key: [AdministrativeAreasFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type AdministrativeAreaConnection {
+    pageInfo: PageInfo!
+    edges: [AdministrativeAreaEdge]
+}
+type AdministrativeAreaEdge {
+    cursor: String!
+    node: AdministrativeArea!
+}
+
+# Queries
+type Query {
+    administrativeArea(id: String!): AdministrativeArea @auth(for: [KNOWLEDGE])
+    administrativeAreas(
+        first: Int
+        after: ID
+        orderBy: AdministrativeAreasOrdering
+        orderMode: OrderingMode
+        filters: [AdministrativeAreasFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): AdministrativeAreaConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input AdministrativeAreaAddInput {
+    stix_id: StixId
+    x_opencti_stix_ids: [StixId]
+    name: String! @constraint(minLength: 2)
+    description: String!
+    administrativeArea_types: [String]
+    aliases: [String]
+    confidence: Int
+    revoked: Boolean
+    lang: String
+    createdBy: String
+    objectMarking: [String]
+    objectOrganization: [String]
+    objectLabel: [String]
+    externalReferences: [String]
+    created: DateTime
+    modified: DateTime
+    clientMutationId: String
+    update: Boolean
+}
+
+type Mutation {
+    administrativeAreaAdd(input: AdministrativeAreaAddInput!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
+    administrativeAreaDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    administrativeAreaFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
+    administrativeAreaContextPatch(id: ID!, input: EditContext!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
+    administrativeAreaContextClean(id: ID!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
+    administrativeAreaRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
+}
