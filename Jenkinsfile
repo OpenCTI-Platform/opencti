@@ -65,12 +65,16 @@ node {
         if (fileExists('config/schema/compiled.graphql')) {
           sh 'rm config/schema/compiled.graphql'
         }
-        sh 'yarn install'
+        docker.image('node:16.19.0-alpine3.16').inside() {
+          sh 'yarn install'
+        }
       }
       dir('opencti-front') { // Frontend
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
-        sh 'yarn install'
-        sh 'yarn run schema-compile'
+        docker.image('node:16.19.0-alpine3.16').inside() {
+          sh 'yarn install'
+          sh 'yarn run schema-compile'
+        }
       }
     }
   }
@@ -111,7 +115,7 @@ node {
         configFileProvider([
           configFile(fileId: 'graphql-env', replaceTokens: true, targetLocation: 'opencti-platform/opencti-graphql/.env')
         ]) {
-          docker.image('node:16.6.0-alpine3.14').inside('-u root:root') {
+          docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
             sh label: 'test front', script: '''
               cd opencti-platform/opencti-front
               yarn test || true
