@@ -8,16 +8,18 @@ import { registerDefinition } from '../../types/module';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_LOCATION_CITY,
-  ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION
 } from '../../schema/stixDomainObject';
 import { REL_EXTENDED } from '../../database/stix';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent> = {
   type: {
     id: 'events',
     name: ENTITY_TYPE_EVENT,
-    category: 'StixDomainEntity',
+    category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
   graphql: {

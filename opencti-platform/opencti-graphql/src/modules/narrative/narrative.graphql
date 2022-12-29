@@ -103,7 +103,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection
     exportFiles(first: Int): FileConnection
-    editContext: [EditUserContext]
+    editContext: [EditUserContext!]
     connectors(onlyAlive: Boolean): [Connector]
     jobs(first: Int): [Work]
     status: Status

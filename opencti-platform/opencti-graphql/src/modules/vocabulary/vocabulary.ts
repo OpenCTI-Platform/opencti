@@ -7,6 +7,11 @@ import vocabularyResolvers from './vocabulary-resolver';
 import convertVocabularyToStix from './vocabulary-converter';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
 
+const generateInputDependencyKeys = () => {
+  return Object.values(vocabularyDefinitions)
+    .flatMap(({ entity_types, fields }) => fields.map(({ key }) => ({ src: key, types: entity_types })));
+};
+
 const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary> = {
   type: {
     id: 'vocabulary',
@@ -34,7 +39,7 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary> = {
     { name: 'category', type: 'string', multiple: false, upsert: true },
   ],
   relations: [],
-  depsKeys: Object.values(vocabularyDefinitions).flatMap(({ fields }) => fields.map(({ key }) => key)),
+  depsKeys: generateInputDependencyKeys(),
   converter: convertVocabularyToStix,
 };
 

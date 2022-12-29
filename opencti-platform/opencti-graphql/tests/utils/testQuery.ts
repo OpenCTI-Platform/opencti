@@ -14,8 +14,8 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 696;
-export const SYNC_LIVE_EVENTS_SIZE = 499;
+export const RAW_EVENTS_SIZE = 711;
+export const SYNC_LIVE_EVENTS_SIZE = 511;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -53,6 +53,7 @@ export const executeExternalQuery = async (uri: string, query: unknown, variable
 export const ADMIN_USER: AuthUser = {
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+  individual_id: undefined,
   organizations: [],
   name: 'admin',
   user_email: 'admin@opencti.io',

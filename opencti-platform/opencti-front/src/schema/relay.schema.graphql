@@ -440,7 +440,7 @@ type Workspace {
   manifest: String
   created_at: DateTime
   updated_at: DateTime
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   graph_data: String
 }
@@ -630,7 +630,7 @@ type StatusTemplate {
   id: ID!
   name: String!
   color: String!
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   usages: Int
 }
 
@@ -1126,7 +1126,7 @@ type Group implements InternalObject & BasicObject {
   created_at: DateTime
   updated_at: DateTime
   allowed_marking: [MarkingDefinition]
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 input GroupAddInput {
@@ -1219,7 +1219,7 @@ type User implements BasicObject & InternalObject {
   allowed_marking: [MarkingDefinition]
   sessions: [SessionDetail]
   userSubscriptions(first: Int): UserSubscriptionConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 type MeUser implements BasicObject & InternalObject {
@@ -1313,7 +1313,7 @@ type Role implements BasicObject & InternalObject {
   created_at: DateTime!
   updated_at: DateTime!
   capabilities: [Capability]
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 input RoleAddInput {
@@ -1342,7 +1342,7 @@ type Capability implements BasicObject & InternalObject {
   attribute_order: Int
   created_at: DateTime!
   updated_at: DateTime!
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 enum ConnectorType {
@@ -1532,7 +1532,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   x_opencti_color: String
   creator: Creator
   toStix: String
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 input MarkingDefinitionAddInput {
@@ -1596,7 +1596,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   color: String
   creator: Creator
   toStix: String
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 input LabelAddInput {
@@ -1670,7 +1670,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -1741,7 +1741,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   phase_name: String!
   x_opencti_order: Int
   creator: Creator
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 input KillChainPhaseAddInput {
@@ -1864,7 +1864,7 @@ interface StixCoreObject {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -1968,7 +1968,7 @@ interface StixDomainObject {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -2090,7 +2090,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -2206,7 +2206,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -2409,7 +2409,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -2549,7 +2549,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -2661,7 +2661,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -2779,7 +2779,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -2893,7 +2893,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -3012,7 +3012,7 @@ interface Identity {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -3130,7 +3130,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -3272,7 +3272,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -3392,7 +3392,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -3505,7 +3505,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -3647,7 +3647,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -3773,7 +3773,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -3889,7 +3889,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4014,7 +4014,7 @@ interface Location {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4130,7 +4130,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4247,7 +4247,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4359,7 +4359,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4472,7 +4472,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4595,7 +4595,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4720,7 +4720,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4836,7 +4836,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -4956,7 +4956,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -5086,7 +5086,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -5204,7 +5204,7 @@ interface StixCyberObservable {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5246,7 +5246,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5296,7 +5296,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5344,7 +5344,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5389,7 +5389,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5440,7 +5440,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5492,7 +5492,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5561,7 +5561,7 @@ interface HashedObservable {
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5607,7 +5607,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5668,7 +5668,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5749,7 +5749,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5821,7 +5821,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5868,7 +5868,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5912,7 +5912,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -5956,7 +5956,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6010,7 +6010,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6084,7 +6084,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6155,7 +6155,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6204,7 +6204,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6262,7 +6262,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6321,7 +6321,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6369,7 +6369,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6415,7 +6415,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6459,7 +6459,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6503,7 +6503,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6547,7 +6547,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6591,7 +6591,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6637,7 +6637,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6683,7 +6683,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6730,7 +6730,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6782,7 +6782,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
@@ -6896,9 +6896,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | Case
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | Case
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7069,7 +7069,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   killChainPhases: KillChainPhaseConnection
   creator: Creator
   toStix: String
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
 }
@@ -7187,7 +7187,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   creator: Creator
   toStix: String
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
 }
@@ -7277,7 +7277,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   confidence: Int
   objectMarking: MarkingDefinitionConnection
   creator: Creator
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
 }
 
 input StixCyberObservableRelationshipAddInput {
@@ -7561,6 +7561,8 @@ type Query {
   vocabulary(id: String!): Vocabulary
   vocabularyCategories: [VocabularyDefinition!]!
   vocabularies(category: VocabularyCategory, first: Int, after: ID, orderBy: VocabularyOrdering, orderMode: OrderingMode, filters: [VocabularyFiltering!], filterMode: FilterMode, search: String): VocabularyConnection
+  case(id: String!): Case
+  cases(first: Int, after: ID, orderBy: CasesOrdering, orderMode: OrderingMode, filters: [CasesFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseConnection
 }
 
 type Subscription {
@@ -8217,6 +8219,13 @@ type Mutation {
   vocabularyAdd(input: VocabularyAddInput!): Vocabulary
   vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary
   vocabularyDelete(id: ID!): ID
+  caseAdd(input: CaseAddInput!): Case
+  caseDelete(id: ID!): ID
+  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case
+  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case
+  caseContextPatch(id: ID!, input: EditContext!): Case
+  caseContextClean(id: ID!): Case
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -8258,7 +8267,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -8366,7 +8375,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -8475,7 +8484,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -8588,7 +8597,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -8705,7 +8714,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -8811,7 +8820,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -8919,7 +8928,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext]
+  editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
   status: Status
@@ -8999,6 +9008,9 @@ enum VocabularyCategory {
   account_type_ov
   attack_motivation_ov
   attack_resource_level_ov
+  case_types_ov
+  case_severity_ov
+  case_priority_ov
   channel_types_ov
   collection_layers_ov
   event_type_ov
@@ -9106,3 +9118,118 @@ input VocabularyAddInput {
 }
 
 scalar name_String_NotNull_minLength_1
+
+type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
+  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  name: String!
+  case_type: String!
+  severity: String
+  priority: String
+  description: String
+  rating: Int!
+  creator: Creator
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+
+enum CasesOrdering {
+  name
+  created
+  modified
+  context
+  rating
+  created_at
+  updated_at
+  creator
+  createdBy
+  markedBy
+  x_opencti_workflow_id
+  case_type
+}
+
+enum CasesFilter {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  markedBy
+  x_opencti_workflow_id
+  rating
+  case_type
+}
+
+input CasesFiltering {
+  key: [CasesFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type CaseConnection {
+  pageInfo: PageInfo!
+  edges: [CaseEdge]
+}
+
+type CaseEdge {
+  cursor: String!
+  node: Case!
+}
+
+input CaseAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_2!
+  case_type: String!
+  severity: String
+  priority: String
+  rating: Int!
+  description: String
+  lang: String
+  objects: [String]
+  objectMarking: [String]
+  createdBy: String
+  created: DateTime
+  modified: DateTime
+  file: Upload
+}

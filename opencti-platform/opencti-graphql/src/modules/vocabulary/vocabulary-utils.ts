@@ -6,9 +6,10 @@ import { READ_ENTITIES_INDICES } from '../../database/utils';
 
 export const builtInOv = [
   'pattern_type_ov',
+  'case_types_ov',
 ];
 
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string }>> = {
+export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string, aliases?: string[] }>> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },
@@ -108,6 +109,23 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   // C
+  case_types_ov: [
+    { key: 'feedback', description: 'Give your feedback.' },
+    { key: 'incident', description: 'Open an incident' },
+    { key: 'rfi', description: 'Request for information' },
+  ],
+  case_severity_ov: [
+    { key: '01 - low', description: 'Low impact', aliases: ['low'] },
+    { key: '02 - medium', description: 'Medium impact', aliases: ['medium'] },
+    { key: '03 - high', description: 'High impact', aliases: ['high'] },
+    { key: '04 - critical', description: 'Critical impact', aliases: ['critical'] },
+  ],
+  case_priority_ov: [
+    { key: 'P1', description: 'Critical priority' },
+    { key: 'P2', description: 'High priority' },
+    { key: 'P3', description: 'Medium priority' },
+    { key: 'P4', description: 'Low priority' },
+  ],
   channel_types_ov: [
     { key: 'Twitter' },
     { key: 'Facebook' },
@@ -292,10 +310,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   incident_severity_ov: [
-    { key: 'low', description: 'Low impact' },
-    { key: 'medium', description: 'Medium impact' },
-    { key: 'high', description: 'High impact' },
-    { key: 'critical', description: 'Critical impact' },
+    { key: '01 - low', description: 'Low impact', aliases: ['low'] },
+    { key: '02 - medium', description: 'Medium impact', aliases: ['medium'] },
+    { key: '03 - high', description: 'High impact', aliases: ['high'] },
+    { key: '04 - critical', description: 'Critical impact', aliases: ['critical'] },
   ],
   indicator_type_ov: [
     {
@@ -408,10 +426,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   integrity_level_ov: [
-    { key: 'low', description: 'A low level of integrity.' },
-    { key: 'medium', description: 'A medium level of integrity.' },
-    { key: 'high', description: 'A high level of integrity.' },
-    { key: 'system', description: 'A system level of integrity.' },
+    { key: '01 - low', description: 'A low level of integrity.', aliases: ['low'] },
+    { key: '02 - medium', description: 'A medium level of integrity.', aliases: ['medium'] },
+    { key: '03 - high', description: 'A high level of integrity.', aliases: ['high'] },
+    { key: '04 - system', description: 'A system level of integrity.', aliases: ['critical'] },
   ],
   // M
   malware_capabilities_ov: [
@@ -430,7 +448,6 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
       description:
         'Indicates that the malware instance or family is able to prevent itself from being disassembled or make disassembly more difficult.',
     },
-
     {
       key: 'anti-emulation',
       description:
@@ -983,6 +1000,12 @@ export const getVocabulariesCategories = (): VocabularyDefinition[] => {
     .filter(([_, value]) => value.entity_types?.length > 0)
     .map(([key, value]) => ({ key: key as VocabularyCategory, ...value }))
     .sort();
+};
+
+export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: string) => {
+  return Object.entries(vocabularyDefinitions)
+    .filter(([, { entity_types }]) => entity_types.includes(entityType))
+    .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName)).length > 0;
 };
 
 export const getVocabularyCategoryForField = (fieldName: string, entityType: string) => {

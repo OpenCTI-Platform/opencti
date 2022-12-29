@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
-import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -14,20 +13,6 @@ import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import AccessesMenu from './AccessesMenu';
 import RoleCreation from './roles/RoleCreation';
-
-export const rolesSearchQuery = graphql`
-  query RolesSearchQuery($search: String) {
-    roles(search: $search) {
-      edges {
-        node {
-          id
-          name
-          description
-        }
-      }
-    }
-  }
-`;
 
 const styles = () => ({
   container: {

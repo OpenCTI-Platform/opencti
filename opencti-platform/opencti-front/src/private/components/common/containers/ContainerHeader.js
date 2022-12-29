@@ -796,6 +796,9 @@ export default createFragmentContainer(ContainerHeader, {
       ... on Grouping {
         name
       }
+      ... on Case {
+        name
+      }
       ... on Note {
         attribute_abstract
         content

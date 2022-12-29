@@ -18,6 +18,7 @@ interface UserOrigin {
 interface AuthUser {
   id: string;
   internal_id: string;
+  individual_id: string | undefined;
   name: string;
   user_email: string;
   inside_platform_organization: boolean;

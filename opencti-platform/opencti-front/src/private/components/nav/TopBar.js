@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, Link, useLocation } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import {
   AccountCircleOutlined,
+  ContentPasteSearchOutlined,
   ExploreOutlined,
   InsertChartOutlined,
-  ContentPasteSearchOutlined,
 } from '@mui/icons-material';
 import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@mui/material/Menu';
@@ -58,11 +58,7 @@ import TopMenuProfile from './TopMenuProfile';
 import TopMenuTechniques from './TopMenuTechniques';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
-  EXPLORE,
-} from '../../../utils/hooks/useGranted';
+import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
@@ -74,6 +70,9 @@ import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
 import TopMenuDataComponent from './TopMenuDataComponent';
 import TopMenuDataSource from './TopMenuDataSource';
+import TopMenuFeedback from './TopMenuFeedback';
+import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
+import TopMenuCases from './TopMenuCases';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -151,6 +150,7 @@ const TopBar = ({
     };
   });
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
+  const [openDrawer, setOpenDrawer] = useState(false);
   const handleOpenMenu = (event) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
@@ -173,6 +173,15 @@ const TopBar = ({
       history.push(`/dashboard/search/${encodeKey}`);
     }
   };
+  const handleOpenDrawer = () => {
+    setOpenDrawer(true);
+    handleCloseMenu();
+  };
+  const handleCloseDrawer = () => {
+    setOpenDrawer(false);
+    handleCloseMenu();
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -204,6 +213,13 @@ const TopBar = ({
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
             <TopMenuAnalysis />
+          )}
+          {(location.pathname === '/dashboard/cases'
+            || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
+            <TopMenuCases />
+          )}
+          {location.pathname.includes('/dashboard/cases/feedbacks/') && (
+            <TopMenuFeedback />
           )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
@@ -483,11 +499,20 @@ const TopBar = ({
               >
                 {t('Profile')}
               </MenuItem>
+              <MenuItem
+                onClick={handleOpenDrawer}
+                >
+                {t('Feedback')}
+              </MenuItem>
               <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
             </Menu>
           </div>
         </div>
       </Toolbar>
+      <FeedbackCreation
+        openDrawer={openDrawer}
+        handleCloseDrawer={handleCloseDrawer}
+      />
     </AppBar>
   );
 };

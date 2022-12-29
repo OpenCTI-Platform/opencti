@@ -7,12 +7,13 @@ import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
 import { REL_NEW } from '../../database/stix';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative> = {
   type: {
     id: 'narratives',
     name: ENTITY_TYPE_NARRATIVE,
-    category: 'StixDomainEntity',
+    category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
   graphql: {

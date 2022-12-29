@@ -35,6 +35,14 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#727926';
       }
       return '#7f8727';
+    case 'Case':
+    case 'Case-incident':
+    case 'Case-rfi':
+    case 'Case-feedback':
+      if (dark) {
+        return '#ad1457';
+      }
+      return '#ec407a';
     case 'Campaign':
       if (dark) {
         return '#4a148c';
@@ -47,14 +55,14 @@ export const itemColor = (type, dark = false, reversed = false) => {
       return '#2e7d32';
     case 'Observed-Data':
       if (dark) {
-        return '#00acc1';
+        return '#00838f';
       }
-      return '#00838f';
+      return '#00acc1';
     case 'Opinion':
       if (dark) {
-        return '#ad1457';
+        return '#1565c0';
       }
-      return '#ec407a';
+      return '#1976d2';
     case 'Report':
       if (dark) {
         return '#4a148c';

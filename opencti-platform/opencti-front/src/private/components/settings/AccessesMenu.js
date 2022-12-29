@@ -1,12 +1,20 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
+import {
+  CenterFocusStrongOutlined,
+  GroupOutlined,
+  PermIdentityOutlined,
+  ReceiptOutlined,
+  Security,
+} from '@mui/icons-material';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -36,16 +44,22 @@ const SettingsMenu = (props) => {
           selected={location.pathname === '/dashboard/settings/accesses/roles'}
           dense={false}
         >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <Security fontSize="medium" />
+          </ListItemIcon>
           <ListItemText primary={t('Roles')} />
         </MenuItem>
         <MenuItem
           component={Link}
           to={'/dashboard/settings/accesses/users'}
           selected={location.pathname.includes(
-            '/dashboard/settings/accesses/users',
+            '/dashboard/settings/management/users',
           )}
           dense={false}
         >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <PermIdentityOutlined fontSize="medium" />
+          </ListItemIcon>
           <ListItemText primary={t('Users')} />
         </MenuItem>
         <MenuItem
@@ -54,6 +68,9 @@ const SettingsMenu = (props) => {
           selected={location.pathname === '/dashboard/settings/accesses/groups'}
           dense={false}
         >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <GroupOutlined fontSize="medium" />
+          </ListItemIcon>
           <ListItemText primary={t('Groups')} />
         </MenuItem>
         <MenuItem
@@ -64,6 +81,9 @@ const SettingsMenu = (props) => {
           }
           dense={false}
         >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <CenterFocusStrongOutlined fontSize="medium" />
+          </ListItemIcon>
           <ListItemText primary={t('Marking definitions')} />
         </MenuItem>
         <MenuItem
@@ -74,6 +94,9 @@ const SettingsMenu = (props) => {
           }
           dense={false}
         >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <ReceiptOutlined fontSize="medium" />
+          </ListItemIcon>
           <ListItemText primary={t('Sessions')} />
         </MenuItem>
       </MenuList>

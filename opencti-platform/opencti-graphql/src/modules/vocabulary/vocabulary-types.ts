@@ -15,6 +15,7 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import type { StixObject } from '../../types/stix-common';
 import type { VocabularyCategory } from '../../generated/graphql';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
@@ -67,6 +68,30 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   // C
+  case_types_ov: {
+    entity_types: [ENTITY_TYPE_CONTAINER_CASE],
+    fields: [{
+      key: 'case_type',
+      required: true,
+      multiple: false,
+    }]
+  },
+  case_severity_ov: {
+    entity_types: [ENTITY_TYPE_CONTAINER_CASE],
+    fields: [{
+      key: 'severity',
+      required: false,
+      multiple: false,
+    }]
+  },
+  case_priority_ov: {
+    entity_types: [ENTITY_TYPE_CONTAINER_CASE],
+    fields: [{
+      key: 'priority',
+      required: false,
+      multiple: false,
+    }]
+  },
   channel_types_ov: {
     entity_types: [ENTITY_TYPE_CHANNEL],
     fields: [{

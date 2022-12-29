@@ -5,12 +5,13 @@ import groupingResolvers from './grouping-resolver';
 import { ENTITY_TYPE_CONTAINER_GROUPING, StoreEntityGrouping } from './grouping-types';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping> = {
   type: {
     id: 'groupings',
     name: ENTITY_TYPE_CONTAINER_GROUPING,
-    category: 'StixDomainEntity',
+    category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
   graphql: {

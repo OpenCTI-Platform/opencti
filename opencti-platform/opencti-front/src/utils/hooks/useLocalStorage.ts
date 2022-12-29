@@ -1,31 +1,43 @@
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import * as R from 'ramda';
 import { isEmptyField, removeEmptyFields } from '../utils';
-import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
+import {
+  Filters,
+  OrderMode,
+  PaginationOptions,
+} from '../../components/list_lines';
 import { isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
 import { DataComponentsLinesPaginationQuery$variables } from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 
 export interface LocalStorage {
-  numberOfElements?: { number: number | string, symbol: string, original?: number },
-  filters?: Filters,
-  searchTerm?: string,
-  sortBy?: string,
-  orderAsc?: boolean,
-  openExports?: boolean,
-  count?: number,
-  types?: string[]
-  view?: string,
-  zoom?: Record<string, unknown>,
+  numberOfElements?: {
+    number: number | string;
+    symbol: string;
+    original?: number;
+  };
+  filters?: Filters;
+  searchTerm?: string;
+  sortBy?: string;
+  orderAsc?: boolean;
+  openExports?: boolean;
+  count?: number;
+  types?: string[];
+  view?: string;
+  zoom?: Record<string, unknown>;
 }
 
 export interface UseLocalStorageHelpers {
-  handleSearch: (value: string) => void,
-  handleRemoveFilter: (key: string) => void,
-  handleSort: (field: string, order: boolean) => void
-  handleAddFilter: HandleAddFilter
-  handleToggleExports: () => void,
-  handleSetNumberOfElements: (value: { number?: number | string, symbol?: string, original?: number }) => void,
+  handleSearch: (value: string) => void;
+  handleRemoveFilter: (key: string) => void;
+  handleSort: (field: string, order: boolean) => void;
+  handleAddFilter: HandleAddFilter;
+  handleToggleExports: () => void;
+  handleSetNumberOfElements: (value: {
+    number?: number | string;
+    symbol?: string;
+    original?: number;
+  }) => void;
 }
 
 export const localStorageToPaginationOptions = <U>({
@@ -34,31 +46,42 @@ export const localStorageToPaginationOptions = <U>({
   sortBy,
   orderAsc,
   ...props
-}: LocalStorage & Omit<U, 'filters'>): unknown extends U ? PaginationOptions : U => {
+}: LocalStorage & Omit<U, 'filters'>): unknown extends U
+    ? PaginationOptions
+    : U => {
   // Remove only display options, not query linked
   const localOptions = { ...props };
   delete localOptions.openExports;
   delete localOptions.numberOfElements;
   delete localOptions.view;
   delete localOptions.zoom;
-  return ({
+  return {
     ...localOptions,
     search: searchTerm,
     orderMode: orderAsc ? OrderMode.asc : OrderMode.desc,
     orderBy: sortBy,
     filters: filters ? convertFilters(filters) : undefined,
-  }) as unknown extends U ? PaginationOptions : U;
+  } as unknown extends U ? PaginationOptions : U;
 };
 
-export type HandleAddFilter = (k: string, id: string, value: Record<string, unknown> | string, event: SyntheticEvent) => void;
+export type HandleAddFilter = (
+  k: string,
+  id: string,
+  value: Record<string, unknown> | string,
+  event: SyntheticEvent
+) => void;
 
-export type UseLocalStorage = [value: LocalStorage,
+export type UseLocalStorage = [
+  value: LocalStorage,
   setValue: Dispatch<SetStateAction<LocalStorage>>,
   helpers: UseLocalStorageHelpers,
 ];
 
 const buildParamsFromHistory = (params: LocalStorage) => removeEmptyFields({
-  filters: (params.filters && Object.keys(params.filters).length > 0) ? JSON.stringify(params.filters) : undefined,
+  filters:
+      params.filters && Object.keys(params.filters).length > 0
+        ? JSON.stringify(params.filters)
+        : undefined,
   zoom: JSON.stringify(params.zoom),
   searchTerm: params.searchTerm,
   sortBy: params.sortBy,
@@ -71,13 +94,20 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
   return removeEmptyFields({
     filters: filters ? JSON.parse(filters) : undefined,
     zoom: zoom ? JSON.parse(zoom) : undefined,
-    searchTerm: searchObject.get('searchTerm') ? searchObject.get('searchTerm') : undefined,
+    searchTerm: searchObject.get('searchTerm')
+      ? searchObject.get('searchTerm')
+      : undefined,
     sortBy: searchObject.get('sortBy'),
-    orderAsc: searchObject.get('orderAsc') ? searchObject.get('orderAsc') === 'true' : undefined,
+    orderAsc: searchObject.get('orderAsc')
+      ? searchObject.get('orderAsc') === 'true'
+      : undefined,
   });
 };
 
-const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStorage => {
+const useLocalStorage = (
+  key: string,
+  initialValue: LocalStorage,
+): UseLocalStorage => {
   // State to store our value
 
   // Pass initial state function to useState so logic is only executed once
@@ -95,7 +125,9 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       if (isEmptyField(value)) {
         value = initialValue;
       }
-      return Array.from(searchParams.values()).length > 0 ? { ...value, ...finalParams } : value;
+      return Array.from(searchParams.values()).length > 0
+        ? { ...value, ...finalParams }
+        : value;
     } catch (error) {
       // If error also return initialValue
       throw Error('Error while initializing values in local storage');
@@ -103,7 +135,9 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
   });
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
-  const setValue = (value: LocalStorage | ((val: LocalStorage) => LocalStorage)) => {
+  const setValue = (
+    value: LocalStorage | ((val: LocalStorage) => LocalStorage),
+  ) => {
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
@@ -119,8 +153,16 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
 
         if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
           const effectiveParams = new URLSearchParams(urlParams);
-          if (Object.entries(urlParams).some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)) {
-            window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
+          if (
+            Object.entries(urlParams).some(
+              ([k, v]) => initialValue[k as keyof LocalStorage] !== v,
+            )
+          ) {
+            window.history.replaceState(
+              null,
+              '',
+              `?${effectiveParams.toString()}`,
+            );
           } else {
             window.history.replaceState(null, '', window.location.pathname);
           }
@@ -143,7 +185,12 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       sortBy: field,
       orderAsc: order,
     })),
-    handleAddFilter: (k: string, id: string, value: Record<string, unknown> | string, event: SyntheticEvent) => {
+    handleAddFilter: (
+      k: string,
+      id: string,
+      value: Record<string, unknown> | string,
+      event: SyntheticEvent,
+    ) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -165,15 +212,22 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
           },
         }));
       } else {
-        setValue((c) => ({ ...c, filters: R.assoc(k, [{ id, value }], c.filters) }));
+        setValue((c) => ({
+          ...c,
+          filters: R.assoc(k, [{ id, value }], c.filters),
+        }));
       }
     },
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
-    handleSetNumberOfElements: (nbElements: { number?: number | string, symbol?: string, original?: number }) => {
+    handleSetNumberOfElements: (nbElements: {
+      number?: number | string;
+      symbol?: string;
+      original?: number;
+    }) => {
       if (!R.equals(nbElements, storedValue.numberOfElements)) {
         setValue((c) => {
           const { number, symbol, original } = nbElements;
-          return ({
+          return {
             ...c,
             numberOfElements: {
               ...c.numberOfElements,
@@ -181,7 +235,7 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
               ...(symbol ? { symbol } : { symbol: '' }),
               ...(original ? { original } : { original: 0 }),
             },
-          });
+          };
         });
       }
     },
@@ -191,17 +245,22 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
 };
 
 type PaginationLocalStorage<U> = {
-  viewStorage: LocalStorage,
-  helpers: UseLocalStorageHelpers,
-  paginationOptions: U,
+  viewStorage: LocalStorage;
+  helpers: UseLocalStorageHelpers;
+  paginationOptions: U;
 };
 
-export const usePaginationLocalStorage = <U>(key: string, initialValue: LocalStorage): PaginationLocalStorage<U> => {
+export const usePaginationLocalStorage = <U>(
+  key: string,
+  initialValue: LocalStorage,
+): PaginationLocalStorage<U> => {
   const [viewStorage, , helpers] = useLocalStorage(key, initialValue);
-  const paginationOptions = localStorageToPaginationOptions<DataComponentsLinesPaginationQuery$variables>({
-    ...viewStorage,
-    count: 25,
-  });
+  const paginationOptions = localStorageToPaginationOptions<DataComponentsLinesPaginationQuery$variables>(
+    {
+      ...viewStorage,
+      count: 25,
+    },
+  );
   return {
     viewStorage,
     helpers,

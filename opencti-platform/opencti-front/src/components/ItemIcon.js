@@ -12,7 +12,7 @@ import {
   CenterFocusStrongOutlined,
   ShortTextOutlined,
   WorkOutline,
-  FeedbackOutlined,
+  ReviewsOutlined,
   LanguageOutlined,
   WifiTetheringOutlined,
   Visibility,
@@ -26,6 +26,9 @@ import {
   WorkspacesOutlined,
   StreamOutlined,
   SourceOutlined,
+  SubjectOutlined,
+  TipsAndUpdatesOutlined,
+  BiotechOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -43,6 +46,7 @@ import {
   Launch,
   LaptopAccount,
   ArchiveOutline,
+  Brain,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -87,13 +91,13 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Campaign':
       return <ChessKnight style={style} fontSize={fontSize} role="img" />;
     case 'Note':
-      return <WorkOutline style={style} fontSize={fontSize} role="img" />;
+      return <SubjectOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Observed-Data':
       return (
         <WifiTetheringOutlined style={style} fontSize={fontSize} role="img" />
       );
     case 'Opinion':
-      return <FeedbackOutlined style={style} fontSize={fontSize} role="img" />;
+      return <ReviewsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Report':
       return (
         <DescriptionOutlined style={style} fontSize={fontSize} role="img" />
@@ -162,6 +166,16 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <Launch style={style} fontSize={fontSize} role="img" />;
     case 'Artifact':
       return <ArchiveOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Case':
+      return <WorkOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Case-incident':
+      return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Case-feedback':
+      return (
+        <TipsAndUpdatesOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'Case-rfi':
+      return <Brain style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

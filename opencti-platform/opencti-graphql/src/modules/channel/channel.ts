@@ -38,12 +38,13 @@ import {
   ENTITY_USER_ACCOUNT
 } from '../../schema/stixCyberObservable';
 import { REL_EXTENDED, REL_NEW } from '../../database/stix';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
   type: {
     id: 'channels',
     name: ENTITY_TYPE_CHANNEL,
-    category: 'StixDomainEntity',
+    category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
   graphql: {

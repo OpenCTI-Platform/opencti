@@ -11,6 +11,7 @@ import Drawer from '@mui/material/Drawer';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import {
   AssignmentOutlined,
+  CasesOutlined,
   ConstructionOutlined,
   DashboardOutlined,
   LayersOutlined,
@@ -202,6 +203,27 @@ const LeftBar = () => {
               )}
             </MenuItem>
           </StyledTooltip>
+          <Security needs={[SETTINGS]}>
+            <StyledTooltip title={!navOpen && t('Cases')} placement="right">
+              <MenuItem
+                component={Link}
+                to="/dashboard/cases"
+                selected={location.pathname.includes('/dashboard/cases')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon style={{ minWidth: 20 }}>
+                  <CasesOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t('Cases')}
+                  />
+                )}
+              </MenuItem>
+            </StyledTooltip>
+          </Security>
           <StyledTooltip title={!navOpen && t('Events')} placement="right">
             <MenuItem
               component={Link}

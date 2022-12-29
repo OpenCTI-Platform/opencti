@@ -34,7 +34,7 @@ const useStyles = makeStyles(() => ({
 interface ContainerStixObjectsOrStixRelationshipsComponentProps {
   isSupportParticipation: boolean,
   container: ContainerStixObjectsOrStixRelationships_container$data,
-  paginationOptions: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
+  paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
 }
 
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<ContainerStixObjectsOrStixRelationshipsComponentProps> = ({
@@ -52,7 +52,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<Contai
     security.push(KNOWLEDGE_KNPARTICIPATE);
   }
   const { helper } = useContext(UserContext);
-  const isRuntimeSort = helper?.isRuntimeFieldEnable('RUNTIME_SORTING');
+  const isRuntimeSort = helper?.isRuntimeFieldEnable();
   const dataColumns = {
     entity_type: {
       label: 'Type',

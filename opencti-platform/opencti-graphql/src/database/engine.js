@@ -1019,6 +1019,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   let mustnot = [];
   let ordering = [];
   const markingRestrictions = await buildDataRestrictions(context, user);
+  const numericOrBooleanAttr = numericOrBooleanAttributes();
   must.push(...markingRestrictions.must);
   mustnot.push(...markingRestrictions.must_not);
   if (ids.length > 0) {
@@ -1139,7 +1140,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
           } else if (operator === 'eq') {
             valuesFiltering.push({
               multi_match: {
-                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttributes.includes(k)) ? k : `${k}.keyword`}`),
+                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttr.includes(k)) ? k : `${k}.keyword`}`),
                 query: values[i].toString(),
               },
             });
@@ -1202,7 +1203,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
     const orderCriterion = Array.isArray(orderBy) ? orderBy : [orderBy];
     for (let index = 0; index < orderCriterion.length; index += 1) {
       const orderCriteria = orderCriterion[index];
-      const isDateOrNumber = dateAttributes.includes(orderCriteria) || numericOrBooleanAttributes.includes(orderCriteria);
+      const isDateOrNumber = dateAttributes.includes(orderCriteria) || numericOrBooleanAttr.includes(orderCriteria);
       const orderKeyword = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
       const order = { [orderKeyword]: orderMode };
       ordering = R.append(order, ordering);
@@ -1608,7 +1609,7 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
 export const elAttributeValues = async (context, user, field, opts = {}) => {
   const { first, orderMode = 'asc', search } = opts;
   const markingRestrictions = await buildDataRestrictions(context, user);
-  const isDateOrNumber = dateAttributes.includes(field) || numericOrBooleanAttributes.includes(field);
+  const isDateOrNumber = dateAttributes.includes(field) || numericOrBooleanAttributes().includes(field);
   const must = [];
   if (isNotEmptyField(search) && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search);

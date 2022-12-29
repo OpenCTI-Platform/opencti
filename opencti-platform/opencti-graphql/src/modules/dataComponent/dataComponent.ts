@@ -1,7 +1,11 @@
 import dataComponentTypeDefs from './dataComponent.graphql';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_DATA_COMPONENT,
+  ENTITY_TYPE_DATA_SOURCE
+} from '../../schema/stixDomainObject';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import type { StoreEntityDataComponent } from './dataComponent-types';
 import { INPUT_DATA_SOURCE } from './dataComponent-types';
@@ -10,12 +14,13 @@ import convertDataComponentToStix from './dataComponent-converter';
 import { RELATION_DETECTS } from '../../schema/stixCoreRelationship';
 import { REL_EXTENDED } from '../../database/stix';
 import { ATTRIBUTE_DATA_SOURCE, RELATION_DATA_SOURCE } from './dataComponent-domain';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent> = {
   type: {
     id: 'datacomponents',
     name: ENTITY_TYPE_DATA_COMPONENT,
-    category: 'StixDomainEntity',
+    category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
   graphql: {

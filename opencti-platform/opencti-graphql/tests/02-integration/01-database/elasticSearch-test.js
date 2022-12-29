@@ -381,7 +381,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: 1000 });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(350);
+    expect(data.edges.length).toEqual(361);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -399,7 +399,7 @@ describe('Elasticsearch pagination', () => {
       first: 1000,
     });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(317);
+    expect(data.edges.length).toEqual(328);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -448,7 +448,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
-    expect(data.edges.length).toEqual(343);
+    expect(data.edges.length).toEqual(354);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
@@ -483,7 +483,7 @@ describe('Elasticsearch pagination', () => {
       { key: 'color', operator: undefined, values: [null] },
     ];
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
-    expect(data.edges.length).toEqual(268);
+    expect(data.edges.length).toEqual(279);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
@@ -497,7 +497,7 @@ describe('Elasticsearch pagination', () => {
       orderMode: 'asc',
       first: 1000
     });
-    expect(data.edges.length).toEqual(307);
+    expect(data.edges.length).toEqual(318);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
