@@ -20,7 +20,6 @@ import {
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import Tooltip from '@material-ui/core/Tooltip';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
@@ -108,33 +107,7 @@ const styles = (theme) => ({
     marginBottom: '5px',
     border: '1px solid #F9B406',
   },
-  veryHigh: {
-    fill: theme.palette.riskPriority.veryHigh,
-  },
-  high: {
-    fill: theme.palette.riskPriority.high,
-  },
-  moderate: {
-    fill: theme.palette.riskPriority.moderate,
-  },
-  low: {
-    fill: theme.palette.riskPriority.low,
-  },
-  veryLow: {
-    fill: theme.palette.riskPriority.veryLow,
-  },
 });
-
-const RiskTooltip = withStyles((theme) => ({
-  tooltip: {
-    backgroundColor: 'rgba(241, 241, 242, 0.25)',
-    color: '#FFF',
-    maxWidth: 220,
-    fontSize: theme.typography.pxToRem(12),
-    border: '1px solid rgba(241, 241, 242, 0.5)',
-    borderRadius: '4px',
-  },
-}))(Tooltip);
 
 class RiskCardComponent extends Component {
   constructor(props) {
@@ -240,7 +213,7 @@ class RiskCardComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}>
-                  {t('Risk')}
+                  {t('Severity')}
                 </Typography>
                 <div
                   // className={classes.bodyItem}
