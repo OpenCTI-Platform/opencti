@@ -318,6 +318,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             ... on DataSource {
               name
             }
+            ... on Case {
+              name
+            }
             ... on StixCyberObservable {
               id
               entity_type
@@ -518,6 +521,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               name
             }
             ... on DataSource {
+              name
+            }
+            ... on Case {
               name
             }
             ... on StixCyberObservable {

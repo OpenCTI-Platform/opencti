@@ -273,6 +273,9 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         ... on DataSource {
           name
         }
+        ... on Case {
+          name
+        }
         objectLabel {
           edges {
             node {

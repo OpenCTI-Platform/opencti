@@ -1591,6 +1591,9 @@ const ReportKnowledgeGraph = createFragmentContainer(
               ... on DataSource {
                 name
               }
+              ... on Case {
+                name
+              }
               ... on StixCyberObservable {
                 observable_value
               }

@@ -449,6 +449,9 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
           ... on DataSource {
             name
           }
+          ... on Case {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -574,6 +577,9 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
             name
           }
           ... on DataSource {
+            name
+          }
+          ... on Case {
             name
           }
           ... on StixCyberObservable {

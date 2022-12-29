@@ -759,6 +759,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             ... on DataSource {
               name
             }
+            ... on Case {
+              name
+            }
             ... on StixCoreRelationship {
               id
               relationship_type
@@ -860,6 +863,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   name
                 }
                 ... on DataSource {
+                  name
+                }
+                ... on Case {
                   name
                 }
                 ... on StixCyberObservable {
@@ -1020,6 +1026,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         ... on DataSource {
                           name
                         }
+                        ... on Case {
+                          name
+                        }
                         ... on StixCyberObservable {
                           observable_value
                           x_opencti_description
@@ -1128,6 +1137,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on DataSource {
                       name
                     }
+                    ... on Case {
+                      name
+                    }
                   }
                   to {
                     ... on BasicObject {
@@ -1220,6 +1232,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on DataSource {
+                      name
+                    }
+                    ... on Case {
                       name
                     }
                     ... on ObservedData {
@@ -1375,6 +1390,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                             }
                             ... on DataSource {
+                              name
+                            }
+                            ... on Case {
                               name
                             }
                             ... on StixCyberObservable {
@@ -1484,6 +1502,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on DataSource {
                   name
                 }
+                ... on Case {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -1642,6 +1663,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         ... on DataSource {
                           name
                         }
+                        ... on Case {
+                          name
+                        }
                         ... on StixCyberObservable {
                           observable_value
                           x_opencti_description
@@ -1752,6 +1776,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on DataSource {
                       name
                     }
+                    ... on Case {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -1908,6 +1935,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                             }
                             ... on DataSource {
+                              name
+                            }
+                            ... on Case {
                               name
                             }
                             ... on StixCyberObservable {
@@ -2014,6 +2044,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on DataSource {
                       name
                     }
+                    ... on Case {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -2170,6 +2203,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                             }
                             ... on DataSource {
+                              name
+                            }
+                            ... on Case {
                               name
                             }
                             ... on StixCyberObservable {
@@ -2283,6 +2319,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on DataSource {
                   name
                 }
+                ... on Case {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -2441,6 +2480,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         ... on DataSource {
                           name
                         }
+                        ... on Case {
+                          name
+                        }
                         ... on StixCyberObservable {
                           observable_value
                           x_opencti_description
@@ -2549,6 +2591,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on DataSource {
                       name
                     }
+                    ... on Case {
+                      name
+                    }
                   }
                   to {
                     ... on BasicObject {
@@ -2641,6 +2686,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on DataSource {
+                      name
+                    }
+                    ... on Case {
                       name
                     }
                     ... on ObservedData {
@@ -2796,6 +2844,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                             }
                             ... on DataSource {
+                              name
+                            }
+                            ... on Case {
                               name
                             }
                             ... on StixCyberObservable {
@@ -2905,6 +2956,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on DataSource {
                   name
                 }
+                ... on Case {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -3063,6 +3117,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         ... on DataSource {
                           name
                         }
+                        ... on Case {
+                          name
+                        }
                         ... on StixCyberObservable {
                           observable_value
                           x_opencti_description
@@ -3173,6 +3230,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on DataSource {
                       name
                     }
+                    ... on Case {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -3329,6 +3389,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                             }
                             ... on DataSource {
+                              name
+                            }
+                            ... on Case {
                               name
                             }
                             ... on StixCyberObservable {
@@ -3435,6 +3498,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on DataSource {
                       name
                     }
+                    ... on Case {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -3591,6 +3657,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                             }
                             ... on DataSource {
+                              name
+                            }
+                            ... on Case {
                               name
                             }
                             ... on StixCyberObservable {
@@ -3718,6 +3787,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on DataSource {
             name
           }
+          ... on Case {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -3876,6 +3948,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   ... on DataSource {
                     name
                   }
+                  ... on Case {
+                    name
+                  }
                   ... on StixCyberObservable {
                     observable_value
                     x_opencti_description
@@ -3984,6 +4059,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on DataSource {
                 name
               }
+              ... on Case {
+                name
+              }
             }
             to {
               ... on BasicObject {
@@ -4076,6 +4154,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on DataSource {
+                name
+              }
+              ... on Case {
                 name
               }
             }
@@ -4176,6 +4257,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on DataSource {
             name
           }
+          ... on Case {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -4331,6 +4415,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   ... on DataSource {
                     name
                   }
+                  ... on Case {
+                    name
+                  }
                   ... on StixCyberObservable {
                     observable_value
                     x_opencti_description
@@ -4432,6 +4519,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on DataSource {
                 name
               }
+              ... on Case {
+                name
+              }
               ... on StixCyberObservable {
                 observable_value
               }
@@ -4520,6 +4610,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on DataSource {
+                name
+              }
+              ... on Case {
                 name
               }
               ... on StixCyberObservable {

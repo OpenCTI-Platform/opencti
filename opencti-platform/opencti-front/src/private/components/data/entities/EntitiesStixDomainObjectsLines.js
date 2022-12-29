@@ -155,6 +155,10 @@ export const entitiesStixDomainObjectsLinesSearchQuery = graphql`
             aliases
             description
           }
+          ... on Case {
+            name
+            description
+          }
           ... on Individual {
             name
             description
@@ -255,6 +259,9 @@ export const entitiesStixDomainObjectsLinesSearchQuery = graphql`
             name
           }
           ... on DataSource {
+            name
+          }
+          ... on Case {
             name
           }
           createdBy {

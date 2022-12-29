@@ -212,6 +212,10 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                 name
                 description
               }
+              ... on Case {
+                name
+                description
+              }
               ... on StixCyberObservable {
                 observable_value
                 x_opencti_description

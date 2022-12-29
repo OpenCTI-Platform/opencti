@@ -346,6 +346,9 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
                 ... on DataSource {
                   name
                 }
+                ... on Case {
+                  name
+                }
               }
             }
           }

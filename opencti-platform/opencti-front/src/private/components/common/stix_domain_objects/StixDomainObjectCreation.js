@@ -213,6 +213,9 @@ const stixDomainObjectCreationMutation = graphql`
       ... on DataSource {
         name
       }
+      ... on Case {
+        name
+      }
       ... on Report {
         name
       }

@@ -175,6 +175,10 @@ const stixCoreRelationshipsDonutsDistributionQuery = graphql`
           name
           description
         }
+        ... on Case {
+          name
+          description
+        }
         ... on StixCyberObservable {
           observable_value
         }

@@ -225,6 +225,9 @@ const stixDomainObjectBookmarksListQuery = graphql`
           ... on DataSource {
             name
           }
+          ... on Case {
+            name
+          }
           createdBy {
             ... on Identity {
               id

@@ -162,6 +162,9 @@ const entityStixCoreRelationshipsListDistributionQuery = graphql`
         ... on DataSource {
           name
         }
+        ... on Case {
+          name
+        }
       }
     }
   }

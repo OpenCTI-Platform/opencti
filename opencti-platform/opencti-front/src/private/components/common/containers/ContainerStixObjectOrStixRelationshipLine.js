@@ -242,6 +242,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on DataSource {
           name
         }
+        ... on Case {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
         }
@@ -332,6 +335,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on DataSource {
               name
             }
+            ... on Case {
+              name
+            }
           }
           to {
             ... on BasicObject {
@@ -412,6 +418,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on DataSource {
+              name
+            }
+            ... on Case {
               name
             }
           }

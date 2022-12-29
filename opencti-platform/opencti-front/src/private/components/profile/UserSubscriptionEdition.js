@@ -590,6 +590,9 @@ const UserSubscriptionEditionFragment = createFragmentContainer(
           ... on DataSource {
             name
           }
+          ... on Case {
+            name
+          }
         }
       }
     `,

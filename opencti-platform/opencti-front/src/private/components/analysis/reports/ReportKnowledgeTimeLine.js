@@ -311,6 +311,10 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
               name
               description
             }
+            ... on Case {
+              name
+              description
+            }
             ... on StixCyberObservable {
               observable_value
               x_opencti_description
@@ -464,6 +468,10 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                   name
                   description
                 }
+                ... on Case {
+                  name
+                  description
+                }
                 ... on StixCyberObservable {
                   observable_value
                   x_opencti_description
@@ -606,6 +614,10 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                   description
                 }
                 ... on DataSource {
+                  name
+                  description
+                }
+                ... on Case {
                   name
                   description
                 }

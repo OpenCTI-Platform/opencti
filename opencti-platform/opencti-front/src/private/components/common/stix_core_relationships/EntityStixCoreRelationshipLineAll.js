@@ -450,6 +450,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
           ... on DataSource {
             name
           }
+          ... on Case {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -612,6 +615,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
               }
               ... on DataSource {
+                name
+              }
+              ... on Case {
                 name
               }
               ... on StixCyberObservable {
@@ -778,6 +784,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
               }
               ... on DataSource {
+                name
+              }
+              ... on Case {
                 name
               }
               ... on StixCyberObservable {
@@ -948,6 +957,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
           ... on DataSource {
             name
           }
+          ... on Case {
+            name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -1110,6 +1122,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
               }
               ... on DataSource {
+                name
+              }
+              ... on Case {
                 name
               }
               ... on StixCyberObservable {
@@ -1276,6 +1291,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
               }
               ... on DataSource {
+                name
+              }
+              ... on Case {
                 name
               }
               ... on StixCyberObservable {

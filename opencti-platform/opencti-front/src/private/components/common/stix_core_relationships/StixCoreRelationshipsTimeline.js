@@ -224,6 +224,9 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
             ... on DataSource {
               name
             }
+            ... on Case {
+              name
+            }
             ... on StixCyberObservable {
               id
               entity_type

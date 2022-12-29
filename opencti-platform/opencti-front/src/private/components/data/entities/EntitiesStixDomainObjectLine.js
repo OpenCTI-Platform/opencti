@@ -229,6 +229,10 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
           aliases
           description
         }
+        ... on Case {
+          name
+          description
+        }
         ... on Individual {
           name
           description

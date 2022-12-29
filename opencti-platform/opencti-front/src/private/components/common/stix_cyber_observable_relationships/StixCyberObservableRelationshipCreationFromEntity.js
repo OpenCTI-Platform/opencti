@@ -283,6 +283,9 @@ const stixCyberObservableRelationshipCreationFromEntityQuery = graphql`
       ... on DataSource {
         name
       }
+      ... on Case {
+        name
+      }
       ... on StixCyberObservable {
         observable_value
       }

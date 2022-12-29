@@ -323,6 +323,9 @@ const StixDomainObjectAddObjectRefsLines = createPaginationContainer(
               ... on DataSource {
                 name
               }
+              ... on Case {
+                name
+              }
             }
           }
         }

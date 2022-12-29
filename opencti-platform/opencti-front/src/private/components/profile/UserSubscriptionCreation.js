@@ -233,6 +233,9 @@ const userSubscriptionMutation = graphql`
         ... on DataSource {
           name
         }
+        ... on Case {
+          name
+        }
       }
     }
   }
