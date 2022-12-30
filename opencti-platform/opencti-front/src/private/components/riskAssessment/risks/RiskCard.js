@@ -20,7 +20,6 @@ import {
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import Tooltip from '@material-ui/core/Tooltip';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
@@ -124,17 +123,6 @@ const styles = (theme) => ({
     fill: theme.palette.riskPriority.veryLow,
   },
 });
-
-const RiskTooltip = withStyles((theme) => ({
-  tooltip: {
-    backgroundColor: 'rgba(241, 241, 242, 0.25)',
-    color: '#FFF',
-    maxWidth: 220,
-    fontSize: theme.typography.pxToRem(12),
-    border: '1px solid rgba(241, 241, 242, 0.5)',
-    borderRadius: '4px',
-  },
-}))(Tooltip);
 
 class RiskCardComponent extends Component {
   constructor(props) {

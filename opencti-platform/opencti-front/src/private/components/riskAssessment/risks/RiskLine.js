@@ -15,7 +15,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
@@ -98,17 +97,6 @@ const styles = (theme) => ({
     fill: theme.palette.riskPriority.veryLow,
   },
 });
-
-const RiskTooltip = withStyles((theme) => ({
-  tooltip: {
-    backgroundColor: 'rgba(241, 241, 242, 0.25)',
-    color: '#FFF',
-    maxWidth: 220,
-    fontSize: theme.typography.pxToRem(12),
-    border: '1px solid rgba(241, 241, 242, 0.5)',
-    borderRadius: '4px',
-  },
-}))(Tooltip);
 
 class RiskLineComponent extends Component {
   render() {

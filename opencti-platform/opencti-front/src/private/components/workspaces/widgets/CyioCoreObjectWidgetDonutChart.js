@@ -1,6 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, assoc } from 'ramda';
+import {
+  compose,
+  map,
+  assoc,
+  concat,
+  replace,
+} from 'ramda';
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Tooltip,
 } from 'recharts';
@@ -150,11 +156,13 @@ class CyioCoreObjectWidgetDonutChart extends Component {
       ...widget.config.variables,
       startDate: new Date(finalStartDate).toISOString(),
       endDate: new Date(finalEndDate).toISOString(),
+      limit: 5,
     };
+    const widgetName = replace('Top-N', concat('Top ', donutChartVariables.limit.toString()), widget.config.name);
     return (
       <>
         <Typography variant="h4" gutterBottom={true}>
-          {widget.config.name || t('Component')}
+          {widgetName || t('Component')}
         </Typography>
         <QueryRenderer
           query={dashboardQueryRisksDistribution}
