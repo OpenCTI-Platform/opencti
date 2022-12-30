@@ -128,7 +128,6 @@ class RiskDetailsComponent extends Component {
   }
 
   handleEditOpen(field) {
-    console.log(field, this.state.open);
     this.setState({ open: !this.state.open, modelName: field });
   }
 
@@ -158,7 +157,6 @@ class RiskDetailsComponent extends Component {
       open,
       modelName,
     } = this.state;
-    console.log(risk);
     const riskDetectionSource = R.pipe(
       R.path(['origins']),
     )(risk);
@@ -166,18 +164,12 @@ class RiskDetailsComponent extends Component {
       R.assoc('deadline', risk?.deadline || ''),
       R.assoc('statement', risk?.statement || ''),
       R.assoc('risk_status', risk?.risk_status || ''),
-      R.assoc('risk_adjusted', risk?.risk_adjusted || ''),
-      R.assoc('false_positive', risk?.false_positive || ''),
-      R.assoc('vendor_dependency', risk?.vendor_dependency || ''),
-      R.assoc('accepted', risk?.accepted || ''),
+      R.assoc('vendor_dependency', risk?.vendor_dependency || false),
       R.pick([
         'deadline',
         'statement',
         'risk_status',
-        'false_positive',
-        'risk_adjusted',
         'vendor_dependency',
-        'accepted',
       ]),
     )(risk);
     return (
@@ -427,6 +419,7 @@ class RiskDetailsComponent extends Component {
                       <Field
                         component={SwitchField}
                         name="vendor_dependency"
+                        type='checkbox'
                         containerstyle={{ margin: '0 -15px 0 11px' }}
                         onChange={this.handleSubmitField.bind(this)}
                       />

@@ -24,6 +24,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import SwitchField from '../../../../components/SwitchField';
 import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   paper: {
@@ -114,15 +115,18 @@ class RiskOverviewComponent extends Component {
     this.state = {
       open: false,
       modelName: '',
+      addJustification: false,
     };
   }
 
   handleEditOpen(field) {
-    console.log(field, this.state.open);
     this.setState({ open: !this.state.open, modelName: field });
   }
 
   handleSubmitField(name, value) {
+    if (value) {
+      this.setState({ addJustification: value })
+    }
     RiskValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -144,11 +148,12 @@ class RiskOverviewComponent extends Component {
     const {
       open,
       modelName,
+      addJustification,
     } = this.state;
     const initialValues = R.pipe(
-      R.assoc('risk_adjusted', risk?.risk_adjusted || ''),
-      R.assoc('false_positive', risk?.false_positive || ''),
-      R.assoc('accepted', risk?.accepted || ''),
+      R.assoc('risk_adjusted', risk?.risk_adjusted || false),
+      R.assoc('false_positive', risk?.false_positive || false),
+      R.assoc('accepted', risk?.accepted || false),
       R.pick([
         'false_positive',
         'risk_adjusted',
@@ -400,6 +405,7 @@ class RiskOverviewComponent extends Component {
                       <Field
                         component={SwitchField}
                         name="accepted"
+                        type='checkbox'
                         containerstyle={{ margin: "0 -15px 0 11px" }}
                         onChange={this.handleSubmitField.bind(this)}
                       />
@@ -470,6 +476,7 @@ class RiskOverviewComponent extends Component {
                         <Field
                           component={SwitchField}
                           name="false_positive"
+                          type='checkbox'
                           containerstyle={{ margin: "0 -15px 0 11px" }}
                           onChange={this.handleSubmitField.bind(this)}
                         />
@@ -537,6 +544,7 @@ class RiskOverviewComponent extends Component {
                       <Field
                         component={SwitchField}
                         name="risk_adjusted"
+                        type='checkbox'
                         containerstyle={{ margin: "0 -15px 0 11px" }}
                         onChange={this.handleSubmitField.bind(this)}
                       />
@@ -557,6 +565,44 @@ class RiskOverviewComponent extends Component {
                       Yes
                     </Typography>
                   </div>
+                </Grid>
+                <Grid item={true} xs={12}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t('Justification')}
+                    </Typography>
+                    <Tooltip
+                      title={t(
+                        'Identifies a summary of impact for how the risk affects the system.',
+                      )}
+                    >
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {addJustification ? (
+                    <Field
+                      component={MarkDownField}
+                      name='statement'
+                      fullWidth={true}
+                      multiline={true}
+                      variant='outlined'
+                      onSubmit={this.handleSubmitField.bind(this)}
+                    />
+                  ) : (
+                    <div className={classes.scrollBg}>
+                      <div className={classes.scrollDiv}>
+                        <div className={classes.scrollObj}>
+                          {risk.statement && t(risk.statement)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </Grid>
                 <Grid item={true} xs={12}>
                   <CyioCoreObjectLabelsView
