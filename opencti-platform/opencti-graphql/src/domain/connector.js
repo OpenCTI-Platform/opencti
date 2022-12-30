@@ -12,7 +12,7 @@ import { registerConnectorQueues, unregisterConnector, unregisterExchanges } fro
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
-import { elFindByIds, elLoadById } from '../database/engine';
+import { elLoadById } from '../database/engine';
 import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
@@ -29,11 +29,6 @@ export const connectorForWork = async (context, user, id) => {
   const work = await elLoadById(context, user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   if (work) return loadConnectorById(context, user, work.connector_id);
   return null;
-};
-
-export const batchConnectorForWork = async (context, user, workIds) => {
-  const works = await elFindByIds(context, user, workIds, { toMap: true });
-  return workIds.map((id) => works[id]);
 };
 
 export const computeWorkStatus = async (work) => {
