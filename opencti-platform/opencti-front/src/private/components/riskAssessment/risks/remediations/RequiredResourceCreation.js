@@ -10,6 +10,7 @@ import {
   pipe,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
@@ -126,13 +127,11 @@ const RequiredResourceCreationMutation = graphql`
   }
 `;
 
-// const RequiredResourceValidation = (t) =>
-//   Yup.object().shape({
-//     // source_name: Yup.string().required(t('This field is required')),
-//     // external_id: Yup.string(),
-//     // url: Yup.string().url(t('The value must be an URL')),
-//     // description: Yup.string(),
-//   });
+const RequiredResourceValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().required(t('This field is required')),
+  });
 
 class RequiredResourceCreation extends Component {
   constructor(props) {
@@ -272,7 +271,7 @@ class RequiredResourceCreation extends Component {
                 resource_type: '',
                 resource: '',
               }}
-              // validationSchema={RequiredResourceValidation(t)}
+              validationSchema={RequiredResourceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -368,7 +367,7 @@ class RequiredResourceCreation extends Component {
               description: '',
               resource_type: '',
             }}
-            // validationSchema={RequiredResourceValidation(t)}
+            validationSchema={RequiredResourceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
