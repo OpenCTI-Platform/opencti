@@ -456,6 +456,16 @@
       "x_opencti_location_type": "City"
     },
     {
+      "id": "location--861af688-581e-4571-a0d9-955c9096fb42",
+      "type": "location",
+      "spec_version": "2.1",
+      "name": "Bretagne",
+      "description": "Administrative Area",
+      "created": "2019-10-26T14:55:55.895Z",
+      "modified": "2020-02-27T08:45:38.165Z",
+      "x_opencti_location_type": "AdministrativeArea"
+    },
+    {
       "id": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
       "type": "location",
       "spec_version": "2.1",

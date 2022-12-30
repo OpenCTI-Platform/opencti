@@ -5598,6 +5598,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   x_opencti_aliases: [String]
   # City
   country: Country
+  administrativeArea: AdministrativeArea
   # Technical
   creator: Creator
   toStix: String

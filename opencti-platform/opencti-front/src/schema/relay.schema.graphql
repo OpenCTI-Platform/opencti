@@ -4349,6 +4349,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   precision: Float
   x_opencti_aliases: [String]
   country: Country
+  administrativeArea: AdministrativeArea
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -9363,7 +9364,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   description: String
   administrativeArea_types: [String]
   aliases: [String]
-  country: AdministrativeAreaConnection
+  country: Country
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection

@@ -95,11 +95,11 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     precision: Float
     x_opencti_aliases: [String]
     # AdministrativeArea
-    name: String!
+
+name: String!
     description: String
     administrativeArea_types: [String]
-    aliases: [String]
-    country: AdministrativeAreaConnection
+    aliases: [String]    country:  Country
     # Technical
     creator: Creator
     toStix: String
