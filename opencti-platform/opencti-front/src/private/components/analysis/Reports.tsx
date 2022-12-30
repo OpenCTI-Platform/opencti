@@ -74,13 +74,15 @@ const Reports: FunctionComponent<ReportsProps> = ({
     });
   }
   if (authorId) {
-    finalFilters.push({ key: 'createdBy',
+    finalFilters.push({
+      key: 'createdBy',
       values: [authorId],
       operator: 'eq',
       filterMode: 'or' });
   }
   if (objectId) {
-    finalFilters.push({ key: 'objectContains',
+    finalFilters.push({
+      key: 'objectContains',
       values: [objectId],
       operator: 'eq',
       filterMode: 'or' });
@@ -187,7 +189,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     let renderFilters = filters;
     renderFilters = { ...renderFilters, entity_type: [{ id: 'Report', value: 'Report' }] };
 
-    const isRuntimeSort = helper?.isRuntimeFieldEnable('RUNTIME_SORTING');
+    const isRuntimeSort = helper?.isRuntimeFieldEnable();
     const dataColumns = {
       name: {
         label: 'Title',

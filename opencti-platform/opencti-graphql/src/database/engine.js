@@ -1151,7 +1151,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
           } else if (operator === 'not_eq') {
             noValuesFiltering.push({
               multi_match: {
-                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttributes.includes(k)) ? k : `${k}.keyword`}`),
+                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttr.includes(k)) ? k : `${k}.keyword`}`),
                 query: values[i].toString(),
               },
             });

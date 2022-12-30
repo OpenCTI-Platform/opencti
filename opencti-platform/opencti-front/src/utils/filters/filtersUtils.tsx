@@ -28,6 +28,8 @@ export const EqFilters = [
   'malware_types',
   'incident_type',
   'context',
+  'pattern_type',
+  'indicator_types',
 ];
 const uniqFilters = [
   'revoked',

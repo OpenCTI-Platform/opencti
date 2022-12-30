@@ -60,6 +60,7 @@ const WORKFLOW_FILTER = 'x_opencti_workflow_id';
 const CONFIDENCE_FILTER = 'confidence';
 const REVOKED_FILTER = 'revoked';
 const PATTERN_FILTER = 'pattern_type';
+const INDICATOR_FILTER = 'indicator_types';
 
 const filterCacheResolver = async (context, values, filterCache) => {
   const filterIds = values.map((v) => v.id);
@@ -281,6 +282,28 @@ const createSeeMiddleware = () => {
       res.status(500).end();
     }
   };
+  const isFoundsTrue = async (founds, filterMode) => {
+    let found = false;
+    switch (filterMode) {
+      case 'and':
+        if (founds.includes(false)) {
+          found = false;
+        } else {
+          found = true;
+        }
+        break;
+      case 'or':
+        if (founds.includes(true)) {
+          found = true;
+        }
+        break;
+      default: // 'or'
+        if (founds.includes(true)) {
+          found = true;
+        }
+    }
+    return found;
+  };
   const isInstanceMatchFilters = async (context, user, instance, filters, filterCache) => {
     const instanceAccessible = await isUserCanAccessStixElement(context, user, instance);
     if (!instanceAccessible) {
@@ -291,7 +314,9 @@ const createSeeMiddleware = () => {
     // User is granted, but we still need to apply filters if needed
     const filterEntries = Object.entries(adaptedFilters);
     for (let index = 0; index < filterEntries.length; index += 1) {
-      const [type, { operator, values }] = filterEntries[index];
+      const [type, { operator, values, filterMode }] = filterEntries[index];
+      let founds = [];
+      let found = false;
       // Markings filtering
       if (type === MARKING_FILTER) {
         if (values.length === 0) {
@@ -302,29 +327,56 @@ const createSeeMiddleware = () => {
           return false;
         }
         const filterMarkingRefs = await filterCacheResolver(context, values, filterCache);
-        const found = filterMarkingRefs.some((r) => markings.includes(r));
-        if (!found) {
-          return false;
+        switch (operator) {
+          case 'not_eq':
+            founds = filterMarkingRefs.map((r) => !markings.includes(r));
+            break;
+          case 'eq':
+            founds = filterMarkingRefs.map((r) => markings.includes(r));
+            break;
+          default:
+            founds = filterMarkingRefs.map((r) => markings.includes(r));
         }
+        found = isFoundsTrue(founds, filterMode);
+        return found;
       }
       // Entity type filtering
       if (type === TYPE_FILTER) {
         const instanceType = instance.extensions[STIX_EXT_OCTI].type;
         const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
-        let found = false;
         if (values.length === 0) {
           found = true;
         } else {
-          // eslint-disable-next-line no-restricted-syntax
-          for (const filter of values) {
-            if (instanceAllTypes.includes(filter.id)) {
-              found = true;
-            }
+          switch (operator) {
+            case 'not_eq':
+              founds = values.map((filter) => !instanceAllTypes.includes(filter.id));
+              break;
+            case 'eq':
+              founds = values.map((filter) => instanceAllTypes.includes(filter.id));
+              break;
+            default: // operator='and' and filterMode='or'
+              founds = values.map((filter) => instanceAllTypes.includes(filter.id));
           }
         }
-        if (!found) {
-          return false;
+        found = isFoundsTrue(founds, filterMode);
+        return found;
+      }
+      // Indicator type filtering
+      if (type === INDICATOR_FILTER) {
+        const indicators = [...(instance.indicator_types ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.indicator_types ?? [])];
+        const extractedValues = values.map((v) => v.value);
+        switch (operator) {
+          case 'not_eq':
+            founds = extractedValues.map((r) => !indicators.includes(r));
+            break;
+          case 'eq':
+            founds = extractedValues.map((r) => indicators.includes(r));
+            break;
+          default:
+            founds = extractedValues.map((r) => indicators.includes(r));
         }
+        found = isFoundsTrue(founds, filterMode);
+        return found;
       }
       // Workflow
       if (type === WORKFLOW_FILTER) {
@@ -332,10 +384,18 @@ const createSeeMiddleware = () => {
         if (!workflowId) {
           return false;
         }
-        const found = values.map((v) => v.id).includes(workflowId);
-        if (!found) {
-          return false;
+        const extractedValues = values.map((v) => v.id);
+        switch (operator) {
+          case 'not_eq':
+            found = !extractedValues.includes(workflowId);
+            break;
+          case 'eq':
+            found = extractedValues.includes(workflowId);
+            break;
+          default:
+            found = extractedValues.includes(workflowId);
         }
+        return found;
       }
       // Creator filtering
       if (type === CREATOR_FILTER) {
@@ -346,33 +406,39 @@ const createSeeMiddleware = () => {
           return false;
         }
         const filterCreationRefs = await filterCacheResolver(context, values, filterCache);
-        const found = filterCreationRefs.includes(instance.created_by_ref);
-        if (!found) {
-          return false;
+        switch (operator) {
+          case 'not_eq':
+            found = !filterCreationRefs.includes(instance.created_by_ref);
+            break;
+          case 'eq':
+            found = filterCreationRefs.includes(instance.created_by_ref);
+            break;
+          default:
+            found = filterCreationRefs.includes(instance.created_by_ref);
         }
+        return found;
       }
       // Labels filtering
       if (type === LABEL_FILTER) {
         const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
-        let found = false;
+        const extractedValues = values.map((v) => v.value);
         switch (operator) {
           case 'not_eq':
-            found = values.map((v) => v.value).some((r) => !labels.includes(r));
+            founds = extractedValues.map((r) => !labels.includes(r));
             break;
           case 'eq':
-            found = values.map((v) => v.value).some((r) => labels.includes(r));
+            founds = extractedValues.map((r) => labels.includes(r));
             break;
           default:
-            found = values.map((v) => v.value).some((r) => labels.includes(r));
+            founds = extractedValues.map((r) => labels.includes(r));
         }
-        if (!found) {
-          return false;
-        }
+        found = isFoundsTrue(founds, filterMode);
+        return found;
       }
       // Boolean filtering
       if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
         const { id } = R.head(values);
-        const found = (id === 'true') === instance.revoked;
+        found = (id === 'true') === instance.revoked;
         if (!found) {
           return false;
         }
@@ -380,7 +446,6 @@ const createSeeMiddleware = () => {
       // Numeric filtering
       if (type === SCORE_FILTER || type === CONFIDENCE_FILTER) {
         const { id } = R.head(values);
-        let found = false;
         const numeric = parseInt(id, 10);
         switch (operator) {
           case 'lt':
@@ -398,14 +463,22 @@ const createSeeMiddleware = () => {
           default:
             found = instance[type] === numeric;
         }
-        if (!found) {
-          return false;
-        }
+        return found;
       }
       // String filtering
-      if (type === PATTERN_FILTER) {
+      if (type === PATTERN_FILTER) { // filterMode by default
         const currentPattern = instance[type];
-        const found = values.map((v) => v.id).includes(currentPattern);
+        const extractedIds = values.map((v) => v.id);
+        switch (operator) {
+          case 'not_eq':
+            found = !extractedIds.includes(currentPattern);
+            break;
+          case 'eq':
+            found = extractedIds.includes(currentPattern);
+            break;
+          default:
+            found = extractedIds.includes(currentPattern);
+        }
         if (!found) {
           return false;
         }
