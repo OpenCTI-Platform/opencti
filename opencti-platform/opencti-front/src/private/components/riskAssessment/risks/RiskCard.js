@@ -107,21 +107,6 @@ const styles = (theme) => ({
     marginBottom: '5px',
     border: '1px solid #F9B406',
   },
-  veryHigh: {
-    fill: theme.palette.riskPriority.veryHigh,
-  },
-  high: {
-    fill: theme.palette.riskPriority.high,
-  },
-  moderate: {
-    fill: theme.palette.riskPriority.moderate,
-  },
-  low: {
-    fill: theme.palette.riskPriority.low,
-  },
-  veryLow: {
-    fill: theme.palette.riskPriority.veryLow,
-  },
 });
 
 class RiskCardComponent extends Component {
@@ -228,7 +213,7 @@ class RiskCardComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}>
-                  {t('Risk')}
+                  {t('Severity')}
                 </Typography>
                 <div
                   // className={classes.bodyItem}

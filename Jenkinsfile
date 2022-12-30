@@ -38,8 +38,9 @@ node {
 
   // Check version, yarn install, etc.
   stage('Setup') {
+    // Update version and API endpoint
     dir('opencti-platform') {
-      dir('opencti-graphql') { // GraphQL
+      dir('opencti-graphql') {
         version = readJSON(file: 'package.json')['version']
         switch (branch) {
           case 'develop':
@@ -61,16 +62,33 @@ node {
           default:
             break
         }
-
-        if (fileExists('config/schema/compiled.graphql')) {
-          sh 'rm config/schema/compiled.graphql'
-        }
-        sh 'yarn install'
       }
-      dir('opencti-front') { // Frontend
+      dir('opencti-front') {
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
-        sh 'yarn install'
-        sh 'yarn run schema-compile'
+      }
+    }
+
+    // Install dependencies
+    try {
+      docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
+        dir('opencti-platform') {
+          dir('opencti-graphql') { // GraphQL
+            if (fileExists('config/schema/compiled.graphql')) {
+              sh 'rm config/schema/compiled.graphql'
+            }
+            sh 'yarn install'
+          }
+          dir('opencti-front') { // Frontend
+            sh 'yarn install'
+            sh 'yarn run schema-compile'
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw e
+    } finally {
+      docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
+        sh 'chown -R 997:995 .'
       }
     }
   }
@@ -111,7 +129,7 @@ node {
         configFileProvider([
           configFile(fileId: 'graphql-env', replaceTokens: true, targetLocation: 'opencti-platform/opencti-graphql/.env')
         ]) {
-          docker.image('node:16.6.0-alpine3.14').inside('-u root:root') {
+          docker.image('node:16.19.0-alpine3.16').inside('-u root:root') {
             sh label: 'test front', script: '''
               cd opencti-platform/opencti-front
               yarn test || true
