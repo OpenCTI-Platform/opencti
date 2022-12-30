@@ -3,19 +3,26 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import * as Yup from 'yup';
+import { Formik, Form, Field } from 'formik';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
+import Edit from '@material-ui/icons/Edit';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
+import Switch from '@material-ui/core/Switch';
+import { IconButton } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
+import SwitchField from '../../../../components/SwitchField';
 import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 
 const styles = (theme) => ({
@@ -61,200 +68,508 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
+  thumb: {
+    '&.MuiSwitch-thumb': {
+      color: 'white',
+    },
+  },
   textBase: {
     display: 'flex',
     alignItems: 'center',
     marginBottom: 5,
   },
+  switch_track: {
+    backgroundColor: '#D3134A !important',
+    opacity: '1 !important',
+  },
+  switch_base: {
+    color: 'white',
+    '&.Mui-checked + .MuiSwitch-track': {
+      backgroundColor: '#49B8FC !important',
+      opacity: 1,
+    },
+  },
+});
+
+const riskOverviewEditMutation = graphql`
+  mutation RiskOverviewEditMutation($id: ID!, $input: [EditInput]!) {
+    editRisk(id: $id, input: $input) {
+      id
+      accepted
+      false_positive
+      risk_adjusted
+    }
+  }
+`;
+
+const RiskValidation = (t) => Yup.object().shape({
+  false_positive: Yup.string().nullable(),
+  risk_adjusted: Yup.string().nullable(),
+  accepted: Yup.string().nullable(),
 });
 
 class RiskOverviewComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: false,
+      modelName: '',
+    };
+  }
+
+  handleEditOpen(field) {
+    console.log(field, this.state.open);
+    this.setState({ open: !this.state.open, modelName: field });
+  }
+
+  handleSubmitField(name, value) {
+    RiskValidation(this.props.t)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitMutation({
+          mutation: riskOverviewEditMutation,
+          variables: { id: this.props.risk.id, input: { key: name, value } },
+          onCompleted: () => {
+            this.setState({ modelName: '', open: false });
+          },
+        });
+      })
+      .catch(() => false);
+  }
+
   render() {
     const {
       t, fldt, classes, risk, refreshQuery,
     } = this.props;
+    const {
+      open,
+      modelName,
+    } = this.state;
+    const initialValues = R.pipe(
+      R.assoc('risk_adjusted', risk?.risk_adjusted || ''),
+      R.assoc('false_positive', risk?.false_positive || ''),
+      R.assoc('accepted', risk?.accepted || ''),
+      R.pick([
+        'false_positive',
+        'risk_adjusted',
+        'accepted',
+      ]),
+    )(risk);
     return (
       <div style={{ height: "100%" }} className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t("Basic Information")}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t("ID")}
-                </Typography>
-                <Tooltip title={t("Uniquely identifies this object")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {risk.id && t(risk.id)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t("Created")}
-                </Typography>
-                <Tooltip
-                  title={t(
-                    "Indicates the date and time at which the object was originally created."
-                  )}
-                >
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {risk.created && fldt(risk.created)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t("Modified")}
-                </Typography>
-                <Tooltip
-                  title={t(
-                    "Indicates the date and time that this particular version of the object was last modified."
-                  )}
-                >
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {risk.modified && fldt(risk.modified)}
-            </Grid>
-            <Grid item={true} xs={12}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t("Description")}
-                </Typography>
-                <Tooltip
-                  title={t(
-                    "Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system."
-                  )}
-                >
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              <div className={classes.scrollBg}>
-                <div className={classes.scrollDiv}>
-                  <div className={classes.scrollObj}>
-                    <Markdown
-                      remarkPlugins={[remarkGfm, remarkParse]}
-                      rehypePlugins={[rehypeRaw]}
-                      parserOptions={{ commonmark: true }}
-                      className="markdown"
+          <Formik enableReinitialize={true} initialValues={initialValues}>
+            <Form>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={12}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
                     >
-                      {risk.description && t(risk.description)}
-                    </Markdown>
+                      {t("ID")}
+                    </Typography>
+                    <Tooltip title={t("Uniquely identifies this object")}>
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
                   </div>
-                </div>
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t("Risk Rating")}
-                </Typography>
-                <Tooltip title={t("Risk Rating")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {risk.risk_level && t(risk.risk_level)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t("Priority")}
-                </Typography>
-                <Tooltip
-                  title={t(
-                    "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
-                  )}
-                >
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {risk.priority && t(risk.priority)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t("Impact")}
-                </Typography>
-                <Tooltip title={t("Version")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {/* {risk.impact && t(risk.impact)} */}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t("Likelihood")}
-                </Typography>
-                <Tooltip title={t("Likelihood")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {/* {risk.likelihood && t(risk.likelihood)} */}
-            </Grid>
-            <Grid item={true} xs={12}>
-              <CyioCoreObjectLabelsView
-                labels={risk.labels}
-                marginTop={5}
-                id={risk.id}
-                refreshQuery={refreshQuery}
-                typename={risk.__typename}
-              />
-            </Grid>
-          </Grid>
+                  <div className="clearfix" />
+                  {risk.id && t(risk.id)}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Created")}
+                    </Typography>
+                    <Tooltip
+                      title={t(
+                        "Indicates the date and time at which the object was originally created."
+                      )}
+                    >
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {risk.created && fldt(risk.created)}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Modified")}
+                    </Typography>
+                    <Tooltip
+                      title={t(
+                        "Indicates the date and time that this particular version of the object was last modified."
+                      )}
+                    >
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {risk.modified && fldt(risk.modified)}
+                </Grid>
+                <Grid item={true} xs={12}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Description")}
+                    </Typography>
+                    <Tooltip
+                      title={t(
+                        "Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system."
+                      )}
+                    >
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <div className={classes.scrollBg}>
+                    <div className={classes.scrollDiv}>
+                      <div className={classes.scrollObj}>
+                        <Markdown
+                          remarkPlugins={[remarkGfm, remarkParse]}
+                          rehypePlugins={[rehypeRaw]}
+                          parserOptions={{ commonmark: true }}
+                          className="markdown"
+                        >
+                          {risk.description && t(risk.description)}
+                        </Markdown>
+                      </div>
+                    </div>
+                  </div>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Risk Rating")}
+                    </Typography>
+                    <Tooltip title={t("Risk Rating")}>
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {risk.risk_level && t(risk.risk_level)}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Priority")}
+                    </Typography>
+                    <Tooltip
+                      title={t(
+                        "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority."
+                      )}
+                    >
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {risk.priority && t(risk.priority)}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Impact")}
+                    </Typography>
+                    <Tooltip title={t("Version")}>
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {/* {risk.impact && t(risk.impact)} */}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Likelihood")}
+                    </Typography>
+                    <Tooltip title={t("Likelihood")}>
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {/* {risk.likelihood && t(risk.likelihood)} */}
+                </Grid>
+                <Grid item={true} xs={4}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Accepted")}
+                    </Typography>
+                    <Tooltip title={t("Accepted")}>
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                    <IconButton
+                      size="small"
+                      style={{ fontSize: "15px" }}
+                      color={
+                        open && modelName === "accepted" ? "primary" : "inherit"
+                      }
+                      onClick={this.handleEditOpen.bind(this, "accepted")}
+                    >
+                      <Edit fontSize="inherit" />
+                    </IconButton>
+                  </div>
+                  <div className="clearfix" />
+                  <div style={{ display: "flex" }}>
+                    <Typography
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      No
+                    </Typography>
+                    {open && modelName === "accepted" ? (
+                      <Field
+                        component={SwitchField}
+                        name="accepted"
+                        containerstyle={{ margin: "0 -15px 0 11px" }}
+                        onChange={this.handleSubmitField.bind(this)}
+                      />
+                    ) : (
+                      <Switch
+                        disabled
+                        defaultChecked={risk.accepted}
+                        classes={{
+                          thumb: classes.thumb,
+                          track: classes.switch_track,
+                          switchBase: classes.switch_base,
+                        }}
+                      />
+                    )}
+                    <Typography
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      Yes
+                    </Typography>
+                  </div>
+                </Grid>
+                <Grid item={true} xs={4}>
+                  <div>
+                    <div className={classes.textBase}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ margin: 0 }}
+                      >
+                        {t("False Positive")}
+                      </Typography>
+                      <Tooltip
+                        title={t(
+                          "Identifies that the risk has been confirmed to be a false positive."
+                        )}
+                      >
+                        <Information
+                          style={{ marginLeft: "5px" }}
+                          fontSize="inherit"
+                          color="disabled"
+                        />
+                      </Tooltip>
+                      <IconButton
+                        size="small"
+                        style={{ fontSize: "15px" }}
+                        color={
+                          open && modelName === "false_positive"
+                            ? "primary"
+                            : "inherit"
+                        }
+                        onClick={this.handleEditOpen.bind(
+                          this,
+                          "false_positive"
+                        )}
+                      >
+                        <Edit fontSize="inherit" />
+                      </IconButton>
+                    </div>
+                    <div className="clearfix" />
+                    <div style={{ display: "flex" }}>
+                      <Typography
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        No
+                      </Typography>
+                      {open && modelName === "false_positive" ? (
+                        <Field
+                          component={SwitchField}
+                          name="false_positive"
+                          containerstyle={{ margin: "0 -15px 0 11px" }}
+                          onChange={this.handleSubmitField.bind(this)}
+                        />
+                      ) : (
+                        <Switch
+                          disabled
+                          defaultChecked={risk.false_positive}
+                          classes={{
+                            thumb: classes.thumb,
+                            track: classes.switch_track,
+                            switchBase: classes.switch_base,
+                          }}
+                        />
+                      )}
+                      <Typography
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        Yes
+                      </Typography>
+                    </div>
+                  </div>
+                </Grid>
+                <Grid item={true} xs={4}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t("Risk Adjusted")}
+                    </Typography>
+                    <Tooltip
+                      title={t(
+                        "Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk."
+                      )}
+                    >
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
+                    </Tooltip>
+                    <IconButton
+                      size="small"
+                      style={{ fontSize: "15px" }}
+                      color={
+                        open && modelName === "risk_adjusted"
+                          ? "primary"
+                          : "inherit"
+                      }
+                      onClick={this.handleEditOpen.bind(this, "risk_adjusted")}
+                    >
+                      <Edit fontSize="inherit" />
+                    </IconButton>
+                  </div>
+                  <div className="clearfix" />
+                  <div style={{ display: "flex" }}>
+                    <Typography
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      No
+                    </Typography>
+                    {open && modelName === "risk_adjusted" ? (
+                      <Field
+                        component={SwitchField}
+                        name="risk_adjusted"
+                        containerstyle={{ margin: "0 -15px 0 11px" }}
+                        onChange={this.handleSubmitField.bind(this)}
+                      />
+                    ) : (
+                      <Switch
+                        disabled
+                        defaultChecked={risk.risk_adjusted}
+                        classes={{
+                          thumb: classes.thumb,
+                          track: classes.switch_track,
+                          switchBase: classes.switch_base,
+                        }}
+                      />
+                    )}
+                    <Typography
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      Yes
+                    </Typography>
+                  </div>
+                </Grid>
+                <Grid item={true} xs={12}>
+                  <CyioCoreObjectLabelsView
+                    labels={risk.labels}
+                    marginTop={5}
+                    id={risk.id}
+                    refreshQuery={refreshQuery}
+                    typename={risk.__typename}
+                  />
+                </Grid>
+              </Grid>
+            </Form>
+          </Formik>
         </Paper>
       </div>
     );
@@ -281,6 +596,9 @@ const RiskOverview = createFragmentContainer(
         description
         risk_level
         priority
+        false_positive
+        risk_adjusted
+        accepted
         vendor_dependency
         impacted_control_id
         first_seen

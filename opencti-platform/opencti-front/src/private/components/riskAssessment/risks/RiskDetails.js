@@ -128,6 +128,7 @@ class RiskDetailsComponent extends Component {
   }
 
   handleEditOpen(field) {
+    console.log(field, this.state.open);
     this.setState({ open: !this.state.open, modelName: field });
   }
 
@@ -157,6 +158,7 @@ class RiskDetailsComponent extends Component {
       open,
       modelName,
     } = this.state;
+    console.log(risk);
     const riskDetectionSource = R.pipe(
       R.path(['origins']),
     )(risk);
@@ -366,7 +368,7 @@ class RiskDetailsComponent extends Component {
                   ) : risk.deadline && fldt(risk.deadline)
                   }
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item={true} xs={6}>
                   <div className={classes.textBase}>
                     <Typography
                       variant="h3"
@@ -391,158 +393,6 @@ class RiskDetailsComponent extends Component {
                         {actor.actor_ref.name && t(actor.actor_ref.name)}
                       </Typography>
                     )))}
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <div>
-                    <div className={classes.textBase}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ margin: 0 }}
-                      >
-                        {t('False Positive')}
-                      </Typography>
-                      <Tooltip
-                        title={t(
-                          'Identifies that the risk has been confirmed to be a false positive.',
-                        )}
-                      >
-                        <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                      <IconButton
-                        size='small'
-                        style={{ fontSize: '15px' }}
-                        color={(open && modelName === 'false_positive') ? 'primary' : 'inherit'}
-                        onClick={this.handleEditOpen.bind(this, 'false_positive')}
-                      >
-                        <Edit fontSize='inherit' />
-                      </IconButton>
-                    </div>
-                    <div className="clearfix" />
-                    <div style={{ display: 'flex' }}>
-                      <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
-                      {open && modelName === 'false_positive' ? (
-                        <Field
-                          component={SwitchField}
-                          name="false_positive"
-                          containerstyle={{ margin: '0 -15px 0 11px' }}
-                          onChange={this.handleSubmitField.bind(this)}
-                        />
-                      ) : (
-                        <Switch
-                          disabled
-                          defaultChecked={risk.false_positive}
-                          classes={{
-                            thumb: classes.thumb,
-                            track: classes.switch_track,
-                            switchBase: classes.switch_base,
-                          }}
-                        />
-                      )}
-                      <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
-                    </div>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <div className={classes.textBase}>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ margin: 0 }}
-                    >
-                      {t('Operationally Required')}
-                    </Typography>
-                    <Tooltip
-                      title={t(
-                        'Operationally Required',
-                      )}
-                    >
-                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                    <IconButton
-                      size='small'
-                      style={{ fontSize: '15px' }}
-                      color={(open && modelName === 'accepted') ? 'primary' : 'inherit'}
-                      onClick={this.handleEditOpen.bind(this, 'accepted')}
-                    >
-                      <Edit fontSize='inherit' />
-                    </IconButton>
-                  </div>
-                  <div className="clearfix" />
-                  <div style={{ display: 'flex' }}>
-                    <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
-                    {open && modelName === 'accepted' ? (
-                      <Field
-                        component={SwitchField}
-                        name="accepted"
-                        containerstyle={{ margin: '0 -15px 0 11px' }}
-                        onChange={this.handleSubmitField.bind(this)}
-                      />
-                    ) : (
-                      <Switch
-                        disabled
-                        defaultChecked={risk.accepted}
-                        classes={{
-                          thumb: classes.thumb,
-                          track: classes.switch_track,
-                          switchBase: classes.switch_base,
-                        }}
-                      />
-                    )}
-                    <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <div className={classes.textBase}>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ margin: 0 }}
-                    >
-                      {t('Risk Adjusted')}
-                    </Typography>
-                    <Tooltip
-                      title={t(
-                        'Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk.',
-                      )}
-                    >
-                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                    <IconButton
-                      size='small'
-                      style={{ fontSize: '15px' }}
-                      color={(open && modelName === 'risk_adjusted') ? 'primary' : 'inherit'}
-                      onClick={this.handleEditOpen.bind(this, 'risk_adjusted')}
-                    >
-                      <Edit fontSize='inherit' />
-                    </IconButton>
-                  </div>
-                  <div className="clearfix" />
-                  <div style={{ display: 'flex' }}>
-                    <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
-                    {open && modelName === 'risk_adjusted' ? (
-                      <Field
-                        component={SwitchField}
-                        name="risk_adjusted"
-                        containerstyle={{ margin: '0 -15px 0 11px' }}
-                        onChange={this.handleSubmitField.bind(this)}
-                      />
-                    ) : (
-                      <Switch
-                        disabled
-                        defaultChecked={risk.risk_adjusted}
-                        classes={{
-                          thumb: classes.thumb,
-                          track: classes.switch_track,
-                          switchBase: classes.switch_base,
-                        }}
-                      />
-                    )}
-                    <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
-                  </div>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <div className={classes.textBase}>
