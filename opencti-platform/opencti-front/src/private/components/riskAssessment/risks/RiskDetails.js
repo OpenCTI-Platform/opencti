@@ -108,7 +108,7 @@ const riskDetailsEditMutation = graphql`
   }
 `;
 
-const RiskValidation = (t) => Yup.object().shape({
+const RiskValidation = () => Yup.object().shape({
   statement: Yup.string().nullable(),
   risk_status: Yup.string().nullable(),
   deadline: Yup.string().nullable(),
