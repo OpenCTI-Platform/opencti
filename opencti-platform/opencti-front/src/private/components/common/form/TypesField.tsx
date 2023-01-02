@@ -91,7 +91,9 @@ const TypesField: FunctionComponent<SearchTypesProps> = ({ types, name, label, s
     return data.map((n) => ({
       label: t(`${type}_${n.node.label}`),
       value: n.node.id,
-    })).sort((a, b) => a.label.localeCompare(b.label));
+    }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+      .filter(({ value }, index, arr) => arr.findIndex((o) => o.value === value) === index);
   };
   const searchTypes = () => {
     fetchQuery(typesFieldTypesQuery, {
