@@ -3,17 +3,14 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, Switch, useParams } from 'react-router-dom';
+import { Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootDataSourceQuery } from './__generated__/RootDataSourceQuery.graphql';
 import { RootDataSourcesSubscription } from './__generated__/RootDataSourcesSubscription.graphql';
 import DataSourcePopover from './DataSourcePopover';
@@ -60,7 +57,6 @@ const dataSourceQuery = graphql`
 
 const RootDataSourceComponent = ({ queryRef }) => {
   const { dataSourceId } = useParams() as { dataSourceId: string };
-  const link = `/dashboard/techniques/data_sources/${dataSourceId}/knowledge`;
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootDataSourcesSubscription>
   >(
@@ -72,27 +68,10 @@ const RootDataSourceComponent = ({ queryRef }) => {
   );
   useSubscription(subConfig);
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
-  const { dataSource, connectorsForExport } = data;
+  const { dataSource, connectorsForExport, settings } = data;
   return (
     <div>
       <TopBar />
-      <Route path="/dashboard/techniques/data_sources/:dataSourceId/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'cities',
-            'organizations',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'observables',
-          ]}
-        />
-      </Route>
       <>
         {dataSource ? (
           <Switch>
@@ -102,45 +81,14 @@ const RootDataSourceComponent = ({ queryRef }) => {
               render={() => <DataSource data={dataSource} />}
             />
             <Route
-              exact
               path="/dashboard/techniques/data_sources/:dataSourceId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/techniques/data_sources/${dataSourceId}/knowledge/overview`}
-                />
-              )}
-            />
-            <Route
-              path="/dashboard/techniques/data_sources/:dataSourceId/knowledge"
-              render={() => ({ DataSourceKnowledgeComponent })}
-            />
-            <Route
-              exact
-              path="/dashboard/techniques/data_sources/:dataSourceId/analysis"
               render={(routeProps: any) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    disableSharing={true}
-                    stixDomainObject={dataSource}
-                    PopoverComponent={<DataSourcePopover id={dataSource.id} />}
-                  />
-                  <StixCoreObjectOrStixCoreRelationshipContainers
-                    {...routeProps}
-                    stixDomainObjectOrStixCoreRelationship={dataSource}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/techniques/data_sources/:dataSourceId/sightings"
-              render={(routeProps: any) => (
-                <EntityStixSightingRelationships
-                  entityId={dataSourceId}
-                  entityLink={link}
-                  noPadding={true}
-                  isTo={true}
+                <DataSourceKnowledgeComponent
                   {...routeProps}
+                  data={dataSource}
+                  enableReferences={settings.platform_enable_reference?.includes(
+                    'Data-Source',
+                  )}
                 />
               )}
             />
