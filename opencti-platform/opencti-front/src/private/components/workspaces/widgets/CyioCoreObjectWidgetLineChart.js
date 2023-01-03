@@ -15,7 +15,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
+import { now, numberOfDays } from '../../../../utils/Time';
 import {
   dashboardQueryRiskTimeSeries,
   dashboardQueryAssetsTimeSeries,

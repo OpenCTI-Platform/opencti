@@ -38,6 +38,7 @@ export const dashboardQueryRisksDistribution = graphql`
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
+    $limit: Int
   ) {
     risksDistribution(
       type: $type
@@ -46,6 +47,7 @@ export const dashboardQueryRisksDistribution = graphql`
       operation: $operation
       startDate: $startDate
       endDate: $endDate
+      limit: $limit
     ) {
       label
       value
@@ -61,6 +63,7 @@ export const dashboardQueryRisksBarDistribution = graphql`
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
+    $limit: Int
   ) {
     risksDistribution(
       type: $type
@@ -68,6 +71,7 @@ export const dashboardQueryRisksBarDistribution = graphql`
       operation: $operation
       startDate: $startDate
       endDate: $endDate
+      limit: $limit
     ) {
       label
       value
