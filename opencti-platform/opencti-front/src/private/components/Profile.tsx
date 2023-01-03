@@ -24,6 +24,7 @@ export const profileQuery = graphql`
         id
         enable
       }
+      otp_mandatory
     }
   }
 `;

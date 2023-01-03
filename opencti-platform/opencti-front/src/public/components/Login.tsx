@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import { Google, KeyOutline, Facebook, Github } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@mui/material/Paper';
+import makeStyles from '@mui/styles/makeStyles';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import logo from '../../static/images/logo.png';
 import LoginForm from './LoginForm';
 import OTPForm from './OTPForm';
+import OtpActivationComponent from './OtpActivation';
+import { Theme } from '../../components/Theme';
+import {
+  RootPublicQuery$data,
+} from '../__generated__/RootPublicQuery.graphql';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     textAlign: 'center',
     margin: '0 auto',
@@ -75,9 +77,19 @@ const styles = (theme) => ({
     padding: 5,
     textAlign: 'center',
   },
-});
+  loginLogo: {
+    mode: theme.palette.mode,
+  },
+}));
 
-const Login = ({ classes, theme, settings, type }) => {
+interface LoginProps {
+  type: string
+  settings: RootPublicQuery$data['settings']
+}
+
+const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
+  const classes = useStyles();
+
   // eslint-disable-next-line max-len
   const [dimension, setDimension] = useState({
     width: window.innerWidth,
@@ -90,7 +102,7 @@ const Login = ({ classes, theme, settings, type }) => {
     window.addEventListener('resize', updateWindowDimensions);
     return () => window.removeEventListener('resize', updateWindowDimensions);
   });
-  const renderExternalAuthButton = (provider) => {
+  const renderExternalAuthButton = (provider: string | null) => {
     switch (provider) {
       case 'facebook':
         return <Facebook className={classes.iconSmall} />;
@@ -103,7 +115,7 @@ const Login = ({ classes, theme, settings, type }) => {
     }
   };
 
-  const renderExternalAuthClassName = (provider) => {
+  const renderExternalAuthClassName = (provider: string | null) => {
     switch (provider) {
       case 'facebook':
         return classes.buttonFacebook;
@@ -116,7 +128,7 @@ const Login = ({ classes, theme, settings, type }) => {
     }
   };
 
-  const renderExternalAuth = (authButtons) => (
+  const renderExternalAuth = (authButtons: Array<{ provider: string | null, name: string, type: string | null }>) => (
     <div style={{ marginTop: 10 }}>
       {authButtons.map((value, index) => (
         <Button
@@ -134,17 +146,19 @@ const Login = ({ classes, theme, settings, type }) => {
     </div>
   );
   const loginMessage = settings.platform_login_message;
-  const loginLogo = theme.palette.mode === 'dark'
+  const loginLogo = classes.loginLogo === 'dark'
     ? settings.platform_theme_dark_logo_login
     : settings.platform_theme_light_logo_login;
   const providers = settings.platform_providers;
-  const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
-  const authSSOs = filter((p) => p.type === 'SSO', providers);
+  const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
+  const authSSOs = providers.filter((p) => p.type === 'SSO');
   const isAuthButtons = authSSOs.length > 0;
   const isLoginMessage = loginMessage && loginMessage.length > 0;
   let loginHeight = 280;
-  if (type === '2FA') {
-    loginHeight = 350;
+  if (type === '2FA_ACTIVATION') {
+    loginHeight = 80;
+  } else if (type === '2FA_VALIDATION') {
+    loginHeight = 200;
   } else if (isAuthButtons && isAuthForm && isLoginMessage) {
     loginHeight = 400;
   } else if (isAuthButtons && isAuthForm) {
@@ -160,6 +174,7 @@ const Login = ({ classes, theme, settings, type }) => {
 
   const loginScreen = () => (
     <div>
+      <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo}/>
       {loginMessage && loginMessage.length > 0 && (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Markdown>{loginMessage}</Markdown>
@@ -171,28 +186,33 @@ const Login = ({ classes, theme, settings, type }) => {
         </Paper>
       )}
       {isAuthButtons && renderExternalAuth(authSSOs)}
-      {providers.length === 0 && (
+      {providers?.length === 0 && (
         <div>No authentication provider available</div>
       )}
     </div>
   );
 
-  const otpScreen = () => (
-    <Paper variant="outlined">
-      <OTPForm />
-    </Paper>
-  );
+  const authScreen = () => {
+    if (type === '2FA_VALIDATION') {
+      return (
+        <div>
+          <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo}/>
+          <Paper variant="outlined">
+            <OTPForm />
+          </Paper>
+        </div>
+      );
+    } if (type === '2FA_ACTIVATION') {
+      return <OtpActivationComponent />;
+    }
+    return loginScreen();
+  };
+
   return (
     <div className={classes.container} style={{ marginTop }}>
-      <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo}/>
-      {type === '2FA' ? otpScreen() : loginScreen()}
+      {authScreen()}
     </div>
   );
 };
 
-Login.propTypes = {
-  classes: PropTypes.object,
-  settings: PropTypes.object,
-};
-
-export default compose(withTheme, withStyles(styles))(Login);
+export default Login;

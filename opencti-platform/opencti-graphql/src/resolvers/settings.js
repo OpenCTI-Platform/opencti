@@ -1,17 +1,15 @@
 import { withFilter } from 'graphql-subscriptions';
-import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
-  getSettings,
-  settingsEditField,
-  settingsEditContext,
-  settingsCleanContext,
   getApplicationInfo,
   getModules,
+  getSettings,
+  settingsCleanContext,
+  settingsEditContext,
+  settingsEditField,
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { PROVIDERS } from '../config/providers';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
 import { findById } from '../domain/organization';
@@ -27,11 +25,9 @@ const settingsResolvers = {
     relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
   },
   Settings: {
-    platform_providers: () => PROVIDERS,
     platform_modules: () => getModules(),
-    platform_map_tile_server_dark: () => nconf.get('app:map_tile_server_dark'),
-    platform_map_tile_server_light: () => nconf.get('app:map_tile_server_light'),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
+    otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     editContext: (settings) => fetchEditContext(settings.id),
   },
   Mutation: {

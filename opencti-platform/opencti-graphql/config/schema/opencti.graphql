@@ -1009,7 +1009,7 @@ type Settings implements InternalObject & BasicObject {
   platform_url: String
   platform_email: String @auth
   platform_modules: [Module!] @auth
-  platform_providers: [Provider!]
+  platform_providers: [Provider!]!
   platform_language: String
   platform_theme: String
   platform_theme_dark_background: String
@@ -1040,6 +1040,7 @@ type Settings implements InternalObject & BasicObject {
   platform_entities_files_ref: [String!] @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
+  otp_mandatory: Boolean @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS])
 }
@@ -1160,6 +1161,7 @@ type User implements BasicObject & InternalObject {
   firstname: String
   otp_activated: Boolean
   otp_qr: String
+  otp_mandatory: Boolean
   lastname: String
   theme: String
   language: String
@@ -1198,6 +1200,7 @@ type MeUser implements BasicObject & InternalObject {
   capabilities: [Capability!]!
   allowed_marking: [MarkingDefinition!]
   userSubscriptions(first: Int): UserSubscriptionConnection
+  otp_mandatory: Boolean
 }
 type SessionDetail {
   id: ID!
@@ -13433,6 +13436,7 @@ type Mutation {
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
   otpLogin(input: UserOTPLoginInput): Boolean @auth
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
+  otpSetActivation(input: UserOTPActivationInput): User @auth(for: [SETTINGS])
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS])
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS])
   statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS])

@@ -24,7 +24,14 @@ export const AuthRequired = (data) => error(AUTH_REQUIRED, 'You must be logged i
 });
 
 export const OTP_REQUIRED = 'OtpRequired';
-export const OtpRequired = (data) => error(OTP_REQUIRED, 'You must validate your accout with 2FA.', {
+export const OtpRequired = (data) => error(OTP_REQUIRED, 'You must validate your account with 2FA.', {
+  http_status: 401,
+  category: CATEGORY_TECHNICAL,
+  ...data,
+});
+
+export const OTP_REQUIRED_ACTIVATION = 'OtpRequiredActivation';
+export const OtpRequiredActivation = (data) => error(OTP_REQUIRED_ACTIVATION, 'You must activate your account with 2FA.', {
   http_status: 401,
   category: CATEGORY_TECHNICAL,
   ...data,

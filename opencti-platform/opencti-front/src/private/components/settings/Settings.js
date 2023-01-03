@@ -31,6 +31,7 @@ import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import HiddenTypesList from './HiddenTypesList';
 import AutomaticTypesList from './AutomaticTypesList';
+import SwitchField from '../../../components/SwitchField';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -48,8 +49,8 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: deepPurple[500],
   },
   button: {
-    float: 'right',
-    margin: '20px 0 0 0',
+    float: 'left',
+    margin: '20px 0 20px 0',
   },
   nested: {
     paddingLeft: theme.spacing(4),
@@ -124,11 +125,12 @@ const settingsQuery = graphql`
         name
         focusOn
       }
+      otp_mandatory
     }
   }
 `;
 
-const settingsMutationFieldPatch = graphql`
+export const settingsMutationFieldPatch = graphql`
   mutation SettingsFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -163,6 +165,7 @@ const settingsMutationFieldPatch = graphql`
           id
           name
         }
+        otp_mandatory
       }
     }
   }
@@ -220,6 +223,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_hidden_types: Yup.array().nullable(),
   platform_entities_files_ref: Yup.array().nullable(),
   platform_organization: Yup.object().nullable(),
+  otp_mandatory: Yup.boolean(),
 });
 
 const Settings = () => {
@@ -237,6 +241,7 @@ const Settings = () => {
       },
     });
   };
+
   const handleSubmitField = (id, name, value) => {
     let finalValue = value;
     if (
@@ -377,6 +382,7 @@ const Settings = () => {
                 'platform_hidden_types',
                 'platform_entities_files_ref',
                 'platform_organization',
+                'otp_mandatory',
               ]),
             )(settings);
             const authProviders = settings.platform_providers;
@@ -413,42 +419,6 @@ const Settings = () => {
                                 />
                               }
                             />
-                            <Alert
-                              classes={{
-                                root: classes.alert,
-                                message: classes.message,
-                              }}
-                              severity="warning"
-                              variant="outlined"
-                              style={{ position: 'relative' }}
-                            >
-                              <AlertTitle>
-                                {t('Platform organization')}
-                              </AlertTitle>
-                              <Tooltip
-                                title={t(
-                                  'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one',
-                                )}
-                              >
-                                <InformationOutline
-                                  fontSize="small"
-                                  color="primary"
-                                  style={{
-                                    position: 'absolute',
-                                    top: 10,
-                                    right: 18,
-                                  }}
-                                />
-                              </Tooltip>
-                              <ObjectOrganizationField
-                                name="platform_organization"
-                                disabled={!isAccessAdmin}
-                                onChange={(name, value) => handleSubmitField(id, name, value)}
-                                style={{ width: '100%' }}
-                                multiple={false}
-                                outlined={false}
-                              />
-                            </Alert>
                             <Field
                               component={TextField}
                               variant="standard"
@@ -534,17 +504,81 @@ const Settings = () => {
                               <MenuItem value="zh-cn">简化字</MenuItem>
                             </Field>
                             <HiddenTypesList values={values}
-                                          handleChangeFocus={handleChangeFocus}
-                                          handleSubmitField={handleSubmitField}
-                                          id={id}
-                                          editContext={editContext}
+                              handleChangeFocus={handleChangeFocus}
+                              handleSubmitField={handleSubmitField}
+                              id={id}
+                              editContext={editContext}
                             />
                             <AutomaticTypesList values={values}
-                                             handleChangeFocus={handleChangeFocus}
-                                             handleSubmitField={handleSubmitField}
-                                             id={id}
-                                             editContext={editContext}
+                             handleChangeFocus={handleChangeFocus}
+                             handleSubmitField={handleSubmitField}
+                             id={id}
+                             editContext={editContext}
                             />
+                            <div style={{ marginTop: 20 }}>
+                              {isAccessAdmin && (
+                                <div>
+                                  <Typography variant="h3" gutterBottom={true} style={{ marginTop: 30 }}>
+                                    {t('Admin access only')}
+                                  </Typography>
+                                  <Alert
+                                  classes={{
+                                    root: classes.alert,
+                                    message: classes.message,
+                                  }}
+                                  severity="warning"
+                                  variant="outlined"
+                                  style={{ position: 'relative' }}
+                                  >
+                                    <AlertTitle>
+                                      {t('Platform organization')}
+                                    </AlertTitle>
+                                    <Tooltip
+                                      title={t(
+                                        'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one',
+                                      )}
+                                    >
+                                      <InformationOutline
+                                        fontSize="small"
+                                        color="primary"
+                                        style={{
+                                          position: 'absolute',
+                                          top: 10,
+                                          right: 18,
+                                        }}
+                                      />
+                                    </Tooltip>
+                                    <ObjectOrganizationField
+                                      name="platform_organization"
+                                      disabled={!isAccessAdmin}
+                                      onChange={(name, value) => handleSubmitField(id, name, value)}
+                                      style={{ width: '100%' }}
+                                      multiple={false}
+                                      outlined={false}
+                                    />
+                                  </Alert>
+                                  <Field
+                                    component={SwitchField}
+                                    disabled={!isAccessAdmin}
+                                    type="checkbox"
+                                    name="otp_mandatory"
+                                    label={t('Enforce Two Factor Authentication')}
+                                    containerstyle={{ margin: '20px 0', float: 'right' }}
+                                    onChange={(name, value) => handleSubmitField(id, name, value)}
+                                    helperText={
+                                      <SubscriptionFocus
+                                        context={editContext}
+                                        fieldName="otp_mandatory"
+                                      />
+                                    }
+                                  >
+                                  </Field>
+                                </div>
+                              )}
+                              {!isAccessAdmin && (
+                                <div></div>
+                              )}
+                            </div>
                           </Form>
                         )}
                       </Formik>
