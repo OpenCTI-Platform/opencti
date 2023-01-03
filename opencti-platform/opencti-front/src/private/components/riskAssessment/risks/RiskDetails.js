@@ -128,7 +128,6 @@ class RiskDetailsComponent extends Component {
   }
 
   handleEditOpen(field) {
-    console.log(field, this.state.open);
     this.setState({ open: !this.state.open, modelName: field });
   }
 
@@ -158,7 +157,6 @@ class RiskDetailsComponent extends Component {
       open,
       modelName,
     } = this.state;
-    console.log(risk);
     const riskDetectionSource = R.pipe(
       R.path(['origins']),
     )(risk);

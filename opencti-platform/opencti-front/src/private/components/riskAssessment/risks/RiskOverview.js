@@ -18,7 +18,7 @@ import remarkParse from 'remark-parse';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import Switch from '@material-ui/core/Switch';
-import { IconButton } from '@material-ui/core';
+import { Button, IconButton } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -115,7 +115,6 @@ class RiskOverviewComponent extends Component {
     this.state = {
       open: false,
       modelName: '',
-      addJustification: false,
     };
   }
 
@@ -124,9 +123,6 @@ class RiskOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    if (value) {
-      this.setState({ addJustification: value })
-    }
     RiskValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -148,7 +144,6 @@ class RiskOverviewComponent extends Component {
     const {
       open,
       modelName,
-      addJustification,
     } = this.state;
     const initialValues = R.pipe(
       R.assoc('risk_adjusted', risk?.risk_adjusted || false),
@@ -160,6 +155,10 @@ class RiskOverviewComponent extends Component {
         'accepted',
       ]),
     )(risk);
+    const enableJustification = R.compose(
+      R.values,
+      R.filter((item) => item)
+     )(initialValues);
     return (
       <div style={{ height: "100%" }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -583,26 +582,61 @@ class RiskOverviewComponent extends Component {
                     >
                       <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                     </Tooltip>
+                    {enableJustification.length !== 0 &&
+                      <IconButton
+                        size="small"
+                        style={{ fontSize: "15px" }}
+                        color={
+                          open && modelName === "justification"
+                            ? "primary"
+                            : "inherit"
+                        }
+                        onClick={this.handleEditOpen.bind(this, "justification")}
+                      >
+                        <Edit fontSize="inherit" />
+                      </IconButton>
+                    }                    
                   </div>
                   <div className="clearfix" />
-                  {addJustification ? (
-                    <Field
-                      component={MarkDownField}
-                      name='statement'
-                      fullWidth={true}
-                      multiline={true}
-                      variant='outlined'
-                      onSubmit={this.handleSubmitField.bind(this)}
-                    />
-                  ) : (
-                    <div className={classes.scrollBg}>
-                      <div className={classes.scrollDiv}>
-                        <div className={classes.scrollObj}>
-                          {risk.statement && t(risk.statement)}
+                  {enableJustification.length !== 0 
+                  && (open && modelName === "justification" 
+                  ? (
+                      <>
+                        <Field
+                          component={MarkDownField}
+                          name='statement'
+                          fullWidth={true}
+                          multiline={true}
+                          variant='outlined'
+                          onSubmit={this.handleSubmitField.bind(this)}
+                        />
+                        <div style={{ marginTop: '20px' }}>
+                          <Button 
+                            variant="outlined"
+                            size="small"
+                            onClick={() => this.setState({ open: !this.state.open, modelName: 'justification' })}
+                            style={{ marginRight: '10px' }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                          >
+                            Submit
+                          </Button>
+                        </div>                      
+                      </>
+                    ) : (
+                      <div className={classes.scrollBg}>
+                        <div className={classes.scrollDiv}>
+                          <div className={classes.scrollObj}>
+                            {risk.statement && t(risk.statement)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    ))}                  
                 </Grid>
                 <Grid item={true} xs={12}>
                   <CyioCoreObjectLabelsView
