@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import { ENTITY_TYPE_FEED } from '../schema/internalObject';
-import { createEntity, deleteElementById, storeLoadById } from '../database/middleware';
-import { listEntitiesPaginated } from '../database/middleware-loader';
-import type { AuthUser, AuthContext } from '../types/user';
+import { createEntity, deleteElementById } from '../database/middleware';
+import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import type { AuthContext, AuthUser } from '../types/user';
 import type { FeedAddInput, QueryFeedsArgs } from '../generated/graphql';
 import type { StoreEntityFeed } from '../types/store';
 import { elReplace } from '../database/engine';
@@ -10,6 +10,7 @@ import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
+import type { DomainFindById } from './domainTypes';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -39,8 +40,8 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
   checkFeedIntegrity(input);
   return createEntity(context, user, input, ENTITY_TYPE_FEED);
 };
-export const findById = async (context: AuthContext, user: AuthUser, feedId: string): Promise<StoreEntityFeed> => {
-  return storeLoadById(context, user, feedId, ENTITY_TYPE_FEED) as unknown as StoreEntityFeed;
+export const findById: DomainFindById<StoreEntityFeed> = async (context: AuthContext, user: AuthUser, feedId: string) => {
+  return storeLoadById<StoreEntityFeed>(context, user, feedId, ENTITY_TYPE_FEED);
 };
 export const editFeed = async (context: AuthContext, user: AuthUser, id: string, input: FeedAddInput): Promise<StoreEntityFeed> => {
   checkFeedIntegrity(input);

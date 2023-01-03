@@ -6,11 +6,10 @@ import {
   batchListThroughGetTo,
   createRelation,
   deleteElementById,
-  deleteRelationsByFromAndTo, distributionRelations,
-  internalLoadById,
-  storeLoadById,
+  deleteRelationsByFromAndTo,
+  distributionRelations,
   timeSeriesRelations,
-  updateAttribute
+  updateAttribute,
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
@@ -51,7 +50,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { listEntities, listRelations } from '../database/middleware-loader';
+import { internalLoadById, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { upload } from '../database/file-storage';

@@ -1,10 +1,10 @@
 import { expect } from 'vitest';
-import { internalLoadById, listThings } from '../../src/database/middleware';
+import { listThings } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
 import { ENTITY_TYPE_TASK } from '../../src/schema/internalObject';
 import { setRuleActivation } from '../../src/domain/rules';
-import { listEntities } from '../../src/database/middleware-loader';
+import { internalLoadById, listEntities } from '../../src/database/middleware-loader';
 import { testContext } from './testQuery';
 
 export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {

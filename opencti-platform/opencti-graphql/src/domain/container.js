@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { paginateAllThings, listThings, storeLoadById, listAllThings } from '../database/middleware';
-import { listEntities, listRelations } from '../database/middleware-loader';
+import { paginateAllThings, listThings, listAllThings } from '../database/middleware';
+import { listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { buildRefRelationKey, ENTITY_TYPE_CONTAINER, ID_INFERRED, ID_INTERNAL } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';

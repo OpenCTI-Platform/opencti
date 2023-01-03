@@ -1,7 +1,7 @@
 import { assoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { generateStandardId, normalizeName } from '../schema/identifier';

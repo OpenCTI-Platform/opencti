@@ -7,7 +7,6 @@ import { createStreamProcessor, EVENT_CURRENT_VERSION, lockResource, StreamProce
 import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
-  internalLoadById,
   patchAttribute,
   stixLoadById,
   storeLoadByIdWithRefs
@@ -29,7 +28,7 @@ import { RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { elList } from '../database/middleware-loader';
+import { elList, internalLoadById } from '../database/middleware-loader';
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';

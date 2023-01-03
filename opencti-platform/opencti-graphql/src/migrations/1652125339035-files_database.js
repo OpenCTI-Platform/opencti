@@ -3,8 +3,8 @@ import { Promise } from 'bluebird';
 import { deleteFiles, rawFilesListing, storeFileConverter } from '../database/file-storage';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
-import { internalLoadById } from '../database/middleware';
 import { logApp } from '../config/conf';
+import { internalLoadById } from '../database/middleware-loader';
 
 export const up = async (next) => {
   const context = executionContext('migration');

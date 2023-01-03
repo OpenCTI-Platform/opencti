@@ -1,8 +1,9 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { internalLoadById, patchAttribute } from '../database/middleware';
+import { patchAttribute } from '../database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { addMarkingDefinition } from '../domain/markingDefinition';
 import { MARKING_TLP_CLEAR } from '../schema/identifier';
+import { internalLoadById } from '../database/middleware-loader';
 
 export const up = async (next) => {
   const context = executionContext('migration');

@@ -2417,7 +2417,7 @@ export type ContextData = {
   from_id?: Maybe<Scalars['String']>;
   id: Scalars['String'];
   message: Scalars['String'];
-  references?: Maybe<Array<Maybe<ExternalReference>>>;
+  references?: Maybe<Array<ExternalReference>>;
   to_id?: Maybe<Scalars['String']>;
 };
 
@@ -14893,7 +14893,7 @@ export type QueryLocationsArgs = {
 export type QueryLogsArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<LogsFiltering>>>;
+  filters?: InputMaybe<Array<LogsFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<LogsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -14905,7 +14905,7 @@ export type QueryLogsTimeSeriesArgs = {
   endDate: Scalars['DateTime'];
   field: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<LogsFiltering>>>;
+  filters?: InputMaybe<Array<LogsFiltering>>;
   interval: Scalars['String'];
   operation: StatsOperation;
   search?: InputMaybe<Scalars['String']>;
@@ -23200,7 +23200,7 @@ export type ResolversTypes = ResolversObject<{
   ContainersFilter: ContainersFilter;
   ContainersFiltering: ContainersFiltering;
   ContainersOrdering: ContainersOrdering;
-  ContextData: ResolverTypeWrapper<Omit<ContextData, 'references'> & { references?: Maybe<Array<Maybe<ResolversTypes['ExternalReference']>>> }>;
+  ContextData: ResolverTypeWrapper<Omit<ContextData, 'references'> & { references?: Maybe<Array<ResolversTypes['ExternalReference']>> }>;
   CountriesFilter: CountriesFilter;
   CountriesFiltering: CountriesFiltering;
   CountriesOrdering: CountriesOrdering;
@@ -23856,7 +23856,7 @@ export type ResolversParentTypes = ResolversObject<{
   ContainerEdge: Omit<ContainerEdge, 'node'> & { node: ResolversParentTypes['Container'] };
   ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
   ContainersFiltering: ContainersFiltering;
-  ContextData: Omit<ContextData, 'references'> & { references?: Maybe<Array<Maybe<ResolversParentTypes['ExternalReference']>>> };
+  ContextData: Omit<ContextData, 'references'> & { references?: Maybe<Array<ResolversParentTypes['ExternalReference']>> };
   CountriesFiltering: CountriesFiltering;
   Country: Omit<Country, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'region' | 'reports' | 'stixCoreRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, region?: Maybe<ResolversParentTypes['Region']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   CountryAddInput: CountryAddInput;
@@ -25053,7 +25053,7 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  references?: Resolver<Maybe<Array<Maybe<ResolversTypes['ExternalReference']>>>, ParentType, ContextType>;
+  references?: Resolver<Maybe<Array<ResolversTypes['ExternalReference']>>, ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

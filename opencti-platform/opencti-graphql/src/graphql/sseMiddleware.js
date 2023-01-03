@@ -7,7 +7,7 @@ import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/u
 import { createStreamProcessor, EVENT_CURRENT_VERSION, STREAM_BATCH_TIME } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { findById, streamCollectionGroups } from '../domain/stream';
-import { internalLoadById, stixLoadById, stixLoadByIds, storeLoadByIdWithRefs } from '../database/middleware';
+import { stixLoadById, stixLoadByIds, storeLoadByIdWithRefs } from '../database/middleware';
 import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
@@ -40,7 +40,7 @@ import { UnsupportedError } from '../config/errors';
 import { adaptFiltersFrontendFormat, convertFiltersToQueryOptions, TYPE_FILTER } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
-import { listAllRelations, listEntities } from '../database/middleware-loader';
+import { internalLoadById, listAllRelations, listEntities } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 const broadcastClients = {};

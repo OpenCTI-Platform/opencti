@@ -1,12 +1,6 @@
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import {
-  createEntity,
-  distributionEntities,
-  internalLoadById,
-  storeLoadById,
-  timeSeriesEntities
-} from '../../database/middleware';
+import { createEntity, distributionEntities, timeSeriesEntities } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
@@ -16,16 +10,22 @@ import type {
   QueryGroupingsNumberArgs,
   QueryGroupingsTimeSeriesArgs,
 } from '../../generated/graphql';
-import { EntityOptions, listEntitiesPaginated } from '../../database/middleware-loader';
+import {
+  EntityOptions,
+  internalLoadById,
+  listEntitiesPaginated,
+  storeLoadById
+} from '../../database/middleware-loader';
 import { BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, GroupingNumberResult } from './grouping-types';
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixMetaRelationship';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { BasicStoreCommon } from '../../types/store';
+import type { DomainFindById } from '../../domain/domainTypes';
 
-export const findById = (context: AuthContext, user: AuthUser, channelId: string): BasicStoreEntityGrouping => {
-  return storeLoadById(context, user, channelId, ENTITY_TYPE_CONTAINER_GROUPING) as unknown as BasicStoreEntityGrouping;
+export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, channelId: string) => {
+  return storeLoadById<BasicStoreEntityGrouping>(context, user, channelId, ENTITY_TYPE_CONTAINER_GROUPING);
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityGrouping>) => {

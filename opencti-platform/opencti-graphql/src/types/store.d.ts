@@ -1,4 +1,4 @@
-import { SortResults } from '@elastic/elasticsearch/api/types';
+import type { SortResults } from '@elastic/elasticsearch/lib/api/types';
 import {
   INPUT_BCC,
   INPUT_BELONGS_TO,
@@ -78,7 +78,7 @@ interface BasicStoreBase {
   x_opencti_workflow_id?: string;
 }
 
-interface StoreMarkingDefinition extends BasicStoreBase {
+interface StoreMarkingDefinition extends BasicStoreEntity {
   definition: string;
   definition_type: string;
   x_opencti_order: number;
@@ -305,6 +305,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   revoked: boolean;
   is_family: boolean;
   x_opencti_detection: boolean;
+  is_inferred: boolean;
   // number
   number_observed: number;
   confidence: number;

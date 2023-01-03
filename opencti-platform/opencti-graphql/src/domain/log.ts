@@ -4,8 +4,11 @@ import { timeSeriesEntities } from '../database/middleware';
 import { EVENT_TYPE_CREATE, INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
+import type { CreateEntity, DomainFindAll } from './domainTypes';
+import type { AuthContext, AuthUser } from '../types/user';
+import type { Log, LogConnection } from '../types/log';
 
-export const findAll = (context, user, args) => {
+export const findAll: DomainFindAll<LogConnection> = (context, user, args) => {
   const finalArgs = {
     orderBy: 'timestamp',
     orderMode: 'desc',
@@ -15,7 +18,7 @@ export const findAll = (context, user, args) => {
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
-export const creatorFromHistory = async (context, user, entityId) => {
+export const creatorFromHistory: CreateEntity<Log> = async (context, user, entityId) => {
   return elPaginate(context, user, READ_INDEX_HISTORY, {
     size: 1,
     filters: [
@@ -23,14 +26,14 @@ export const creatorFromHistory = async (context, user, entityId) => {
       { key: 'context_data.id', values: [entityId] },
     ],
     connectionFormat: false,
-  }).then(async (logs) => {
+  }).then(async (logs: any[]) => {
     const userId = logs.length > 0 ? logs[0].applicant_id || logs[0].user_id : null;
     return userId ?? OPENCTI_SYSTEM_UUID;
   });
 };
 
-export const logsTimeSeries = (context, user, args) => {
-  const filters = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
+export const logsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
+  const filters: any[] = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
   return timeSeriesEntities(context, user, [ENTITY_TYPE_HISTORY], { ...args, filters });
 };
 

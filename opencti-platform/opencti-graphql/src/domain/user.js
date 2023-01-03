@@ -15,10 +15,9 @@ import {
   listThroughGetFrom,
   listThroughGetTo,
   patchAttribute,
-  storeLoadById,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,

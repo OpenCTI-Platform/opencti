@@ -3,11 +3,10 @@ import {
   createEntity,
   batchListThroughGetFrom,
   batchListThroughGetTo,
-  storeLoadById,
   listThroughGetFrom,
   batchLoadThroughGetTo,
 } from '../database/middleware';
-import { listEntities, listRelations } from '../database/middleware-loader';
+import { listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';

@@ -6,8 +6,6 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   distributionRelations,
-  internalLoadById,
-  storeLoadById,
   mergeEntities,
   patchAttribute,
   querySubTypes,
@@ -60,7 +58,12 @@ import { READ_DATA_INDICES } from '../../../src/database/utils';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
-import { listAllRelations, listEntities, listRelations } from '../../../src/database/middleware-loader';
+import {
+  internalLoadById,
+  listAllRelations,
+  listEntities,
+  listRelations, storeLoadById
+} from '../../../src/database/middleware-loader';
 import { addThreatActor } from '../../../src/domain/threatActor';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';

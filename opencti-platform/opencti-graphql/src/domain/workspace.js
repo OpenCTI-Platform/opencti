@@ -5,13 +5,11 @@ import {
   createRelations,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  internalLoadById,
   paginateAllThings,
   listThings,
-  storeLoadById,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';

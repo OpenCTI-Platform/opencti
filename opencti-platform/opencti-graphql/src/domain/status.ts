@@ -1,12 +1,10 @@
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import {
   createEntity,
-  deleteElementById,
-  internalDeleteElementById,
-  storeLoadById,
+  deleteElementById, internalDeleteElementById,
   updateAttribute
 } from '../database/middleware';
-import { listAllEntities, listEntitiesPaginated } from '../database/middleware-loader';
+import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import type {

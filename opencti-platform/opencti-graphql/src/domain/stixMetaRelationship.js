@@ -3,8 +3,7 @@ import { elCount } from '../database/engine';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
-import { storeLoadById } from '../database/middleware';
-import { listRelations } from '../database/middleware-loader';
+import { listRelations, storeLoadById } from '../database/middleware-loader';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, propOr(ABSTRACT_STIX_META_RELATIONSHIP, 'relationship_type', args), args);

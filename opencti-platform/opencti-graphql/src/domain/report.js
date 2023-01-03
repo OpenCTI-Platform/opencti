@@ -4,12 +4,10 @@ import {
   createEntity,
   distributionEntities,
   internalDeleteElementById,
-  internalLoadById,
   listAllThings,
-  storeLoadById,
   timeSeriesEntities,
 } from '../database/middleware';
-import { countAllThings, listEntities } from '../database/middleware-loader';
+import { countAllThings, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';

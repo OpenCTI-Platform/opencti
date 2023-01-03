@@ -42,7 +42,6 @@ import {
   elHistogramCount,
   elIndexElements,
   elList,
-  elLoadById,
   elPaginate,
   elUpdateElement,
   elUpdateEntityConnections,
@@ -222,7 +221,14 @@ import {
 import { buildFilters } from './repository';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
-import { listAllRelations, listEntities, listRelations } from './middleware-loader';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllRelations,
+  listEntities,
+  listRelations,
+  storeLoadById
+} from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
@@ -433,20 +439,6 @@ export const loadEntity = async (context, user, entityTypes, args = {}) => {
 // endregion
 
 // region Loader element
-export const internalFindByIds = (context, user, ids, args = {}) => {
-  return elFindByIds(context, user, ids, args);
-};
-export const internalLoadById = (context, user, id, args = {}) => {
-  const { type } = args;
-  return elLoadById(context, user, id, type);
-};
-export const storeLoadById = async (context, user, id, type, args = {}) => {
-  if (R.isNil(type) || R.isEmpty(type)) {
-    throw FunctionalError('You need to specify a type when loading a element');
-  }
-  const loadArgs = R.assoc('type', type, args);
-  return internalLoadById(context, user, id, loadArgs);
-};
 const loadElementMetaDependencies = async (context, user, element, args = {}) => {
   const { onlyMarking = true } = args;
   const elementId = element.internal_id;

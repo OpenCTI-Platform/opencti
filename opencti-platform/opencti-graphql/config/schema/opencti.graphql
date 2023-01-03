@@ -354,7 +354,7 @@ type ContextData {
   to_id: String
   message: String!
   commit: String
-  references: [ExternalReference]
+  references: [ExternalReference!]
 }
 type Log {
   id: ID!
@@ -11749,7 +11749,7 @@ type Query {
     after: ID
     orderBy: LogsOrdering
     orderMode: OrderingMode
-    filters: [LogsFiltering]
+    filters: [LogsFiltering!]
     filterMode: FilterMode
     search: String
   ): LogConnection @auth(for: [KNOWLEDGE])
@@ -11760,7 +11760,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-    filters: [LogsFiltering]
+    filters: [LogsFiltering!]
     filterMode: FilterMode
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE])

@@ -1,12 +1,12 @@
 import { propOr } from 'ramda';
 import { stixCoreRelationshipCleanContext, stixCoreRelationshipEditContext } from './stixCoreRelationship';
-import { batchListThroughGetFrom, createRelation, deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
+import { batchListThroughGetFrom, createRelation, deleteElementById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
-import { listRelations } from '../database/middleware-loader';
+import { listRelations, storeLoadById } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 

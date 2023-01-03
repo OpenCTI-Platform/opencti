@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';

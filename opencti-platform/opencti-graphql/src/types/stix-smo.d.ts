@@ -2,7 +2,7 @@ import { StixId, StixMarkingsObject, StixObject, StixOpenctiExtension, StixOpenc
 import { STIX_EXT_OCTI } from './stix-extensions';
 
 // Extensions
-interface StixExtension {
+export interface StixExtension {
   id: StixId;
   type: 'extension-definition';
   spec_version: string;
@@ -18,11 +18,11 @@ interface StixExtension {
 
 // Marking Definition Specific Properties
 // name, definition_type, definition
-interface MarkingDefinitionExtension extends StixOpenctiExtension {
+export interface MarkingDefinitionExtension extends StixOpenctiExtension {
   color: string;
   order: number;
 }
-interface StixMarkingDefinition extends StixMarkingsObject {
+export interface StixMarkingDefinition extends StixMarkingsObject {
   name: string;
   definition_type: string;
   extensions: {
@@ -31,8 +31,8 @@ interface StixMarkingDefinition extends StixMarkingsObject {
 }
 
 // Label
-// interface StixInternalLabel = string
-interface StixLabel extends StixObject {
+// export interface StixInternalLabel = string
+export interface StixLabel extends StixObject {
   value: string;
   color: string;
   extensions: {
@@ -41,11 +41,11 @@ interface StixLabel extends StixObject {
 }
 
 // Kill chain
-interface StixInternalKillChainPhase {
+export interface StixInternalKillChainPhase {
   kill_chain_name: string;
   phase_name: string;
 }
-interface StixKillChainPhase extends StixInternalKillChainPhase, StixObject {
+export interface StixKillChainPhase extends StixInternalKillChainPhase, StixObject {
   order: number;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
@@ -53,14 +53,14 @@ interface StixKillChainPhase extends StixInternalKillChainPhase, StixObject {
 }
 
 // External reference
-interface StixInternalExternalReference {
+export interface StixInternalExternalReference {
   source_name: string;
   description: string;
   url: string;
   hashes: object;
   external_id: string;
 }
-interface StixExternalReference extends StixInternalExternalReference, StixObject {
+export interface StixExternalReference extends StixInternalExternalReference, StixObject {
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   };

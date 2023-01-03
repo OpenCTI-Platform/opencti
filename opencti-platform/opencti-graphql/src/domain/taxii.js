@@ -9,8 +9,8 @@ import {
 } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, storeLoadById, updateAttribute, stixLoadByIds } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { deleteElementById, updateAttribute, stixLoadByIds } from '../database/middleware';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';

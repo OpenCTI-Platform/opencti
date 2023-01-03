@@ -1,10 +1,10 @@
-import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, storeLoadById } from '../database/middleware';
+import { batchListThroughGetFrom, batchListThroughGetTo, createEntity } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_DETECTS, RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
-import { EntityOptions, listEntities } from '../database/middleware-loader';
+import { EntityOptions, listEntities, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
 import type { AttackPattern } from '../generated/graphql';

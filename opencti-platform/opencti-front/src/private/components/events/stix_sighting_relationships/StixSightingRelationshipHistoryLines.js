@@ -66,7 +66,7 @@ export const stixCoreObjectHistoryLinesQuery = graphql`
     $first: Int
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
-    $filters: [LogsFiltering]
+    $filters: [LogsFiltering!]
     $filterMode: FilterMode
     $search: String
   ) {

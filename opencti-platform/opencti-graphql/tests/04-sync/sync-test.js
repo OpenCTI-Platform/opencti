@@ -9,13 +9,15 @@ import {
   API_URI,
   executeExternalQuery,
   FIFTEEN_MINUTES,
-  PYTHON_PATH, RAW_EVENTS_SIZE,
+  PYTHON_PATH,
+  RAW_EVENTS_SIZE,
   SYNC_DIRECT_START_REMOTE_URI,
   SYNC_LIVE_EVENTS_SIZE,
   SYNC_LIVE_START_REMOTE_URI,
   SYNC_RAW_START_REMOTE_URI,
   SYNC_RESTORE_START_REMOTE_URI,
-  SYNC_TEST_REMOTE_URI, testContext,
+  SYNC_TEST_REMOTE_URI,
+  testContext,
 } from '../utils/testQuery';
 import { elAggregationCount } from '../../src/database/engine';
 import { execChildPython } from '../../src/python/pythonBridge';
@@ -27,6 +29,7 @@ import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
 import { convertStoreToStix } from '../../src/database/stix-converter';
 import { READ_DATA_INDICES, wait } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
+import { logAudit } from '../../src/config/conf';
 
 const STAT_QUERY = `query stats {
       about {
@@ -124,7 +127,7 @@ describe('Database sync testing', () => {
     };
     const diffElements = await checkInstanceDiff(initStixReport, stixReport, idLoader);
     if (diffElements.length > 0) {
-      console.log(JSON.stringify(diffElements));
+      logAudit.info(JSON.stringify(diffElements));
     }
     expect(diffElements.length).toBe(0);
   };

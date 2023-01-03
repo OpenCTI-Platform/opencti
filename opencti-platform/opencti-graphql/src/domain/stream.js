@@ -10,10 +10,9 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   listThroughGetFrom,
-  storeLoadById,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, BASE_TYPE_ENTITY } from '../schema/general';

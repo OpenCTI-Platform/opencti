@@ -1,8 +1,9 @@
 import { createCapabilities, TAXII_CAPABILITIES } from '../initialization';
-import { deleteElementById, storeLoadById } from '../database/middleware';
+import { deleteElementById } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY } from '../schema/internalObject';
 import { generateStandardId } from '../schema/identifier';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { storeLoadById } from '../database/middleware-loader';
 
 export const up = async (next) => {
   const context = executionContext('migration');

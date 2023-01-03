@@ -11,12 +11,10 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  internalLoadById,
-  storeLoadById,
   storeLoadByIdWithRefs,
   timeSeriesEntities,
 } from '../database/middleware';
-import { listEntities } from '../database/middleware-loader';
+import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';

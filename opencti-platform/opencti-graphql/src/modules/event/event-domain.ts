@@ -1,10 +1,10 @@
 import type { AuthUser, AuthContext } from '../../types/user';
-import { createEntity, storeLoadById } from '../../database/middleware';
+import { createEntity } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { EventAddInput, QueryEventsArgs } from '../../generated/graphql';
-import { listEntitiesPaginated } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BasicStoreEntityEvent, ENTITY_TYPE_EVENT } from './event-types';
 
 export const findById = (context: AuthContext, user: AuthUser, channelId: string): BasicStoreEntityEvent => {

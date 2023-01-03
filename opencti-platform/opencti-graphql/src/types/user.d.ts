@@ -1,6 +1,6 @@
-import type { BasicStoreCommon, StoreMarkingDefinition } from './store';
+import type { BasicStoreCommon, BasicStoreObject, StoreMarkingDefinition } from './store';
 
-interface UserRole {
+interface UserRole extends BasicStoreObject {
   name: string;
 }
 
@@ -15,7 +15,7 @@ interface UserOrigin {
   referer?: string;
 }
 
-interface AuthUser {
+interface AuthUser extends BasicStoreObject {
   id: string;
   internal_id: string;
   individual_id: string | undefined;
@@ -29,6 +29,7 @@ interface AuthUser {
   capabilities: Array<UserCapability>;
   allowed_marking: Array<StoreMarkingDefinition>;
   all_marking: Array<StoreMarkingDefinition>;
+  api_token: string;
 }
 
 interface AuthContext {

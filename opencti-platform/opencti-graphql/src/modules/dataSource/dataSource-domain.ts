@@ -1,5 +1,5 @@
-import { batchListThroughGetFrom, createEntity, storeLoadById } from '../../database/middleware';
-import { listEntitiesPaginated } from '../../database/middleware-loader';
+import { batchListThroughGetFrom, createEntity } from '../../database/middleware';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityDataSource } from './dataSource-types';
 import type { DataSourceAddInput, QueryDataSourcesArgs } from '../../generated/graphql';
@@ -10,9 +10,10 @@ import { ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schem
 import { RELATION_DATA_SOURCE } from '../dataComponent/dataComponent-domain';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { INPUT_DATA_SOURCE } from '../dataComponent/dataComponent-types';
+import type { DomainFindById } from '../../domain/domainTypes';
 
-export const findById = (context: AuthContext, user: AuthUser, dataSourceId: string): BasicStoreEntityDataSource => {
-  return storeLoadById(context, user, dataSourceId, ENTITY_TYPE_DATA_SOURCE) as unknown as BasicStoreEntityDataSource;
+export const findById: DomainFindById<BasicStoreEntityDataSource> = (context: AuthContext, user: AuthUser, dataSourceId: string) => {
+  return storeLoadById(context, user, dataSourceId, ENTITY_TYPE_DATA_SOURCE);
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryDataSourcesArgs) => {

@@ -1,10 +1,13 @@
-import { usePaginationFragment, usePreloadedQuery } from 'react-relay';
+import { PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { useEffect } from 'react';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
-import { GraphQLTaggedNode, OperationType } from 'relay-runtime';
-import { KeyType } from 'react-relay/relay-hooks/helpers';
+import { FragmentType, GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { UseLocalStorageHelpers } from './useLocalStorage';
 import { numberFormat } from '../Number';
+
+type KeyType<TData = unknown> = Readonly<{
+  ' $data'?: TData | undefined;
+  ' $fragmentSpreads': FragmentType;
+}>;
 
 interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
   queryRef: PreloadedQuery<QueryType>

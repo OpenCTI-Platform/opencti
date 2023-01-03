@@ -172,9 +172,9 @@ describe('Connector resolver standard behaviour', () => {
   });
   it('should delete connector', async () => {
     // Delete the connector
-    await queryAsAdmin({ query: DELETE_CONNECTOR_QUERY, variables: { id: "5ed680de-75e2-4aa0-bec0-4e8e5a0d1695" } });
+    await queryAsAdmin({ query: DELETE_CONNECTOR_QUERY, variables: { id: '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695' } });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: "5ed680de-75e2-4aa0-bec0-4e8e5a0d1695" } });
+    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695' } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.connector).toBeNull();
   });

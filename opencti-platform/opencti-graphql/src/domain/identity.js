@@ -1,10 +1,10 @@
 import { pipe, assoc, dissoc, filter } from 'ramda';
-import { createEntity, storeLoadById } from '../database/middleware';
+import { createEntity } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import { ENTITY_TYPE_IDENTITY_SECTOR, isStixDomainObjectIdentity } from '../schema/stixDomainObject';
-import { listEntities } from '../database/middleware-loader';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 
 export const findById = async (context, user, identityId) => {
   return storeLoadById(context, user, identityId, ENTITY_TYPE_IDENTITY);

@@ -1,7 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import { shutdownModules, startModules } from '../../src/modules';
 import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
-import { createRelation, internalDeleteElementById, internalLoadById } from '../../src/database/middleware';
+import { createRelation, internalDeleteElementById } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_LOCATED_AT } from '../../src/schema/stixCoreRelationship';
 import LocatedAtLocatedRule from '../../src/rules/located-at-located/LocatedAtLocatedRule';
@@ -11,6 +11,7 @@ import { FROM_START_STR, UNTIL_END_STR } from '../../src/utils/format';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
 import { wait } from '../../src/database/utils';
+import { internalLoadById } from '../../src/database/middleware-loader';
 
 const RULE = RULE_PREFIX + LocatedAtLocatedRule.id;
 const FRANCE = 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d';
