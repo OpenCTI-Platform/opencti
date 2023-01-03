@@ -85,6 +85,29 @@ const CountryKnowledgeComponent = ({
         />
         <Route
           exact
+          path="/dashboard/locations/countries/:countryId/knowledge/targets"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={['targets']}
+              isRelationReversed
+              entityLink={link}
+              allDirections={true}
+              stixCoreObjectTypes={[
+                'Attack-Pattern',
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+                'Tool',
+              ]}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/locations/countries/:countryId/knowledge/related"
           render={(routeProps) => (
             <EntityStixCoreRelationships

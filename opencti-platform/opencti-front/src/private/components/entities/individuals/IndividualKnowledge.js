@@ -79,6 +79,29 @@ class IndividualKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/entities/individuals/:individualId/knowledge/targets"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={individual.id}
+                relationshipTypes={['targets']}
+                isRelationReversed
+                entityLink={link}
+                allDirections={true}
+                stixCoreObjectTypes={[
+                  'Attack-Pattern',
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Tool',
+                ]}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/entities/individuals/:individualId/knowledge/related"
             render={(routeProps) => (
               <EntityStixCoreRelationships

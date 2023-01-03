@@ -547,6 +547,7 @@ class EntityStixCoreRelationships extends Component {
                 'creator',
                 'created_start_date',
                 'created_end_date',
+                relationshipTypes.includes('targets') ? 'targets' : undefined,
               ]}
               availableEntityTypes={stixCoreObjectTypes}
               availableRelationshipTypes={relationshipTypes}

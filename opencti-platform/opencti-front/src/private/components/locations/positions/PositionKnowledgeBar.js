@@ -8,7 +8,7 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Gauge, TargetVariant } from 'mdi-material-ui';
+import { Gauge, Target, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -53,6 +53,23 @@ class PositionKnowledgeBar extends Component {
             <ListItemText
               primary={t('Overview')}
               secondary={t('Synthesis of knowledge')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/locations/positions/${positionId}/knowledge/targets`}
+            selected={
+              location.pathname
+              === `/dashboard/locations/positions/${positionId}/knowledge/targets`
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Target />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Targets')}
             />
           </MenuItem>
           <MenuItem

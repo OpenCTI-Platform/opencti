@@ -100,6 +100,7 @@ class RootPosition extends Component {
               'attack_patterns',
               'tools',
               'observables',
+              'targets',
             ]}
           />
         </Route>

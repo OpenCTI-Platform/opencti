@@ -135,6 +135,7 @@ class RootIndividual extends Component {
                 'attack_patterns',
                 'tools',
                 'observables',
+                'targets',
               ]}
             />
           )}

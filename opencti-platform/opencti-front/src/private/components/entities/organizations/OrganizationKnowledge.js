@@ -79,6 +79,29 @@ class OrganizationKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/entities/organizations/:organizationId/knowledge/targets"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={organization.id}
+                relationshipTypes={['targets']}
+                isRelationReversed
+                entityLink={link}
+                allDirections={true}
+                stixCoreObjectTypes={[
+                  'Attack-Pattern',
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Tool',
+                ]}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/entities/organizations/:organizationId/knowledge/related"
             render={(routeProps) => (
               <EntityStixCoreRelationships

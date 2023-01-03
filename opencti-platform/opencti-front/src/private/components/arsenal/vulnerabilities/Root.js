@@ -103,6 +103,7 @@ class RootVulnerability extends Component {
               'observables',
               'sightings',
               'infrastructures',
+              'targets',
             ]}
           />
         </Route>

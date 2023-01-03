@@ -95,6 +95,7 @@ const RootRegionComponent = ({ queryRef }) => {
             'attack_patterns',
             'tools',
             'observables',
+            'targets',
           ]}
         />
       </Route>

@@ -93,6 +93,7 @@ const RootCityComponent = ({ queryRef }) => {
             'attack_patterns',
             'tools',
             'observables',
+            'targets',
           ]}
         />
       </Route>

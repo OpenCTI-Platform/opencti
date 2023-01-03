@@ -134,6 +134,7 @@ class RootSystem extends Component {
                 'attack_patterns',
                 'tools',
                 'observables',
+                'targets',
               ]}
             />
           )}

@@ -73,6 +73,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     'fromId',
     'toId',
     'objectContains',
+    'targets',
   ].includes(filterKey);
   const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
     if (value) {

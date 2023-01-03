@@ -80,6 +80,20 @@ class StixCoreObjectKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText primary={t('Overview')} />
           </MenuItem>
+          {isInAvailableSection(['targets']) && (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/targets`}
+              selected={location.pathname === `${stixCoreObjectLink}/targets`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <Target />
+              </ListItemIcon>
+              <ListItemText primary={t('Targets')} />
+            </MenuItem>
+          )}
           {isInAvailableSection(['sectors', 'organizations', 'individuals']) ? (
             <MenuList
               style={{ paddingBottom: 0 }}
