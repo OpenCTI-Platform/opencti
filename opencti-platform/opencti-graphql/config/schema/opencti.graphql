@@ -720,6 +720,7 @@ enum WorksFilter {
   completed_number
   completed_time
   received_time
+  processed_time
 }
 input WorksFiltering {
   key: [WorksFilter!]!
