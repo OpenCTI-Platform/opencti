@@ -76,11 +76,11 @@ export const convertFiltersToQueryOptions = (filters, opts = {}) => {
     const filterEntries = Object.entries(adaptedFilters);
     for (let index = 0; index < filterEntries.length; index += 1) {
       // eslint-disable-next-line prefer-const
-      let [key, { operator, values }] = filterEntries[index];
+      let [key, { operator, values, filterMode }] = filterEntries[index];
       if (key === TYPE_FILTER) {
         types.push(...values.map((v) => v.id));
       } else {
-        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator });
+        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, filterMode });
       }
     }
   }
