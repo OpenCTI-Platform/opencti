@@ -83,7 +83,6 @@ class RiskComponent extends Component {
   }
 
   handleEditOpen(field) {
-    console.log(this.state.open, field)
     this.setState({ open: !this.state.open, modelName: field });
   }
 
