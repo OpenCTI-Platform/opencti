@@ -2591,9 +2591,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@darklight/keycloak-admin-client@file:./lib/darklight-keycloak-admin-client-v1.0.1.tgz::locator=opencti-graphql%40workspace%3A.":
-  version: 1.0.1
-  resolution: "@darklight/keycloak-admin-client@file:./lib/darklight-keycloak-admin-client-v1.0.1.tgz::locator=opencti-graphql%40workspace%3A."
+"@darklight/keycloak-admin-client@file:./lib/darklight-keycloak-admin-client-v1.1.2.tgz::locator=opencti-graphql%40workspace%3A.":
+  version: 1.1.2
+  resolution: "@darklight/keycloak-admin-client@file:./lib/darklight-keycloak-admin-client-v1.1.2.tgz::locator=opencti-graphql%40workspace%3A."
   dependencies:
     "@types/jwt-decode": ^3.1.0
     axios: ^1.1.0
@@ -2602,7 +2602,7 @@ __metadata:
     jwt-decode: ^3.1.2
     lodash: ^4.17.21
     url-join: ^4.0.1
-  checksum: 986ceaaba04a5f78d23c30b64bf1139c7cabff1540be35403b9280c3a005dbc860e383da1ee8192461c387a90e1e67be80081c4cb9374eecf0eedd756c1c2b67
+  checksum: 56528de8f5e6a4a2dcd9153f9614245821cea0ebeb0f59a218aef38d45134a72eae2af0268758635e93f40acac038c338a9fb3658405ecef444f5225d863d0a0
   languageName: node
   linkType: hard
 
@@ -11140,7 +11140,7 @@ chromedriver@latest:
     "@babel/preset-env": 7.15.0
     "@babel/runtime": 7.14.8
     "@bmatei/apollo-prometheus-exporter": ^2.1.1
-    "@darklight/keycloak-admin-client": "file:./lib/darklight-keycloak-admin-client-v1.0.1.tgz"
+    "@darklight/keycloak-admin-client": "file:./lib/darklight-keycloak-admin-client-v1.1.2.tgz"
     "@elastic/elasticsearch": 7.13.0
     "@graphql-tools/graphql-file-loader": ^7.3.1
     "@graphql-tools/load": ^7.4.0
