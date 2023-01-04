@@ -25,6 +25,7 @@ import { commitMutation } from '../../../../relay/environment';
 import SwitchField from '../../../../components/SwitchField';
 import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 import MarkDownField from '../../../../components/MarkDownField';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   paper: {
@@ -99,6 +100,7 @@ const riskOverviewEditMutation = graphql`
       accepted
       false_positive
       risk_adjusted
+      justification
     }
   }
 `;
@@ -136,6 +138,137 @@ class RiskOverviewComponent extends Component {
       })
       .catch(() => false);
   }
+  
+  submitJustification(values, { setSubmitting }) {
+    const adaptedValues = R.evolve(
+      {
+        justification: () => values.justification !== "" ? [values.justification] : [this.props.risk.justification],
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.toPairs,
+      R.map((n) => {
+
+          if(n[0] === "justification" && values.justification === "") {
+            return {
+            'key': n[0],
+            'value': [this.props.risk.justification],
+            'operation': 'remove',
+            }
+          }
+          return {
+            'key': n[0],
+            'value': adaptFieldValue(n[1]),
+          }
+        }
+      ),
+    )(adaptedValues)
+    commitMutation({
+      mutation: riskOverviewEditMutation,
+      variables: { 
+        id: this.props.risk.id, 
+        input: finalValues,
+         
+      },
+      onCompleted: () => {
+        this.setState({ modelName: '', open: false });
+      },
+    });
+  }
+
+  renderJustification() {
+    const {
+      t, fldt, classes, risk, refreshQuery,
+    } = this.props;
+    const {
+      open,
+      modelName,
+    } = this.state;
+    const initialValues = R.pipe(
+      R.assoc('justification', risk?.justification || ""),
+      R.pick([
+        'justification',
+      ]),
+    )(risk);
+    return (
+      <Formik enableReinitialize={true} initialValues={initialValues} onSubmit={this.submitJustification.bind(this)}>
+      {({ submitForm, handleReset, isSubmitting }) => (
+        <Form>
+          <div className={classes.textBase}>
+            <Typography
+              variant="h3"
+              color="textSecondary"
+              gutterBottom={true}
+              style={{ margin: 0 }}
+            >
+              {t('Justification')}
+            </Typography>
+            <Tooltip
+              title={t(
+                'Identifies a summary of impact for how the risk affects the system.',
+              )}
+            >
+              <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+            </Tooltip>
+            <IconButton
+                size="small"
+                style={{ fontSize: "15px" }}
+                color={
+                  open && modelName === "justification"
+                    ? "primary"
+                    : "inherit"
+                }
+                onClick={this.handleEditOpen.bind(this, "justification")}
+              >
+                <Edit fontSize="inherit" />
+              </IconButton>                 
+          </div>
+          <div className="clearfix" />
+          {open && modelName === "justification" 
+          ? 
+          <>
+            <Field
+              component={MarkDownField}
+              name='justification'
+              fullWidth={true}
+              multiline={true}
+              variant='outlined'
+            />
+            <div style={{ marginTop: '20px' }}>
+              <Button 
+                
+                variant="outlined"
+                size="small"
+                onClick={() => this.setState({ open: !this.state.open, modelName: 'justification' })}
+                style={{ marginRight: '10px' }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={submitForm}
+                variant="contained"
+                color="primary"
+                size="small"
+              >
+                Submit
+              </Button>
+            </div> 
+          </>                        
+              : (
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    {risk.justification && t(risk.justification)}
+                  </div>
+                </div>
+              </div>
+            )}            
+        </Form>
+      )}
+    </Formik>
+    )
+  }
 
   render() {
     const {
@@ -166,7 +299,7 @@ class RiskOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Formik enableReinitialize={true} initialValues={initialValues}>
-            <Form>
+          <Form>
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={12}>
                   <div className={classes.textBase}>
@@ -566,77 +699,30 @@ class RiskOverviewComponent extends Component {
                   </div>
                 </Grid>
                 <Grid item={true} xs={12}>
-                  <div className={classes.textBase}>
+                  {enableJustification.length > 0 
+                  ? this.renderJustification() 
+                  : <div className={classes.textBase}>
                     <Typography
                       variant="h3"
                       color="textSecondary"
                       gutterBottom={true}
                       style={{ margin: 0 }}
                     >
-                      {t('Justification')}
+                      {t("Justification")}
                     </Typography>
                     <Tooltip
                       title={t(
-                        'Identifies a summary of impact for how the risk affects the system.',
+                        "Justification"
                       )}
                     >
-                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                      <Information
+                        style={{ marginLeft: "5px" }}
+                        fontSize="inherit"
+                        color="disabled"
+                      />
                     </Tooltip>
-                    {enableJustification.length !== 0 &&
-                      <IconButton
-                        size="small"
-                        style={{ fontSize: "15px" }}
-                        color={
-                          open && modelName === "justification"
-                            ? "primary"
-                            : "inherit"
-                        }
-                        onClick={this.handleEditOpen.bind(this, "justification")}
-                      >
-                        <Edit fontSize="inherit" />
-                      </IconButton>
-                    }                    
                   </div>
-                  <div className="clearfix" />
-                  {enableJustification.length !== 0 
-                  && (open && modelName === "justification" 
-                  ? (
-                      <>
-                        <Field
-                          component={MarkDownField}
-                          name='statement'
-                          fullWidth={true}
-                          multiline={true}
-                          variant='outlined'
-                          onSubmit={this.handleSubmitField.bind(this)}
-                        />
-                        <div style={{ marginTop: '20px' }}>
-                          <Button 
-                            variant="outlined"
-                            size="small"
-                            onClick={() => this.setState({ open: !this.state.open, modelName: 'justification' })}
-                            style={{ marginRight: '10px' }}
-                          >
-                            Cancel
-                          </Button>
-                          <Button 
-                            variant="contained"
-                            color="primary"
-                            size="small"
-                          >
-                            Submit
-                          </Button>
-                        </div>                      
-                      </>
-                    ) : (
-                      <div className={classes.scrollBg}>
-                        <div className={classes.scrollDiv}>
-                          <div className={classes.scrollObj}>
-                            {risk.statement && t(risk.statement)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}                  
+                  }               
                 </Grid>
                 <Grid item={true} xs={12}>
                   <CyioCoreObjectLabelsView
@@ -679,6 +765,7 @@ const RiskOverview = createFragmentContainer(
         false_positive
         risk_adjusted
         accepted
+        justification
         vendor_dependency
         impacted_control_id
         first_seen
