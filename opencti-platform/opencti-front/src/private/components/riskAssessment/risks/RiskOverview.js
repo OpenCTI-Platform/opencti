@@ -3,7 +3,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import * as Yup from 'yup';
 import { Formik, Form, Field } from 'formik';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -25,7 +24,6 @@ import { commitMutation } from '../../../../relay/environment';
 import SwitchField from '../../../../components/SwitchField';
 import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 import MarkDownField from '../../../../components/MarkDownField';
-import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   paper: {
@@ -92,99 +90,17 @@ const styles = (theme) => ({
     },
   },
 });
-
-const riskOverviewEditMutation = graphql`
-  mutation RiskOverviewEditMutation($id: ID!, $input: [EditInput]!) {
-    editRisk(id: $id, input: $input) {
-      id
-      accepted
-      false_positive
-      risk_adjusted
-      justification
-    }
-  }
-`;
-
-const RiskValidation = (t) => Yup.object().shape({
-  false_positive: Yup.string().nullable(),
-  risk_adjusted: Yup.string().nullable(),
-  accepted: Yup.string().nullable(),
-});
-
 class RiskOverviewComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-      modelName: '',
-    };
-  }
-
-  handleEditOpen(field) {
-    this.setState({ open: !this.state.open, modelName: field });
-  }
-
-  handleSubmitField(name, value) {
-    RiskValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: riskOverviewEditMutation,
-          variables: { id: this.props.risk.id, input: { key: name, value } },
-          onCompleted: () => {
-            this.setState({ modelName: '', open: false });
-          },
-        });
-      })
-      .catch(() => false);
-  }
-  
-  submitJustification(values, { setSubmitting }) {
-    const adaptedValues = R.evolve(
-      {
-        justification: () => values.justification !== "" ? [values.justification] : [this.props.risk.justification],
-      },
-      values,
-    );
-    const finalValues = R.pipe(
-      R.toPairs,
-      R.map((n) => {
-
-          if(n[0] === "justification" && values.justification === "") {
-            return {
-            'key': n[0],
-            'value': [this.props.risk.justification],
-            'operation': 'remove',
-            }
-          }
-          return {
-            'key': n[0],
-            'value': adaptFieldValue(n[1]),
-          }
-        }
-      ),
-    )(adaptedValues)
-    commitMutation({
-      mutation: riskOverviewEditMutation,
-      variables: { 
-        id: this.props.risk.id, 
-        input: finalValues,
-         
-      },
-      onCompleted: () => {
-        this.setState({ modelName: '', open: false });
-      },
-    });
-  }
-
   renderJustification() {
     const {
-      t, fldt, classes, risk, refreshQuery,
-    } = this.props;
-    const {
+      t, 
+      classes, 
+      risk,
+      handleEditOpen,
       open,
       modelName,
-    } = this.state;
+      submitJustification,
+    } = this.props;
     const initialValues = R.pipe(
       R.assoc('justification', risk?.justification || ""),
       R.pick([
@@ -192,8 +108,8 @@ class RiskOverviewComponent extends Component {
       ]),
     )(risk);
     return (
-      <Formik enableReinitialize={true} initialValues={initialValues} onSubmit={this.submitJustification.bind(this)}>
-      {({ submitForm, handleReset, isSubmitting }) => (
+      <Formik enableReinitialize={true} initialValues={initialValues} onSubmit={submitJustification.bind(this)}>
+      {({ submitForm }) => (
         <Form>
           <div className={classes.textBase}>
             <Typography
@@ -219,7 +135,7 @@ class RiskOverviewComponent extends Component {
                     ? "primary"
                     : "inherit"
                 }
-                onClick={this.handleEditOpen.bind(this, "justification")}
+                onClick={handleEditOpen.bind(this, "justification")}
               >
                 <Edit fontSize="inherit" />
               </IconButton>                 
@@ -240,7 +156,7 @@ class RiskOverviewComponent extends Component {
                 
                 variant="outlined"
                 size="small"
-                onClick={() => this.setState({ open: !this.state.open, modelName: 'justification' })}
+                onClick={handleEditOpen.bind(this, "justification")}
                 style={{ marginRight: '10px' }}
               >
                 Cancel
@@ -272,12 +188,16 @@ class RiskOverviewComponent extends Component {
 
   render() {
     const {
-      t, fldt, classes, risk, refreshQuery,
-    } = this.props;
-    const {
+      t, 
+      fldt, 
+      classes, 
+      risk, 
+      refreshQuery,
+      handleSubmitField,
+      handleEditOpen,
       open,
       modelName,
-    } = this.state;
+    } = this.props;
     const initialValues = R.pipe(
       R.assoc('risk_adjusted', risk?.risk_adjusted || false),
       R.assoc('false_positive', risk?.false_positive || false),
@@ -298,8 +218,7 @@ class RiskOverviewComponent extends Component {
           {t("Basic Information")}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Formik enableReinitialize={true} initialValues={initialValues}>
-          <Form>
+          
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={12}>
                   <div className={classes.textBase}>
@@ -521,7 +440,7 @@ class RiskOverviewComponent extends Component {
                       color={
                         open && modelName === "accepted" ? "primary" : "inherit"
                       }
-                      onClick={this.handleEditOpen.bind(this, "accepted")}
+                      onClick={handleEditOpen.bind(this, "accepted")}
                     >
                       <Edit fontSize="inherit" />
                     </IconButton>
@@ -539,7 +458,7 @@ class RiskOverviewComponent extends Component {
                         name="accepted"
                         type='checkbox'
                         containerstyle={{ margin: "0 -15px 0 11px" }}
-                        onChange={this.handleSubmitField.bind(this)}
+                        onChange={handleSubmitField.bind(this)}
                       />
                     ) : (
                       <Switch
@@ -589,7 +508,7 @@ class RiskOverviewComponent extends Component {
                             ? "primary"
                             : "inherit"
                         }
-                        onClick={this.handleEditOpen.bind(
+                        onClick={handleEditOpen.bind(
                           this,
                           "false_positive"
                         )}
@@ -610,7 +529,7 @@ class RiskOverviewComponent extends Component {
                           name="false_positive"
                           type='checkbox'
                           containerstyle={{ margin: "0 -15px 0 11px" }}
-                          onChange={this.handleSubmitField.bind(this)}
+                          onChange={handleSubmitField.bind(this)}
                         />
                       ) : (
                         <Switch
@@ -660,7 +579,7 @@ class RiskOverviewComponent extends Component {
                           ? "primary"
                           : "inherit"
                       }
-                      onClick={this.handleEditOpen.bind(this, "risk_adjusted")}
+                      onClick={handleEditOpen.bind(this, "risk_adjusted")}
                     >
                       <Edit fontSize="inherit" />
                     </IconButton>
@@ -678,7 +597,7 @@ class RiskOverviewComponent extends Component {
                         name="risk_adjusted"
                         type='checkbox'
                         containerstyle={{ margin: "0 -15px 0 11px" }}
-                        onChange={this.handleSubmitField.bind(this)}
+                        onChange={handleSubmitField.bind(this)}
                       />
                     ) : (
                       <Switch
@@ -734,8 +653,6 @@ class RiskOverviewComponent extends Component {
                   />
                 </Grid>
               </Grid>
-            </Form>
-          </Formik>
         </Paper>
       </div>
     );
@@ -762,11 +679,6 @@ const RiskOverview = createFragmentContainer(
         description
         risk_level
         priority
-        false_positive
-        risk_adjusted
-        accepted
-        justification
-        vendor_dependency
         impacted_control_id
         first_seen
         last_seen
