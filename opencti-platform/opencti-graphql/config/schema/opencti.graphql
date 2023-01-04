@@ -719,6 +719,7 @@ enum WorksFilter {
   connector_id
   completed_number
   completed_time
+  received_time
 }
 input WorksFiltering {
   key: [WorksFilter!]!
