@@ -286,9 +286,7 @@ const createSeeMiddleware = () => {
     let found = false;
     switch (filterMode) {
       case 'and':
-        if (founds.includes(false)) {
-          found = false;
-        } else {
+        if (!founds.includes(false)) {
           found = true;
         }
         break;

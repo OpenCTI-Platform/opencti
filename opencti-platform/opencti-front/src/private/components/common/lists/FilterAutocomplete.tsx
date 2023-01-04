@@ -81,7 +81,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   ].includes(filterKey);
   const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
     if (value) {
-      if (EqFilters.includes(filterKey) && event.altKey && event.type === 'click') {
+      if (EqFilters.includes(filterKey) && (event as unknown as MouseEvent).altKey && event.type === 'click') {
         const filterAdd = `${filterKey}_not_eq`;
         defaultHandleAddFilter(filterAdd, value.value, value.label, event);
       } else {
@@ -125,8 +125,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       options={options}
       onInputChange={(event) => searchEntities(filterKey, event)}
       inputValue={(inputValues[filterKey] as string) || ''}
-      onChange={(event, value: OptionValue | null) => handleChange(event, value)
-      }
+      onChange={handleChange}
       groupBy={
         isStixObjectTypes
           ? (option) => option.type
