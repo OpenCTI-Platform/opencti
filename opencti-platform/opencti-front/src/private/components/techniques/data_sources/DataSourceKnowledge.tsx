@@ -46,7 +46,7 @@ const DataSourceKnowledgeComponent: FunctionComponent<DataSourceKnowledgeCompone
       />
       <Switch>
         <Route
-          path="/dashboard/techniques/data_components/:dataComponentId/knowledge/relations/:relationId"
+          path="/dashboard/techniques/data_sources/:dataSourceId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
               entityId={dataSource.id}
