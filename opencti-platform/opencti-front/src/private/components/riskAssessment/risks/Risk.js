@@ -83,6 +83,7 @@ class RiskComponent extends Component {
   }
 
   handleEditOpen(field) {
+    console.log(this.state.open, field)
     this.setState({ open: !this.state.open, modelName: field });
   }
 
@@ -158,7 +159,7 @@ class RiskComponent extends Component {
       R.assoc('vendor_dependency', risk?.vendor_dependency || false),
       R.assoc('risk_adjusted', risk?.risk_adjusted || false),
       R.assoc('false_positive', risk?.false_positive || false),
-      R.assoc('accepted', risk?.accepted || false),
+      R.assoc('accepted', risk?.accepted),
       R.pick([
         'deadline',
         'statement',

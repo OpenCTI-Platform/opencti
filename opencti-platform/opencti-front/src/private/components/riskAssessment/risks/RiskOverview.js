@@ -682,6 +682,14 @@ const RiskOverview = createFragmentContainer(
         impacted_control_id
         first_seen
         last_seen
+        statement
+        risk_status
+        deadline
+        false_positive
+        risk_adjusted
+        accepted
+        vendor_dependency
+        justification
         labels {
           __typename
           id
