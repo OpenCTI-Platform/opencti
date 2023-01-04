@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import * as R from 'ramda';
-import * as Yup from 'yup';
-import { Formik, Form, Field } from 'formik';
+import { Field } from 'formik';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -15,7 +14,6 @@ import Edit from '@material-ui/icons/Edit';
 import Switch from '@material-ui/core/Switch';
 import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
 import MarkDownField from '../../../../components/MarkDownField';
 import RiskStatus from '../../common/form/RiskStatus';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -93,90 +91,20 @@ const styles = (theme) => ({
   },
 });
 
-const riskDetailsEditMutation = graphql`
-  mutation RiskDetailsEditMutation($id: ID!, $input: [EditInput]!) {
-    editRisk(id: $id, input: $input) {
-      id
-      statement
-      deadline
-      risk_status
-      accepted
-      false_positive
-      risk_adjusted
-      vendor_dependency
-    }
-  }
-`;
-
-const RiskValidation = () => Yup.object().shape({
-  statement: Yup.string().nullable(),
-  risk_status: Yup.string().nullable(),
-  deadline: Yup.string().nullable(),
-  false_positive: Yup.string().nullable(),
-  risk_adjusted: Yup.string().nullable(),
-  vendor_dependency: Yup.string().nullable(),
-  accepted: Yup.string().nullable(),
-});
-
 class RiskDetailsComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-      modelName: '',
-    };
-  }
-
-  handleEditOpen(field) {
-    this.setState({ open: !this.state.open, modelName: field });
-  }
-
-  handleSubmitField(name, value) {
-    RiskValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: riskDetailsEditMutation,
-          variables: { id: this.props.risk.id, input: { key: name, value } },
-          onCompleted: () => {
-            this.setState({ modelName: '', open: false });
-          },
-        });
-      })
-      .catch(() => false);
-  }
-
   render() {
     const {
       t,
       classes,
       risk,
       fldt,
-    } = this.props;
-    const {
+      handleSubmitField,
+      handleEditOpen,
       open,
       modelName,
-    } = this.state;
+    } = this.props;
     const riskDetectionSource = R.pipe(
       R.path(['origins']),
-    )(risk);
-    const initialValues = R.pipe(
-      R.assoc('deadline', risk?.deadline || ''),
-      R.assoc('statement', risk?.statement || ''),
-      R.assoc('risk_status', risk?.risk_status || ''),
-      R.assoc('risk_adjusted', risk?.risk_adjusted || ''),
-      R.assoc('false_positive', risk?.false_positive || ''),
-      R.assoc('vendor_dependency', risk?.vendor_dependency || ''),
-      R.assoc('accepted', risk?.accepted || ''),
-      R.pick([
-        'deadline',
-        'statement',
-        'risk_status',
-        'false_positive',
-        'risk_adjusted',
-        'vendor_dependency',
-        'accepted',
-      ]),
     )(risk);
     return (
       <div>
@@ -184,11 +112,6 @@ class RiskDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-          >
-            <Form>
               <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
                   <div className={classes.textBase}>
@@ -253,7 +176,7 @@ class RiskDetailsComponent extends Component {
                       size='small'
                       style={{ fontSize: '15px' }}
                       color={(open && modelName === 'statement') ? 'primary' : 'inherit'}
-                      onClick={this.handleEditOpen.bind(this, 'statement')}
+                      onClick={handleEditOpen.bind(this, 'statement')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
@@ -266,7 +189,7 @@ class RiskDetailsComponent extends Component {
                       fullWidth={true}
                       multiline={true}
                       variant='outlined'
-                      onSubmit={this.handleSubmitField.bind(this)}
+                      onSubmit={handleSubmitField.bind(this)}
                     />
                   ) : (
                     <div className={classes.scrollBg}>
@@ -299,7 +222,7 @@ class RiskDetailsComponent extends Component {
                       size='small'
                       style={{ fontSize: '15px' }}
                       color={(open && modelName === 'risk_status') ? 'primary' : 'inherit'}
-                      onClick={this.handleEditOpen.bind(this, 'risk_status')}
+                      onClick={handleEditOpen.bind(this, 'risk_status')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
@@ -310,7 +233,7 @@ class RiskDetailsComponent extends Component {
                       variant='outlined'
                       name='risk_status'
                       size='small'
-                      onChange={this.handleSubmitField.bind(this)}
+                      onChange={handleSubmitField.bind(this)}
                       fullWidth={true}
                       style={{ height: '38.09px', marginBottom: '3px' }}
                       containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
@@ -347,7 +270,7 @@ class RiskDetailsComponent extends Component {
                       size='small'
                       style={{ fontSize: '15px' }}
                       color={(open && modelName === 'deadline') ? 'primary' : 'inherit'}
-                      onClick={this.handleEditOpen.bind(this, 'deadline')}
+                      onClick={handleEditOpen.bind(this, 'deadline')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
@@ -360,13 +283,13 @@ class RiskDetailsComponent extends Component {
                       fullWidth={true}
                       multiline={true}
                       variant='outlined'
-                      onSubmit={this.handleSubmitField.bind(this)}
+                      onSubmit={handleSubmitField.bind(this)}
                       invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                     />
                   ) : risk.deadline && fldt(risk.deadline)
                   }
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item={true} xs={6}>
                   <div className={classes.textBase}>
                     <Typography
                       variant="h3"
@@ -393,158 +316,6 @@ class RiskDetailsComponent extends Component {
                     )))}
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <div>
-                    <div className={classes.textBase}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ margin: 0 }}
-                      >
-                        {t('False Positive')}
-                      </Typography>
-                      <Tooltip
-                        title={t(
-                          'Identifies that the risk has been confirmed to be a false positive.',
-                        )}
-                      >
-                        <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                      <IconButton
-                        size='small'
-                        style={{ fontSize: '15px' }}
-                        color={(open && modelName === 'false_positive') ? 'primary' : 'inherit'}
-                        onClick={this.handleEditOpen.bind(this, 'false_positive')}
-                      >
-                        <Edit fontSize='inherit' />
-                      </IconButton>
-                    </div>
-                    <div className="clearfix" />
-                    <div style={{ display: 'flex' }}>
-                      <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
-                      {open && modelName === 'false_positive' ? (
-                        <Field
-                          component={SwitchField}
-                          name="false_positive"
-                          containerstyle={{ margin: '0 -15px 0 11px' }}
-                          onChange={this.handleSubmitField.bind(this)}
-                        />
-                      ) : (
-                        <Switch
-                          disabled
-                          defaultChecked={risk.false_positive}
-                          classes={{
-                            thumb: classes.thumb,
-                            track: classes.switch_track,
-                            switchBase: classes.switch_base,
-                          }}
-                        />
-                      )}
-                      <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
-                    </div>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <div className={classes.textBase}>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ margin: 0 }}
-                    >
-                      {t('Operationally Required')}
-                    </Typography>
-                    <Tooltip
-                      title={t(
-                        'Operationally Required',
-                      )}
-                    >
-                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                    <IconButton
-                      size='small'
-                      style={{ fontSize: '15px' }}
-                      color={(open && modelName === 'accepted') ? 'primary' : 'inherit'}
-                      onClick={this.handleEditOpen.bind(this, 'accepted')}
-                    >
-                      <Edit fontSize='inherit' />
-                    </IconButton>
-                  </div>
-                  <div className="clearfix" />
-                  <div style={{ display: 'flex' }}>
-                    <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
-                    {open && modelName === 'accepted' ? (
-                      <Field
-                        component={SwitchField}
-                        name="accepted"
-                        containerstyle={{ margin: '0 -15px 0 11px' }}
-                        onChange={this.handleSubmitField.bind(this)}
-                      />
-                    ) : (
-                      <Switch
-                        disabled
-                        defaultChecked={risk.accepted}
-                        classes={{
-                          thumb: classes.thumb,
-                          track: classes.switch_track,
-                          switchBase: classes.switch_base,
-                        }}
-                      />
-                    )}
-                    <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <div className={classes.textBase}>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ margin: 0 }}
-                    >
-                      {t('Risk Adjusted')}
-                    </Typography>
-                    <Tooltip
-                      title={t(
-                        'Identifies that mitigating factors were identified or implemented, reducing the likelihood or impact of the risk.',
-                      )}
-                    >
-                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                    <IconButton
-                      size='small'
-                      style={{ fontSize: '15px' }}
-                      color={(open && modelName === 'risk_adjusted') ? 'primary' : 'inherit'}
-                      onClick={this.handleEditOpen.bind(this, 'risk_adjusted')}
-                    >
-                      <Edit fontSize='inherit' />
-                    </IconButton>
-                  </div>
-                  <div className="clearfix" />
-                  <div style={{ display: 'flex' }}>
-                    <Typography style={{ display: 'flex', alignItems: 'center' }}>No</Typography>
-                    {open && modelName === 'risk_adjusted' ? (
-                      <Field
-                        component={SwitchField}
-                        name="risk_adjusted"
-                        containerstyle={{ margin: '0 -15px 0 11px' }}
-                        onChange={this.handleSubmitField.bind(this)}
-                      />
-                    ) : (
-                      <Switch
-                        disabled
-                        defaultChecked={risk.risk_adjusted}
-                        classes={{
-                          thumb: classes.thumb,
-                          track: classes.switch_track,
-                          switchBase: classes.switch_base,
-                        }}
-                      />
-                    )}
-                    <Typography style={{ display: 'flex', alignItems: 'center' }}>Yes</Typography>
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6}>
                   <div className={classes.textBase}>
                     <Typography
                       variant="h3"
@@ -565,7 +336,7 @@ class RiskDetailsComponent extends Component {
                       size='small'
                       style={{ fontSize: '15px' }}
                       color={(open && modelName === 'vendor_dependency') ? 'primary' : 'inherit'}
-                      onClick={this.handleEditOpen.bind(this, 'vendor_dependency')}
+                      onClick={handleEditOpen.bind(this, 'vendor_dependency')}
                     >
                       <Edit fontSize='inherit' />
                     </IconButton>
@@ -577,8 +348,9 @@ class RiskDetailsComponent extends Component {
                       <Field
                         component={SwitchField}
                         name="vendor_dependency"
+                        type='checkbox'
                         containerstyle={{ margin: '0 -15px 0 11px' }}
-                        onChange={this.handleSubmitField.bind(this)}
+                        onChange={handleSubmitField.bind(this)}
                       />
                     ) : (
                       <Switch
@@ -595,8 +367,6 @@ class RiskDetailsComponent extends Component {
                   </div>
                 </Grid>
               </Grid>
-            </Form>
-          </Formik>
         </Paper>
       </div>
     );
@@ -616,6 +386,9 @@ const RiskDetails = createFragmentContainer(
     risk: graphql`
       fragment RiskDetails_risk on Risk {
         id
+        impacted_control_id
+        first_seen
+        last_seen
         statement
         risk_status
         deadline
@@ -623,9 +396,7 @@ const RiskDetails = createFragmentContainer(
         risk_adjusted
         accepted
         vendor_dependency
-        impacted_control_id
-        first_seen
-        last_seen
+        justification
         origins {
           origin_actors {
             actor_type
