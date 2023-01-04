@@ -8,7 +8,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
 import RequiredResourcesLines, {
@@ -83,9 +82,12 @@ class RequiredResources extends Component {
                       button={false}
                     >
                       <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatarDisabled }}>
-                          {i}
-                        </Avatar>
+                        <Skeleton
+                          animation="circle"
+                          variant="rect"
+                          width="25%"
+                          height={15}
+                        />
                       </ListItemIcon>
                       <ListItemText
                         primary={

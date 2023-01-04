@@ -1,7 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues, generateId, CyioError} from '../../../utils.js';
 import {convertToProperties} from '../../riskUtils.js'
-import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
+import { selectObjectIriByIdQuery, objectMap } from '../../../global/global-utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -474,14 +474,19 @@ const oscalTaskResolvers = {
         if (editItem.operation !== undefined) continue;
 
         // if value if empty then treat as a remove
-        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+        if (editItem.value.length === 0) {
           editItem.operation = 'remove';
           continue;
         }
+        if (Array.isArray(editItem.value) && editItem.value[0] === null) throw new CyioError(`Field "${editItem.key}" has invalid value "null"`);
+
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
           editItem.operation = 'replace';
+
+          // Set operation to 'skip' if no change in value
+          if (response[0][editItem.key] === editItem.value) editItem.operation ='skip';
         }
       }
 
@@ -495,6 +500,113 @@ const oscalTaskResolvers = {
       if (!response[0].hasOwnProperty('modified')) operation = "add";
       let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
       input.push(update);
+
+      // Handle the update to fields that have references to other object instances
+      for (let editItem  of input) {
+        let value, fieldType, objectType, iris=[];
+        for (value of editItem.value) {
+          switch(editItem.key) {
+            case 'on_date':
+            case 'start_date':
+            case 'end_date':
+            case 'frequency_period':
+            case 'time_unit':
+              break;
+
+            case 'timing':
+              let timing = JSON.parse(value);
+              if (('within_date_range' in timing && 'on_date' in timing) ||
+                  ('within_date_range' in timing && 'at_frequency' in timing) ||
+                  ('on_date in input.timing' && 'at_frequency' in timing)) {
+                    throw new CyioError(`Only one timing field can be specified.`);
+              }
+
+              let newItem;
+              let operationAction = 'replace';
+
+              if ('on_date' in timing) {
+                if (!response[0].hasOwnProperty('on_date')) operationAction = 'add';
+                if (operationAction !== 'add' && response[0]['on_date'] === timing.on_date.on_date) break;
+                newItem = {key:'on_date', value: timing.on_date.on_date, operation: operationAction};
+                input.push(newItem);
+              }
+              if ('within_date_range' in timing) {
+                if (!response[0].hasOwnProperty('start_date')) operationAction = 'add';
+                if (operationAction !== 'add' && response[0]['start_date'] === timing.within_date_range.start_date) break;
+                newItem = {key:'start_date', value: timing.within_date_range.start_date, operation: operationAction};
+                input.push(newItem);
+
+                if (timing.within_date_range.end_date !== undefined) {
+                  if (!response[0].hasOwnProperty('end_date')) operationAction = 'add';
+                  if (operationAction !== 'add' && response[0]['end_date'] === timing.within_date_range.end_date) break;
+                  newItem = {key:'end_date', value: timing.within_date_range.end_date, operation: operationAction};
+                  input.push(newItem);
+                }
+              }
+              if ('at_frequency' in timing) {
+                if (!response[0].hasOwnProperty('frequency_period')) operationAction = 'add';
+                if (operationAction !== 'add' && response[0]['frequency_period'] === timing.at_frequency.period) break;
+                newItem = {key:'frequency_period', value: timing.at_frequency.period, operation: operationAction};
+                input.push(newItem);
+
+                if (!response[0].hasOwnProperty('time_unit')) operationAction = 'add';
+                if (operationAction !== 'add' && response[0]['time_unit'] === timing.at_frequency.unit) break;
+                newItem = {key:'time_unit', value: timing.at_frequency.unit, operation: operationAction};
+                input.push(newItem);
+              }
+              break;
+
+            case 'task_dependencies':
+            case 'related_tasks':
+              objectType = 'oscal-task';
+              fieldType = 'id';
+              break;
+            case 'responsible_roles':
+              objectType = 'oscal-responsible-party';
+              fieldType = 'id';
+              break;
+            case 'links':
+              objectType = 'external-reference';
+              fieldType = 'id';
+              break;
+            case 'remarks':
+              objectType = 'note';
+              fieldType = 'id';
+              break;
+            case 'associated_activities':
+              // TODO: Need to implement when Assessment Subjects are supported
+              editItem.operation = 'skip';
+              objectType = 'associated-activity';
+              fieldType = 'id';
+              break;
+            case 'subjects':
+              // TODO: Need to implement when Assessment Subjects are supported
+              editItem.operation = 'skip';
+              objectType = 'assessment-subject';
+              break;
+            default:
+              fieldType = 'simple';
+              break;
+          }
+
+          if (fieldType === 'id') {
+            // continue to next item if nothing to do
+            if (editItem.operation === 'skip') continue;
+
+            let iri = `${objectMap[objectType].iriTemplate}-${value}`;
+            let sparqlQuery = selectObjectIriByIdQuery(value, objectType);
+            let result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Obtaining IRI for the object with id",
+              singularizeSchema
+            });
+            if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${taskId}`);
+            iris.push(`<${result[0].iri}>`);
+            }
+        }
+        if (iris.length > 0) editItem.value = iris;
+      }    
 
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}`,
