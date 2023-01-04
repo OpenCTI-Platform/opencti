@@ -44,24 +44,24 @@ export const convertFiltersFrontendFormat = (filters) => {
 // @Deprecated
 // TODO Needs to be replaced with convertFiltersFrontendFormat @JRI
 export const adaptFiltersFrontendFormat = (filters) => {
-  const adaptedFilters = {};
+  const adaptedFilters = [];
   const filterEntries = Object.entries(filters);
   for (let index = 0; index < filterEntries.length; index += 1) {
     const [key, values] = filterEntries[index];
     if (key.endsWith('start_date') || key.endsWith('_gt')) {
       const workingKey = key.replace('_start_date', '').replace('_gt', '');
-      adaptedFilters[workingKey] = { operator: 'gt', values };
+      adaptedFilters.push({ key: workingKey, operator: 'gt', values });
     } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
       const workingKey = key.replace('_end_date', '').replace('_lt', '');
-      adaptedFilters[workingKey] = { operator: 'lt', values };
+      adaptedFilters.push({ key: workingKey, operator: 'lt', values });
     } else if (key.endsWith('_lte')) {
       const workingKey = key.replace('_lte', '');
-      adaptedFilters[workingKey] = { operator: 'lte', values };
+      adaptedFilters.push({ key: workingKey, operator: 'lte', values });
     } else if (key.endsWith('_not_eq')) {
       const workingKey = key.replace('_not_eq', '');
-      adaptedFilters[workingKey] = { operator: 'not_eq', values, filterMode: 'and' };
+      adaptedFilters.push({ key: workingKey, operator: 'not_eq', values, filterMode: 'and' });
     } else {
-      adaptedFilters[key] = { operator: 'eq', values, filterMode: 'or' };
+      adaptedFilters.push({ key, operator: 'eq', values, filterMode: 'or' });
     }
   }
   return adaptedFilters;
@@ -73,10 +73,9 @@ export const convertFiltersToQueryOptions = (filters, opts = {}) => {
   const types = [...defaultTypes];
   if (filters) {
     const adaptedFilters = adaptFiltersFrontendFormat(filters);
-    const filterEntries = Object.entries(adaptedFilters);
-    for (let index = 0; index < filterEntries.length; index += 1) {
+    for (let index = 0; index < adaptedFilters.length; index += 1) {
       // eslint-disable-next-line prefer-const
-      let [key, { operator, values, filterMode }] = filterEntries[index];
+      let { key, operator, values, filterMode } = adaptedFilters[index];
       if (key === TYPE_FILTER) {
         types.push(...values.map((v) => v.id));
       } else {

@@ -310,9 +310,8 @@ const createSeeMiddleware = () => {
     // Pre-filter transformation to handle specific frontend format
     const adaptedFilters = adaptFiltersFrontendFormat(filters);
     // User is granted, but we still need to apply filters if needed
-    const filterEntries = Object.entries(adaptedFilters);
-    for (let index = 0; index < filterEntries.length; index += 1) {
-      const [type, { operator, values, filterMode }] = filterEntries[index];
+    for (let index = 0; index < adaptedFilters.length; index += 1) {
+      const { key: type, operator, values, filterMode } = adaptedFilters[index];
       let founds = [];
       let found = false;
       // Markings filtering

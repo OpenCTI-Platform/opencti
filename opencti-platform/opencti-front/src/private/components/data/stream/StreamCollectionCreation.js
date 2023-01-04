@@ -138,16 +138,15 @@ const StreamCollectionCreation = (props) => {
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters(
-        R.assoc(
-          key,
-          isUniqFilter(key)
+        {
+          ...filters,
+          [key]: isUniqFilter(key)
             ? [{ id, value }]
             : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
+        },
       );
     } else {
-      setFilters(R.assoc(key, [{ id, value }], filters));
+      setFilters({ ...filters, [key]: [{ id, value }] });
     }
   };
 

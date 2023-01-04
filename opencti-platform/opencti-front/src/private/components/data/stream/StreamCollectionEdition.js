@@ -115,15 +115,14 @@ const StreamCollectionEditionContainer = (props) => {
   const handleAddFilter = (key, id, value) => {
     let newFilters;
     if (filters[key] && filters[key].length > 0) {
-      newFilters = R.assoc(
-        key,
-        isUniqFilter(key)
+      newFilters = {
+        ...filters,
+        [key]: isUniqFilter(key)
           ? [{ id, value }]
           : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-        filters,
-      );
+      };
     } else {
-      newFilters = R.assoc(key, [{ id, value }], filters);
+      newFilters = { ...filters, [key]: [{ id, value }] };
     }
     const jsonFilters = JSON.stringify(newFilters);
     commitMutation({
