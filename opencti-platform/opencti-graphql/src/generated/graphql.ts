@@ -6873,7 +6873,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   pendingFiles?: Maybe<FileConnection>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
-  severity?: Maybe<IncidentSeverity>;
+  severity?: Maybe<Scalars['String']>;
   source?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -7029,7 +7029,7 @@ export type IncidentAddInput = {
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objective?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
-  severity?: InputMaybe<IncidentSeverity>;
+  severity?: InputMaybe<Scalars['String']>;
   source?: InputMaybe<Scalars['String']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
@@ -7080,13 +7080,6 @@ export type IncidentEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
   toId: Scalars['StixRef'];
 };
-
-export enum IncidentSeverity {
-  Critical = 'critical',
-  High = 'high',
-  Low = 'low',
-  Medium = 'medium'
-}
 
 export enum IncidentsFilter {
   Aliases = 'aliases',
@@ -23329,7 +23322,6 @@ export type ResolversTypes = ResolversObject<{
   IncidentConnection: ResolverTypeWrapper<Omit<IncidentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IncidentEdge']>>> }>;
   IncidentEdge: ResolverTypeWrapper<Omit<IncidentEdge, 'node'> & { node: ResolversTypes['Incident'] }>;
   IncidentEditMutations: ResolverTypeWrapper<Omit<IncidentEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Incident']>, contextPatch?: Maybe<ResolversTypes['Incident']>, fieldPatch?: Maybe<ResolversTypes['Incident']>, relationDelete?: Maybe<ResolversTypes['Incident']> }>;
-  IncidentSeverity: IncidentSeverity;
   IncidentsFilter: IncidentsFilter;
   IncidentsFiltering: IncidentsFiltering;
   IncidentsOrdering: IncidentsOrdering;
@@ -26276,7 +26268,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IncidentPendingFilesArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<IncidentReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  severity?: Resolver<Maybe<ResolversTypes['IncidentSeverity']>, ParentType, ContextType>;
+  severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
