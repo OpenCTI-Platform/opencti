@@ -355,8 +355,8 @@ const initializeDefaultValues = async (withMarkings = true) => {
     platform_url: '',
     platform_theme: 'dark',
     platform_language: 'auto',
-    platform_theme_dark_primary: '#00bcd4',
-    platform_theme_dark_secondary: '#d84315',
+    platform_theme_dark_primary: '#075AD3',
+    platform_theme_dark_secondary: '#F9B406',
   });
   await createDefaultStatusTemplates();
   await createAttributesTypes();
@@ -412,6 +412,7 @@ const platformInit = async (withMarkings = true) => {
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       // await isCompatiblePlatform();
+      await initializeData(withMarkings);
       await initializeAdminUser();
       await alignMigrationLastRun();
       await applyMigration();
