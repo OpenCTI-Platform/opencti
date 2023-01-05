@@ -5,6 +5,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/general';
 import { isStixDomainObjectLocation } from '../schema/stixDomainObject';
+import { FunctionalError } from '../config/errors';
 
 export const findById = async (context, user, locationId) => {
   return storeLoadById(context, user, locationId, ENTITY_TYPE_LOCATION);
@@ -22,6 +23,9 @@ export const findAll = async (context, user, args) => {
 };
 
 export const addLocation = async (context, user, location) => {
+  if (!isStixDomainObjectLocation(location.type)) {
+    throw FunctionalError(`Invalid location type ${location.type}`);
+  }
   const locationToCreate = pipe(assoc('x_opencti_location_type', location.type), dissoc('type'))(location);
   const created = await createEntity(context, user, locationToCreate, location.type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
