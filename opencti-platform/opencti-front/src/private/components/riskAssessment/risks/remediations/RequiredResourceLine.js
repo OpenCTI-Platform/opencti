@@ -32,6 +32,7 @@ import CyioCoreobjectExternalReferences from '../../../analysis/external_referen
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import { fetchQuery } from '../../../../../relay/environment';
 import { itAssetFiltersAssetTypeFieldQuery } from '../../../settings/ItAssetFilters';
+import { Divider } from '@material-ui/core';
 
 const styles = (theme) => ({
   item: {
@@ -200,14 +201,14 @@ class RequiredResourceLineComponent extends Component {
             aria-controls="panel1a-content"
             id="panel1a-header"
           >
-            {this.state.value ? '' : (
-              <CardContent style={{ display: 'flex', alignItems: 'center' }}>
-                <GroupIcon fontSize='large' color="disabled" />
+           <CardContent style={{ display: 'flex', alignItems: 'center', padding: '16px 16px 0 0' }}>
+                <GroupIcon fontSize='large' color="disabled"/>
                 <div style={{ marginLeft: '10px' }}>
                   <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
                     {data.name && t(data.name)}
                   </Typography>
-                  <Typography align="left" variant="subtitle1">
+                  {!this.state.value && 
+                    <Typography align="left" variant="subtitle1">
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
                       rehypePlugins={[rehypeRaw]}
@@ -217,11 +218,9 @@ class RequiredResourceLineComponent extends Component {
                     >
                       {data.description && t(data.description)}
                     </Markdown>
-                  </Typography>
+                  </Typography>}
                 </div>
               </CardContent>
-            )
-            }
           </AccordionSummary>
           <AccordionDetails classes={{ root: classes.accordionDetails }}>
             <Grid container={true} spacing={3} >              
