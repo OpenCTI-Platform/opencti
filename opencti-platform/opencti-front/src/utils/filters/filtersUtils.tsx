@@ -30,6 +30,13 @@ export const EqFilters = [
   'context',
   'pattern_type',
   'indicator_types',
+  'report_types',
+  'note_types',
+  'channel_types',
+  'sightedBy',
+  'relationship_type',
+  'creator',
+  'x_opencti_negative',
 ];
 const uniqFilters = [
   'revoked',
