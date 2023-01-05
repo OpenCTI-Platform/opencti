@@ -137,7 +137,7 @@ class DeviceEditionDetailsComponent extends Component {
                     name="installed_software"
                     // disabled={true}
                     fullWidth={true}
-                    style={{ height: '38.09px' }}
+                    style={{ height: '38.09px', maxWidth: '300px' }}
                     containerstyle={{ width: '100%' }}
                   />
                 </div>
