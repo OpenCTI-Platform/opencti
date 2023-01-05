@@ -544,16 +544,24 @@ const createSeeMiddleware = () => {
     const fromAllTypes = [type, ...getParentTypes(type)];
     // eslint-disable-next-line no-restricted-syntax
     for (const filter of filters.entity_type.values) {
-      if (filter.operator === 'not_eq') { // filterMode = 'and'
+      // consider the operator
+      if (filter.operator === 'not_eq') {
         if (!fromAllTypes.includes(filter.id)) {
           matches.push(true);
         } else {
           matches.push(false);
         }
-        if (!matches.include(false)) {
+      } else if (fromAllTypes.includes(filter.id)) { // operator = 'eq'
+        matches.push(true);
+      } else {
+        matches.push(false);
+      }
+      // consider the filterMode
+      if (filter.filterMode === 'and') {
+        if (!matches.includes(false)) {
           match = true;
         }
-      } else if (fromAllTypes.includes(filter.id)) { // operator = 'eq' and filterMode = 'or'
+      } else if (matches.includes(true)) { // filterMode = 'or'
         match = true;
       }
     }
