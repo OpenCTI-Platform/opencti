@@ -37,7 +37,12 @@ import {
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { adaptFiltersFrontendFormat, convertFiltersToQueryOptions, TYPE_FILTER } from '../utils/filtering';
+import {
+  adaptFiltersFrontendFormat,
+  convertFiltersFrontendFormat,
+  convertFiltersToQueryOptions,
+  TYPE_FILTER
+} from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { internalLoadById, listAllRelations, listEntities } from '../database/middleware-loader';
@@ -308,7 +313,7 @@ const createSeeMiddleware = () => {
       return false;
     }
     // Pre-filter transformation to handle specific frontend format
-    const adaptedFilters = adaptFiltersFrontendFormat(filters);
+    const adaptedFilters = convertFiltersFrontendFormat(filters);
     // User is granted, but we still need to apply filters if needed
     for (let index = 0; index < adaptedFilters.length; index += 1) {
       const { key: type, operator, values, filterMode } = adaptedFilters[index];
@@ -535,10 +540,20 @@ const createSeeMiddleware = () => {
   };
   const isFiltersEntityTypeMatch = (filters, type) => {
     let match = false;
+    const matches = [];
     const fromAllTypes = [type, ...getParentTypes(type)];
     // eslint-disable-next-line no-restricted-syntax
     for (const filter of filters.entity_type.values) {
-      if (fromAllTypes.includes(filter.id)) {
+      if (filter.operator === 'not_eq') { // filterMode = 'and'
+        if (!fromAllTypes.includes(filter.id)) {
+          matches.push(true);
+        } else {
+          matches.push(false);
+        }
+        if (!matches.include(false)) {
+          match = true;
+        }
+      } else if (fromAllTypes.includes(filter.id)) { // operator = 'eq' and filterMode = 'or'
         match = true;
       }
     }
