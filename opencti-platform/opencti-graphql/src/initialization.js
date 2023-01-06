@@ -412,7 +412,6 @@ const platformInit = async (withMarkings = true) => {
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       // await isCompatiblePlatform();
-      await initializeData(withMarkings);
       await initializeAdminUser();
       await alignMigrationLastRun();
       await applyMigration();

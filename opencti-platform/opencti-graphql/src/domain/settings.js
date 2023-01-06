@@ -41,7 +41,10 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  return loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  let settings =  await loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  if ('platform_theme_dark_primary' in settings) settings['platform_theme_dark_primary'] = null;
+  if ('platform_theme_dark_secondary' in settings) settings['platform_theme_dark_secondary'] = null;
+  return settings;
 };
 
 export const addSettings = async (user, settings) => {
@@ -64,6 +67,7 @@ export const settingsEditContext = (user, settingsId, input) => {
 };
 
 export const settingsEditField = async (user, settingsId, input) => {
+  if (user === undefined) user = SYSTEM_USER;
   const { element } = await updateAttribute(user, settingsId, ENTITY_TYPE_SETTINGS, input);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
 };
