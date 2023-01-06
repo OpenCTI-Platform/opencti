@@ -17,15 +17,14 @@ import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { insertNode } from '../../../../utils/store';
-import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import {
+  ExternalReferencesLinesPaginationQuery$variables,
+} from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import {
   ExternalReferenceAddInput,
@@ -139,13 +138,17 @@ ExternalReferenceCreationProps
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+
   const [open, setOpen] = useState(false);
+
   const handleOpen = () => {
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
   };
+
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -184,6 +187,7 @@ ExternalReferenceCreationProps
       optimisticResponse: undefined,
     });
   };
+
   const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     if (dryrun && creationCallback && handleCloseContextual) {
@@ -216,9 +220,11 @@ ExternalReferenceCreationProps
       optimisticResponse: undefined,
     });
   };
+
   const onResetClassic = () => {
     handleClose();
   };
+
   const onResetContextual = () => {
     if (handleCloseContextual) {
       handleCloseContextual();
@@ -226,6 +232,7 @@ ExternalReferenceCreationProps
       handleClose();
     }
   };
+
   const renderClassic = () => {
     return (
       <div>
@@ -272,7 +279,7 @@ ExternalReferenceCreationProps
               onSubmit={onSubmit}
               onReset={onResetClassic}
             >
-              {({ submitForm, handleReset, isSubmitting }) => (
+              {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
@@ -285,6 +292,7 @@ ExternalReferenceCreationProps
                     component={TextField}
                     variant="standard"
                     name="external_id"
+                    id={'external_id'}
                     label={t('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
@@ -297,6 +305,26 @@ ExternalReferenceCreationProps
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
+                  {!dryrun && (
+                    <Field
+                      component={SimpleFileUpload}
+                      name="file"
+                      label={t('Associated file')}
+                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                      InputProps={{
+                        classes: { fullWidth: true, variant: 'standard' },
+                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+                          const fileName = event.target.value.split('\\').pop();
+                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
+                          if (!externalIdValue && fileName) {
+                            setFieldValue('external_id', fileName);
+                          }
+                        },
+                      }}
+                      fullWidth={true}
+                    />
+                  )}
                   <Field
                     component={MarkDownField}
                     name="description"
@@ -306,17 +334,6 @@ ExternalReferenceCreationProps
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  {!dryrun && (
-                    <Field
-                      component={SimpleFileUpload}
-                      name="file"
-                      label={t('Associated file')}
-                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                      InputProps={{ fullWidth: true, variant: 'standard' }}
-                      fullWidth={true}
-                    />
-                  )}
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -344,6 +361,7 @@ ExternalReferenceCreationProps
       </div>
     );
   };
+
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -364,7 +382,8 @@ ExternalReferenceCreationProps
         >
           <Formik
             enableReinitialize={true}
-            initialValues={{
+            onSubmit={!handleCloseContextual ? onSubmit : onSubmitContextual}
+            initialValues= {{
               source_name: inputValue,
               external_id: '',
               url: '',
@@ -372,10 +391,9 @@ ExternalReferenceCreationProps
               file: '',
             }}
             validationSchema={externalReferenceValidation(t)}
-            onSubmit={!handleCloseContextual ? onSubmit : onSubmitContextual}
             onReset={onResetContextual}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
               <Form>
                 <DialogTitle>{t('Create an external reference')}</DialogTitle>
                 <DialogContent>
@@ -390,6 +408,7 @@ ExternalReferenceCreationProps
                     component={TextField}
                     variant="standard"
                     name="external_id"
+                    id={'external_id'}
                     label={t('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
@@ -402,15 +421,6 @@ ExternalReferenceCreationProps
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20, marginBottom: 20 }}
-                  />
                   {!dryrun && (
                     <Field
                       component={SimpleFileUpload}
@@ -421,12 +431,30 @@ ExternalReferenceCreationProps
                       }}
                       InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                       InputProps={{
-                        fullWidth: true,
-                        variant: 'standard',
+                        classes: {
+                          fullWidth: true,
+                          variant: 'standard',
+                        },
+                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+                          const fileName = event.target.value.split('\\').pop();
+                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
+                          if (!externalIdValue && fileName) {
+                            setFieldValue('external_id', fileName);
+                          }
+                        },
                       }}
                       fullWidth={true}
                     />
                   )}
+                  <Field
+                    component={MarkDownField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20, marginBottom: 20 }}
+                  />
                 </DialogContent>
                 <DialogActions>
                   <Button
