@@ -1,10 +1,11 @@
 import React from 'react';
 import * as R from 'ramda';
+import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Chip from '@mui/material/Chip';
-import { compose } from 'ramda';
+import Tooltip from '@mui/material/Tooltip';
 import { truncate } from '../utils/String';
 
 const styles = () => ({
@@ -81,6 +82,7 @@ const ItemMarkings = (props) => {
     R.take(number),
   )(markingDefinitions);
   return (
+    <Tooltip title={markingDefinitions?.[0]?.node.definition}>
     <div>
       {markings.map((markingDefinition) => {
         const label = truncate(markingDefinition.definition, 20);
@@ -170,6 +172,7 @@ const ItemMarkings = (props) => {
         }
       })}
     </div>
+    </Tooltip>
   );
 };
 

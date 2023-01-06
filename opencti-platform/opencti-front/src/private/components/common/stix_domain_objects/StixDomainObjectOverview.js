@@ -121,11 +121,7 @@ class StixDomainObjectOverview extends Component {
                     {t('Marking')}
                   </Typography>
                   <ItemMarkings
-                    markingDefinitions={R.pathOr(
-                      [],
-                      ['objectMarking', 'edges'],
-                      stixDomainObject,
-                    )}
+                    markingDefinitions={stixDomainObject.objectMarking.edges ?? []}
                     limit={10}
                   />
                 </div>

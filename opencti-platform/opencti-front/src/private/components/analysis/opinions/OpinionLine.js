@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import Checkbox from '@mui/material/Checkbox';
 import inject18n from '../../../../components/i18n';
@@ -142,11 +142,7 @@ class OpinionLineComponent extends Component {
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <ItemMarkings
-                  markingDefinitions={pathOr(
-                    [],
-                    ['objectMarking', 'edges'],
-                    node,
-                  )}
+                  markingDefinitions={node.objectMarking.edges ?? []}
                   limit={1}
                   variant="inList"
                 />

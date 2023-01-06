@@ -12,10 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  FeedbackLine_node$key,
-  FeedbackLine_node$data,
-} from './__generated__/FeedbackLine_node.graphql';
+import { FeedbackLine_node$data, FeedbackLine_node$key } from './__generated__/FeedbackLine_node.graphql';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';

@@ -4,13 +4,12 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
-import { pathOr } from 'ramda';
+import * as R from 'ramda';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import Chip from '@mui/material/Chip';
-import * as R from 'ramda';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { Theme } from '../../../../components/Theme';
@@ -348,11 +347,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                markingDefinitions={pathOr(
-                  [],
-                  ['objectMarking', 'edges'],
-                  stixCoreObject,
-                )}
+                markingDefinitions={stixCoreObject.objectMarking?.edges ?? []}
                 limit={1}
                 variant="inList"
               />

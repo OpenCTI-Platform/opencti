@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -135,11 +135,7 @@ class IncidentLineComponent extends Component {
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <ItemMarkings
-                  markingDefinitions={pathOr(
-                    [],
-                    ['objectMarking', 'edges'],
-                    node,
-                  )}
+                  markingDefinitions={node.objectMarking.edges ?? []}
                   limit={1}
                   variant="inList"
                 />

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { compose, propOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -19,7 +20,6 @@ import IconButton from '@mui/material/IconButton';
 import { BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import Slide from '@mui/material/Slide';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -136,11 +136,7 @@ class StixCyberObservableOverview extends Component {
                 {t('Marking')}
               </Typography>
               <ItemMarkings
-                markingDefinitions={R.pathOr(
-                  [],
-                  ['objectMarking', 'edges'],
-                  stixCyberObservable,
-                )}
+                markingDefinitions={stixCyberObservable.objectMarking.edges ?? []}
                 limit={10}
               />
               <Typography

@@ -3627,11 +3627,7 @@ const StixCoreRelationshipsList = ({
                               </div>
                               <div className={classes.bodyItem}>
                                 <ItemMarkings
-                                  markingDefinitions={R.pathOr(
-                                    [],
-                                    ['objectMarking', 'edges'],
-                                    stixCoreRelationship,
-                                  )}
+                                  markingDefinitions={stixCoreRelationship.objectMarking.edges ?? []}
                                   limit={1}
                                   variant="inList"
                                 />
