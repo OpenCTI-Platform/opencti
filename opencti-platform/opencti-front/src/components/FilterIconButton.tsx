@@ -67,7 +67,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FilterIconButtonProps {
-  filters: Filters,
+  filters: Filters<{ id: string, value: string }[]>,
   handleRemoveFilter?: (key: string) => void,
   classNameNumber?: number,
   styleNumber?: number,
@@ -109,24 +109,28 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
     classOperator = classes.operator3;
   }
 
+  const lastKey = last(toPairs(filters))?.[0];
+
   return <div
     className={finalClassName}
-    style={dataColumns ? { width: dataColumns.filters.width } : undefined}
+    style={{ width: dataColumns?.filters.width }}
   >
     {
       toPairs(filters).map((currentFilter) => {
-        const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-        const negative = currentFilter[0].endsWith('not_eq');
+        const filterKey = currentFilter[0];
+        const filterContent = currentFilter[1];
+        const label = `${truncate(t(`filter_${filterKey}`), 20)}`;
+        const negative = filterKey.endsWith('not_eq');
         const localFilterMode = negative ? t('AND') : t('OR');
         const values = (
         <span>
-        {currentFilter[1].map(
+        {filterContent.map(
           (n) => (
-            <span key={n.value as string}>
-              {n.value && (n.value as string).length > 0
+            <span key={n.value}>
+              {n.value && (n.value).length > 0
                 ? truncate(n.value, 15)
                 : t('No label')}{' '}
-              {last(currentFilter[1])?.value !== n.value && (
+              {last(filterContent)?.value !== n.value && (
                 <Chip
                   label={localFilterMode}
                 />
@@ -137,7 +141,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       </span>
         );
         return (
-        <span key={currentFilter[0]}>
+        <span key={filterKey}>
           <Chip
           classes={{ root: classFilter }}
           label={
@@ -146,9 +150,9 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
             </div>
           }
           disabled={disabledPossible ? Object.keys(filters).length === 1 : undefined}
-          onDelete={handleRemoveFilter ? () => handleRemoveFilter(currentFilter[0]) : undefined}
+          onDelete={() => handleRemoveFilter?.(filterKey)}
         />
-          {last(toPairs(filters))?.[0] !== currentFilter[0] && (
+          {lastKey !== filterKey && (
             <Chip
               classes={{ root: classOperator }}
               label={t('AND')}

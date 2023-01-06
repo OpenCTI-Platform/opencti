@@ -1,8 +1,6 @@
-import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import * as R from 'ramda';
-import { Record } from 'mdi-material-ui';
 import { QueryRenderer } from '../../../relay/environment';
-import { convertFilters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
@@ -10,11 +8,15 @@ import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
-import useLocalStorage from '../../../utils/hooks/useLocalStorage';
-import { ReportsLinesPaginationQuery$data } from './reports/__generated__/ReportsLinesPaginationQuery.graphql';
+import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
+import {
+  ReportsLinesPaginationQuery$data,
+  ReportsLinesPaginationQuery$variables,
+} from './reports/__generated__/ReportsLinesPaginationQuery.graphql';
 import { Filters } from '../../../components/list_lines';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.graphql';
+import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 
 const LOCAL_STORAGE_KEY = 'view-reports';
 
@@ -32,14 +34,13 @@ const Reports: FunctionComponent<ReportsProps> = ({
   match,
 }) => {
   const [viewStorage, setViewStorage, storageHelpers] = useLocalStorage(LOCAL_STORAGE_KEY, {
-    numberOfElements: { number: 0, symbol: '' },
+    numberOfElements: { number: 0, symbol: '', original: 0 },
     filters: {} as Filters,
     searchTerm: '',
     sortBy: 'published',
     orderAsc: false,
     openExports: false,
     count: 25,
-    view: 'lines',
   });
 
   const {
@@ -49,12 +50,19 @@ const Reports: FunctionComponent<ReportsProps> = ({
     sortBy,
     orderAsc,
     openExports,
-    view,
   } = viewStorage;
 
-  const [selectedElements, setSelectedElements] = useState<Record<string, ReportLine_node$data>>({});
-  const [deSelectedElements, setDeSelectedElements] = useState<Record<string, ReportLine_node$data>>({});
-  const [selectAll, setSelectAll] = useState(false);
+  const {
+    selectedElements,
+    deSelectedElements,
+    selectAll,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    onToggleEntity,
+  } = useEntityToggle<ReportLine_node$data>(
+    'view-reports',
+  );
+
   const [NotEqLocalFilterMode] = useState('and');
   const [EqLocalFilterMode] = useState('or');
 
@@ -63,10 +71,10 @@ const Reports: FunctionComponent<ReportsProps> = ({
   const reportFilterClass = reportType !== 'all' && reportType !== undefined
     ? reportType.replace(/_/g, ' ')
     : '';
-  const finalFilters = convertFilters(filters);
 
+  const additionnalFilters = [];
   if (reportFilterClass) {
-    finalFilters.push({
+    additionnalFilters.push({
       key: 'report_types',
       values: [reportFilterClass],
       operator: 'eq',
@@ -74,86 +82,28 @@ const Reports: FunctionComponent<ReportsProps> = ({
     });
   }
   if (authorId) {
-    finalFilters.push({
+    additionnalFilters.push({
       key: 'createdBy',
       values: [authorId],
       operator: 'eq',
       filterMode: 'or' });
   }
   if (objectId) {
-    finalFilters.push({
+    additionnalFilters.push({
       key: 'objectContains',
       values: [objectId],
       operator: 'eq',
       filterMode: 'or' });
   }
 
-  const paginationOptions = {
-    filters: finalFilters,
+  const paginationOptions = localStorageToPaginationOptions<ReportsLinesPaginationQuery$variables>({
+    filters,
     search: searchTerm,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-  };
-
-  const handleToggleSelectEntity = (entity: ReportLine_node$data, event: SyntheticEvent, forceRemove = []) => {
-    event.stopPropagation();
-    event.preventDefault();
-    if (Array.isArray(entity)) {
-      const currentIds = R.values(selectedElements).map((n) => n.id);
-      const givenIds = entity.map((n) => n.id);
-      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
-      let newSelectedElements = {
-        ...selectedElements,
-        ...R.indexBy(
-          R.prop('id'),
-          entity.filter((n) => addedIds.includes(n.id)),
-        ),
-      };
-      if (forceRemove.length > 0) {
-        newSelectedElements = R.omit(
-          forceRemove.map((n: ReportLine_node$data) => n.id),
-          newSelectedElements,
-        );
-      }
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-      setDeSelectedElements({});
-    } else if (entity.id in (selectedElements || {})) {
-      const newSelectedElements = R.omit([entity.id], selectedElements);
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-    } else if (selectAll && entity.id in (deSelectedElements || {})) {
-      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
-      setDeSelectedElements(newDeSelectedElements);
-    } else if (selectAll) {
-      const newDeSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        deSelectedElements,
-      );
-      setDeSelectedElements(newDeSelectedElements);
-    } else {
-      const newSelectedElements = R.assoc(
-        entity.id,
-        entity,
-        selectedElements,
-      );
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-    }
-  };
-
-  const handleToggleSelectAll = () => {
-    setSelectAll(!selectAll);
-    setSelectedElements({});
-    setDeSelectedElements({});
-  };
-
-  const handleClearSelectedElements = () => {
-    setSelectAll(false);
-    setSelectedElements({});
-    setDeSelectedElements({});
-  };
+    sortBy,
+    orderAsc,
+    additionnalFilters,
+    count: 25,
+  });
 
   const handleChangeLocalFilterMode = (key: string) => {
     if (filters) {
@@ -271,7 +221,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
         >
           <QueryRenderer
             query={reportsLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
+            variables={{ ...paginationOptions }}
             render={({ props }: { props: ReportsLinesPaginationQuery$data }) => (
               <ReportsLines
                 data={props}
@@ -281,7 +231,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 onLabelClick={storageHelpers.handleAddFilter}
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
-                onToggleEntity={handleToggleSelectEntity}
+                onToggleEntity={onToggleEntity}
                 selectAll={selectAll}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
               />
@@ -306,9 +256,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     <UserContext.Consumer>
       {({ helper }) => (
         <div>
-          {view === 'lines'
-            ? renderLines(helper)
-            : ''}
+          {renderLines(helper)}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ReportCreation paginationOptions={paginationOptions} />
           </Security>
