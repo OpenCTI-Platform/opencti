@@ -47,6 +47,7 @@ import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
+import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -648,6 +649,7 @@ const ContainerHeader = (props) => {
                           variant="header"
                         />
                       )}
+                      <StixCoreObjectEnrichment stixCoreObjectId={container.id} />
                       {enableSuggestions && (
                         <React.Fragment>
                           <Tooltip title={t('Open the suggestions')}>
