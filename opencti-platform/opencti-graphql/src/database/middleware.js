@@ -267,9 +267,9 @@ export const querySubType = async (subTypeId) => {
   }
   return null;
 };
-export const queryDefaultSubTypes = async () => {
+export const queryDefaultSubTypes = async (search) => {
   const sortByLabel = R.sortBy(R.toLower);
-  const types = schemaTypes.get(ABSTRACT_STIX_DOMAIN_OBJECT);
+  const types = schemaTypes.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((n) => n.includes(search ?? ''));
   const finalResult = R.pipe(
     sortByLabel,
     R.map((n) => ({ node: { id: n, label: n } })),
@@ -278,12 +278,12 @@ export const queryDefaultSubTypes = async () => {
   )(types);
   return buildPagination(0, null, finalResult, finalResult.length);
 };
-export const querySubTypes = async ({ type = null }) => {
+export const querySubTypes = async ({ type = null, search }) => {
   if (type === null) {
-    return queryDefaultSubTypes();
+    return queryDefaultSubTypes(search);
   }
   const sortByLabel = R.sortBy(R.toLower);
-  const types = schemaTypes.get(type);
+  const types = schemaTypes.get(type).filter((n) => n.includes(search ?? ''));
   const finalResult = R.pipe(
     sortByLabel,
     R.map((n) => ({ node: { id: n, label: n } }))
