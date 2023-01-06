@@ -5307,6 +5307,7 @@ export type ExternalReferencesFiltering = {
 export enum ExternalReferencesOrdering {
   Created = 'created',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   ExternalId = 'external_id',
   Hash = 'hash',
   Modified = 'modified',
@@ -12267,6 +12268,7 @@ export enum NotesOrdering {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   Modified = 'modified',
   NoteTypes = 'note_types',
   ObjectMarking = 'objectMarking',
@@ -12873,6 +12875,7 @@ export enum OpinionsOrdering {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   Modified = 'modified',
   ObjectMarking = 'objectMarking',
   Opinion = 'opinion',

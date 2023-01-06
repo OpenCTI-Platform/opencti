@@ -1559,6 +1559,7 @@ enum ExternalReferencesOrdering {
   modified
   created_at
   updated_at
+  creator
 }
 enum ExternalReferencesFilter {
   url
@@ -2575,6 +2576,7 @@ enum NotesOrdering {
   x_opencti_workflow_id
   objectMarking
   note_types
+  creator
 }
 enum NotesFilter {
   attribute_abstract
@@ -2986,6 +2988,7 @@ enum OpinionsOrdering {
   createdBy
   objectMarking
   x_opencti_workflow_id
+  creatorBac
 }
 enum OpinionsFilter {
   explanation
