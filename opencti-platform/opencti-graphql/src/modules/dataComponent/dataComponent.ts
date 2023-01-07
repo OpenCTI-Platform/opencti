@@ -18,7 +18,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent> = {
   type: {
-    id: 'datacomponents',
+    id: 'dataComponents',
     name: ENTITY_TYPE_DATA_COMPONENT,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true

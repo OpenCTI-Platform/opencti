@@ -1,4 +1,4 @@
-import { pipe, assoc, dissoc, filter } from 'ramda';
+import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
@@ -14,7 +14,7 @@ export const findById = async (context, user, locationId) => {
 export const findAll = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
-    types = filter((type) => isStixDomainObjectLocation(type), args.types);
+    types = R.filter((type) => isStixDomainObjectLocation(type), args.types);
   }
   if (types.length === 0) {
     types.push(ENTITY_TYPE_LOCATION);
@@ -23,10 +23,14 @@ export const findAll = async (context, user, args) => {
 };
 
 export const addLocation = async (context, user, location) => {
-  if (!isStixDomainObjectLocation(location.type)) {
-    throw FunctionalError(`Invalid location type ${location.type}`);
+  let { type } = location;
+  if (type === 'AdministrativeArea') {
+    type = 'Administrative-Area';
   }
-  const locationToCreate = pipe(assoc('x_opencti_location_type', location.type), dissoc('type'))(location);
-  const created = await createEntity(context, user, locationToCreate, location.type);
+  if (!isStixDomainObjectLocation(type)) {
+    throw FunctionalError(`Invalid location type ${type}`);
+  }
+  const locationToCreate = R.pipe(R.assoc('x_opencti_location_type', type), R.dissoc('type'))(location);
+  const created = await createEntity(context, user, locationToCreate, type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

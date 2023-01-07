@@ -43,6 +43,7 @@ import { isBasicRelationship, isStixRelationship } from './stixRelationship';
 import { isInternalRelationship } from './internalRelationship';
 import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject';
 import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
+import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrativeArea/administrativeArea-types';
 
 export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 export const isInternalId = (id) => validator.isUUID(id);
@@ -62,9 +63,10 @@ export const convertEntityTypeToStixType = (type) => {
     case ENTITY_TYPE_IDENTITY_SECTOR:
     case ENTITY_TYPE_IDENTITY_SYSTEM:
       return 'identity';
-    case ENTITY_TYPE_LOCATION_CITY:
-    case ENTITY_TYPE_LOCATION_COUNTRY:
     case ENTITY_TYPE_LOCATION_REGION:
+    case ENTITY_TYPE_LOCATION_COUNTRY:
+    case ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA:
+    case ENTITY_TYPE_LOCATION_CITY:
     case ENTITY_TYPE_LOCATION_POSITION:
       return 'location';
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:

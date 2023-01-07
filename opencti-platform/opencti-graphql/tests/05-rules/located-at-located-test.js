@@ -34,6 +34,7 @@ describe('Located at located rule', () => {
       expect(beforeActivationRelations.length).toBe(0);
       // ---- base
       // HIETZING > located-in > FRANCE (Start: 2020-02-29T23:00:00.000Z, Stop: 2020-02-29T23:00:00.000Z, Confidence: 30)
+      // BRETAGNE > located-in > FRANCE (Start: none, Stop: none, Confidence: 0)
       // FRANCE > located-in > WESTERN EUROPE (Start: none, Stop: none, Confidence: 0)
       // WESTERN EUROPE > located-in > EUROPE  (Start: none, Stop: none, Confidence: 0)
       // ---- inferences that will be created
@@ -83,7 +84,7 @@ describe('Located at located rule', () => {
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       // Check the inferences
       const afterLiveRelations = await getInferences(RELATION_LOCATED_AT);
-      expect(afterLiveRelations.length).toBe(5);
+      expect(afterLiveRelations.length).toBe(7);
       // Inferences must have been created by the markings combination
       const parisToWesternEurope = await inferenceLookup(afterLiveRelations, PARIS, WESTERN_EUROPE, RELATION_LOCATED_AT);
       expect(parisToWesternEurope).not.toBeNull();
@@ -106,17 +107,17 @@ describe('Located at located rule', () => {
       await internalDeleteElementById(testContext, SYSTEM_USER, parisLocatedToFrance.internal_id);
       await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterRelDeletionRelations = await getInferences(RELATION_LOCATED_AT);
-      expect(afterRelDeletionRelations.length).toBe(3);
+      expect(afterRelDeletionRelations.length).toBe(5);
       // Recreate the relation
       await createRelation(testContext, SYSTEM_USER, { fromId: paris.id, toId: FRANCE, relationship_type: RELATION_LOCATED_AT });
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterRecreationRelations = await getInferences(RELATION_LOCATED_AT);
-      expect(afterRecreationRelations.length).toBe(5);
+      expect(afterRecreationRelations.length).toBe(7);
       // Remove the city
       await internalDeleteElementById(testContext, SYSTEM_USER, paris.internal_id);
       await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterParisDeletionRelations = await getInferences(RELATION_LOCATED_AT);
-      expect(afterParisDeletionRelations.length).toBe(3);
+      expect(afterParisDeletionRelations.length).toBe(5);
       // Disable the rule
       await disableRule(LocatedAtLocatedRule.id);
       // Check the number of inferences
