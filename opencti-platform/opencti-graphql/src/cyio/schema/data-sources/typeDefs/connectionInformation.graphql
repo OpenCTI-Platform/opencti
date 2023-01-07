@@ -1,0 +1,144 @@
+# declares the query entry-points for this type
+extend type Query {
+  connectionConfig(id: ID!): ConnectionInformation @hasPermission(resources: "DataSource:view")
+  connectionConfigs(
+    first: Int
+    offset: Int
+    orderedBy: ConnectionInfoOrdering
+    orderMode: OrderingMode
+    filters: [ConnectionInfoFiltering]
+    filterMode: FilterMode
+    search: String @constraint(minLength: 2)
+  ): ConnectionInfoConnection @hasPermission(resources: "DataSource:view")
+}
+
+# declares the mutation entry-points for this type
+extend type Mutation {
+  deleteConnectionConfigs(ids: [ID!]!): [ID]  @hasPermission(resources: "DataSource:delete")
+  createConnectionConfig(input: ConnectionInformationInput): DataSource  @hasPermission(resources: "DataSource:update")
+  deleteConnectionConfig(id: ID!): String! @hasPermission(resources: "DataSource:delete")
+  editConnectionConfig(id: ID!, input: [EditInput]!, commitMessage: String): ConnectionInformation @hasPermission(resources: "DataSource:update")
+}
+
+"""
+ConnectionInformation contains the information necessary to successfully make a connection to the external source.
+"""
+type ConnectionInformation implements BasicObject {
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp!
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp!
+  # Connection Information
+  "Identifies the name of the connection"
+  name: String!
+  "Identifies the name used to display to users"
+  display_name: String
+  "Identifies a human-readable description of the connection and its purpose"
+  description: String
+  "Indicates the requirement for a secure (e.g., TLS) connection"
+  secure: Boolean!
+  "Indicates the name of the host or IP address of the connection"
+  host: String!
+  "Indications the port number to be used by the connection"
+  port: Int
+  "Indicates the query or body to be used by the connection on subsequent queries."
+  query: String!
+  "Indicates the query or body to be used by the connection on an initial retrieval or reset."
+  query_initial: String!
+  "Indicates the field/header to be used as the value of the index when required to make multiple queries to pagination through larger result sets."
+  query_index_field: String
+  "Indicates the required minimum time, in seconds, between consecutive queries."
+  query_sleep_interval: Int
+  "Indicates the file(s) containing the Certificate Authority for the connection.  The value must be a file path that includes the name of the file."
+  ca: [String]
+  "Indicates the API key to be used by the connection"
+  api_key: String
+  "Indicates the username to be used to establish the connection"
+  username: String
+  "Indicates the passphrase to be used to establish the connection"
+  passphrase: String
+  "Indicates the topic on which connector is to listen for data"
+  listen: String
+  "Indicates the exchange on which connector is to listen for data"
+  listen_exchange: String
+  "Indicates the topic on which connector is to push data"
+  push: String
+  "Indicates the exchange on which connector is to push data"
+  push_exchange: String
+}
+
+input ConnectionInformationInput {
+  "Indicates the requirement for a secure (e.g., TLS) connection"
+  secure: Boolean!
+  "Indicates the name of the host or IP address of the connection"
+  host: String!
+  "Indications the port number to be used by the connection"
+  port: Int
+  "Indicates the query or body to be used by the connection on subsequent queries."
+  query: String!
+  "Indicates the query or body to be used by the connection on an initial retrieval or reset."
+  query_initial: String!
+  "Indicates the field/header to be used as the value of the index when required to make multiple queries to pagination through larger result sets."
+  query_index_field: String
+  "Indicates the required minimum time, in seconds, between consecutive queries."
+  query_sleep_interval: Int!
+  "Indicates the file(s) containing the Certificate Authority for the connection.  The value must be a file path that includes the name of the file."
+  ca: [String]
+  "Indicates the API key to be used by the connection"
+  api_key: String
+  "Indicates the username to be used to establish the connection"
+  username: String
+  "Indicates the passphrase to be used to establish the connection"
+  passphrase: String
+}
+
+# Ordering
+enum ConnectionInfoOrdering {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Display Name"
+  display_name
+  "Name"
+  name
+}
+
+# Filtering Enumerations
+enum ConnectionInfoFilter {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Display Name"
+  display_name
+  "Name"
+  name
+}
+
+input ConnectionInfoFiltering {
+  key: ConnectionInfoFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+
+# Pagination Types
+type ConnectionInfoConnection {
+  pageInfo: PageInfo!
+  edges: [ConnectionInfoEdge]
+}
+type ConnectionInfoEdge {
+  cursor: String!
+  node: ConnectionInformation!
+}
+

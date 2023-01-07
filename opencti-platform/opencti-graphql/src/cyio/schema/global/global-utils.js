@@ -63,6 +63,15 @@ import {
 import {
   workspacePredicateMap, attachToWorkspaceQuery, detachFromWorkspaceQuery ,
 } from '../../../schema/sparql/cyio-workspace.js'
+import {
+  dataMarkingPredicateMap, attachToDataMarkingQuery, detachFromDataMarkingQuery
+} from '../data-markings/schema/sparql/dataMarkings.js';
+import {
+  dataSourcePredicateMap, attachToDataSourceQuery, detachFromDataSourceQuery
+} from '../data-sources/schema/sparql/dataSource.js';
+import {
+  connectionInformationPredicateMap, attachToConnectionInformationQuery, detachFromConnectionInformationQuery
+} from '../data-sources/schema/sparql/connectionInformation.js';
 
 
 // find IRI of parent
@@ -254,6 +263,22 @@ export const objectMap = {
     classIri: "http://scap.nist.gov/ns/asset-identification#ComputingDevice",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#ComputingDevice"
   },
+  "connection-information": {
+    predicateMap: connectionInformationPredicateMap,
+    attachQuery: attachToConnectionInformationQuery,
+    detachQuery: detachFromConnectionInformationQuery,
+    graphQLType: "ConnectionInformation",
+    classIri: "<http://darklight.ai/ns/cyio/connection#ConnectionInformation>",
+    iriTemplate: "http://cyio.darklight.ai/connection-information"
+  },
+  "data-source": {
+    predicateMap: dataSourcePredicateMap,
+    attachQuery: attachToDataSourceQuery,
+    detachQuery: detachFromDataSourceQuery,
+    graphQLType: "DataSource",
+    classIri: "<http://darklight.ai/ns/cyio/datasource#DataSource",
+    iriTemplate: "http://cyio.darklight.ai/data-source"
+  },
   "evidence": {
     predicateMap: evidencePredicateMap,
     attachQuery: attachToEvidenceQuery,
@@ -318,6 +343,14 @@ export const objectMap = {
     graphQLType: "LogEntryAuthor",
     classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor"
+  },
+  "marking-definition": {
+    predicateMap: dataMarkingPredicateMap,
+    attachQuery: attachToDataMarkingQuery,
+    detachQuery: detachFromDataMarkingQuery,
+    graphQLType: "DataMarkingObject",
+    classIri: "<http://docs.oasis-open.org/ns/cti/data-marking#MarkingDefinition",
+    iriTemplate: "http://cyio.darklight.ai/marking-definition"
   },
   "mitigating-factor": {
     predicateMap: mitigatingFactorPredicateMap,

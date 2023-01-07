@@ -355,6 +355,7 @@ const initializeDefaultValues = async (withMarkings = true) => {
     platform_url: '',
     platform_theme: 'dark',
     platform_language: 'auto',
+    // TODO: Workaround
     platform_theme_dark_primary: '#075AD3',
     platform_theme_dark_secondary: '#F9B406',
   });
