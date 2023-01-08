@@ -413,11 +413,20 @@ class ListenStream(threading.Thread):
                         pass
                     if msg.event == "heartbeat" or msg.event == "connected":
                         state = self.helper.get_state()
-                        state["start_from"] = str(msg.id)
-                        self.helper.set_state(state)
+                        # state can be None if reset from the UI
+                        # In this case, default parameters will be used but SSE Client needs to be restarted
+                        if state is None:
+                            self.exit = True
+                        else:
+                            state["start_from"] = str(msg.id)
+                            self.helper.set_state(state)
                     else:
                         self.callback(msg)
                         state = self.helper.get_state()
+                        # state can be None if reset from the UI
+                        # In this case, default parameters will be used but SSE Client needs to be restarted
+                        if state is None:
+                            self.exit = True
                         state["start_from"] = str(msg.id)
                         self.helper.set_state(state)
         except:
