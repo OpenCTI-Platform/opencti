@@ -20,7 +20,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import NotePopover from './NotePopover';
 import { resolveLink } from '../../../../utils/Entity';
@@ -34,6 +33,7 @@ import Transition from '../../../../components/Transition';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -106,7 +106,9 @@ const StixCoreObjectOrStixCoreRelationshipNoteCardFragment = graphql`
       edges {
         node {
           id
+          definition_type
           definition
+          x_opencti_order
           x_opencti_color
         }
       }
@@ -175,7 +177,6 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
       note.createdBy.id
     }`;
   }
-  const [markingDefinition] = note.objectMarking?.edges ?? [];
   return (
     <Card classes={{ root: classes.card }} variant="outlined">
       <CardHeader
@@ -237,14 +238,11 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                 textTransform: 'none',
               }}
             >
-              {markingDefinition && (
-                <ItemMarking
-                  key={markingDefinition.node.id}
-                  label={markingDefinition.node.definition}
-                  color={markingDefinition.node.x_opencti_color}
-                  variant="inList"
-                />
-              )}
+              <ItemMarkings
+                variant="inList"
+                markingDefinitionsEdges={note?.objectMarking?.edges || []}
+                limit={1}
+              />
             </div>
           </div>
         }

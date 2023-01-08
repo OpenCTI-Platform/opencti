@@ -10,9 +10,9 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   item: {
@@ -106,16 +106,11 @@ class ObservedDataLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                {R.take(1, R.pathOr([], ['objectMarking', 'edges'], node)).map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      variant="inList"
-                      label={markingDefinition.node.definition}
-                      color={markingDefinition.node.x_opencti_color}
-                    />
-                  ),
-                )}
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitionsEdges={node.objectMarking.edges}
+                  limit={1}
+                />
               </div>
             </div>
           }
@@ -158,7 +153,9 @@ const ObservedDataLineFragment = createFragmentContainer(
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
               x_opencti_color
             }
           }

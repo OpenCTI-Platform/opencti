@@ -154,13 +154,9 @@ const SearchStixCoreObjectLineComponent = ({
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                markingDefinitions={R.pathOr(
-                  [],
-                  ['objectMarking', 'edges'],
-                  node,
-                )}
-                limit={1}
                 variant="inList"
+                markingDefinitionsEdges={node.objectMarking.edges}
+                limit={1}
               />
             </div>
           </div>
@@ -355,7 +351,9 @@ export const SearchStixCoreObjectLine = createFragmentContainer(
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
               x_opencti_color
             }
           }

@@ -195,7 +195,11 @@ const filtersStixCoreObjectsSearchQuery = graphql`
           objectMarking {
             edges {
               node {
+                id
+                definition_type
                 definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }
@@ -802,7 +806,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('context', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
+            unionSetEntities(
+              'context',
+              (data?.vocabularies?.edges ?? []).map(({ node }) => ({
+                label: t(node.name),
+                value: node.name,
+                type: 'Vocabulary',
+              })),
+            );
           });
         break;
       case 'entity_type':
@@ -1213,7 +1224,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            unionSetEntities('note_types', (data?.vocabularies?.edges ?? []).map(({ node }) => ({ label: t(node.name), value: node.name, type: 'Vocabulary' })));
+            unionSetEntities(
+              'note_types',
+              (data?.vocabularies?.edges ?? []).map(({ node }) => ({
+                label: t(node.name),
+                value: node.name,
+                type: 'Vocabulary',
+              })),
+            );
           });
         break;
       default:

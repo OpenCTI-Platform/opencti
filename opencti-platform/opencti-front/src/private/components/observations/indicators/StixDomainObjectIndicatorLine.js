@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr, take } from 'ramda';
+import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -15,8 +15,8 @@ import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreRelationshipFromAndToPopover from '../../common/stix_core_relationships/StixCoreRelationshipFromAndToPopover';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   item: {
@@ -124,16 +124,11 @@ class StixDomainObjectIndicatorLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      variant="inList"
-                      label={markingDefinition.node.definition}
-                      color={markingDefinition.node.x_opencti_color}
-                    />
-                  ),
-                )}
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitionsEdges={node.objectMarking.edges}
+                  limit={1}
+                />
               </div>
             </div>
           }
@@ -186,7 +181,9 @@ const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
               x_opencti_color
             }
           }

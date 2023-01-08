@@ -161,6 +161,7 @@ const stixCoreRelationshipsListQuery = graphql`
               node {
                 id
                 definition
+                x_opencti_order
                 x_opencti_color
               }
             }
@@ -360,6 +361,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                 node {
                                   id
                                   definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                             }
@@ -658,6 +661,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -882,6 +887,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                 node {
                                   id
                                   definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                             }
@@ -1109,6 +1116,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -1330,6 +1339,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -1558,6 +1569,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                 node {
                                   id
                                   definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                             }
@@ -1856,6 +1869,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -2080,6 +2095,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                 node {
                                   id
                                   definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                             }
@@ -2307,6 +2324,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -2528,6 +2547,8 @@ const stixCoreRelationshipsListQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -2665,6 +2686,7 @@ const stixCoreRelationshipsListQuery = graphql`
               node {
                 id
                 definition
+                x_opencti_order
                 x_opencti_color
               }
             }
@@ -2770,6 +2792,8 @@ const stixCoreRelationshipsListQuery = graphql`
                           node {
                             id
                             definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                       }
@@ -3151,6 +3175,8 @@ const stixCoreRelationshipsListQuery = graphql`
                           node {
                             id
                             definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                       }
@@ -3627,13 +3653,12 @@ const StixCoreRelationshipsList = ({
                               </div>
                               <div className={classes.bodyItem}>
                                 <ItemMarkings
-                                  markingDefinitions={R.pathOr(
-                                    [],
-                                    ['objectMarking', 'edges'],
-                                    stixCoreRelationship,
-                                  )}
-                                  limit={1}
                                   variant="inList"
+                                  markingDefinitionsEdges={
+                                    stixCoreRelationship.objectMarking.edges
+                                    ?? []
+                                  }
+                                  limit={1}
                                 />
                               </div>
                             </div>

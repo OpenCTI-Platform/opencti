@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import withTheme from '@mui/styles/withTheme';
@@ -64,7 +63,6 @@ import {
   fetchQuery,
   MESSAGING$,
 } from '../../../relay/environment';
-import ItemMarking from '../../../components/ItemMarking';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
 import { defaultValue } from '../../../utils/Graph';
@@ -80,6 +78,7 @@ import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analysis/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
+import ItemMarkings from '../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -756,16 +755,16 @@ class ToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const labels = pipe(
-          pathOr([], ['labels', 'edges']),
-          map((n) => ({
+        const labels = R.pipe(
+          R.pathOr([], ['labels', 'edges']),
+          R.map((n) => ({
             label: n.node.value,
             value: n.node.id,
             color: n.node.color,
           })),
         )(data);
         this.setState({
-          labels: union(this.state.labels, labels),
+          labels: R.union(this.state.labels, labels),
         });
       });
   }
@@ -784,10 +783,10 @@ class ToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const externalReferences = pipe(
-          pathOr([], ['externalReferences', 'edges']),
-          sortWith([ascend(path(['node', 'source_name']))]),
-          map((n) => ({
+        const externalReferences = R.pipe(
+          R.pathOr([], ['externalReferences', 'edges']),
+          R.sortWith([R.ascend(R.path(['node', 'source_name']))]),
+          R.map((n) => ({
             label: `[${n.node.source_name}] ${truncate(
               n.node.description || n.node.external_id,
               150,
@@ -796,7 +795,7 @@ class ToolBar extends Component {
           })),
         )(data);
         this.setState({
-          externalReferences: union(
+          externalReferences: R.union(
             this.state.externalReferences,
             externalReferences,
           ),
@@ -820,15 +819,17 @@ class ToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const identities = pipe(
-          pathOr([], ['identities', 'edges']),
-          map((n) => ({
+        const identities = R.pipe(
+          R.pathOr([], ['identities', 'edges']),
+          R.map((n) => ({
             label: n.node.name,
             value: n.node.id,
             type: n.node.entity_type,
           })),
         )(data);
-        this.setState({ identities: union(this.state.identities, identities) });
+        this.setState({
+          identities: R.union(this.state.identities, identities),
+        });
       });
   }
 
@@ -850,16 +851,16 @@ class ToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const statuses = pipe(
-          pathOr([], ['statuses', 'edges']),
-          map((n) => ({
+        const statuses = R.pipe(
+          R.pathOr([], ['statuses', 'edges']),
+          R.map((n) => ({
             label: n.node.template.name,
             value: n.node.id,
             order: n.node.order,
             color: n.node.template.color,
           })),
         )(data);
-        this.setState({ statuses: union(this.state.statuses, statuses) });
+        this.setState({ statuses: R.union(this.state.statuses, statuses) });
       });
   }
 
@@ -1831,19 +1832,10 @@ class ToolBar extends Component {
                     {R.pathOr('', ['createdBy', 'name'], element)}
                   </div>
                   <div style={{ marginRight: 50 }}>
-                    {R.pathOr([], ['objectMarking', 'edges'], element).length
-                      > 0
-                      && R.map(
-                        (markingDefinition) => (
-                          <ItemMarking
-                            key={markingDefinition.node.id}
-                            label={markingDefinition.node.definition}
-                            color={markingDefinition.node.x_opencti_color}
-                            variant="inList"
-                          />
-                        ),
-                        element.objectMarking.edges,
-                      )}
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitionsEdges={element.objectMarking.edges}
+                    />
                   </div>
                   <ListItemSecondaryAction>
                     <Radio
@@ -1916,20 +1908,11 @@ class ToolBar extends Component {
                 >
                   {t('Marking')}
                 </Typography>
-                {R.pathOr([], ['markingDefinitions', 'edges'], keptElement)
-                  .length > 0 ? (
-                    R.map(
-                      (markingDefinition) => (
-                      <ItemMarking
-                        key={markingDefinition.node.id}
-                        label={markingDefinition.node.definition}
-                      />
-                      ),
-                      R.pathOr([], ['objectMarking', 'edges'], keptElement),
-                    )
-                  ) : (
-                  <ItemMarking label="TLP:CLEAR" />
-                  )}
+                <ItemMarkings
+                  markingDefinitionsEdges={
+                    keptElement?.markingDefinitions?.edges || []
+                  }
+                />
               </>
             )}
             {noWarning !== true && (

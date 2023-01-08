@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import { head, pathOr, assoc, map, pluck, last } from 'ramda';
+import { assoc, head, last, map, pathOr, pluck } from 'ramda';
 import { makeStyles, useTheme } from '@mui/styles';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
@@ -20,7 +20,7 @@ import {
 import Chart from 'react-apexcharts';
 import Slide from '@mui/material/Slide';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { yearsAgo, dayAgo, monthsAgo } from '../../utils/Time';
+import { dayAgo, monthsAgo, yearsAgo } from '../../utils/Time';
 import { useFormatter } from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
 import Loader from '../../components/Loader';
@@ -515,7 +515,10 @@ const LastIngestedAnalysis = () => {
               edges {
                 node {
                   id
+                  definition_type
                   definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
             }
@@ -586,11 +589,9 @@ const LastIngestedAnalysis = () => {
               }}
             >
               <ItemMarkings
-                markingDefinitions={pathOr(
-                  [],
-                  ['objectMarking', 'edges'],
-                  stixDomainObject,
-                )}
+                markingDefinitionsEdges={
+                  stixDomainObject.objectMarking.edges ?? []
+                }
                 limit={1}
                 variant="inList"
               />

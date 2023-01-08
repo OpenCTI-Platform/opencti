@@ -58,7 +58,10 @@ const reportKnowledgeCorrelationStixCoreObjectQuery = graphql`
         edges {
           node {
             id
+            definition_type
             definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -194,7 +197,10 @@ const reportKnowledgeCorrelationStixCoreRelationshipQuery = graphql`
         edges {
           node {
             id
+            definition_type
             definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -1060,7 +1066,10 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
+              x_opencti_color
             }
           }
         }
@@ -1085,7 +1094,10 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                   edges {
                     node {
                       id
+                      definition_type
                       definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                 }
@@ -1110,7 +1122,10 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                         edges {
                           node {
                             id
+                            definition_type
                             definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                       }
@@ -1213,7 +1228,10 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                         edges {
                           node {
                             id
+                            definition_type
                             definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                       }

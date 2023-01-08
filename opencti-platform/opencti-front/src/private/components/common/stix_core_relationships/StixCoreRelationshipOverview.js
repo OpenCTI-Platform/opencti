@@ -32,7 +32,6 @@ import StixCoreRelationshipEdition, {
 } from './StixCoreRelationshipEdition';
 import { commitMutation } from '../../../../relay/environment';
 import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
-import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
@@ -46,6 +45,7 @@ import { defaultValue } from '../../../../utils/Graph';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemCreator from '../../../../components/ItemCreator';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   container: {
@@ -209,14 +209,7 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   render() {
-    const {
-      t,
-      fldt,
-      nsdt,
-      classes,
-      stixCoreRelationship,
-      paddingRight,
-    } = this.props;
+    const { t, fldt, nsdt, classes, stixCoreRelationship, paddingRight } = this.props;
     const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
@@ -379,17 +372,11 @@ class StixCoreRelationshipContainer extends Component {
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
-                    {stixCoreRelationship.objectMarking.edges.length > 0
-                      && R.map(
-                        (markingDefinition) => (
-                          <ItemMarking
-                            key={markingDefinition.node.id}
-                            label={markingDefinition.node.definition}
-                            color={markingDefinition.node.x_opencti_color}
-                          />
-                        ),
-                        stixCoreRelationship.objectMarking.edges,
-                      )}
+                    <ItemMarkings
+                      markingDefinitionsEdges={
+                        stixCoreRelationship.objectMarking.edges
+                      }
+                    />
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -891,7 +878,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                             edges {
                               node {
                                 id
+                                definition_type
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -1257,7 +1247,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                 edges {
                                   node {
                                     id
+                                    definition_type
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -1529,6 +1522,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               node {
                                 id
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -1803,6 +1798,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -2071,6 +2068,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -2346,6 +2345,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               node {
                                 id
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -2712,6 +2713,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -2983,6 +2986,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               node {
                                 id
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -3257,6 +3262,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -3525,6 +3532,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -3688,6 +3697,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_order
               x_opencti_color
             }
           }
@@ -3814,6 +3824,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         node {
                           id
                           definition
+                          x_opencti_order
+                          x_opencti_color
                         }
                       }
                     }
@@ -4284,6 +4296,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                         node {
                           id
                           definition
+                          x_opencti_order
+                          x_opencti_color
                         }
                       }
                     }

@@ -307,6 +307,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 node {
                                   id
                                   definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                             }
@@ -605,6 +607,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -829,6 +833,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 node {
                                   id
                                   definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                             }
@@ -1056,6 +1062,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -1277,6 +1285,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -1505,6 +1515,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 node {
                                   id
                                   definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                             }
@@ -1803,6 +1815,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -2027,6 +2041,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 node {
                                   id
                                   definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                             }
@@ -2254,6 +2270,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -2475,6 +2493,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                     node {
                                       id
                                       definition
+                                      x_opencti_order
+                                      x_opencti_color
                                     }
                                   }
                                 }
@@ -2613,6 +2633,8 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                 id
                 definition
                 x_opencti_color
+                x_opencti_order
+                x_opencti_color
               }
             }
           }
@@ -2716,7 +2738,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         edges {
                           node {
                             id
+                            definition_type
                             definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                       }
@@ -3097,7 +3122,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         edges {
                           node {
                             id
+                            definition_type
                             definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                       }
@@ -3422,7 +3450,10 @@ export default createPaginationContainer(
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }

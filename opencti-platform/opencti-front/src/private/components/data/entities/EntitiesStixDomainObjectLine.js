@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -154,13 +154,9 @@ const EntitiesStixDomainObjectLineComponent = ({
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                markingDefinitions={R.pathOr(
-                  [],
-                  ['objectMarking', 'edges'],
-                  node,
-                )}
-                limit={1}
                 variant="inList"
+                markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                limit={1}
               />
             </div>
           </div>
@@ -348,6 +344,7 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_order
               x_opencti_color
             }
           }

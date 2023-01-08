@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
@@ -10,10 +9,10 @@ import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -108,16 +107,11 @@ const ContainerStixObjectOrStixRelationshipLineComponent = (props) => {
               className={classes.bodyItem}
               style={{ width: dataColumns.objectMarking.width }}
             >
-              {R.take(1, R.pathOr([], ['objectMarking', 'edges'], node)).map(
-                (markingDefinition) => (
-                  <ItemMarking
-                    key={markingDefinition.node.id}
-                    variant="inList"
-                    label={markingDefinition.node.definition}
-                    color={markingDefinition.node.x_opencti_color}
-                  />
-                ),
-              )}
+              <ItemMarkings
+                variant="inList"
+                markingDefinitionsEdges={node.objectMarking.edges}
+                limit={1}
+              />
             </div>
           </div>
         }
@@ -155,7 +149,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             edges {
               node {
                 id
+                definition_type
                 definition
+                x_opencti_order
                 x_opencti_color
               }
             }
@@ -172,7 +168,7 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         }
         ... on Grouping {
           name
-        }        
+        }
         ... on CourseOfAction {
           name
         }

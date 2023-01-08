@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -159,9 +159,9 @@ const ReportLineComponent = ({
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                markingDefinitions={node.objectMarking.edges ?? []}
-                limit={1}
                 variant="inList"
+                markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                limit={1}
               />
             </div>
           </div>
@@ -194,7 +194,9 @@ export const ReportLine = createFragmentContainer(ReportLineComponent, {
         edges {
           node {
             id
+            definition_type
             definition
+            x_opencti_order
             x_opencti_color
           }
         }

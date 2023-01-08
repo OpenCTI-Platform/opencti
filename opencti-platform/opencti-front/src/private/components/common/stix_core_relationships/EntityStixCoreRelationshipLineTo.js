@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -13,7 +13,6 @@ import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
-import { pathOr } from 'ramda';
 import Checkbox from '@mui/material/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -206,13 +205,9 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <ItemMarkings
-                  markingDefinitions={pathOr(
-                    [],
-                    ['objectMarking', 'edges'],
-                    node,
-                  )}
-                  limit={1}
                   variant="inList"
+                  markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                  limit={1}
                 />
               </div>
             </div>
@@ -281,7 +276,9 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
               x_opencti_color
             }
           }
@@ -324,7 +321,9 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
               edges {
                 node {
                   id
+                  definition_type
                   definition
+                  x_opencti_order
                   x_opencti_color
                 }
               }

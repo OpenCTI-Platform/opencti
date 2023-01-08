@@ -17,7 +17,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import InvestigationGraphBar from './InvestigationGraphBar';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import {
   applyFilters,
   buildGraphData,
@@ -67,7 +70,10 @@ const investigationGraphStixCoreObjectQuery = graphql`
         edges {
           node {
             id
+            definition_type
             definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -223,7 +229,10 @@ const investigationGraphStixCoreRelationshipQuery = graphql`
         edges {
           node {
             id
+            definition_type
             definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -270,7 +279,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
               edges {
                 node {
                   id
+                  definition_type
                   definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
             }
@@ -290,7 +302,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
               edges {
                 node {
                   id
+                  definition_type
                   definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
             }
@@ -321,7 +336,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -518,7 +536,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -544,7 +565,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -714,7 +738,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -1676,7 +1703,10 @@ class InvestigationGraphComponent extends Component {
                     style={{ width: '100%' }}
                   />
                   <TypesField
-                    types={['stix-core-relationship', 'stix-cyber-observable-relationship']}
+                    types={[
+                      'stix-core-relationship',
+                      'stix-cyber-observable-relationship',
+                    ]}
                     name="relationship_types"
                     label={t('All types of relationship')}
                     fullWidth={true}
@@ -1999,7 +2029,10 @@ const InvestigationGraph = createFragmentContainer(
                   edges {
                     node {
                       id
+                      definition_type
                       definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                 }
@@ -2176,7 +2209,10 @@ const InvestigationGraph = createFragmentContainer(
                   edges {
                     node {
                       id
+                      definition_type
                       definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                 }

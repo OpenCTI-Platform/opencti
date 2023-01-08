@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { compose, pathOr, head } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -13,8 +13,8 @@ import ListItemText from '@mui/material/ListItemText';
 import { AccountBalanceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import { QueryRenderer } from '../../../../relay/environment';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   paper: {
@@ -88,7 +88,9 @@ const sectorTargetedOrganizationsQuery = graphql`
               edges {
                 node {
                   id
+                  definition_type
                   definition
+                  x_opencti_order
                   x_opencti_color
                 }
               }
@@ -130,11 +132,8 @@ class SectorTargetedOrganizations extends Component {
                   return (
                     <List>
                       {props.sector.targetedOrganizations.edges.map(
-                        (relationedge) => {
-                          const relation = relationedge.node;
-                          const markingDefinition = head(
-                            pathOr([], ['objectMarking', 'edges'], relation),
-                          );
+                        (relationEdge) => {
+                          const relation = relationEdge.node;
                           return (
                             <ListItem
                               key={relation.id}
@@ -154,24 +153,19 @@ class SectorTargetedOrganizations extends Component {
                                 }
                               />
                               <div style={inlineStyles.itemAuthor}>
-                                {pathOr('', ['createdBy', 'name'], relation)}
+                                {R.pathOr('', ['createdBy', 'name'], relation)}
                               </div>
                               <div style={inlineStyles.itemDate}>
                                 {fsd(relation.start_time)}
                               </div>
                               <div style={{ width: 110, paddingRight: 20 }}>
-                                {markingDefinition ? (
-                                  <ItemMarking
-                                    key={markingDefinition.node.id}
-                                    label={markingDefinition.node.definition}
-                                    color={
-                                      markingDefinition.node.x_opencti_color
-                                    }
-                                    variant="inList"
-                                  />
-                                ) : (
-                                  ''
-                                )}
+                                <ItemMarkings
+                                  variant="inList"
+                                  markingDefinitionsEdges={
+                                    relation.objectMarking.edges
+                                  }
+                                  limit={1}
+                                />
                               </div>
                             </ListItem>
                           );
@@ -257,7 +251,7 @@ SectorTargetedOrganizations.propTypes = {
   fsd: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(SectorTargetedOrganizations);

@@ -13,8 +13,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import {
-  FeedbackLine_node$key,
   FeedbackLine_node$data,
+  FeedbackLine_node$key,
 } from './__generated__/FeedbackLine_node.graphql';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -96,7 +96,9 @@ const caseFragment = graphql`
       edges {
         node {
           id
+          definition_type
           definition
+          x_opencti_order
           x_opencti_color
         }
       }
@@ -233,9 +235,9 @@ export const FeedbackLine: FunctionComponent<FeedbackLineComponentProps> = ({
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                markingDefinitions={data.objectMarking?.edges ?? []}
-                limit={1}
                 variant="inList"
+                markingDefinitionsEdges={data.objectMarking?.edges ?? []}
+                limit={1}
               />
             </div>
           </div>

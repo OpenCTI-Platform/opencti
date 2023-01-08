@@ -104,7 +104,10 @@ const groupingKnowledgeGraphStixCoreObjectQuery = graphql`
         edges {
           node {
             id
+            definition_type
             definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -242,7 +245,10 @@ const groupingKnowledgeGraphStixRelationshipQuery = graphql`
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
+              x_opencti_color
             }
           }
         }
@@ -288,7 +294,10 @@ const groupingKnowledgeGraphStixRelationshipQuery = graphql`
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
+              x_opencti_color
             }
           }
         }
@@ -342,7 +351,10 @@ const groupingKnowledgeGraphStixRelationshipQuery = graphql`
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
+              x_opencti_color
             }
           }
         }
@@ -1408,7 +1420,10 @@ const GroupingKnowledgeGraph = createFragmentContainer(
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
+              x_opencti_color
             }
           }
         }
@@ -1433,7 +1448,10 @@ const GroupingKnowledgeGraph = createFragmentContainer(
                   edges {
                     node {
                       id
+                      definition_type
                       definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                 }
@@ -1597,7 +1615,10 @@ const GroupingKnowledgeGraph = createFragmentContainer(
                   edges {
                     node {
                       id
+                      definition_type
                       definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                 }
@@ -1643,7 +1664,10 @@ const GroupingKnowledgeGraph = createFragmentContainer(
                   edges {
                     node {
                       id
+                      definition_type
                       definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                 }
@@ -1697,7 +1721,10 @@ const GroupingKnowledgeGraph = createFragmentContainer(
                   edges {
                     node {
                       id
+                      definition_type
                       definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                 }

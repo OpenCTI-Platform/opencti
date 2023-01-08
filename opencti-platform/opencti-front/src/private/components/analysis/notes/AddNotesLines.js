@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { map, filter, head, compose, pathOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -12,7 +12,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import ItemMarking from '../../../../components/ItemMarking';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   avatar: {
@@ -66,14 +66,14 @@ class AddNotesLinesContainer extends Component {
       stixCoreObjectOrStixCoreRelationshipId,
       stixCoreObjectOrStixCoreRelationshipNotes,
     } = this.props;
-    const entityNotesIds = map(
+    const entityNotesIds = R.map(
       (n) => n.node.id,
       stixCoreObjectOrStixCoreRelationshipNotes,
     );
     const alreadyAdded = entityNotesIds.includes(note.id);
     if (alreadyAdded) {
-      const existingNote = head(
-        filter(
+      const existingNote = R.head(
+        R.filter(
           (n) => n.node.id === note.id,
           stixCoreObjectOrStixCoreRelationshipNotes,
         ),
@@ -122,7 +122,7 @@ class AddNotesLinesContainer extends Component {
 
   render() {
     const { classes, data, stixCoreObjectOrStixCoreRelationshipNotes } = this.props;
-    const entityNotesIds = map(
+    const entityNotesIds = R.map(
       (n) => n.node.id,
       stixCoreObjectOrStixCoreRelationshipNotes,
     );
@@ -152,20 +152,13 @@ class AddNotesLinesContainer extends Component {
                 secondary={truncate(note.content, 120)}
               />
               <div style={{ marginRight: 50 }}>
-                {pathOr('', ['createdBy', 'name'], note)}
+                {R.pathOr('', ['createdBy', 'name'], note)}
               </div>
               <div style={{ marginRight: 50 }}>
-                {pathOr([], ['objectMarking', 'edges'], note).length > 0
-                  && map(
-                    (markingDefinition) => (
-                      <ItemMarking
-                        key={markingDefinition.node.id}
-                        label={markingDefinition.node.definition}
-                        variant="inList"
-                      />
-                    ),
-                    note.objectMarking.edges,
-                  )}
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitionsEdges={note?.objectMarking?.edges || []}
+                />
               </div>
             </ListItem>
           );
@@ -213,7 +206,9 @@ const AddNotesLines = createPaginationContainer(
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
                     x_opencti_color
                   }
                 }
@@ -245,4 +240,4 @@ const AddNotesLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(AddNotesLines);
+export default R.compose(inject18n, withStyles(styles))(AddNotesLines);
