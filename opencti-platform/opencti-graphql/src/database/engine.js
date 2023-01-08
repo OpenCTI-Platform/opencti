@@ -217,7 +217,7 @@ export const elRawBulk = (args) => engine.bulk(args).then((r) => oebp(r));
 export const elRawUpdateByQuery = (query) => engine.updateByQuery(query).then((r) => oebp(r));
 const elGetTask = (taskId) => engine.tasks.get({ task_id: taskId }).then((r) => oebp(r));
 export const elUpdateByQueryForMigration = async (message, index, body) => {
-  logApp.info(`[SEARCH] ${message} started`);
+  logApp.info(`${message} > started`);
   // Execute the update by query in async mode
   const queryAsync = await elRawUpdateByQuery({
     index,
@@ -225,20 +225,21 @@ export const elUpdateByQueryForMigration = async (message, index, body) => {
     wait_for_completion: false,
     body
   }).catch((err) => {
-    throw DatabaseError('[SEARCH] Error updating elastic (migration)', { error: err });
+    throw DatabaseError(`${message} > elastic error (migration)`, { error: err });
   });
+  logApp.info(`${message} > elastic running task ${queryAsync.task}`);
   // Wait 10 seconds for task to initialize
   await waitInSec(10);
   // Monitor the task until completion
   let taskStatus = await elGetTask(queryAsync.task);
   while (!taskStatus.completed) {
     const { total, updated } = taskStatus.task.status;
-    logApp.info(`[SEARCH] ${message} in progress - ${updated}/${total}`);
+    logApp.info(`${message} > in progress - ${updated}/${total}`);
     await waitInSec(5);
     taskStatus = await elGetTask(queryAsync.task);
   }
   const timeSec = Math.round(taskStatus.task.running_time_in_nanos / 1e9);
-  logApp.info(`[SEARCH] ${message} done in ${timeSec} seconds`);
+  logApp.info(`${message} > done in ${timeSec} seconds`);
 };
 
 const buildDataRestrictions = async (context, user) => {
