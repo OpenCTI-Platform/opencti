@@ -47,6 +47,7 @@ import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
+import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -656,6 +657,7 @@ const ContainerHeader = (props) => {
                               disabled={suggestions.length === 0}
                               value="suggestion"
                               size="small"
+                              style={{ marginRight: 3 }}
                             >
                               <Badge
                                 badgeContent={
@@ -680,9 +682,11 @@ const ContainerHeader = (props) => {
                               </Badge>
                             </ToggleButton>
                           </Tooltip>
-                          <div> &nbsp; </div>
                         </React.Fragment>
                       )}
+                      <StixCoreObjectEnrichment
+                        stixCoreObjectId={container.id}
+                      />
                     </ToggleButtonGroup>
                     <Dialog
                       PaperProps={{ elevation: 1 }}
