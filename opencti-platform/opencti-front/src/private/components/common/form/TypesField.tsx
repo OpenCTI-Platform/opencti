@@ -9,23 +9,35 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { TypesFieldTypesQuery$data } from './__generated__/TypesFieldTypesQuery.graphql';
 
 interface SearchTypesProps {
-  name: string,
-  label: string,
-  style: Record<string, string | number>,
-  helpertext?: string,
-  multiple: boolean,
-  types: ('Stix-Domain-Object' | 'Stix-Cyber-Observable' | 'stix-core-relationship' | 'stix-cyber-observable-relationship' | 'stix-meta-relationship')[],
+  name: string;
+  label: string;
+  style: Record<string, string | number>;
+  helpertext?: string;
+  multiple: boolean;
+  types: (
+    | 'Stix-Domain-Object'
+    | 'Stix-Cyber-Observable'
+    | 'stix-core-relationship'
+    | 'stix-cyber-observable-relationship'
+    | 'stix-meta-relationship'
+  )[];
 }
 
 interface SearchOption {
-  label: string,
-  value: string
+  label: string;
+  value: string;
 }
 
 const typesFieldTypesQuery = graphql`
-  query TypesFieldTypesQuery($isDomain: Boolean!, $isObservable: Boolean!, $isCoreRelationship: Boolean!,
-    $isObservableRelationship: Boolean!, $isMetaRelationship: Boolean!) {
-    stixDomainObjectTypes: subTypes(type: "Stix-Domain-Object") @include(if: $isDomain) {
+  query TypesFieldTypesQuery(
+    $isDomain: Boolean!
+    $isObservable: Boolean!
+    $isCoreRelationship: Boolean!
+    $isObservableRelationship: Boolean!
+    $isMetaRelationship: Boolean!
+  ) {
+    stixDomainObjectTypes: subTypes(type: "Stix-Domain-Object")
+      @include(if: $isDomain) {
       edges {
         node {
           id
@@ -33,7 +45,8 @@ const typesFieldTypesQuery = graphql`
         }
       }
     }
-    stixCyberObservableTypes: subTypes(type: "Stix-Cyber-Observable") @include(if: $isObservable) {
+    stixCyberObservableTypes: subTypes(type: "Stix-Cyber-Observable")
+      @include(if: $isObservable) {
       edges {
         node {
           id
@@ -41,7 +54,8 @@ const typesFieldTypesQuery = graphql`
         }
       }
     }
-    stixCoreRelationshipTypes: subTypes(type: "stix-core-relationship") @include(if: $isCoreRelationship) {
+    stixCoreRelationshipTypes: subTypes(type: "stix-core-relationship")
+      @include(if: $isCoreRelationship) {
       edges {
         node {
           id
@@ -49,7 +63,9 @@ const typesFieldTypesQuery = graphql`
         }
       }
     }
-    stixCyberObservableRelationshipTypes: subTypes(type: "stix-cyber-observable-relationship") @include(if: $isObservableRelationship) {
+    stixCyberObservableRelationshipTypes: subTypes(
+      type: "stix-cyber-observable-relationship"
+    ) @include(if: $isObservableRelationship) {
       edges {
         node {
           id
@@ -57,7 +73,8 @@ const typesFieldTypesQuery = graphql`
         }
       }
     }
-    stixMetaRelationshipTypes: subTypes(type: "stix-meta-relationship")  @include(if: $isMetaRelationship) {
+    stixMetaRelationshipTypes: subTypes(type: "stix-meta-relationship")
+      @include(if: $isMetaRelationship) {
       edges {
         node {
           id
@@ -83,24 +100,39 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const TypesField: FunctionComponent<SearchTypesProps> = ({ types, name, label, style, helpertext, multiple }) => {
+const TypesField: FunctionComponent<SearchTypesProps> = ({
+  types,
+  name,
+  label,
+  style,
+  helpertext,
+  multiple,
+}) => {
   const [dataTypes, setDataTypes] = useState<SearchOption[]>([]);
   const classes = useStyles();
   const { t } = useFormatter();
-  const optionBuilder = (type: string, data: { node: { id: string, label: string } }[]) => {
-    return data.map((n) => ({
-      label: t(`${type}_${n.node.label}`),
-      value: n.node.id,
-    }))
+  const optionBuilder = (
+    type: string,
+    data: { node: { id: string; label: string } }[],
+  ) => {
+    return data
+      .map((n) => ({
+        label: t(`${type}_${n.node.label}`),
+        value: n.node.id,
+      }))
       .sort((a, b) => a.label.localeCompare(b.label))
-      .filter(({ value }, index, arr) => arr.findIndex((o) => o.value === value) === index);
+      .filter(
+        ({ value }, index, arr) => arr.findIndex((o) => o.value === value) === index,
+      );
   };
   const searchTypes = () => {
     fetchQuery(typesFieldTypesQuery, {
       isDomain: types.includes('Stix-Domain-Object'),
       isObservable: types.includes('Stix-Cyber-Observable'),
       isCoreRelationship: types.includes('stix-core-relationship'),
-      isObservableRelationship: types.includes('stix-cyber-observable-relationship'),
+      isObservableRelationship: types.includes(
+        'stix-cyber-observable-relationship',
+      ),
       isMetaRelationship: types.includes('stix-meta-relationship'),
     })
       .toPromise()
@@ -118,6 +150,7 @@ const TypesField: FunctionComponent<SearchTypesProps> = ({ types, name, label, s
         setDataTypes([...relationships, ...entities]);
       });
   };
+  console.log(dataTypes);
   return (
     <div>
       <Field

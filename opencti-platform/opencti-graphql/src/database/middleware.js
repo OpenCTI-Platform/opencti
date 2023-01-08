@@ -267,18 +267,19 @@ export const querySubType = async (subTypeId) => {
   }
   return null;
 };
-export const queryDefaultSubTypes = async (search) => {
+export const queryDefaultSubTypes = async (search = null) => {
   const sortByLabel = R.sortBy(R.toLower);
   const types = schemaTypes.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((n) => n.includes(search ?? ''));
   const finalResult = R.pipe(
     sortByLabel,
     R.map((n) => ({ node: { id: n, label: n } })),
     R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP } }),
-    R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } })
+    R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } }),
+    R.uniqBy(R.path(['node', 'id'])),
   )(types);
   return buildPagination(0, null, finalResult, finalResult.length);
 };
-export const querySubTypes = async ({ type = null, search }) => {
+export const querySubTypes = async ({ type = null, search = null }) => {
   if (type === null) {
     return queryDefaultSubTypes(search);
   }
@@ -286,7 +287,8 @@ export const querySubTypes = async ({ type = null, search }) => {
   const types = schemaTypes.get(type).filter((n) => n.includes(search ?? ''));
   const finalResult = R.pipe(
     sortByLabel,
-    R.map((n) => ({ node: { id: n, label: n } }))
+    R.map((n) => ({ node: { id: n, label: n } })),
+    R.uniqBy(R.path(['node', 'id'])),
   )(types);
   return buildPagination(0, null, finalResult, finalResult.length);
 };

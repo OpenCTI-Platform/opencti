@@ -22672,6 +22672,8 @@ export enum WorksFilter {
   CompletedNumber = 'completed_number',
   CompletedTime = 'completed_time',
   ConnectorId = 'connector_id',
+  ProcessedTime = 'processed_time',
+  ReceivedTime = 'received_time',
   Status = 'status'
 }
 
