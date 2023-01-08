@@ -150,7 +150,6 @@ const TypesField: FunctionComponent<SearchTypesProps> = ({
         setDataTypes([...relationships, ...entities]);
       });
   };
-  console.log(dataTypes);
   return (
     <div>
       <Field

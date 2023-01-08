@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { offsetToCursor, READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
-import { elFindByIds, elLoadById, elPaginate, elQueryCount } from './engine';
+import { elCount, elFindByIds, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -349,7 +349,7 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
 
 export const countAllThings = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, args: ListFilter<T> = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  return elQueryCount(context, user, indices, args);
+  return elCount(context, user, indices, args);
 };
 
 export const internalFindByIds: InternalFindByIds = async (context, user, ids, args = {}) => {

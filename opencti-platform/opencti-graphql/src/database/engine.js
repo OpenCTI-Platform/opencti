@@ -1266,27 +1266,10 @@ const elQueryBodyBuilder = async (context, user, options) => {
 export const elCount = async (context, user, indexName, options = {}) => {
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const query = { index: indexName, body };
-  logApp.debug('[SEARCH] countEntities', { query });
+  logApp.debug('[SEARCH] elCount', { query });
   return engine.count(query)
     .then((data) => {
       return oebp(data).count;
-    })
-    .catch(async () => {
-      // In some case count can fail, so we can search instead
-      const searchFallback = await elRawSearch(query);
-      return searchFallback.hits.total.value;
-    });
-};
-export const elQueryCount = async (context, user, indexName, options = {}) => {
-  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
-  const query = { index: indexName, body: { query: body.query } };
-  logApp.debug('[SEARCH] elQueryCount', { query });
-  return engine.count(query)
-    .then((data) => {
-      return oebp(data).count;
-    })
-    .catch((err) => {
-      throw DatabaseError('[SEARCH] Count data fail', { error: err, query });
     });
 };
 export const elHistogramCount = async (context, user, indexName, options = {}) => {

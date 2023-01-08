@@ -21,7 +21,6 @@ import {
 } from '../database/utils';
 import {
   isStixCoreRelationship,
-  STIX_CORE_RELATIONSHIPS,
   stixCoreRelationshipOptions
 } from '../schema/stixCoreRelationship';
 import {
@@ -81,7 +80,7 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
   return distributionRelations(context, context.user, finalArgs);
 };
 export const stixCoreRelationshipsNumber = (context, user, args) => {
-  const { relationship_type = [STIX_CORE_RELATIONSHIPS] } = args;
+  const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP] } = args;
   const numberArgs = buildFilters({ ...args, types: relationship_type });
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {
