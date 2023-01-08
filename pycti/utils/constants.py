@@ -55,9 +55,10 @@ class IdentityTypes(Enum):
 
 
 class LocationTypes(Enum):
-    CITY = "City"
-    COUNTRY = "Country"
     REGION = "Region"
+    COUNTRY = "Country"
+    ADMINISTRATIVE_AREA = "Administrative-Area"
+    CITY = "City"
     POSITION = "Position"
 
     @classmethod
