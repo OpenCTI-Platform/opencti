@@ -154,9 +154,9 @@ const StixCyberObservableLineComponent = ({
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                markingDefinitions={node.objectMarking.edges ?? []}
-                limit={1}
                 variant="inList"
+                markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                limit={1}
               />
             </div>
           </div>
@@ -211,6 +211,7 @@ export const StixCyberObservableLine = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_order
               x_opencti_color
             }
           }

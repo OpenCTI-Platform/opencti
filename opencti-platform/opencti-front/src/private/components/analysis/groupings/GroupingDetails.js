@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, head, pathOr } from 'ramda';
+import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -13,13 +13,12 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import * as R from 'ramda';
 import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   paper: {
@@ -155,9 +154,6 @@ const GroupingDetailsComponent = (props) => {
             )
             .map((relatedContainerEdge) => {
               const relatedContainer = relatedContainerEdge.node;
-              const markingDefinition = head(
-                pathOr([], ['objectMarking', 'edges'], relatedContainer),
-              );
               return (
                 <ListItem
                   key={grouping.id}
@@ -179,19 +175,19 @@ const GroupingDetailsComponent = (props) => {
                     }
                   />
                   <div style={inlineStyles.itemAuthor}>
-                    {pathOr('', ['createdBy', 'name'], relatedContainer)}
+                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
                   </div>
                   <div style={inlineStyles.itemDate}>
                     {fsd(relatedContainer.published)}
                   </div>
                   <div style={{ width: 110, paddingRight: 20 }}>
-                    {markingDefinition && (
-                      <ItemMarking
-                        key={markingDefinition.node.id}
-                        label={markingDefinition.node.definition}
-                        variant="inList"
-                      />
-                    )}
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitionsEdges={
+                        relatedContainer.objectMarking.edges
+                      }
+                      limit={1}
+                    />
                   </div>
                 </ListItem>
               );
@@ -254,7 +250,12 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
               objectMarking {
                 edges {
                   node {
+                    id
                     definition
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -266,4 +267,4 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(GroupingDetails);
+export default R.compose(inject18n, withStyles(styles))(GroupingDetails);

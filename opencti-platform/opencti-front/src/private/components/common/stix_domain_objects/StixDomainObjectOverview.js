@@ -121,8 +121,9 @@ class StixDomainObjectOverview extends Component {
                     {t('Marking')}
                   </Typography>
                   <ItemMarkings
-                    markingDefinitions={stixDomainObject.objectMarking.edges ?? []}
-                    limit={10}
+                    markingDefinitionsEdges={
+                      stixDomainObject.objectMarking.edges ?? []
+                    }
                   />
                 </div>
               )}

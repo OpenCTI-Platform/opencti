@@ -19,7 +19,7 @@ import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
-import ItemMarking from '../../../../components/ItemMarking';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   container: {
@@ -216,21 +216,13 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                     )
                                 }
                               />
-                              {R.take(
-                                1,
-                                R.pathOr(
-                                  [],
-                                  ['markingDefinitions', 'edges'],
-                                  attackPattern,
-                                ),
-                              ).map((markingDefinition) => (
-                                <ItemMarking
-                                  key={markingDefinition.node.id}
-                                  variant="inList"
-                                  label={markingDefinition.node.definition}
-                                  color={markingDefinition.node.x_opencti_color}
-                                />
-                              ))}
+                              <ItemMarkings
+                                variant="inList"
+                                markingDefinitionsEdges={
+                                  attackPattern.markingDefinitions.edges
+                                }
+                                limit={1}
+                              />
                               {!coursesOfAction && (
                                 <ItemYears
                                   variant="inList"

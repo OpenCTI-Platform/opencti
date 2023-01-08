@@ -12,7 +12,11 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 import { DescriptionOutlined } from '@mui/icons-material';
-import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
+import {
+  Database,
+  GraphOutline,
+  HexagonMultipleOutline,
+} from 'mdi-material-ui';
 import Chart from 'react-apexcharts';
 import Slide from '@mui/material/Slide';
 import { graphql, useLazyLoadQuery } from 'react-relay';
@@ -511,7 +515,10 @@ const LastIngestedAnalysis = () => {
               edges {
                 node {
                   id
+                  definition_type
                   definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
             }
@@ -582,7 +589,9 @@ const LastIngestedAnalysis = () => {
               }}
             >
               <ItemMarkings
-                markingDefinitions={stixDomainObject.objectMarking.edges ?? []}
+                markingDefinitionsEdges={
+                  stixDomainObject.objectMarking.edges ?? []
+                }
                 limit={1}
                 variant="inList"
               />

@@ -109,7 +109,10 @@ export const containerHeaderObjectsQuery = graphql`
         edges {
           node {
             id
+            definition_type
             definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -134,7 +137,10 @@ export const containerHeaderObjectsQuery = graphql`
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -301,7 +307,10 @@ export const containerHeaderObjectsQuery = graphql`
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -347,7 +356,10 @@ export const containerHeaderObjectsQuery = graphql`
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -401,7 +413,10 @@ export const containerHeaderObjectsQuery = graphql`
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -825,7 +840,9 @@ export default createFragmentContainer(ContainerHeader, {
         edges {
           node {
             id
+            definition_type
             definition
+            x_opencti_order
             x_opencti_color
           }
         }

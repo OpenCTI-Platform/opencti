@@ -201,7 +201,9 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
       edges {
         node {
           id
+          definition_type
           definition
+          x_opencti_order
           x_opencti_color
         }
       }
@@ -347,9 +349,11 @@ EntityStixCoreRelationshipsEntitiesLineProps
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                markingDefinitions={stixCoreObject.objectMarking?.edges ?? []}
-                limit={1}
                 variant="inList"
+                markingDefinitionsEdges={
+                  stixCoreObject.objectMarking?.edges ?? []
+                }
+                limit={1}
               />
             </div>
           </div>

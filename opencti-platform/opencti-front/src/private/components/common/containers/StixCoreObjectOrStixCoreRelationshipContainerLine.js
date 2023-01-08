@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -7,15 +8,14 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { compose, pathOr, take } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemStatus from '../../../../components/ItemStatus';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   item: {
@@ -75,7 +75,7 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Compone
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdBy', 'name'], node)}
+                {R.pathOr('', ['createdBy', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -107,16 +107,11 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Compone
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      variant="inList"
-                      label={markingDefinition.node.definition}
-                      color={markingDefinition.node.x_opencti_color}
-                    />
-                  ),
-                )}
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitionsEdges={node.objectMarking.edges}
+                  limit={1}
+                />
               </div>
             </div>
           }
@@ -186,7 +181,9 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             edges {
               node {
                 id
+                definition_type
                 definition
+                x_opencti_order
                 x_opencti_color
               }
             }
@@ -220,7 +217,10 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
                       edges {
                         node {
                           id
+                          definition_type
                           definition
+                          x_opencti_order
+                          x_opencti_color
                         }
                       }
                     }
@@ -367,7 +367,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
   },
 );
 
-export const StixCoreObjectOrStixCoreRelationshipContainerLine = compose(
+export const StixCoreObjectOrStixCoreRelationshipContainerLine = R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreObjectOrStixCoreRelationshipContainerLineFragment);
@@ -459,7 +459,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
 };
 
-export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy = compose(
+export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy = R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreObjectOrStixCoreRelationshipContainerLineDummyComponent);

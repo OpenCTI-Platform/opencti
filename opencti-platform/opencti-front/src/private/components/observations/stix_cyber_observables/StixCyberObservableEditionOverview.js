@@ -753,6 +753,8 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
               id
               definition
               definition_type
+              x_opencti_order
+              x_opencti_color
             }
           }
         }

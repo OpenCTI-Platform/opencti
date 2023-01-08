@@ -1,20 +1,20 @@
 import React from 'react';
 import * as R from 'ramda';
-import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import { styled, useTheme } from '@mui/material/styles';
+import Badge from '@mui/material/Badge';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import { truncate } from '../utils/String';
+import Grid from '@mui/material/Grid';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
     height: 25,
     margin: '0 7px 7px 0',
-    borderRadius: '0',
+    borderRadius: 5,
     width: 90,
   },
   chipInList: {
@@ -23,10 +23,18 @@ const styles = () => ({
     height: 20,
     float: 'left',
     marginRight: 7,
-    borderRadius: '0',
+    borderRadius: 5,
     width: 90,
   },
-});
+  chipInToolTip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    height: 25,
+    margin: '0 7px 7px 0',
+    borderRadius: 5,
+    width: '100%',
+  },
+}));
 
 const inlineStylesDark = {
   white: {
@@ -71,117 +79,158 @@ const inlineStylesLight = {
   },
 };
 
-const ItemMarkings = (props) => {
-  const { classes, variant, markingDefinitions, limit, theme } = props;
-  const className = variant === 'inList' ? classes.chipInList : classes.chip;
-  const number = limit || 1;
-  const sortBy = R.sortWith([R.descend(R.prop('definition'))]);
+const EnrichedTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(() => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    width: 400,
+    padding: '20px 20px 10px 20px',
+  },
+}));
+
+const StyledBadge = styled(Badge)(() => ({
+  '& .MuiBadge-badge': {
+    right: 9,
+    top: 4,
+  },
+}));
+
+const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
+  const classes = useStyles();
+  const theme = useTheme();
+  const sortBy = R.sortWith([
+    R.ascend(R.propOr('TLP', 'definition_type')),
+    R.descend(R.propOr(0, 'x_opencti_order')),
+  ]);
   const markings = R.pipe(
     R.map((n) => n.node),
     sortBy,
-    R.take(number),
-  )(markingDefinitions);
+  )(markingDefinitionsEdges);
+  const renderChip = (markingDefinition, isTooltip = false) => {
+    let className = classes.chip;
+    if (isTooltip) {
+      className = classes.chipInToolTip;
+    } else if (variant === 'inList') {
+      className = classes.chipInList;
+    }
+    if (markingDefinition.x_opencti_color) {
+      let backgroundColor = markingDefinition.x_opencti_color;
+      let textColor = theme.palette.text.primary;
+      let border = '0';
+      if (theme.palette.mode === 'light') {
+        if (backgroundColor === '#ffffff') {
+          backgroundColor = '#ffffff';
+          textColor = '#2b2b2b';
+          border = '1px solid #2b2b2b';
+        } else {
+          textColor = '#ffffff';
+        }
+      } else if (backgroundColor === '#ffffff') {
+        textColor = '#2b2b2b';
+      }
+      return (
+        <Chip
+          key={markingDefinition.definition}
+          className={className}
+          style={{
+            backgroundColor,
+            color: textColor,
+            border,
+          }}
+          label={markingDefinition.definition}
+        />
+      );
+    }
+    let inlineStyles = inlineStylesDark;
+    if (theme.palette.mode === 'light') {
+      inlineStyles = inlineStylesLight;
+    }
+    switch (markingDefinition.definition) {
+      case 'CD':
+      case 'CD-SF':
+      case 'DR':
+      case 'DR-SF':
+      case 'TLP:RED':
+        return (
+          <Chip
+            key={markingDefinition.definition}
+            className={className}
+            style={inlineStyles.red}
+            label={markingDefinition.definition}
+          />
+        );
+      case 'TLP:AMBER':
+        return (
+          <Chip
+            key={markingDefinition.definition}
+            className={className}
+            style={inlineStyles.orange}
+            label={markingDefinition.definition}
+          />
+        );
+      case 'NP':
+      case 'TLP:GREEN':
+        return (
+          <Chip
+            key={markingDefinition.definition}
+            className={className}
+            style={inlineStyles.green}
+            label={markingDefinition.definition}
+          />
+        );
+      case 'SF':
+        return (
+          <Chip
+            key={markingDefinition.definition}
+            className={className}
+            style={inlineStyles.blue}
+            label={markingDefinition.definition}
+          />
+        );
+      default:
+        return (
+          <Chip
+            key={markingDefinition.definition}
+            className={className}
+            style={inlineStyles.white}
+            label={markingDefinition.definition}
+          />
+        );
+    }
+  };
+  if (!limit || markings.length === 1) {
+    return (
+      <span>
+        {markings.map((markingDefinition) => renderChip(markingDefinition, false))}
+      </span>
+    );
+  }
   return (
-    <Tooltip title={markingDefinitions?.[0]?.node.definition}>
-    <div>
-      {markings.map((markingDefinition) => {
-        const label = truncate(markingDefinition.definition, 20);
-        if (markingDefinition.x_opencti_color) {
-          let backgroundColor = markingDefinition.x_opencti_color;
-          let textColor = theme.palette.text.primary;
-          let border = '0';
-          if (theme.palette.mode === 'light') {
-            if (backgroundColor === '#ffffff') {
-              backgroundColor = '#ffffff';
-              textColor = '#2b2b2b';
-              border = '1px solid #2b2b2b';
-            } else {
-              textColor = '#ffffff';
-            }
-          } else if (backgroundColor === '#ffffff') {
-            textColor = '#2b2b2b';
-          }
-          return (
-            <Chip
-              key={markingDefinition.definition}
-              className={className}
-              style={{
-                backgroundColor,
-                color: textColor,
-                border,
-              }}
-              label={label}
-            />
-          );
-        }
-        let inlineStyles = inlineStylesDark;
-        if (theme.palette.mode === 'light') {
-          inlineStyles = inlineStylesLight;
-        }
-        switch (markingDefinition.definition) {
-          case 'CD':
-          case 'CD-SF':
-          case 'DR':
-          case 'DR-SF':
-          case 'TLP:RED':
-            return (
-              <Chip
-                key={markingDefinition.definition}
-                className={className}
-                style={inlineStyles.red}
-                label={label}
-              />
-            );
-          case 'TLP:AMBER':
-            return (
-              <Chip
-                key={markingDefinition.definition}
-                className={className}
-                style={inlineStyles.orange}
-                label={label}
-              />
-            );
-          case 'NP':
-          case 'TLP:GREEN':
-            return (
-              <Chip
-                key={markingDefinition.definition}
-                className={className}
-                style={inlineStyles.green}
-                label={label}
-              />
-            );
-          case 'SF':
-            return (
-              <Chip
-                key={markingDefinition.definition}
-                className={className}
-                style={inlineStyles.blue}
-                label={label}
-              />
-            );
-          default:
-            return (
-              <Chip
-                key={markingDefinition.definition}
-                className={className}
-                style={inlineStyles.white}
-                label={label}
-              />
-            );
-        }
-      })}
-    </div>
-    </Tooltip>
+    <EnrichedTooltip
+      title={
+        <Grid container={true} spacing={3}>
+          {markings.map((markingDefinition) => (
+            <Grid key={markingDefinition.id} item={true} xs={6}>
+              {renderChip(markingDefinition, true)}
+            </Grid>
+          ))}
+        </Grid>
+      }
+      placement="bottom"
+    >
+      <span>
+        <StyledBadge variant="dot" color="primary">
+          {R.take(limit || 10, markings).map((markingDefinition) => renderChip(markingDefinition, false))}
+        </StyledBadge>
+      </span>
+    </EnrichedTooltip>
   );
 };
 
 ItemMarkings.propTypes = {
-  theme: PropTypes.object,
-  classes: PropTypes.object.isRequired,
   variant: PropTypes.string,
   limit: PropTypes.number,
   markingDefinitions: PropTypes.array,
 };
 
-export default compose(withTheme, withStyles(styles))(ItemMarkings);
+export default ItemMarkings;

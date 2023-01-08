@@ -2,25 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
-import {
-  compose,
-  pipe,
-  map,
-  assoc,
-  uniq,
-  indexBy,
-  prop,
-  values,
-  take,
-  filter,
-  pathOr,
-  pluck,
-  concat,
-  sortWith,
-  ascend,
-  descend,
-  propOr,
-} from 'ramda';
+import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -38,14 +20,13 @@ import {
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Tooltip from '@mui/material/Tooltip';
-import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   container: {
@@ -70,7 +51,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
 
   handleToggleLine(lineKey) {
     this.setState({
-      expandedLines: assoc(
+      expandedLines: R.assoc(
         lineKey,
         this.state.expandedLines[lineKey] !== undefined
           ? !this.state.expandedLines[lineKey]
@@ -84,24 +65,24 @@ class StixDomainObjectVictimologyRegionsList extends Component {
     const { t, classes, data, entityLink, paginationOptions, searchTerm } = this.props;
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || propOr('', 'countries_text', n)
+      || R.propOr('', 'countries_text', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
     const unknownRegionId = 'fe15f901-07eb-4b28-b5a4-54f6d589a337';
     const unknownCountryId = '5b1e93ff-9b3d-4ab5-b1bd-3fd95dc17626';
     // Extract all regions
-    const regions = pipe(
-      filter((n) => n.node.to.entity_type === 'Region'),
-      map((n) => ({
+    const regions = R.pipe(
+      R.filter((n) => n.node.to.entity_type === 'Region'),
+      R.map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         countries: {},
         relations: [],
       })),
     )(data.stixCoreRelationships.edges);
-    const countries = pipe(
-      filter((n) => n.node.to.entity_type === 'Country'),
-      map((n) => ({
+    const countries = R.pipe(
+      R.filter((n) => n.node.to.entity_type === 'Country'),
+      R.map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         cities: {},
@@ -117,13 +98,13 @@ class StixDomainObjectVictimologyRegionsList extends Component {
         relations: [],
       })),
     )(data.stixCoreRelationships.edges);
-    const countriesRegions = filter(
+    const countriesRegions = R.filter(
       (n) => n !== null,
-      pluck('region', countries),
+      R.pluck('region', countries),
     );
-    const cities = pipe(
-      filter((n) => n.node.to.entity_type === 'City'),
-      map((n) => ({
+    const cities = R.pipe(
+      R.filter((n) => n.node.to.entity_type === 'City'),
+      R.map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         country: n.node.to.country
@@ -144,23 +125,26 @@ class StixDomainObjectVictimologyRegionsList extends Component {
         relations: [],
       })),
     )(data.stixCoreRelationships.edges);
-    const citiesCountries = filter((n) => n !== null, pluck('country', cities));
-    const citiesCountriesRegions = filter(
+    const citiesCountries = R.filter(
       (n) => n !== null,
-      pluck('region', citiesCountries),
+      R.pluck('country', cities),
     );
-    const finalRegions = pipe(
-      concat(countriesRegions),
-      concat(citiesCountriesRegions),
-      uniq,
-      indexBy(prop('id')),
+    const citiesCountriesRegions = R.filter(
+      (n) => n !== null,
+      R.pluck('region', citiesCountries),
+    );
+    const finalRegions = R.pipe(
+      R.concat(countriesRegions),
+      R.concat(citiesCountriesRegions),
+      R.uniq,
+      R.indexBy(R.prop('id')),
     )(regions);
-    const finalCountries = pipe(
-      concat(citiesCountries),
-      uniq,
-      indexBy(prop('id')),
+    const finalCountries = R.pipe(
+      R.concat(citiesCountries),
+      R.uniq,
+      R.indexBy(R.prop('id')),
     )(countries);
-    for (const country of values(finalCountries)) {
+    for (const country of R.values(finalCountries)) {
       if (country.region) {
         finalRegions[country.region.id].countries[country.id] = country;
         finalRegions[country.region.id].countries_text = `${
@@ -182,17 +166,17 @@ class StixDomainObjectVictimologyRegionsList extends Component {
     }
     for (const stixCoreRelationshipEdge of data.stixCoreRelationships.edges) {
       let stixCoreRelationship = stixCoreRelationshipEdge.node;
-      stixCoreRelationship = assoc(
+      stixCoreRelationship = R.assoc(
         'startTimeYear',
         yearFormat(stixCoreRelationship.start_time),
         stixCoreRelationship,
       );
-      stixCoreRelationship = assoc(
+      stixCoreRelationship = R.assoc(
         'stopTimeYear',
         yearFormat(stixCoreRelationship.stop_time),
         stixCoreRelationship,
       );
-      stixCoreRelationship = assoc(
+      stixCoreRelationship = R.assoc(
         'years',
         stixCoreRelationship.startTimeYear === stixCoreRelationship.stopTimeYear
           ? stixCoreRelationship.startTimeYear
@@ -280,21 +264,21 @@ class StixDomainObjectVictimologyRegionsList extends Component {
         }
       }
     }
-    const orderedFinalRegions = pipe(
-      values,
-      sortWith([ascend(prop('name'))]),
-      filter(filterByKeyword),
+    const orderedFinalRegions = R.pipe(
+      R.values,
+      R.sortWith([R.ascend(R.prop('name'))]),
+      R.filter(filterByKeyword),
     )(finalRegions);
     return (
       <List>
         {orderedFinalRegions.map((region) => {
-          const orderedRelations = pipe(
-            values,
-            sortWith([descend(prop('years'))]),
+          const orderedRelations = R.pipe(
+            R.values,
+            R.sortWith([R.descend(R.prop('years'))]),
           )(region.relations);
-          const orderedCountries = pipe(
-            values,
-            sortWith([ascend(prop('name'))]),
+          const orderedCountries = R.pipe(
+            R.values,
+            R.sortWith([R.ascend(R.prop('name'))]),
           )(region.countries);
           return (
             <div key={region.id}>
@@ -364,21 +348,13 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                               )
                           }
                         />
-                        {take(
-                          1,
-                          pathOr(
-                            [],
-                            ['markingDefinitions', 'edges'],
-                            stixCoreRelationship,
-                          ),
-                        ).map((markingDefinition) => (
-                          <ItemMarking
-                            key={markingDefinition.node.id}
-                            variant="inList"
-                            label={markingDefinition.node.definition}
-                            color={markingDefinition.node.x_opencti_color}
-                          />
-                        ))}
+                        <ItemMarkings
+                          variant="inList"
+                          markingDefinitionsEdges={
+                            stixCoreRelationship.objectMarking.edges
+                          }
+                          limit={1}
+                        />
                         <ItemYears
                           variant="inList"
                           years={stixCoreRelationship.years}
@@ -411,13 +387,13 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                     );
                   })}
                   {orderedCountries.map((country) => {
-                    const orderedSubRelations = pipe(
-                      values,
-                      sortWith([descend(prop('years'))]),
+                    const orderedSubRelations = R.pipe(
+                      R.values,
+                      R.sortWith([R.descend(R.prop('years'))]),
                     )(country.relations);
-                    const orderedCities = pipe(
-                      values,
-                      sortWith([ascend(prop('name'))]),
+                    const orderedCities = R.pipe(
+                      R.values,
+                      R.sortWith([R.ascend(R.prop('name'))]),
                     )(country.cities);
                     return (
                       <div key={country.id}>
@@ -504,23 +480,13 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                         )
                                     }
                                   />
-                                  {take(
-                                    1,
-                                    pathOr(
-                                      [],
-                                      ['markingDefinitions', 'edges'],
-                                      stixCoreRelationship,
-                                    ),
-                                  ).map((markingDefinition) => (
-                                    <ItemMarking
-                                      key={markingDefinition.node.id}
-                                      variant="inList"
-                                      label={markingDefinition.node.definition}
-                                      color={
-                                        markingDefinition.node.x_opencti_color
-                                      }
-                                    />
-                                  ))}
+                                  <ItemMarkings
+                                    variant="inList"
+                                    markingDefinitionsEdges={
+                                      stixCoreRelationship.objectMarking.edges
+                                    }
+                                    limit={1}
+                                  />
                                   <ItemYears
                                     variant="inList"
                                     years={stixCoreRelationship.years}
@@ -558,9 +524,9 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                               );
                             })}
                             {orderedCities.map((city) => {
-                              const orderedSubSubRelations = pipe(
-                                values,
-                                sortWith([descend(prop('years'))]),
+                              const orderedSubSubRelations = R.pipe(
+                                R.values,
+                                R.sortWith([R.descend(R.prop('years'))]),
                               )(city.relations);
                               return (
                                 <div key={city.id}>
@@ -634,27 +600,14 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                                 )
                                             }
                                           />
-                                          {take(
-                                            1,
-                                            pathOr(
-                                              [],
-                                              ['markingDefinitions', 'edges'],
-                                              stixCoreRelationship,
-                                            ),
-                                          ).map((markingDefinition) => (
-                                            <ItemMarking
-                                              key={markingDefinition.node.id}
-                                              variant="inList"
-                                              label={
-                                                markingDefinition.node
-                                                  .definition
-                                              }
-                                              color={
-                                                markingDefinition.node
-                                                  .x_opencti_color
-                                              }
-                                            />
-                                          ))}
+                                          <ItemMarkings
+                                            variant="inList"
+                                            markingDefinitionsEdges={
+                                              stixCoreRelationship.objectMarking
+                                                .edges
+                                            }
+                                            limit={1}
+                                          />
                                           <ItemYears
                                             variant="inList"
                                             years={stixCoreRelationship.years}
@@ -722,7 +675,7 @@ StixDomainObjectVictimologyRegionsList.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixDomainObjectVictimologyRegionsList);

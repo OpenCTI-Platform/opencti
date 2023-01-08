@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, pathOr } from 'ramda';
+import { compose, pathOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -19,8 +19,8 @@ import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
-import ItemMarking from '../../../../components/ItemMarking';
 import { resolveLink } from '../../../../utils/Entity';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = () => ({
   dialogPaper: {
@@ -147,25 +147,12 @@ class StixDomainObjectDetectDuplicate extends Component {
                         )}
                       </div>
                       <div style={{ marginRight: 50 }}>
-                        {pathOr(
-                          [],
-                          ['node', 'markingDefinitions', 'edges'],
-                          element,
-                        ).length > 0 ? (
-                            map(
-                              (markingDefinition) => (
-                              <ItemMarking
-                                key={markingDefinition.node.id}
-                                label={markingDefinition.node.definition}
-                                color={markingDefinition.node.x_opencti_color}
-                                variant="inList"
-                              />
-                              ),
-                              element.node.objectMarking.edges,
-                            )
-                          ) : (
-                          <ItemMarking label="TLP:CLEAR" variant="inList" />
-                          )}
+                        <ItemMarkings
+                          variant="inList"
+                          markingDefinitionsEdges={
+                            element.node.objectMarking.edges
+                          }
+                        />
                       </div>
                       <ListItemSecondaryAction>
                         <IconButton

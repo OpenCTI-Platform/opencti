@@ -14,7 +14,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Chip from '@mui/material/Chip';
-import ItemMarking from '../../../../components/ItemMarking';
 import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -26,6 +25,7 @@ import { convertFilters } from '../../../../utils/ListParameters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { truncate } from '../../../../utils/String';
 import Filters from '../lists/Filters';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   container: {
@@ -237,6 +237,10 @@ const stixDomainObjectsListQuery = graphql`
             edges {
               node {
                 definition
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }
@@ -350,9 +354,6 @@ class StixDomainObjectsList extends Component {
                 <List style={{ marginTop: -10 }}>
                   {data.map((stixCoreObjectEdge) => {
                     const stixCoreObject = stixCoreObjectEdge.node;
-                    const markingDefinition = R.head(
-                      R.pathOr([], ['objectMarking', 'edges'], stixCoreObject),
-                    );
                     return (
                       <ListItem
                         key={stixCoreObject.id}
@@ -385,13 +386,13 @@ class StixDomainObjectsList extends Component {
                           {fsd(stixCoreObject[dateAttribute])}
                         </div>
                         <div style={{ width: 110, paddingRight: 20 }}>
-                          {markingDefinition && (
-                            <ItemMarking
-                              key={markingDefinition.node.id}
-                              label={markingDefinition.node.definition}
-                              variant="inList"
-                            />
-                          )}
+                          <ItemMarkings
+                            variant="inList"
+                            markingDefinitionsEdges={
+                              stixCoreObject.objectMarking.edges
+                            }
+                            limit={1}
+                          />
                         </div>
                       </ListItem>
                     );

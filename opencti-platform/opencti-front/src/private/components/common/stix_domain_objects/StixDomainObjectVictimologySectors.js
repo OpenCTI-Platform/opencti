@@ -36,13 +36,13 @@ import {
   KNOWLEDGE_KNGETEXPORT,
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   container: {
@@ -440,21 +440,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 )
                             }
                           />
-                          {R.take(
-                            1,
-                            R.pathOr(
-                              [],
-                              ['markingDefinitions', 'edges'],
-                              stixCoreRelationship,
-                            ),
-                          ).map((markingDefinition) => (
-                            <ItemMarking
-                              key={markingDefinition.node.id}
-                              variant="inList"
-                              label={markingDefinition.node.definition}
-                              color={markingDefinition.node.x_opencti_color}
-                            />
-                          ))}
+                          <ItemMarkings
+                            variant="inList"
+                            markingDefinitionsEdges={
+                              stixCoreRelationship.objectMarking.edges
+                            }
+                            limit={1}
+                          />
                           <ItemYears
                             variant="inList"
                             years={stixCoreRelationship.years}
@@ -590,26 +582,14 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                             )
                                         }
                                       />
-                                      {R.take(
-                                        1,
-                                        R.pathOr(
-                                          [],
-                                          ['markingDefinitions', 'edges'],
-                                          stixCoreRelationship,
-                                        ),
-                                      ).map((markingDefinition) => (
-                                        <ItemMarking
-                                          key={markingDefinition.node.id}
-                                          variant="inList"
-                                          label={
-                                            markingDefinition.node.definition
-                                          }
-                                          color={
-                                            markingDefinition.node
-                                              .x_opencti_color
-                                          }
-                                        />
-                                      ))}
+                                      <ItemMarkings
+                                        variant="inList"
+                                        markingDefinitionsEdges={
+                                          stixCoreRelationship.objectMarking
+                                            .edges
+                                        }
+                                        limit={1}
+                                      />
                                       <ItemYears
                                         variant="inList"
                                         years={stixCoreRelationship.years}
@@ -789,7 +769,9 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
                 edges {
                   node {
                     id
+                    definition_type
                     definition
+                    x_opencti_order
                     x_opencti_color
                   }
                 }

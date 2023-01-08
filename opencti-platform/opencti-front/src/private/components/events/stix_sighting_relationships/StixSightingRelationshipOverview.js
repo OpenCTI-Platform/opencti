@@ -26,7 +26,6 @@ import StixSightingRelationshipEdition, {
 } from './StixSightingRelationshipEdition';
 import { commitMutation } from '../../../../relay/environment';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixSightingRelationshipInference from './StixSightingRelationshipInference';
 import StixSightingRelationshipExternalReferences from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
@@ -37,6 +36,7 @@ import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
 import ItemCreator from '../../../../components/ItemCreator';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   container: {
@@ -329,18 +329,11 @@ class StixSightingRelationshipContainer extends Component {
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
-                    {stixSightingRelationship.objectMarking?.edges?.length
-                      > 0
-                      && R.map(
-                        (markingDefinition) => (
-                          <ItemMarking
-                            key={markingDefinition.node.id}
-                            label={markingDefinition.node.definition}
-                            color={markingDefinition.node.x_opencti_color}
-                          />
-                        ),
-                        stixSightingRelationship.objectMarking.edges,
-                      )}
+                    <ItemMarkings
+                      markingDefinitionsEdges={
+                        stixSightingRelationship.objectMarking.edges
+                      }
+                    />
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -685,7 +678,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                         edges {
                           node {
                             id
+                            definition_type
                             definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                       }
@@ -1429,7 +1425,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                             edges {
                               node {
                                 id
+                                definition_type
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -1727,7 +1726,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                                 edges {
                                   node {
                                     id
+                                    definition_type
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -1951,7 +1953,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                             edges {
                               node {
                                 id
+                                definition_type
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -2178,7 +2183,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                                 edges {
                                   node {
                                     id
+                                    definition_type
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -2399,7 +2407,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                                 edges {
                                   node {
                                     id
+                                    definition_type
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -2536,7 +2547,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
           edges {
             node {
               id
+              definition_type
               definition
+              x_opencti_order
               x_opencti_color
             }
           }
@@ -2593,7 +2606,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       edges {
                         node {
                           id
+                          definition_type
                           definition
+                          x_opencti_order
+                          x_opencti_color
                         }
                       }
                     }

@@ -136,8 +136,9 @@ class StixCyberObservableOverview extends Component {
                 {t('Marking')}
               </Typography>
               <ItemMarkings
-                markingDefinitions={stixCyberObservable.objectMarking.edges ?? []}
-                limit={10}
+                markingDefinitionsEdges={
+                  stixCyberObservable.objectMarking.edges ?? []
+                }
               />
               <Typography
                 variant="h3"

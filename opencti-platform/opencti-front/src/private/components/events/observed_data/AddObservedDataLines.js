@@ -12,7 +12,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import ItemMarking from '../../../../components/ItemMarking';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   avatar: {
@@ -148,22 +148,11 @@ class AddObservedDataLinesContainer extends Component {
                 {pathOr('', ['createdBy', 'name'], observedData)}
               </div>
               <div style={{ marginRight: 50 }}>
-                {pathOr([], ['objectMarking', 'edges'], observedData).length
-                > 0 ? (
-                    map(
-                      (markingDefinition) => (
-                      <ItemMarking
-                        key={markingDefinition.node.id}
-                        label={markingDefinition.node.definition}
-                        color={markingDefinition.node.x_opencti_color}
-                        variant="inList"
-                      />
-                      ),
-                      observedData.objectMarking.edges,
-                    )
-                  ) : (
-                  <ItemMarking label="TLP:CLEAR" variant="inList" />
-                  )}
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitionsEdges={observedData.objectMarking.edges}
+                  limit={1}
+                />
               </div>
             </ListItem>
           );

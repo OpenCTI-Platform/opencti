@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { compose, pathOr, head } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -12,9 +12,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   paper: {
@@ -98,7 +98,11 @@ const stixCoreObjectOrStixCoreRelationshipLastReportsQuery = graphql`
           objectMarking {
             edges {
               node {
+                id
+                definition_type
                 definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }
@@ -148,9 +152,6 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                     <List>
                       {props.reports.edges.map((reportEdge) => {
                         const report = reportEdge.node;
-                        const markingDefinition = head(
-                          pathOr([], ['objectMarking', 'edges'], report),
-                        );
                         return (
                           <ListItem
                             key={report.id}
@@ -172,19 +173,19 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                               }
                             />
                             <div style={inlineStyles.itemAuthor}>
-                              {pathOr('', ['createdBy', 'name'], report)}
+                              {R.pathOr('', ['createdBy', 'name'], report)}
                             </div>
                             <div style={inlineStyles.itemDate}>
                               {fsd(report.published)}
                             </div>
                             <div style={{ width: 110, paddingRight: 20 }}>
-                              {markingDefinition && (
-                                <ItemMarking
-                                  key={markingDefinition.node.id}
-                                  label={markingDefinition.node.definition}
-                                  variant="inList"
-                                />
-                              )}
+                              <ItemMarkings
+                                variant="inList"
+                                markingDefinitionsEdges={
+                                  report.objectMarking.edges
+                                }
+                                limit={1}
+                              />
                             </div>
                           </ListItem>
                         );
@@ -270,7 +271,7 @@ StixCoreObjectOrStixCoreRelationshipLastReports.propTypes = {
   fsd: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreObjectOrStixCoreRelationshipLastReports);

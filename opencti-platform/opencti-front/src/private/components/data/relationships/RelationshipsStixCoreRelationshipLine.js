@@ -234,9 +234,9 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <ItemMarkings
-                  markingDefinitions={node.objectMarking.edges ?? []}
-                  limit={1}
                   variant="inList"
+                  markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                  limit={1}
                 />
               </div>
             </div>
@@ -298,6 +298,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_order
               x_opencti_color
             }
           }
@@ -497,6 +498,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               node {
                                 id
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -795,6 +798,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -1019,6 +1024,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               node {
                                 id
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -1246,6 +1253,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -1467,6 +1476,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -1695,6 +1706,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               node {
                                 id
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -1993,6 +2006,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -2217,6 +2232,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               node {
                                 id
                                 definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                           }
@@ -2444,6 +2461,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -2665,6 +2684,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                                   node {
                                     id
                                     definition
+                                    x_opencti_order
+                                    x_opencti_color
                                   }
                                 }
                               }
@@ -2806,6 +2827,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_order
               x_opencti_color
             }
           }
@@ -2911,6 +2933,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                         node {
                           id
                           definition
+                          x_opencti_order
+                          x_opencti_color
                         }
                       }
                     }
@@ -3292,6 +3316,8 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                         node {
                           id
                           definition
+                          x_opencti_order
+                          x_opencti_color
                         }
                       }
                     }

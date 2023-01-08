@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { map, filter, head, compose, pathOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -12,7 +12,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import ItemMarking from '../../../../components/ItemMarking';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   avatar: {
@@ -63,11 +63,11 @@ const sharedUpdater = (store, entityId, newEdge) => {
 class AddOpinionsLinesContainer extends Component {
   toggleOpinion(opinion) {
     const { entityId, entityOpinions } = this.props;
-    const entityOpinionsIds = map((n) => n.node.id, entityOpinions);
+    const entityOpinionsIds = R.map((n) => n.node.id, entityOpinions);
     const alreadyAdded = entityOpinionsIds.includes(opinion.id);
     if (alreadyAdded) {
-      const existingOpinion = head(
-        filter((n) => n.node.id === opinion.id, entityOpinions),
+      const existingOpinion = R.head(
+        R.filter((n) => n.node.id === opinion.id, entityOpinions),
       );
       commitMutation({
         mutation: opinionMutationRelationDelete,
@@ -113,7 +113,7 @@ class AddOpinionsLinesContainer extends Component {
 
   render() {
     const { classes, data, entityOpinions } = this.props;
-    const entityOpinionsIds = map((n) => n.node.id, entityOpinions);
+    const entityOpinionsIds = R.map((n) => n.node.id, entityOpinions);
     return (
       <List>
         {data.opinions.edges.map((opinionNode) => {
@@ -142,24 +142,14 @@ class AddOpinionsLinesContainer extends Component {
                 secondary={truncate(opinion.explanation, 120)}
               />
               <div style={{ marginRight: 50 }}>
-                {pathOr('', ['createdBy', 'name'], opinion)}
+                {R.pathOr('', ['createdBy', 'name'], opinion)}
               </div>
               <div style={{ marginRight: 50 }}>
-                {pathOr([], ['objectMarking', 'edges'], opinion).length > 0 ? (
-                  map(
-                    (markingDefinition) => (
-                      <ItemMarking
-                        key={markingDefinition.node.id}
-                        label={markingDefinition.node.definition}
-                        color={markingDefinition.node.x_opencti_color}
-                        variant="inList"
-                      />
-                    ),
-                    opinion.objectMarking.edges,
-                  )
-                ) : (
-                  <ItemMarking label="TLP:CLEAR" variant="inList" />
-                )}
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitionsEdges={opinion.objectMarking.edges}
+                  limit={1}
+                />
               </div>
             </ListItem>
           );
@@ -230,4 +220,4 @@ const AddOpinionsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(AddOpinionsLines);
+export default R.compose(inject18n, withStyles(styles))(AddOpinionsLines);

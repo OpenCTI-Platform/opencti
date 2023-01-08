@@ -1,24 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
-import {
-  compose,
-  pipe,
-  map,
-  assoc,
-  groupBy,
-  path,
-  mapObjIndexed,
-  uniq,
-  indexBy,
-  prop,
-  values,
-  sortWith,
-  ascend,
-  take,
-  pathOr,
-} from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -36,9 +20,9 @@ import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   itemIcon: {
@@ -57,7 +41,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
 
   handleToggleLine(lineKey) {
     this.setState({
-      expandedLines: assoc(
+      expandedLines: R.assoc(
         lineKey,
         this.state.expandedLines[lineKey] !== undefined
           ? !this.state.expandedLines[lineKey]
@@ -70,9 +54,9 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
   render() {
     const { t, classes, data, entityLink, paginationOptions } = this.props;
     // Extract all kill chain phases
-    const killChainPhases = pipe(
+    const killChainPhases = R.pipe(
       // eslint-disable-next-line no-nested-ternary
-      map((n) => (n.node
+      R.map((n) => (n.node
         && n.node.killChainPhases
         && n.node.killChainPhases.edges.length > 0
         ? n.node.killChainPhases.edges[0].node
@@ -82,33 +66,33 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
             && n.node.to.killChainPhases.edges.length > 0
           ? n.node.to.killChainPhases.edges[0].node
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
-      uniq,
-      indexBy(prop('id')),
+      R.uniq,
+      R.indexBy(R.prop('id')),
     )(data.stixRelationships.edges);
-    const stixRelationships = pipe(
-      map((n) => n.node),
-      map((n) => assoc(
+    const stixRelationships = R.pipe(
+      R.map((n) => n.node),
+      R.map((n) => R.assoc(
         'startTimeYear',
         yearFormat(n.start_time) === '1970'
           ? t('None')
           : yearFormat(n.start_time),
         n,
       )),
-      map((n) => assoc(
+      R.map((n) => R.assoc(
         'stopTimeYear',
         yearFormat(n.stop_time) === '5138'
           ? t('None')
           : yearFormat(n.stop_time),
         n,
       )),
-      map((n) => assoc(
+      R.map((n) => R.assoc(
         'years',
         n.startTimeYear === n.stopTimeYear
           ? n.startTimeYear
           : `${n.startTimeYear} - ${n.stopTimeYear}`,
         n,
       )),
-      map((n) => assoc(
+      R.map((n) => R.assoc(
         'killChainPhase',
         // eslint-disable-next-line no-nested-ternary
         n && n.killChainPhases && n.killChainPhases.edges.length > 0
@@ -121,11 +105,11 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
             : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
         n,
       )),
-      sortWith([ascend(prop('years'))]),
-      groupBy(path(['killChainPhase', 'id'])),
-      mapObjIndexed((value, key) => assoc('stixDomainObjects', value, killChainPhases[key])),
-      values,
-      sortWith([ascend(prop('x_opencti_order'))]),
+      R.sortWith([R.ascend(R.prop('years'))]),
+      R.groupBy(R.path(['killChainPhase', 'id'])),
+      R.mapObjIndexed((value, key) => R.assoc('stixDomainObjects', value, killChainPhases[key])),
+      R.values,
+      R.sortWith([R.ascend(R.prop('x_opencti_order'))]),
     )(data.stixRelationships.edges);
     return (
       <div style={{ marginBottom: 90 }}>
@@ -224,21 +208,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                   )
                               }
                             />
-                            {take(
-                              1,
-                              pathOr(
-                                [],
-                                ['markingDefinitions', 'edges'],
-                                stixDomainObject,
-                              ),
-                            ).map((markingDefinition) => (
-                              <ItemMarking
-                                key={markingDefinition.node.id}
-                                variant="inList"
-                                label={markingDefinition.node.definition}
-                                color={markingDefinition.node.x_opencti_color}
-                              />
-                            ))}
+                            <ItemMarkings
+                              variant="inList"
+                              markingDefinitionsEdges={
+                                stixDomainObject.objectMarking.edges
+                              }
+                              limit={1}
+                            />
                             <ItemYears
                               variant="inList"
                               years={stixDomainObject.years}
@@ -310,7 +286,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   edges {
                     node {
                       id
+                      definition_type
                       definition
+                      x_opencti_order
                       x_opencti_color
                     }
                   }
@@ -416,7 +394,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixDomainObjectGlobalKillChain);

@@ -118,6 +118,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   node {
                     id
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -237,6 +239,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   node {
                     id
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -266,6 +270,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   node {
                     id
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -320,6 +326,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -415,6 +423,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -444,6 +454,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -500,6 +512,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -595,6 +609,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -624,6 +640,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -682,6 +700,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   node {
                     id
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -777,6 +797,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   node {
                     id
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -806,6 +828,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   node {
                     id
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
@@ -860,6 +884,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -955,6 +981,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -984,6 +1012,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -1040,6 +1070,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -1135,6 +1167,8 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                       node {
                         id
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -1163,7 +1197,10 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                     edges {
                       node {
                         id
+                        definition_type
                         definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }

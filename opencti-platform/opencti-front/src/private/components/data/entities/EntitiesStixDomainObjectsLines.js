@@ -313,6 +313,8 @@ export default createPaginationContainer(
                   node {
                     id
                     definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                 }
               }
