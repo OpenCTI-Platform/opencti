@@ -9,6 +9,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
+import Checkbox from '@mui/material/Checkbox';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { ExternalReferenceLine_node$data } from './__generated__/ExternalReferenceLine_node.graphql';
@@ -83,12 +84,34 @@ interface ExternalReferenceLineComponentProps {
       isSortable: boolean;
     };
   };
-  node?: ExternalReferenceLine_node$data;
+  node: ExternalReferenceLine_node$data;
+  selectedElements: Record<string, ExternalReferenceLine_node$data>;
+  deSelectedElements: Record<string, ExternalReferenceLine_node$data>;
+  onToggleEntity: (
+    entity: ExternalReferenceLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
+  onToggleShiftEntity: (
+    index: number,
+    entity: ExternalReferenceLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  index: number;
 }
 
 const ExternalReferenceLineComponent: FunctionComponent<
 ExternalReferenceLineComponentProps
-> = ({ dataColumns, node }) => {
+> = ({
+  dataColumns,
+  node,
+  selectedElements,
+  deSelectedElements,
+  onToggleEntity,
+  selectAll,
+  onToggleShiftEntity,
+  index,
+}) => {
   const classes = useStyles();
   const { fd } = useFormatter();
   return (
@@ -99,6 +122,24 @@ ExternalReferenceLineComponentProps
       component={Link}
       to={`/dashboard/analysis/external_references/${node?.id}`}
     >
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, node, event)
+          : onToggleEntity(node, event))
+        }
+      >
+        <Checkbox
+          edge="start"
+          checked={
+            (selectAll
+              && !((node?.id || 'id') in (deSelectedElements || {})))
+            || (node?.id || 'id') in (selectedElements || {})
+          }
+          disableRipple={true}
+        />
+      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="External-Reference" />
       </ListItemIcon>
@@ -205,6 +246,12 @@ ExternalReferenceLineDummyComponentProps
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon
+        classes={{ root: classes.itemIconDisabled }}
+        style={{ minWidth: 40 }}
+      >
+        <Checkbox edge="start" disabled={true} disableRipple={true} />
+      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>

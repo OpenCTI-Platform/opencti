@@ -8,14 +8,14 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-import { externalReferencesSearchQuery } from '../../analysis/ExternalReferences';
+import { externalReferencesQueriesSearchQuery } from '../../analysis/external_references/ExternalReferencesQueries';
 import ExternalReferenceCreation from '../../analysis/external_references/ExternalReferenceCreation';
 import { externalReferenceLinesMutationRelationAdd } from '../../analysis/external_references/AddExternalReferencesLines';
 import { Option } from './ReferenceField';
 import {
-  ExternalReferencesSearchQuery$data,
-  ExternalReferencesSearchQuery$variables,
-} from '../../analysis/__generated__/ExternalReferencesSearchQuery.graphql';
+  ExternalReferencesQueriesSearchQuery$data,
+  ExternalReferencesQueriesSearchQuery$variables,
+} from '../../analysis/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
 import { ExternalReferenceCreationMutation$data } from '../../analysis/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 
@@ -115,18 +115,18 @@ ExternalReferencesFieldProps
   const searchExternalReferences = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    let filters: ExternalReferencesSearchQuery$variables['filters'] = [];
+    let filters: ExternalReferencesQueriesSearchQuery$variables['filters'] = [];
     if (id) {
       filters = [{ key: ['usedBy'], values: [id] }];
     }
-    fetchQuery(externalReferencesSearchQuery, {
+    fetchQuery(externalReferencesQueriesSearchQuery, {
       search: event && event.target.value,
       filters,
     })
       .toPromise()
       .then((data) => {
         const newExternalReferencesEdges = ((
-          data as ExternalReferencesSearchQuery$data
+          data as ExternalReferencesQueriesSearchQuery$data
         )?.externalReferences?.edges ?? []) as {
           node: {
             description: string | null;

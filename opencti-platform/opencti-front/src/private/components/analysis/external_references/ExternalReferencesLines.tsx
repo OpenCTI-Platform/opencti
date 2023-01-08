@@ -1,38 +1,76 @@
 import React, { FunctionComponent } from 'react';
-import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { ExternalReferenceLine, ExternalReferenceLineDummy } from './ExternalReferenceLine';
-import { ExternalReferencesLines_data$data } from './__generated__/ExternalReferencesLines_data.graphql';
 import {
-  ExternalReferencesLinesPaginationQuery$variables,
-} from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+  createPaginationContainer,
+  graphql,
+  RelayPaginationProp,
+} from 'react-relay';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import {
+  ExternalReferenceLine,
+  ExternalReferenceLineDummy,
+} from './ExternalReferenceLine';
+import { ExternalReferencesLines_data$data } from './__generated__/ExternalReferencesLines_data.graphql';
+import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import { ExternalReferenceLine_node$data } from './__generated__/ExternalReferenceLine_node.graphql';
+import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
 interface ExternalReferencesLinesProps {
-  initialLoading: boolean,
+  initialLoading: boolean;
+  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'];
   dataColumns: {
     source_name: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     external_id: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     url: {
-      label: string, width: string, isSortable: boolean
-    },
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
+    creator: {
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
     created: {
-      label: string,
-      width: string,
-      isSortable: boolean,
-    }
-  },
-  relay: RelayPaginationProp,
-  paginationOptions: ExternalReferencesLinesPaginationQuery$variables,
-  data: ExternalReferencesLines_data$data,
+      label: string;
+      width: string;
+      isSortable: boolean;
+    };
+  };
+  relay: RelayPaginationProp;
+  paginationOptions: ExternalReferencesLinesPaginationQuery$variables;
+  data: ExternalReferencesLines_data$data;
+  selectedElements: Record<string, ExternalReferenceLine_node$data>;
+  deSelectedElements: Record<string, ExternalReferenceLine_node$data>;
+  onToggleEntity: (
+    entity: ExternalReferenceLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
 }
 
-const ExternalReferencesLines: FunctionComponent<ExternalReferencesLinesProps> = ({ initialLoading, dataColumns, relay, paginationOptions, data }) => {
+const ExternalReferencesLines: FunctionComponent<
+ExternalReferencesLinesProps
+> = ({
+  initialLoading,
+  dataColumns,
+  relay,
+  paginationOptions,
+  data,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleEntity,
+}) => {
   return (
     <ListLinesContent
       initialLoading={initialLoading}
@@ -40,12 +78,18 @@ const ExternalReferencesLines: FunctionComponent<ExternalReferencesLinesProps> =
       hasMore={relay.hasMore}
       isLoading={relay.isLoading}
       dataList={data?.externalReferences?.edges ?? []}
-      globalCount={data?.externalReferences?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-      LineComponent={<ExternalReferenceLine node={undefined}/>}
-      DummyLineComponent={<ExternalReferenceLineDummy />}
+      globalCount={
+        data?.externalReferences?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
+      LineComponent={ExternalReferenceLine}
+      DummyLineComponent={ExternalReferenceLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      onToggleEntity={onToggleEntity}
+      selectAll={selectAll}
     />
   );
 };
