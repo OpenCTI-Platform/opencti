@@ -164,7 +164,7 @@ const initializeSchema = async () => {
   return true;
 };
 
-const initializeQueues = async () => {
+const initializeInternalQueues = async () => {
   await registerConnectorQueues(INTERNAL_SYNC_QUEUE, 'Internal sync manager', 'internal', 'sync');
 };
 
@@ -358,7 +358,7 @@ const platformInit = async (withMarkings = true) => {
     const alreadyExists = await isExistingPlatform(context);
     if (!alreadyExists) {
       logApp.info('[INIT] New platform detected, initialization...');
-      await initializeQueues();
+      await initializeInternalQueues();
       await initializeBucket();
       await initializeSchema();
       await initializeMigration(context);
@@ -366,6 +366,7 @@ const platformInit = async (withMarkings = true) => {
       await initializeAdminUser(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
+      await initializeInternalQueues();
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);
       await alignMigrationLastRun(context);
