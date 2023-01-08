@@ -649,7 +649,6 @@ const ContainerHeader = (props) => {
                           variant="header"
                         />
                       )}
-                      <StixCoreObjectEnrichment stixCoreObjectId={container.id} />
                       {enableSuggestions && (
                         <React.Fragment>
                           <Tooltip title={t('Open the suggestions')}>
@@ -658,6 +657,7 @@ const ContainerHeader = (props) => {
                               disabled={suggestions.length === 0}
                               value="suggestion"
                               size="small"
+                              style={{ marginRight: 3 }}
                             >
                               <Badge
                                 badgeContent={
@@ -682,9 +682,11 @@ const ContainerHeader = (props) => {
                               </Badge>
                             </ToggleButton>
                           </Tooltip>
-                          <div> &nbsp; </div>
                         </React.Fragment>
                       )}
+                      <StixCoreObjectEnrichment
+                        stixCoreObjectId={container.id}
+                      />
                     </ToggleButtonGroup>
                     <Dialog
                       PaperProps={{ elevation: 1 }}

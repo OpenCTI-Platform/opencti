@@ -176,6 +176,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               onClick={handleOpenSharing}
               value="shared"
               size="small"
+              style={{ marginRight: 3 }}
             >
               <ShareOutlined fontSize="small" color="warning" />
             </ToggleButton>
