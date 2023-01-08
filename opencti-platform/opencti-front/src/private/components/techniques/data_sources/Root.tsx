@@ -46,6 +46,9 @@ const dataSourceQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -68,7 +71,7 @@ const RootDataSourceComponent = ({ queryRef }) => {
   );
   useSubscription(subConfig);
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
-  const { dataSource, connectorsForExport, settings } = data;
+  const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
   return (
     <div>
       <TopBar />
@@ -105,7 +108,7 @@ const RootDataSourceComponent = ({ queryRef }) => {
                   <FileManager
                     {...routeProps}
                     id={dataSourceId}
-                    connectorsImport={[]}
+                    connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={dataSource}
                   />

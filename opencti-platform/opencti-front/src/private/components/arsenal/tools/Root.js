@@ -49,6 +49,9 @@ const toolQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -189,7 +192,7 @@ class RootTool extends Component {
                           <FileManager
                             {...routeProps}
                             id={toolId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.tool}
                           />

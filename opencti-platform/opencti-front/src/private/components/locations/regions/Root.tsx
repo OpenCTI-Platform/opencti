@@ -51,6 +51,9 @@ const regionQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -74,7 +77,7 @@ const RootRegionComponent = ({ queryRef }) => {
   );
   useSubscription(subConfig);
   const data = usePreloadedQuery(regionQuery, queryRef);
-  const { region, connectorsForExport } = data;
+  const { region, connectorsForImport, connectorsForExport } = data;
   return (
     <div>
       <TopBar />
@@ -159,7 +162,7 @@ const RootRegionComponent = ({ queryRef }) => {
                   <FileManager
                     {...routeProps}
                     id={regionId}
-                    connectorsImport={[]}
+                    connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={region}
                   />

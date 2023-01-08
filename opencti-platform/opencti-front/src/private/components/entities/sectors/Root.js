@@ -49,6 +49,9 @@ const sectorQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -180,7 +183,7 @@ class RootSector extends Component {
                           <FileManager
                             {...routeProps}
                             id={sectorId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.sector}
                           />

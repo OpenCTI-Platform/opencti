@@ -47,6 +47,9 @@ const eventQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -171,7 +174,7 @@ class RootEvent extends Component {
                           <FileManager
                             {...routeProps}
                             id={eventId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.event}
                           />

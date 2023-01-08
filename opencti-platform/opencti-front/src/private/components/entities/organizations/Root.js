@@ -52,6 +52,9 @@ const organizationQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -222,7 +225,7 @@ class RootOrganization extends Component {
                           <FileManager
                             {...routeProps}
                             id={organizationId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.organization}
                           />

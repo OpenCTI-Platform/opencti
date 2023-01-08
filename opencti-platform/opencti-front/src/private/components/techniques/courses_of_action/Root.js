@@ -43,6 +43,9 @@ const courseOfActionQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -118,7 +121,7 @@ class RootCourseOfAction extends Component {
                           <FileManager
                             {...routeProps}
                             id={courseOfActionId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.courseOfAction}
                           />

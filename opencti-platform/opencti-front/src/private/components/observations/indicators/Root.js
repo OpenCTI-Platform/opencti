@@ -47,6 +47,9 @@ const indicatorQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -150,7 +153,7 @@ class RootIndicator extends Component {
                           <FileManager
                             {...routeProps}
                             id={indicatorId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.indicator}
                           />

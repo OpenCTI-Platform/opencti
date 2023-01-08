@@ -49,6 +49,9 @@ const narrativeQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -195,7 +198,7 @@ class RootNarrative extends Component {
                           <FileManager
                             {...routeProps}
                             id={narrativeId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.narrative}
                           />

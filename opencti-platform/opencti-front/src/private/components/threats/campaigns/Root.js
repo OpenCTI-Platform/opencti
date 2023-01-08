@@ -50,6 +50,9 @@ const campaignQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -203,7 +206,7 @@ class RootCampaign extends Component {
                           <FileManager
                             {...routeProps}
                             id={campaignId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.campaign}
                           />

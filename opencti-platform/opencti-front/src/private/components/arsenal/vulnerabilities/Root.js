@@ -49,6 +49,9 @@ const vulnerabilityQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -195,7 +198,7 @@ class RootVulnerability extends Component {
                           <FileManager
                             {...routeProps}
                             id={vulnerabilityId}
-                            connectorsImport={[]}
+                            connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.vulnerability}
                           />

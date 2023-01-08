@@ -1,7 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { append, assoc, compose, filter, groupBy, keys, map, pipe } from 'ramda';
+import {
+  append,
+  assoc,
+  compose,
+  filter,
+  groupBy,
+  keys,
+  map,
+  pipe,
+} from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -24,6 +33,7 @@ import {
   reportKnowledgeGraphMutationRelationDeleteMutation,
   reportKnowledgeGraphtMutationRelationAddMutation,
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   container: {
@@ -330,6 +340,12 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                               )}
                             </Markdown>
                           }
+                        />
+                        <ItemMarkings
+                          markingDefinitionsEdges={
+                            stixCoreObject.objectMarking.edges
+                          }
+                          limit={1}
                         />
                       </ListItem>
                     );

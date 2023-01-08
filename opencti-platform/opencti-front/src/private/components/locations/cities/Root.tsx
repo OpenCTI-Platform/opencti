@@ -50,6 +50,9 @@ const cityQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -71,7 +74,7 @@ const RootCityComponent = ({ queryRef }) => {
   );
   useSubscription(subConfig);
   const data = usePreloadedQuery(cityQuery, queryRef);
-  const { city, connectorsForExport } = data;
+  const { city, connectorsForImport, connectorsForExport } = data;
   return (
     <div>
       <TopBar />
@@ -157,7 +160,7 @@ const RootCityComponent = ({ queryRef }) => {
                   <FileManager
                     {...routeProps}
                     id={cityId}
-                    connectorsImport={[]}
+                    connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={city}
                   />
