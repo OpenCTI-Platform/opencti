@@ -17,7 +17,6 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { ExternalReferenceLine_node$data } from './external_references/__generated__/ExternalReferenceLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import { Filters } from '../../../components/list_lines';
-import { LOCAL_STORAGE_KEY_CASE } from '../cases/Feedbacks';
 
 const LOCAL_STORAGE_KEY = 'view-external-references';
 
@@ -29,7 +28,7 @@ interface ExternalReferencesProps {
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   const { helper } = useContext(UserContext);
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ExternalReferencesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE,
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'created',
