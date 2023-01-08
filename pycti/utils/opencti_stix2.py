@@ -1123,7 +1123,7 @@ class OpenCTIStix2:
 
         # Locations
         if LocationTypes.has_value(entity["entity_type"]):
-            if not not no_custom_attributes:
+            if not no_custom_attributes:
                 entity["x_opencti_location_type"] = entity["entity_type"]
             if entity["entity_type"] == "City":
                 entity["city"] = entity["name"]
