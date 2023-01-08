@@ -141,6 +141,7 @@ enum GroupingsOrdering {
     createdBy
     objectMarking
     x_opencti_workflow_id
+    creator
 }
 
 # Filtering

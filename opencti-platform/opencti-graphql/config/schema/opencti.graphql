@@ -2988,7 +2988,7 @@ enum OpinionsOrdering {
   createdBy
   objectMarking
   x_opencti_workflow_id
-  creatorBac
+  creator
 }
 enum OpinionsFilter {
   explanation

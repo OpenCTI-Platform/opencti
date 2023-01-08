@@ -78,7 +78,7 @@ import {
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
-import { externalReferencesSearchQuery } from '../analysis/ExternalReferences';
+import { externalReferencesQueriesSearchQuery } from '../analysis/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 
 const styles = (theme) => ({
@@ -779,7 +779,7 @@ class ToolBar extends Component {
       actionsInputs[i],
     );
     this.setState({ actionsInputs });
-    fetchQuery(externalReferencesSearchQuery, {
+    fetchQuery(externalReferencesQueriesSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
     })
       .toPromise()

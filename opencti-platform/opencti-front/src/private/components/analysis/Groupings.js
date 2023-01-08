@@ -219,7 +219,7 @@ class Groupings extends Component {
         isSortable: true,
       },
       context: {
-        label: 'Type',
+        label: 'Context',
         width: '8%',
         isSortable: true,
       },

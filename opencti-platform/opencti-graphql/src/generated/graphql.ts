@@ -5754,6 +5754,7 @@ export enum GroupingsOrdering {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
