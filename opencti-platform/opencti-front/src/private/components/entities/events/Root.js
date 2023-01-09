@@ -92,6 +92,7 @@ class RootEvent extends Component {
             stixCoreObjectLink={link}
             availableSections={[
               'locations',
+              'threats',
               'threat_actors',
               'intrusion_sets',
               'campaigns',

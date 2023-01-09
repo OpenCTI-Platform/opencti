@@ -86,6 +86,7 @@ const RootCountryComponent = ({ queryRef }) => {
           availableSections={[
             'cities',
             'organizations',
+            'threats',
             'threat_actors',
             'intrusion_sets',
             'campaigns',

@@ -220,6 +220,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_EVENT}`]: [
+    { name: RELATION_TARGETS, type: REL_EXTENDED }
+  ],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN }
   ],
@@ -778,6 +781,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_IDENTITY_SYSTEM}`]: [
+    { name: RELATION_TARGETS, type: REL_EXTENDED }
   ],
   [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_MALWARE}`]: [
     { name: RELATION_DELIVERS, type: REL_BUILT_IN },

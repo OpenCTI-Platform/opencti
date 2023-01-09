@@ -85,6 +85,7 @@ const RootCityComponent = ({ queryRef }) => {
             'organizations',
             'countries',
             'regions',
+            'threats',
             'threat_actors',
             'intrusion_sets',
             'campaigns',

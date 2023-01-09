@@ -65,6 +65,28 @@ class EventKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/entities/events/:eventId/knowledge/threats"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={event.id}
+                relationshipTypes={['targets']}
+                isRelationReversed
+                entityLink={link}
+                stixCoreObjectTypes={[
+                  'Attack-Pattern',
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Tool',
+                ]}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/entities/events/:eventId/knowledge/related"
             render={(routeProps) => (
               <EntityStixCoreRelationships

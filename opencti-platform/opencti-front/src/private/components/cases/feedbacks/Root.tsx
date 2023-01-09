@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, Switch, useParams } from 'react-router-dom';
+import { Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
@@ -81,15 +81,6 @@ const RootCaseComponent = ({ queryRef }) => {
               exact
               path="/dashboard/cases/feedbacks/:caseId"
               render={() => <Case data={caseData} />}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/cases/feedbacks/${caseId}/knowledge/overview`}
-                />
-              )}
             />
             <Route
               exact

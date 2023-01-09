@@ -94,6 +94,7 @@ class RootSector extends Component {
             stixCoreObjectLink={link}
             availableSections={[
               'organizations',
+              'threats',
               'threat_actors',
               'intrusion_sets',
               'campaigns',

@@ -82,6 +82,28 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
         />
         <Route
           exact
+          path="/dashboard/locations/cities/:cityId/knowledge/threats"
+          render={(routeProps: any) => (
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={['targets']}
+              isRelationReversed
+              entityLink={link}
+              stixCoreObjectTypes={[
+                'Attack-Pattern',
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+                'Tool',
+              ]}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/locations/cities/:cityId/knowledge/related"
           render={(routeProps: any) => (
             <EntityStixCoreRelationships

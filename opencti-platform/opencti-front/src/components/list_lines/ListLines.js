@@ -185,6 +185,7 @@ class ListLines extends Component {
       enableGraph,
       availableEntityTypes,
       availableRelationshipTypes,
+      availableRelationFilterTypes,
       enableNestedView,
       enableEntitiesView,
       currentView,
@@ -213,6 +214,7 @@ class ListLines extends Component {
               handleAddFilter={handleAddFilter}
               availableEntityTypes={availableEntityTypes}
               availableRelationshipTypes={availableRelationshipTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
             />
           )}
           {(!availableFilterKeys || availableFilterKeys.length === 0)
@@ -537,6 +539,7 @@ ListLines.propTypes = {
   enableGraph: PropTypes.bool,
   availableEntityTypes: PropTypes.array,
   availableRelationshipTypes: PropTypes.array,
+  availableRelationFilterTypes: PropTypes.object,
   enableNestedView: PropTypes.bool,
   enableEntitiesView: PropTypes.bool,
   currentView: PropTypes.string,

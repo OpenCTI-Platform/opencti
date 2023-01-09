@@ -47,9 +47,9 @@ const positionQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
     }
-      connectorsForImport {
-          ...FileManager_connectorsImport
-      }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
     connectorsForExport {
       ...FileManager_connectorsExport
     }
@@ -92,6 +92,7 @@ class RootPosition extends Component {
             stixCoreObjectLink={link}
             availableSections={[
               'organizations',
+              'threats',
               'threat_actors',
               'intrusion_sets',
               'campaigns',

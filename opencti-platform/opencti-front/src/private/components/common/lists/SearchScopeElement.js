@@ -23,15 +23,13 @@ const SearchScopeElement = ({
   name,
   searchScope,
   setSearchScope,
+  availableRelationFilterTypes,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
   const [anchorElSearchScope, setAnchorElSearchScope] = useState();
-
   const handleOpenSearchScope = (event) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(undefined);
-
   const handleToggleSearchScope = (key, value) => {
     setSearchScope((c) => ({
       ...c,
@@ -40,8 +38,10 @@ const SearchScopeElement = ({
         : [...(searchScope[key] || []), value],
     }));
   };
-
   const entitiesTypes = R.pipe(
+    R.filter((n) => (availableRelationFilterTypes && availableRelationFilterTypes[name]
+      ? availableRelationFilterTypes[name].includes(n)
+      : true)),
     R.map((n) => ({
       label: t(
         n.toString()[0] === n.toString()[0].toUpperCase()
@@ -55,11 +55,7 @@ const SearchScopeElement = ({
   )(entityTypes);
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
-      <IconButton
-        onClick={handleOpenSearchScope}
-        size="small"
-        edge="end"
-      >
+      <IconButton onClick={handleOpenSearchScope} size="small" edge="end">
         <PaletteOutlined
           fontSize="small"
           color={

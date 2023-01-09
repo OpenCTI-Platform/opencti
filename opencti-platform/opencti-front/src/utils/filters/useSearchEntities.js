@@ -392,6 +392,25 @@ const useSearchEntities = ({
             unionSetEntities('toId', toIdEntities);
           });
         break;
+      case 'targets':
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: (searchScope && searchScope.targets) || ['Stix-Core-Object'],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 100,
+        })
+          .toPromise()
+          .then((data) => {
+            const toIdEntities = R.pipe(
+              R.pathOr([], ['stixCoreObjects', 'edges']),
+              R.map((n) => ({
+                label: defaultValue(n.node),
+                value: n.node.id,
+                type: n.node.entity_type,
+              })),
+            )(data);
+            unionSetEntities('targets', toIdEntities);
+          });
+        break;
       case 'objectContains':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
           types: (searchScope && searchScope.objectContains) || [

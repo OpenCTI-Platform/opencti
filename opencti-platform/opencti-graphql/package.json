@@ -15,7 +15,7 @@
     "clean:relations": "yarn build:prod && node build/script-clean-relations.js",
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
     "build": "yarn install:python && yarn build:prod",
-    "start": "yarn build:dev && node build/back.js",
+    "start": "NODE_ENV=dev yarn build:dev && node build/back.js",
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js",
     "test:dev": "vitest --threads false run -c ./builder/dev/vitest.config.ts",

@@ -42,6 +42,7 @@ const ListFilters = ({
   setInputValues,
   availableEntityTypes,
   availableRelationshipTypes,
+  availableRelationFilterTypes,
   allEntityTypes,
   defaultHandleAddFilter,
 }) => {
@@ -106,6 +107,7 @@ const ListFilters = ({
                   setInputValues={setInputValues}
                   availableEntityTypes={availableEntityTypes}
                   availableRelationshipTypes={availableRelationshipTypes}
+                  availableRelationFilterTypes={availableRelationFilterTypes}
                   allEntityTypes={allEntityTypes}
                   openOnFocus={false}
                 />
