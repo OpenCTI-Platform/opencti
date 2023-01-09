@@ -511,6 +511,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             ["connector", "confidence_level"],
             config,
             True,
+            50,
         )
         self.connect_scope = get_config_variable(
             "CONNECTOR_SCOPE", ["connector", "scope"], config
