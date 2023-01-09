@@ -127,6 +127,7 @@ class RootIndividual extends Component {
               availableSections={[
                 'organizations',
                 'locations',
+                'threats',
                 'threat_actors',
                 'intrusion_sets',
                 'campaigns',
@@ -135,7 +136,6 @@ class RootIndividual extends Component {
                 'attack_patterns',
                 'tools',
                 'observables',
-                'targets',
               ]}
             />
           )}

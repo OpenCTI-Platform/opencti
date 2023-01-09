@@ -18,6 +18,7 @@ const Filters = ({
   noDirectFilters,
   availableEntityTypes,
   availableRelationshipTypes,
+  availableRelationFilterTypes,
   allEntityTypes,
   handleAddFilter,
   type,
@@ -78,6 +79,7 @@ const Filters = ({
       defaultHandleAddFilter={defaultHandleAddFilter}
       availableEntityTypes={availableEntityTypes}
       availableRelationshipTypes={availableRelationshipTypes}
+      availableRelationFilterTypes={availableRelationFilterTypes}
       allEntityTypes={allEntityTypes}
     />
   );
@@ -117,6 +119,7 @@ const Filters = ({
       defaultHandleAddFilter={defaultHandleAddFilter}
       availableEntityTypes={availableEntityTypes}
       availableRelationshipTypes={availableRelationshipTypes}
+      availableRelationFilterTypes={availableRelationFilterTypes}
       allEntityTypes={allEntityTypes}
     />
   );

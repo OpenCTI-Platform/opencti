@@ -82,13 +82,13 @@ const RegionKnowledgeComponent = ({
         />
         <Route
           exact
-          path="/dashboard/locations/regions/:regionId/knowledge/targets"
+          path="/dashboard/locations/regions/:regionId/knowledge/threats"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={region.id}
               relationshipTypes={['targets']}
+              isRelationReversed
               entityLink={link}
-              allDirections={true}
               stixCoreObjectTypes={[
                 'Attack-Pattern',
                 'Threat-Actor',

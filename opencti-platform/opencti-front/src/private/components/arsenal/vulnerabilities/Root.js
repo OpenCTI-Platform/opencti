@@ -93,6 +93,7 @@ class RootVulnerability extends Component {
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
+              'threats',
               'threat_actors',
               'intrusion_sets',
               'campaigns',
@@ -103,7 +104,6 @@ class RootVulnerability extends Component {
               'observables',
               'sightings',
               'infrastructures',
-              'targets',
             ]}
           />
         </Route>

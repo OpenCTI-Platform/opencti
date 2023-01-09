@@ -482,7 +482,8 @@ const i18n = {
       'No enrichment connectors on this platform':
         'Ningún conector de enriquecimiento en esta plataforma',
       'Enrichment connectors': 'Conectores de enriquecimiento ',
-      'Copy disabled: too many selected elements (maximum number of elements for a copy: ': 'Copia deshabilitada: demasiados elementos seleccionados (número máximo de elementos para una copia: ',
+      'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
+        'Copia deshabilitada: demasiados elementos seleccionados (número máximo de elementos para una copia: ',
       Copy: 'Copiar',
       'Elements successfully copied': 'Elementos copiados correctamente',
       'Registered connectors': 'Conectores registrados',
@@ -816,9 +817,11 @@ const i18n = {
       'Validate and send for import': 'Validar y enviar para importación',
       'Validate this workbench': 'Validar este espacio de trabajo',
       'File successfully removed': 'Fichero borrado con éxito',
-      'File and associated external reference successfully removed': 'Archivo y referencia externa asociada eliminados correctamente',
+      'File and associated external reference successfully removed':
+        'Archivo y referencia externa asociada eliminados correctamente',
       'File successfully uploaded': 'Fichero subido con éxito',
-      'File successfully uploaded and associated external reference successfully created': 'Archivo cargado correctamente y referencia externa asociada creada correctamente',
+      'File successfully uploaded and associated external reference successfully created':
+        'Archivo cargado correctamente y referencia externa asociada creada correctamente',
       'Launch an import of this file': 'Lanzar importación de este fichero',
       Launch: 'Lanzar',
       'Rule rescan': 'Reescaneo de reglas',
@@ -1306,6 +1309,7 @@ const i18n = {
       'Reset filters': 'Restablecer filtros',
       reversed: 'invertido',
       Limit: 'Límite',
+      'All threats': 'Todas las amenazas',
       // Time
       '24h': '24 h',
       // Types
@@ -2140,7 +2144,8 @@ const i18n = {
       'No enrichment connectors on this platform':
         "Aucun connecteur d'enrichissement sur cette plateforme",
       'Enrichment connectors': "Connecteurs d'enrichissement",
-      'Copy disabled: too many selected elements (maximum number of elements for a copy: ': 'Copie désactivée : trop d’éléments sélectionnés (nombre maximum d\'éléments pour une copie: ',
+      'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
+        "Copie désactivée : trop d’éléments sélectionnés (nombre maximum d'éléments pour une copie: ",
       Copy: 'Copie',
       'Elements successfully copied': 'Elements copiés avec succès',
       'Registered connectors': 'Connecteurs enregistrés',
@@ -2468,9 +2473,11 @@ const i18n = {
       'Validate and send for import': 'Valider et envoyer pour import',
       'Validate this workbench': 'Valider cet espace de travail',
       'File successfully removed': 'Fichier supprimé avec succès',
-      'File and associated external reference successfully removed': 'Fichier et référence externe associé supprimés avec succès',
+      'File and associated external reference successfully removed':
+        'Fichier et référence externe associé supprimés avec succès',
       'File successfully uploaded': 'Fichier uploadé avec succès',
-      'File successfully uploaded and associated external reference successfully created': 'Fichier uploadé avec succès et référence externe associée créee avec succès',
+      'File successfully uploaded and associated external reference successfully created':
+        'Fichier uploadé avec succès et référence externe associée créee avec succès',
       'Launch an import of this file': 'Lancer un import de ce fichier',
       Launch: 'Lancer',
       'Rule rescan': 'Rafraichissement des règles',
@@ -2958,6 +2965,7 @@ const i18n = {
       'Reset filters': 'Réinitialiser les filtres',
       reversed: 'inversé',
       Limit: 'Limite',
+      'All threats': 'Toutes les menaces',
       on: 'le',
       // Time
       '24h': '24h',
@@ -3748,7 +3756,8 @@ const i18n = {
       'No enrichment connectors on this platform':
         '有効なエンリッチ用コネクタがありません',
       'Enrichment connectors': 'エンリッチ用コネクタ',
-      'Copy disabled: too many selected elements (maximum number of elements for a copy: ': 'コピー無効:選択した要素が多すぎます(コピーの要素の最大数:',
+      'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
+        'コピー無効:選択した要素が多すぎます(コピーの要素の最大数:',
       Copy: '写し',
       'Elements successfully copied': '要素が正常にコピーされました',
       'Registered connectors': '登録済みのコネクタ',
@@ -4077,9 +4086,11 @@ const i18n = {
       'Validate and send for import': 'インポート用に検証して送信する',
       'Validate this workbench': 'このワークスペースを検証する',
       'File successfully removed': 'ファイルの削除に成功',
-      'File and associated external reference successfully removed': 'ファイルおよび関連する外部参照が正常に削除されました',
+      'File and associated external reference successfully removed':
+        'ファイルおよび関連する外部参照が正常に削除されました',
       'File successfully uploaded': 'ファイルのアップロードに成功',
-      'File successfully uploaded and associated external reference successfully created': 'ファイルが正常にアップロードされ、関連付けられた外部参照が正常に作成されました',
+      'File successfully uploaded and associated external reference successfully created':
+        'ファイルが正常にアップロードされ、関連付けられた外部参照が正常に作成されました',
       'Launch an import of this file': 'このファイルのインポートを開始する',
       Launch: '起動',
       'Rule rescan': 'ルールの再スキャン',
@@ -4559,6 +4570,7 @@ const i18n = {
       'Reset filters': 'フィルタをリセット',
       reversed: '反転した',
       Limit: 'リミット',
+      'All threats': 'すべての脅威',
       // Time
       '24h': '24時間',
       // Types
@@ -5311,7 +5323,8 @@ const i18n = {
       'Enabled import connectors': '已启用的导入连接器',
       'No enrichment connectors on this platform': '此平台上没有富化连接器',
       'Enrichment connectors': '富化连接器',
-      'Copy disabled: too many selected elements (maximum number of elements for a copy: ': '複製已關閉：選取元素過多（複製的最大元素數：',
+      'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
+        '複製已關閉：選取元素過多（複製的最大元素數：',
       Copy: '複製',
       'Elements successfully copied': '已成功複製元素',
       'Registered connectors': '已注册连接器',
@@ -5615,9 +5628,11 @@ const i18n = {
       'Validate and send for import': '验证并发送以进行导入',
       'Validate this workbench': '验证此工作区',
       'File successfully removed': '已成功移除文件',
-      'File and associated external reference successfully removed': '已成功刪除檔和關聯的外部引用',
+      'File and associated external reference successfully removed':
+        '已成功刪除檔和關聯的外部引用',
       'File successfully uploaded': '已成功上传文件',
-      'File successfully uploaded and associated external reference successfully created': '已成功上載檔並成功創建關聯的外部引用',
+      'File successfully uploaded and associated external reference successfully created':
+        '已成功上載檔並成功創建關聯的外部引用',
       'Launch an import of this file': '启动此文件的导入',
       Launch: '启动',
       'Rule rescan': '规则重新扫描',
@@ -6085,6 +6100,7 @@ const i18n = {
       'Reset filters': '重置过滤器',
       reversed: '反转',
       Limit: '限制',
+      'All threats': '所有威胁',
       // Time
       '24h': '24小时',
       // Types

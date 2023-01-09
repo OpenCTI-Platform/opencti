@@ -549,6 +549,29 @@ class EntityStixCoreRelationships extends Component {
                 'created_end_date',
                 relationshipTypes.includes('targets') ? 'targets' : undefined,
               ]}
+              availableRelationFilterTypes={{
+                targets: isRelationReversed
+                  ? [
+                    'Position',
+                    'City',
+                    'Country',
+                    'Region',
+                    'Individual',
+                    'System',
+                    'Organization',
+                    'Sector',
+                    'Event',
+                    'Vulnerability',
+                  ]
+                  : [
+                    'Threat-Actor',
+                    'Intrusion-Set',
+                    'Campaign',
+                    'Incident',
+                    'Malware',
+                    'Tool',
+                  ],
+              }}
               availableEntityTypes={stixCoreObjectTypes}
               availableRelationshipTypes={relationshipTypes}
               numberOfElements={numberOfElements}

@@ -87,6 +87,7 @@ const RootRegionComponent = ({ queryRef }) => {
           availableSections={[
             'countries',
             'cities',
+            'threats',
             'threat_actors',
             'intrusion_sets',
             'campaigns',
@@ -95,7 +96,6 @@ const RootRegionComponent = ({ queryRef }) => {
             'attack_patterns',
             'tools',
             'observables',
-            'targets',
           ]}
         />
       </Route>

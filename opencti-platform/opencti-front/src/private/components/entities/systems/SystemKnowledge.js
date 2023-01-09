@@ -80,14 +80,13 @@ class SystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/entities/systems/:systemId/knowledge/targets"
+            path="/dashboard/entities/systems/:systemId/knowledge/threats"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={system.id}
                 relationshipTypes={['targets']}
                 isRelationReversed
                 entityLink={link}
-                allDirections={true}
                 stixCoreObjectTypes={[
                   'Attack-Pattern',
                   'Threat-Actor',

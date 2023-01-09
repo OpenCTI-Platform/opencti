@@ -79,14 +79,13 @@ class IndividualKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/entities/individuals/:individualId/knowledge/targets"
+            path="/dashboard/entities/individuals/:individualId/knowledge/threats"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['targets']}
                 isRelationReversed
                 entityLink={link}
-                allDirections={true}
                 stixCoreObjectTypes={[
                   'Attack-Pattern',
                   'Threat-Actor',

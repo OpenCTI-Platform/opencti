@@ -40,7 +40,6 @@ const CountryKnowledgeComponent = ({
     countryData,
   );
   const link = `/dashboard/locations/countries/${country.id}/knowledge`;
-
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
@@ -85,14 +84,13 @@ const CountryKnowledgeComponent = ({
         />
         <Route
           exact
-          path="/dashboard/locations/countries/:countryId/knowledge/targets"
+          path="/dashboard/locations/countries/:countryId/knowledge/threats"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
               isRelationReversed
               entityLink={link}
-              allDirections={true}
               stixCoreObjectTypes={[
                 'Attack-Pattern',
                 'Threat-Actor',
@@ -184,7 +182,7 @@ const CountryKnowledgeComponent = ({
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets', 'originates-from']}
-              stixCoreObjectTypes={['Campaign', 'Intrusion-Set']}
+              stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}

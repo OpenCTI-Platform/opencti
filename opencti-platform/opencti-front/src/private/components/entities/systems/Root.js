@@ -126,6 +126,7 @@ class RootSystem extends Component {
               availableSections={[
                 'systems',
                 'systems',
+                'threats',
                 'threat_actors',
                 'intrusion_sets',
                 'campaigns',
@@ -134,7 +135,6 @@ class RootSystem extends Component {
                 'attack_patterns',
                 'tools',
                 'observables',
-                'targets',
               ]}
             />
           )}

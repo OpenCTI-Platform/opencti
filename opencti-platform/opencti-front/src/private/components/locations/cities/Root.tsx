@@ -85,6 +85,7 @@ const RootCityComponent = ({ queryRef }) => {
             'organizations',
             'countries',
             'regions',
+            'threats',
             'threat_actors',
             'intrusion_sets',
             'campaigns',
@@ -93,7 +94,6 @@ const RootCityComponent = ({ queryRef }) => {
             'attack_patterns',
             'tools',
             'observables',
-            'targets',
           ]}
         />
       </Route>

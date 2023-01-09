@@ -41,6 +41,7 @@ interface FilterAutocompleteProps {
   setInputValues: Dispatch<Record<string, string | Date>>;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
+  availableRelationFilterTypes?: Record<string, string[]>;
   allEntityTypes?: boolean;
   openOnFocus?: boolean;
 }
@@ -52,12 +53,15 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   setInputValues,
   availableEntityTypes,
   availableRelationshipTypes,
+  availableRelationFilterTypes,
   allEntityTypes,
   openOnFocus,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [searchScope, setSearchScope] = useState<Record<string, string[]>>({});
+  const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
+    availableRelationFilterTypes || {},
+  );
   const [entities, searchEntities] = useSearchEntities({
     searchScope,
     setInputValues,
@@ -89,6 +93,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       name={key}
       searchScope={searchScope}
       setSearchScope={setSearchScope}
+      availableRelationFilterTypes={availableRelationFilterTypes}
     />
   );
   let options: OptionValue[] = [];

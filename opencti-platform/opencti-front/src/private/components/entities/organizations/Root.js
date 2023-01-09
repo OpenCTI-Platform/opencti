@@ -129,6 +129,7 @@ class RootOrganization extends Component {
                 'individuals',
                 'locations',
                 'used_tools',
+                'threats',
                 'threat_actors',
                 'intrusion_sets',
                 'campaigns',
@@ -137,7 +138,6 @@ class RootOrganization extends Component {
                 'attack_patterns',
                 'tools',
                 'observables',
-                'targets',
               ]}
             />
           )}

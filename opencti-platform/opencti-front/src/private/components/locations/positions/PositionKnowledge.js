@@ -67,14 +67,13 @@ class PositionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/locations/positions/:positionId/knowledge/targets"
+            path="/dashboard/locations/positions/:positionId/knowledge/threats"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={position.id}
                 relationshipTypes={['targets']}
                 isRelationReversed
                 entityLink={link}
-                allDirections={true}
                 stixCoreObjectTypes={[
                   'Attack-Pattern',
                   'Threat-Actor',

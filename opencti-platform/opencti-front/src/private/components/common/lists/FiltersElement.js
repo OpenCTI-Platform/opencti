@@ -3,7 +3,10 @@ import TextField from '@mui/material/TextField';
 import * as R from 'ramda';
 import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import { directFilters, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import {
+  directFilters,
+  FiltersVariant,
+} from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 
@@ -18,6 +21,7 @@ const FiltersElement = ({
   defaultHandleAddFilter,
   availableEntityTypes,
   availableRelationshipTypes,
+  availableRelationFilterTypes,
   allEntityTypes,
 }) => {
   const { t } = useFormatter();
@@ -66,6 +70,7 @@ const FiltersElement = ({
               setInputValues={setInputValues}
               availableEntityTypes={availableEntityTypes}
               availableRelationshipTypes={availableRelationshipTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
               allEntityTypes={allEntityTypes}
               openOnFocus={true}
             />
