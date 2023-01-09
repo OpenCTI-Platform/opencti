@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
+import InputAdornment from '@mui/material/InputAdornment';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -14,6 +15,8 @@ import { ConnectionHandler } from 'relay-runtime';
 import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
 import { assoc, pipe } from 'ramda';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -236,7 +239,12 @@ const RetentionCreation = (props) => {
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({ submitForm, handleReset, isSubmitting, values: formValues }) => (
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              values: formValues,
+            }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -253,6 +261,23 @@ const RetentionCreation = (props) => {
                   fullWidth={true}
                   onChange={() => setVerified(false)}
                   style={{ marginTop: 20 }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip
+                          title={t(
+                            'All objects matching the filters that have not been updated since this amount of days will be deleted',
+                          )}
+                        >
+                          <InformationOutline
+                            fontSize="small"
+                            color="primary"
+                            style={{ cursor: 'default' }}
+                          />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 <div style={{ marginTop: 35 }}>
                   <Filters

@@ -1834,7 +1834,7 @@ class ToolBar extends Component {
                   <div style={{ marginRight: 50 }}>
                     <ItemMarkings
                       variant="inList"
-                      markingDefinitionsEdges={element.objectMarking.edges}
+                      markingDefinitionsEdges={element.objectMarking?.edges ?? []}
                     />
                   </div>
                   <ListItemSecondaryAction>

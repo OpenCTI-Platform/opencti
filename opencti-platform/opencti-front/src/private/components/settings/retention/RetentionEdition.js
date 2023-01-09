@@ -11,6 +11,9 @@ import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
 import { assoc, pipe } from 'ramda';
+import InputAdornment from '@mui/material/InputAdornment';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -198,6 +201,23 @@ const RetentionEditionContainer = (props) => {
                 onChange={() => setVerified(false)}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Tooltip
+                        title={t(
+                          'All objects matching the filters that have not been updated since this amount of days will be deleted',
+                        )}
+                      >
+                        <InformationOutline
+                          fontSize="small"
+                          color="primary"
+                          style={{ cursor: 'default' }}
+                        />
+                      </Tooltip>
+                    </InputAdornment>
+                  ),
+                }}
               />
               <div style={{ marginTop: 35 }}>
                 <Filters

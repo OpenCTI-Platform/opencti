@@ -19,6 +19,9 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MuiTextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
+import InputAdornment from '@mui/material/InputAdornment';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -246,7 +249,10 @@ const FeedCreation = (props) => {
   };
 
   const areAttributesValid = () => {
-    if (selectedTypes.length === 0 || Object.keys(feedAttributes).length === 0) {
+    if (
+      selectedTypes.length === 0
+      || Object.keys(feedAttributes).length === 0
+    ) {
       return false;
     }
     for (const n of Object.keys(feedAttributes)) {
@@ -420,6 +426,23 @@ const FeedCreation = (props) => {
                           label={t('Rolling time (in minutes)')}
                           fullWidth={true}
                           style={{ marginTop: 20 }}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <Tooltip
+                                  title={t(
+                                    'Return all objects matching the filters that have been updated since this amount of minutes',
+                                  )}
+                                >
+                                  <InformationOutline
+                                    fontSize="small"
+                                    color="primary"
+                                    style={{ cursor: 'default' }}
+                                  />
+                                </Tooltip>
+                              </InputAdornment>
+                            ),
+                          }}
                         />
                         <Field
                           component={SelectField}
