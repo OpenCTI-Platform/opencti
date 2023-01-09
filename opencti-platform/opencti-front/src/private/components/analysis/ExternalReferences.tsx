@@ -1,6 +1,9 @@
 import React, { FunctionComponent, useContext } from 'react';
+import * as R from 'ramda';
 import ListLines from '../../../components/list_lines/ListLines';
-import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_references/ExternalReferencesLines';
+import ExternalReferencesLines, {
+  externalReferencesLinesQuery,
+} from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -11,9 +14,7 @@ import {
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import {
-  ExternalReferenceLine_node$data,
-} from './external_references/__generated__/ExternalReferenceLine_node.graphql';
+import { ExternalReferenceLine_node$data } from './external_references/__generated__/ExternalReferenceLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import { Filters } from '../../../components/list_lines';
 import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
@@ -28,11 +29,7 @@ interface ExternalReferencesProps {
 
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   const { helper } = useContext(UserContext);
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<ExternalReferencesLinesPaginationQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ExternalReferencesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
@@ -84,9 +81,16 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<ExternalReferenceLine_node$data>(LOCAL_STORAGE_KEY);
-
-  const queryRef = useQueryLoading<ExternalReferencesLinesPaginationQuery>(externalReferencesLinesQuery, paginationOptions);
-
+  const queryRef = useQueryLoading<ExternalReferencesLinesPaginationQuery>(
+    externalReferencesLinesQuery,
+    paginationOptions,
+  );
+  let finalFilters = filters;
+  finalFilters = R.assoc(
+    'entity_type',
+    [{ id: 'External-Reference', value: 'External-Reference' }],
+    finalFilters,
+  );
   return (
     <div>
       <ListLines
@@ -113,9 +117,20 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense fallback={
-            <>{Array(20).fill(0).map((idx) => (<ExternalReferenceLineDummy key={idx} dataColumns={dataColumns} />))}</>
-          }>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <ExternalReferenceLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+            }
+          >
             <>
               <ExternalReferencesLines
                 queryRef={queryRef}
@@ -133,6 +148,8 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
                 numberOfSelectedElements={numberOfSelectedElements}
                 handleClearSelectedElements={handleClearSelectedElements}
                 selectAll={selectAll}
+                search={searchTerm}
+                filters={finalFilters}
                 type="External-Reference"
               />
             </>

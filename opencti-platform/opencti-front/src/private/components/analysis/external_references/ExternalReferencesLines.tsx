@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { ExternalReferenceLine, ExternalReferenceLineDummy } from './ExternalReferenceLine';
+import {
+  ExternalReferenceLine,
+  ExternalReferenceLineDummy,
+} from './ExternalReferenceLine';
 import { ExternalReferencesLines_data$key } from './__generated__/ExternalReferencesLines_data.graphql';
 import {
   ExternalReferencesLinesPaginationQuery,
@@ -16,7 +19,7 @@ const nbOfRowsToLoad = 50;
 
 interface ExternalReferencesLinesProps {
   setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'];
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
   paginationOptions: ExternalReferencesLinesPaginationQuery$variables;
   queryRef: PreloadedQuery<ExternalReferencesLinesPaginationQuery>;
   selectedElements: Record<string, ExternalReferenceLine_node$data>;
@@ -37,13 +40,13 @@ export const externalReferencesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...ExternalReferencesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -53,12 +56,10 @@ const externalReferencesLineFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "ExternalReferencesOrdering"
-      defaultValue: source_name
-    }
+    orderBy: { type: "ExternalReferencesOrdering", defaultValue: source_name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-  ) @refetchable(queryName: "ExternalReferencesLinesRefetchQuery")  {
+  )
+  @refetchable(queryName: "ExternalReferencesLinesRefetchQuery") {
     externalReferences(
       search: $search
       first: $count
@@ -81,7 +82,7 @@ const externalReferencesLineFragment = graphql`
 `;
 
 const ExternalReferencesLines: FunctionComponent<
-  ExternalReferencesLinesProps
+ExternalReferencesLinesProps
 > = ({
   dataColumns,
   paginationOptions,
@@ -92,12 +93,10 @@ const ExternalReferencesLines: FunctionComponent<
   onToggleEntity,
   setNumberOfElements,
 }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<ExternalReferencesLinesPaginationQuery, ExternalReferencesLines_data$key>({
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+  ExternalReferencesLinesPaginationQuery,
+  ExternalReferencesLines_data$key
+  >({
     linesQuery: externalReferencesLinesQuery,
     linesFragment: externalReferencesLineFragment,
     queryRef,

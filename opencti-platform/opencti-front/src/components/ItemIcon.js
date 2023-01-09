@@ -13,7 +13,7 @@ import {
   ShortTextOutlined,
   WorkOutline,
   ReviewsOutlined,
-  LanguageOutlined,
+  LocalOfferOutlined,
   WifiTetheringOutlined,
   Visibility,
   PlaceOutlined,
@@ -83,7 +83,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
         />
       );
     case 'External-Reference':
-      return <LanguageOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <LocalOfferOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'Label':
       return <LabelOutline style={style} fontSize={fontSize} role="img" />;
     case 'Attack-Pattern':
