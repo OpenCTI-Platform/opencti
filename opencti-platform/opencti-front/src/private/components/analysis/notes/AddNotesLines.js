@@ -157,7 +157,7 @@ class AddNotesLinesContainer extends Component {
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitionsEdges={note?.objectMarking?.edges || []}
+                  markingDefinitionsEdges={note.objectMarking?.edges || []}
                 />
               </div>
             </ListItem>

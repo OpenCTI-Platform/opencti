@@ -220,7 +220,7 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
     >
       <span>
         <StyledBadge variant="dot" color="primary">
-          {R.take(limit || 10, markings).map((markingDefinition) => renderChip(markingDefinition, false))}
+          {R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition, false))}
         </StyledBadge>
       </span>
     </EnrichedTooltip>

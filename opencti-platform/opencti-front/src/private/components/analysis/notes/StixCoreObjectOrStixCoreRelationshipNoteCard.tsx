@@ -240,7 +240,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={note?.objectMarking?.edges || []}
+                markingDefinitionsEdges={note.objectMarking?.edges || []}
                 limit={1}
               />
             </div>
