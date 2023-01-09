@@ -198,7 +198,7 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
         );
     }
   };
-  if (!limit || markings.length === 1) {
+  if (!limit || markings.length <= 1) {
     return (
       <span>
         {markings.map((markingDefinition) => renderChip(markingDefinition, false))}
