@@ -7,7 +7,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Avatar from '@mui/material/Avatar';
 import { CheckCircle, DocumentScannerOutlined } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';

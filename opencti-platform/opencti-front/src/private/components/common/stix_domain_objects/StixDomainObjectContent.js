@@ -183,6 +183,7 @@ class StixDomainObjectContentComponent extends Component {
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
+      readOnly: true,
     };
   }
 
@@ -303,6 +304,10 @@ class StixDomainObjectContentComponent extends Component {
     });
   }
 
+  handleSwitchReadOnly() {
+    this.setState({ readOnly: !this.state.readOnly });
+  }
+
   onTextFieldChange(event) {
     this.setState({ currentContent: event.target.value });
     SAVE$.next({ action: 'SaveFile' });
@@ -409,6 +414,7 @@ class StixDomainObjectContentComponent extends Component {
       currentContent,
       markdownSelectedTab,
       navOpen,
+      readOnly,
     } = this.state;
     const files = getFiles(stixDomainObject);
     const currentUrl = currentFileId
@@ -461,6 +467,8 @@ class StixDomainObjectContentComponent extends Component {
             <StixDomainObjectContentBar
               directDownload={currentGetUrl}
               handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+              handleSwitchReadOnly={this.handleSwitchReadOnly.bind(this)}
+              readOnly={readOnly}
               navOpen={navOpen}
             />
             <div
@@ -481,6 +489,7 @@ class StixDomainObjectContentComponent extends Component {
                   this.onHtmlFieldChange(editor.getData());
                 }}
                 onBlur={this.saveFile.bind(this)}
+                disabled={readOnly}
               />
             </div>
           </div>

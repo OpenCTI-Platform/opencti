@@ -8,6 +8,7 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
   CloudDownloadOutlined,
+  EditOutlined,
 } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
@@ -38,6 +39,8 @@ class StixDomainObjectContentBar extends Component {
       handleDownload,
       directDownload,
       handleDownloadPdf,
+      handleSwitchReadOnly,
+      readOnly,
       navOpen,
     } = this.props;
     return (
@@ -63,6 +66,15 @@ class StixDomainObjectContentBar extends Component {
               display: 'flex',
             }}
           >
+            {handleSwitchReadOnly && (
+              <IconButton
+                color={readOnly ? 'primary' : 'secondary'}
+                onClick={handleSwitchReadOnly.bind(this)}
+                size="large"
+              >
+                <EditOutlined />
+              </IconButton>
+            )}
             {handleZoomIn && (
               <IconButton
                 color="primary"
@@ -132,9 +144,11 @@ StixDomainObjectContentBar.propTypes = {
   handleDownload: PropTypes.func,
   directDownload: PropTypes.string,
   handleDownloadPdf: PropTypes.func,
+  handleSwitchReadOnly: PropTypes.func,
   currentZoom: PropTypes.number,
   theme: PropTypes.object,
   navOpen: PropTypes.bool,
+  readOnly: PropTypes.bool,
 };
 
 export default R.compose(

@@ -147,7 +147,15 @@ html[data-theme="light"],body[data-theme="light"] {
 }
 
 .ck-read-only {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: #9a9a9a !important;
+}
+
+.ck-read-only ::-moz-selection { /* Code for Firefox */
+  color: #505050 !important;
+}
+
+.ck-read-only ::selection {
+  color: #505050 !important;
 }
 
 td.ck-editor__editable {
