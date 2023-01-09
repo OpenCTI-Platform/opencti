@@ -4,7 +4,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, WorkOutline } from '@mui/icons-material';
+import {
+  ArrowForwardIosOutlined,
+  LocalOfferOutlined,
+} from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -50,7 +53,7 @@ class TopMenuExternalReference extends Component {
           color="primary"
           classes={{ root: classes.buttonHome }}
         >
-          <WorkOutline className={classes.icon} fontSize="small" />
+          <LocalOfferOutlined className={classes.icon} fontSize="small" />
           {t('External references')}
         </Button>
         <ArrowForwardIosOutlined

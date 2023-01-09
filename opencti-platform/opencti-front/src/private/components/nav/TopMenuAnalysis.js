@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import {
-  LanguageOutlined,
+  LocalOfferOutlined,
   SubjectOutlined,
   DescriptionOutlined,
   ReviewsOutlined,
@@ -123,7 +123,7 @@ class TopMenuAnalysis extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <LanguageOutlined className={classes.icon} fontSize="small" />
+          <LocalOfferOutlined className={classes.icon} fontSize="small" />
           {t('External references')}
         </Button>
       </div>

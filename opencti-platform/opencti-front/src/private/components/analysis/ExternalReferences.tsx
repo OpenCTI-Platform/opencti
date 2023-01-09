@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useContext } from 'react';
-import { QueryRenderer } from '../../../relay/environment';
+import * as R from 'ramda';
 import ListLines from '../../../components/list_lines/ListLines';
 import ExternalReferencesLines, {
   externalReferencesLinesQuery,
@@ -8,7 +8,7 @@ import ExternalReferenceCreation from './external_references/ExternalReferenceCr
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import {
-  ExternalReferencesLinesPaginationQuery$data,
+  ExternalReferencesLinesPaginationQuery,
   ExternalReferencesLinesPaginationQuery$variables,
 } from './external_references/__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -17,6 +17,8 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { ExternalReferenceLine_node$data } from './external_references/__generated__/ExternalReferenceLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import { Filters } from '../../../components/list_lines';
+import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
 const LOCAL_STORAGE_KEY = 'view-external-references';
 
@@ -79,6 +81,16 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<ExternalReferenceLine_node$data>(LOCAL_STORAGE_KEY);
+  const queryRef = useQueryLoading<ExternalReferencesLinesPaginationQuery>(
+    externalReferencesLinesQuery,
+    paginationOptions,
+  );
+  let finalFilters = filters;
+  finalFilters = R.assoc(
+    'entity_type',
+    [{ id: 'External-Reference', value: 'External-Reference' }],
+    finalFilters,
+  );
   return (
     <div>
       <ListLines
@@ -104,20 +116,26 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           'created_end_date',
         ]}
       >
-        <QueryRenderer
-          query={externalReferencesLinesQuery}
-          variables={paginationOptions}
-          render={({
-            props,
-          }: {
-            props: ExternalReferencesLinesPaginationQuery$data;
-          }) => (
+        {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <ExternalReferenceLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+            }
+          >
             <>
               <ExternalReferencesLines
-                data={props}
+                queryRef={queryRef}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
-                initialLoading={props === null}
                 setNumberOfElements={helpers.handleSetNumberOfElements}
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
@@ -130,11 +148,13 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
                 numberOfSelectedElements={numberOfSelectedElements}
                 handleClearSelectedElements={handleClearSelectedElements}
                 selectAll={selectAll}
+                search={searchTerm}
+                filters={finalFilters}
                 type="External-Reference"
               />
             </>
-          )}
-        />
+          </React.Suspense>
+        )}
       </ListLines>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ExternalReferenceCreation
