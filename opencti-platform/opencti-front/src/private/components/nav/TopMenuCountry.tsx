@@ -5,7 +5,10 @@ import { ArrowForwardIosOutlined, FlagOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 import { Theme } from '../../../components/Theme';
 
 const styles = makeStyles<Theme>((theme) => ({
@@ -58,15 +61,13 @@ const TopMenuCountry: FunctionComponent = () => {
         component={Link}
         to={`/dashboard/locations/countries/${countryId}`}
         variant={
-          location.pathname
-          === `/dashboard/locations/countries/${countryId}`
+          location.pathname === `/dashboard/locations/countries/${countryId}`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname
-          === `/dashboard/locations/countries/${countryId}`
+          location.pathname === `/dashboard/locations/countries/${countryId}`
             ? 'secondary'
             : 'primary'
         }
@@ -95,6 +96,26 @@ const TopMenuCountry: FunctionComponent = () => {
         classes={{ root: classes.button }}
       >
         {t('Knowledge')}
+      </Button>
+      <Button
+        component={Link}
+        to={`/dashboard/locations/countries/${countryId}/analysis`}
+        variant={
+          location.pathname
+          === `/dashboard/locations/countries/${countryId}/analysis`
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname
+          === `/dashboard/locations/countries/${countryId}/analysis`
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Analysis')}
       </Button>
       <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
         <Button
