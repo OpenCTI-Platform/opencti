@@ -52,7 +52,7 @@ const syncPopoverDeletionMutation = graphql`
 
 const syncPopoverStartMutation = graphql`
   mutation SyncPopoverStartMutation($id: ID!) {
-    synchronizerStart(id: $id) {
+      synchronizerStart(id: $id) {
       id
       name
       uri
@@ -92,6 +92,10 @@ const syncEditionQuery = graphql`
       no_dependencies
       ssl_verify
       current_state
+      user {
+        id
+        name
+      }
     }
   }
 `;

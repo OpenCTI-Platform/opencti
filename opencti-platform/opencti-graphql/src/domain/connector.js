@@ -146,7 +146,7 @@ export const testSync = async (context, user, sync) => {
     try {
       const eventSource = new EventSource(eventSourceUri, {
         rejectUnauthorized: ssl,
-        headers: { authorization: `Bearer ${token}` },
+        headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
       });
       eventSource.on('connected', (d) => {
         const { connectionId } = JSON.parse(d.data);

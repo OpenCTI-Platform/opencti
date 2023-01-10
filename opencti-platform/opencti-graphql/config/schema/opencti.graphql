@@ -534,10 +534,12 @@ type StreamCollection {
   description: String
   filters: String
   groups: [Group]
+  stream_live: Boolean
+  stream_public: Boolean
 }
 type StreamCollectionConnection {
   pageInfo: PageInfo!
-  edges: [StreamCollectionEdge]
+  edges: [StreamCollectionEdge!]!
 }
 type StreamCollectionEdge {
   cursor: String!
@@ -548,10 +550,25 @@ input StreamCollectionAddInput {
   description: String
   groups: [String]
   filters: String
+  stream_live: Boolean
+  stream_public: Boolean
 }
 enum StreamCollectionOrdering {
   name
   description
+  stream_public
+}
+enum StreamCollectionFilter {
+  name
+  stream_public
+  stream_live
+}
+
+input StreamCollectionFiltering {
+  key: [StreamCollectionFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
 }
 
 ############## SubTypes
@@ -645,7 +662,7 @@ type Synchronizer {
   id: ID!
   name: String!
   uri: String!
-  token: String!
+  token: String
   stream_id: String!
   user: Creator
   running: Boolean!
@@ -668,7 +685,7 @@ type SynchronizerConnection {
 input SynchronizerAddInput {
   name: String! @constraint(minLength: 2)
   uri: String! @constraint(minLength: 2)
-  token: String! @constraint(minLength: 2)
+  token: String
   stream_id: String! @constraint(minLength: 2)
   user_id: String
   recover: DateTime
@@ -12021,7 +12038,8 @@ type Query {
     orderBy: StreamCollectionOrdering
     orderMode: OrderingMode
     search: String
-  ): StreamCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+    filters: [StreamCollectionFiltering]
+  ): StreamCollectionConnection!
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int

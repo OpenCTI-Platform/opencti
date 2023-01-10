@@ -18,6 +18,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, BASE_TYPE_ENTITY } from '../schema/general';
 import { getParentTypes } from '../schema/schemaUtils';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
+import { SYSTEM_USER } from '../utils/access';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (context, user, input) => {
@@ -54,15 +55,29 @@ export const createGroupRelation = async (context, user, collectionId, groupId) 
   return findById(context, user, collectionId);
 };
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_STREAM_COLLECTION], args);
+  if (user) {
+    return listEntities(context, user, [ENTITY_TYPE_STREAM_COLLECTION], args);
+  }
+  return listEntities(
+    context,
+    SYSTEM_USER,
+    [ENTITY_TYPE_STREAM_COLLECTION],
+    {
+      ...(args ?? {}),
+      filters: [
+        ...(args?.filters ?? []),
+        { key: ['stream_public'], values: ['true'] },
+      ],
+    }
+  );
 };
 export const streamCollectionEditField = async (context, user, collectionId, input) => {
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, element, user);
 };
 export const streamCollectionDelete = async (context, user, collectionId) => {
-  await deleteElementById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
-  return collectionId;
+  const elementId = await deleteElementById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+  return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].DELETE_TOPIC, elementId, user);
 };
 export const streamCollectionCleanContext = async (context, user, collectionId) => {
   await delEditContext(user, collectionId);

@@ -60,7 +60,7 @@ class Stream extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       description: {
@@ -77,6 +77,11 @@ class Stream extends Component {
         label: 'Filters',
         width: '40%',
       },
+      stream_public: {
+        label: 'Public',
+        width: '5%',
+        isSortable: true,
+      },
     };
     return (
       <ListLines
@@ -89,24 +94,36 @@ class Stream extends Component {
         secondaryAction={true}
         keyword={searchTerm}
         message={
-          <span>
-            {t('Global streams are available for granted users. Live at')}{' '}
-            <a
-              href="/stream/live"
-              target="_blank"
-              style={{ color: theme.palette.secondary.main }}
-            >
-              <i>/stream/live</i>
-            </a>{' '}
-            {t('and raw at')}{' '}
-            <a
-              href="/stream"
-              target="_blank"
-              style={{ color: theme.palette.secondary.main }}
-            >
-              <i>/stream</i>
-            </a>
-          </span>
+          <>
+            <div>
+              {t('Global streams are available for granted users. Live at')}{' '}
+              <a
+                href="/stream/live"
+                target="_blank"
+                style={{ color: theme.palette.secondary.main }}
+              >
+                <i>/stream/live</i>
+              </a>{' '}
+              {t('and raw at')}{' '}
+              <a
+                href="/stream"
+                target="_blank"
+                style={{ color: theme.palette.secondary.main }}
+              >
+                <i>/stream</i>
+              </a>
+            </div>
+            <div>
+              {t('Public streams are available for anyone at')}{' '}
+              <a
+                href="/public"
+                target="_blank"
+                style={{ color: theme.palette.secondary.main }}
+              >
+                <i>/public</i>
+              </a>
+            </div>
+          </>
         }
       >
         <QueryRenderer

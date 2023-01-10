@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
-import { Google, KeyOutline, Facebook, Github } from 'mdi-material-ui';
+import { Facebook, Github, Google, KeyOutline } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
@@ -10,9 +10,7 @@ import LoginForm from './LoginForm';
 import OTPForm from './OTPForm';
 import OtpActivationComponent from './OtpActivation';
 import { Theme } from '../../components/Theme';
-import {
-  RootPublicQuery$data,
-} from '../__generated__/RootPublicQuery.graphql';
+import { LoginRootPublicQuery$data } from '../__generated__/LoginRootPublicQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -84,7 +82,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface LoginProps {
   type: string
-  settings: RootPublicQuery$data['settings']
+  settings: LoginRootPublicQuery$data['settings']
 }
 
 const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {

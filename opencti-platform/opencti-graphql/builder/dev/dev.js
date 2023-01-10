@@ -14,7 +14,7 @@ esbuild.build({
     ],
     entryNames: "[name]",
     bundle: true,
-    loader: {'.js': 'jsx'},
+    loader: { '.js': 'jsx' },
     platform: 'node',
     target: ['node14'],
     minify: false,

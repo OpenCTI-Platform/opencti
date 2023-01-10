@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
@@ -9,13 +9,15 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, environment, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
-import { syncCheckMutation } from './SyncCreation';
+import { syncCheckMutation, syncStreamCollectionQuery } from './SyncCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
+import SelectField from '../../../../components/SelectField';
 
 const styles = (theme) => ({
   header: {
@@ -63,10 +65,23 @@ const syncMutationFieldPatch = graphql`
   }
 `;
 
+const syncEditionUserQuery = graphql`
+  query SyncEditionUserQuery {
+    users {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 const syncValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().required(t('This field is required')),
-  token: Yup.string().required(t('This field is required')),
+  token: Yup.string(),
   stream_id: Yup.string().required(t('This field is required')),
   current_state: Yup.date()
     .nullable()
@@ -74,10 +89,18 @@ const syncValidation = (t) => Yup.object().shape({
   listen_deletion: Yup.bool(),
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
+  user_id: Yup.string(),
 });
+
+const queryRef = loadQuery(environment, syncEditionUserQuery);
 
 const SyncEditionContainer = (props) => {
   const { t, classes, handleClose, synchronizer } = props;
+
+  const [streams, setStreams] = useState([]);
+
+  const { users } = usePreloadedQuery(syncEditionUserQuery, queryRef);
+
   const initialValues = R.pipe(
     R.assoc('current_state', buildDate(synchronizer.current_state)),
     R.pick([
@@ -118,6 +141,30 @@ const SyncEditionContainer = (props) => {
       })
       .catch(() => false);
   };
+
+  const handleGetStreams = async (uri) => {
+    const res = await fetch(`${uri}/graphql`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: syncStreamCollectionQuery }),
+    });
+    if (!res.ok) {
+      MESSAGING$.notifyError('Error getting the streams from distant OpenCTI');
+      return;
+    }
+    const result = await res.json();
+    setStreams([
+      { value: 'live', label: 'live' },
+      ...result.data.streamCollections.edges.map(({ node }) => ({ value: node.id, label: node.name })),
+    ]);
+  };
+
+  useEffect(() => {
+    if (initialValues.uri) {
+      handleGetStreams(initialValues.uri);
+    }
+  }, []);
+
   return (
     <div>
       <div className={classes.header}>
@@ -135,7 +182,7 @@ const SyncEditionContainer = (props) => {
       <div className={classes.container}>
         <Formik
           enableReinitialize={true}
-          initialValues={initialValues}
+          initialValues={{ ...initialValues, user_id: synchronizer.user?.id }}
           validationSchema={syncValidation(t)}
         >
           {({ values }) => (
@@ -167,14 +214,32 @@ const SyncEditionContainer = (props) => {
                 onSubmit={handleSubmitField}
               />
               <Field
-                component={TextField}
+                component={SelectField}
                 variant="standard"
                 name="stream_id"
                 label={t('Remote OpenCTI stream ID')}
-                fullWidth={true}
+                containerstyle={{ width: '100%' }}
+                style={{ marginTop: 20 }}
+                onOpen={() => (values.uri ? handleGetStreams(values.uri) : {})}
+                onSubmit={handleSubmitField}
+              >
+                {streams.map(({ value, label }) => (
+                  <MenuItem key={value} value={value}>{label}</MenuItem>
+                ))}
+              </Field>
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="user_id"
+                label={t('User applied for this synchronizer')}
+                containerstyle={{ width: '100%' }}
                 style={{ marginTop: 20 }}
                 onSubmit={handleSubmitField}
-              />
+              >
+                {users.edges.map(({ node }) => (
+                  <MenuItem key={node.id} value={node.id}>{node.name}</MenuItem>
+                ))}
+              </Field>
               <Field
                 component={DateTimePickerField}
                 name="current_state"
@@ -246,6 +311,9 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       no_dependencies
       current_state
       ssl_verify
+      user {
+        id
+      }
     }
   `,
 });

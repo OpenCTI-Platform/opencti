@@ -542,11 +542,13 @@ type StreamCollection {
   description: String
   filters: String
   groups: [Group]
+  stream_live: Boolean
+  stream_public: Boolean
 }
 
 type StreamCollectionConnection {
   pageInfo: PageInfo!
-  edges: [StreamCollectionEdge]
+  edges: [StreamCollectionEdge!]!
 }
 
 type StreamCollectionEdge {
@@ -559,11 +561,27 @@ input StreamCollectionAddInput {
   description: String
   groups: [String]
   filters: String
+  stream_live: Boolean
+  stream_public: Boolean
 }
 
 enum StreamCollectionOrdering {
   name
   description
+  stream_public
+}
+
+enum StreamCollectionFilter {
+  name
+  stream_public
+  stream_live
+}
+
+input StreamCollectionFiltering {
+  key: [StreamCollectionFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
 }
 
 enum SubTypesOrdering {
@@ -668,7 +686,7 @@ type Synchronizer {
   id: ID!
   name: String!
   uri: String!
-  token: String!
+  token: String
   stream_id: String!
   user: Creator
   running: Boolean!
@@ -691,7 +709,7 @@ type SynchronizerConnection {
 input SynchronizerAddInput {
   name: name_String_NotNull_minLength_2!
   uri: uri_String_NotNull_minLength_2!
-  token: token_String_NotNull_minLength_2!
+  token: String
   stream_id: stream_id_String_NotNull_minLength_2!
   user_id: String
   recover: DateTime
@@ -704,8 +722,6 @@ input SynchronizerAddInput {
 scalar name_String_NotNull_minLength_2
 
 scalar uri_String_NotNull_minLength_2
-
-scalar token_String_NotNull_minLength_2
 
 scalar stream_id_String_NotNull_minLength_2
 
@@ -7554,7 +7570,7 @@ type Query {
   streamCollection(id: String!): StreamCollection
   feed(id: String!): Feed
   feeds(first: Int, after: ID, orderBy: FeedOrdering, orderMode: OrderingMode, search: String): FeedConnection
-  streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String): StreamCollectionConnection
+  streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: [StreamCollectionFiltering]): StreamCollectionConnection!
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   status(id: String!): Status

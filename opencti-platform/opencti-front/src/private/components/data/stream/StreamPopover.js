@@ -16,10 +16,8 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-
-import Loader from '../../../../components/Loader';
-import StreamCollectionEdition from './StreamCollectionEdition';
+import { commitMutation } from '../../../../relay/environment';
+import StreamCollectionEdition, { streamCollectionMutationFieldPatch } from './StreamCollectionEdition';
 
 const styles = (theme) => ({
   container: {
@@ -47,18 +45,6 @@ const streamCollectionPopoverDeletionMutation = graphql`
   mutation StreamPopoverDeletionMutation($id: ID!) {
     streamCollectionEdit(id: $id) {
       delete
-    }
-  }
-`;
-
-const streamCollectionEditionQuery = graphql`
-  query StreamPopoverEditionQuery($id: String!) {
-    streamCollection(id: $id) {
-      id
-      name
-      description
-      filters
-      ...StreamCollectionEdition_streamCollection
     }
   }
 `;
@@ -100,12 +86,22 @@ class StreamCollectionPopover extends Component {
     this.setState({ displayDelete: false });
   }
 
+  handleOnOff() {
+    commitMutation({
+      mutation: streamCollectionMutationFieldPatch,
+      variables: {
+        id: this.props.streamCollection.id,
+        input: [{ key: 'stream_live', value: [(!this.props.streamCollection.stream_live).toString()] }],
+      },
+    });
+  }
+
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
       mutation: streamCollectionPopoverDeletionMutation,
       variables: {
-        id: this.props.streamCollectionId,
+        id: this.props.streamCollection.id,
       },
       updater: (store) => {
         const container = store.getRoot();
@@ -126,7 +122,7 @@ class StreamCollectionPopover extends Component {
   }
 
   render() {
-    const { classes, t, streamCollectionId } = this.props;
+    const { classes, t, streamCollection } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -142,11 +138,14 @@ class StreamCollectionPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem component="a" href={`/stream/${streamCollectionId}`}>
+          <MenuItem component="a" href={`/stream/${streamCollection.id}`}>
             {t('View')}
           </MenuItem>
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOnOff.bind(this)}>
+            {t(streamCollection.stream_live ? 'Stop' : 'Start')}
           </MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
@@ -160,21 +159,9 @@ class StreamCollectionPopover extends Component {
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >
-          <QueryRenderer
-            query={streamCollectionEditionQuery}
-            variables={{ id: streamCollectionId }}
-            render={({ props }) => {
-              if (props) {
-                // Done
-                return (
-                  <StreamCollectionEdition
-                    streamCollection={props.streamCollection}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
+          <StreamCollectionEdition
+            streamCollection={this.props.streamCollection}
+            handleClose={this.handleCloseUpdate.bind(this)}
           />
         </Drawer>
         <Dialog
@@ -211,7 +198,7 @@ class StreamCollectionPopover extends Component {
 }
 
 StreamCollectionPopover.propTypes = {
-  streamCollectionId: PropTypes.string,
+  streamCollection: PropTypes.object,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

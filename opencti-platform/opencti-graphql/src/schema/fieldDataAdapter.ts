@@ -173,6 +173,8 @@ export const booleanAttributes = [
   'aslr_enabled',
   'dep_enabled',
   'otp_mandatory',
+  'stream_public',
+  'stream_live',
 ];
 export const dictAttributes = ['hashes', 'startup_info'];
 export const numericOrBooleanAttributes = () => [...numericAttributes, ...booleanAttributes];

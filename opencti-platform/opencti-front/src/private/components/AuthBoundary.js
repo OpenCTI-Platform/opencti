@@ -2,7 +2,7 @@ import React from 'react';
 import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import RootPublic from '../../public/Root';
+import LoginRoot from '../../public/LoginRoot';
 
 class AuthBoundaryComponent extends React.Component {
   constructor(props) {
@@ -21,18 +21,18 @@ class AuthBoundaryComponent extends React.Component {
       const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
       // If access is forbidden, just redirect to home page
       if (includes('ForbiddenAccess', types)) {
-        return <RootPublic type="LOGIN" />;
+        return <LoginRoot type="LOGIN" />;
         // window.location.href = '/';
       }
       // If user not authenticated, redirect to login with encoded path
       if (includes('AuthRequired', types)) {
-        return <RootPublic type="LOGIN" />;
+        return <LoginRoot type="LOGIN" />;
       }
       if (includes('OtpRequiredActivation', types)) {
-        return <RootPublic type="2FA_ACTIVATION" />;
+        return <LoginRoot type="2FA_ACTIVATION" />;
       }
       if (includes('OtpRequired', types)) {
-        return <RootPublic type="2FA_VALIDATION" />;
+        return <LoginRoot type="2FA_VALIDATION" />;
       }
     }
     return this.props.children;

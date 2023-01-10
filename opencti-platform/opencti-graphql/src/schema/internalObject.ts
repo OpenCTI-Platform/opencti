@@ -204,7 +204,7 @@ const internalObjectsAttributes = {
     'updated_at',
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters'],
-  [ENTITY_TYPE_STREAM_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters'],
+  [ENTITY_TYPE_STREAM_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters', 'stream_public', 'stream_live'],
   [ENTITY_TYPE_STATUS_TEMPLATE]: ['internal_id', 'standard_id', 'name', 'color'],
   [ENTITY_TYPE_STATUS]: ['internal_id', 'standard_id', 'template_id', 'type', 'order'],
   [ENTITY_TYPE_TASK]: [
@@ -237,6 +237,7 @@ const internalObjectsAttributes = {
     'current_state',
     'listen_deletion',
     'no_dependencies',
+    'user_id',
   ],
 };
 

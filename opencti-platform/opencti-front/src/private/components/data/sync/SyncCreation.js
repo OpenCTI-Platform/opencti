@@ -9,14 +9,18 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, environment, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
+import SelectField from '../../../../components/SelectField';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import ItemIcon from '../../../../components/ItemIcon';
 import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
@@ -82,7 +86,7 @@ export const syncCheckMutation = graphql`
 const syncCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().required(t('This field is required')),
-  token: Yup.string().required(t('This field is required')),
+  token: Yup.string(),
   stream_id: Yup.string().required(t('This field is required')),
   current_state: Yup.date()
     .nullable()
@@ -92,10 +96,40 @@ const syncCreationValidation = (t) => Yup.object().shape({
   ssl_verify: Yup.bool(),
 });
 
+export const syncStreamCollectionQuery = `
+    query SyncCreationStreamCollectionQuery {
+      streamCollections {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  `;
+
+const syncCreationUserQuery = graphql`
+  query SyncCreationUserQuery {
+    users {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const queryRef = loadQuery(environment, syncCreationUserQuery);
 const SyncCreation = (props) => {
   const { t, classes } = props;
   const [open, setOpen] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [streams, setStreams] = useState([]);
+
+  const { users } = usePreloadedQuery(syncCreationUserQuery, queryRef);
 
   const handleOpen = () => {
     setOpen(true);
@@ -144,6 +178,23 @@ const SyncCreation = (props) => {
     handleClose();
   };
 
+  const handleGetStreams = async (uri) => {
+    const res = await fetch(`${uri}/graphql`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: syncStreamCollectionQuery }),
+    });
+    if (!res.ok) {
+      MESSAGING$.notifyError('Error getting the streams from distant OpenCTI');
+      return;
+    }
+    const result = await res.json();
+    setStreams([
+      { value: 'live', label: 'live' },
+      ...result.data.streamCollections.edges.map(({ node }) => ({ value: node.id, label: node.name })),
+    ]);
+  };
+
   return (
     <div>
       <Fab
@@ -190,7 +241,7 @@ const SyncCreation = (props) => {
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({ submitForm, handleReset, isSubmitting, values }) => (
+            {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -216,12 +267,44 @@ const SyncCreation = (props) => {
                   style={{ marginTop: 20 }}
                 />
                 <Field
-                  component={TextField}
+                  component={SelectField}
                   variant="standard"
                   name="stream_id"
                   label={t('Remote OpenCTI stream ID')}
-                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
                   style={{ marginTop: 20 }}
+                  onOpen={() => (values.uri ? handleGetStreams(values.uri) : {})}
+                >
+                  {streams.map(({ value, label }) => (
+                    <MenuItem key={value} value={value}>{label}</MenuItem>
+                  ))}
+                </Field>
+                <Field
+                  component={AutocompleteField}
+                  name="user_id"
+                  onChange={(name, value) => setFieldValue(name, value.value)}
+                  textfieldprops={{
+                    variant: 'standard',
+                    label: t('User applied for this synchronizer'),
+                  }}
+                  containerstyle={{ width: '100%' }}
+                  style={{ marginTop: 20 }}
+                  noOptionsText={t('No available options')}
+                  options={users.edges.map(({ node }) => ({
+                    id: node.id,
+                    value: node.id,
+                    label: node.name,
+                  }))}
+                  renderOption={(optionProps, option) => (
+                    <li {...optionProps}>
+                      <div className={classes.icon}>
+                        <ItemIcon type="User" />
+                      </div>
+                      <div className={classes.text}>
+                        {option.label}
+                      </div>
+                    </li>
+                  )}
                 />
                 <Field
                   component={DateTimePickerField}

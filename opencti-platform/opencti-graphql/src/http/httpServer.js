@@ -91,17 +91,17 @@ const createHttpServer = async () => {
     onHealthCheck,
     path: `${basePath}/graphql`,
   });
-  const { seeMiddleware } = await createApp(app);
-  return { httpServer, seeMiddleware };
+  const { sseMiddleware } = await createApp(app);
+  return { httpServer, sseMiddleware };
 };
 
 const listenServer = async () => {
   return new Promise((resolve, reject) => {
     try {
       const serverPromise = createHttpServer();
-      serverPromise.then(({ httpServer, seeMiddleware }) => {
+      serverPromise.then(({ httpServer, sseMiddleware }) => {
         httpServer.on('close', () => {
-          seeMiddleware.shutdown();
+          sseMiddleware.shutdown();
         });
         const server = httpServer.listen(PORT);
         resolve({ server });

@@ -18,6 +18,7 @@ const ThemeLight = (
   palette: {
     mode: 'light',
     error: { main: '#f44336' },
+    success: { main: '#03A847' },
     primary: { main: primary || '#007fff' },
     secondary: { main: secondary || '#d81b60' },
     chip: { main: '#000000' },

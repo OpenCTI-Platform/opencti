@@ -15,7 +15,7 @@ import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/con
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile } from '../database/file-storage';
-import createSeeMiddleware from '../graphql/sseMiddleware';
+import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { LOGIN_ACTION } from '../config/audit';
 import initHttpRollingFeeds from './httpRollingFeed';
@@ -101,8 +101,8 @@ const createApp = async (app) => {
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));
 
-  const seeMiddleware = createSeeMiddleware();
-  seeMiddleware.applyMiddleware({ app });
+  const sseMiddleware = createSseMiddleware();
+  sseMiddleware.applyMiddleware({ app });
 
   // -- Init Taxii rest api
   initTaxiiApi(app);
@@ -291,7 +291,7 @@ const createApp = async (app) => {
     res.redirect('/');
     next();
   });
-  return { seeMiddleware };
+  return { sseMiddleware };
 };
 
 export default createApp;

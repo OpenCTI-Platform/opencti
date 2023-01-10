@@ -6,11 +6,13 @@ export interface DataColumn {
   label: string;
   width?: string | number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  render?: (v: any) => ReactNode;
+  render?: (v: any, helpers?: any) => ReactNode;
 }
+
 export type DataColumns = Record<string, DataColumn>;
 
-export type Filters<F = Record<string, unknown>[]> = Record<string, F>;
+export type Filter = Record<string, unknown>[];
+export type Filters<F = Filter> = Record<string, F>;
 
 export enum OrderMode {
   asc = 'asc',

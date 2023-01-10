@@ -20,6 +20,7 @@ const ThemeDark = (
   palette: {
     mode: 'dark',
     error: { main: '#f44336' },
+    success: { main: '#03A847' },
     primary: { main: primary || '#00b1ff' },
     secondary: { main: secondary || '#ec407a' },
     chip: { main: '#ffffff' },
