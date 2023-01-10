@@ -199,7 +199,7 @@ import {
   BYPASS,
   BYPASS_REFERENCE,
   executionContext,
-  filterStoreElements,
+  userFilterStoreElements,
   isBypassUser,
   isUserCanAccessStoreElement,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
@@ -2725,7 +2725,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
       // We need to filter what we found with the user rights
-      const filteredRelations = await filterStoreElements(context, user, existingRelationships);
+      const filteredRelations = await userFilterStoreElements(context, user, existingRelationships);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredRelations.length === 0) {
         throw UnsupportedError('Restricted relation already exists');
@@ -3045,7 +3045,7 @@ export const createEntityRaw = async (context, user, input, type, opts = {}) => 
     let dataEntity;
     if (existingEntities.length > 0) {
       // We need to filter what we found with the user rights
-      const filteredEntities = await filterStoreElements(context, user, existingEntities);
+      const filteredEntities = await userFilterStoreElements(context, user, existingEntities);
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {

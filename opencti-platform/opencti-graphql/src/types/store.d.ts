@@ -131,8 +131,6 @@ interface StoreRule {
 interface BasicStoreCommon extends BasicStoreBase {
   // Array
   [k: `i_rule_${string}`]: Array<StoreRawRule>;
-
-  // [k: `rel_${string}`]: Array<string>;
   // object
   hashes?: { [k: string]: string };
   sort?: SortResults;

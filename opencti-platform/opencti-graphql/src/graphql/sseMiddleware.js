@@ -281,7 +281,11 @@ const createSeeMiddleware = () => {
       res.status(500).end();
     }
   };
-  const isInstanceMatchFilters = async (context, instance, filters, filterCache) => {
+  const isInstanceMatchFilters = async (context, user, instance, filters, filterCache) => {
+    const instanceAccessible = await isUserCanAccessStixElement(context, user, instance);
+    if (!instanceAccessible) {
+      return false;
+    }
     // Pre-filter transformation to handle specific frontend format
     const adaptedFilters = adaptFiltersFrontendFormat(filters);
     // User is granted, but we still need to apply filters if needed
@@ -482,8 +486,8 @@ const createSeeMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
-      const isFromVisible = await isInstanceMatchFilters(context, fromStix, streamFilters, filterCache);
-      const isToVisible = await isInstanceMatchFilters(context, toStix, streamFilters, filterCache);
+      const isFromVisible = await isInstanceMatchFilters(context, user, fromStix, streamFilters, filterCache);
+      const isToVisible = await isInstanceMatchFilters(context, user, toStix, streamFilters, filterCache);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
         // From or to are visible, consider it as a dependency
@@ -621,10 +625,10 @@ const createSeeMiddleware = () => {
             // Check for inferences
             const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
             if (!isInferredData || (isInferredData && withInferences)) {
-              const isCurrentlyVisible = await isInstanceMatchFilters(context, stix, streamFilters, filterCache);
+              const isCurrentlyVisible = await isInstanceMatchFilters(context, user, stix, streamFilters, filterCache);
               if (type === EVENT_TYPE_UPDATE) {
                 const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
-                const isPreviouslyVisible = await isInstanceMatchFilters(context, previous, streamFilters, filterCache);
+                const isPreviouslyVisible = await isInstanceMatchFilters(context, user, previous, streamFilters, filterCache);
                 if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                   client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                 } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
@@ -648,7 +652,7 @@ const createSeeMiddleware = () => {
                   for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
                     const container = containers[containerIndex];
                     const stixContainer = convertStoreToStix(container);
-                    const containerMatch = await isInstanceMatchFilters(context, stixContainer, streamFilters, filterCache);
+                    const containerMatch = await isInstanceMatchFilters(context, user, stixContainer, streamFilters, filterCache);
                     if (containerMatch) {
                       isContainerMatching = true;
                       break;
