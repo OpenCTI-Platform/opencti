@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { hashMergeValidation } from '../../../src/database/middleware';
 
-describe.concurrent('middleware', () => {
+describe('middleware', () => {
   it('should hashes allowed to merge', () => {
     const instanceOne = { hashes: { MD5: 'md5', 'SHA-1': 'SHA' } };
     const instanceTwo = { hashes: { MD5: 'md5' } };

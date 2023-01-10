@@ -5,7 +5,7 @@ import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { STIX_META_RELATION_TO_FIELD } from '../../../src/schema/stixMetaRelationship';
 
-describe.concurrent('identifier', () => {
+describe('identifier', () => {
   it('should name correctly normalize', () => {
     let normalize = normalizeName('My data %test     ');
     expect(normalize).toEqual('my data %test');

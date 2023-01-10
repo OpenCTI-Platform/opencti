@@ -7,7 +7,7 @@ import { MARKING_TLP_AMBER, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../
 
 const DEFAULT_PARAM = { name: 'indicator', pattern_type: 'stix', pattern: 'undefined' };
 
-describe.concurrent('indicator utils', () => {
+describe('indicator utils', () => {
   it('should observables correctly extracted', async () => {
     // simpleHash
     const simpleHash = extractObservablesFromIndicatorPattern('[file:hashes.\'SHA-256\' = \'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']');
