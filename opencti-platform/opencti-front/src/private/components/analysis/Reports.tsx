@@ -1,6 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
-import * as R from 'ramda';
-import { QueryRenderer } from '../../../relay/environment';
+import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
@@ -10,13 +8,15 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
 import {
-  ReportsLinesPaginationQuery$data,
+  ReportsLinesPaginationQuery,
   ReportsLinesPaginationQuery$variables,
 } from './reports/__generated__/ReportsLinesPaginationQuery.graphql';
 import { Filters } from '../../../components/list_lines';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.graphql';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { ReportLineDummy } from './reports/ReportLine';
 
 const LOCAL_STORAGE_KEY = 'view-reports';
 
@@ -33,7 +33,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
   onChangeOpenExports,
   match,
 }) => {
-  const [viewStorage, setViewStorage, storageHelpers] = useLocalStorage(LOCAL_STORAGE_KEY, {
+  const [viewStorage, _, storageHelpers] = useLocalStorage(LOCAL_STORAGE_KEY, {
     numberOfElements: { number: 0, symbol: '', original: 0 },
     filters: {} as Filters,
     searchTerm: '',
@@ -62,9 +62,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
   } = useEntityToggle<ReportLine_node$data>(
     'view-reports',
   );
-
-  const [NotEqLocalFilterMode] = useState('and');
-  const [EqLocalFilterMode] = useState('or');
 
   const { reportType } = match.params;
 
@@ -105,24 +102,10 @@ const Reports: FunctionComponent<ReportsProps> = ({
     count: 25,
   });
 
-  const handleChangeLocalFilterMode = (key: string) => {
-    if (filters) {
-      const filterContent = filters[key];
-      let newKey = key;
-      if (key.endsWith('_or')) {
-        newKey = key.replace('_or', '_and');
-      } else if (key.endsWith('_and')) {
-        newKey = key.replace('_and', '_or');
-      }
-      setViewStorage((c) => ({
-        ...c,
-        filters: {
-          ...R.dissoc(key, filters),
-          [newKey]: filterContent,
-        },
-      }));
-    }
-  };
+  const queryRef = useQueryLoading<ReportsLinesPaginationQuery>(
+    reportsLinesQuery,
+    paginationOptions,
+  );
 
   const renderLines = (helper: ModuleHelper | undefined) => {
     let exportContext = null;
@@ -154,12 +137,12 @@ const Reports: FunctionComponent<ReportsProps> = ({
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: isRuntimeSort,
+        isSortable: isRuntimeSort ?? false,
       },
       creator: {
         label: 'Creator',
         width: '12%',
-        isSortable: isRuntimeSort,
+        isSortable: isRuntimeSort ?? false,
       },
       objectLabel: {
         label: 'Labels',
@@ -178,7 +161,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: isRuntimeSort,
+        isSortable: isRuntimeSort ?? false,
         width: '8%',
       },
     };
@@ -215,19 +198,26 @@ const Reports: FunctionComponent<ReportsProps> = ({
             'published_start_date',
             'published_end_date',
           ]}
-          handleChangeLocalFilterMode={handleChangeLocalFilterMode}
-          EqLocalFilterMode={EqLocalFilterMode}
-          NotEqLocalFilterMode={NotEqLocalFilterMode}
         >
-          <QueryRenderer
-            query={reportsLinesQuery}
-            variables={{ ...paginationOptions }}
-            render={({ props }: { props: ReportsLinesPaginationQuery$data }) => (
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((idx) => (
+                      <ReportLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
+            >
               <ReportsLines
-                data={props}
+                queryRef={queryRef}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
-                initialLoading={props === null}
                 onLabelClick={storageHelpers.handleAddFilter}
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
@@ -235,19 +225,19 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 selectAll={selectAll}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
               />
-            )}
-          />
+              <ToolBar
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                search={searchTerm}
+                filters={renderFilters}
+                handleClearSelectedElements={handleClearSelectedElements}
+                type="Report"
+              />
+              </React.Suspense>
+          )}
         </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={renderFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="Report"
-        />
       </div>
     );
   };

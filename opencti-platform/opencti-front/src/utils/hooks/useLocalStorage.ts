@@ -57,9 +57,9 @@ export const localStorageToPaginationOptions = <U>({
   delete localOptions.numberOfElements;
   delete localOptions.view;
   delete localOptions.zoom;
-  const finalFilters = filters ? convertFilters(filters) : undefined;
+  let finalFilters = filters ? convertFilters(filters) : undefined;
   if (finalFilters && additionnalFilters) {
-    (finalFilters as { key: string, values: string[], operator: string, filterMode: string }[]).concat(additionnalFilters);
+    finalFilters = (finalFilters as { key: string, values: string[], operator: string, filterMode: string }[]).concat(additionnalFilters);
   }
   return {
     ...localOptions,
