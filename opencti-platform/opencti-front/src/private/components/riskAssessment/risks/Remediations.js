@@ -50,7 +50,7 @@ const Remediations = (props) => {
         name={remediation.name}
         cyioDomainObject={remediation}
         handleOpenCreation={handleOpenCreation}
-        goBack='/activities/risk_assessment/risks'
+        goBack={`/activities/risk_assessment/risks/${riskId}`}
       // PopoverComponent={<DevicePopover />}
       // handleOpenNewCreation={handleOpenNewCreation.bind(this)}
       // OperationsComponent={<RiskDeletion />}
