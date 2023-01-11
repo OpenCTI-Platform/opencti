@@ -4065,14 +4065,6 @@ type LocationEdge {
   node: Location!
 }
 
-enum LocationType {
-  City
-  AdministrativeArea
-  Country
-  Region
-  Position
-}
-
 interface Location {
   id: ID!
   standard_id: String!
@@ -4125,7 +4117,7 @@ interface Location {
 input LocationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  type: LocationType!
+  type: String!
   name: String!
   description: String
   latitude: Float

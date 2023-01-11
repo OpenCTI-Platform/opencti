@@ -132,7 +132,7 @@ export const convertTypeToStixType = (type: string): string => {
   if (isStixDomainObjectLocation(type)) {
     return 'location';
   }
-  if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+  if (type.toLowerCase() === ENTITY_HASHED_OBSERVABLE_STIX_FILE.toLowerCase()) {
     return 'file';
   }
   if (isStixCoreRelationship(type) || isStixMetaRelationship(type)) {

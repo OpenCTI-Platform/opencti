@@ -9489,7 +9489,7 @@ export type LocationAddInput = {
   precision?: InputMaybe<Scalars['Float']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
-  type: LocationType;
+  type: Scalars['String'];
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
@@ -9539,14 +9539,6 @@ export type LocationEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
   toId: Scalars['StixRef'];
 };
-
-export enum LocationType {
-  AdministrativeArea = 'AdministrativeArea',
-  City = 'City',
-  Country = 'Country',
-  Position = 'Position',
-  Region = 'Region'
-}
 
 export enum LocationsFilter {
   Aliases = 'aliases',
@@ -24366,7 +24358,6 @@ export type ResolversTypes = ResolversObject<{
   LocationConnection: ResolverTypeWrapper<Omit<LocationConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LocationEdge']>>> }>;
   LocationEdge: ResolverTypeWrapper<Omit<LocationEdge, 'node'> & { node: ResolversTypes['Location'] }>;
   LocationEditMutations: ResolverTypeWrapper<Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Location']>, contextPatch?: Maybe<ResolversTypes['Location']>, fieldPatch?: Maybe<ResolversTypes['Location']>, relationDelete?: Maybe<ResolversTypes['Location']> }>;
-  LocationType: LocationType;
   LocationsFilter: LocationsFilter;
   LocationsFiltering: LocationsFiltering;
   LocationsOrdering: LocationsOrdering;
