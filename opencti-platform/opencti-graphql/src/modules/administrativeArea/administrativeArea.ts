@@ -38,11 +38,13 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
     { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
   ],
   relations: [
-    { name: RELATION_LOCATED_AT,
+    {
+      name: RELATION_LOCATED_AT,
       targets: [
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_BUILT_IN },
-      ] },
+      ]
+    },
   ],
   converter: convertAdministrativeAreaToStix
 };

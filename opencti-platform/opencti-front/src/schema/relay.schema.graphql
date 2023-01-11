@@ -9356,14 +9356,12 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  name: String!
+  description: String
   latitude: Float
   longitude: Float
   precision: Float
   x_opencti_aliases: [String]
-  name: String!
-  description: String
-  administrativeArea_types: [String]
-  aliases: [String]
   country: Country
   creator: Creator
   toStix: String
@@ -9379,7 +9377,6 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
 
 enum AdministrativeAreasOrdering {
   name
-  administrativeArea_types
   created
   modified
   created_at
@@ -9392,7 +9389,6 @@ enum AdministrativeAreasOrdering {
 enum AdministrativeAreasFilter {
   name
   aliases
-  administrativeArea_types
   created
   modified
   created_at
@@ -9425,8 +9421,7 @@ input AdministrativeAreaAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
-  administrativeArea_types: [String]
-  aliases: [String]
+  x_opencti_aliases: [String]
   confidence: Int
   revoked: Boolean
   lang: String

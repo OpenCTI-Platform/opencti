@@ -39,8 +39,6 @@ export type AckDetails = {
 
 export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'AdministrativeArea';
-  administrativeArea_types?: Maybe<Array<Maybe<Scalars['String']>>>;
-  aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
   country?: Maybe<Country>;
@@ -211,8 +209,6 @@ export type AdministrativeAreaStixCoreRelationshipsDistributionArgs = {
 };
 
 export type AdministrativeAreaAddInput = {
-  administrativeArea_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
@@ -228,6 +224,7 @@ export type AdministrativeAreaAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
+  x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
@@ -244,7 +241,6 @@ export type AdministrativeAreaEdge = {
 };
 
 export enum AdministrativeAreasFilter {
-  AdministrativeAreaTypes = 'administrativeArea_types',
   Aliases = 'aliases',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -265,7 +261,6 @@ export type AdministrativeAreasFiltering = {
 };
 
 export enum AdministrativeAreasOrdering {
-  AdministrativeAreaTypes = 'administrativeArea_types',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -25346,8 +25341,6 @@ export type AckDetailsResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type AdministrativeAreaResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeArea'] = ResolversParentTypes['AdministrativeArea']> = ResolversObject<{
-  administrativeArea_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AdministrativeAreaConnectorsArgs>>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;

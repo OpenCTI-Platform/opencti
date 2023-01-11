@@ -639,6 +639,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_LOCATION_CITY}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_LOCATION_CITY}_${ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA}`]: [
+    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
+  ],
   // endregion
   // region COUNTRY
   [`${ENTITY_TYPE_LOCATION_COUNTRY}_${ENTITY_TYPE_LOCATION_REGION}`]: [

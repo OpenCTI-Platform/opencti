@@ -463,7 +463,7 @@
       "description": "Administrative Area",
       "created": "2019-10-26T14:55:55.895Z",
       "modified": "2020-02-27T08:45:38.165Z",
-      "x_opencti_location_type": "AdministrativeArea"
+      "x_opencti_location_type": "Administrative-Area"
     },
     {
       "id": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",

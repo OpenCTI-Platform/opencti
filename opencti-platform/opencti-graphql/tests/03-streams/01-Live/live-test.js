@@ -4,8 +4,7 @@ import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE, testContext } from '..
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { elAggregationCount } from '../../../src/database/engine';
-import { convertEntityTypeToStixType } from '../../../src/schema/schemaUtils';
-import { convertStoreToStix } from '../../../src/database/stix-converter';
+import { convertStoreToStix, convertTypeToStixType } from '../../../src/database/stix-converter';
 import { utcDate } from '../../../src/utils/format';
 import { PORT } from '../../../src/config/conf';
 import httpServer from '../../../src/http/httpServer';
@@ -24,7 +23,7 @@ describe('Live streams tests', () => {
     const stixCoreAgg = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
     for (let index = 0; index < stixCoreAgg.length; index += 1) {
       const { label, value } = stixCoreAgg[index];
-      const key = convertEntityTypeToStixType(label);
+      const key = convertTypeToStixType(label);
       if (data[key]) {
         data[key] += value;
       } else {

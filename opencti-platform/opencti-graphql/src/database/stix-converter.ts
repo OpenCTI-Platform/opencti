@@ -375,7 +375,7 @@ const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIde
     }
   };
 };
-const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLocation => {
+export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLocation => {
   if (!isStixDomainObjectLocation(type)) {
     throw UnsupportedError(`${instance.entity_type} not compatible with location`);
   }
@@ -388,7 +388,6 @@ const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLoc
     precision: instance.precision,
     region: instance.region,
     country: instance.country,
-    administrative_area: instance.administrative_area,
     city: instance.city,
     street_address: instance.street_address,
     postal_code: instance.postal_code,

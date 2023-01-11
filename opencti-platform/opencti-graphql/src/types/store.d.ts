@@ -229,7 +229,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   primary_motivation: string;
   region: string;
   country: string;
-  administrative_area: string;
   city: string;
   street_address: string;
   postal_code: string;
