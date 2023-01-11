@@ -441,6 +441,47 @@ class OpenCTIStix2:
                         "type": kill_chain_phase["entity_type"],
                     }
                 kill_chain_phases_ids.append(kill_chain_phase["id"])
+        elif "x_opencti_kill_chain_phases" in stix_object:
+            for kill_chain_phase in stix_object["x_opencti_kill_chain_phases"]:
+                if (
+                    kill_chain_phase["kill_chain_name"] + kill_chain_phase["phase_name"]
+                    in self.mapping_cache
+                ):
+                    kill_chain_phase = self.mapping_cache[
+                        kill_chain_phase["kill_chain_name"]
+                        + kill_chain_phase["phase_name"]
+                    ]
+                else:
+                    if (
+                        "x_opencti_order" not in kill_chain_phase
+                        and self.opencti.get_attribute_in_extension(
+                            "order", kill_chain_phase
+                        )
+                        is not None
+                    ):
+                        kill_chain_phase[
+                            "x_opencti_order"
+                        ] = self.opencti.get_attribute_in_extension(
+                            "order", kill_chain_phase
+                        )
+                    kill_chain_phase = self.opencti.kill_chain_phase.create(
+                        kill_chain_name=kill_chain_phase["kill_chain_name"],
+                        phase_name=kill_chain_phase["phase_name"],
+                        x_opencti_order=kill_chain_phase["x_opencti_order"]
+                        if "x_opencti_order" in kill_chain_phase
+                        else 0,
+                        stix_id=kill_chain_phase["id"]
+                        if "id" in kill_chain_phase
+                        else None,
+                    )
+                    self.mapping_cache[
+                        kill_chain_phase["kill_chain_name"]
+                        + kill_chain_phase["phase_name"]
+                    ] = {
+                        "id": kill_chain_phase["id"],
+                        "type": kill_chain_phase["entity_type"],
+                    }
+                kill_chain_phases_ids.append(kill_chain_phase["id"])
         # Object refs
         object_refs_ids = (
             stix_object["object_refs"] if "object_refs" in stix_object else []
@@ -599,6 +640,58 @@ class OpenCTIStix2:
                         update=True,
                     )
                     reports[external_reference_id] = report
+        elif "x_opencti_external_references" in stix_object:
+            for external_reference in stix_object["x_opencti_external_references"]:
+                url = external_reference["url"] if "url" in external_reference else None
+                source_name = (
+                    external_reference["source_name"]
+                    if "source_name" in external_reference
+                    else None
+                )
+                external_id = (
+                    external_reference["external_id"]
+                    if "external_id" in external_reference
+                    else None
+                )
+                generated_ref_id = self.opencti.external_reference.generate_id(
+                    url, source_name, external_id
+                )
+                if generated_ref_id is None:
+                    continue
+                if generated_ref_id in self.mapping_cache:
+                    external_reference_id = self.mapping_cache[generated_ref_id]
+                else:
+                    external_reference_id = self.opencti.external_reference.create(
+                        source_name=source_name,
+                        url=url,
+                        external_id=external_id,
+                        description=external_reference["description"]
+                        if "description" in external_reference
+                        else None,
+                    )["id"]
+                if "x_opencti_files" in external_reference:
+                    for file in external_reference["x_opencti_files"]:
+                        self.opencti.external_reference.add_file(
+                            id=external_reference_id,
+                            file_name=file["name"],
+                            data=base64.b64decode(file["data"]),
+                            mime_type=file["mime_type"],
+                        )
+                if (
+                    self.opencti.get_attribute_in_extension("files", external_reference)
+                    is not None
+                ):
+                    for file in self.opencti.get_attribute_in_extension(
+                        "files", external_reference
+                    ):
+                        self.opencti.external_reference.add_file(
+                            id=external_reference_id,
+                            file_name=file["name"],
+                            data=base64.b64decode(file["data"]),
+                            mime_type=file["mime_type"],
+                        )
+                self.mapping_cache[generated_ref_id] = generated_ref_id
+                external_references_ids.append(external_reference_id)
         # Granted refs
         granted_refs_ids = []
         if (
