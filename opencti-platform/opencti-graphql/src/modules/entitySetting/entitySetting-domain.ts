@@ -14,7 +14,7 @@ import { queryDefaultSubTypes } from '../../domain/subType';
 
 // -- VALIDATION --
 
-const upsertValidation = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: [EditInput]) => {
+const upsertValidation = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
   const entitySettings = await getEntitiesMapFromCache<BasicStoreEntityEntitySetting>(context, user, ENTITY_TYPE_ENTITY_SETTING);
   const entitySetting = entitySettings.get(entitySettingId);
   if (!entitySetting) {
