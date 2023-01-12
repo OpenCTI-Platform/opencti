@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import NarrativeEditionOverview from './NarrativeEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const NarrativeEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, narrative, enableReferences } = props;
+  const { handleClose, narrative } = props;
   const { editContext } = narrative;
 
   return (
@@ -65,7 +66,7 @@ const NarrativeEditionContainer = (props) => {
       <div className={classes.container}>
         <NarrativeEditionOverview
           narrative={narrative}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Narrative')}
           context={editContext}
           handleClose={handleClose}
         />

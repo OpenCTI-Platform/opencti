@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { assoc, difference, filter, fromPairs, head, includes, map, pathOr, pick, pipe } from 'ramda';
 import { useHistory } from 'react-router-dom';
+import * as R from 'ramda';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -25,14 +26,21 @@ import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import { adaptFieldValue } from '../../../../utils/String';
 
 const stixCyberObservableMutationFieldPatch = graphql`
   mutation StixCyberObservableEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     stixCyberObservableEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         id
         ...StixCyberObservableEditionOverview_stixCyberObservable
         ...StixCyberObservable_stixCyberObservable
@@ -84,11 +92,42 @@ const stixCyberObservableMutationRelationDelete = graphql`
   }
 `;
 
-const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enableReferences, context }) => {
+const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enableReferences, context, handleClose }) => {
   const history = useHistory();
   const { t } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
 
+  const onSubmit = (values, { setSubmitting }) => {
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    const inputValues = R.pipe(
+      R.dissoc('message'),
+      R.dissoc('references'),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.toPairs,
+      R.map((n) => ({
+        key: n[0],
+        value: adaptFieldValue(n[1]),
+      })),
+    )(values);
+    commitMutation({
+      mutation: stixCyberObservableMutationFieldPatch,
+      variables: {
+        id: stixCyberObservable.id,
+        input: inputValues,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        handleClose();
+      },
+    });
+  };
   const handleChangeFocus = (name) => {
     commitMutation({
       mutation: stixCyberObservableEditionOverviewFocus,
@@ -102,35 +141,37 @@ const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enab
   };
 
   const handleSubmitField = (name, value) => {
-    let finalName = name;
-    let finalValue = value || '';
-    if (name.includes('hashes')) {
-      finalName = name.replace('hashes_', 'hashes.');
-    }
-    if (multipleAttributes.includes(finalName)) {
-      if (finalValue.length > 0) {
-        finalValue = finalValue.split(',');
-      } else {
-        finalValue = [];
+    if (!enableReferences) {
+      let finalName = name;
+      let finalValue = value || '';
+      if (name.includes('hashes')) {
+        finalName = name.replace('hashes_', 'hashes.');
       }
-    }
-    commitMutation({
-      mutation: stixCyberObservableMutationFieldPatch,
-      variables: {
-        id: stixCyberObservable.id,
-        input: { key: finalName, value: finalValue },
-      },
-      onCompleted: (response) => {
-        if (
-          response.stixCyberObservableEdit.fieldPatch.id
-          !== stixCyberObservable.id
-        ) {
-          history.push(
-            `/dashboard/observations/observables/${response.stixCyberObservableEdit.fieldPatch.id}`,
-          );
+      if (multipleAttributes.includes(finalName)) {
+        if (finalValue.length > 0) {
+          finalValue = finalValue.split(',');
+        } else {
+          finalValue = [];
         }
-      },
-    });
+      }
+      commitMutation({
+        mutation: stixCyberObservableMutationFieldPatch,
+        variables: {
+          id: stixCyberObservable.id,
+          input: { key: finalName, value: finalValue },
+        },
+        onCompleted: (response) => {
+          if (
+            response.stixCyberObservableEdit.fieldPatch.id
+            !== stixCyberObservable.id
+          ) {
+            history.push(
+              `/dashboard/observations/observables/${response.stixCyberObservableEdit.fieldPatch.id}`,
+            );
+          }
+        },
+      });
+    }
   };
 
   const handleChangeCreatedBy = (name, value) => {
@@ -158,36 +199,38 @@ const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enab
   };
 
   const handleChangeObjectMarking = (name, values) => {
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(stixCyberObservable);
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: stixCyberObservableMutationRelationAdd,
-        variables: {
-          id: stixCyberObservable.id,
-          input: {
-            toId: head(added).value,
+    if (!enableReferences) {
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(stixCyberObservable);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: stixCyberObservableMutationRelationAdd,
+          variables: {
+            id: stixCyberObservable.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: stixCyberObservableMutationRelationDelete,
+          variables: {
+            id: stixCyberObservable.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixCyberObservableMutationRelationDelete,
-        variables: {
-          id: stixCyberObservable.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   };
 
@@ -262,7 +305,7 @@ const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enab
               <Formik
                 enableReinitialize={true}
                 initialValues={initialValues}
-                onSubmit={() => true}
+                onSubmit={onSubmit}
               >
                 {({ setFieldValue }) => (
                   <Form style={{ margin: '20px 0 20px 0' }}>

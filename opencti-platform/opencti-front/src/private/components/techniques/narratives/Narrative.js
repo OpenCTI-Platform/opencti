@@ -29,13 +29,13 @@ const styles = () => ({
 
 class NarrativeComponent extends Component {
   render() {
-    const { classes, narrative, enableReferences } = this.props;
+    const { classes, narrative } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Narrative'}
           stixDomainObject={narrative}
           PopoverComponent={<NarrativePopover />}
-          enableReferences={enableReferences}
         />
         <Grid
           container={true}

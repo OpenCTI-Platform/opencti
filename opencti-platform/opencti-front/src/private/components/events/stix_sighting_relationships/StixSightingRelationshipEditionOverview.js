@@ -24,6 +24,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -160,6 +161,8 @@ const StixSightingRelationshipEditionOverview = ({
   const { t } = useFormatter();
   const classes = useStyles();
 
+  const enableReferences = useIsEnforceReference('stix-sighting-relationship');
+
   const { editContext } = stixSightingRelationship;
   useEffect(() => {
     const sub = requestSubscription({
@@ -173,46 +176,50 @@ const StixSightingRelationshipEditionOverview = ({
     };
   });
   const handleChangeObjectMarking = (name, values) => {
-    const currentMarkingDefinitions = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(stixSightingRelationship);
-    const added = R.difference(values, currentMarkingDefinitions);
-    const removed = R.difference(currentMarkingDefinitions, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: stixSightingRelationshipMutationRelationAdd,
-        variables: {
-          id: stixSightingRelationship.id,
-          input: {
-            toId: R.head(added).value,
+    if (!enableReferences) {
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(stixSightingRelationship);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: stixSightingRelationshipMutationRelationAdd,
+          variables: {
+            id: stixSightingRelationship.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: stixSightingRelationshipMutationRelationDelete,
+          variables: {
+            id: stixSightingRelationship.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixSightingRelationshipMutationRelationDelete,
-        variables: {
-          id: stixSightingRelationship.id,
-          toId: R.head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   };
   const handleChangeCreatedBy = (name, value) => {
-    commitMutation({
-      mutation: stixSightingRelationshipMutationFieldPatch,
-      variables: {
-        id: stixSightingRelationship.id,
-        input: { key: 'createdBy', value: value.value || '' },
-      },
-    });
+    if (!enableReferences) {
+      commitMutation({
+        mutation: stixSightingRelationshipMutationFieldPatch,
+        variables: {
+          id: stixSightingRelationship.id,
+          input: { key: 'createdBy', value: value.value || '' },
+        },
+      });
+    }
   };
   const handleChangeFocus = (name) => {
     commitMutation({
@@ -226,22 +233,24 @@ const StixSightingRelationshipEditionOverview = ({
     });
   };
   const handleSubmitField = (name, value) => {
-    let finalValue = value;
-    if (name === 'x_opencti_workflow_id') {
-      finalValue = value.value;
+    if (!enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
+      stixSightingRelationshipValidation(t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: stixSightingRelationshipMutationFieldPatch,
+            variables: {
+              id: stixSightingRelationship.id,
+              input: { key: name, value: finalValue || '' },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    stixSightingRelationshipValidation(t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: stixSightingRelationshipMutationFieldPatch,
-          variables: {
-            id: stixSightingRelationship.id,
-            input: { key: name, value: finalValue || '' },
-          },
-        });
-      })
-      .catch(() => false);
   };
 
   const createdBy = convertCreatedBy(stixSightingRelationship);

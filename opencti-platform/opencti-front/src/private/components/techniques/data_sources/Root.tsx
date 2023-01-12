@@ -52,9 +52,6 @@ const dataSourceQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -101,6 +98,7 @@ const RootDataSourceComponent = ({ queryRef }) => {
               render={(routeProps: any) => (
                 <React.Fragment>
                   <StixDomainObjectHeader
+                    entityType={'Data-Source'}
                     disableSharing={true}
                     stixDomainObject={dataSource}
                     PopoverComponent={<DataSourcePopover id={dataSource.id} />}

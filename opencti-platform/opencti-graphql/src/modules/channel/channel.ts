@@ -66,6 +66,7 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
     { name: 'description', type: 'string', multiple: false, upsert: true },
     { name: 'channel_types', type: 'string', multiple: true, upsert: true },
     { name: 'x_opencti_stix_ids', type: 'string', multiple: true, upsert: true },
+    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
   ],
   relations: [
     { name: RELATION_TARGETS,

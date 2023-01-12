@@ -225,7 +225,13 @@ const GroupingEditionOverviewComponent = (props) => {
       validationSchema={groupingValidation(t)}
       onSubmit={onSubmit}
     >
-      {({ submitForm, isSubmitting, validateForm, setFieldValue, values }) => (
+      {({
+        submitForm,
+        isSubmitting,
+        validateForm,
+        setFieldValue,
+        values,
+      }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field

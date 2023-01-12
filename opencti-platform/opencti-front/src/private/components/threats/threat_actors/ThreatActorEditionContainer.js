@@ -41,7 +41,7 @@ const ThreatActorEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, threatActor, enableReferences } = props;
+  const { handleClose, threatActor } = props;
   const { editContext } = threatActor;
 
   const [currentTab, setCurrentTab] = useState(0);
@@ -78,7 +78,7 @@ const ThreatActorEditionContainer = (props) => {
         {currentTab === 0 && (
           <ThreatActorEditionOverview
             threatActor={threatActor}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Threat-Actor')}
             context={editContext}
             handleClose={handleClose}
           />
@@ -86,7 +86,7 @@ const ThreatActorEditionContainer = (props) => {
         {currentTab === 1 && (
           <ThreatActorEditionDetails
             threatActor={threatActor}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Threat-Actor')}
             context={editContext}
             handleClose={handleClose}
           />

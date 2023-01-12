@@ -440,6 +440,7 @@ OrganizationEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   organization: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const OrganizationEditionOverview = createFragmentContainer(

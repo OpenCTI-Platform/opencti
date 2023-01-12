@@ -8,4 +8,5 @@ import './dataComponent/dataComponent';
 import './dataSource/dataSource';
 import './vocabulary/vocabulary';
 import './case/case';
+import './entitySetting/entitySetting';
 // endregion

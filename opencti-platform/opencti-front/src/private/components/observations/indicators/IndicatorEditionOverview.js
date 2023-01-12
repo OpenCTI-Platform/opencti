@@ -127,7 +127,10 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
       R.dissoc('references'),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('x_mitre_platforms', values.x_mitre_platforms ?? []),
+      R.assoc('indicator_types', values.indicator_types),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.assoc(
         'valid_from',
         values.valid_from ? parse(values.valid_from).format() : null,
@@ -529,6 +532,7 @@ IndicatorEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   indicator: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const IndicatorEditionOverview = createFragmentContainer(

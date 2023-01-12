@@ -45,7 +45,6 @@ export const getSettings = async (context) => {
     ...platformSettings,
     platform_url: baseUrl,
     platform_providers: PROVIDERS,
-    platform_enable_reference: conf.get('app:enforce_references'),
     platform_reference_attachment: conf.get('app:reference_attachment'),
     platform_map_tile_server_dark: nconf.get('app:map_tile_server_dark'),
     platform_map_tile_server_light: nconf.get('app:map_tile_server_light'),

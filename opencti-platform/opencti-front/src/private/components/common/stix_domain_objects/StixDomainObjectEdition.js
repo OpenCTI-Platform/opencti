@@ -29,9 +29,6 @@ const stixDomainObjectEditionQuery = graphql`
       ...StixDomainObjectEditionOverview_stixDomainObject
       entity_type
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -65,9 +62,6 @@ class StixDomainObjectEdition extends Component {
                   <StixDomainObjectEditionOverview
                     variant={variant}
                     stixDomainObject={props.stixDomainObject}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      props.stixDomainObject.entity_type,
-                    )}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
                       typeof handleDelete === 'function'

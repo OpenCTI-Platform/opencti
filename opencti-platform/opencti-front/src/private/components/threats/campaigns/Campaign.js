@@ -29,13 +29,13 @@ const styles = () => ({
 
 class CampaignComponent extends Component {
   render() {
-    const { classes, campaign, enableReferences } = this.props;
+    const { classes, campaign } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Campaign'}
           stixDomainObject={campaign}
           PopoverComponent={<CampaignPopover />}
-          enableReferences={enableReferences}
         />
         <Grid
           container={true}

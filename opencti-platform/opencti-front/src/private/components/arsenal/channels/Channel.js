@@ -29,13 +29,13 @@ const styles = () => ({
 
 class ChannelComponent extends Component {
   render() {
-    const { classes, channel, enableReferences } = this.props;
+    const { classes, channel } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Channel'}
           stixDomainObject={channel}
           PopoverComponent={<ChannelPopover />}
-          enableReferences={enableReferences}
         />
         <Grid
           container={true}
@@ -96,7 +96,6 @@ ChannelComponent.propTypes = {
   channel: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  enableReferences: PropTypes.bool,
 };
 
 const Channel = createFragmentContainer(ChannelComponent, {

@@ -55,9 +55,6 @@ const sectorQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -145,6 +142,7 @@ class RootSector extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Sector'}
                             disableSharing={true}
                             stixDomainObject={props.sector}
                             PopoverComponent={<SectorPopover />}
@@ -184,6 +182,7 @@ class RootSector extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Sector'}
                             disableSharing={true}
                             stixDomainObject={props.sector}
                             PopoverComponent={<SectorPopover />}
@@ -204,6 +203,7 @@ class RootSector extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Sector'}
                             disableSharing={true}
                             stixDomainObject={props.sector}
                             PopoverComponent={<SectorPopover />}

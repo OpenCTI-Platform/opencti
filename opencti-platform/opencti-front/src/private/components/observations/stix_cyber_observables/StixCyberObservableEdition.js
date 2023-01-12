@@ -37,9 +37,6 @@ export const stixCyberObservableEditionQuery = graphql`
       ...StixCyberObservableEditionContainer_stixCyberObservable
       ...StixCyberObservable_stixCyberObservable
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -90,14 +87,7 @@ class StixCyberObservableEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCyberObservableEditionContainer
-                    variant={variant}
-                    stixCyberObservable={props.stixCyberObservable}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Stix-Cyber-Observable',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <StixCyberObservableEditionContainer variant={variant} stixCyberObservable={props.stixCyberObservable} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

@@ -112,8 +112,8 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     name: String!
     description: String
     aliases: [String]
-    x_mitre_platforms: [String]
-    collection_layers: [String]
+    x_mitre_platforms: [String!]
+    collection_layers: [String!]
     dataComponents: DataComponentConnection
 }
 

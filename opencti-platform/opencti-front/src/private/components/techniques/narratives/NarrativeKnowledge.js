@@ -28,6 +28,7 @@ class NarrativeKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Narrative'}
           disableSharing={true}
           stixDomainObject={country}
           PopoverComponent={<CountryPopover />}

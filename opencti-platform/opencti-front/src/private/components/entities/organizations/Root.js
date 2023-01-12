@@ -58,9 +58,6 @@ const organizationQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -159,9 +156,6 @@ class RootOrganization extends Component {
                           organization={props.organization}
                           viewAs={viewAs}
                           onViewAs={this.handleChangeViewAs.bind(this)}
-                          enableReferences={props.settings.platform_enable_reference?.includes(
-                            'Organization',
-                          )}
                         />
                       )}
                     />
@@ -226,12 +220,10 @@ class RootOrganization extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Organization'}
                             disableSharing={true}
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Organization',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -249,12 +241,10 @@ class RootOrganization extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Organization'}
                             disableSharing={true}
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Organization',
-                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

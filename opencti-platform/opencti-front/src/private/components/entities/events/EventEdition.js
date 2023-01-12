@@ -37,9 +37,6 @@ export const eventEditionQuery = graphql`
     event(id: $id) {
       ...EventEditionContainer_event
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -90,13 +87,7 @@ class EventEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <EventEditionContainer
-                    event={props.event}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Event',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <EventEditionContainer event={props.event} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

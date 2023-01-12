@@ -34,6 +34,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -185,7 +186,7 @@ const StixDomainObjectHeader = (props) => {
     disablePopover,
     disableSharing,
     noAliases,
-    enableReferences,
+    entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
   } = props;
 
   const openAliasesCreate = false;
@@ -289,6 +290,7 @@ const StixDomainObjectHeader = (props) => {
     isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
     stixDomainObject,
   );
+  const enableReferences = useIsEnforceReference(entityType);
   return (
       <div>
         <Tooltip title={stixDomainObject.name}>

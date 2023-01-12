@@ -6,6 +6,7 @@ import { Biohazard } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -27,6 +28,7 @@ const TopMenuArsenal = () => {
 
   return (
     <div>
+      {!useIsHiddenEntity('Malware') && (
         <Button
           component={Link}
           to="/dashboard/arsenal/malwares"
@@ -46,6 +48,8 @@ const TopMenuArsenal = () => {
           <Biohazard className={classes.icon} fontSize="small" />
           {t('Malwares')}
         </Button>
+      )}
+      {!useIsHiddenEntity('Channel') && (
         <Button
           component={Link}
           to="/dashboard/arsenal/channels"
@@ -68,6 +72,8 @@ const TopMenuArsenal = () => {
           />
           {t('Channels')}
         </Button>
+      )}
+      {!useIsHiddenEntity('Tool') && (
         <Button
           component={Link}
           to="/dashboard/arsenal/tools"
@@ -87,6 +93,8 @@ const TopMenuArsenal = () => {
           <WebAssetOutlined className={classes.icon} fontSize="small" />
           {t('Tools')}
         </Button>
+      )}
+      {!useIsHiddenEntity('Vulnerability') && (
         <Button
           component={Link}
           to="/dashboard/arsenal/vulnerabilities"
@@ -106,6 +114,7 @@ const TopMenuArsenal = () => {
           <BugReportOutlined className={classes.icon} fontSize="small" />
           {t('Vulnerabilities')}
         </Button>
+      )}
     </div>
   );
 };

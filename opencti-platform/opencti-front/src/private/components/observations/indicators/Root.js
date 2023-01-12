@@ -53,9 +53,6 @@ const indicatorQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -101,9 +98,6 @@ class RootIndicator extends Component {
                         <Indicator
                           {...routeProps}
                           indicator={props.indicator}
-                          enableReferences={props.settings.platform_enable_reference?.includes(
-                            'Indicator',
-                          )}
                         />
                       )}
                     />
@@ -115,9 +109,6 @@ class RootIndicator extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Indicator',
-                            )}
                             noAliases={true}
                           />
                           <EntityStixSightingRelationships
@@ -145,9 +136,6 @@ class RootIndicator extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Indicator',
-                            )}
                             noAliases={true}
                           />
                           <FileManager
@@ -168,9 +156,6 @@ class RootIndicator extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Indicator',
-                            )}
                             noAliases={true}
                           />
                           <StixCoreObjectHistory
@@ -188,9 +173,6 @@ class RootIndicator extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Indicator',
-                            )}
                             noAliases={true}
                           />
                           <IndicatorEntities
@@ -208,9 +190,6 @@ class RootIndicator extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Indicator',
-                            )}
                             noAliases={true}
                           />
                           <StixCoreRelationship
@@ -228,9 +207,6 @@ class RootIndicator extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Indicator',
-                            )}
                             noAliases={true}
                           />
                           <StixSightingRelationship

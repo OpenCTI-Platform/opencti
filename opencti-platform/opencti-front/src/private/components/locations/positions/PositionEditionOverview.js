@@ -377,6 +377,7 @@ PositionEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   position: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const PositionEditionOverview = createFragmentContainer(

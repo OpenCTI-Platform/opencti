@@ -36,6 +36,7 @@ class IndividualComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Individual'}
           disableSharing={true}
           stixDomainObject={individual}
           isOpenctiAlias={true}

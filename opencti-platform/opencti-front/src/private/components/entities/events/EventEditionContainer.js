@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import EventEditionOverview from './EventEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const EventEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, event, enableReferences } = props;
+  const { handleClose, event } = props;
   const { editContext } = event;
 
   return (
@@ -65,7 +66,7 @@ const EventEditionContainer = (props) => {
       <div className={classes.container}>
         <EventEditionOverview
           event={event}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Event')}
           context={editContext}
           handleClose={handleClose}
         />

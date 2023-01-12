@@ -1173,7 +1173,7 @@ const convertKillChainPhaseToStix = (instance: StoreEntity): SMO.StixKillChainPh
     }
   };
 };
-const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternalReference => {
+export const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternalReference => {
   const reference = buildStixObject(instance);
   return {
     ...reference,

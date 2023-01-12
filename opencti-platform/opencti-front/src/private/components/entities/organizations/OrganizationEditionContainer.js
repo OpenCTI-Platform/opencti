@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import OrganizationEditionOverview from './OrganizationEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const OrganizationEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, organization, enableReferences } = props;
+  const { handleClose, organization } = props;
   const { editContext } = organization;
 
   return (
@@ -65,7 +66,7 @@ const OrganizationEditionContainer = (props) => {
       <div className={classes.container}>
         <OrganizationEditionOverview
           organization={organization}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Organization')}
           context={editContext}
           handleClose={handleClose}
         />

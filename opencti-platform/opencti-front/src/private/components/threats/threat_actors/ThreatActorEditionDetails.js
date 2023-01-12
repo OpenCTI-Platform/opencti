@@ -254,7 +254,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="threat-actor-sophistication-ov"
                   name="sophistication"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={false}
@@ -265,7 +266,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="attack-resource-level-ov"
                   name="resource_level"
                   onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"
                   multiple={false}
@@ -288,6 +290,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                   type="attack-motivation-ov"
                   name="primary_motivation"
                   onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={(name, value) => setFieldValue(name, value)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   containerStyle={fieldSpacingContainerStyle}
                   variant="edit"

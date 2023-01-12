@@ -9,6 +9,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import NoteEditionOverview from './NoteEditionOverview';
 import { Theme } from '../../../../components/Theme';
 import { NoteEditionContainer_note$data } from './__generated__/NoteEditionContainer_note.graphql';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -69,7 +70,10 @@ const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({ no
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <NoteEditionOverview note={note} context={editContext} />
+          <NoteEditionOverview note={note}
+                               context={editContext}
+                               enableReferences={useIsEnforceReference('Note')}
+                               handleClose={handleClose} />
         </div>
       </div>
   );

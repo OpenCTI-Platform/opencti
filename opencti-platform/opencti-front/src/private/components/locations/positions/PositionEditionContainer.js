@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import PositionEditionOverview from './PositionEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const PositionEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, position, enableReferences } = props;
+  const { handleClose, position } = props;
   const { editContext } = position;
 
   return (
@@ -65,7 +66,7 @@ const PositionEditionContainer = (props) => {
       <div className={classes.container}>
         <PositionEditionOverview
           position={position}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Position')}
           context={editContext}
           handleClose={handleClose}
         />

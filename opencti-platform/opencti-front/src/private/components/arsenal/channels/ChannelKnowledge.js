@@ -28,6 +28,7 @@ class ChannelKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Channel'}
           stixDomainObject={channel}
           PopoverComponent={<ChannelPopover />}
         />

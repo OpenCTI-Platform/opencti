@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
@@ -15,7 +12,8 @@ import ChannelPopover from './ChannelPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixCoreObjectOrStixCoreRelationshipContainers
+  from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
@@ -54,9 +52,6 @@ const channelQuery = graphql`
     }
     connectorsForExport {
       ...FileManager_connectorsExport
-    }
-    settings {
-      platform_enable_reference
     }
   }
 `;
@@ -122,9 +117,6 @@ class RootChannel extends Component {
                         <Channel
                           {...routeProps}
                           channel={props.channel}
-                          enableReferences={props.settings.platform_enable_reference?.includes(
-                            'Channel',
-                          )}
                         />
                       )}
                     />
@@ -152,11 +144,9 @@ class RootChannel extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Channel'}
                             stixDomainObject={props.channel}
                             PopoverComponent={<ChannelPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Channel',
-                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -173,6 +163,7 @@ class RootChannel extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Channel'}
                             stixDomainObject={props.channel}
                             PopoverComponent={<ChannelPopover />}
                           />
@@ -190,11 +181,9 @@ class RootChannel extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Channel'}
                             stixDomainObject={props.channel}
                             PopoverComponent={<ChannelPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Channel',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -212,11 +201,9 @@ class RootChannel extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Channel'}
                             stixDomainObject={props.channel}
                             PopoverComponent={<ChannelPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Channel',
-                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

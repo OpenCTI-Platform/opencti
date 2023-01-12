@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import InfrastructureEditionOverview from './InfrastructureEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const InfrastructureEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, infrastructure, enableReferences } = props;
+  const { handleClose, infrastructure } = props;
   const { editContext } = infrastructure;
 
   return (
@@ -65,7 +66,7 @@ const InfrastructureEditionContainer = (props) => {
       <div className={classes.container}>
         <InfrastructureEditionOverview
           infrastructure={infrastructure}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Infrastructure')}
           context={editContext}
           handleClose={handleClose}
         />

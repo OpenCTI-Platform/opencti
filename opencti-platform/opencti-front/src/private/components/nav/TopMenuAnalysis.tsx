@@ -11,6 +11,7 @@ import {
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -32,82 +33,90 @@ const TopMenuAnalysis = () => {
 
   return (
       <div>
-        <Button
-          component={Link}
-          to="/dashboard/analysis/reports"
-          variant={
-            location.pathname === '/dashboard/analysis/reports'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/analysis/reports'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <DescriptionOutlined className={classes.icon} fontSize="small" />
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/analysis/groupings"
-          variant={
-            location.pathname === '/dashboard/analysis/groupings'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/analysis/groupings'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <WorkspacesOutlined className={classes.icon} fontSize="small" />
-          {t('Groupings')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/analysis/notes"
-          variant={
-            location.pathname === '/dashboard/analysis/notes'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/analysis/notes'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <SubjectOutlined className={classes.icon} fontSize="small" />
-          {t('Notes')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/analysis/opinions"
-          variant={
-            location.pathname === '/dashboard/analysis/opinions'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/analysis/opinions'
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <ReviewsOutlined className={classes.icon} fontSize="small" />
-          {t('Opinions')}
-        </Button>
+        {!useIsHiddenEntity('Report') && (
+          <Button
+            component={Link}
+            to="/dashboard/analysis/reports"
+            variant={
+              location.pathname === '/dashboard/analysis/reports'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/analysis/reports'
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            <DescriptionOutlined className={classes.icon} fontSize="small" />
+            {t('Reports')}
+          </Button>
+        )}
+        {!useIsHiddenEntity('Grouping') && (
+          <Button
+            component={Link}
+            to="/dashboard/analysis/groupings"
+            variant={
+              location.pathname === '/dashboard/analysis/groupings'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/analysis/groupings'
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            <WorkspacesOutlined className={classes.icon} fontSize="small" />
+            {t('Groupings')}
+          </Button>
+        )}
+        {!useIsHiddenEntity('Note') && (
+          <Button
+            component={Link}
+            to="/dashboard/analysis/notes"
+            variant={
+              location.pathname === '/dashboard/analysis/notes'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/analysis/notes'
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            <SubjectOutlined className={classes.icon} fontSize="small" />
+            {t('Notes')}
+          </Button>
+        )}
+        {!useIsHiddenEntity('Opinion') && (
+          <Button
+            component={Link}
+            to="/dashboard/analysis/opinions"
+            variant={
+              location.pathname === '/dashboard/analysis/opinions'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/analysis/opinions'
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            <ReviewsOutlined className={classes.icon} fontSize="small" />
+            {t('Opinions')}
+          </Button>
+        )}
         <Button
           component={Link}
           to="/dashboard/analysis/external_references"

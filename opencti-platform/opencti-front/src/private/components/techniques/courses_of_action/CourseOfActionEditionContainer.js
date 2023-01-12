@@ -42,7 +42,7 @@ const CourseOfActionEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, courseOfAction, enableReferences } = props;
+  const { handleClose, courseOfAction } = props;
   const { editContext } = courseOfAction;
 
   return (
@@ -66,7 +66,7 @@ const CourseOfActionEditionContainer = (props) => {
       <div className={classes.container}>
         <CourseOfActionEditionOverview
           courseOfAction={courseOfAction}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Course-Of-Action')}
           context={editContext}
           handleClose={handleClose}
         />

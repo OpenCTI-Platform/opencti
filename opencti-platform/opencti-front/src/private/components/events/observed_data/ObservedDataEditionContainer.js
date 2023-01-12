@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import ObservedDataEditionOverview from './ObservedDataEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const ObservedDataEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, observedData, enableReferences } = props;
+  const { handleClose, observedData } = props;
   const { editContext } = observedData;
 
   return (
@@ -65,7 +66,7 @@ const ObservedDataEditionContainer = (props) => {
       <div className={classes.container}>
         <ObservedDataEditionOverview
           observedData={observedData}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Observed-Data')}
           context={editContext}
           handleClose={handleClose}
         />

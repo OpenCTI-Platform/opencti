@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import ReportEditionOverview from './ReportEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const ReportEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, report, enableReferences } = props;
+  const { handleClose, report } = props;
   const { editContext } = report;
 
   return (
@@ -65,7 +66,7 @@ const ReportEditionContainer = (props) => {
       <div className={classes.container}>
         <ReportEditionOverview
           report={report}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Report')}
           context={editContext}
           handleClose={handleClose}
         />

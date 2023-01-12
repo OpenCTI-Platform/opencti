@@ -41,6 +41,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'City'}
         disableSharing={true}
         stixDomainObject={city}
         PopoverComponent={CityPopover}

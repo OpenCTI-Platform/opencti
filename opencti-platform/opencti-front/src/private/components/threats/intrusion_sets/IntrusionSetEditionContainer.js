@@ -11,6 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
 import IntrusionSetEditionDetails from './IntrusionSetEditionDetails';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -40,7 +41,7 @@ const IntrusionSetEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, intrusionSet, enableReferences } = props;
+  const { handleClose, intrusionSet } = props;
   const { editContext } = intrusionSet;
 
   const [currentTab, setCurrentTab] = useState(0);
@@ -78,7 +79,7 @@ const IntrusionSetEditionContainer = (props) => {
         {currentTab === 0 && (
           <IntrusionSetEditionOverview
             intrusionSet={intrusionSet}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Intrusion-Set')}
             context={editContext}
             handleClose={handleClose}
           />
@@ -86,7 +87,7 @@ const IntrusionSetEditionContainer = (props) => {
         {currentTab === 1 && (
           <IntrusionSetEditionDetails
             intrusionSet={intrusionSet}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Intrusion-Set')}
             context={editContext}
             handleClose={handleClose}
           />

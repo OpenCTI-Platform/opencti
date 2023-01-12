@@ -56,9 +56,6 @@ const intrusionSetQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -124,9 +121,6 @@ class RootIntrusionSet extends Component {
                         <IntrusionSet
                           {...routeProps}
                           intrusionSet={props.intrusionSet}
-                          enableReferences={props.settings.platform_enable_reference?.includes(
-                            'Intrusion-Set',
-                          )}
                         />
                       )}
                     />
@@ -154,11 +148,9 @@ class RootIntrusionSet extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Intrusion-Set'}
                             stixDomainObject={props.intrusionSet}
                             PopoverComponent={<IntrusionSetPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Intrusion-Set',
-                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -175,6 +167,7 @@ class RootIntrusionSet extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Intrusion-Set'}
                             stixDomainObject={props.intrusionSet}
                             PopoverComponent={<IntrusionSetPopover />}
                           />
@@ -202,11 +195,9 @@ class RootIntrusionSet extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Intrusion-Set'}
                             stixDomainObject={props.intrusionSet}
                             PopoverComponent={<IntrusionSetPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Intrusion-Set',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -224,6 +215,7 @@ class RootIntrusionSet extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Intrusion-Set'}
                             stixDomainObject={props.intrusionSet}
                             PopoverComponent={<IntrusionSetPopover />}
                           />

@@ -30,6 +30,7 @@ class OrganizationKnowledgeComponent extends Component {
         style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}
       >
         <StixDomainObjectHeader
+          entityType={'Organization'}
           disableSharing={true}
           stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}

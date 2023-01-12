@@ -42,6 +42,7 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent> = {
     { name: 'event_types', type: 'string', multiple: true, upsert: true },
     { name: 'start_time', type: 'date', multiple: false, upsert: true },
     { name: 'stop_time', type: 'date', multiple: false, upsert: true },
+    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
   ],
   relations: [
     { name: RELATION_LOCATED_AT,

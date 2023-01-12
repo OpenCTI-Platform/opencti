@@ -10,6 +10,7 @@ import { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import DataSourceEditionOverview from './DataSourceEditionOverview';
 import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditionContainerQuery.graphql';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -49,9 +50,6 @@ export const dataSourceEditionQuery = graphql`
         focusOn
       }
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -88,7 +86,7 @@ const DataSourceEditionContainer: FunctionComponent<DataSourceEditionContainerPr
         <div className={classes.container}>
           <DataSourceEditionOverview
             data={queryData.dataSource}
-            enableReferences={queryData.settings.platform_enable_reference?.includes('Data Source')}
+            enableReferences={useIsEnforceReference('Data-Source')}
             context={queryData.dataSource.editContext}
             handleClose={handleClose}
           />

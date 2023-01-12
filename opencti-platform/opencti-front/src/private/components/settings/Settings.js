@@ -24,10 +24,16 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import Loader from '../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import HiddenTypesList from './entity_settings/HiddenTypesList';
+import AutomaticTypesList from './entity_settings/AutomaticTypesList';
+import { entitySettingsQuery } from './sub_types/EntitySetting';
+import EnforceReferenceTypesList from './entity_settings/EnforceReferenceTypesList';
 import useGranted, {
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
@@ -108,9 +114,6 @@ const settingsQuery = graphql`
       platform_theme_light_logo
       platform_theme_light_logo_collapsed
       platform_theme_light_logo_login
-      platform_enable_reference
-      platform_hidden_types
-      platform_entities_files_ref
       platform_organization {
         id
         name
@@ -162,8 +165,6 @@ export const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_login
         platform_language
         platform_login_message
-        platform_hidden_types
-        platform_entities_files_ref
         platform_organization {
           id
           name
@@ -223,8 +224,6 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
-  platform_hidden_types: Yup.array().nullable(),
-  platform_entities_files_ref: Yup.array().nullable(),
   platform_organization: Yup.object().nullable(),
   otp_mandatory: Yup.boolean(),
 });
@@ -272,45 +271,6 @@ const Settings = () => {
         finalValue = '#000000';
       }
     }
-    if (name === 'platform_hidden_types') {
-      if (finalValue.includes('Threats')) {
-        finalValue = finalValue.filter(
-          (n) => !['Threat-Actor', 'Intrusion-Set', 'Campaign'].includes(n),
-        );
-      }
-      if (finalValue.includes('Arsenal')) {
-        finalValue = finalValue.filter(
-          (n) => !['Malware', 'Channel', 'Tool', 'Vulnerability'].includes(n),
-        );
-      }
-      if (finalValue.includes('Techniques')) {
-        finalValue = finalValue.filter(
-          (n) => ![
-            'Attack-Pattern',
-            'Course-Of-Action',
-            'Narrative',
-            'Data-Component',
-            'Data-Source',
-          ].includes(n),
-        );
-      }
-      if (finalValue.includes('Entities')) {
-        finalValue = finalValue.filter(
-          (n) => ![
-            'Sector',
-            'Event',
-            'Organization',
-            'Individual',
-            'System',
-          ].includes(n),
-        );
-      }
-      if (finalValue.includes('Locations')) {
-        finalValue = finalValue.filter(
-          (n) => !['Region', 'Country', 'City', 'Position'].includes(n),
-        );
-      }
-    }
     if (name === 'platform_organization') {
       finalValue = finalValue.value;
     }
@@ -325,6 +285,8 @@ const Settings = () => {
       .catch(() => false);
   };
 
+  const queryRef = useQueryLoading(entitySettingsQuery);
+
   return (
     <div className={classes.container}>
       <QueryRenderer
@@ -334,14 +296,6 @@ const Settings = () => {
             const { settings } = props;
             const { id, editContext } = settings;
             const initialValues = R.pipe(
-              R.assoc(
-                'platform_hidden_types',
-                settings.platform_hidden_types ?? [],
-              ),
-              R.assoc(
-                'platform_entities_files_ref',
-                settings.platform_entities_files_ref ?? [],
-              ),
               R.assoc(
                 'platform_organization',
                 settings.platform_organization
@@ -378,8 +332,6 @@ const Settings = () => {
                 'platform_theme_light_logo_login',
                 'platform_map_tile_server_dark',
                 'platform_map_tile_server_light',
-                'platform_hidden_types',
-                'platform_entities_files_ref',
                 'platform_organization',
                 'otp_mandatory',
               ]),
@@ -400,7 +352,7 @@ const Settings = () => {
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
                       >
-                        {({ values }) => (
+                        {() => (
                           <Form>
                             <Field
                               component={TextField}
@@ -504,20 +456,13 @@ const Settings = () => {
                               <MenuItem value="ja-jp">日本語</MenuItem>
                               <MenuItem value="zh-cn">简化字</MenuItem>
                             </Field>
-                            <HiddenTypesList
-                              values={values}
-                              handleChangeFocus={handleChangeFocus}
-                              handleSubmitField={handleSubmitField}
-                              id={id}
-                              editContext={editContext}
-                            />
-                            <AutomaticTypesList
-                              values={values}
-                              handleChangeFocus={handleChangeFocus}
-                              handleSubmitField={handleSubmitField}
-                              id={id}
-                              editContext={editContext}
-                            />
+                            {queryRef && (
+                              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                                 <HiddenTypesList queryRef={queryRef} />
+                                <AutomaticTypesList queryRef={queryRef} />
+                                <EnforceReferenceTypesList queryRef={queryRef} />
+                              </React.Suspense>
+                            )}
                             <div style={{ marginTop: 20 }}>
                               {isAccessAdmin && (
                                 <div>

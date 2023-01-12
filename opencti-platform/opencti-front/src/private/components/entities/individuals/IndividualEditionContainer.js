@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IndividualEditionOverview from './IndividualEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const IndividualEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, individual, enableReferences } = props;
+  const { handleClose, individual } = props;
   const { editContext } = individual;
 
   return (
@@ -65,7 +66,7 @@ const IndividualEditionContainer = (props) => {
       <div className={classes.container}>
         <IndividualEditionOverview
           individual={individual}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Individual')}
           context={editContext}
           handleClose={handleClose}
         />

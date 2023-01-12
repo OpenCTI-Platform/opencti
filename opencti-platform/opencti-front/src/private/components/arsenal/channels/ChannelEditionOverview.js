@@ -108,7 +108,8 @@ class ChannelEditionOverviewComponent extends Component {
       R.dissoc('references'),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('channel_types', R.pluck('value', values.channel_types)),
+      R.assoc('channel_types', values.channel_types),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -133,22 +134,24 @@ class ChannelEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'x_opencti_workflow_id') {
-      finalValue = value.value;
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
+      channelValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: channelMutationFieldPatch,
+            variables: {
+              id: this.props.channel.id,
+              input: { key: name, value: finalValue },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    channelValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: channelMutationFieldPatch,
-          variables: {
-            id: this.props.channel.id,
-            input: { key: name, value: finalValue },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   handleChangeCreatedBy(name, value) {
@@ -164,40 +167,42 @@ class ChannelEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { channel } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(channel);
+    if (!this.props.enableReferences) {
+      const { channel } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(channel);
 
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: channelMutationRelationAdd,
-        variables: {
-          id: this.props.channel.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: channelMutationRelationAdd,
+          variables: {
+            id: this.props.channel.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: channelMutationRelationDelete,
+          variables: {
+            id: this.props.channel.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: channelMutationRelationDelete,
-        variables: {
-          id: this.props.channel.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 

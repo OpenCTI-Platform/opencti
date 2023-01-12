@@ -45,7 +45,6 @@ ExternalReferenceComponentProps
           <ExternalReferencePopover
             id={''}
             handleRemove={undefined}
-            entityId={''}
           />
         }
       />

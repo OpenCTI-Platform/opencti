@@ -153,7 +153,7 @@ class ToolEditionOverviewComponent extends Component {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
-      R.assoc('tool_types', R.pluck('value', values.tool_types)),
+      R.assoc('tool_types', values.tool_types),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -178,22 +178,24 @@ class ToolEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'x_opencti_workflow_id') {
-      finalValue = value.value;
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
+      toolValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: toolMutationFieldPatch,
+            variables: {
+              id: this.props.tool.id,
+              input: { key: name, value: finalValue },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    toolValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: toolMutationFieldPatch,
-          variables: {
-            id: this.props.tool.id,
-            input: { key: name, value: finalValue },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   handleChangeCreatedBy(name, value) {
@@ -209,78 +211,82 @@ class ToolEditionOverviewComponent extends Component {
   }
 
   handleChangeKillChainPhases(name, values) {
-    const { tool } = this.props;
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(tool);
+    if (!this.props.enableReferences) {
+      const { tool } = this.props;
+      const currentKillChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        map((n) => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(tool);
 
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
+      const added = difference(values, currentKillChainPhases);
+      const removed = difference(currentKillChainPhases, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: toolMutationRelationAdd,
-        variables: {
-          id: this.props.tool.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: toolMutationRelationAdd,
+          variables: {
+            id: this.props.tool.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'kill-chain-phase',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: toolMutationRelationDelete,
+          variables: {
+            id: this.props.tool.id,
+            toId: head(removed).value,
             relationship_type: 'kill-chain-phase',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: toolMutationRelationDelete,
-        variables: {
-          id: this.props.tool.id,
-          toId: head(removed).value,
-          relationship_type: 'kill-chain-phase',
-        },
-      });
+        });
+      }
     }
   }
 
   handleChangeObjectMarking(name, values) {
-    const { tool } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(tool);
+    if (!this.props.enableReferences) {
+      const { tool } = this.props;
+      const currentMarkingDefinitions = pipe(
+        pathOr([], ['objectMarking', 'edges']),
+        map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(tool);
 
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+      const added = difference(values, currentMarkingDefinitions);
+      const removed = difference(currentMarkingDefinitions, values);
 
-    if (added.length > 0) {
-      commitMutation({
-        mutation: toolMutationRelationAdd,
-        variables: {
-          id: this.props.tool.id,
-          input: {
-            toId: head(added).value,
+      if (added.length > 0) {
+        commitMutation({
+          mutation: toolMutationRelationAdd,
+          variables: {
+            id: this.props.tool.id,
+            input: {
+              toId: head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: toolMutationRelationDelete,
+          variables: {
+            id: this.props.tool.id,
+            toId: head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: toolMutationRelationDelete,
-        variables: {
-          id: this.props.tool.id,
-          toId: head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 

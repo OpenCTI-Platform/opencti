@@ -15,11 +15,15 @@ import { executionContext } from '../utils/access';
 const createApolloServer = () => {
   const schema = createSchema();
   // In production mode, we use static from the server
-  const playgroundOptions = DEV_MODE ? {} : {
-    cdnUrl: `${basePath}/static`,
-    title: 'OpenCTI Playground',
-    faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`
-  };
+  const playgroundOptions = DEV_MODE
+    ? {
+      'request.credentials': 'same-origin'
+    }
+    : {
+      cdnUrl: `${basePath}/static`,
+      title: 'OpenCTI Playground',
+      faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`
+    };
   const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
   const appolloPlugins = [playgroundPlugin, loggerPlugin, httpResponsePlugin];
   if (ENABLED_TRACING) {

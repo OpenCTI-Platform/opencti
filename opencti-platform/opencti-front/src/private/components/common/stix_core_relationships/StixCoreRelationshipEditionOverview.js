@@ -25,6 +25,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -163,12 +164,12 @@ const StixCoreRelationshipEditionContainer = ({
   handleDelete,
   stixCoreRelationship,
   stixDomainObject,
-  enableReferences,
   noStoreUpdate,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
+  const enableReferences = useIsEnforceReference('stix-core-relationship');
   const { editContext } = stixCoreRelationship;
   useEffect(() => {
     const sub = requestSubscription({

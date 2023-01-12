@@ -30,36 +30,12 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource> = {
     },
   },
   attributes: [
-    {
-      name: 'name',
-      type: 'string',
-      multiple: false,
-      upsert: true
-    },
-    {
-      name: 'description',
-      type: 'string',
-      multiple: false,
-      upsert: true
-    },
-    {
-      name: 'x_mitre_platforms',
-      type: 'string',
-      multiple: true,
-      upsert: true
-    },
-    {
-      name: 'collection_layers',
-      type: 'string',
-      multiple: true,
-      upsert: true
-    },
-    {
-      name: 'dataComponents',
-      type: 'string',
-      multiple: true,
-      upsert: true
-    }
+    { name: 'name', type: 'string', multiple: false, upsert: true },
+    { name: 'description', type: 'string', multiple: false, upsert: true },
+    { name: 'x_mitre_platforms', type: 'string', multiple: true, upsert: true },
+    { name: 'collection_layers', type: 'string', multiple: true, upsert: true },
+    { name: 'dataComponents', type: 'string', multiple: true, upsert: true },
+    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
   ],
   relations: [],
   converter: convertDataSourceToStix

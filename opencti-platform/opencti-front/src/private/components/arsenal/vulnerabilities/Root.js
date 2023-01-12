@@ -55,9 +55,6 @@ const vulnerabilityQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -122,9 +119,6 @@ class RootVulnerability extends Component {
                         <Vulnerability
                           {...routeProps}
                           vulnerability={props.vulnerability}
-                          enableReferences={props.settings.platform_enable_reference?.includes(
-                            'Vulnerability',
-                          )}
                         />
                       )}
                     />
@@ -152,11 +146,9 @@ class RootVulnerability extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Vulnerability'}
                             stixDomainObject={props.vulnerability}
                             PopoverComponent={<VulnerabilityPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Vulnerability',
-                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -173,6 +165,7 @@ class RootVulnerability extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Vulnerability'}
                             stixDomainObject={props.vulnerability}
                             PopoverComponent={<VulnerabilityPopover />}
                           />
@@ -190,11 +183,9 @@ class RootVulnerability extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Vulnerability'}
                             stixDomainObject={props.vulnerability}
                             PopoverComponent={<VulnerabilityPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Vulnerability',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -212,11 +203,9 @@ class RootVulnerability extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Vulnerability'}
                             stixDomainObject={props.vulnerability}
                             PopoverComponent={<VulnerabilityPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Vulnerability',
-                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

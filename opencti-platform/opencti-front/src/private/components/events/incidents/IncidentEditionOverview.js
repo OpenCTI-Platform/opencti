@@ -147,22 +147,24 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'x_opencti_workflow_id') {
-      finalValue = value.value;
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
+      IncidentValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: incidentMutationFieldPatch,
+            variables: {
+              id: this.props.incident.id,
+              input: { key: name, value: finalValue || '' },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    IncidentValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: incidentMutationFieldPatch,
-          variables: {
-            id: this.props.incident.id,
-            input: { key: name, value: finalValue || '' },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   handleChangeCreatedBy(name, value) {
@@ -278,7 +280,7 @@ class IncidentEditionOverviewComponent extends Component {
     return (
       <Formik
         enableReinitialize={true}
-        initialValues={initialValues}
+        initialValues={{ ...initialValues, references: [] }}
         validationSchema={IncidentValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >

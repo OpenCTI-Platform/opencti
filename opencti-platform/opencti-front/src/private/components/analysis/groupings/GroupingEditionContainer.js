@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import GroupingEditionOverview from './GroupingEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const GroupingEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, grouping, enableReferences } = props;
+  const { handleClose, grouping } = props;
   const { editContext } = grouping;
 
   return (
@@ -65,7 +66,7 @@ const GroupingEditionContainer = (props) => {
       <div className={classes.container}>
         <GroupingEditionOverview
           grouping={grouping}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Grouping')}
           context={editContext}
           handleClose={handleClose}
         />

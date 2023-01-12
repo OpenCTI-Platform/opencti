@@ -80,3 +80,12 @@ export const serverFromUser = (user = ADMIN_USER) => {
 
 const adminApolloServer = serverFromUser();
 export const queryAsAdmin = (request: any) => adminApolloServer.executeOperation(request);
+
+export const isSorted = (arr: []) => {
+  let second_index;
+  for (let first_index = 0; first_index < arr.length; first_index += 1) {
+    second_index = first_index + 1;
+    if (arr[second_index] - arr[first_index] < 0) return false;
+  }
+  return true;
+};

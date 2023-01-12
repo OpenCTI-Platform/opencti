@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IndicatorEditionOverview from './IndicatorEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const IndicatorEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, indicator, enableReferences } = props;
+  const { handleClose, indicator } = props;
   const { editContext } = indicator;
 
   return (
@@ -65,7 +66,7 @@ const IndicatorEditionContainer = (props) => {
       <div className={classes.container}>
         <IndicatorEditionOverview
           indicator={indicator}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Indicator')}
           context={editContext}
           handleClose={handleClose}
         />

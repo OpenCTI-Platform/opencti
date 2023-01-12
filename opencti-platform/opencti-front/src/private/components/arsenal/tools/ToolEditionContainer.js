@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import ToolEditionOverview from './ToolEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const ToolEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, tool, enableReferences } = props;
+  const { handleClose, tool } = props;
   const { editContext } = tool;
 
   return (
@@ -65,7 +66,7 @@ const ToolEditionContainer = (props) => {
       <div className={classes.container}>
         <ToolEditionOverview
           tool={tool}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Tool')}
           context={editContext}
           handleClose={handleClose}
         />

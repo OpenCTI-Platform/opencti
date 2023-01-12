@@ -5,7 +5,7 @@ import { AccountBalanceOutlined, DomainOutlined, EventOutlined, PersonOutlined, 
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
-import useHelper from '../../../utils/hooks/useHelper';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -24,12 +24,10 @@ const TopMenuEntities = () => {
   const { t } = useFormatter();
   const location = useLocation();
   const classes = useStyles();
-  const { isEntityTypeHidden } = useHelper();
 
   return (
     <div>
-      {!isEntityTypeHidden('Entities')
-        && !isEntityTypeHidden('Sector') && (
+      {!useIsHiddenEntity('Sector') && (
           <Button
             component={Link}
             to="/dashboard/entities/sectors"
@@ -50,7 +48,7 @@ const TopMenuEntities = () => {
             {t('Sectors')}
           </Button>
       )}
-      {!isEntityTypeHidden('Event') && (
+      {!useIsHiddenEntity('Event') && (
         <Button
           component={Link}
           to="/dashboard/entities/events"
@@ -71,7 +69,7 @@ const TopMenuEntities = () => {
           {t('Events')}
         </Button>
       )}
-      {!isEntityTypeHidden('Organization') && (
+      {!useIsHiddenEntity('Organization') && (
         <Button
           component={Link}
           to="/dashboard/entities/organizations"
@@ -95,7 +93,7 @@ const TopMenuEntities = () => {
           {t('Organizations')}
         </Button>
       )}
-      {!isEntityTypeHidden('System') && (
+      {!useIsHiddenEntity('System') && (
         <Button
           component={Link}
           to="/dashboard/entities/systems"
@@ -116,7 +114,7 @@ const TopMenuEntities = () => {
           {t('Systems')}
         </Button>
       )}
-      {!isEntityTypeHidden('Individual') && (
+      {!useIsHiddenEntity('Individual') && (
         <Button
           component={Link}
           to="/dashboard/entities/individuals"

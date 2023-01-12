@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import SystemEditionOverview from './SystemEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const SystemEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, system, enableReferences } = props;
+  const { handleClose, system } = props;
   const { editContext } = system;
 
   return (
@@ -65,7 +66,7 @@ const SystemEditionContainer = (props) => {
       <div className={classes.container}>
         <SystemEditionOverview
           system={system}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('System')}
           context={editContext}
           handleClose={handleClose}
         />

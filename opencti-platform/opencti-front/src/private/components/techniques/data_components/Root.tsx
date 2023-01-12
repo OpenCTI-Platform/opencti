@@ -53,9 +53,6 @@ const dataComponentQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -98,9 +95,6 @@ const RootDataComponent = () => {
                       <DataComponentKnowledge
                         {...routeProps}
                         data={props.dataComponent}
-                        enableReferences={props.settings.platform_enable_reference?.includes(
-                          'Data-Component',
-                        )}
                       />
                     )}
                   />

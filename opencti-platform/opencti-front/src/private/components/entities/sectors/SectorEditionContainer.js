@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import SectorEditionOverview from './SectorEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const SectorEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, sector, enableReferences } = props;
+  const { handleClose, sector } = props;
   const { editContext } = sector;
 
   return (
@@ -65,7 +66,7 @@ const SectorEditionContainer = (props) => {
       <div className={classes.container}>
         <SectorEditionOverview
           sector={sector}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Sector')}
           context={editContext}
           handleClose={handleClose}
         />

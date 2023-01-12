@@ -42,6 +42,7 @@ const RegionKnowledgeComponent = ({
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'Region'}
         disableSharing={true}
         stixDomainObject={region}
         PopoverComponent={<RegionPopover id={region.id} />}

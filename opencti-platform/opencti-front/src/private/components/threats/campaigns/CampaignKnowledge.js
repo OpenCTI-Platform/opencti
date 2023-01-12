@@ -29,6 +29,7 @@ class CampaignKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Campaign'}
           stixDomainObject={campaign}
           PopoverComponent={<CampaignPopover />}
         />

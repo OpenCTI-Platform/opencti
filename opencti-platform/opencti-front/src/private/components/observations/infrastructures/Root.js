@@ -55,9 +55,6 @@ const infrastructureQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -132,9 +129,6 @@ class RootInfrastructure extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.infrastructure}
                             PopoverComponent={<InfrastructurePopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Infrastructure',
-                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -153,9 +147,6 @@ class RootInfrastructure extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.infrastructure}
                             PopoverComponent={<InfrastructurePopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Infrastructure',
-                            )}
                           />
                           <StixDomainObjectIndicators
                             {...routeProps}
@@ -183,9 +174,6 @@ class RootInfrastructure extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.infrastructure}
                             PopoverComponent={<InfrastructurePopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Infrastructure',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -205,9 +193,6 @@ class RootInfrastructure extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.infrastructure}
                             PopoverComponent={<InfrastructurePopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Infrastructure',
-                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

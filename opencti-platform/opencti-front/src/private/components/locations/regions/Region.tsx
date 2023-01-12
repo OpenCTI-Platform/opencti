@@ -102,6 +102,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'Region'}
         disableSharing={true}
         stixDomainObject={region}
         isOpenctiAlias={true}

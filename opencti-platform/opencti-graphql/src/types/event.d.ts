@@ -5,7 +5,7 @@ import type { StoreRelation } from './store';
 
 interface CommitContext {
   message: string;
-  references: Array<string>;
+  external_references: Array<string>;
 }
 
 interface EventOpts {

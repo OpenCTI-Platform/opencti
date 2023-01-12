@@ -6,6 +6,7 @@ import { Fire } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -27,25 +28,27 @@ const TopMenuEvents = () => {
 
   return (
       <div>
-        <Button
-          component={Link}
-          to="/dashboard/events/incidents"
-          variant={
-            location.pathname.includes('/dashboard/events/incidents')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/events/incidents')
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Fire className={classes.icon} fontSize="small" />
-          {t('Incidents')}
-        </Button>
+        {!useIsHiddenEntity('Incident') && (
+          <Button
+            component={Link}
+            to="/dashboard/events/incidents"
+            variant={
+              location.pathname.includes('/dashboard/events/incidents')
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname.includes('/dashboard/events/incidents')
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            <Fire className={classes.icon} fontSize="small" />
+            {t('Incidents')}
+          </Button>
+        )}
         <Button
           component={Link}
           to="/dashboard/events/sightings"
@@ -65,25 +68,27 @@ const TopMenuEvents = () => {
           <VisibilityOutlined className={classes.icon} fontSize="small" />
           {t('Sightings')}
         </Button>
-        <Button
-          component={Link}
-          to="/dashboard/events/observed_data"
-          variant={
-            location.pathname.includes('/dashboard/events/observed_data')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/events/observed_data')
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          <WifiTetheringOutlined className={classes.icon} fontSize="small" />
-          {t('Observed datas')}
-        </Button>
+        {!useIsHiddenEntity('Observed-Data') && (
+          <Button
+            component={Link}
+            to="/dashboard/events/observed_data"
+            variant={
+              location.pathname.includes('/dashboard/events/observed_data')
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname.includes('/dashboard/events/observed_data')
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            <WifiTetheringOutlined className={classes.icon} fontSize="small" />
+            {t('Observed datas')}
+          </Button>
+        )}
       </div>
   );
 };

@@ -5,6 +5,7 @@ import { ArchiveOutline, HexagonOutline, ServerNetwork, ShieldSearch } from 'mdi
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -64,6 +65,7 @@ const TopMenuObservations = () => {
         <ArchiveOutline className={classes.icon} fontSize="small" />
         {t('Artifacts')}
       </Button>
+      {!useIsHiddenEntity('Indicator') && (
         <Button
           component={Link}
           to="/dashboard/observations/indicators"
@@ -83,6 +85,8 @@ const TopMenuObservations = () => {
           <ShieldSearch className={classes.icon} fontSize="small" />
           {t('Indicators')}
         </Button>
+      )}
+      {!useIsHiddenEntity('Infrastructure') && (
         <Button
           component={Link}
           to="/dashboard/observations/infrastructures"
@@ -106,6 +110,7 @@ const TopMenuObservations = () => {
           <ServerNetwork className={classes.icon} fontSize="small" />
           {t('Infrastructures')}
         </Button>
+      )}
     </div>
   );
 };

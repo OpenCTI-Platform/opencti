@@ -27,6 +27,7 @@ class ToolKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Tool'}
           stixDomainObject={tool}
           PopoverComponent={<ToolPopover />}
         />

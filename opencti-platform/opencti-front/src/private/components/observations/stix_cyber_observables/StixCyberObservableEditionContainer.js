@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import StixCyberObservableEditionOverview from './StixCyberObservableEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const StixCyberObservableEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, stixCyberObservable, enableReferences } = props;
+  const { handleClose, stixCyberObservable } = props;
   const { editContext } = stixCyberObservable;
 
   return (
@@ -65,7 +66,7 @@ const StixCyberObservableEditionContainer = (props) => {
       <div className={classes.container}>
         <StixCyberObservableEditionOverview
           stixCyberObservable={stixCyberObservable}
-          enableReferences={enableReferences}
+          enableReferences={useIsEnforceReference('Stix-Cyber-Observable')}
           context={editContext}
           handleClose={handleClose}
         />

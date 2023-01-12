@@ -10,6 +10,7 @@ import { makeStyles } from '@mui/styles';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import AttackPatternEditionOverview from './AttackPatternEditionOverview';
 import AttackPatternEditionDetails from './AttackPatternEditionDetails';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles((theme) => ({
@@ -40,7 +41,7 @@ const AttackPatternEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, attackPattern, enableReferences } = props;
+  const { handleClose, attackPattern } = props;
   const { editContext } = attackPattern;
 
   const [currentTab, setCurrentTab] = useState(0);
@@ -78,7 +79,7 @@ const AttackPatternEditionContainer = (props) => {
         {currentTab === 0 && (
           <AttackPatternEditionOverview
             attackPattern={attackPattern}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Attack-Pattern')}
             context={editContext}
             handleClose={handleClose}
           />
@@ -86,7 +87,7 @@ const AttackPatternEditionContainer = (props) => {
         {currentTab === 1 && (
           <AttackPatternEditionDetails
             attackPattern={attackPattern}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Attack-Pattern')}
             context={editContext}
             handleClose={handleClose}
           />

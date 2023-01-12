@@ -27,6 +27,7 @@ class PositionKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Position'}
           disableSharing={true}
           stixDomainObject={position}
           PopoverComponent={<PositionPopover />}

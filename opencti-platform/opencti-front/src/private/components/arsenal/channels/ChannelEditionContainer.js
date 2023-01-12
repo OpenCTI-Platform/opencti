@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import ChannelEditionOverview from './ChannelEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -41,7 +42,7 @@ const ChannelEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, channel, enableReferences } = props;
+  const { handleClose, channel } = props;
   const { editContext } = channel;
 
   return (
@@ -65,7 +66,7 @@ const ChannelEditionContainer = (props) => {
         <div className={classes.container}>
           <ChannelEditionOverview
             channel={channel}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Channel')}
             context={editContext}
             handleClose={handleClose}
           />

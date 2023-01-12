@@ -29,13 +29,12 @@ const styles = () => ({
 
 class AttackPatternComponent extends Component {
   render() {
-    const { classes, attackPattern, enableReferences } = this.props;
+    const { classes, attackPattern } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
-          enableReferences={enableReferences}
         />
         <Grid
           container={true}

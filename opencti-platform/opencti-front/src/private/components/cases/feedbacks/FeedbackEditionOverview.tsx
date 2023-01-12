@@ -23,6 +23,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import RatingField from '../../../../components/RatingField';
+import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 
@@ -166,9 +167,11 @@ interface FeedbackEditionOverviewProps {
 }
 
 interface CaseEditionFormValues {
-  x_opencti_workflow_id:
-  | string
-  | { label: string; color: string; value: string; order: string };
+  message?: string
+  references?: Option[]
+  createdBy?: Option
+  x_opencti_workflow_id: Option
+  objectMarking?: Option[]
 }
 
 const CaseEditionOverviewComponent: FunctionComponent<
@@ -194,14 +197,23 @@ FeedbackEditionOverviewProps
     values,
     { setSubmitting },
   ) => {
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
+
     const inputValues = Object.entries({
-      x_opencti_workflow_id: values.x_opencti_workflow_id,
+      ...otherValues,
+      createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     editor.fieldPatch({
       variables: {
         id: caseData.id,
         input: inputValues,
+        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        references: commitReferences,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -252,7 +264,13 @@ FeedbackEditionOverviewProps
       validationSchema={caseValidation(t)}
       onSubmit={onSubmit}
     >
-      {({ setFieldValue }) => (
+      {({
+        submitForm,
+        isSubmitting,
+        validateForm,
+        setFieldValue,
+        values,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
             label={t('Case priority')}
@@ -362,6 +380,16 @@ FeedbackEditionOverviewProps
             handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))
             }
           />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting}
+              validateForm={validateForm}
+              setFieldValue={setFieldValue}
+              values={values}
+              id={caseData.id}
+            />
+          )}
         </Form>
       )}
     </Formik>

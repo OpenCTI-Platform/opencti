@@ -18,6 +18,7 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import { typesWithoutName } from '../../../../utils/Entity';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -143,8 +144,9 @@ const StixDomainObjectEditionContainer = (props) => {
     handleClose,
     stixDomainObject,
     noStoreUpdate,
-    enableReferences,
   } = props;
+
+  const enableReferences = useIsEnforceReference(stixDomainObject.entity_type);
 
   useEffect(() => {
     const sub = requestSubscription({

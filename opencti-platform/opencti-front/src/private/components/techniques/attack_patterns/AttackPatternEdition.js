@@ -37,9 +37,6 @@ export const attackPatternEditionQuery = graphql`
       ...AttackPatternEditionContainer_attackPattern
       ...AttackPatternEditionDetails_attackPattern
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -90,13 +87,7 @@ class AttackPatternEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <AttackPatternEditionContainer
-                    attackPattern={props.attackPattern}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Attack-Pattern',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <AttackPatternEditionContainer attackPattern={props.attackPattern} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

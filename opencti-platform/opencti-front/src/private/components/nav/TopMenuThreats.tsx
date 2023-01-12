@@ -5,6 +5,7 @@ import { ChessKnight, DiamondOutline, LaptopAccount } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -26,6 +27,7 @@ const TopMenuThreats = () => {
 
   return (
     <div>
+      {!useIsHiddenEntity('Threat-Actor') && (
         <Button
           component={Link}
           to="/dashboard/threats/threat_actors"
@@ -49,6 +51,8 @@ const TopMenuThreats = () => {
           <LaptopAccount className={classes.icon} fontSize="small" />
           {t('Threat actors')}
         </Button>
+      )}
+      {!useIsHiddenEntity('Intrusion-Set') && (
         <Button
           component={Link}
           to="/dashboard/threats/intrusion_sets"
@@ -72,6 +76,8 @@ const TopMenuThreats = () => {
           <DiamondOutline className={classes.icon} fontSize="small" />
           {t('Intrusion sets')}
         </Button>
+      )}
+      {!useIsHiddenEntity('Campaign') && (
         <Button
           component={Link}
           to="/dashboard/threats/campaigns"
@@ -91,6 +97,7 @@ const TopMenuThreats = () => {
           <ChessKnight className={classes.icon} fontSize="small" />
           {t('Campaigns')}
         </Button>
+      )}
     </div>
   );
 };

@@ -11,6 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IncidentEditionOverview from './IncidentEditionOverview';
 import IncidentEditionDetails from './IncidentEditionDetails';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -40,7 +41,7 @@ const IncidentEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { handleClose, incident, enableReferences } = props;
+  const { handleClose, incident } = props;
   const { editContext } = incident;
 
   const [currentTab, setCurrentTab] = useState(0);
@@ -78,7 +79,7 @@ const IncidentEditionContainer = (props) => {
         {currentTab === 0 && (
           <IncidentEditionOverview
             incident={incident}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Incident')}
             context={editContext}
             handleClose={handleClose}
           />
@@ -86,7 +87,7 @@ const IncidentEditionContainer = (props) => {
         {currentTab === 1 && (
           <IncidentEditionDetails
             incident={incident}
-            enableReferences={enableReferences}
+            enableReferences={useIsEnforceReference('Incident')}
             context={editContext}
             handleClose={handleClose}
           />

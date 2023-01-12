@@ -36,9 +36,6 @@ export const IncidentEditionQuery = graphql`
     incident(id: $id) {
       ...IncidentEditionContainer_incident
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -89,13 +86,7 @@ class IncidentEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IncidentEditionContainer
-                    incident={props.incident}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Incident',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <IncidentEditionContainer incident={props.incident} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

@@ -7,6 +7,7 @@ import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import OpinionEditionOverview from './OpinionEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -66,6 +67,7 @@ const OpinionEditionContainer = (props) => {
           <OpinionEditionOverview
             opinion={opinion}
             context={editContext}
+            enableReferences={useIsEnforceReference('Opinion')}
             handleClose={handleClose}
           />
         </div>
