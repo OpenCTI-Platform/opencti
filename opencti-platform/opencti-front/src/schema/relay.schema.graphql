@@ -1630,6 +1630,7 @@ enum ExternalReferencesFilter {
   source_name
   external_id
   fileId
+  creator
 }
 
 input ExternalReferencesFiltering {

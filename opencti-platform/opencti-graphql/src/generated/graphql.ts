@@ -5290,6 +5290,7 @@ export type ExternalReferenceEditMutationsRelationDeleteArgs = {
 };
 
 export enum ExternalReferencesFilter {
+  Creator = 'creator',
   ExternalId = 'external_id',
   FileId = 'fileId',
   SourceName = 'source_name',

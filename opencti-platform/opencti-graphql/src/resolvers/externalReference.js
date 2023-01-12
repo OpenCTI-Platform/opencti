@@ -28,6 +28,7 @@ const externalReferenceResolvers = {
   },
   ExternalReferencesFilter: {
     usedBy: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
+    creator: 'creator_id',
   },
   ExternalReference: {
     url: (externalReference) => (externalReference.fileId ? (baseUrl + externalReference.url) : externalReference.url),

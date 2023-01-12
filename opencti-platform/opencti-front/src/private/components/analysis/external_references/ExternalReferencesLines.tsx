@@ -38,6 +38,7 @@ export const externalReferencesLinesQuery = graphql`
     $cursor: ID
     $orderBy: ExternalReferencesOrdering
     $orderMode: OrderingMode
+    $filters: [ExternalReferencesFiltering!]
   ) {
     ...ExternalReferencesLines_data
       @arguments(
@@ -46,6 +47,7 @@ export const externalReferencesLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -58,6 +60,7 @@ const externalReferencesLineFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "ExternalReferencesOrdering", defaultValue: source_name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "[ExternalReferencesFiltering!]" }
   )
   @refetchable(queryName: "ExternalReferencesLinesRefetchQuery") {
     externalReferences(
@@ -66,6 +69,7 @@ const externalReferencesLineFragment = graphql`
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
+      filters: $filters
     ) @connection(key: "Pagination_externalReferences") {
       edges {
         node {

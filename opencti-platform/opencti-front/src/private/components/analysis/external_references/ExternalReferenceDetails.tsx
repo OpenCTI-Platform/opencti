@@ -15,6 +15,7 @@ import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -72,12 +73,20 @@ ExternalReferenceDetailsComponentProps
               {t('External ID')}
             </Typography>
             {externalReference.external_id}
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Creator')}
+            </Typography>
+            <ItemCreator creator={externalReference.creator} />
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t('URL')}
             </Typography>
-            <pre style={{ position: 'relative' }}>
+            <pre style={{ position: 'relative', minHeight: 35 }}>
               {externalReference.url}
               <Tooltip title={t('Browse the link')}>
                 <IconButton
@@ -86,6 +95,7 @@ ExternalReferenceDetailsComponentProps
                   size="medium"
                   color="secondary"
                   style={{ position: 'absolute', right: 0, top: 0 }}
+                  disabled={!externalReference.url}
                 >
                   <OpenInBrowserOutlined />
                 </IconButton>
@@ -125,6 +135,10 @@ const ExternalReferenceDetails = createFragmentContainer(
         id
         external_id
         url
+        creator {
+          id
+          name
+        }
       }
     `,
   },
