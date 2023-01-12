@@ -151,13 +151,14 @@ class SoftwareEditionDetailsComponent extends Component {
       setFieldValue,
       values,
     } = this.props;
+    console.log(values)
     // const initialValues = R.pipe(
     //   R.assoc('first_seen', dateFormat(software.first_seen)),
     //   R.assoc('last_seen', dateFormat(software.last_seen)),
     //   R.pick(['first_seen', 'last_seen', 'objective']),
     // )(software);
-    const installedOn = R.map((n) => n.name)(software.installed_on);
-    const relatedRisk = R.map((n) => n.name)(software.related_risks);
+    const installedOn = R.map((n) => n.name)(values.installed_on);
+    const relatedRisk = R.map((n) => n.name)(values.related_risks);
     return (
       <>
         {/* // <Formik
@@ -481,6 +482,17 @@ const SoftwareEditionDetails = createFragmentContainer(
         patch_level
         installation_id
         implementation_point
+        installed_on {
+          id
+          entity_type
+          vendor_name
+          name
+          version
+        }
+        related_risks {
+          id
+          name
+        }
       }
     `,
   },
