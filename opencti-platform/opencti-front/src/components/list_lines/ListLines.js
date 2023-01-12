@@ -223,7 +223,7 @@ class ListLines extends Component {
                 {t('entitie(s)')}
               </div>
             )}
-            {(exportEntityType === 'Report') && redirectionMode && (
+            {redirectionMode && (
                 <ToggleButtonGroup
                   size="small"
                   color="secondary"

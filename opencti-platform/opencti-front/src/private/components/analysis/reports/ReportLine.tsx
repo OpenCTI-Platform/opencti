@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
@@ -15,8 +15,11 @@ import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
+import { Theme } from '../../../../components/Theme';
+import { DataColumns } from '../../../../components/list_lines';
+import { ReportLine_node$data } from './__generated__/ReportLine_node.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -38,12 +41,12 @@ const useStyles = makeStyles((theme) => ({
     right: -10,
   },
   itemIconDisabled: {
-    color: theme.palette.grey[700],
+    color: theme.palette.grey?.[700],
   },
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: theme.palette.grey?.[700],
   },
   chipInList: {
     fontSize: 12,
@@ -53,7 +56,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ReportLineComponent = ({
+interface ReportLineComponentProps {
+  node: ReportLine_node$data;
+  dataColumns: DataColumns;
+  onLabelClick: (key: string, id: string, value: string, event: React.SyntheticEvent) => void;
+  selectedElements: Record<string, ReportLine_node$data>;
+  deSelectedElements: Record<string, ReportLine_node$data>;
+  onToggleEntity: (entity: ReportLine_node$data, event?: React.SyntheticEvent) => void;
+  selectAll: boolean;
+  onToggleShiftEntity: (
+    index: number,
+    entity: ReportLine_node$data,
+    event?: React.SyntheticEvent,
+  ) => void;
+  index: number;
+  redirectionMode: string;
+}
+
+const ReportLineComponent: FunctionComponent<ReportLineComponentProps> = ({
   node,
   dataColumns,
   onLabelClick,
@@ -161,7 +181,7 @@ const ReportLineComponent = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                markingDefinitionsEdges={node.objectMarking?.edges ?? []}
                 limit={1}
               />
             </div>
@@ -228,7 +248,11 @@ export const ReportLine = createFragmentContainer(ReportLineComponent, {
   `,
 });
 
-export const ReportLineDummy = ({ dataColumns }) => {
+interface ReportLineDummyProps {
+  dataColumns: DataColumns;
+}
+
+export const ReportLineDummy: FunctionComponent<ReportLineDummyProps> = ({ dataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

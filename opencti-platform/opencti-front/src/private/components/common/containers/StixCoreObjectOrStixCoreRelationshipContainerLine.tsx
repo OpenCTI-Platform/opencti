@@ -1,23 +1,26 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
+import React, { FunctionComponent, SyntheticEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { Theme } from '../../../../components/Theme';
+import { DataColumns } from '../../../../components/list_lines';
+import {
+  StixCoreObjectOrStixCoreRelationshipContainerLine_node$data,
+} from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -39,99 +42,98 @@ const styles = (theme) => ({
     right: -10,
   },
   itemIconDisabled: {
-    color: theme.palette.grey[700],
+    color: theme.palette.grey?.[700],
   },
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: theme.palette.grey?.[700],
   },
-});
+}));
 
-class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Component {
-  render() {
-    const { fd, classes, node, dataColumns, onLabelClick, redirectionMode } = this.props;
-    return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component={Link}
-        to={(redirectionMode === 'overview' || node.entity_type !== 'Report') ? `${resolveLink(node.entity_type)}/${node.id}` : `${resolveLink(node.entity_type)}/${node.id}/${redirectionMode}`}
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.entity_type} />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {defaultValue(node)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                {R.pathOr('', ['createdBy', 'name'], node)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={node.objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                {fd(node.first_observed || node.published || node.created)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.x_opencti_workflow_id.width }}
-              >
-                <ItemStatus
-                  status={node.status}
-                  variant="inList"
-                  disabled={!node.workflowEnabled}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <ItemMarkings
-                  variant="inList"
-                  markingDefinitionsEdges={node.objectMarking.edges}
-                  limit={1}
-                />
-              </div>
-            </div>
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
-        </ListItemIcon>
-      </ListItem>
-    );
-  }
+interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
+  node: StixCoreObjectOrStixCoreRelationshipContainerLine_node$data,
+  dataColumns: DataColumns,
+  onLabelClick: (key: string, id: string, value: string, event: SyntheticEvent) => void,
+  redirectionMode: string,
 }
 
-StixCoreObjectOrStixCoreRelationshipContainerLineComponent.propTypes = {
-  dataColumns: PropTypes.object,
-  node: PropTypes.object,
-  classes: PropTypes.object,
-  fd: PropTypes.func,
-  t: PropTypes.func,
-  onLabelClick: PropTypes.func,
-  redirectionMode: PropTypes.string,
+export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps> = ({
+  node, dataColumns, onLabelClick, redirectionMode,
+}) => {
+  const classes = useStyles();
+  const { fd } = useFormatter();
+
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={(redirectionMode === 'overview' || node.entity_type !== 'Report') ? `${resolveLink(node.entity_type)}/${node.id}` : `${resolveLink(node.entity_type)}/${node.id}/${redirectionMode}`}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ItemIcon type={node.entity_type} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              {defaultValue(node)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {node.createdBy?.name ?? ''}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <StixCoreObjectLabels
+                variant="inList"
+                labels={node.objectLabel}
+                onClick={onLabelClick.bind(this)}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
+              {fd(node.first_observed || node.published || node.created)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.x_opencti_workflow_id.width }}
+            >
+              <ItemStatus
+                status={node.status}
+                variant="inList"
+                disabled={!node.workflowEnabled}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <ItemMarkings
+                variant="inList"
+                markingDefinitionsEdges={node.objectMarking?.edges}
+                limit={1}
+              />
+            </div>
+          </div>
+        }
+      />
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRightOutlined />
+      </ListItemIcon>
+    </ListItem>
+  );
 };
 
 const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragmentContainer(
@@ -368,99 +370,91 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
   },
 );
 
-export const StixCoreObjectOrStixCoreRelationshipContainerLine = R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectOrStixCoreRelationshipContainerLineFragment);
+export const StixCoreObjectOrStixCoreRelationshipContainerLine = StixCoreObjectOrStixCoreRelationshipContainerLineFragment;
 
-class StixCoreObjectOrStixCoreRelationshipContainerLineDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns } = this.props;
-    return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
-              </div>
-            </div>
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
-        </ListItemIcon>
-      </ListItem>
-    );
-  }
+interface StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps {
+  dataColumns: DataColumns,
 }
 
-StixCoreObjectOrStixCoreRelationshipContainerLineDummyComponent.propTypes = {
-  classes: PropTypes.object,
-  dataColumns: PropTypes.object,
-};
+export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionComponent<StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps> = ({
+  dataColumns,
+}) => {
+  const classes = useStyles();
 
-export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy = R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectOrStixCoreRelationshipContainerLineDummyComponent);
+  return (
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
+        />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
+          </div>
+        }
+      />
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRightOutlined />
+      </ListItemIcon>
+    </ListItem>
+  );
+};
