@@ -1,16 +1,14 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import inject18n from '../../../../components/i18n';
+import { makeStyles } from '@mui/styles';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import OpinionEditionOverview from './OpinionEditionOverview';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -37,28 +35,22 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
-});
+}));
 
-class OpinionEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { currentTab: 0 };
-  }
+const OpinionEditionContainer = (props) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
 
-  handleChangeTab(event, value) {
-    this.setState({ currentTab: value });
-  }
+  const { handleClose, opinion } = props;
+  const { editContext } = opinion;
 
-  render() {
-    const { t, classes, handleClose, opinion } = this.props;
-    const { editContext } = opinion;
-    return (
+  return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
+            onClick={handleClose}
             size="large"
             color="primary"
           >
@@ -72,21 +64,13 @@ class OpinionEditionContainer extends Component {
         </div>
         <div className={classes.container}>
           <OpinionEditionOverview
-            opinion={this.props.opinion}
+            opinion={opinion}
             context={editContext}
+            handleClose={handleClose}
           />
         </div>
       </div>
-    );
-  }
-}
-
-OpinionEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  opinion: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
 const OpinionEditionFragment = createFragmentContainer(
@@ -105,7 +89,4 @@ const OpinionEditionFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(OpinionEditionFragment);
+export default OpinionEditionFragment;

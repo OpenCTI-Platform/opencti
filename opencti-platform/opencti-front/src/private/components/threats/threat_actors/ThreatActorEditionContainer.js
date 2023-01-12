@@ -1,20 +1,19 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React, { useState } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import ThreatActorEditionOverview from './ThreatActorEditionOverview';
 import ThreatActorEditionDetails from './ThreatActorEditionDetails';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -36,78 +35,65 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
-});
+}));
 
-class ThreatActorEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { currentTab: 0 };
-  }
+const ThreatActorEditionContainer = (props) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
 
-  handleChangeTab(event, value) {
-    this.setState({ currentTab: value });
-  }
+  const { handleClose, threatActor, enableReferences } = props;
+  const { editContext } = threatActor;
 
-  render() {
-    const { t, classes, handleClose, threatActor } = this.props;
-    const { editContext } = threatActor;
-    return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a threat actor')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs
-              value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}
-            >
-              <Tab label={t('Overview')} />
-              <Tab label={t('Details')} />
-            </Tabs>
-          </Box>
-          {this.state.currentTab === 0 && (
-            <ThreatActorEditionOverview
-              threatActor={this.props.threatActor}
-              enableReferences={this.props.enableReferences}
-              context={editContext}
-              handleClose={handleClose.bind(this)}
-            />
-          )}
-          {this.state.currentTab === 1 && (
-            <ThreatActorEditionDetails
-              threatActor={this.props.threatActor}
-              enableReferences={this.props.enableReferences}
-              context={editContext}
-              handleClose={handleClose.bind(this)}
-            />
-          )}
-        </div>
+  const [currentTab, setCurrentTab] = useState(0);
+  const handleChangeTab = (event, value) => setCurrentTab(value);
+
+  return (
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update a threat actor')}
+        </Typography>
+        <SubscriptionAvatars context={editContext} />
+        <div className="clearfix" />
       </div>
-    );
-  }
-}
-
-ThreatActorEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  threatActor: PropTypes.object,
-  enableReferences: PropTypes.bool,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+      <div className={classes.container}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs
+            value={currentTab}
+            onChange={handleChangeTab}
+          >
+            <Tab label={t('Overview')} />
+            <Tab label={t('Details')} />
+          </Tabs>
+        </Box>
+        {currentTab === 0 && (
+          <ThreatActorEditionOverview
+            threatActor={threatActor}
+            enableReferences={enableReferences}
+            context={editContext}
+            handleClose={handleClose}
+          />
+        )}
+        {currentTab === 1 && (
+          <ThreatActorEditionDetails
+            threatActor={threatActor}
+            enableReferences={enableReferences}
+            context={editContext}
+            handleClose={handleClose}
+          />
+        )}
+      </div>
+    </div>
+  );
 };
 
 const ThreatActorEditionFragment = createFragmentContainer(
@@ -127,7 +113,4 @@ const ThreatActorEditionFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ThreatActorEditionFragment);
+export default ThreatActorEditionFragment;

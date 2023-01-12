@@ -1,16 +1,14 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import ObservedDataEditionOverview from './ObservedDataEditionOverview';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -37,58 +35,43 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
-});
+}));
 
-class ObservedDataEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { currentTab: 0 };
-  }
+const ObservedDataEditionContainer = (props) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
 
-  handleChangeTab(event, value) {
-    this.setState({ currentTab: value });
-  }
+  const { handleClose, observedData, enableReferences } = props;
+  const { editContext } = observedData;
 
-  render() {
-    const { t, classes, handleClose, observedData } = this.props;
-    const { editContext } = observedData;
-    return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an observed data')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <ObservedDataEditionOverview
-            observedData={this.props.observedData}
-            enableReferences={this.props.enableReferences}
-            context={editContext}
-            handleClose={handleClose.bind(this)}
-          />
-        </div>
+  return (
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update an observed data')}
+        </Typography>
+        <SubscriptionAvatars context={editContext} />
+        <div className="clearfix" />
       </div>
-    );
-  }
-}
-
-ObservedDataEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  observedData: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+      <div className={classes.container}>
+        <ObservedDataEditionOverview
+          observedData={observedData}
+          enableReferences={enableReferences}
+          context={editContext}
+          handleClose={handleClose}
+        />
+      </div>
+    </div>
+  );
 };
 
 const ObservedDataEditionFragment = createFragmentContainer(
@@ -107,7 +90,4 @@ const ObservedDataEditionFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ObservedDataEditionFragment);
+export default ObservedDataEditionFragment;
