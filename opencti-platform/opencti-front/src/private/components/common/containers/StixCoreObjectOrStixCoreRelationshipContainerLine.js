@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -50,14 +50,14 @@ const styles = (theme) => ({
 
 class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Component {
   render() {
-    const { fd, classes, node, dataColumns, onLabelClick } = this.props;
+    const { fd, classes, node, dataColumns, onLabelClick, redirectionMode } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={`${resolveLink(node.entity_type)}/${node.id}`}
+        to={(redirectionMode === 'overview' || node.entity_type !== 'Report') ? `${resolveLink(node.entity_type)}/${node.id}` : `${resolveLink(node.entity_type)}/${node.id}/${redirectionMode}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.entity_type} />
@@ -131,6 +131,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponent.propTypes = {
   fd: PropTypes.func,
   t: PropTypes.func,
   onLabelClick: PropTypes.func,
+  redirectionMode: PropTypes.string,
 };
 
 const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragmentContainer(

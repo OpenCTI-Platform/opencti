@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, toPairs } from 'ramda';
+import { compose, last, map, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
@@ -13,6 +13,8 @@ import {
   ArrowDropUp,
   FileDownloadOutlined,
   LibraryBooksOutlined,
+  PreviewOutlined,
+  SourceOutlined,
   ViewListOutlined,
   ViewModuleOutlined,
 } from '@mui/icons-material';
@@ -20,11 +22,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import {
-  GraphOutline,
-  FormatListGroup,
-  RelationManyToMany,
-} from 'mdi-material-ui';
+import { FormatListGroup, GraphOutline, RelationManyToMany } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -34,6 +32,7 @@ import Filters from '../../private/components/common/lists/Filters';
 import StixCyberObservablesExports
   from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import StixCoreRelationshipsExports
+
   from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
 import FilterIconButton from '../FilterIconButton';
@@ -178,6 +177,8 @@ class ListLines extends Component {
       enableNestedView,
       enableEntitiesView,
       currentView,
+      handleSwitchRedirectionMode,
+      redirectionMode,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -221,6 +222,48 @@ class ListLines extends Component {
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                 {t('entitie(s)')}
               </div>
+            )}
+            {(exportEntityType === 'Report') && redirectionMode && (
+                <ToggleButtonGroup
+                  size="small"
+                  color="secondary"
+                  exclusive={true}
+                  onChange={(_, value) => {
+                    handleSwitchRedirectionMode(value);
+                  }}
+                  style={{ margin: '7px 20px 0 10px' }}
+                >
+                  <ToggleButton
+                    value="overview" aria-label="overview"
+                  >
+                    <Tooltip title={t('Redirecting to the Overview section')}>
+                      <PreviewOutlined
+                        fontSize="small"
+                        color={redirectionMode === 'overview' ? 'secondary' : 'primary'}
+                      />
+                    </Tooltip>
+                  </ToggleButton>
+                  <ToggleButton
+                    value="knowledge" aria-label="knowledge"
+                  >
+                    <Tooltip title={t('Redirecting to the Knowledge section')}>
+                      <GraphOutline
+                        fontSize="small"
+                        color={redirectionMode === 'knowledge' ? 'secondary' : 'primary'}
+                      />
+                    </Tooltip>
+                  </ToggleButton>
+                  <ToggleButton
+                    value="content" aria-label="content"
+                  >
+                    <Tooltip title={t('Redirecting to the Content section')}>
+                      <SourceOutlined
+                        fontSize="small"
+                        color={redirectionMode === 'content' ? 'secondary' : 'primary'}
+                      />
+                    </Tooltip>
+                  </ToggleButton>
+            </ToggleButtonGroup>
             )}
             {(typeof handleChangeView === 'function'
               || typeof handleToggleExports === 'function') && (
@@ -494,6 +537,8 @@ ListLines.propTypes = {
   enableNestedView: PropTypes.bool,
   enableEntitiesView: PropTypes.bool,
   currentView: PropTypes.string,
+  handleSwitchRedirectionMode: PropTypes.func,
+  redirectionMode: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

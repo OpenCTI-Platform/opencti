@@ -63,6 +63,7 @@ const ReportLineComponent = ({
   selectAll,
   onToggleShiftEntity,
   index,
+  redirectionMode,
 }) => {
   const classes = useStyles();
   const { fd, t } = useFormatter();
@@ -72,7 +73,7 @@ const ReportLineComponent = ({
       divider={true}
       button={true}
       component={Link}
-      to={`/dashboard/analysis/reports/${node.id}`}
+      to={redirectionMode === 'overview' ? `/dashboard/analysis/reports/${node.id}` : `/dashboard/analysis/reports/${node.id}/${redirectionMode}`}
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}

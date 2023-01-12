@@ -42,6 +42,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
+        redirectionMode={this.props.redirectionMode}
       />
     );
   }
@@ -58,6 +59,7 @@ StixCoreObjectOrStixCoreRelationshipContainersLines.propTypes = {
   searchTerm: PropTypes.string,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
+  redirectionMode: PropTypes.string,
 };
 
 export const stixCoreObjectOrStixCoreRelationshipContainersLinesQuery = graphql`
