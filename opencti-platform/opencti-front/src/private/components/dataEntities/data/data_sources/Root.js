@@ -108,7 +108,7 @@ class RootDataSource extends Component {
                         <DataSource
                           {...routeProps}
                           refreshQuery={retry}
-                          location={props.dataSource}
+                          dataSource={props.dataSource}
                         />
                       )}
                     />

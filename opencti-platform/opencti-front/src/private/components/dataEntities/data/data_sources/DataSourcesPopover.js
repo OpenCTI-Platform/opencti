@@ -63,7 +63,6 @@ class DataSourcesPopover extends Component {
       history,
       node,
     } = this.props;
-    console.log(node);
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>

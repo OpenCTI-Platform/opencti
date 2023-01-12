@@ -72,7 +72,8 @@ const styles = (theme) => ({
     padding: '3px 0',
   },
   circleBorderBtn: {
-    borderRadius: '1.8rem'
+    borderRadius: '1.8rem',
+    margin: '0 5px 10px 0',
   },
   chip: { borderRadius: '4px' }
 });
@@ -108,13 +109,13 @@ class DataSourceDetailsComponent extends Component {
       t,
       classes,
       refreshQuery,
-      location,
+      dataSource,
       fldt,
       history,
     } = this.props;
     return (
       <div style={{ height: '100%', marginBottom: '5%' }}>
-        <Grid container={true} spacing={1}>
+        <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Basic Information')}
@@ -131,7 +132,7 @@ class DataSourceDetailsComponent extends Component {
                       {t('Name')}
                     </Typography>
                     <div className="clearfix" />
-                    {location.name && t(location.name)}
+                    {dataSource.name && t(dataSource.name)}
                   </div>
                 </Grid>
                 <Grid item xs={6}>
@@ -144,7 +145,7 @@ class DataSourceDetailsComponent extends Component {
                       {t('ID')}
                     </Typography>
                     <div className="clearfix" />
-                    {location.id && t(location.id)}
+                    {dataSource.id && t(dataSource.id)}
                   </div>
                 </Grid>
               </Grid>
@@ -159,7 +160,7 @@ class DataSourceDetailsComponent extends Component {
                       {t('Created')}
                     </Typography>
                     <div className="clearfix" />
-                    {location.created && fldt(location.created)}
+                    {dataSource.created && fldt(dataSource.created)}
                   </div>
                 </Grid>
                 <Grid item xs={6}>
@@ -172,7 +173,7 @@ class DataSourceDetailsComponent extends Component {
                       {t('Last Modified')}
                     </Typography>
                     <div className="clearfix" />
-                    {location.modified && fldt(location.modified)}
+                    {dataSource.modified && fldt(dataSource.modified)}
                   </div>
                 </Grid>
               </Grid>
@@ -187,8 +188,12 @@ class DataSourceDetailsComponent extends Component {
                       {t('Only Contextual')}
                     </Typography>
                     <div className="clearfix" />
-                    {/* {location?.address?.street_address && t(location?.address?.street_address)} */}
-                    <Button style={{ width: '40%' }} color="primary" variant="contained">No</Button>
+                    {(dataSource && dataSource.contextual === true) && (
+                      <Button style={{ width: '40%' }} color="primary" variant="contained">Yes</Button>
+                    )}
+                    {(dataSource && dataSource.contextual === false) && (
+                      <Button style={{ width: '40%' }} color="primary" variant="contained">No</Button>
+                    )}
                   </div>
                 </Grid>
                 <Grid item xs={6}>
@@ -201,8 +206,12 @@ class DataSourceDetailsComponent extends Component {
                       {t('Automatic Trigger')}
                     </Typography>
                     <div className="clearfix" />
-                    {/* {location?.address?.administrative_area && t(location?.address?.administrative_area)} */}
-                    <Button style={{ width: '40%' }} color="primary" variant="contained">Yes</Button>
+                    {(dataSource && dataSource.auto === true) && (
+                      <Button style={{ width: '40%' }} color="primary" variant="contained">Yes</Button>
+                    )}
+                    {(dataSource && dataSource.auto === false) && (
+                      <Button style={{ width: '40%' }} color="primary" variant="contained">No</Button>
+                    )}
                   </div>
                 </Grid>
               </Grid>
@@ -217,8 +226,9 @@ class DataSourceDetailsComponent extends Component {
                       {t('Scope')}
                     </Typography>
                     <div className="clearfix" />
-                    {/* {location?.address?.country_code && t(location?.address?.country_code)} */}
-                    <Button className={classes.circleBorderBtn} color="primary" variant="contained">ipv4-Addr  </Button>
+                    {dataSource.scope.length && dataSource.scope.map((scope, i) => (
+                      <Button key={i} className={classes.circleBorderBtn} color="primary" variant="contained">{scope}</Button>
+                    ))}
                   </div>
                 </Grid>
                 <Grid item xs={6}>
@@ -252,7 +262,7 @@ class DataSourceDetailsComponent extends Component {
                           parserOptions={{ commonmark: true }}
                           className="markdown"
                         >
-                          {location.description && t(location.description)}
+                          {dataSource.description && t(dataSource.description)}
                         </Markdown>
                       </div>
                     </div>
@@ -261,7 +271,7 @@ class DataSourceDetailsComponent extends Component {
               </Grid>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
@@ -326,6 +336,8 @@ class DataSourceDetailsComponent extends Component {
               </Grid>
             </Paper>
           </Grid>
+        </Grid>
+        <Grid container spacing={1}>
           <Grid item xs={12}>
             <div style={{ marginTop: '3%' }}>
               <Typography variant="h4" gutterBottom={true}>
@@ -345,7 +357,7 @@ class DataSourceDetailsComponent extends Component {
                         {t('Name')}
                       </Typography>
                       <div className="clearfix" />
-                      {location.name && t(location.name)}
+                      {dataSource.name && t(dataSource.name)}
                     </div>
                   </Grid>
                   <Grid item xs={6}>
@@ -371,7 +383,7 @@ class DataSourceDetailsComponent extends Component {
                         {t('Work start time')}
                       </Typography>
                       <div className="clearfix" />
-                      {location.created && fldt(location.created)}
+                      {dataSource.created && fldt(dataSource.created)}
                     </div>
                   </Grid>
                   <Grid item xs={6}>
@@ -447,7 +459,7 @@ class DataSourceDetailsComponent extends Component {
                         {t('Name')}
                       </Typography>
                       <div className="clearfix" />
-                      {location.name && t(location.name)}
+                      {dataSource.name && t(dataSource.name)}
                     </div>
                   </Grid>
                   <Grid item xs={6}>
@@ -473,7 +485,7 @@ class DataSourceDetailsComponent extends Component {
                         {t('Work start time')}
                       </Typography>
                       <div className="clearfix" />
-                      {location.created && fldt(location.created)}
+                      {dataSource.created && fldt(dataSource.created)}
                     </div>
                   </Grid>
                   <Grid item xs={6}>
@@ -531,21 +543,21 @@ class DataSourceDetailsComponent extends Component {
             </Paper>
           </Grid>
         </Grid>
-        <DataSourceConfigurationPopover
+        {/* <DataSourceConfigurationPopover
           openConfiguration={this.state.openConfiguration}
           handleCloseConfiguration={this.handleCloseConfiguration.bind(this)}
         />
         <DataSourceInformationExchangePolicyPopover
           openInformationExchangePolicy={this.state.openInformationExchangePolicy}
           handleCloseInformationExchangePolicy={this.handleCloseInformationExchangePolicy.bind(this)}
-        />
+        /> */}
       </div>
     );
   }
 }
 
 DataSourceDetailsComponent.propTypes = {
-  location: PropTypes.object,
+  dataSource: PropTypes.object,
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
@@ -555,15 +567,18 @@ DataSourceDetailsComponent.propTypes = {
 const DataSourceDetails = createFragmentContainer(
   DataSourceDetailsComponent,
   {
-    location: graphql`
+    dataSource: graphql`
       fragment DataSourceDetails_data on DataSource {
         __typename
         id
-        entity_type
+        auto
+        name
+        scope
         created
         modified
-        name
+        contextual
         description
+        entity_type
       }
     `,
   },

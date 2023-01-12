@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../../components/i18n';
@@ -13,7 +12,6 @@ import DataSourceDetails from './DataSourceDetails';
 import DataSourcesPopover from './DataSourcesPopover';
 import DataSourcesDeletion from './DataSourcesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import DataSourceEditionContainer from './DataSourceEditionContainer';
 import DataSourcesCreation from './DataSourcesCreation';
 
@@ -69,7 +67,11 @@ class DataSourceComponent extends Component {
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={12}>
-              <DataSourceDetails dataSource={dataSource} history={history} refreshQuery={refreshQuery} />
+              <DataSourceDetails
+                dataSource={dataSource}
+                history={history}
+                refreshQuery={refreshQuery}
+              />
             </Grid>
           </Grid>
         </div>
