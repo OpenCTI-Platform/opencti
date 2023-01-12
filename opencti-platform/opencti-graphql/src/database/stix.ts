@@ -1030,9 +1030,6 @@ const stixCyberObservableRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_CONTAINS, type: REL_BUILT_IN },
     { name: OBS_RELATION_CONTENT, type: REL_BUILT_IN }
   ],
-  [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_PROCESS}`]: [
-    { name: RELATION_IMAGE, type: REL_BUILT_IN }
-  ],
   // From IPV4
   [`${ENTITY_IPV4_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [
     { name: OBS_RELATION_BELONGS_TO, type: REL_BUILT_IN }
@@ -1089,26 +1086,27 @@ const stixCyberObservableRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_OPENED_CONNECTION, type: REL_BUILT_IN }
   ],
   [`${ENTITY_PROCESS}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
-    { name: RELATION_SERVICE_DLL, type: REL_BUILT_IN }
+    { name: RELATION_SERVICE_DLL, type: REL_BUILT_IN },
+    { name: RELATION_IMAGE, type: REL_BUILT_IN }
   ],
   [`${ENTITY_PROCESS}_${ENTITY_PROCESS}`]: [
     { name: RELATION_PARENT, type: REL_BUILT_IN },
     { name: RELATION_CHILD, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_PROCESS}_${ENTITY_USER_ACCOUNT}`]: [
+    { name: RELATION_CREATOR_USER, type: REL_BUILT_IN }
   ],
   // From MALWARE
   [`${ENTITY_TYPE_MALWARE}_${ENTITY_SOFTWARE}`]: [
     { name: RELATION_OPERATING_SYSTEM, type: REL_BUILT_IN }
   ],
   // From USER_ACCOUNT
-  [`${ENTITY_USER_ACCOUNT}_${ENTITY_PROCESS}`]: [
-    { name: RELATION_CREATOR_USER, type: REL_BUILT_IN }
-  ],
-  [`${ENTITY_USER_ACCOUNT}_${ENTITY_WINDOWS_REGISTRY_KEY}`]: [
-    { name: RELATION_CREATOR_USER, type: REL_BUILT_IN }
-  ],
   // From WINDOWS_REGISTRY_KEY
   [`${ENTITY_WINDOWS_REGISTRY_KEY}_${ENTITY_WINDOWS_REGISTRY_VALUE_TYPE}`]: [
     { name: RELATION_VALUES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_WINDOWS_REGISTRY_KEY}_${ENTITY_USER_ACCOUNT}`]: [
+    { name: RELATION_CREATOR_USER, type: REL_BUILT_IN }
   ],
 };
 

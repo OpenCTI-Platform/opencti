@@ -329,7 +329,8 @@ const stixCyberObservableRelationshipTypesMapping = {
   'Observed-Data_StixFile': ['obs_content'],
   'Process_Network-Traffic': ['opened-connection'],
   Process_Process: ['parent', 'child'],
-  Process_StixFile: ['service-dll'],
+  Process_StixFile: ['service-dll', 'image'],
+  'Process_User-Account': ['creator-user'],
   Malware_Software: ['operating-system'],
   StixFile_Artifact: ['contains'],
   'StixFile_Autonomous-System': ['contains'],
@@ -344,7 +345,7 @@ const stixCyberObservableRelationshipTypesMapping = {
   Malware_StixFile: ['sample'],
   StixFile_Mutex: ['contains'],
   'StixFile_Network-Traffic': ['contains'],
-  StixFile_Process: ['contains', 'image'],
+  StixFile_Process: ['contains'],
   StixFile_Software: ['contains'],
   StixFile_StixFile: ['contains'],
   StixFile_Url: ['contains'],
@@ -357,9 +358,8 @@ const stixCyberObservableRelationshipTypesMapping = {
   StixFile_Text: ['contains'],
   'StixFile_User-Agent': ['contains'],
   'StixFile_x509-Certificate': ['contains'],
-  'User-Account_Process': ['creator-user'],
-  'User-Account_Windows-Registry-Key': ['creator-user'],
   'Windows-Registry-Key_Windows-Registry-Value-Type': ['values'],
+  'Windows-Registry-Key_User-Account': ['creator-user'],
 };
 
 export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
