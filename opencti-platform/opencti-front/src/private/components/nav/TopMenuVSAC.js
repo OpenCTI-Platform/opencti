@@ -35,7 +35,7 @@ class TopMenuVSAC extends Component {
       <div>
         <Button
           component={Link}
-          to="/defender HQ/assets"
+          to="/activities/vulnerability_assessment/scans"
           variant="contained"
           color="primary"
           classes={{ root: classes.buttonHome }}

@@ -445,6 +445,7 @@ class RelatedTaskPopover extends Component {
                         <TaskType
                           name="task_type"
                           fullWidth={true}
+                          required={true}
                           taskType='OscalTaskType'
                           variant='outlined'
                           style={{ height: '38.09px' }}

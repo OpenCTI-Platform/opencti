@@ -9,7 +9,6 @@ import Button from '@material-ui/core/Button';
 import { compose, assoc } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -70,33 +69,12 @@ const workspaceValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_workspaces',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class WorkspaceCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     commitMutation({
       mutation: workspaceMutation,
       variables: {
         input: assoc('type', this.props.type, values),
-      },
-      updater: (store) => {
-        const payload = store.getRootField('workspaceAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
       },
       setSubmitting,
       onCompleted: () => {

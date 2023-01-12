@@ -69,6 +69,7 @@ class TaskType extends Component {
       editContext,
       disabled,
       helperText,
+      required,
     } = this.props;
     const TaskTypeList = R.pathOr(
       [],
@@ -90,6 +91,9 @@ class TaskType extends Component {
           style={style}
           helperText={helperText}
         >
+        {!required && <MenuItem value={''}>
+            <em>None</em>
+          </MenuItem>}          
           {TaskTypeList.map(
             (et, key) =>
               et.value && (

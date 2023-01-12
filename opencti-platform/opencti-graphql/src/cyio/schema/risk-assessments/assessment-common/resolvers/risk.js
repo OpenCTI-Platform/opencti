@@ -123,6 +123,12 @@ const riskResolvers = {
             continue
           }
 
+          // Provide default values if missing - MUST be done before converting to props
+          if ( !('false_positive' in risk)) risk.false_positive = false;
+          if ( !('accepted' in risk)) risk.accepted = false;
+          if ( !('risk_adjusted' in risk)) risk.risk_adjusted = false;
+          if ( !('vendor_dependency' in risk)) risk.vendor_dependency = false;
+                
           // if props were requested
           if (selectMap.getNode('node').includes('props')) {
             let props = convertToProperties(risk, riskPredicateMap);
@@ -271,12 +277,18 @@ const riskResolvers = {
           delete risk.remediation_timestamp_values;
         }
 
-          // TODO: WORKAROUND fix up invalidate deviation values
-          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+        // TODO: WORKAROUND fix up invalidate deviation values
+        if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
           console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
           risk.risk_status = risk.risk_status.replace('_', '-');
         }
-          // END WORKAROUND
+        // END WORKAROUND
+
+        // Provide default values if missing - MUST be done before converting to props
+        if ( !('false_positive' in risk)) risk.false_positive = false;
+        if ( !('accepted' in risk)) risk.accepted = false;
+        if ( !('risk_adjusted' in risk)) risk.risk_adjusted = false;
+        if ( !('vendor_dependency' in risk)) risk.vendor_dependency = false;
 
         // if props were requested
         if (selectMap.getNode('risk').includes('props')) {
@@ -503,20 +515,25 @@ const riskResolvers = {
         if (editItem.operation !== undefined) continue;
 
         // if value if empty then treat as a remove
-        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+        if (editItem.value.length === 0 ) {
           editItem.operation = 'remove';
           continue;
         }
+        if (Array.isArray(editItem.value) && editItem.value[0] === null) throw new CyioError(`Field "${editItem.key}" has invalid value "null"`);
+
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
           editItem.operation = 'replace';
+
+        // Set operation to 'skip' if no change in value
+        if (response[0][editItem.key] === editItem.value) editItem.operation ='skip';
         }
       }
 
       // Handle 'dynamic' property editing separately
       for (let editItem of input) {
-        let parentIri, iriTemplate, predicateMap;
+        let parentIri, iriTemplate, classIri, predicateMap;
         if (editItem.key === 'poam_id') {
           // remove edit item so it doesn't get processed again
           input = input.filter(item => item.key != 'poam_id');
@@ -535,6 +552,7 @@ const riskResolvers = {
             let index = result.objectType.indexOf('poam-item');
             parentIri = result.parentIri[index];
             iriTemplate = objectMap[result.objectType[index]].iriTemplate;
+            classIri = objectMap[result.objectType[index]].classIri;
             predicateMap = objectMap[result.objectType[index]].predicateMap;
             break;
           }
@@ -542,7 +560,7 @@ const riskResolvers = {
           let newInput = [editItem];
           const query = updateQuery(
             parentIri,
-            iriTemplate,
+            classIri,
             newInput,
             predicateMap
           );
@@ -596,7 +614,6 @@ const riskResolvers = {
             }
           }
         }
-        if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
       }
 
       const select = selectRiskQuery(id, selectMap.getNode("editRisk"));

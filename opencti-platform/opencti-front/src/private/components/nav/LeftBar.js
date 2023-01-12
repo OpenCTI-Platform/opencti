@@ -292,7 +292,7 @@ const LeftBar = ({
                   <ListItemText primary={t('Assets')} data-cy='assets' />
                 </MenuItem>
                 <MenuItem
-                  disabled="true"
+                  disabled={true}
                   component={Link}
                   to="/dashboard/events"
                   selected={location.pathname.includes('/dashboard/events')}
@@ -321,7 +321,7 @@ const LeftBar = ({
             <Collapse in={openDrawer}>
               <MenuList component="nav" disablePadding={true}>
                 <MenuItem
-                  disabled="true"
+                  disabled={true}
                   component={Link}
                   to="/dashboard/threats"
                   selected={location.pathname.includes('/dashboard/threats')}
@@ -415,7 +415,7 @@ const LeftBar = ({
                     if (version.includes('-')) {
                       return (
                         <MenuItem
-                          disabled="true"
+                          disabled={true}
                           dense={false}
                           classes={{ root: openDrawer ? classes.menuItem : classes.menuItemClose }}
                         >

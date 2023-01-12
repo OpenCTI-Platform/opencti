@@ -36,10 +36,12 @@ const styles = (theme) => ({
     border: 'none',
   },
   number: {
-    marginTop: '1rem',
-    float: 'left',
-    fontSize: '1.5rem',
-    height: 'inherit',
+    fontSize: '55px',
+  },
+  content: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   title: {
     marginTop: 5,
@@ -52,9 +54,6 @@ const styles = (theme) => ({
   icon: {
     color: theme.palette.primary.main,
     width: 'auto',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    height: 'inherit',
   },
 });
 
@@ -93,7 +92,7 @@ class CyioCoreObjectWidgetRiskCount extends Component {
     const finalEndDate = endDate || now();
     const countChartVariables = {
       ...widget.config.variables,
-      endDate: finalEndDate,
+      endDate: new Date(finalEndDate).toISOString(),
     };
     return (
       <>
@@ -108,13 +107,11 @@ class CyioCoreObjectWidgetRiskCount extends Component {
               return (
                 <Card classes={{ root: classes.card }} variant="outlined">
                   <Suspense fallback={<Loader variant="inElement" />}>
-                    <CardContent>
-                      <div className={classes.content}>
+                    <CardContent className={ classes.content }>
                         <div className={classes.number}>
                           {props[widget.config.queryType].total
                             && t(props[widget.config.queryType].total)}
                         </div>
-                      </div>
                       <div className={classes.icon}>
                         <ListItemIcon style={{ minWidth: 35 }}>
                           <ItemIcon type={itemIcon} />
@@ -169,7 +166,7 @@ class CyioCoreObjectWidgetRiskCount extends Component {
     const finalEndDate = endDate || now();
     const countChartVariables = {
       ...widget.config.variables,
-      endDate: finalEndDate,
+      endDate: new Date(finalEndDate).toISOString(),
     };
     return (
       <>
@@ -184,13 +181,11 @@ class CyioCoreObjectWidgetRiskCount extends Component {
               return (
                 <Card classes={{ root: classes.card }} variant="outlined">
                   <Suspense fallback={<Loader variant="inElement" />}>
-                    <CardContent>
-                      <div className={classes.content}>
+                    <CardContent className={ classes.content }>
                         <div className={classes.number}>
                           {props[widget.config.queryType].total
                             && t(props[widget.config.queryType].total)}
                         </div>
-                      </div>
                       <div className={classes.icon}>
                         <ListItemIcon style={{ minWidth: 35 }}>
                           <ItemIcon type={itemIcon} />

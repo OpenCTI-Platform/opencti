@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, replace, concat } from 'ramda';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
@@ -11,7 +11,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableRow from '@material-ui/core/TableRow';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { now } from '../../../../utils/Time';
 import {
   dashboardQueryRisksListDistribution,
 } from '../../settings/DashboardQuery';
@@ -71,13 +71,15 @@ class CyioCoreObjectVulnerableInventoryItemList extends Component {
       field: field || null,
       limit: 10,
       operation: operation || 'count',
-      startDate: finalStartDate,
-      endDate: finalEndDate,
+      startDate: new Date(finalStartDate).toISOString(),
+      endDate: new Date(finalEndDate).toISOString(),
     };
+    const widgetName = replace('Top-N', concat('Top ', ListChartVariables.limit.toString()), widget.config.name);
+
     return (
       <>
         <Typography variant="h4" gutterBottom={true}>
-          {widget.config.name || t('Component')}
+          {widgetName || t('Component')}
         </Typography>
         <QueryRenderer
           query={dashboardQueryRisksListDistribution}

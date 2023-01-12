@@ -89,6 +89,7 @@ const extractTokenFromBasicAuth = async (authorization) => {
   return null;
 };
 
+// TODO: Need to rework to use Keycloak before returning undefined
 export const findById = async (user, userId) => {
   const data = await loadById(user, userId, ENTITY_TYPE_USER);
   const userObj = data ? R.dissoc('password', data) : data;

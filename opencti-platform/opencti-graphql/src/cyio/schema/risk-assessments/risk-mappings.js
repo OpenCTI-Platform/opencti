@@ -198,9 +198,13 @@ export const riskSingularizeSchema = {
     "starting_port": true,
     "statement": true,
     "status_change": true,
+    "subject_asset_type": true,
+    "subject_component_type": true,
     "subject_context": true,
     "subject_id": true,
+    "subject_location_type": true,
     "subject_name": true,
+    "subject_party_type": true,
     "subject_type": true,
     "subject_ref": true,
     "subject_version": true,
@@ -227,6 +231,7 @@ export const riskSingularizeSchema = {
     "remediation_type_values": true,
     "remediation_timestamp_values": true,
     "occurrences": true,
+    "justification": true,
   }
 };
 

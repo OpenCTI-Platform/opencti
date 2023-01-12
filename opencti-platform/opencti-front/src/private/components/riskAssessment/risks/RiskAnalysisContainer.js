@@ -18,9 +18,7 @@ import RiskAnalysisEdition from './RiskAnalysisEdition';
 import RiskPopover from './RiskPopover';
 import RiskDeletion from './RiskDeletion';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import RiskAnalysisCharacterization from './RiskAnalysisCharacterization';
-import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = () => ({
   container: {
@@ -80,7 +78,7 @@ class RiskAnalysisContainerComponent extends Component {
               cyioDomainObject={risk}
               PopoverComponent={<RiskPopover />}
               OperationsComponent={<RiskDeletion />}
-              goBack='/activities/risk_assessment/risks'
+              goBack={`/activities/risk_assessment/risks/${risk.id}`}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
             // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             />
@@ -96,37 +94,6 @@ class RiskAnalysisContainerComponent extends Component {
               </Grid>
               <Grid item={true} xs={6}>
                 <RiskAnalysisThreats risk={risk} history={history} />
-              </Grid>
-            </Grid>
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 25 }}
-            >
-              <Grid item={true} xs={6}>
-                <CyioCoreObjectExternalReferences
-                  disableAdd={true}
-                  typename={riskCharacterizations.__typename}
-                  externalReferences={riskCharacterizations.links}
-                  fieldName='links'
-                  cyioCoreObjectId={riskCharacterizations.id}
-                  refreshQuery={refreshQuery}
-                  removeIcon={true}
-                />
-              </Grid>
-              <Grid item={true} xs={6}>
-                {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
-                <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  typename={riskCharacterizations.__typename}
-                  disableAdd={true}
-                  notes={riskCharacterizations.remarks}
-                  cyioCoreObjectOrCyioCoreRelationshipId={riskCharacterizations.id}
-                  marginTop='0px'
-                  fieldName='remarks'
-                  refreshQuery={refreshQuery}
-                  removeIcon={true}
-                />
               </Grid>
             </Grid>
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -161,8 +128,8 @@ const RiskAnalysisContainerFragment = createFragmentContainer(
     risk: graphql`
       fragment RiskAnalysisContainer_risk on Risk {
         __typename
-        id
         name
+        id
         characterizations {
           __typename
           id

@@ -13,26 +13,41 @@ extend type Query {
 }
 
 extend type Mutation {
-  deleteMarkings(id: [ID!]!): [ID]  @hasPermission(resources: "Marking:delete")
+  deleteDataMarkings(id: [ID!]!): [ID]  @hasPermission(resources: "Marking:delete")
   createStatementMarking(input: StatementMarkingInput): StatementMarking  @hasPermission(resources: "Marking:update")
-  deleteStatementMarking(id: ID!): String! @hasPermission(resources: "Marking:delete")
-  editStatementMarking(id: ID!, input: [EditInput]!, commitMessage: String): StatementMarking @hasPermission(resources:"Marking:update")
   createTLPMarking(input: TLPMarkingInput): TLPMarking  @hasPermission(resources: "Marking:update")
-  deleteTLPMarking(id: ID!): String! @hasPermission(resources: "Marking:delete")
-  editTLPMarking(id: ID!, input: [EditInput]!, commitMessage: String): TLPMarking @hasPermission(resources:"Marking:update")
   createIEPMarking(input: IEPMarkingInput): IEPMarking  @hasPermission(resources: "Marking:update")
-  deleteIEPMarking(id: ID!): String! @hasPermission(resources: "Marking:delete")
-  editIEPMarking(id: ID!, input: [EditInput]!, commitMessage: String): IEPMarking @hasPermission(resources:"Marking:update")
+  deleteDataMarking(id: ID!): String! @hasPermission(resources: "Marking:delete")
+  editDataMarking(id: ID!, input: [EditInput]!, commitMessage: String): DataMarking @hasPermission(resources:"Marking:update")
 }
 
-interface MarkingObject {
+interface DataMarkingObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp!
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp!
+  # Data Marking
   "Indicates the type of the data marking."
   definition_type: DataMarkingType!
   "Identifies the color to be applied."
   color: String!
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  external_references: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  notes: [CyioNote]
 }
 
-type StatementMarking implements BasicObject & LifecycleObject & MarkingObject {
+type StatementMarking implements BasicObject & LifecycleObject & DataMarkingObject {
   # BasicObject
   "Uniquely identifies this object."
   id: ID!
@@ -77,7 +92,7 @@ input StatementMarkingInput {
   color: String!
 }
 
-type TLPMarking implements BasicObject & LifecycleObject & MarkingObject {
+type TLPMarking implements BasicObject & LifecycleObject & DataMarkingObject {
   # BasicObject
   "Uniquely identifies this object."
   id: ID!
@@ -122,7 +137,7 @@ input TLPMarkingInput {
   color: String!
 }
 
-type IEPMarking implements BasicObject & LifecycleObject & MarkingObject {
+type IEPMarking implements BasicObject & LifecycleObject & DataMarkingObject {
   # BasicObject
   "Uniquely identifies this object."
   id: ID!
@@ -147,15 +162,15 @@ type IEPMarking implements BasicObject & LifecycleObject & MarkingObject {
   "Identifies one or more references to additional commentary on the entity."
   notes: [CyioNote]
   # IEP Marking
-  "Indicates the version of the poliicy"
-  version: Float!
-  "Indicates the name of the data marking"
+  "Indicates the version of the IEP standard the policy is in adherence."
+  iep_version: String!
+  "Indicates the human-readable name of the policy"
   name: String!
   "Identifies a human-readable description that provide some background information about the IEP implementation."
   description: String
   "Indicates the date that the IEP is effective from.  If none supplied, the IEP is applicable up until the end date."
   start_date: Timestamp
-  "Indictes the date that the IEP is effective until.  If none supplied, the IEP is applicable in perpetuity."
+  "Indicates the date that the IEP is effective until.  If none supplied, the IEP is applicable in perpetuity."
   end_date: Timestamp
   "Identifies whether the received information has to be encrypted when it is retransmitted by the recipient."
   encrypt_in_transit: EncryptInTransit!
@@ -164,24 +179,22 @@ type IEPMarking implements BasicObject & LifecycleObject & MarkingObject {
   "Identifies whether recipients are permitted to notify affected third parties of a compromise or threat."
   affected_party_notifications: AffectedPartyNotifications!
   "Identified whether recipients are permitted to redistribute the information received within the redistribution scope as defined by the enumerations."
-  sharing: TLPMarking!
+  tlp: TLPLevel!
   "Identifies whether recipients are required to attribute or anonymize the Provider when redistributing the information received."
-  provider_attribution: ProviderAttribution!
+  attribution: ProviderAttribution!
   "Indicates whether the recipient MAY or MUST NOT resell the information received unmodified or in a semantically equivalent format."
   unmodified_resale: UnmodifiedResale!
 }
 
 input IEPMarkingInput {
   # IEP Marking
-  "Indicates the version of the poliicy"
-  version: Float!
-  "Indicates the name of the data marking"
+  "Indicates the human-readable name of the policy"
   name: String!
   "Identifies a human-readable description that provide some background information about the IEP implementation."
   description: String
   "Indicates the date that the IEP is effective from.  If none supplied, the IEP is applicable up until the end date."
   start_date: Timestamp
-  "Indictes the date that the IEP is effective until.  If none supplied, the IEP is applicable in perpetuity."
+  "Indicates the date that the IEP is effective until.  If none supplied, the IEP is applicable in perpetuity."
   end_date: Timestamp
   "Identifies whether the received information has to be encrypted when it is retransmitted by the recipient."
   encrypt_in_transit: EncryptInTransit!
@@ -190,9 +203,9 @@ input IEPMarkingInput {
   "Identifies whether recipients are permitted to notify affected third parties of a compromise or threat."
   affected_party_notifications: AffectedPartyNotifications!
   "Identified whether recipients are permitted to redistribute the information received within the redistribution scope as defined by the enumerations."
-  sharing: TLPMarkingInput!
+  tlp: TLPLevel!
   "Identifies whether recipients are required to attribute or anonymize the Provider when redistributing the information received."
-  provider_attribution: ProviderAttribution!
+  attribution: ProviderAttribution!
   "Indicates whether the recipient MAY or MUST NOT resell the information received unmodified or in a semantically equivalent format."
   unmodified_resale: UnmodifiedResale!
   "Identifies the color to be applied."

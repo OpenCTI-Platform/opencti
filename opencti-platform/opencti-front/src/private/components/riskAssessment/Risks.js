@@ -299,7 +299,7 @@ class Risks extends Component {
     const dataColumns = {
       poam_id: {
         label: 'POAM ID',
-        width: '12%',
+        width: '9%',
         isSortable: true,
       },
       name: {
@@ -308,33 +308,33 @@ class Risks extends Component {
         isSortable: true,
       },
       risk_level: {
-        label: 'Risk',
-        width: '7%',
+        label: 'Severity',
+        width: '11%',
         isSortable: true,
       },
       risk_status: {
         label: 'Status',
-        width: '16%',
+        width: '10%',
         isSortable: true,
       },
       response_type: {
         label: 'Response',
-        width: '11%',
+        width: '10%',
         isSortable: true,
       },
       lifecycle: {
         label: 'Lifecycle',
-        width: '13%',
+        width: '18%',
         isSortable: true,
       },
       occurrences: {
         label: 'Occurrences',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       deadline: {
         label: 'Deadline',
-        width: '10%',
+        width: '7%',
         isSortable: true,
       },
     };

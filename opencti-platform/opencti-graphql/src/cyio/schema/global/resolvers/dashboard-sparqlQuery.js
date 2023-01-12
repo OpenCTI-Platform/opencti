@@ -1,4 +1,3 @@
-import { match } from 'ramda';
 import {CyioError, optionalizePredicate, parameterizePredicate, buildSelectVariables} from '../../utils.js';
 import {objectMap} from '../global-utils.js'
 
@@ -77,7 +76,7 @@ export const entitiesCountQuery = (args) => {
   }
 
   // construct the IRI
-  classIri = `<${objectMap[type].iriTemplate}>`;
+  classIri = `<${objectMap[type].classIri}>`;
 
   if (('endDate' in args) && (args.endDate instanceof Date)) {
     // convert end date to string, if specified 
@@ -87,19 +86,27 @@ export const entitiesCountQuery = (args) => {
     endDate = new Date().toISOString();
   }
   filterClause = `
-    ?iri <http://darklight.ai/ns/common#modified> ?created .
+    ?iri <http://darklight.ai/ns/common#created> ?created .
     FILTER (?created > "${endDate}"^^xsd:dateTime)
     `;
 
   if (args.field !== 'entity_type') {
     if ('match' in args && args.match.length > 0) {
+      let dataType = '';
       let values = "";
+
+      // extract the datatype as its needed for the match strings
+      let binding = predicateMap[args.field].binding( '?iri', args.field );
+      if (binding.includes('^^')) {
+        dataType = binding.substr(binding.indexOf('^^'));
+      }
+
       for (let match of args.match) {
-        values = values + ` "${match}"`;
+        values = values + ` "${match}"${dataType}`;
       }
       if (values.length > 0) {
         values = values.trim();
-        matchPredicates.push(`  Values ?o {${values}} .`);
+        matchPredicates.push(`  VALUES ?o {${values}} .`);
         matchPredicates.push(`  ?iri ${predicate} ?o .`);    
       }
     }
@@ -107,13 +114,14 @@ export const entitiesCountQuery = (args) => {
   
   return `
   PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-  SELECT DISTINCT (COUNT(?iri) AS ?total) ?count
+  SELECT (COUNT(DISTINCT ?iri) AS ?total) ?count
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a ${classIri} .
+    ${matchPredicates.join("\n")}
     OPTIONAL {
       {
-        SELECT (COUNT(?created) AS ?count)
+        SELECT (COUNT(DISTINCT ?iri) AS ?count)
         WHERE {
           ?iri a ${classIri} .
           ${matchPredicates.join("\n")}
@@ -174,7 +182,7 @@ export const entitiesTimeSeriesQuery = (args) => {
   if ('objectId' in args) {
     classIri = `<${objectMap[type].iriTemplate}-${args.objectId}>`;
   } else {
-    classIri = `<${objectMap[type].iriTemplate}>`;
+    classIri = `<${objectMap[type].classIri}>`;
   }
 
   if (('startDate' in args) && (args.startDate instanceof Date)) {
@@ -271,7 +279,7 @@ export const entitiesDistributionQuery = (args) => {
   if ('objectId' in args) {
     classIri = `<${objectMap[type].iriTemplate}-${args.objectId}>`;
   } else {
-    classIri = `<${objectMap[type].iriTemplate}>`;
+    classIri = `<${objectMap[type].classIri}>`;
   }
 
   // build filter for start and end dates

@@ -294,9 +294,9 @@ class Export extends Component {
             enableReinitialize={true}
             initialValues={{
               purpose: '',
-              max_items: 0,
+              max_items: '5',
               db_scan: false,
-              media_type: '',
+              media_type: 'markdown',
               description: '',
               web_scan: false,
               pen_test: false,
@@ -313,7 +313,7 @@ class Export extends Component {
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t('SAR Report Generation')}
+                  {t('Security Assessment Report Generation')}
                   <Typography>
                     {t('This feature will generate a report in Markdown (a lightweight text markup language) that can be further edited and then transformed into the output of your choice (Word, PDF, etc.). For more about Markdown and useful conversion tools, see ')}
                     <span className={classes.spanLink}>https://www.markdownguide.org</span>
@@ -427,7 +427,7 @@ class Export extends Component {
                           <MenuItem value='all'>{t('all')}</MenuItem>
                         </Field>
                         <Typography>
-                          {t('Number of risk items do you to include')}
+                          {t('Number of risks to include')}
                         </Typography>
                         <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
                           <Tooltip title={t('Total Number')} >
@@ -591,6 +591,7 @@ class Export extends Component {
                           name="media_type"
                           taskType='ReportMediaType'
                           fullWidth={true}
+                          required={true}
                           style={{ height: '18.09px' }}
                           containerstyle={{ width: '100%', marginLeft: '12px' }}
                         />

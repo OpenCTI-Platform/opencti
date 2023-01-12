@@ -23,13 +23,21 @@ import CardContent from '@material-ui/core/CardContent';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import RiskAssessmentPopover from './RiskAssessmentPopover';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   card: {
     width: '100%',
     height: '319px',
     borderRadius: 9,
-    border: '1.5px solid #1F2842',
+    border: `1.5px solid ${theme.palette.dataView.border}`,
+  },
+  selectedItem: {
+    width: '100%',
+    height: '319px',
+    borderRadius: 9,
+    border: `1.5px solid ${theme.palette.dataView.selectedBorder}`,
+    background: theme.palette.dataView.selectedBackgroundColor,
   },
   cardDummy: {
     width: '100%',
@@ -129,18 +137,17 @@ class RiskCardComponent extends Component {
     )(node);
     return (
       <Card
-        classes={{ root: classes.card }}
+        classes={{
+          root: (selectAll || node.id in (selectedElements || {}))
+            ? classes.selectedItem : classes.card,
+        }}
         raised={true}
         elevation={3}
-        style={{
-          background: (selectAll || node.id in (selectedElements || {})) && 'linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), #075AD3',
-          border: (selectAll || node.id in (selectedElements || {})) && '1.5px solid #075AD3',
-        }}
       >
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          TouchRippleProps={ this.state.openMenu && { classes: { root: classes.buttonRipple } }}
+          TouchRippleProps={this.state.openMenu && { classes: { root: classes.buttonRipple } }}
           to={`/activities/risk_assessment/risks/${node?.id}`}
         >
           {/* <CardHeader
@@ -206,11 +213,19 @@ class RiskCardComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}>
-                  {t('Risk')}
+                  {t('Severity')}
                 </Typography>
-                <Typography>
-                  {node?.risk_level && t(node?.risk_level)}
-                </Typography>
+                <div
+                  // className={classes.bodyItem}
+                  style={{
+                    display: 'flex',
+                    marginRight: '20px',
+                  }}
+                >
+                  <RiskLevel
+                    node={node}
+                  />
+                </div>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography

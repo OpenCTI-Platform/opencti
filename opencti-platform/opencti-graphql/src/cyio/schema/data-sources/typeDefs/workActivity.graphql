@@ -1,6 +1,7 @@
 # declares the query entry-points for this type
 extend type Query {
-  ingestActivity(id: ID!): IngestActivty  @hasPermission(resources: "DataSource:view")
+  sourceIngestActivity(sourceId: ID!): [IngestActivity]  @hasPermission(resources: "DataSource:view")
+  ingestActivity(sourceId: ID, activityId: ID): IngestActivity  @hasPermission(resources: "DataSource:view")
   ingestActivities(
     first: Int
     offset: Int
@@ -34,9 +35,9 @@ interface WorkActivity {
   start_time: Timestamp!
   "Indicates the date/time when the activity completed"
   completed_time: Timestamp
-  "Indictes the total operations to be performed for the activity"
+  "Indicates the total operations to be performed for the activity"
   total_operations: Int
-  "Indictes that number of operations completed so far"
+  "Indicates that number of operations completed so far"
   operations_completed: Int
   "An array of non-error messages that occurred during the activity"
   messages: [WorkMessage]
@@ -46,7 +47,7 @@ interface WorkActivity {
   tracking: WorkTracking
 }
 
-type IngestActivty implements BasicObject & LifecycleObject & WorkActivity {
+type IngestActivity implements BasicObject & LifecycleObject & WorkActivity {
   # BasicObject
   "Uniquely identifies this object."
   id: ID!
@@ -68,13 +69,15 @@ type IngestActivty implements BasicObject & LifecycleObject & WorkActivity {
   name: String!
   "Indicates the current status of the activity"
   status: WorkActivityStatus!
+  # "Indicates the originator of the work activity"
+  # initiator: User
   "Indicates the date/time when the activity started"
   start_time: Timestamp!
   "Indicates the date/time when the activity completed"
   completed_time: Timestamp
-  "Indictes the total operations to be performed for the activity"
+  "Indicates the total operations to be performed for the activity"
   total_operations: Int
-  "Indictes that number of operations completed so far"
+  "Indicates that number of operations completed so far"
   operations_completed: Int
   "An array of non-error messages that occurred during the activity"
   messages: [WorkMessage]
@@ -106,7 +109,7 @@ type IngestConnection {
 }
 type IngestEdge {
   cursor: String!
-  node: IngestActivty!
+  node: IngestActivity!
 }
 
 """

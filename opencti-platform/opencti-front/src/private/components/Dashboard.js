@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import {
-  compose, head, pathOr, assoc, map, pluck, last, propOr,
+  compose, head, pathOr, assoc, map, pluck, last, or,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withTheme, withStyles } from '@material-ui/core/styles';
@@ -54,7 +54,6 @@ import ItemMarkings from '../../components/ItemMarkings';
 import ImportFreshdeskScript from '../../utils/freshdesk';
 import TopBar from './nav/TopBar';
 import { toastGenericError } from '../../utils/bakedToast';
-import { saveViewParameters, buildViewParamsFromUrlAndStorage } from '../../utils/ListParameters';
 
 const styles = (theme) => ({
   root: {
@@ -364,24 +363,9 @@ query DashboardCustomDashboardQuery($id: String!) {
 class Dashboard extends Component {
   constructor(props) {
     super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.history,
-      props.location,
-      'view-dashboard',
-    );
     this.state = {
-      dashboard: propOr('default', 'dashboard', params),
+      dashboard: or(localStorage.getItem('view-dashboard'), 'default'),
     };
-  }
-
-  saveView() {
-    this.props.history.push('/dashboard');
-    saveViewParameters(
-      this.props.history,
-      this.props.location,
-      'view-dashboard',
-      this.state,
-    );
   }
 
   tickFormatter(title) {
@@ -1043,7 +1027,9 @@ class Dashboard extends Component {
   }
 
   handleChangeDashboard = (event) => {
-    this.setState({ dashboard: event.target.value }, () => this.saveView());
+    this.setState({ dashboard: event.target.value });
+    localStorage.setItem('view-dashboard', event.target.value);
+    this.props.history.push('/dashboard');
   }
 
   render() {

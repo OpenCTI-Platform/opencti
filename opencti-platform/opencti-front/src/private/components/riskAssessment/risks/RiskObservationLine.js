@@ -38,7 +38,6 @@ const styles = () => ({
   },
   observationList: {
     marginBottom: 0,
-    padding: '0 12px 12px 12px',
   },
   menuItem: {
     padding: '15px 0',
@@ -49,7 +48,7 @@ const styles = () => ({
   observationMain: {
     display: 'grid',
     gridTemplateColumns: '90% 10%',
-    marginBottom: '10px',
+    paddingLeft: '18px',
   },
 
 });
@@ -145,7 +144,7 @@ class RiskObservationLineContainer extends Component {
           <List key={observation.node.id} className={classes.observationList}>
             <div>
               <div className={classes.observationMain}>
-                <div style={{ padding: '10px 0 0 18px' }}>
+                <div>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography
                       variant="h2"
@@ -164,17 +163,16 @@ class RiskObservationLineContainer extends Component {
                   </div>
                   <div className="clearfix" />
                   <Typography
-                    variant="h2"
+                    variant="h3"
                     style={{ color: 'white' }}
                   >
                     {observation.node.name && t(observation.node.name)}
                   </Typography>
                 </div>
-                <div style={{ marginTop: '12px' }}>
+                <div>
                   <IconButton
                     onClick={this.handleOpen.bind(this)}
                     aria-haspopup="true"
-                    style={{ marginTop: 1 }}
                   >
                     <MoreVertOutlined />
                   </IconButton>
