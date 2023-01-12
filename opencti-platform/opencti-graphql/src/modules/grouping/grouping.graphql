@@ -158,6 +158,7 @@ enum GroupingsFilter {
     objectContains
     x_opencti_workflow_id
     revoked
+    creator
 }
 input GroupingsFiltering {
     key: [GroupingsFilter!]!
