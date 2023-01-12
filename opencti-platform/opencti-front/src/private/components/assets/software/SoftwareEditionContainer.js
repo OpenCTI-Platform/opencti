@@ -135,6 +135,7 @@ class SoftwareEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    
     const filteredValue = {};
     const { totalInitial } = this.state;
     const adaptedValues = R.evolve(
@@ -273,6 +274,8 @@ class SoftwareEditionContainer extends Component {
           {({
             submitForm,
             isSubmitting,
+            setFieldValue,
+            values,
           }) => (
             <>
               <div className={classes.header}>
@@ -343,6 +346,8 @@ class SoftwareEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <SoftwareEditionDetails
                       software={software}
+                      setFieldValue={setFieldValue}
+                      values={values}
                       // enableReferences={this.props.enableReferences}
                       // context={editContext}
                       handleClose={handleClose.bind(this)}
@@ -485,6 +490,17 @@ const SoftwareEditionFragment = createFragmentContainer(
         implementation_point
         is_scanned
         last_scanned
+        installed_on {
+          id
+          entity_type
+          vendor_name
+          name
+          version
+        }
+        related_risks {
+          id
+          name
+        }
         # ...SoftwareEditionOverview_software
         # editContext {
         #   name

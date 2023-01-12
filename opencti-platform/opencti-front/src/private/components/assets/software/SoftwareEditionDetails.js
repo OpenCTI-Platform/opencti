@@ -21,6 +21,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import TaskType from '../../common/form/TaskType';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import AddressField from '../../common/form/AddressField';
 
 const styles = () => ({
   paper: {
@@ -147,13 +148,16 @@ class SoftwareEditionDetailsComponent extends Component {
       software,
       context,
       enableReferences,
+      setFieldValue,
+      values,
     } = this.props;
     // const initialValues = R.pipe(
     //   R.assoc('first_seen', dateFormat(software.first_seen)),
     //   R.assoc('last_seen', dateFormat(software.last_seen)),
     //   R.pick(['first_seen', 'last_seen', 'objective']),
     // )(software);
-
+    const installedOn = R.map((n) => n.name)(software.installed_on);
+    const relatedRisk = R.map((n) => n.name)(software.related_risks);
     return (
       <>
         {/* // <Formik
@@ -371,6 +375,22 @@ class SoftwareEditionDetailsComponent extends Component {
                   />
                 </Grid>
               </Grid>
+              <AddressField
+                setFieldValue={setFieldValue}
+                values={software}
+                addressValues={installedOn}
+                title='Installed on Asset'
+                name='installed_on'
+                helperText='Defines identifying information about an instance of software.'
+              />
+              <AddressField
+                setFieldValue={setFieldValue}
+                values={software}
+                addressValues={relatedRisk}
+                title='Related Risks'
+                name='related_risks'
+                helperText='Indicates the risks related to this entity.'
+              />
             </Grid>
           </Paper>
         </div>

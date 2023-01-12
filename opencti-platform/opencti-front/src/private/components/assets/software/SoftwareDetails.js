@@ -218,13 +218,13 @@ class SoftwareDetailsComponent extends Component {
                 {software.last_scanned && fldt(software.last_scanned)}
               </Grid>
             </Grid>
-            <Grid container spacing={3}>
-              <Grid item={true} xs={6}>
+            <Grid container spacing={1}>
+              <Grid item={true} xs={12}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Installed on Assets')}
                 </Typography>
@@ -247,12 +247,12 @@ class SoftwareDetailsComponent extends Component {
                   </div>
                 </div>
               </Grid>       
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={12}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20  }}
+                  style={{ float: 'left'  }}
                 >
                   {t('Related Risks')}
                 </Typography>
