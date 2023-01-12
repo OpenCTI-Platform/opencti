@@ -520,6 +520,10 @@ const DeviceEditionFragment = createFragmentContainer(
           id
           name
         }
+        related_risks {
+          id
+          name
+        }
         installed_hardware {
           id
           name

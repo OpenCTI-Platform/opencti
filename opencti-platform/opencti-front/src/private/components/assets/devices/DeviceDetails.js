@@ -164,8 +164,8 @@ class DeviceDetailsComponent extends Component {
                 
               </div>
             </Grid>
-            <Grid item={true} xs={6}>
-              <div style={{ marginBottom: '10px' }}>
+            <Grid item={true} xs={12}>
+              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -203,7 +203,7 @@ class DeviceDetailsComponent extends Component {
                 </div>                
               </div>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={12}>
               <div>
                 <Typography
                   variant="h3"
