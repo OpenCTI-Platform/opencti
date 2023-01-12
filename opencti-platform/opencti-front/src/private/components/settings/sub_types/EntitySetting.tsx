@@ -45,7 +45,7 @@ export const entitySettingQuery = graphql`
 `;
 
 export const entitySettingsPatch = graphql`
-  mutation EntitySettingsPatchMutation($ids: [ID]!, $input: [EditInput]!) {
+  mutation EntitySettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
       ...EntitySetting_entitySetting
     }
@@ -53,7 +53,7 @@ export const entitySettingsPatch = graphql`
 `;
 
 export const entitySettingPatch = graphql`
-  mutation EntitySettingPatchMutation($id: ID!, $input: [EditInput]!) {
+  mutation EntitySettingPatchMutation($id: ID!, $input: [EditInput!]!) {
     entitySettingFieldPatch(id: $id, input: $input) {
       ...EntitySetting_entitySetting
     }

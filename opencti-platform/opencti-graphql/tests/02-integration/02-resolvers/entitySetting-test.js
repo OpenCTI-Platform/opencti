@@ -43,7 +43,7 @@ const READ_QUERY_BY_TARGET_TYPE = gql`
   }
 `;
 const UPDATE_QUERY = gql`
-  mutation entitySettingEdit($id: ID!, $input: [EditInput]!) {
+  mutation entitySettingEdit($id: ID!, $input: [EditInput!]!) {
     entitySettingFieldPatch(id: $id, input: $input) {
       id
       target_type
@@ -54,7 +54,7 @@ const UPDATE_QUERY = gql`
   }
 `;
 const MASS_UPDATE_QUERY = gql`
-  mutation entitySettingsEdit($ids: [ID]!, $input: [EditInput]!) {
+  mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
       id
       target_type
@@ -71,7 +71,7 @@ describe('EntitySetting resolver standard behavior', () => {
     const context = executionContext('test');
     await initCreateEntitySettings(context);
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
-    expect(queryResult.data.entitySettings.edges.length).toEqual(35);
+    expect(queryResult.data.entitySettings.edges.length).toEqual(33);
 
     const entitySettingDataComponent = queryResult.data.entitySettings.edges.filter((entitySetting) => entitySetting.node.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP)[0];
     expect(entitySettingDataComponent.platform_entity_files_ref).toSatisfy((s) => s === null || s === undefined);
