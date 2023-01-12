@@ -1,18 +1,17 @@
 import React, { useEffect } from 'react';
-import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import makeStyles from '@mui/styles/makeStyles';
 import { buildDate } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
@@ -26,7 +25,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -66,7 +65,7 @@ const styles = (theme) => ({
   buttonLeft: {
     float: 'left',
   },
-});
+}));
 
 const subscription = graphql`
   subscription StixSightingRelationshipEditionOverviewSubscription($id: ID!) {
@@ -152,14 +151,15 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
 });
 
 const StixSightingRelationshipEditionOverview = ({
-  t,
-  classes,
   handleClose,
   handleDelete,
   stixSightingRelationship,
   stixDomainObject,
   inferred,
 }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+
   const { editContext } = stixSightingRelationship;
   useEffect(() => {
     const sub = requestSubscription({
@@ -243,6 +243,7 @@ const StixSightingRelationshipEditionOverview = ({
       })
       .catch(() => false);
   };
+
   const createdBy = convertCreatedBy(stixSightingRelationship);
   const objectMarking = convertMarkings(stixSightingRelationship);
   const status = convertStatus(t, stixSightingRelationship);
@@ -462,18 +463,6 @@ const StixSightingRelationshipEditionOverview = ({
   );
 };
 
-StixSightingRelationshipEditionOverview.propTypes = {
-  handleClose: PropTypes.func,
-  handleDelete: PropTypes.func,
-  classes: PropTypes.object,
-  stixDomainObject: PropTypes.object,
-  stixSightingRelationship: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  inferred: PropTypes.bool,
-  noStoreUpdate: PropTypes.bool,
-};
-
 const StixSightingRelationshipEditionFragment = createFragmentContainer(
   StixSightingRelationshipEditionOverview,
   {
@@ -522,7 +511,4 @@ const StixSightingRelationshipEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(StixSightingRelationshipEditionFragment);
+export default StixSightingRelationshipEditionFragment;

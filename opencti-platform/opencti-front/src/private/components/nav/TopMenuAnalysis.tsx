@@ -1,19 +1,18 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import {
-  LocalOfferOutlined,
-  SubjectOutlined,
   DescriptionOutlined,
+  LocalOfferOutlined,
   ReviewsOutlined,
+  SubjectOutlined,
   WorkspacesOutlined,
 } from '@mui/icons-material';
-import inject18n from '../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { Theme } from '@mui/material/styles/createTheme';
+import { useFormatter } from '../../../components/i18n';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     marginRight: theme.spacing(2),
     padding: '0 5px 0 5px',
@@ -24,12 +23,14 @@ const styles = (theme) => ({
   icon: {
     marginRight: theme.spacing(1),
   },
-});
+}));
 
-class TopMenuAnalysis extends Component {
-  render() {
-    const { t, location, classes } = this.props;
-    return (
+const TopMenuAnalysis = () => {
+  const classes = useStyles();
+  const location = useLocation();
+  const { t } = useFormatter();
+
+  return (
       <div>
         <Button
           component={Link}
@@ -127,19 +128,7 @@ class TopMenuAnalysis extends Component {
           {t('External references')}
         </Button>
       </div>
-    );
-  }
-}
-
-TopMenuAnalysis.propTypes = {
-  classes: PropTypes.object,
-  location: PropTypes.object,
-  t: PropTypes.func,
-  history: PropTypes.object,
+  );
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(TopMenuAnalysis);
+export default TopMenuAnalysis;

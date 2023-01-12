@@ -9,9 +9,10 @@ import {
 } from '@mui/icons-material';
 import { Brain } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     marginRight: theme.spacing(2),
     padding: '0 5px 0 5px',
@@ -67,25 +68,25 @@ const TopMenuCases = () => {
         <Brain className={classes.icon} fontSize="small" />
         {t('RFIs')}
       </Button>
-      <Button
-        component={Link}
-        to="/dashboard/cases/feedbacks"
-        variant={
-          location.pathname === '/dashboard/cases/feedbacks'
-            ? 'contained'
-            : 'text'
-        }
-        size="small"
-        color={
-          location.pathname === '/dashboard/cases/feedbacks'
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
-        {t('Feedbacks')}
-      </Button>
+        <Button
+          component={Link}
+          to="/dashboard/cases/feedbacks"
+          variant={
+            location.pathname === '/dashboard/cases/feedbacks'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/cases/feedbacks'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
+          {t('Feedbacks')}
+        </Button>
       <Button
         component={Link}
         to="/dashboard/cases/others"
