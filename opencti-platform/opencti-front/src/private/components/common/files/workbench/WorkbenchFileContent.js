@@ -46,6 +46,7 @@ import {
   dateAttributes,
   ignoredAttributes,
   markdownAttributes,
+  multipleAttributes,
   numberAttributes,
   resolveIdentityClass,
   resolveIdentityType,
@@ -77,7 +78,7 @@ import {
 import ItemIcon from '../../../../../components/ItemIcon';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import StixItemLabels from '../../../../../components/StixItemLabels';
-import { defaultValue } from '../../../../../utils/Graph';
+import { defaultKey, defaultValue } from '../../../../../utils/Graph';
 import StixItemMarkings from '../../../../../components/StixItemMarkings';
 import { buildDate, now } from '../../../../../utils/Time';
 import DynamicResolutionField from '../../form/DynamicResolutionField';
@@ -606,16 +607,18 @@ class WorkbenchFileContentComponent extends Component {
         n,
       ));
     }
-    this.setState({
-      stixDomainObjects: R.uniqBy(R.prop('id'), [
-        ...finalStixDomainObjects,
-        ...markingDefinitions,
-      ]),
-      stixCyberObservables: finalStixCyberObservables,
-      stixCoreRelationships: finalStixCoreRelationships,
-      containers: finalContainers,
-    });
-    this.saveFile();
+    this.setState(
+      {
+        stixDomainObjects: R.uniqBy(R.prop('id'), [
+          ...finalStixDomainObjects,
+          ...markingDefinitions,
+        ]),
+        stixCyberObservables: finalStixCyberObservables,
+        stixCoreRelationships: finalStixCoreRelationships,
+        containers: finalContainers,
+      },
+      () => this.saveFile(),
+    );
   }
 
   reverseBy(field) {
@@ -760,14 +763,16 @@ class WorkbenchFileContentComponent extends Component {
     finalStixCoreRelationships = finalStixCoreRelationships.filter(
       (n) => !stixCoreRelationshipsToRemove.includes(n.id),
     );
-    this.setState({
-      stixDomainObjects: finalStixDomainObjects,
-      stixCyberObservables: finalStixCyberObservables,
-      stixCoreRelationships: finalStixCoreRelationships,
-      containers: finalContainers,
-      deleteObject: null,
-    });
-    this.saveFile();
+    this.setState(
+      {
+        stixDomainObjects: finalStixDomainObjects,
+        stixCyberObservables: finalStixCyberObservables,
+        stixCoreRelationships: finalStixCoreRelationships,
+        containers: finalContainers,
+        deleteObject: null,
+      },
+      () => this.saveFile(),
+    );
   }
 
   submitDeleteObject() {
@@ -888,16 +893,18 @@ class WorkbenchFileContentComponent extends Component {
     finalStixCoreRelationships = finalStixCoreRelationships.filter(
       (n) => !stixCoreRelationshipsToRemove.includes(n.id),
     );
-    this.setState({
-      stixDomainObjects: finalStixDomainObjects,
-      stixCyberObservables: finalStixCyberObservables,
-      stixCoreRelationships: finalStixCoreRelationships,
-      containers: finalContainers,
-      selectedElements: null,
-      deSelectedElements: null,
-      selectAll: false,
-    });
-    this.saveFile();
+    this.setState(
+      {
+        stixDomainObjects: finalStixDomainObjects,
+        stixCyberObservables: finalStixCyberObservables,
+        stixCoreRelationships: finalStixCoreRelationships,
+        containers: finalContainers,
+        selectedElements: null,
+        deSelectedElements: null,
+        selectAll: false,
+      },
+      () => this.saveFile(),
+    );
   }
   // endregion
 
@@ -1446,20 +1453,22 @@ class WorkbenchFileContentComponent extends Component {
     ) {
       updatedEntity.x_opencti_location_type = entityType;
     }
-    this.setState({
-      stixDomainObjects: uniqWithByFields(
-        ['name', 'type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixDomainObjects.filter((n) => n.id !== updatedEntity.id),
-          ...markingDefinitions,
-          ...(identity ? [identity] : []),
-          updatedEntity,
-        ]),
-      ),
-      entityId: updatedEntity.id,
-      entityStep: 1,
-    });
-    this.saveFile();
+    this.setState(
+      {
+        stixDomainObjects: uniqWithByFields(
+          ['name', 'type'],
+          R.uniqBy(R.prop('id'), [
+            ...stixDomainObjects.filter((n) => n.id !== updatedEntity.id),
+            ...markingDefinitions,
+            ...(identity ? [identity] : []),
+            updatedEntity,
+          ]),
+        ),
+        entityId: updatedEntity.id,
+        entityStep: 1,
+      },
+      this.saveFile(),
+    );
   }
 
   onSubmitEntityContext(values) {
@@ -1560,28 +1569,30 @@ class WorkbenchFileContentComponent extends Component {
     const stixDomainObjectsToDeleteIds = stixDomainObjectsToDelete.map(
       (n) => n.id,
     );
-    this.setState({
-      stixDomainObjects: uniqWithByFields(
-        ['name', 'type', 'identity_class', 'x_opencti_location_type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixDomainObjects.filter(
-            (n) => !stixDomainObjectsToDeleteIds.includes(n.id),
-          ),
-          ...newEntities,
-        ]),
-      ),
-      stixCoreRelationships: uniqWithByFields(
-        ['source_ref', 'target_ref', 'relationship_type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixCoreRelationships.filter(
-            (n) => !stixCoreRelationshipsToDeleteIds.includes(n.id),
-          ),
-          ...newRelationships,
-        ]),
-      ),
-    });
+    this.setState(
+      {
+        stixDomainObjects: uniqWithByFields(
+          ['name', 'type', 'identity_class', 'x_opencti_location_type'],
+          R.uniqBy(R.prop('id'), [
+            ...stixDomainObjects.filter(
+              (n) => !stixDomainObjectsToDeleteIds.includes(n.id),
+            ),
+            ...newEntities,
+          ]),
+        ),
+        stixCoreRelationships: uniqWithByFields(
+          ['source_ref', 'target_ref', 'relationship_type'],
+          R.uniqBy(R.prop('id'), [
+            ...stixCoreRelationships.filter(
+              (n) => !stixCoreRelationshipsToDeleteIds.includes(n.id),
+            ),
+            ...newRelationships,
+          ]),
+        ),
+      },
+      () => this.saveFile(),
+    );
     this.handleCloseEntity();
-    this.saveFile();
   }
 
   onResetEntity() {
@@ -1812,27 +1823,29 @@ class WorkbenchFileContentComponent extends Component {
       ...finalValues,
       id: relationship.id ? relationship.id : `relationship--${uuid()}`,
     };
-    this.setState({
-      stixCoreRelationships: uniqWithByFields(
-        ['source_ref', 'target_ref', 'relationship_type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixCoreRelationships.filter(
-            (n) => n.id !== updatedRelationship.id,
-          ),
-          updatedRelationship,
-        ]),
-      ),
-      stixDomainObjects: uniqWithByFields(
-        ['name', 'type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixDomainObjects,
-          ...markingDefinitions,
-          ...(identity ? [identity] : []),
-        ]),
-      ),
-    });
+    this.setState(
+      {
+        stixCoreRelationships: uniqWithByFields(
+          ['source_ref', 'target_ref', 'relationship_type'],
+          R.uniqBy(R.prop('id'), [
+            ...stixCoreRelationships.filter(
+              (n) => n.id !== updatedRelationship.id,
+            ),
+            updatedRelationship,
+          ]),
+        ),
+        stixDomainObjects: uniqWithByFields(
+          ['name', 'type'],
+          R.uniqBy(R.prop('id'), [
+            ...stixDomainObjects,
+            ...markingDefinitions,
+            ...(identity ? [identity] : []),
+          ]),
+        ),
+      },
+      () => this.saveFile(),
+    );
     this.handleCloseRelationship();
-    this.saveFile();
   }
 
   onResetRelationship() {
@@ -1914,9 +1927,18 @@ class WorkbenchFileContentComponent extends Component {
               if (R.includes(attribute, dateAttributes)) {
                 initialValues[attribute] = observable[attribute]
                   ? buildDate(observable[attribute])
-                  : now();
+                  : null;
               } else if (R.includes(attribute, booleanAttributes)) {
                 initialValues[attribute] = observable[attribute] || false;
+              } else if (R.includes(attribute, multipleAttributes)) {
+                initialValues[attribute] = observable[attribute]
+                  ? observable[attribute].join(',')
+                  : null;
+              } else if (attribute === 'hashes') {
+                initialValues.hashes_MD5 = observable[attribute].MD5;
+                initialValues['hashes_SHA-1'] = observable[attribute]['SHA-1'];
+                initialValues['hashes_SHA-256'] = observable[attribute]['SHA-256'];
+                initialValues['hashes_SHA-512'] = observable[attribute]['SGA-512'];
               } else {
                 initialValues[attribute] = observable[attribute] || '';
               }
@@ -1953,6 +1975,44 @@ class WorkbenchFileContentComponent extends Component {
                                 style: { marginTop: 20 },
                               }}
                             />
+                          );
+                        }
+                        if (attribute === 'hashes') {
+                          return (
+                            <div key={attribute}>
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                name="hashes_MD5"
+                                label={t('hash_md5')}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                              />
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                name="hashes_SHA-1"
+                                label={t('hash_sha-1')}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                              />
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                name="hashes_SHA-256"
+                                label={t('hash_sha-256')}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                              />
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                name="hashes.SHA-512"
+                                label={t('hash_sha-512')}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                              />
+                            </div>
                           );
                         }
                         if (R.includes(attribute, numberAttributes)) {
@@ -2090,18 +2150,20 @@ class WorkbenchFileContentComponent extends Component {
       }
       return n;
     });
-    this.setState({
-      stixCyberObservables: uniqWithByFields(
-        ['value', 'type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixCyberObservables.filter((n) => n.id !== observableId),
-          updatedObservable,
-        ]),
-      ),
-      stixCoreRelationships: updatedStixCoreRelationships,
-      containers: updatedContainers,
-    });
-    this.saveFile();
+    this.setState(
+      {
+        stixCyberObservables: uniqWithByFields(
+          ['value', 'type'],
+          R.uniqBy(R.prop('id'), [
+            ...stixCyberObservables.filter((n) => n.id !== observableId),
+            updatedObservable,
+          ]),
+        ),
+        stixCoreRelationships: updatedStixCoreRelationships,
+        containers: updatedContainers,
+      },
+      () => this.saveFile(),
+    );
   }
 
   onSubmitObservable(values) {
@@ -2120,6 +2182,19 @@ class WorkbenchFileContentComponent extends Component {
         type: 'marking-definition',
       }),
     );
+    const hashes = {};
+    if (values.hashes_MD5 && values.hashes_MD5.length > 0) {
+      hashes.MD5 = values.hashes_MD5;
+    }
+    if (values['hashes_SHA-1'] && values['hashes_SHA-1'].length > 0) {
+      hashes['SHA-1'] = values['hashes_SHA-1'];
+    }
+    if (values['hashes_SHA-256'] && values['hashes_SHA-256'].length > 0) {
+      hashes['SHA-256'] = values['hashes_SHA-256'];
+    }
+    if (values['hashes_SHA-512'] && values['hashes_SHA-512'].length > 0) {
+      hashes['SHA-512'] = values['hashes_SHA-512'];
+    }
     const identity = values.createdBy?.entity
       ? {
         ...values.createdBy.entity,
@@ -2127,9 +2202,18 @@ class WorkbenchFileContentComponent extends Component {
         type: 'identity',
       }
       : null;
-    const finalValues = {
+    let finalValues = {
       ...R.omit(
-        ['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'],
+        [
+          'objectLabel',
+          'objectMarking',
+          'createdBy',
+          'externalReferences',
+          'hashes_MD5',
+          'hashes_SHA-1',
+          'hashes_SHA-256',
+          'hashes_SHA-512',
+        ],
         values,
       ),
       labels: R.pluck('label', values.objectLabel),
@@ -2140,6 +2224,9 @@ class WorkbenchFileContentComponent extends Component {
         values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
+    if (!R.isEmpty(hashes)) {
+      finalValues = { ...finalValues, hashes };
+    }
     const stixType = convertToStixType(observableType);
     const updatedObservable = {
       ...observable,
@@ -2147,24 +2234,30 @@ class WorkbenchFileContentComponent extends Component {
       id: observable.id ? observable.id : `${stixType}--${uuid()}`,
       type: stixType,
     };
-    this.setState({
-      stixCyberObservables: uniqWithByFields(
-        ['value', 'type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixCyberObservables.filter((n) => n.id !== updatedObservable.id),
-          updatedObservable,
-        ]),
-      ),
-      stixDomainObjects: uniqWithByFields(
-        ['name', 'type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixDomainObjects,
-          ...markingDefinitions,
-          ...(identity ? [identity] : []),
-        ]),
-      ),
-    });
-    this.saveFile();
+    this.setState(
+      {
+        stixCyberObservables: uniqWithByFields(
+          defaultKey(updatedObservable)
+            ? [defaultKey(updatedObservable), 'type']
+            : ['id'],
+          R.uniqBy(R.prop('id'), [
+            ...stixCyberObservables.filter(
+              (n) => n.id !== updatedObservable.id,
+            ),
+            updatedObservable,
+          ]),
+        ),
+        stixDomainObjects: uniqWithByFields(
+          ['name', 'type'],
+          R.uniqBy(R.prop('id'), [
+            ...stixDomainObjects,
+            ...markingDefinitions,
+            ...(identity ? [identity] : []),
+          ]),
+        ),
+      },
+      () => this.saveFile(),
+    );
     this.handleCloseObservable();
   }
 
@@ -2726,35 +2819,37 @@ class WorkbenchFileContentComponent extends Component {
       id: container.id ? container.id : `${stixType}--${uuid()}`,
       type: stixType,
     };
-    this.setState({
-      containers: uniqWithByFields(
-        ['name', 'type'],
-        R.uniqBy(R.prop('id'), [
-          ...containers.filter((n) => n.id !== updatedContainer.id),
-          updatedContainer,
-        ]),
-      ),
-      stixDomainObjects: uniqWithByFields(
-        ['name', 'type'],
-        R.uniqBy(R.prop('id'), [
-          ...stixDomainObjects,
-          ...markingDefinitions,
-          ...(identity ? [identity] : []),
-        ]),
-      ),
-      containerId: updatedContainer.id,
-      containerSelectedElements: R.indexBy(
-        R.prop('id'),
-        (container.object_refs || [])
-          .map((n) => indexedStixObjects[n] || null)
-          .filter((n) => n !== null),
-      ),
-      containerSelectAll:
-        (container.object_refs || []).length
-        >= Object.keys(indexedStixObjects).length,
-      containerStep: 1,
-    });
-    this.saveFile();
+    this.setState(
+      {
+        containers: uniqWithByFields(
+          ['name', 'type'],
+          R.uniqBy(R.prop('id'), [
+            ...containers.filter((n) => n.id !== updatedContainer.id),
+            updatedContainer,
+          ]),
+        ),
+        stixDomainObjects: uniqWithByFields(
+          ['name', 'type'],
+          R.uniqBy(R.prop('id'), [
+            ...stixDomainObjects,
+            ...markingDefinitions,
+            ...(identity ? [identity] : []),
+          ]),
+        ),
+        containerId: updatedContainer.id,
+        containerSelectedElements: R.indexBy(
+          R.prop('id'),
+          (container.object_refs || [])
+            .map((n) => indexedStixObjects[n] || null)
+            .filter((n) => n !== null),
+        ),
+        containerSelectAll:
+          (container.object_refs || []).length
+          >= Object.keys(indexedStixObjects).length,
+        containerStep: 1,
+      },
+      () => this.saveFile(),
+    );
   }
 
   onSubmitContainerContext() {
@@ -2792,23 +2887,25 @@ class WorkbenchFileContentComponent extends Component {
       ...container,
       object_refs: containerElementsIds,
     };
-    this.setState({
-      containers: uniqWithByFields(
-        ['name', 'type'],
-        R.uniqBy(R.prop('id'), [
-          ...containers.filter((n) => n.id !== updatedContainer.id),
-          updatedContainer,
-        ]),
-      ),
-      containerId: null,
-      containerType: null,
-      containerSelectedElements: null,
-      containerDeSelectedElements: null,
-      containerSelectAll: null,
-      containerStep: 0,
-    });
+    this.setState(
+      {
+        containers: uniqWithByFields(
+          ['name', 'type'],
+          R.uniqBy(R.prop('id'), [
+            ...containers.filter((n) => n.id !== updatedContainer.id),
+            updatedContainer,
+          ]),
+        ),
+        containerId: null,
+        containerType: null,
+        containerSelectedElements: null,
+        containerDeSelectedElements: null,
+        containerSelectAll: null,
+        containerStep: 0,
+      },
+      () => this.saveFile(),
+    );
     this.handleCloseContainer();
-    this.saveFile();
   }
 
   onResetContainer() {

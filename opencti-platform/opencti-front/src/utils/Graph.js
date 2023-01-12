@@ -320,6 +320,32 @@ export const defaultValueMarking = (n) => {
   return def;
 };
 
+export const defaultKey = (n) => {
+  if (!n) return null;
+  if (n.hashes) {
+    return 'hashes';
+  }
+  if (n.value) {
+    return 'value';
+  }
+  if (n.name) {
+    return 'name';
+  }
+  if (n.observable_value) {
+    return 'observable_value';
+  }
+  if (n.attribute_abstract) {
+    return 'attribute_abstract';
+  }
+  if (n.opinion) {
+    return null;
+  }
+  if (n.abstract) {
+    return 'abstract';
+  }
+  return null;
+};
+
 export const defaultValue = (n, tooltip = false) => {
   if (!n) return '';
   if (typeof n.definition === 'object') {

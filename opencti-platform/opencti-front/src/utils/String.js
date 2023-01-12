@@ -50,7 +50,7 @@ export const convertToStixType = (type) => {
   if (!type) {
     return type;
   }
-  if (type === 'Stixfile') {
+  if (type === 'StixFile') {
     return 'file';
   }
   if (['Sector', 'Organization', 'Individual', 'System'].includes(type)) {
