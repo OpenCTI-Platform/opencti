@@ -22,6 +22,7 @@ import { parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import { adaptFieldValue } from '../../../../utils/String';
 import TaskType from '../../common/form/TaskType';
+import AddressField from '../../common/form/AddressField';
 
 const styles = () => ({
   paper: {
@@ -156,7 +157,7 @@ class NetworkEditionDetailsComponent extends Component {
   }
 
   render() {
-    const { t, classes, enableReferences } = this.props;
+    const { t, classes, enableReferences, network } = this.props;
     // const initialValues = pipe(
     //   assoc('first_seen', dateFormat(network.first_seen)),
     //   assoc('last_seen', dateFormat(network.last_seen)),
@@ -362,6 +363,22 @@ class NetworkEditionDetailsComponent extends Component {
                   />
                 </Grid>
               </Grid>
+              <AddressField
+                setFieldValue={setFieldValue}
+                values={software}
+                addressValues={installedOn}
+                title='Installed on Asset'
+                name='installed_on'
+                helperText='Defines identifying information about an instance of software.'
+              />
+              <AddressField
+                setFieldValue={setFieldValue}
+                values={software}
+                addressValues={relatedRisk}
+                title='Related Risks'
+                name='related_risks'
+                helperText='Indicates the risks related to this entity.'
+              />
             </Grid>
           </Paper>
         </div>

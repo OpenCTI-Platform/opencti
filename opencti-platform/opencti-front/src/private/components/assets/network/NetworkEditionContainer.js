@@ -277,7 +277,7 @@ class NetworkEditionContainer extends Component {
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
-          {({ submitForm, isSubmitting }) => (
+          {({ submitForm, isSubmitting, setFieldValue }) => (
             <>
               <div className={classes.header}>
                 <div>
@@ -341,6 +341,7 @@ class NetworkEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <NetworkEditionDetails
                       network={network}
+                      setFieldValue={setFieldValue}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}

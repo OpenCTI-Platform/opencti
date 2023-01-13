@@ -22,6 +22,7 @@ import TaskType from '../../common/form/TaskType';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import AddressField from '../../common/form/AddressField';
+import HyperLinkField from '../../common/form/HyperLinkField';
 
 const styles = () => ({
   paper: {
@@ -389,6 +390,13 @@ class SoftwareEditionDetailsComponent extends Component {
                 addressValues={relatedRisk}
                 title='Related Risks'
                 name='related_risks'
+                helperText='Indicates the risks related to this entity.'
+              />
+              <HyperLinkField
+                setFieldValue={setFieldValue}
+                data={installedOn}
+                title='Installed on Asset'
+                name='installed_on'
                 helperText='Indicates the risks related to this entity.'
               />
             </Grid>

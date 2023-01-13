@@ -21,6 +21,7 @@ import PortsField from '../../common/form/PortsField';
 import AddressField from '../../common/form/AddressField';
 import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../utils/Network';
 import TaskType from '../../common/form/TaskType';
+import HyperLinkField from '../../common/form/HyperLinkField';
 
 const styles = () => ({
   paper: {
@@ -82,8 +83,12 @@ class DeviceEditionDetailsComponent extends Component {
       setFieldValue,
       device,
     } = this.props;
-    const installedOn = R.map((n) => n.name)(device.installed_on) || [];
-    const relatedRisk = R.map((n) => n.name)(device.related_risks) || [];
+    const installedOn = R.map((n) => n.name)(device?.installed_software);
+    // const installedOn = R.pipe(
+    //   R.pathOr([], ['name']),
+    //   R.map((n) => n),
+    // )(device?.installed_software);
+    // const relatedRisk = R.map((n) => n.name)(values?.related_risks);
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -93,7 +98,7 @@ class DeviceEditionDetailsComponent extends Component {
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
-                <div style={{ marginBottom: '45px' }}>
+                <div>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -149,6 +154,48 @@ class DeviceEditionDetailsComponent extends Component {
                 </div>
               </Grid>
               <Grid item={true} xs={12}>
+              <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Installed Software')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Installed Software')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <InstalledAsset
+                    component={SelectField}
+                    variant='outlined'
+                    type='software'
+                    multiple={true}
+                    name="installed_software"
+                    // disabled={true}
+                    fullWidth={true}
+                    style={{ height: '38.09px', maxWidth: '300px' }}
+                    containerstyle={{ width: '100%' }}
+                  />
+                </div>
+                </Grid>
+                <Grid item={true} xs={12}>
+                <HyperLinkField
+                    variant='outlined'
+                    type='software'
+                    multiple={true}
+                    name="installed_software"
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '90%' }}
+                    helperText={'Install OS'}
+                    data={installedOn}
+                    title={'Installed Software'}
+                  />
+                </Grid>
+              {/* <Grid item={true} xs={12}>
                   <AddressField
                     setFieldValue={setFieldValue}
                     values={values}
@@ -167,7 +214,7 @@ class DeviceEditionDetailsComponent extends Component {
                     name='related_risks'
                     helperText='Defines identifying information about an instance of software.'
                   />
-              </Grid>
+              </Grid> */}
               <Grid item={true} xs={6}>
                 <div>
                   <Typography
