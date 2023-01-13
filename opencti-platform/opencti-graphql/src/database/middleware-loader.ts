@@ -11,6 +11,7 @@ import type {
   StoreProxyRelation
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
+import type { FilterMode } from '../generated/graphql';
 
 const MAX_SEARCH_SIZE = 5000;
 
@@ -34,7 +35,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
   orderBy?: string | Array<string> | null,
   orderMode?: 'asc' | 'desc' | undefined | null,
   filters?: Array<Filter> | null;
-  filterMode?: 'and' | 'or' | undefined | null;
+  filterMode?: FilterMode | undefined | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
 }
 

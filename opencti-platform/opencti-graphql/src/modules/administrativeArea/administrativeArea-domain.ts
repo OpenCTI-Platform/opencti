@@ -8,12 +8,13 @@ import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-
 import { BasicStoreEntityAdministrativeArea, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from './administrativeArea-types';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_COUNTRY } from '../../schema/stixDomainObject';
+import type { DomainFindAll, DomainFindById } from '../../domain/domainTypes';
 
-export const findById = (context: AuthContext, user: AuthUser, administrativeAreaId: string): BasicStoreEntityAdministrativeArea => {
-  return storeLoadById(context, user, administrativeAreaId, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA) as unknown as BasicStoreEntityAdministrativeArea;
+export const findById: DomainFindById<BasicStoreEntityAdministrativeArea> = (context: AuthContext, user: AuthUser, administrativeAreaId: string) => {
+  return storeLoadById(context, user, administrativeAreaId, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryAdministrativeAreasArgs) => {
+export const findAll: DomainFindAll<BasicStoreEntityAdministrativeArea> = (context: AuthContext, user: AuthUser, opts: QueryAdministrativeAreasArgs) => {
   return listEntitiesPaginated<BasicStoreEntityAdministrativeArea>(context, user, [ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA], opts);
 };
 

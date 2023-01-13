@@ -15080,7 +15080,6 @@ export type QueryAdministrativeAreasArgs = {
   filters?: InputMaybe<Array<AdministrativeAreasFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<AdministrativeAreasOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
 };
 
