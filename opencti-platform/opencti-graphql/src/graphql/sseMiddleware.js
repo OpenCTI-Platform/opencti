@@ -287,26 +287,6 @@ const createSeeMiddleware = () => {
       res.status(500).end();
     }
   };
-  const isFoundsTrue = async (founds, filterMode) => {
-    let found = false;
-    switch (filterMode) {
-      case 'and':
-        if (!founds.includes(false)) {
-          found = true;
-        }
-        break;
-      case 'or':
-        if (founds.includes(true)) {
-          found = true;
-        }
-        break;
-      default: // 'or'
-        if (founds.includes(true)) {
-          found = true;
-        }
-    }
-    return found;
-  };
   const isInstanceMatchFilters = async (context, user, instance, filters, filterCache) => {
     const instanceAccessible = await isUserCanAccessStixElement(context, user, instance);
     if (!instanceAccessible) {
@@ -316,8 +296,7 @@ const createSeeMiddleware = () => {
     const adaptedFilters = convertFiltersFrontendFormat(filters);
     // User is granted, but we still need to apply filters if needed
     for (let index = 0; index < adaptedFilters.length; index += 1) {
-      const { key: type, operator, values, filterMode } = adaptedFilters[index];
-      let founds = [];
+      const { key: type, operator, values } = adaptedFilters[index];
       let found = false;
       // Markings filtering
       if (type === MARKING_FILTER) {
@@ -325,22 +304,20 @@ const createSeeMiddleware = () => {
           return true;
         }
         const markings = instance.object_marking_refs || [];
-        if (values.length > 0 && markings.length === 0) {
-          return false;
-        }
         const filterMarkingRefs = await filterCacheResolver(context, values, filterCache);
         switch (operator) {
-          case 'not_eq':
-            founds = filterMarkingRefs.map((r) => !markings.includes(r));
+          case 'not_eq': // filterMode=and
+            found = !filterMarkingRefs.map((r) => !markings.includes(r)).includes(false);
             break;
-          case 'eq':
-            founds = filterMarkingRefs.map((r) => markings.includes(r));
+          case 'eq': // filterMode=or
+            found = filterMarkingRefs.some((r) => markings.includes(r));
             break;
           default:
-            founds = filterMarkingRefs.map((r) => markings.includes(r));
+            found = filterMarkingRefs.some((r) => markings.includes(r));
         }
-        found = isFoundsTrue(founds, filterMode);
-        return found;
+        if (!found) {
+          return false;
+        }
       }
       // Entity type filtering
       if (type === TYPE_FILTER) {
@@ -350,92 +327,93 @@ const createSeeMiddleware = () => {
           found = true;
         } else {
           switch (operator) {
-            case 'not_eq':
-              founds = values.map((filter) => !instanceAllTypes.includes(filter.id));
+            case 'not_eq': // filterMode=and
+              found = !values.map((filter) => !instanceAllTypes.includes(filter.id)).includes(false);
               break;
-            case 'eq':
-              founds = values.map((filter) => instanceAllTypes.includes(filter.id));
+            case 'eq': // filterMode=or
+              found = values.some((filter) => instanceAllTypes.includes(filter.id));
               break;
-            default: // operator='and' and filterMode='or'
-              founds = values.map((filter) => instanceAllTypes.includes(filter.id));
+            default:
+              found = values.some((filter) => instanceAllTypes.includes(filter.id));
           }
         }
-        found = isFoundsTrue(founds, filterMode);
-        return found;
+        if (!found) {
+          return false;
+        }
       }
       // Indicator type filtering
       if (type === INDICATOR_FILTER) {
         const indicators = [...(instance.indicator_types ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.indicator_types ?? [])];
         const extractedValues = values.map((v) => v.value);
         switch (operator) {
-          case 'not_eq':
-            founds = extractedValues.map((r) => !indicators.includes(r));
+          case 'not_eq': // filterMode=and
+            found = !extractedValues.map((r) => !indicators.includes(r)).includes(false);
             break;
-          case 'eq':
-            founds = extractedValues.map((r) => indicators.includes(r));
+          case 'eq': // filterMode=or
+            found = extractedValues.some((r) => indicators.includes(r));
             break;
           default:
-            founds = extractedValues.map((r) => indicators.includes(r));
+            found = extractedValues.some((r) => indicators.includes(r));
         }
-        found = isFoundsTrue(founds, filterMode);
-        return found;
+        if (!found) {
+          return false;
+        }
       }
       // Workflow
       if (type === WORKFLOW_FILTER) {
         const workflowId = instance.extensions[STIX_EXT_OCTI].workflow_id;
-        if (!workflowId) {
-          return false;
-        }
         const extractedValues = values.map((v) => v.id);
         switch (operator) {
-          case 'not_eq':
+          case 'not_eq': // filterMode=and
             found = !extractedValues.includes(workflowId);
             break;
-          case 'eq':
+          case 'eq': // filterMode=or
             found = extractedValues.includes(workflowId);
             break;
           default:
             found = extractedValues.includes(workflowId);
         }
-        return found;
+        if (!found) {
+          return false;
+        }
       }
       // Creator filtering
       if (type === CREATOR_FILTER) {
         if (values.length === 0) {
           return true;
         }
-        if (values.length > 0 && instance.created_by_ref === undefined) {
-          return false;
-        }
         const filterCreationRefs = await filterCacheResolver(context, values, filterCache);
         switch (operator) {
-          case 'not_eq':
+          case 'not_eq': // filterMode=and
             found = !filterCreationRefs.includes(instance.created_by_ref);
             break;
-          case 'eq':
+          case 'eq': // filterMode=or
             found = filterCreationRefs.includes(instance.created_by_ref);
             break;
           default:
             found = filterCreationRefs.includes(instance.created_by_ref);
         }
-        return found;
+        if (!found) {
+          return false;
+        }
       }
       // Labels filtering
       if (type === LABEL_FILTER) {
         const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
         const extractedValues = values.map((v) => v.value);
         switch (operator) {
-          case 'not_eq':
-            founds = extractedValues.map((r) => !labels.includes(r));
+          case 'not_eq': // filterMode=and
+            found = !extractedValues.map((r) => !labels.includes(r)).includes(false);
             break;
-          case 'eq':
-            founds = extractedValues.map((r) => labels.includes(r));
+          case 'eq': // filterMode=or
+            found = extractedValues.some((r) => labels.includes(r));
             break;
           default:
-            founds = extractedValues.map((r) => labels.includes(r));
+            found = extractedValues.some((r) => labels.includes(r));
         }
-        found = isFoundsTrue(founds, filterMode);
-        return found;
+        if (!found) {
+          return false;
+        }
       }
       // Boolean filtering
       if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
@@ -465,17 +443,19 @@ const createSeeMiddleware = () => {
           default:
             found = instance[type] === numeric;
         }
-        return found;
+        if (!found) {
+          return false;
+        }
       }
       // String filtering
       if (type === PATTERN_FILTER) { // filterMode by default
         const currentPattern = instance[type];
         const extractedIds = values.map((v) => v.id);
         switch (operator) {
-          case 'not_eq':
+          case 'not_eq': // filterMode=and
             found = !extractedIds.includes(currentPattern);
             break;
-          case 'eq':
+          case 'eq': // filterMode=or
             found = extractedIds.includes(currentPattern);
             break;
           default:
