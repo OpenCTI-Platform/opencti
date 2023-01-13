@@ -14,7 +14,7 @@ export const findById = async (context, user, locationId) => {
 export const findAll = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
-    types = R.filter((type) => isStixDomainObjectLocation(type), args.types);
+    types = args.types.filter((type) => isStixDomainObjectLocation(type));
   }
   if (types.length === 0) {
     types.push(ENTITY_TYPE_LOCATION);
@@ -28,7 +28,7 @@ export const addLocation = async (context, user, location) => {
     const supportedTypes = schemaTypes.get(ENTITY_TYPE_LOCATION).join(', ');
     throw FunctionalError(`Invalid location type ${type}, please provide one of ${supportedTypes}`);
   }
-  const locationToCreate = R.pipe(R.assoc('x_opencti_location_type', type), R.dissoc('type'))(location);
+  const locationToCreate = R.pipe(R.assoc('x_opencti_location_type', location.type), R.dissoc('type'))(location);
   const created = await createEntity(context, user, locationToCreate, type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
