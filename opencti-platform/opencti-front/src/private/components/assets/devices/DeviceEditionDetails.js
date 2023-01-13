@@ -80,7 +80,10 @@ class DeviceEditionDetailsComponent extends Component {
       values,
       isSubmitting,
       setFieldValue,
+      device,
     } = this.props;
+    const installedOn = R.map((n) => n.name)(device.installed_on) || [];
+    const relatedRisk = R.map((n) => n.name)(device.related_risks) || [];
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -146,54 +149,24 @@ class DeviceEditionDetailsComponent extends Component {
                 </div>
               </Grid>
               <Grid item={true} xs={12}>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Installed Software')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Installed Software')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
                   <AddressField
                     setFieldValue={setFieldValue}
                     values={values}
-                    addressValues={values.installed_software}
+                    addressValues={installedOn}
                     title='Installed Software'
                     name='installed_software'
                     helperText='Defines identifying information about an instance of software.'
                   />
-                </div>
               </Grid>
               <Grid item={true} xs={12}>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Related Risks')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Related Risks')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
                   <AddressField
                     setFieldValue={setFieldValue}
                     values={values}
-                    addressValues={values.related_risks}
+                    addressValues={relatedRisk}
                     title='Related Risk'
                     name='related_risks'
                     helperText='Defines identifying information about an instance of software.'
                   />
-                </div>
               </Grid>
               <Grid item={true} xs={6}>
                 <div>

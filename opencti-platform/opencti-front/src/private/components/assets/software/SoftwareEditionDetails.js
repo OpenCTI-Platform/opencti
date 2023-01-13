@@ -151,14 +151,13 @@ class SoftwareEditionDetailsComponent extends Component {
       setFieldValue,
       values,
     } = this.props;
-    console.log(values)
     // const initialValues = R.pipe(
     //   R.assoc('first_seen', dateFormat(software.first_seen)),
     //   R.assoc('last_seen', dateFormat(software.last_seen)),
     //   R.pick(['first_seen', 'last_seen', 'objective']),
     // )(software);
-    const installedOn = R.map((n) => n.name)(values.installed_on);
-    const relatedRisk = R.map((n) => n.name)(values.related_risks);
+    const installedOn = R.map((n) => n.name)(values.installed_on) || [];
+    const relatedRisk = R.map((n) => n.name)(values.related_risks) || [];
     return (
       <>
         {/* // <Formik
