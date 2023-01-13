@@ -342,18 +342,9 @@ class Location:
             self.opencti.log("error", "[opencti_location] Missing name")
             return
         if "x_opencti_location_type" in stix_object:
-            if stix_object["x_opencti_location_type"] == "Administrative-Area":
-                type = "AdministrativeArea"
-            else:
-                type = stix_object["x_opencti_location_type"]
+            type = stix_object["x_opencti_location_type"]
         elif self.opencti.get_attribute_in_extension("type", stix_object) is not None:
-            if (
-                self.opencti.get_attribute_in_extension("type", stix_object)
-                == "Administrative-Area"
-            ):
-                type = "AdministrativeArea"
-            else:
-                type = self.opencti.get_attribute_in_extension("type", stix_object)
+            type = self.opencti.get_attribute_in_extension("type", stix_object)
         else:
             if "city" in stix_object:
                 type = "City"
@@ -364,7 +355,6 @@ class Location:
             else:
                 type = "Position"
         if stix_object is not None:
-
             # Search in extensions
             if "x_opencti_aliases" not in stix_object:
                 stix_object[
