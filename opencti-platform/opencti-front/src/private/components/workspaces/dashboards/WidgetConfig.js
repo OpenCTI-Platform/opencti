@@ -1039,7 +1039,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
               }
             >
               <MenuItem value="day">{t('Day')}</MenuItem>
+              <MenuItem value="week">{t('Week')}</MenuItem>
               <MenuItem value="month">{t('Month')}</MenuItem>
+              <MenuItem value="quarter">{t('Quarter')}</MenuItem>
               <MenuItem value="year">{t('Year')}</MenuItem>
             </Select>
           </FormControl>
@@ -1178,7 +1180,18 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                       )
                                       }
                                     >
-                                      {attributes.map((attribute) => (
+                                      {[
+                                        ...attributes,
+                                        { value: 'created-by.internal_id' },
+                                        { value: 'object-marking.internal_id' },
+                                        { value: 'object-marking.internal_id' },
+                                        {
+                                          value: 'kill-chain-phase.internal_id',
+                                        },
+                                        {
+                                          value: 'kill-chain-phase.internal_id',
+                                        },
+                                      ].map((attribute) => (
                                         <MenuItem
                                           key={attribute.value}
                                           value={attribute.value}

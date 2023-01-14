@@ -199,6 +199,10 @@ export const ignoredAttributesInDashboards = [
   'spec_version',
   'extensions',
   'importFiles',
+  'x_opencti_graph_data',
+  'x_opencti_workflow_id',
+  'x_opencti_stix_ids',
+  'creator',
 ];
 
 export const dateAttributes = [
@@ -280,4 +284,10 @@ export const typesWithOpenCTIAliases = [
   'Narrative',
 ];
 
-export const typesWithoutAliases = ['Indicator', 'Vulnerability', 'Language', 'Grouping', 'Report'];
+export const typesWithoutAliases = [
+  'Indicator',
+  'Vulnerability',
+  'Language',
+  'Grouping',
+  'Report',
+];

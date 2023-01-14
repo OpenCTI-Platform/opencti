@@ -129,9 +129,15 @@ export const READ_RELATIONSHIPS_INDICES = [
 export const isNotEmptyField = (field) => !R.isEmpty(field) && !R.isNil(field);
 export const isEmptyField = (field) => !isNotEmptyField(field);
 
+const getMonday = (d) => {
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+  return new Date(d.setDate(diff));
+};
+
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
-  const startDateParsed = moment.parseZone(startDate);
-  const endDateParsed = moment.parseZone(endDate ?? now());
+  let startDateParsed = moment.parseZone(startDate);
+  let endDateParsed = moment.parseZone(endDate ?? now());
   let dateFormat;
   switch (interval) {
     case 'year':
@@ -142,10 +148,14 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
       dateFormat = 'YYYY-MM';
       break;
     /* istanbul ignore next */
+    case 'week':
+      dateFormat = 'YYYY-MM-DD';
+      startDateParsed = moment.parseZone(getMonday(new Date(startDateParsed.format(dateFormat))).toISOString());
+      endDateParsed = moment.parseZone(getMonday(new Date(endDateParsed.format(dateFormat))).toISOString());
+      break;
     default:
       dateFormat = 'YYYY-MM-DD';
   }
-
   const startFormatDate = new Date(endDateParsed.format(dateFormat));
   const endFormatDate = new Date(startDateParsed.format(dateFormat));
   const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), `${interval}s`);
