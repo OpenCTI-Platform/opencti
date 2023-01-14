@@ -1441,20 +1441,12 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       let targetTypes = [];
       if (elementWithTargetTypes) { targetTypes = elementWithTargetTypes; } else if (fromTypes) { targetTypes = fromTypes; } else if (toTypes) { targetTypes = toTypes; }
       if (field === 'internal_id') {
-        let filterTarget = (argKey, argTargetId) => {
+        const filterTarget = (argKey, argTargetId) => {
           if (Array.isArray(argTargetId)) {
             return !argTargetId.includes(argKey);
           }
           return argKey !== argTargetId;
         };
-        if (isTo) {
-          filterTarget = (argKey, argTargetId) => {
-            if (Array.isArray(argTargetId)) {
-              return argTargetId.includes(argKey);
-            }
-            return argKey === argTargetId;
-          };
-        }
         const { buckets } = data.aggregations.connections.filtered.genres;
         const filteredBuckets = R.filter((b) => filterTarget(b.key, targetId), buckets);
         return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
@@ -1470,20 +1462,12 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
         const toEntity = await elLoadById(context, user, toId);
         targetType = toEntity.entity_type;
       }
-      let filterTarget = (argInternalId, argTargetId, argsTypes) => {
+      const filterTarget = (argInternalId, argTargetId, argsTypes) => {
         if (Array.isArray(argTargetId)) {
           return !argTargetId.includes(argInternalId) && !R.includes(targetType, argsTypes);
         }
         return argInternalId !== argTargetId && !R.includes(targetType, argsTypes);
       };
-      if (isTo) {
-        filterTarget = (argInternalId, argTargetId, argsTypes) => {
-          if (Array.isArray(argTargetId)) {
-            return argTargetId.includes(argInternalId) && !R.includes(targetType, argsTypes);
-          }
-          return argInternalId === argTargetId && !R.includes(targetType, argsTypes);
-        };
-      }
       const resultTypes = R.pipe(
         R.map((h) => h._source.connections),
         R.flatten(),
