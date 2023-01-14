@@ -69,6 +69,7 @@ import StixCoreObjectsTreeMap from '../../common/stix_core_objects/StixCoreObjec
 import StixCoreRelationshipsTreeMap from '../../common/stix_core_relationships/StixCoreRelationshipsTreeMap';
 import StixCoreRelationshipsMap from '../../common/stix_core_relationships/StixCoreRelationshipsMap';
 import StixDomainObjectBookmarksList from '../../common/stix_domain_objects/StixDomainObjectBookmarksList';
+import StixCoreObjectsMultiHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -595,6 +596,20 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           />
         );
       case 'horizontal-bar':
+        if (
+          widget.dataSelection.length > 1
+          && widget.dataSelection[0].attribute.endsWith('internal_id')
+        ) {
+          return (
+            <StixCoreObjectsMultiHorizontalBars
+              startDate={startDate}
+              endDate={endDate}
+              dataSelection={widget.dataSelection}
+              parameters={widget.parameters}
+              variant="inLine"
+            />
+          );
+        }
         return (
           <StixCoreObjectsHorizontalBars
             startDate={startDate}

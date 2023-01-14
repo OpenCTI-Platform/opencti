@@ -203,6 +203,13 @@ export const ignoredAttributesInDashboards = [
   'x_opencti_workflow_id',
   'x_opencti_stix_ids',
   'creator',
+  'created',
+  'created_at',
+  'modified',
+  'updated_at',
+  'internal_id',
+  'standard_id',
+  'published',
 ];
 
 export const dateAttributes = [

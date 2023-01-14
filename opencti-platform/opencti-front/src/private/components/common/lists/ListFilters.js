@@ -2,6 +2,7 @@ import Button from '@mui/material/Button';
 import { FilterListOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
+import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { RayStartArrow, RayEndArrow } from 'mdi-material-ui';
 import React from 'react';
@@ -49,33 +50,43 @@ const ListFilters = ({
   const { t } = useFormatter();
   const classes = useStyles();
   let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
+  let tooltip = t('Filters');
+  let color = 'primary';
   if (type === 'from') {
     icon = <RayStartArrow fontSize={fontSize || 'medium'} />;
+    tooltip = t('Dynamic source filters');
+    color = 'warning';
   } else if (type === 'to') {
     icon = <RayEndArrow fontSize={fontSize || 'medium'} />;
+    tooltip = t('Dynamic target filters');
+    color = 'success';
   }
   return (
     <div className={classes.filters}>
       {variant === 'text' ? (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenFilters}
-          startIcon={icon}
-          size="small"
-          style={{ float: 'left', margin: '0 15px 0 7px' }}
-        >
-          {t('Filters')}
-        </Button>
+        <Tooltip title={tooltip}>
+          <Button
+            variant="contained"
+            color={color}
+            onClick={handleOpenFilters}
+            startIcon={icon}
+            size="small"
+            style={{ float: 'left', margin: '0 15px 0 7px' }}
+          >
+            {t('Filters')}
+          </Button>
+        </Tooltip>
       ) : (
-        <IconButton
-          color="primary"
-          onClick={handleOpenFilters}
-          style={{ float: 'left', marginTop: -2 }}
-          size={size || 'large'}
-        >
-          {icon}
-        </IconButton>
+        <Tooltip title={tooltip}>
+          <IconButton
+            color={color}
+            onClick={handleOpenFilters}
+            style={{ float: 'left', marginTop: -2 }}
+            size={size || 'large'}
+          >
+            {icon}
+          </IconButton>
+        </Tooltip>
       )}
       <Popover
         classes={{ paper: classes.container }}

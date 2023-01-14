@@ -878,6 +878,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     return (
                       <span key={currentFilter[0]}>
                         <Chip
+                          color="warning"
                           classes={{ root: classes.filter }}
                           label={
                             <div>
@@ -925,6 +926,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     return (
                       <span key={currentFilter[0]}>
                         <Chip
+                          color="success"
                           classes={{ root: classes.filter }}
                           label={
                             <div>
