@@ -8,7 +8,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
 import Skeleton from '@material-ui/lab/Skeleton';
 import RiskPopover from './RiskPopover';
 import inject18n from '../../../../components/i18n';
@@ -67,7 +66,7 @@ class RiskTracking extends Component {
           history={history}
           cyioDomainObject={risk}
           PopoverComponent={<RiskPopover />}
-          goBack='/activities/risk_assessment/risks'
+          goBack={`/activities/risk_assessment/risks/${riskId}`}
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
         // OperationsComponent={<RiskDeletion />}
         // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
@@ -109,9 +108,13 @@ class RiskTracking extends Component {
                         button={false}
                       >
                         <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatarDisabled }}>
-                            {i}
-                          </Avatar>
+                          <Skeleton
+                            animation="wave"
+                            variant="circle"
+                            width="45%"
+                            height={25}
+                            style={{ marginBottom: 10 }}
+                          />
                         </ListItemIcon>
                         <ListItemText
                           primary={

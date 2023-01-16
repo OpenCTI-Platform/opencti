@@ -10,6 +10,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
+import Skeleton from '@material-ui/lab/Skeleton';
 import IconButton from '@material-ui/core/IconButton';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -154,7 +155,6 @@ const UserPreferencesModal = (props) => {
     updateOrganizationSettings(currentClient_id, param).then((results) => {
 
       localStorage.setItem('client_id', currentClient_id);
-      localStorage.setItem('view-dashboard', 'default');
       props.setClientId(currentClient_id);
       if (location.pathname === '/activities/vulnerability_assessment/scans/explore results') {
         props.history.push('/activities/vulnerability_assessment/scans');
@@ -176,7 +176,7 @@ const UserPreferencesModal = (props) => {
     user.clients.forEach((item) => {
       getOrganizationSettings(item.client_id).then((result) => {
         // eslint-disable-next-line no-param-reassign
-        if (result) {
+        if (result) {          
           if (item.client_id == currentClient_id) {
             setSeverityLevel(result.data.vsa_severity_score_method);
           }
@@ -184,13 +184,17 @@ const UserPreferencesModal = (props) => {
             client_id: result.data.client_id,
             vsa_severity_score_method: result.data.vsa_severity_score_method,
           }]);
+          setIsLoading(false);
         }
       }).catch((error) => {
+        if(error) {
+          setIsLoading(false);
+        }
         console.log(error)
       });
     });
 
-    setIsLoading(false);
+    
   }, []);
 
   const handleOrgChange = (event) => {
@@ -209,7 +213,7 @@ const UserPreferencesModal = (props) => {
       elevation={2}
       style={{ width: '400px' }}
     >
-      {!isLoading ? (
+      { !isLoading && severityLevel ? (
         <Card>
           <CardHeader
             avatar={
@@ -300,9 +304,32 @@ const UserPreferencesModal = (props) => {
           </CardActions>
         </Card>
       ) : (
-        <Card>
+        <Card style={{ height: 'auto', minHeight: '475px' }}>
           <CardContent>
-            <CircularProgress />
+            <Grid container spacing={3}>
+              <Grid item xs={2}>
+                <Skeleton variant="circle" width={40} height={40} />
+              </Grid>
+              <Grid item xs={10}>
+                <Skeleton variant="rect" height={40} />
+              </Grid>
+              <Grid item xs={12}>
+                <Skeleton variant="rect" height={80}/>
+              </Grid>
+              <Grid item xs={12}>
+                <Skeleton variant="text" height={35} />
+              </Grid>
+              <Grid item xs={12}>
+                <Skeleton variant="rect" height={80} />
+              </Grid>
+              <Grid item xs={12}>
+                <Skeleton variant="text" height={35} />
+              </Grid>
+              <Grid item xs={12} style={{ display: 'flex', placeContent: 'end'}}>
+                <Skeleton variant="text" height={50} width={70} style={{margin: '0 20px'}}/>
+                <Skeleton variant="text" height={50} width={70}/>
+              </Grid>
+            </Grid>
           </CardContent>
         </Card>
       )}

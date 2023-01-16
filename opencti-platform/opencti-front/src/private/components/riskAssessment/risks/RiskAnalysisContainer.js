@@ -78,7 +78,7 @@ class RiskAnalysisContainerComponent extends Component {
               cyioDomainObject={risk}
               PopoverComponent={<RiskPopover />}
               OperationsComponent={<RiskDeletion />}
-              goBack='/activities/risk_assessment/risks'
+              goBack={`/activities/risk_assessment/risks/${risk.id}`}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
             // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             />
@@ -128,6 +128,8 @@ const RiskAnalysisContainerFragment = createFragmentContainer(
     risk: graphql`
       fragment RiskAnalysisContainer_risk on Risk {
         __typename
+        name
+        id
         characterizations {
           __typename
           id
