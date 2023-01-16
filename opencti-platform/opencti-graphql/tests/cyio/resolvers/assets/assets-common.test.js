@@ -141,6 +141,5 @@ describe('Test Common Assets', () => {
     const result = await submitOperation(deleteAssetLocation, variables);
 
     expect(typeof { value: result.data.deleteAssetLocation }).toBe('object');
-
   });
 });

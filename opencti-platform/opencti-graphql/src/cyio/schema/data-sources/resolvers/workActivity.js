@@ -16,10 +16,11 @@ import {
 const cyioWorkActivityResolvers = {
   Query: {
     ingestActivities: async (_, args, { dataSources }) => findAllIngestActivities(args, dataSources),
-    ingestActivity: async (_, { id, activityId }, { dataSources }) => findIngestActivityById(id, activityId, dataSources),
+    ingestActivity: async (_, { id, activityId }, { dataSources }) =>
+      findIngestActivityById(id, activityId, dataSources),
     sourceIngestActivity: async (_, { sourceId }, { dataSources }) => findSourceActivityById(sourceId, dataSources),
   },
-  
+
   // Mutation: {
   // },
 

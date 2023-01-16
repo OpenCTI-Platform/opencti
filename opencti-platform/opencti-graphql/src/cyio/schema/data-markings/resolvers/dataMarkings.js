@@ -14,25 +14,31 @@ import {
 
 const cyioDataMarkingResolvers = {
   Query: {
-    dataMarkings: async (_, args, { dbName, dataSources, selectMap }) => findAllDataMarkings(args, dbName, dataSources, selectMap),
-    dataMarking: async (_, { id }, { dbName, dataSources, selectMap }) => findDataMarkingById(id, dbName, dataSources, selectMap),
+    dataMarkings: async (_, args, { dbName, dataSources, selectMap }) =>
+      findAllDataMarkings(args, dbName, dataSources, selectMap),
+    dataMarking: async (_, { id }, { dbName, dataSources, selectMap }) =>
+      findDataMarkingById(id, dbName, dataSources, selectMap),
   },
   Mutation: {
-    deleteDataMarkings: async (_, { ids }, { dbName, dataSources }) => deleteDataMarkingById( ids, dbName, dataSources),
-    createStatementMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, selectMap, dataSources),
-    createTLPMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, selectMap, dataSources),
-    createIEPMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, selectMap, dataSources),
-    deleteDataMarking: async (_, { id }, { dbName, dataSources }) => deleteDataMarkingById( id, dbName, dataSources),
-    editDataMarking: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editDataMarkingById(id, input, dbName, dataSources, selectMap, schema),
+    deleteDataMarkings: async (_, { ids }, { dbName, dataSources }) => deleteDataMarkingById(ids, dbName, dataSources),
+    createStatementMarking: async (_, { input }, { dbName, selectMap, dataSources }) =>
+      createDataMarking(input, dbName, selectMap, dataSources),
+    createTLPMarking: async (_, { input }, { dbName, selectMap, dataSources }) =>
+      createDataMarking(input, dbName, selectMap, dataSources),
+    createIEPMarking: async (_, { input }, { dbName, selectMap, dataSources }) =>
+      createDataMarking(input, dbName, selectMap, dataSources),
+    deleteDataMarking: async (_, { id }, { dbName, dataSources }) => deleteDataMarkingById(id, dbName, dataSources),
+    editDataMarking: async (_, { id, input }, { dbName, dataSources, selectMap }, { schema }) =>
+      editDataMarkingById(id, input, dbName, dataSources, selectMap, schema),
   },
   // type resolvers
   DataMarking: {
-    __resolveType: ( item ) => {
+    __resolveType: (item) => {
       if (item.definition_type === 'statement') return 'StatementMarking';
       if (item.definition_type === 'tlp') return 'TLPMarking';
       if (item.definition_type === 'iep') return 'IEPMarking';
       return objectMap[item.entity_type].graphQLType;
-    }
+    },
   },
   // Map enum GraphQL values to data model required values
   EncryptInTransit: {

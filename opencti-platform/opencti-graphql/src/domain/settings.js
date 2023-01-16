@@ -41,9 +41,9 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  let settings =  await loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
-  if ('platform_theme_dark_primary' in settings) settings['platform_theme_dark_primary'] = null;
-  if ('platform_theme_dark_secondary' in settings) settings['platform_theme_dark_secondary'] = null;
+  const settings = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  if ('platform_theme_dark_primary' in settings) settings.platform_theme_dark_primary = null;
+  if ('platform_theme_dark_secondary' in settings) settings.platform_theme_dark_secondary = null;
   return settings;
 };
 

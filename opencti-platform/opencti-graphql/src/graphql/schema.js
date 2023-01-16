@@ -28,7 +28,9 @@ import {
   VoidTypeDefinition,
   VoidResolver,
 } from 'graphql-scalars';
-import {DateTimeScalar} from "./scalars";
+import { loadSchemaSync } from '@graphql-tools/load';
+import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
+import { DateTimeScalar } from './scalars';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -134,13 +136,10 @@ import cyioConnectionInformationResolvers from '../cyio/schema/data-sources/reso
 import cyioWorkActivityResolvers from '../cyio/schema/data-sources/resolvers/workActivity.js';
 
 // Cyio Extensions to support merged graphQL schema
-import { loadSchemaSync } from '@graphql-tools/load';
-import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader' ;
 
-const {authDirectiveTransformer } = authDirectiveV2();
+const { authDirectiveTransformer } = authDirectiveV2();
 
 const createSchema = () => {
-
   const globalResolvers = {
     DateTime: GraphQLDateTime,
     Timestamp: DateTimeScalar,
@@ -282,7 +281,7 @@ const createSchema = () => {
     cyioDataMarkingResolvers,
     cyioDataSourceResolvers,
     cyioWorkActivityResolvers,
-]);
+  ]);
 
   // load the OpenCTI and each of the Cyio GraphQL schema files
   const typeDefs = loadSchemaSync('./**/**/*.graphql', {

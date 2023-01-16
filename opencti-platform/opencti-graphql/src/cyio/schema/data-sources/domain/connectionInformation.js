@@ -17,64 +17,64 @@ import {
 
 export const findConnectionConfigById = async (connectionId, dbName, dataSources, selectMap) => {
   // ensure the id is a valid UUID
-  if (!checkIfValidUUID(connectionId)) throw new CyioError(`Invalid identifier: ${connectionId}`);  
+  if (!checkIfValidUUID(connectionId)) throw new CyioError(`Invalid identifier: ${connectionId}`);
 
-  let iri = `<http://cyio.darklight.ai/connection-information--${connectionId}>`;
+  const iri = `<http://cyio.darklight.ai/connection-information--${connectionId}>`;
   return findConnectionConfigByIri(iri, dbName, dataSources, selectMap);
-}
+};
 
 export const findConnectionConfigByIri = async (connectionIri, dbName, dataSources, selectMap) => {
-  const sparqlQuery = selectConnectionInformationByIriQuery(connectionIri, selectMap.getNode("connectionConfig"));
+  const sparqlQuery = selectConnectionInformationByIriQuery(connectionIri, selectMap.getNode('connectionConfig'));
   let response;
   try {
     response = await dataSources.Stardog.queryById({
       dbName: 'cyio-config',
       sparqlQuery,
-      queryId: "Select Configuration Information",
-      singularizeSchema
+      queryId: 'Select Configuration Information',
+      singularizeSchema,
     });
   } catch (e) {
-    console.log(e)
-    throw e
+    console.log(e);
+    throw e;
   }
 
   if (response === undefined) return null;
-  if (typeof (response) === 'object' && 'body' in response) {
+  if (typeof response === 'object' && 'body' in response) {
     throw new UserInputError(response.statusText, {
-      error_details: (response.body.message ? response.body.message : response.body),
-      error_code: (response.body.code ? response.body.code : 'N/A')
+      error_details: response.body.message ? response.body.message : response.body,
+      error_code: response.body.code ? response.body.code : 'N/A',
     });
   }
 
   if (Array.isArray(response) && response.length > 0) {
-    const reducer = getReducer("CONNECTION-INFORMATION");
-    return reducer(response[0]);  
+    const reducer = getReducer('CONNECTION-INFORMATION');
+    return reducer(response[0]);
   }
 };
 
 export const findAllConnectionConfig = async (args, dbName, dataSources, selectMap) => {
-  const sparqlQuery = selectAllConnectionInformationQuery(selectMap.getNode("node"), args);
+  const sparqlQuery = selectAllConnectionInformationQuery(selectMap.getNode('node'), args);
   let response;
   try {
     response = await dataSources.Stardog.queryAll({
       dbName: 'cyio-config',
       sparqlQuery,
-      queryId: "Select List of Configuration Information",
-      singularizeSchema
+      queryId: 'Select List of Configuration Information',
+      singularizeSchema,
     });
   } catch (e) {
-    console.log(e)
-    throw e
+    console.log(e);
+    throw e;
   }
 
   // no results found
   if (response === undefined || response.length === 0) return null;
 
   // Handle reporting Stardog Error
-  if (typeof (response) === 'object' && 'body' in response) {
+  if (typeof response === 'object' && 'body' in response) {
     throw new UserInputError(response.statusText, {
-      error_details: (response.body.message ? response.body.message : response.body),
-      error_code: (response.body.code ? response.body.code : 'N/A')
+      error_details: response.body.message ? response.body.message : response.body,
+      error_code: response.body.code ? response.body.code : 'N/A',
     });
   }
 
@@ -82,14 +82,20 @@ export const findAllConnectionConfig = async (args, dbName, dataSources, selectM
   if (Array.isArray(response) && response.length < 1) return null;
 
   const edges = [];
-  const reducer = getReducer("CONNECTION-INFORMATION");
-  let skipCount = 0,filterCount = 0, resultCount = 0, limit, offset, limitSize, offsetSize;
-  limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-  offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+  const reducer = getReducer('CONNECTION-INFORMATION');
+  const skipCount = 0;
+  let filterCount = 0;
+  let resultCount = 0;
+  let limit;
+  let offset;
+  let limitSize;
+  let offsetSize;
+  limitSize = limit = args.first === undefined ? response.length : args.first;
+  offsetSize = offset = args.offset === undefined ? 0 : args.offset;
 
-  let resultList ;
-  if (args.orderedBy !== undefined ) {
-    resultList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+  let resultList;
+  if (args.orderedBy !== undefined) {
+    resultList = response.sort(compareValues(args.orderedBy, args.orderMode));
   } else {
     resultList = response;
   }
@@ -98,38 +104,39 @@ export const findAllConnectionConfig = async (args, dbName, dataSources, selectM
   if (offset > resultList.length) return null;
 
   // for each result in the result set
-  for (let resultItem of resultList) {
+  for (const resultItem of resultList) {
     // skip down past the offset
     if (offset) {
-      offset--
-      continue
+      offset--;
+      continue;
     }
 
     // filter out non-matching entries if a filter is to be applied
     if ('filters' in args && args.filters != null && args.filters.length > 0) {
-      if (!filterValues(resultItem, args.filters, args.filterMode) ) {
-        continue
+      if (!filterValues(resultItem, args.filters, args.filterMode)) {
+        continue;
       }
       filterCount++;
     }
 
     // if haven't reached limit to be returned
     if (limit) {
-      let edge = {
+      const edge = {
         cursor: resultItem.iri,
         node: reducer(resultItem),
-      }
-      edges.push(edge)
+      };
+      edges.push(edge);
       limit--;
       if (limit === 0) break;
     }
   }
   // check if there is data to be returned
-  if (edges.length === 0 ) return null;
-  let hasNextPage = false, hasPreviousPage = false;
+  if (edges.length === 0) return null;
+  let hasNextPage = false;
+  let hasPreviousPage = false;
   resultCount = resultList.length - skipCount;
   if (edges.length < resultCount) {
-    if (edges.length === limitSize && filterCount <= limitSize ) {
+    if (edges.length === limitSize && filterCount <= limitSize) {
       hasNextPage = true;
       if (offsetSize > 0) hasPreviousPage = true;
     }
@@ -141,13 +148,13 @@ export const findAllConnectionConfig = async (args, dbName, dataSources, selectM
   return {
     pageInfo: {
       startCursor: edges[0].cursor,
-      endCursor: edges[edges.length-1].cursor,
-      hasNextPage: (hasNextPage ),
-      hasPreviousPage: (hasPreviousPage),
+      endCursor: edges[edges.length - 1].cursor,
+      hasNextPage,
+      hasPreviousPage,
       globalCount: resultCount,
     },
-    edges: edges,
-  }
+    edges,
+  };
 };
 
 export const createConnectionConfig = async (input, dbName, selectMap, dataSources) => {
@@ -165,32 +172,32 @@ export const createConnectionConfig = async (input, dbName, selectMap, dataSourc
 
   // create the Connection Information object
   let response;
-  let {iri, id:connectionId, query} = insertConnectionInformationQuery(input);
+  const { iri, id: connectionId, query } = insertConnectionInformationQuery(input);
   try {
     response = await dataSources.Stardog.create({
       dbName: 'cyio-config',
       sparqlQuery: query,
-      queryId: "Create Connection Information object"
-      });
+      queryId: 'Create Connection Information object',
+    });
   } catch (e) {
-    console.log(e)
-    throw e
+    console.log(e);
+    throw e;
   }
 
   // retrieve the newly created Connection Information to be returned
-  const select = selectConnectionInformationQuery(id, selectMap.getNode("createConnectionConfig"));
+  const select = selectConnectionInformationQuery(id, selectMap.getNode('createConnectionConfig'));
   const result = await dataSources.Stardog.queryById({
     dbName: 'cyio-config',
     sparqlQuery: select,
-    queryId: "Select Connection Information object",
-    singularizeSchema
+    queryId: 'Select Connection Information object',
+    singularizeSchema,
   });
-  const reducer = getReducer("CONNECTION-INFORMATION");
+  const reducer = getReducer('CONNECTION-INFORMATION');
   return reducer(result[0]);
 };
 
-export const deleteConnectionConfigById = async (connectionId, dbName, dataSources) => {  
-  let select = ['id','object_type'];
+export const deleteConnectionConfigById = async (connectionId, dbName, dataSources) => {
+  const select = ['id', 'object_type'];
   if (!Array.isArray(connectionId)) {
     if (!checkIfValidUUID(connectionId)) throw new CyioError(`Invalid identifier: ${connectionId}`);
 
@@ -201,12 +208,12 @@ export const deleteConnectionConfigById = async (connectionId, dbName, dataSourc
       response = await dataSources.Stardog.queryById({
         dbName: 'cyio-config',
         sparqlQuery,
-        queryId: "Select Connection Information",
-        singularizeSchema
+        queryId: 'Select Connection Information',
+        singularizeSchema,
       });
     } catch (e) {
-      console.log(e)
-      throw e
+      console.log(e);
+      throw e;
     }
     if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
@@ -216,51 +223,51 @@ export const deleteConnectionConfigById = async (connectionId, dbName, dataSourc
       response = await dataSources.Stardog.delete({
         dbName: 'cyio-config',
         sparqlQuery,
-        queryId: "Delete Connection Information"
+        queryId: 'Delete Connection Information',
       });
     } catch (e) {
-      console.log(e)
-      throw e
+      console.log(e);
+      throw e;
     }
-    
+
     if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
     return id;
-  } 
+  }
 
   if (Array.isArray(connectionId)) {
     let response;
-    for (let item of connectionId) {
-      if (!checkIfValidUUID(item)) throw new CyioError(`Invalid identifier: ${item}`);  
+    for (const item of connectionId) {
+      if (!checkIfValidUUID(item)) throw new CyioError(`Invalid identifier: ${item}`);
 
       // check if object with id exists
-      let sparqlQuery = selectConnectionInformationQuery(connectionId, select);
+      const sparqlQuery = selectConnectionInformationQuery(connectionId, select);
       try {
         response = await dataSources.Stardog.queryById({
           dbName: 'cyio-config',
           sparqlQuery,
-          queryId: "Select Connection Information",
-          singularizeSchema
+          queryId: 'Select Connection Information',
+          singularizeSchema,
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
-      
+
       if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
     }
 
-    let sparqlQuery = deleteMultipleConnectionInformationQuery(connectionId);
+    const sparqlQuery = deleteMultipleConnectionInformationQuery(connectionId);
     try {
       response = await dataSources.Stardog.delete({
         dbName: 'cyio-config',
         sparqlQuery,
-        queryId: "Delete multiple Connection Information"
+        queryId: 'Delete multiple Connection Information',
       });
     } catch (e) {
-      console.log(e)
-      throw e
+      console.log(e);
+      throw e;
     }
-    
+
     if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
     return id;
   }
@@ -271,25 +278,25 @@ export const editConnectionConfigById = async (connectionId, input, dbName, data
   if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
 
   // WORKAROUND to remove immutable fields
-  input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
+  input = input.filter((element) => element.key !== 'id' && element.key !== 'created' && element.key !== 'modified');
 
   // check that the object to be edited exists with the predicates - only get the minimum of data
-  let editSelect = ['id','created','modified'];
-  for (let editItem of input) {
+  const editSelect = ['id', 'created', 'modified'];
+  for (const editItem of input) {
     editSelect.push(editItem.key);
   }
 
-  const sparqlQuery = selectConnectionInformationQuery(connectionId, editSelect );
-  let response = await dataSources.Stardog.queryById({
+  const sparqlQuery = selectConnectionInformationQuery(connectionId, editSelect);
+  const response = await dataSources.Stardog.queryById({
     dbName: 'cyio-config',
     sparqlQuery,
-    queryId: "Select Connection Information",
-    singularizeSchema
+    queryId: 'Select Connection Information',
+    singularizeSchema,
   });
   if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${connectionId}`);
 
   // determine operation, if missing
-  for (let editItem of input) {
+  for (const editItem of input) {
     if (editItem.operation !== undefined) continue;
 
     // if value if empty then treat as a remove
@@ -297,7 +304,8 @@ export const editConnectionConfigById = async (connectionId, input, dbName, data
       editItem.operation = 'remove';
       continue;
     }
-    if (Array.isArray(editItem.value) && editItem.value[0] === null) throw new CyioError(`Field "${editItem.key}" has invalid value "null"`);
+    if (Array.isArray(editItem.value) && editItem.value[0] === null)
+      throw new CyioError(`Field "${editItem.key}" has invalid value "null"`);
 
     if (!response[0].hasOwnProperty(editItem.key)) {
       editItem.operation = 'add';
@@ -305,28 +313,32 @@ export const editConnectionConfigById = async (connectionId, input, dbName, data
       editItem.operation = 'replace';
 
       // Set operation to 'skip' if no change in value
-      if (response[0][editItem.key] === editItem.value) editItem.operation ='skip';
+      if (response[0][editItem.key] === editItem.value) editItem.operation = 'skip';
     }
   }
 
   // Push an edit to update the modified time of the object
   const timestamp = new Date().toISOString();
   if (!response[0].hasOwnProperty('created')) {
-    let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+    const update = { key: 'created', value: [`${timestamp}`], operation: 'add' };
     input.push(update);
   }
-  let operation = "replace";
-  if (!response[0].hasOwnProperty('modified')) operation = "add";
-  let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
+  let operation = 'replace';
+  if (!response[0].hasOwnProperty('modified')) operation = 'add';
+  const update = { key: 'modified', value: [`${timestamp}`], operation: `${operation}` };
   input.push(update);
 
   // Handle the update to fields that have references to other object instances
-  for (let editItem  of input) {
+  for (const editItem of input) {
     if (editItem.operation === 'skip') continue;
 
-    let value, fieldType, objectType, objArray, iris=[];
+    let value;
+    let fieldType;
+    let objectType;
+    let objArray;
+    const iris = [];
     for (value of editItem.value) {
-      switch(editItem.key) {
+      switch (editItem.key) {
         default:
           fieldType = 'simple';
           break;
@@ -336,24 +348,24 @@ export const editConnectionConfigById = async (connectionId, input, dbName, data
         // continue to next item if nothing to do
         if (editItem.operation === 'skip') continue;
 
-        let iri = `${objectMap[objectType].iriTemplate}-${value}`;
-        let sparqlQuery = selectObjectIriByIdQuery(value, objectType);
-        let result = await dataSources.Stardog.queryById({
+        const iri = `${objectMap[objectType].iriTemplate}-${value}`;
+        const sparqlQuery = selectObjectIriByIdQuery(value, objectType);
+        const result = await dataSources.Stardog.queryById({
           dbName: 'cyio-config',
           sparqlQuery,
-          queryId: "Obtaining IRI for the object with id",
-          singularizeSchema
+          queryId: 'Obtaining IRI for the object with id',
+          singularizeSchema,
         });
         if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${value}`);
         iris.push(`<${result[0].iri}>`);
       }
     }
     if (iris.length > 0) editItem.value = iris;
-  }    
+  }
 
   const query = updateQuery(
     `http://cyio.darklight.ai/connection-information--${connectionId}`,
-    "http://darklight.ai/ns/cyio/connection#ConnectionInformation",
+    'http://darklight.ai/ns/cyio/connection#ConnectionInformation',
     input,
     connectionInformationPredicateMap
   );
@@ -363,31 +375,31 @@ export const editConnectionConfigById = async (connectionId, input, dbName, data
       response = await dataSources.Stardog.edit({
         dbName: 'cyio-config',
         sparqlQuery: query,
-        queryId: "Update Connection Information"
-      });  
+        queryId: 'Update Connection Information',
+      });
     } catch (e) {
-      console.log(e)
-      throw e
+      console.log(e);
+      throw e;
     }
 
     if (response !== undefined && 'status' in response) {
       if (response.ok === false || response.status > 299) {
         // Handle reporting Stardog Error
         throw new UserInputError(response.statusText, {
-          error_details: (response.body.message ? response.body.message : response.body),
-          error_code: (response.body.code ? response.body.code : 'N/A')
+          error_details: response.body.message ? response.body.message : response.body,
+          error_code: response.body.code ? response.body.code : 'N/A',
         });
       }
     }
   }
 
-  const select = selectConnectionInformationQuery(connectionId, selectMap.getNode("editConnectionConfig"));
+  const select = selectConnectionInformationQuery(connectionId, selectMap.getNode('editConnectionConfig'));
   const result = await dataSources.Stardog.queryById({
     dbName,
     sparqlQuery: select,
-    queryId: "Select Connection Information",
-    singularizeSchema
+    queryId: 'Select Connection Information',
+    singularizeSchema,
   });
-  const reducer = getReducer("CONNECTION-INFORMATION");
+  const reducer = getReducer('CONNECTION-INFORMATION');
   return reducer(result[0]);
 };
