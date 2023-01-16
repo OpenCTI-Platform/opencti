@@ -155,7 +155,6 @@ const UserPreferencesModal = (props) => {
     updateOrganizationSettings(currentClient_id, param).then((results) => {
 
       localStorage.setItem('client_id', currentClient_id);
-      localStorage.setItem('view-dashboard', 'default');
       props.setClientId(currentClient_id);
       if (location.pathname === '/activities/vulnerability_assessment/scans/explore results') {
         props.history.push('/activities/vulnerability_assessment/scans');
