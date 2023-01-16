@@ -1,4 +1,4 @@
-import {addIndividual, findAll, findById, batchOrganizations, isUser} from '../domain/individual';
+import { addIndividual, findAll, findById, batchOrganizations, isUser } from '../domain/individual';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
