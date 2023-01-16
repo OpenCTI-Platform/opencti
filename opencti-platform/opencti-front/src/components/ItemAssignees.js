@@ -17,6 +17,7 @@ const ItemAssignees = (props) => {
       {assignees.length > 0
         ? assignees.map((assignee) => (
             <Button
+              key={assignee.id}
               variant="outlined"
               color="primary"
               size="small"

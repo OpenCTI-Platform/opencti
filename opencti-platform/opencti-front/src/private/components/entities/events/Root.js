@@ -154,13 +154,19 @@ class RootEvent extends Component {
                       exact
                       path="/dashboard/entities/events/:eventId/sightings"
                       render={(routeProps) => (
-                        <EntityStixSightingRelationships
-                          entityId={props.event.id}
-                          entityLink={link}
-                          noPadding={true}
-                          isTo={true}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.event}
+                            PopoverComponent={<EventPopover />}
+                          />
+                          <EntityStixSightingRelationships
+                            entityId={props.event.id}
+                            entityLink={link}
+                            noPadding={true}
+                            isTo={true}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route

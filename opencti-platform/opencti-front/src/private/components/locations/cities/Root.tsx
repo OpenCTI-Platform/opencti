@@ -139,13 +139,20 @@ const RootCityComponent = ({ queryRef }) => {
               exact
               path="/dashboard/locations/cities/:cityId/sightings"
               render={(routeProps) => (
-                <EntityStixSightingRelationships
-                  entityId={city.id}
-                  entityLink={link}
-                  noPadding={true}
-                  isTo={true}
-                  {...routeProps}
-                />
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={city}
+                    PopoverComponent={CityPopover}
+                  />
+                  <EntityStixSightingRelationships
+                    entityId={city.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                    {...routeProps}
+                  />
+                </React.Fragment>
               )}
             />
             <Route

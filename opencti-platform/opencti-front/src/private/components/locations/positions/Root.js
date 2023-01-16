@@ -169,13 +169,23 @@ class RootPosition extends Component {
                       exact
                       path="/dashboard/locations/positions/:positionId/sightings"
                       render={(routeProps) => (
-                        <EntityStixSightingRelationships
-                          entityId={props.position.id}
-                          entityLink={link}
-                          noPadding={true}
-                          isTo={true}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            disableSharing={true}
+                            stixDomainObject={props.position}
+                            PopoverComponent={<PositionPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Position',
+                            )}
+                          />
+                          <EntityStixSightingRelationships
+                            entityId={props.position.id}
+                            entityLink={link}
+                            noPadding={true}
+                            isTo={true}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route

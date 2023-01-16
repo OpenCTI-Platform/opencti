@@ -138,8 +138,8 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
-  ENTITY_TYPE_MIGRATION_STATUS,
-  ENTITY_TYPE_STATUS, ENTITY_TYPE_USER,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_USER,
   isDatedInternalObject,
   isInternalObject,
 } from '../schema/internalObject';

@@ -44,36 +44,6 @@ All you need to install the OpenCTI platform can be found in the [official docum
 * [Use Terraform or Helm-Chart](https://filigran.notion.site/Using-Terraform-or-Helm-Chart-Community-Version-05e38d1046f34b998a0bd2873537f8f0) (Community Version)
 * [Install manually](https://filigran.notion.site/Manual-deployment-b911beba44234f179841582ab3894bb1)
 
-## Luatix's members
-
-### Founders
-
-<p align="left">
-  <a href="https://medium.com/@samuel.hassine" alt="Samuel Hassine"><img src="https://www.luatix.org/wp-content/uploads/2021/10/sam-circle-1.png" width="80" /></a>
-  <a href="https://medium.com/@julien.richard" alt="Julien Richard"><img src="https://www.luatix.org/wp-content/uploads/2021/10/julien.png" width="80" /></a>
-  <a href="https://www.ssi.gouv.fr" alt="ANSSI"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Anssi.png" width="80" /></a>
-</p>
-
-### Sponsors
-
-<p align="left">
-  <a href="https://www.intrinsec.com" alt="Intrinsec"><img src="https://www.luatix.org/wp-content/uploads/2020/12/intrinsec.png" width="80" /></a>
-  <a href="https://www.thalesgroup.com" alt="Thales"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Thales.png" width="80" /></a>
-  <a href="https://www.tanium.com" alt="Tanium"><img src="https://www.luatix.org/wp-content/uploads/2021/01/tanium.png" width="80" /></a>
-  <a href="https://www1.nyc.gov/site/cyber/index.page" alt="New York City Cyber Command"><img src="https://www.luatix.org/wp-content/uploads/2020/11/nyc.png" width="80" /></a>
-  <a href="https://www.gatewatcher.com" alt="Gatewatcher"><img src="https://www.luatix.org/wp-content/uploads/2021/03/gatewatcher.png" width="80" /></a>
-  <a href="https://www.deepwatch.com" alt="deepwatch"><img src="https://www.luatix.org/wp-content/uploads/2021/10/deepwatch.png" width="80" /></a>
-  <a href="https://www.aisi.fr" alt="AISI"><img src="https://www.luatix.org/wp-content/uploads/2021/10/aisi.png" width="80" /></a>
-  <a href="https://www.hermes.com" alt="Hermès"><img src="https://www.luatix.org/wp-content/uploads/2022/01/hermes.png" width="80" /></a>
-  <a href="https://www.aon.com" alt="Aon"><img src="https://www.luatix.org/wp-content/uploads/2022/01/aon.png" width="80" /></a>
-</p>
-
-### Advisory board
-
-<p align="left">
-  <a href="https://cert.europa.eu" alt="CERT-EU"><img src="https://www.luatix.org/wp-content/uploads/2021/02/certeu.png" width="80" /></a>
-</p>
-
 ## Contributing
 
 ### Code of Conduct
@@ -106,12 +76,14 @@ If you need support or you wish to engage a discussion about the OpenCTI platfor
 
 ### Authors
 
-OpenCTI is a product powered by the collaboration of the private company [Filigran](https://www.filigran.io), the [French national cybersecurity agency (ANSSI)](https://ssi.gouv.fr), the [CERT-EU](https://cert.europa.eu) and the [Luatix](https://www.luatix.org) non-profit organization.
+OpenCTI is a product designed and developed by the company [Filigran](https://www.filigran.io).
+
+<a href="https://www.filigran.io" alt="Filigran"><img src="https://www.filigran.io/wp-content/uploads/2022/08/filigran_text_horizontal_dense_margin.png" width="230" /></a>
 
 ### GDPR and the OpenCTI OpenStreetMap server
 
-In order to provide OpenCTI users with cartography features, the platform uses a dedicated OpenStreetMap server (https://map.opencti.io). To monitor usage and adapt services performances, Luatix collects access log to this server (including IP addresses).
+In order to provide OpenCTI users with cartography features, the platform uses a dedicated OpenStreetMap server (https://map.opencti.io). To monitor usage and adapt services performances, Filigran collects access log to this server (including IP addresses).
 
-By using this server, you authorize Luatix to collect this information. Otherwise, you are free to deploy your own OpenStreetMap server and modify the platform configuration accordingly.
+By using this server, you authorize Filigran to collect this information. Otherwise, you are free to deploy your own OpenStreetMap server and modify the platform configuration accordingly.
 
-If you have started using the Luatix server and change your mind, you have the right to access, limit, rectify, erase and receive your data. To exercise your rights, please send your request to gdpr@opencti.io.
+If you have started using the Filigran server and change your mind, you have the right to access, limit, rectify, erase and receive your data. To exercise your rights, please send your request to gdpr@opencti.io.

@@ -201,13 +201,23 @@ class RootOrganization extends Component {
                       exact
                       path="/dashboard/entities/organizations/:organizationId/sightings"
                       render={(routeProps) => (
-                        <EntityStixSightingRelationships
-                          entityId={props.organization.id}
-                          entityLink={link}
-                          noPadding={true}
-                          isTo={true}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            disableSharing={true}
+                            stixDomainObject={props.organization}
+                            PopoverComponent={<OrganizationPopover />}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Organization',
+                            )}
+                          />
+                          <EntityStixSightingRelationships
+                            entityId={props.organization.id}
+                            entityLink={link}
+                            noPadding={true}
+                            isTo={true}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route
