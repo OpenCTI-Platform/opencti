@@ -19,6 +19,7 @@ import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import {
+  convertAssignees,
   convertCreatedBy,
   convertMarkings,
   convertStatus,
@@ -27,6 +28,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 
 const styles = (theme) => ({
   createButton: {
@@ -149,6 +151,7 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -245,14 +248,53 @@ class ReportEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeObjectAssignee(name, values) {
+    if (!this.props.enableReferences) {
+      const { report } = this.props;
+      const currentAssignees = R.pipe(
+        R.pathOr([], ['objectAssignee', 'edges']),
+        R.map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+        })),
+      )(report);
+      const added = R.difference(values, currentAssignees);
+      const removed = R.difference(currentAssignees, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: reportMutationRelationAdd,
+          variables: {
+            id: this.props.report.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-assignee',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: reportMutationRelationDelete,
+          variables: {
+            id: this.props.report.id,
+            toId: R.head(removed).value,
+            relationship_type: 'object-assignee',
+          },
+        });
+      }
+    }
+  }
+
   render() {
     const { t, report, context, enableReferences } = this.props;
     const createdBy = convertCreatedBy(report);
     const objectMarking = convertMarkings(report);
+    const objectAssignee = convertAssignees(report);
     const status = convertStatus(t, report);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('objectAssignee', objectAssignee),
       R.assoc('published', buildDate(report.published)),
       R.assoc('x_opencti_workflow_id', status),
       R.assoc('report_types', report.report_types ?? []),
@@ -263,6 +305,7 @@ class ReportEditionOverviewComponent extends Component {
         'report_types',
         'createdBy',
         'objectMarking',
+        'objectAssignee',
         'confidence',
         'x_opencti_workflow_id',
       ]),
@@ -288,7 +331,7 @@ class ReportEditionOverviewComponent extends Component {
                     setFieldValue,
                     values,
                   }) => (
-                    <Form style={{ margin: '0px 0 20px 0' }}>
+                    <Form style={{ margin: '20px 0 20px 0' }}>
                       <Field
                         component={TextField}
                         variant="standard"
@@ -354,22 +397,6 @@ class ReportEditionOverviewComponent extends Component {
                         onFocus={this.handleChangeFocus.bind(this)}
                         onSubmit={this.handleSubmitField.bind(this)}
                       />
-                      {report.workflowEnabled && (
-                        <StatusField
-                          name="x_opencti_workflow_id"
-                          type="Report"
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onChange={this.handleSubmitField.bind(this)}
-                          setFieldValue={setFieldValue}
-                          style={{ marginTop: 20 }}
-                          helpertext={
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="x_opencti_workflow_id"
-                            />
-                          }
-                        />
-                      )}
                       <CreatedByField
                         name="createdBy"
                         style={{ marginTop: 20, width: '100%' }}
@@ -393,6 +420,33 @@ class ReportEditionOverviewComponent extends Component {
                         }
                         onChange={this.handleChangeObjectMarking.bind(this)}
                       />
+                      <ObjectAssigneeField
+                        name="objectAssignee"
+                        style={{ marginTop: 20, width: '100%' }}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldname="objectAssignee"
+                          />
+                        }
+                        onChange={this.handleChangeObjectAssignee.bind(this)}
+                      />
+                      {report.workflowEnabled && (
+                        <StatusField
+                          name="x_opencti_workflow_id"
+                          type="Report"
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onChange={this.handleSubmitField.bind(this)}
+                          setFieldValue={setFieldValue}
+                          style={{ marginTop: 20 }}
+                          helpertext={
+                            <SubscriptionFocus
+                              context={context}
+                              fieldName="x_opencti_workflow_id"
+                            />
+                          }
+                        />
+                      )}
                       {enableReferences && (
                         <CommitMessage
                           submitForm={submitForm}
@@ -450,6 +504,15 @@ const ReportEditionOverview = createFragmentContainer(
               definition
               x_opencti_order
               x_opencti_color
+            }
+          }
+        }
+        objectAssignee {
+          edges {
+            node {
+              id
+              name
+              entity_type
             }
           }
         }

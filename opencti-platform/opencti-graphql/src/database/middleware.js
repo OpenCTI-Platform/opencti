@@ -137,7 +137,12 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { ENTITY_TYPE_STATUS, isDatedInternalObject, isInternalObject, } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_MIGRATION_STATUS,
+  ENTITY_TYPE_STATUS, ENTITY_TYPE_USER,
+  isDatedInternalObject,
+  isInternalObject,
+} from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
@@ -163,7 +168,7 @@ import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectShareableContainer,
@@ -1587,6 +1592,7 @@ export const updateAttributeRaw = async (context, user, instance, inputs, opts =
     }
   }
   // endregion
+
   // If is valid_until modification, update also revoked if needed
   const validUntilInput = R.find((e) => e.key === VALID_UNTIL, preparedElements);
   if (validUntilInput) {
@@ -1603,6 +1609,7 @@ export const updateAttributeRaw = async (context, user, instance, inputs, opts =
       preparedElements.push({ key: X_DETECTION, value: [false] });
     }
   }
+
   // Update all needed attributes with inner elements if needed
   const updatedInputs = [];
   const impactedInputs = [];
@@ -1701,6 +1708,15 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   const initial = await storeLoadByIdWithRefs(context, user, id, { type });
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
+  }
+  // Individual check
+  const { internalForceUpdate } = context;
+  if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !internalForceUpdate) {
+    const args = { filters: [{ key: 'user_email', values: [initial.contact_information] }], connectionFormat: false };
+    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
+    if (users.length > 0) {
+      throw FunctionalError('Cannot update an individual corresponding to a user');
+    }
   }
   if (updates.length === 0) {
     return { element: initial };
@@ -1928,6 +1944,14 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       } : undefined;
       const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit });
       return { element: updatedInstance, event };
+    }
+    // Post-operation to update the individual linked to a user
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
+      const args = { filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }], connectionFormat: false };
+      const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+      const individualId = R.head(individuals).id;
+      const patch = { contact_information: updatedInstance.user_email, name: updatedInstance.name, firstname: updatedInstance.firstname, lastname: updatedInstance.lastname };
+      await patchAttribute({ ...context, internalForceUpdate: true }, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL, patch);
     }
     // Return updated element after waiting for it.
     return { element: updatedInstance };
@@ -3179,6 +3203,22 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   const element = await storeLoadByIdWithRefs(context, user, id);
   if (!element) {
     throw FunctionalError('Cant find element to delete', { id });
+  }
+  const { internalForceUpdate } = context;
+  // Prevent individual deletion if linked to a user
+  if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information) && !internalForceUpdate) {
+    const args = { filters: [{ key: 'user_email', values: [element.contact_information] }], connectionFormat: false };
+    const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
+    if (users.length > 0) {
+      throw FunctionalError('Cannot delete an individual corresponding to a user');
+    }
+  }
+  // When delete a user, delete also the individual
+  if (element.entity_type === ENTITY_TYPE_USER) {
+    const args = { filters: [{ key: 'contact_information', values: [element.user_email] }], connectionFormat: false };
+    const individuals = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+    const individual = R.head(individuals);
+    await internalDeleteElementById({ ...context, internalForceUpdate: true }, user, individual.id);
   }
   // Check inference operation
   checkIfInferenceOperationIsValid(user, element);

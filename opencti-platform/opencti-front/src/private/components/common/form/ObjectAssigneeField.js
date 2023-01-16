@@ -1,11 +1,5 @@
 import React, { Component } from 'react';
-import {
-  compose,
-  pathOr,
-  pipe,
-  map,
-  union,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union, filter } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
@@ -35,20 +29,20 @@ const styles = (theme) => ({
   },
 });
 
-class CreatedByField extends Component {
+class ObjectAssigneeField extends Component {
   constructor(props) {
     super(props);
-    const { defaultCreatedBy } = props;
+    const { defaultObjectAssignee } = props;
     this.state = {
       identityCreation: false,
       keyword: '',
-      identities: defaultCreatedBy
+      identities: defaultObjectAssignee
         ? [
           {
-            label: defaultCreatedBy.name,
-            value: defaultCreatedBy.id,
-            type: defaultCreatedBy.entity_type,
-            entity: defaultCreatedBy,
+            label: defaultObjectAssignee.name,
+            value: defaultObjectAssignee.id,
+            type: defaultObjectAssignee.entity_type,
+            entity: defaultObjectAssignee,
           },
         ]
         : [],
@@ -82,7 +76,7 @@ class CreatedByField extends Component {
 
   searchIdentities() {
     fetchQuery(identitySearchIdentitiesSearchQuery, {
-      types: ['Individual', 'Organization', 'System'],
+      types: ['Individual'],
       search: this.state.keyword,
       first: 10,
     })
@@ -90,6 +84,7 @@ class CreatedByField extends Component {
       .then((data) => {
         const identities = pipe(
           pathOr([], ['identities', 'edges']),
+          filter((n) => n.node.isUser),
           map((n) => ({
             label: n.node.name,
             value: n.node.id,
@@ -120,9 +115,10 @@ class CreatedByField extends Component {
           style={style}
           name={name}
           disabled={disabled}
+          multiple={true}
           textfieldprops={{
             variant: 'standard',
-            label: t('Author'),
+            label: t('Assignee(s)'),
             helperText: helpertext,
             onFocus: this.searchIdentities.bind(this),
           }}
@@ -143,7 +139,7 @@ class CreatedByField extends Component {
         />
         <IdentityCreation
           contextual={true}
-          onlyAuthors={true}
+          onlyAssignees={true}
           inputValue={this.state.keyword}
           open={this.state.identityCreation}
           handleClose={this.handleCloseIdentityCreation.bind(this)}
@@ -170,4 +166,4 @@ class CreatedByField extends Component {
   }
 }
 
-export default compose(inject18n, withStyles(styles))(CreatedByField);
+export default compose(inject18n, withStyles(styles))(ObjectAssigneeField);

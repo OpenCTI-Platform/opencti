@@ -44,7 +44,10 @@ class ReportComponent extends Component {
             <ReportDetails report={report} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={report} />
+            <StixDomainObjectOverview
+              stixDomainObject={report}
+              displayAssignees={true}
+            />
           </Grid>
         </Grid>
         <Grid
@@ -62,7 +65,9 @@ class ReportComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={report.id}
-          defaultMarking={(report.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarking={(report.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ReportEdition reportId={report.id} />
@@ -119,6 +124,15 @@ const Report = createFragmentContainer(ReportComponent, {
             id
             value
             color
+          }
+        }
+      }
+      objectAssignee {
+        edges {
+          node {
+            id
+            name
+            entity_type
           }
         }
       }

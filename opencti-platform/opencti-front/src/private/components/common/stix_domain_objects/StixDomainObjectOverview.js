@@ -34,6 +34,7 @@ import ItemStatus from '../../../../components/ItemStatus';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
+import ItemAssignees from '../../../../components/ItemAssignees';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -101,7 +102,15 @@ class StixDomainObjectOverview extends Component {
   }
 
   render() {
-    const { t, fldt, classes, stixDomainObject, withoutMarking, withPattern } = this.props;
+    const {
+      t,
+      fldt,
+      classes,
+      stixDomainObject,
+      withoutMarking,
+      withPattern,
+      displayAssignees,
+    } = this.props;
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
       (n) => n !== stixDomainObject.standard_id,
@@ -186,6 +195,20 @@ class StixDomainObjectOverview extends Component {
                 status={stixDomainObject.status}
                 disabled={!stixDomainObject.workflowEnabled}
               />
+              {displayAssignees && (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Assignees')}
+                  </Typography>
+                  <ItemAssignees
+                    assigneesEdges={stixDomainObject.objectAssignee?.edges ?? []}
+                  />
+                </div>
+              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -317,6 +340,7 @@ StixDomainObjectOverview.propTypes = {
   t: PropTypes.func,
   fldt: PropTypes.func,
   withoutMarking: PropTypes.bool,
+  displayAssignees: PropTypes.bool,
 };
 
 export default R.compose(

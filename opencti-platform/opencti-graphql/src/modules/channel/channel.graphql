@@ -89,6 +89,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     created: DateTime
     modified: DateTime
     x_opencti_graph_data: String
+    objectAssignee: IndividualConnection
     # Channel
     name: String!
     description: String
@@ -131,6 +132,7 @@ enum ChannelsFilter {
     updated_at
     createdBy
     markedBy
+    assigneeTo
     labelledBy
     x_opencti_workflow_id
 }

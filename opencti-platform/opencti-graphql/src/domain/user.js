@@ -36,7 +36,7 @@ import {
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
-import { generateStandardId } from '../schema/identifier';
+import { generateStandardId, MARKING_TLP_RED } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
@@ -63,6 +63,7 @@ import {
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntityFromCache } from '../database/cache';
+import { addIndividual } from './individual';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -314,6 +315,15 @@ export const addUser = async (context, user, newUser) => {
   // Audit log
   const groups = defaultGroups.edges.map((g) => ({ id: g.node.id, name: g.node.name }));
   logAudit.info(user, USER_CREATION, { user: userEmail, roles: userRoles, groups });
+  // Create individual
+  const individual = {
+    name: userCreated.name,
+    contact_information: userCreated.user_email,
+    x_opencti_firstname: userCreated.firstname,
+    x_opencti_lastname: userCreated.lastname,
+    objectMarking: [MARKING_TLP_RED]
+  };
+  await addIndividual(context, user, individual);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 

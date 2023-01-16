@@ -13,7 +13,7 @@ import {
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
-  RELATION_OBJECT,
+  RELATION_OBJECT, RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from './stixMetaRelationship';
@@ -177,6 +177,7 @@ export const stixDomainObjectOptions = {
   StixDomainObjectsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     objectContains: buildRefRelationKey(RELATION_OBJECT),
     containedBy: buildRefRelationKey(RELATION_OBJECT),

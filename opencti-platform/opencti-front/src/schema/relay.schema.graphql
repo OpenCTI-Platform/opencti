@@ -1902,6 +1902,7 @@ enum StixDomainObjectsFilter {
   created_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   hasExternalReference
   objectContains
@@ -1967,6 +1968,7 @@ interface StixDomainObject {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -2023,6 +2025,7 @@ enum AttackPatternsFilter {
   x_mitre_id
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   mitigatedBy
   revoked
@@ -2076,6 +2079,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   aliases: [String]
@@ -2147,6 +2151,7 @@ enum CampaignsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -2199,6 +2204,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   aliases: [String]
@@ -2231,6 +2237,7 @@ input CampaignAddInput {
   objective: String
   createdBy: String
   objectMarking: [String]
+  objectAssignee: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -2266,6 +2273,7 @@ enum ContainersFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   objectContains
   x_opencti_workflow_id
@@ -2318,6 +2326,7 @@ interface Container {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   workflowEnabled: Boolean
@@ -2347,6 +2356,7 @@ enum NotesFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   objectContains
   x_opencti_workflow_id
@@ -2403,6 +2413,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   attribute_abstract: String
@@ -2491,6 +2502,7 @@ enum ObservedDatasFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   objectContains
   x_opencti_workflow_id
@@ -2544,6 +2556,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   first_observed: DateTime!
@@ -2605,6 +2618,7 @@ enum OpinionsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   objectContains
   x_opencti_workflow_id
@@ -2659,6 +2673,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   explanation: String
@@ -2722,6 +2737,7 @@ enum ReportsFilter {
   objectLabel
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   objectContains
   x_opencti_workflow_id
@@ -2776,6 +2792,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
@@ -2808,6 +2825,7 @@ input ReportAddInput {
   createdBy: String
   objectOrganization: [String]
   objectMarking: [String]
+  objectAssignee: [String]
   objectLabel: [String]
   externalReferences: [String]
   objects: [String]
@@ -2836,6 +2854,7 @@ enum CoursesOfActionFilter {
   created_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   mitigatedBy
   x_opencti_workflow_id
@@ -2889,6 +2908,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   x_opencti_aliases: [String]
@@ -2951,6 +2971,7 @@ enum IdentitiesFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -3009,6 +3030,7 @@ interface Identity {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   identity_class: String!
   name: String!
   description: String
@@ -3069,6 +3091,7 @@ enum IndividualsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   description
@@ -3124,6 +3147,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   identity_class: String!
   name: String!
   description: String
@@ -3143,6 +3167,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  isUser: Boolean
 }
 
 input IndividualAddInput {
@@ -3188,6 +3213,7 @@ enum OrganizationsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   description
@@ -3266,6 +3292,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   identity_class: String!
   name: String!
   description: String
@@ -3332,6 +3359,7 @@ enum SectorsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   partOf
   x_opencti_workflow_id
@@ -3385,6 +3413,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   identity_class: String!
   name: String!
   description: String
@@ -3447,6 +3476,7 @@ enum SystemsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -3499,6 +3529,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   identity_class: String!
   name: String!
   description: String
@@ -3580,6 +3611,7 @@ enum IndicatorsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   basedOn
   indicates
@@ -3636,6 +3668,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   pattern_type: String
   pattern_version: String
   pattern: String
@@ -3717,6 +3750,7 @@ enum InfrastructuresFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -3769,6 +3803,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   aliases: [String]
   description: String
@@ -3830,6 +3865,7 @@ enum IntrusionSetsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -3882,6 +3918,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   aliases: [String]
@@ -3921,6 +3958,7 @@ input IntrusionSetAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectAssignee: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -3953,6 +3991,7 @@ enum LocationsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -4011,6 +4050,7 @@ interface Location {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   latitude: Float
@@ -4072,6 +4112,7 @@ enum PositionsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -4124,6 +4165,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   latitude: Float
@@ -4191,6 +4233,7 @@ enum CitiesFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -4243,6 +4286,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   latitude: Float
@@ -4303,6 +4347,7 @@ enum CountriesFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -4355,6 +4400,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   latitude: Float
@@ -4414,6 +4460,7 @@ enum RegionsFilter {
   created_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
 }
@@ -4465,6 +4512,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   latitude: Float
@@ -4536,6 +4584,7 @@ enum MalwaresFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
 }
@@ -4587,6 +4636,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   aliases: [String]
@@ -4628,6 +4678,7 @@ input MalwareAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectAssignee: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
@@ -4656,6 +4707,7 @@ enum ThreatActorsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   revoked
@@ -4708,6 +4760,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   aliases: [String]
@@ -4757,6 +4810,7 @@ input ThreatActorAddInput {
   createdBy: String
   objectMarking: [String]
   objectOrganization: [String]
+  objectAssignee: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -4782,6 +4836,7 @@ enum ToolsFilter {
   created_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
 }
@@ -4833,6 +4888,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   aliases: [String]
@@ -4897,6 +4953,7 @@ enum VulnerabilitiesFilter {
   created_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
   creator
@@ -4949,6 +5006,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   x_opencti_aliases: [String]
@@ -5022,6 +5080,7 @@ enum IncidentsFilter {
   created_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
 }
@@ -5073,6 +5132,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   aliases: [String]
@@ -5112,6 +5172,7 @@ input IncidentAddInput {
   createdBy: String
   objectOrganization: [String]
   objectMarking: [String]
+  objectAssignee: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -8259,6 +8320,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   channel_types: [String]
@@ -8297,6 +8359,7 @@ enum ChannelsFilter {
   updated_at
   createdBy
   markedBy
+  assigneeTo
   labelledBy
   x_opencti_workflow_id
 }
@@ -8369,6 +8432,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   aliases: [String]
   creator: Creator
@@ -8474,6 +8538,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   event_types: [String]
@@ -8587,6 +8652,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
@@ -8705,6 +8771,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   name: String!
   description: String
   narrative_types: [String]
@@ -8818,6 +8885,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -8926,6 +8994,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -9152,6 +9221,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: IndividualConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
@@ -9197,6 +9267,8 @@ enum CasesFilter {
   creator
   createdBy
   markedBy
+  labelledBy
+  assigneeTo
   x_opencti_workflow_id
   rating
   case_type
@@ -9234,6 +9306,7 @@ input CaseAddInput {
   objects: [String]
   createdBy: String
   objectMarking: [String]
+  objectAssignee: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]

@@ -250,7 +250,7 @@ class ObservedDataEditionOverviewComponent extends Component {
           values,
         }) => (
           <div>
-            <Form style={{ margin: '0px 0 20px 0' }}>
+            <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={DateTimePickerField}
                 name="first_observed"

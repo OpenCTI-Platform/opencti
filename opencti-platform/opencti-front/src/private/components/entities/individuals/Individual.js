@@ -42,6 +42,7 @@ class IndividualComponent extends Component {
           PopoverComponent={<IndividualPopover />}
           onViewAs={onViewAs.bind(this)}
           viewAs={viewAs}
+          disablePopover={individual.isUser}
         />
         <Grid
           container={true}
@@ -92,11 +93,15 @@ class IndividualComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={individual.id}
-          defaultMarking={(individual.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarking={(individual.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndividualEdition individualId={individual.id} />
-        </Security>
+        {!individual.isUser && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IndividualEdition individualId={individual.id} />
+          </Security>
+        )}
       </div>
     );
   }
@@ -123,6 +128,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
       modified
       created_at
       updated_at
+      isUser
       createdBy {
         ... on Identity {
           id

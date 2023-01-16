@@ -101,6 +101,9 @@ const FeedbackCreation: FunctionComponent<{
       description: values.description,
       rating: parseInt(String(values.rating), 6),
       objects: values.objects.map((o) => o.value),
+      objectMarking: [
+        'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
+      ],
     };
     if (values.file) {
       finalValues.file = values.file;

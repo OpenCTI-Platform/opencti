@@ -31,6 +31,7 @@ import {
   INPUT_VALUES
 } from '../schema/stixCyberObservableRelationship';
 import {
+  INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
   INPUT_DOMAIN_FROM,
   INPUT_DOMAIN_TO,
@@ -47,6 +48,7 @@ import {
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
   RELATION_OBJECT,
+  RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_MARKING
 } from '../schema/stixMetaRelationship';
 import type { PageInfo } from '../generated/graphql';
@@ -137,6 +139,7 @@ interface BasicStoreCommon extends BasicStoreBase {
   // inputs
   [RELATION_GRANTED_TO]?: Array<string>;
   [RELATION_OBJECT_MARKING]?: Array<string>;
+  [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
 }
 
@@ -144,6 +147,7 @@ interface StoreCommon {
   // inputs
   [INPUT_LINKED]?: Array<BasicStoreObject>;
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
+  [INPUT_ASSIGNEE]?: Array<BasicStoreObject>;
   [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
   [INPUT_GRANTED_REFS]?: Array<BasicStoreObject>;
 }
