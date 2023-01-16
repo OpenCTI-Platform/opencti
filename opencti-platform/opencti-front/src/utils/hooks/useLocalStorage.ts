@@ -25,6 +25,7 @@ export interface LocalStorage {
   types?: string[];
   view?: string;
   zoom?: Record<string, unknown>;
+  additionnalFilters?: { key: string, values: string[], operator: string, filterMode: string }[] | undefined;
 }
 
 export interface UseLocalStorageHelpers {
@@ -45,6 +46,7 @@ export const localStorageToPaginationOptions = <U>({
   filters,
   sortBy,
   orderAsc,
+  additionnalFilters,
   ...props
 }: LocalStorage & Omit<U, 'filters'>): unknown extends U
     ? PaginationOptions
@@ -55,12 +57,16 @@ export const localStorageToPaginationOptions = <U>({
   delete localOptions.numberOfElements;
   delete localOptions.view;
   delete localOptions.zoom;
+  let finalFilters = filters ? convertFilters(filters) : undefined;
+  if (finalFilters && additionnalFilters) {
+    finalFilters = (finalFilters as { key: string, values: string[], operator: string, filterMode: string }[]).concat(additionnalFilters);
+  }
   return {
     ...localOptions,
     search: searchTerm,
     orderMode: orderAsc ? OrderMode.asc : OrderMode.desc,
     orderBy: sortBy,
-    filters: filters ? convertFilters(filters) : undefined,
+    filters: finalFilters,
   } as unknown extends U ? PaginationOptions : U;
 };
 

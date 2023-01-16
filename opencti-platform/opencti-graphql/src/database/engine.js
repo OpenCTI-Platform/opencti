@@ -1016,13 +1016,12 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const dateFilter = [];
   const searchAfter = after ? cursorToOffset(after) : undefined;
-  let must = [];
-  let mustnot = [];
   let ordering = [];
   const markingRestrictions = await buildDataRestrictions(context, user);
   const numericOrBooleanAttr = numericOrBooleanAttributes();
-  must.push(...markingRestrictions.must);
-  mustnot.push(...markingRestrictions.must_not);
+  const accessMust = markingRestrictions.must;
+  const accessMustNot = markingRestrictions.must_not;
+  const mustFilters = [];
   if (ids.length > 0) {
     const idsTermsPerType = [];
     const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
@@ -1034,7 +1033,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
         idsTermsPerType.push({ term });
       }
     }
-    must = R.append({ bool: { should: idsTermsPerType, minimum_should_match: 1 } }, must);
+    mustFilters.push({ bool: { should: idsTermsPerType, minimum_should_match: 1 } });
   }
   if (startDate && endDate) {
     dateFilter.push({
@@ -1065,7 +1064,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       },
     });
   }
-  must = R.concat(dateFilter, must);
+  mustFilters.push(...dateFilter);
   if (types !== null && types.length > 0) {
     const should = R.flatten(
       types.map((typeValue) => {
@@ -1075,13 +1074,13 @@ const elQueryBodyBuilder = async (context, user, options) => {
         ];
       })
     );
-    must = R.append({ bool: { should, minimum_should_match: 1 } }, must);
+    mustFilters.push({ bool: { should, minimum_should_match: 1 } });
   }
-  let mustFilters = [];
   const validFilters = R.filter((f) => f?.values?.length > 0 || f?.nested?.length > 0, filters || []);
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
+      const noValuesFiltering = [];
       const { key, values, nested, operator = 'eq', filterMode: localFilterMode = 'or' } = validFilters[index];
       const validKeys = Array.isArray(key) ? key : [key];
       // const rulesKeys = getAttributesRulesFor(key);
@@ -1125,14 +1124,18 @@ const elQueryBodyBuilder = async (context, user, options) => {
             },
           },
         };
-        mustFilters = R.append({ nested: nestedQuery }, mustFilters);
+        mustFilters.push({ nested: nestedQuery });
       } else {
         for (let i = 0; i < values.length; i += 1) {
           if (values[i] === null) {
             if (validKeys.length > 1) {
               throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
             }
-            mustnot = R.append({ exists: { field: R.head(validKeys) } }, mustnot);
+            if (operator === 'eq') {
+              noValuesFiltering.push({ exists: { field: R.head(validKeys) } });
+            } else if (operator === 'not_eq') {
+              valuesFiltering.push({ exists: { field: R.head(validKeys) } });
+            }
           } else if (values[i] === 'EXISTS') {
             if (validKeys.length > 1) {
               throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
@@ -1140,6 +1143,13 @@ const elQueryBodyBuilder = async (context, user, options) => {
             valuesFiltering.push({ exists: { field: R.head(validKeys) } });
           } else if (operator === 'eq') {
             valuesFiltering.push({
+              multi_match: {
+                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttr.includes(k)) ? k : `${k}.keyword`}`),
+                query: values[i].toString(),
+              },
+            });
+          } else if (operator === 'not_eq') {
+            noValuesFiltering.push({
               multi_match: {
                 fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttr.includes(k)) ? k : `${k}.keyword`}`),
                 query: values[i].toString(),
@@ -1172,22 +1182,32 @@ const elQueryBodyBuilder = async (context, user, options) => {
             valuesFiltering.push({ range: { [R.head(validKeys)]: { [operator]: values[i] } } });
           }
         }
-        mustFilters = R.append(
-          {
-            bool: {
-              should: valuesFiltering,
-              minimum_should_match: localFilterMode === 'or' ? 1 : valuesFiltering.length,
+        if (valuesFiltering.length > 0) {
+          mustFilters.push(
+            {
+              bool: {
+                should: valuesFiltering,
+                minimum_should_match: localFilterMode === 'or' ? 1 : valuesFiltering.length,
+              },
             },
-          },
-          mustFilters
-        );
+          );
+        }
+        if (noValuesFiltering.length > 0) {
+          mustFilters.push(
+            {
+              bool: {
+                should: noValuesFiltering.map((o) => ({
+                  bool: {
+                    must_not: [o]
+                  }
+                })),
+                minimum_should_match: localFilterMode === 'or' ? 1 : noValuesFiltering.length,
+              },
+            }
+          );
+        }
       }
     }
-  }
-  if (filterMode === 'or') {
-    must = R.append({ bool: { should: mustFilters, minimum_should_match: 1 } }, must);
-  } else {
-    must = [...must, ...mustFilters];
   }
   if (search !== null && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search);
@@ -1197,7 +1217,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
         minimum_should_match: 1,
       },
     };
-    must = R.append(bool, must);
+    mustFilters.push(bool);
   }
   // Handle orders
   if (isNotEmptyField(orderBy)) {
@@ -1209,7 +1229,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       const order = { [orderKeyword]: orderMode };
       ordering = R.append(order, ordering);
       if (!orderKeyword.startsWith('_')) {
-        must = R.append({ exists: { field: orderKeyword } }, must);
+        mustFilters.push({ exists: { field: orderKeyword } });
       }
     }
     // Add standard_id if not specify to ensure ordering uniqueness
@@ -1237,11 +1257,15 @@ const elQueryBodyBuilder = async (context, user, options) => {
   }
   // Build query
   const querySize = first || 10;
+  let mustFiltersWithOperator = mustFilters;
+  if (filterMode === 'or') {
+    mustFiltersWithOperator = [{ bool: { should: mustFilters, minimum_should_match: 1 } }];
+  }
   const body = {
     query: {
       bool: {
-        must,
-        must_not: mustnot,
+        must: [...accessMust, ...mustFiltersWithOperator],
+        must_not: accessMustNot,
       },
     },
   };

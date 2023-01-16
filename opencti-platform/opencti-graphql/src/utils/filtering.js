@@ -32,8 +32,11 @@ export const convertFiltersFrontendFormat = (filters) => {
     } else if (key.endsWith('_lte')) {
       const workingKey = key.replace('_lte', '');
       adaptedFilters.push({ key: workingKey, operator: 'lte', values });
+    } else if (key.endsWith('_not_eq')) {
+      const workingKey = key.replace('_not_eq', '');
+      adaptedFilters.push({ key: workingKey, operator: 'not_eq', values, filterMode: 'and' });
     } else {
-      adaptedFilters.push({ key, operator: 'eq', values });
+      adaptedFilters.push({ key, operator: 'eq', values, filterMode: 'or' });
     }
   }
   return adaptedFilters;
@@ -54,8 +57,11 @@ export const adaptFiltersFrontendFormat = (filters) => {
     } else if (key.endsWith('_lte')) {
       const workingKey = key.replace('_lte', '');
       adaptedFilters[workingKey] = { operator: 'lte', values };
+    } else if (key.endsWith('_not_eq')) {
+      const workingKey = key.replace('_not_eq', '');
+      adaptedFilters[workingKey] = { operator: 'not_eq', values, filterMode: 'and' };
     } else {
-      adaptedFilters[key] = { operator: 'eq', values };
+      adaptedFilters[key] = { operator: 'eq', values, filterMode: 'or' };
     }
   }
   return adaptedFilters;
@@ -66,15 +72,14 @@ export const convertFiltersToQueryOptions = (filters, opts = {}) => {
   const queryFilters = [];
   const types = [...defaultTypes];
   if (filters) {
-    const adaptedFilters = adaptFiltersFrontendFormat(filters);
-    const filterEntries = Object.entries(adaptedFilters);
-    for (let index = 0; index < filterEntries.length; index += 1) {
+    const adaptedFilters = convertFiltersFrontendFormat(filters);
+    for (let index = 0; index < adaptedFilters.length; index += 1) {
       // eslint-disable-next-line prefer-const
-      let [key, { operator, values }] = filterEntries[index];
+      let { key, operator, values, filterMode } = adaptedFilters[index];
       if (key === TYPE_FILTER) {
         types.push(...values.map((v) => v.id));
       } else {
-        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator });
+        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, filterMode });
       }
     }
   }

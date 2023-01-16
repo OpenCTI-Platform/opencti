@@ -10,7 +10,6 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -25,6 +24,7 @@ import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -101,16 +101,6 @@ const reportValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_reports',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class ReportCreation extends Component {
   constructor(props) {
     super(props);
@@ -141,15 +131,7 @@ class ReportCreation extends Component {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('reportAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
+        insertNode(store, 'Pagination_reports', this.props.paginationOptions, 'reportAdd');
       },
       setSubmitting,
       onCompleted: () => {

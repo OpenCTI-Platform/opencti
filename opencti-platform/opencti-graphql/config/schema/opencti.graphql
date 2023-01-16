@@ -2595,6 +2595,7 @@ enum NotesFilter {
   revoked
   note_types
   likelihood
+  creator
 }
 input NotesFiltering {
   key: [NotesFilter!]!
@@ -3005,6 +3006,7 @@ enum OpinionsFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  creator
 }
 input OpinionsFiltering {
   key: [OpinionsFilter!]!

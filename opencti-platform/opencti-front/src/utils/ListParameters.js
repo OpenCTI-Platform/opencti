@@ -205,6 +205,7 @@ export const convertFilters = (filters) => pipe(
   map((pair) => {
     let key = head(pair);
     let operator = 'eq';
+    let filterMode = 'or';
     if (key.endsWith('start_date') || key.endsWith('_gt')) {
       key = key.replace('_start_date', '').replace('_gt', '');
       operator = 'gt';
@@ -214,9 +215,13 @@ export const convertFilters = (filters) => pipe(
     } else if (key.endsWith('_lte')) {
       key = key.replace('_lte', '');
       operator = 'lte';
+    } else if (key.endsWith('_not_eq')) {
+      key = key.replace('_not_eq', '');
+      operator = 'not_eq';
+      filterMode = 'and';
     }
     const values = last(pair);
     const valIds = map((v) => v.id, values);
-    return { key, values: valIds, operator };
+    return { key, values: valIds, operator, filterMode };
   }),
 )(filters);

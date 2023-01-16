@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -8,13 +8,12 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import { FileDelimitedOutline } from 'mdi-material-ui';
-import { compose, last, map, toPairs } from 'ramda';
-import Chip from '@mui/material/Chip';
+import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
-import { truncate } from '../../../../utils/String';
 import FeedPopover from './FeedPopover';
 import inject18n from '../../../../components/i18n';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -50,24 +49,11 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
-  filter: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    marginRight: 7,
-    borderRadius: 10,
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    height: 20,
-    marginRight: 10,
-  },
 });
 
 class FeedLineLineComponent extends Component {
   render() {
-    const { t, classes, node, dataColumns, paginationOptions } = this.props;
+    const { classes, node, dataColumns, paginationOptions } = this.props;
     const filters = JSON.parse(node.filters || '{}');
     return (
       <ListItem
@@ -107,53 +93,12 @@ class FeedLineLineComponent extends Component {
               >
                 {node.feed_attributes.map((n) => n.attribute).join(', ')}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                {map((currentFilter) => {
-                  const label = `${truncate(
-                    t(`filter_${currentFilter[0]}`),
-                    20,
-                  )}`;
-                  const values = (
-                    <span>
-                      {map(
-                        (n) => (
-                          <span key={n.value}>
-                            {n.value && n.value.length > 0
-                              ? truncate(n.value, 15)
-                              : t('No label')}{' '}
-                            {last(currentFilter[1]).value !== n.value && (
-                              <code>OR</code>
-                            )}{' '}
-                          </span>
-                        ),
-                        currentFilter[1],
-                      )}
-                    </span>
-                  );
-                  return (
-                    <span>
-                      <Chip
-                        key={currentFilter[0]}
-                        classes={{ root: classes.filter }}
-                        label={
-                          <div>
-                            <strong>{label}</strong>: {values}
-                          </div>
-                        }
-                      />
-                      {last(toPairs(filters))[0] !== currentFilter[0] && (
-                        <Chip
-                          classes={{ root: classes.operator }}
-                          label={t('AND')}
-                        />
-                      )}
-                    </span>
-                  );
-                }, toPairs(filters))}
-              </div>
+              <FilterIconButton
+                filters={filters}
+                classNameNumber={3}
+                styleNumber={3}
+                dataColumns={dataColumns}
+              />
             </div>
           }
         />

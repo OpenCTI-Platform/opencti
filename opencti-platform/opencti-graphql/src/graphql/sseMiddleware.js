@@ -37,7 +37,12 @@ import {
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { adaptFiltersFrontendFormat, convertFiltersToQueryOptions, TYPE_FILTER } from '../utils/filtering';
+import {
+  adaptFiltersFrontendFormat,
+  convertFiltersFrontendFormat,
+  convertFiltersToQueryOptions,
+  TYPE_FILTER
+} from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { internalLoadById, listAllRelations, listEntities } from '../database/middleware-loader';
@@ -60,6 +65,7 @@ const WORKFLOW_FILTER = 'x_opencti_workflow_id';
 const CONFIDENCE_FILTER = 'confidence';
 const REVOKED_FILTER = 'revoked';
 const PATTERN_FILTER = 'pattern_type';
+const INDICATOR_FILTER = 'indicator_types';
 
 const filterCacheResolver = async (context, values, filterCache) => {
   const filterIds = values.map((v) => v.id);
@@ -287,22 +293,28 @@ const createSeeMiddleware = () => {
       return false;
     }
     // Pre-filter transformation to handle specific frontend format
-    const adaptedFilters = adaptFiltersFrontendFormat(filters);
+    const adaptedFilters = convertFiltersFrontendFormat(filters);
     // User is granted, but we still need to apply filters if needed
-    const filterEntries = Object.entries(adaptedFilters);
-    for (let index = 0; index < filterEntries.length; index += 1) {
-      const [type, { operator, values }] = filterEntries[index];
+    for (let index = 0; index < adaptedFilters.length; index += 1) {
+      const { key: type, operator, values } = adaptedFilters[index];
+      let found = false;
       // Markings filtering
       if (type === MARKING_FILTER) {
         if (values.length === 0) {
           return true;
         }
         const markings = instance.object_marking_refs || [];
-        if (values.length > 0 && markings.length === 0) {
-          return false;
-        }
         const filterMarkingRefs = await filterCacheResolver(context, values, filterCache);
-        const found = filterMarkingRefs.some((r) => markings.includes(r));
+        switch (operator) {
+          case 'not_eq': // filterMode=and
+            found = !filterMarkingRefs.map((r) => !markings.includes(r)).includes(false);
+            break;
+          case 'eq': // filterMode=or
+            found = filterMarkingRefs.some((r) => markings.includes(r));
+            break;
+          default:
+            found = filterMarkingRefs.some((r) => markings.includes(r));
+        }
         if (!found) {
           return false;
         }
@@ -311,16 +323,37 @@ const createSeeMiddleware = () => {
       if (type === TYPE_FILTER) {
         const instanceType = instance.extensions[STIX_EXT_OCTI].type;
         const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
-        let found = false;
         if (values.length === 0) {
           found = true;
         } else {
-          // eslint-disable-next-line no-restricted-syntax
-          for (const filter of values) {
-            if (instanceAllTypes.includes(filter.id)) {
-              found = true;
-            }
+          switch (operator) {
+            case 'not_eq': // filterMode=and
+              found = !values.map((filter) => !instanceAllTypes.includes(filter.id)).includes(false);
+              break;
+            case 'eq': // filterMode=or
+              found = values.some((filter) => instanceAllTypes.includes(filter.id));
+              break;
+            default:
+              found = values.some((filter) => instanceAllTypes.includes(filter.id));
           }
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      // Indicator type filtering
+      if (type === INDICATOR_FILTER) {
+        const indicators = [...(instance.indicator_types ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.indicator_types ?? [])];
+        const extractedValues = values.map((v) => v.value);
+        switch (operator) {
+          case 'not_eq': // filterMode=and
+            found = !extractedValues.map((r) => !indicators.includes(r)).includes(false);
+            break;
+          case 'eq': // filterMode=or
+            found = extractedValues.some((r) => indicators.includes(r));
+            break;
+          default:
+            found = extractedValues.some((r) => indicators.includes(r));
         }
         if (!found) {
           return false;
@@ -329,10 +362,17 @@ const createSeeMiddleware = () => {
       // Workflow
       if (type === WORKFLOW_FILTER) {
         const workflowId = instance.extensions[STIX_EXT_OCTI].workflow_id;
-        if (!workflowId) {
-          return false;
+        const extractedValues = values.map((v) => v.id);
+        switch (operator) {
+          case 'not_eq': // filterMode=and
+            found = !extractedValues.includes(workflowId);
+            break;
+          case 'eq': // filterMode=or
+            found = extractedValues.includes(workflowId);
+            break;
+          default:
+            found = extractedValues.includes(workflowId);
         }
-        const found = values.map((v) => v.id).includes(workflowId);
         if (!found) {
           return false;
         }
@@ -342,11 +382,17 @@ const createSeeMiddleware = () => {
         if (values.length === 0) {
           return true;
         }
-        if (values.length > 0 && instance.created_by_ref === undefined) {
-          return false;
-        }
         const filterCreationRefs = await filterCacheResolver(context, values, filterCache);
-        const found = filterCreationRefs.includes(instance.created_by_ref);
+        switch (operator) {
+          case 'not_eq': // filterMode=and
+            found = !filterCreationRefs.includes(instance.created_by_ref);
+            break;
+          case 'eq': // filterMode=or
+            found = filterCreationRefs.includes(instance.created_by_ref);
+            break;
+          default:
+            found = filterCreationRefs.includes(instance.created_by_ref);
+        }
         if (!found) {
           return false;
         }
@@ -354,7 +400,17 @@ const createSeeMiddleware = () => {
       // Labels filtering
       if (type === LABEL_FILTER) {
         const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
-        const found = values.map((v) => v.value).some((r) => labels.includes(r));
+        const extractedValues = values.map((v) => v.value);
+        switch (operator) {
+          case 'not_eq': // filterMode=and
+            found = !extractedValues.map((r) => !labels.includes(r)).includes(false);
+            break;
+          case 'eq': // filterMode=or
+            found = extractedValues.some((r) => labels.includes(r));
+            break;
+          default:
+            found = extractedValues.some((r) => labels.includes(r));
+        }
         if (!found) {
           return false;
         }
@@ -362,7 +418,7 @@ const createSeeMiddleware = () => {
       // Boolean filtering
       if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
         const { id } = R.head(values);
-        const found = (id === 'true') === instance.revoked;
+        found = (id === 'true') === instance.revoked;
         if (!found) {
           return false;
         }
@@ -370,7 +426,6 @@ const createSeeMiddleware = () => {
       // Numeric filtering
       if (type === SCORE_FILTER || type === CONFIDENCE_FILTER) {
         const { id } = R.head(values);
-        let found = false;
         const numeric = parseInt(id, 10);
         switch (operator) {
           case 'lt':
@@ -393,9 +448,19 @@ const createSeeMiddleware = () => {
         }
       }
       // String filtering
-      if (type === PATTERN_FILTER) {
+      if (type === PATTERN_FILTER) { // filterMode by default
         const currentPattern = instance[type];
-        const found = values.map((v) => v.id).includes(currentPattern);
+        const extractedIds = values.map((v) => v.id);
+        switch (operator) {
+          case 'not_eq': // filterMode=and
+            found = !extractedIds.includes(currentPattern);
+            break;
+          case 'eq': // filterMode=or
+            found = extractedIds.includes(currentPattern);
+            break;
+          default:
+            found = extractedIds.includes(currentPattern);
+        }
         if (!found) {
           return false;
         }
@@ -455,10 +520,28 @@ const createSeeMiddleware = () => {
   };
   const isFiltersEntityTypeMatch = (filters, type) => {
     let match = false;
+    const matches = [];
     const fromAllTypes = [type, ...getParentTypes(type)];
     // eslint-disable-next-line no-restricted-syntax
     for (const filter of filters.entity_type.values) {
-      if (fromAllTypes.includes(filter.id)) {
+      // consider the operator
+      if (filter.operator === 'not_eq') {
+        if (!fromAllTypes.includes(filter.id)) {
+          matches.push(true);
+        } else {
+          matches.push(false);
+        }
+      } else if (fromAllTypes.includes(filter.id)) { // operator = 'eq'
+        matches.push(true);
+      } else {
+        matches.push(false);
+      }
+      // consider the filterMode
+      if (filter.filterMode === 'and') {
+        if (!matches.includes(false)) {
+          match = true;
+        }
+      } else if (matches.includes(true)) { // filterMode = 'or'
         match = true;
       }
     }

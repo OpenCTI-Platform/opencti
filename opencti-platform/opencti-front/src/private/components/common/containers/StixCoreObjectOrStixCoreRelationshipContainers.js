@@ -3,8 +3,6 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
-import { last, map, toPairs } from 'ramda';
-import Chip from '@mui/material/Chip';
 import { QueryRenderer } from '../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -20,16 +18,17 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
   stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import StixCoreObjectOrStixCoreRelationshipContainersGraphBar
+  from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import SearchInput from '../../../../components/SearchInput';
-import { truncate } from '../../../../utils/String';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const VIEW_AS_KNOWLEDGE = 'knowledge';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     marginTop: 20,
     paddingBottom: 70,
@@ -47,18 +46,6 @@ const styles = (theme) => ({
   },
   parameters: {
     marginTop: -10,
-  },
-  filters: {
-    float: 'left',
-    margin: '2px 0 0 10px',
-  },
-  filter: {
-    marginRight: 10,
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    marginRight: 10,
   },
 });
 
@@ -290,7 +277,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
   }
 
   renderGraph(paginationOptions) {
-    const { stixDomainObjectOrStixCoreRelationship, classes, t } = this.props;
+    const { stixDomainObjectOrStixCoreRelationship, classes } = this.props;
     const { searchTerm, filters } = this.state;
     const availableFilterKeys = [
       'labelledBy',
@@ -317,51 +304,11 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             availableFilterKeys={availableFilterKeys}
             handleAddFilter={this.handleAddFilter.bind(this)}
           />
-          <div className={classes.filters}>
-            {map((currentFilter) => {
-              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const values = (
-                <span>
-                  {map(
-                    (n) => (
-                      <span key={n.value}>
-                        {n.value && n.value.length > 0
-                          ? truncate(n.value, 15)
-                          : t('No label')}{' '}
-                        {last(currentFilter[1]).value !== n.value && (
-                          <code>OR</code>
-                        )}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span>
-                  <Chip
-                    key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={this.handleRemoveFilter.bind(
-                      this,
-                      currentFilter[0],
-                    )}
-                  />
-                  {last(toPairs(filters))[0] !== currentFilter[0] && (
-                    <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
-                    />
-                  )}
-                </span>
-              );
-            }, toPairs(filters))}
-          </div>
+          <FilterIconButton
+            filters={filters}
+            handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+            className={5}
+          />
           <div className="clearfix" />
         </div>
         <QueryRenderer

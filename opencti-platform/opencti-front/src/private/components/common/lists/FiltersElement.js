@@ -1,7 +1,9 @@
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import * as R from 'ramda';
+import { compose } from 'ramda';
 import React from 'react';
+import withStyles from '@mui/styles/withStyles';
 import { useFormatter } from '../../../../components/i18n';
 import {
   directFilters,
@@ -10,7 +12,16 @@ import {
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 
+const styles = (theme) => ({
+  helpertext: {
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+    marginTop: 20,
+  },
+});
+
 const FiltersElement = ({
+  classes,
   variant,
   keyword,
   availableFilterKeys,
@@ -27,6 +38,7 @@ const FiltersElement = ({
   const { t } = useFormatter();
 
   return (
+    <div>
     <Grid container={true} spacing={2}>
       {variant === FiltersVariant.dialog && (
         <Grid item={true} xs={12}>
@@ -78,7 +90,9 @@ const FiltersElement = ({
         );
       })}
     </Grid>
+      <div className={classes.helpertext}>{t('Use Alt + click to exclude items')}</div>
+    </div>
   );
 };
 
-export default FiltersElement;
+export default compose(withStyles(styles))(FiltersElement);

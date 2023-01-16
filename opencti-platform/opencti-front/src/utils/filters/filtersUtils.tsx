@@ -18,6 +18,26 @@ export const directFilters = [
   'note_types',
   'context',
 ];
+// filters that can have 'eq' or 'not_eq' operator
+export const EqFilters = [
+  'labelledBy',
+  'createdBy',
+  'markedBy',
+  'entity_type',
+  'x_opencti_workflow_id',
+  'malware_types',
+  'incident_type',
+  'context',
+  'pattern_type',
+  'indicator_types',
+  'report_types',
+  'note_types',
+  'channel_types',
+  'sightedBy',
+  'relationship_type',
+  'creator',
+  'x_opencti_negative',
+];
 const uniqFilters = [
   'revoked',
   'x_opencti_detection',

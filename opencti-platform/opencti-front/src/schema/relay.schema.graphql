@@ -2353,6 +2353,7 @@ enum NotesFilter {
   revoked
   note_types
   likelihood
+  creator
 }
 
 input NotesFiltering {
@@ -2608,6 +2609,7 @@ enum OpinionsFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  creator
 }
 
 input OpinionsFiltering {
@@ -8629,6 +8631,7 @@ enum GroupingsFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  creator
 }
 
 input GroupingsFiltering {

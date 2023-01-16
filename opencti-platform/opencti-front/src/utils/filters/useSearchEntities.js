@@ -476,15 +476,12 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const labelledByEntities = R.pipe(
-              R.pathOr([], ['labels', 'edges']),
-              R.map((n) => ({
-                label: n.node.value,
-                value: n.node.id,
-                type: 'Label',
-                color: n.node.color,
-              })),
-            )(data);
+            const labelledByEntities = (data?.labels?.edges ?? []).map((n) => ({
+              label: n.node.value,
+              value: n.node.id,
+              type: 'Label',
+              color: n.node.color,
+            }));
             unionSetEntities('labelledBy', [
               {
                 label: t('No label'),
@@ -519,13 +516,11 @@ const useSearchEntities = ({
         break;
       case 'confidence_gt':
         // eslint-disable-next-line no-case-declarations
-        const confidenceEntitiesGt = R.pipe(
-          R.map((n) => ({
-            label: t(`confidence_${n.toString()}`),
-            value: n,
-            type: 'Vocabulary',
-          })),
-        )(confidences);
+        const confidenceEntitiesGt = confidences.map((n) => ({
+          label: t(`confidence_${n.toString()}`),
+          value: n,
+          type: 'Vocabulary',
+        }));
         unionSetEntities('confidence_gt', confidenceEntitiesGt);
         break;
       case 'confidence_lte':
@@ -602,46 +597,34 @@ const useSearchEntities = ({
       // endregion
       case 'x_opencti_detection':
         // eslint-disable-next-line no-case-declarations
-        const detectionEntities = R.pipe(
-          R.map((n) => ({
-            label: t(n),
-            value: n,
-            type: 'Vocabulary',
-          })),
-        )(['true', 'false']);
+        const detectionEntities = ['true', 'false'].map((n) => ({
+          label: t(n),
+          value: n,
+          type: 'Vocabulary',
+        }));
         unionSetEntities('x_opencti_detection', detectionEntities);
         break;
       case 'basedOn':
         // eslint-disable-next-line no-case-declarations
-        const basedOnEntities = R.pipe(
-          R.map((n) => ({
-            label: n === 'EXISTS' ? t('Yes') : t('No'),
-            value: n,
-            type: 'Vocabulary',
-          })),
-        )(['EXISTS', null]);
+        const basedOnEntities = ['EXISTS', null].map((n) => ({
+          label: n === 'EXISTS' ? t('Yes') : t('No'),
+          value: n,
+          type: 'Vocabulary',
+        }));
         unionSetEntities('basedOn', basedOnEntities);
         break;
       case 'revoked':
         // eslint-disable-next-line no-case-declarations
-        const revokedEntities = R.pipe(
-          R.map((n) => ({
-            label: t(n),
-            value: n,
-            type: 'Vocabulary',
-          })),
-        )(['true', 'false']);
+        const revokedEntities = ['true', 'false'].map((n) => ({
+          label: t(n),
+          value: n,
+          type: 'Vocabulary',
+        }));
         unionSetEntities('revoked', revokedEntities);
         break;
       case 'pattern_type':
         // eslint-disable-next-line no-case-declarations
-        const patternTypesEntities = R.pipe(
-          R.map((n) => ({
-            label: t(n),
-            value: n,
-            type: 'Vocabulary',
-          })),
-        )([
+        const patternTypesEntities = [
           'stix',
           'pcre',
           'sigma',
@@ -651,7 +634,11 @@ const useSearchEntities = ({
           'tanium-signal',
           'spl',
           'eql',
-        ]);
+        ].map((n) => ({
+          label: t(n),
+          value: n,
+          type: 'Vocabulary',
+        }));
         unionSetEntities('pattern_type', patternTypesEntities);
         break;
       case 'x_opencti_base_severity':
@@ -662,14 +649,11 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const severityEntities = R.pipe(
-              R.pathOr([], ['runtimeAttributes', 'edges']),
-              R.map((n) => ({
-                label: n.node.value,
-                value: n.node.value,
-                type: 'Vocabulary',
-              })),
-            )(data);
+            const severityEntities = (data?.runtimeAttributes?.edges ?? []).map((n) => ({
+              label: n.node.value,
+              value: n.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('x_opencti_base_severity', severityEntities);
           });
         break;
@@ -681,14 +665,11 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const attackVectorEntities = R.pipe(
-              R.pathOr([], ['runtimeAttributes', 'edges']),
-              R.map((n) => ({
-                label: n.node.value,
-                value: n.node.value,
-                type: 'Vocabulary',
-              })),
-            )(data);
+            const attackVectorEntities = (data?.runtimeAttributes?.edges ?? []).map((n) => ({
+              label: n.node.value,
+              value: n.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('x_opencti_attack_vector', attackVectorEntities);
           });
         break;
@@ -700,14 +681,11 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const attackVectorEntities = R.pipe(
-              R.pathOr([], ['runtimeAttributes', 'edges']),
-              R.map((n) => ({
-                label: n.node.value,
-                value: n.node.value,
-                type: 'Vocabulary',
-              })),
-            )(data);
+            const attackVectorEntities = (data?.runtimeAttributes?.edges ?? []).map((n) => ({
+              label: n.node.value,
+              value: n.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('malware_types', attackVectorEntities);
           });
         break;
@@ -741,14 +719,11 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const organizationTypeEntities = R.pipe(
-              R.pathOr([], ['runtimeAttributes', 'edges']),
-              R.map((n) => ({
-                label: n.node.value,
-                value: n.node.value,
-                type: 'Vocabulary',
-              })),
-            )(data);
+            const organizationTypeEntities = (data?.runtimeAttributes?.edges ?? []).map((n) => ({
+              label: n.node.value,
+              value: n.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities(
               'x_opencti_organization_type',
               organizationTypeEntities,
@@ -870,14 +845,11 @@ const useSearchEntities = ({
                 || availableEntityTypes.includes('Stix-Cyber-Observable')
               ) {
                 result = [
-                  ...R.pipe(
-                    R.pathOr([], ['scoTypes', 'edges']),
-                    R.map((n) => ({
-                      label: t(`entity_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  )(data),
+                  ...(data?.scoTypes?.edges ?? []).map((n) => ({
+                    label: t(`entity_${n.node.label}`),
+                    value: n.node.label,
+                    type: n.node.label,
+                  })),
                   ...result,
                 ];
               }
@@ -886,14 +858,11 @@ const useSearchEntities = ({
                 || availableEntityTypes.includes('Stix-Domain-Object')
               ) {
                 result = [
-                  ...R.pipe(
-                    R.pathOr([], ['sdoTypes', 'edges']),
-                    R.map((n) => ({
-                      label: t(`entity_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  )(data),
+                  ...(data?.scoTypes?.edges ?? []).map((n) => ({
+                    label: t(`entity_${n.node.label}`),
+                    value: n.node.label,
+                    type: n.node.label,
+                  })),
                   ...result,
                 ];
               }
@@ -902,14 +871,11 @@ const useSearchEntities = ({
                 || availableEntityTypes.includes('stix-core-relationship')
               ) {
                 result = [
-                  ...R.pipe(
-                    R.pathOr([], ['sroTypes', 'edges']),
-                    R.map((n) => ({
-                      label: t(`relationship_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  )(data),
+                  ...(data?.sroTypes?.edges ?? []).map((n) => ({
+                    label: t(`relationship_${n.node.label}`),
+                    value: n.node.label,
+                    type: n.node.label,
+                  })),
                   ...result,
                 ];
               }
@@ -959,14 +925,11 @@ const useSearchEntities = ({
                 || availableEntityTypes.includes('Stix-Cyber-Observable')
               ) {
                 result = [
-                  ...R.pipe(
-                    R.pathOr([], ['scoTypes', 'edges']),
-                    R.map((n) => ({
-                      label: t(`entity_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  )(data),
+                  ...(data?.scoTypes?.edges ?? []).map((n) => ({
+                    label: t(`entity_${n.node.label}`),
+                    value: n.node.label,
+                    type: n.node.label,
+                  })),
                   ...result,
                 ];
               }
