@@ -106,6 +106,7 @@ interface ReportsLinesProps {
   ) => void;
   selectAll: boolean;
   onLabelClick?: HandleAddFilter,
+  redirectionMode?: string,
 }
 
 const ReportsLines: FunctionComponent<
@@ -120,6 +121,7 @@ ReportsLinesProps
   paginationOptions,
   setNumberOfElements,
   queryRef,
+  redirectionMode,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ReportsLinesPaginationQuery,
@@ -151,6 +153,7 @@ ReportsLinesProps
       deSelectedElements={deSelectedElements}
       selectAll={selectAll}
       onToggleEntity={onToggleEntity}
+      redirectionMode={redirectionMode}
     />
   );
 };

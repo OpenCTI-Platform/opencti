@@ -41,6 +41,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     orderAsc: false,
     openExports: false,
     count: 25,
+    redirectionMode: 'overview',
   });
 
   const {
@@ -50,6 +51,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     sortBy,
     orderAsc,
     openExports,
+    redirectionMode,
   } = viewStorage;
 
   const {
@@ -183,6 +185,8 @@ const Reports: FunctionComponent<ReportsProps> = ({
           exportEntityType="Report"
           exportContext={exportContext}
           keyword={searchTerm}
+          redirectionMode={redirectionMode}
+          handleSwitchRedirectionMode={storageHelpers.handleSetRedirectionMode}
           filters={filters}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
@@ -224,6 +228,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 onToggleEntity={onToggleEntity}
                 selectAll={selectAll}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                redirectionMode={redirectionMode}
               />
               <ToolBar
                 selectedElements={selectedElements}

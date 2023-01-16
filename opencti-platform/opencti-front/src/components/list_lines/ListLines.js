@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, last, map, toPairs } from 'ramda';
+import { compose, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
@@ -32,7 +32,6 @@ import Filters from '../../private/components/common/lists/Filters';
 import StixCyberObservablesExports
   from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import StixCoreRelationshipsExports
-
   from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
 import FilterIconButton from '../FilterIconButton';

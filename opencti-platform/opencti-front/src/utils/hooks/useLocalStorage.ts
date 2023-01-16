@@ -26,6 +26,7 @@ export interface LocalStorage {
   view?: string;
   zoom?: Record<string, unknown>;
   additionnalFilters?: { key: string, values: string[], operator: string, filterMode: string }[] | undefined;
+  redirectionMode?: string,
 }
 
 export interface UseLocalStorageHelpers {
@@ -39,6 +40,7 @@ export interface UseLocalStorageHelpers {
     symbol?: string;
     original?: number;
   }) => void;
+  handleSetRedirectionMode: (value: string) => void;
 }
 
 export const localStorageToPaginationOptions = <U>({
@@ -244,6 +246,9 @@ const useLocalStorage = (
           };
         });
       }
+    },
+    handleSetRedirectionMode: (value: string) => {
+      setValue((c) => ({ ...c, redirectionMode: value }));
     },
   };
 
