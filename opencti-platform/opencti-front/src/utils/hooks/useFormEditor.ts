@@ -20,7 +20,7 @@ interface GenericData {
         readonly id: string;
         readonly name: string;
       };
-    } | null> | null;
+    }>;
   } | null;
 }
 

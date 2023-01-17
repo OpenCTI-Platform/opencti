@@ -301,7 +301,7 @@ export type Assignee = {
 
 export type AssigneeConnection = {
   __typename?: 'AssigneeConnection';
-  edges?: Maybe<Array<Maybe<AssigneeEdge>>>;
+  edges: Array<AssigneeEdge>;
   pageInfo: PageInfo;
 };
 
@@ -24565,7 +24565,7 @@ export type AssigneeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type AssigneeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AssigneeConnection'] = ResolversParentTypes['AssigneeConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['AssigneeEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['AssigneeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

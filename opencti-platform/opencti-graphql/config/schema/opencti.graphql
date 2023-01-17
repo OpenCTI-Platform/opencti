@@ -1117,7 +1117,7 @@ type CreatorConnection {
 }
 type AssigneeConnection {
   pageInfo: PageInfo!
-  edges: [AssigneeEdge]
+  edges: [AssigneeEdge!]!
 }
 type UserEdge {
   cursor: String!
