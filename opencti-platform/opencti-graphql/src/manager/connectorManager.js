@@ -129,7 +129,6 @@ const initConnectorManager = () => {
       }, SCHEDULE_TIME);
     },
     status: async () => {
-      logApp.info('[OPENCTI-MODULE] Connector manager declares itself');
       return {
         id: 'connector_manager',
         enabled: booleanConf('connector_manager:enabled', false),

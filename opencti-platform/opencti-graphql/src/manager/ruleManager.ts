@@ -365,7 +365,6 @@ const initRuleManager = () => {
       }, SCHEDULE_TIME);
     },
     status: async () => {
-      logApp.info('[OPENCTI-MODULE] Rule engine declares itself');
       return {
         id: 'rule_engine',
         enabled: booleanConf('rule_engine:enabled', false),

@@ -196,7 +196,6 @@ const initHistoryManager = () => {
       }, SCHEDULE_TIME);
     },
     status: async () => {
-      logApp.info('[OPENCTI-MODULE] History manager declares itself');
       return {
         id: 'history_manager',
         enabled: booleanConf('history_manager:enabled', false),

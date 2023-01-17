@@ -8,6 +8,10 @@ import taskManager from './taskManager';
 import expiredManager from './expiredManager';
 import syncManager from './syncManager';
 import retentionManager from './retentionManager';
+import { registerClusterInstance } from '../database/redis';
+import { loadEntity } from '../database/middleware';
+import { executionContext, SYSTEM_USER } from '../utils/access';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 const SCHEDULE_TIME = 30000;
 
@@ -28,9 +32,9 @@ const initClusterManager = () => {
   let config_sync = {};
   let config_retention = {};
 
-  const clusterHandler = async () => {
+  const clusterHandler = async (platform_id: string) => {
     try {
-      logApp.info('[OPENCTI-MODULE] hello'); // printing Hello every 30s
+      // receive information from the managers every 30s
       config_subscription = await subscriptionManager.status();
       config_rule = await ruleEngine.status();
       config_history = await historyManager.status();
@@ -50,15 +54,21 @@ const initClusterManager = () => {
         config_sync,
         config_retention,
       ];
+      const config_data = {
+        platform_id,
+        managers: config_managers,
+      };
       logApp.info('config_managers = ', config_managers);
+      await registerClusterInstance(platform_id, config_data);
     }
   };
 
   return {
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Starting cluster manager');
+      const platform_id = `platform:instance:${process.pid}`;
       scheduler = setIntervalAsync(async () => {
-        await clusterHandler();
+        await clusterHandler(platform_id);
       }, SCHEDULE_TIME);
     },
     shutdown: async () => {

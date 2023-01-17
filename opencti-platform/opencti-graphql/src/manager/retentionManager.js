@@ -91,7 +91,6 @@ const initRetentionManager = () => {
       }, SCHEDULE_TIME);
     },
     status: async () => {
-      logApp.info('[OPENCTI-MODULE] Retention manager declares itself');
       return {
         id: 'retention_manager',
         enabled: booleanConf('retention_manager:enabled', false),

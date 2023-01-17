@@ -490,7 +490,6 @@ const initTaskManager = () => {
       }, SCHEDULE_TIME);
     },
     status: async () => {
-      logApp.info('[OPENCTI-MODULE] Task manager declares itself');
       return {
         id: 'task_scheduler',
         enabled: booleanConf('task_scheduler:enabled', false),

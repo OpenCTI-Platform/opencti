@@ -67,7 +67,6 @@ const initExpiredManager = () => {
       }, SCHEDULE_TIME);
     },
     status: async () => {
-      logApp.info('[OPENCTI-MODULE] Expiration manager declares itself');
       return {
         id: 'expiration_scheduler',
         enabled: booleanConf('expiration_scheduler:enabled', false),

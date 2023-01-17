@@ -238,7 +238,6 @@ const initSyncManager = () => {
       }, WAIT_TIME_ACTION);
     },
     status: async () => {
-      logApp.info('[OPENCTI-MODULE] Sync manager declares itself');
       return {
         id: 'sync_manager',
         enabled: booleanConf('sync_manager:enabled', false),

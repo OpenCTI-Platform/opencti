@@ -92,7 +92,6 @@ const initSubscriptionManager = () => {
       }, SCHEDULE_TIME);
     },
     status: async () => {
-      logApp.info('[OPENCTI-MODULE] Subscription manager declares itself');
       return {
         id: 'subscription_scheduler',
         enabled: booleanConf('subscription_scheduler:enabled', false),
