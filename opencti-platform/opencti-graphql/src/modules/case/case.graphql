@@ -89,7 +89,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Container
   objects(
     first: Int

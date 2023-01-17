@@ -79,6 +79,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       }
       return '#8bc34a';
     case 'Individual':
+    case 'User':
       if (dark) {
         return '#006064';
       }

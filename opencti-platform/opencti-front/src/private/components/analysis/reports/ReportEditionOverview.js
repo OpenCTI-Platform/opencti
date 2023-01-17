@@ -397,29 +397,6 @@ class ReportEditionOverviewComponent extends Component {
                         onFocus={this.handleChangeFocus.bind(this)}
                         onSubmit={this.handleSubmitField.bind(this)}
                       />
-                      <CreatedByField
-                        name="createdBy"
-                        style={{ marginTop: 20, width: '100%' }}
-                        setFieldValue={setFieldValue}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={context}
-                            fieldName="createdBy"
-                          />
-                        }
-                        onChange={this.handleChangeCreatedBy.bind(this)}
-                      />
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={{ marginTop: 20, width: '100%' }}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={context}
-                            fieldname="objectMarking"
-                          />
-                        }
-                        onChange={this.handleChangeObjectMarking.bind(this)}
-                      />
                       <ObjectAssigneeField
                         name="objectAssignee"
                         style={{ marginTop: 20, width: '100%' }}
@@ -447,6 +424,29 @@ class ReportEditionOverviewComponent extends Component {
                           }
                         />
                       )}
+                      <CreatedByField
+                        name="createdBy"
+                        style={{ marginTop: 20, width: '100%' }}
+                        setFieldValue={setFieldValue}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldName="createdBy"
+                          />
+                        }
+                        onChange={this.handleChangeCreatedBy.bind(this)}
+                      />
+                      <ObjectMarkingField
+                        name="objectMarking"
+                        style={{ marginTop: 20, width: '100%' }}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldname="objectMarking"
+                          />
+                        }
+                        onChange={this.handleChangeObjectMarking.bind(this)}
+                      />
                       {enableReferences && (
                         <CommitMessage
                           submitForm={submitForm}

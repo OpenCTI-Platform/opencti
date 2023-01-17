@@ -89,7 +89,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     created: DateTime
     modified: DateTime
     x_opencti_graph_data: String
-    objectAssignee: IndividualConnection
+    objectAssignee: AssigneeConnection
     # Channel
     name: String!
     description: String

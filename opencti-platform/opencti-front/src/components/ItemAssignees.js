@@ -1,9 +1,7 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import * as R from 'ramda';
-import { resolveLink } from '../utils/Entity';
 
 const ItemAssignees = (props) => {
   const { assigneesEdges } = props;
@@ -21,10 +19,6 @@ const ItemAssignees = (props) => {
               variant="outlined"
               color="primary"
               size="small"
-              component={Link}
-              to={`${resolveLink(assignee.entity_type)}/${
-                assignee.id
-              }?viewAs=author`}
               style={{ margin: '0 7px 7px 0' }}
             >
               {assignee.name}

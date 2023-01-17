@@ -1115,6 +1115,10 @@ type CreatorConnection {
   pageInfo: PageInfo!
   edges: [CreatorEdge]
 }
+type AssigneeConnection {
+  pageInfo: PageInfo!
+  edges: [AssigneeEdge]
+}
 type UserEdge {
   cursor: String!
   node: User!
@@ -1123,10 +1127,20 @@ type CreatorEdge {
   cursor: String!
   node: Creator!
 }
+type AssigneeEdge {
+  cursor: String!
+  node: Assignee!
+}
 type Creator {
   id: ID! # internal_id
   name: String!
   entity_type: String!
+}
+type Assignee {
+  id: ID! # internal_id
+  name: String!
+  entity_type: String!
+  user_email: String!
 }
 type OtpElement {
   secret: String!
@@ -2016,7 +2030,7 @@ interface StixDomainObject {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Technical
   creator: Creator
   toStix: String
@@ -2184,7 +2198,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # AttackPattern
   name: String!
   description: String
@@ -2367,7 +2381,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Campaign
   name: String!
   description: String
@@ -2546,7 +2560,7 @@ interface Container {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Container
   objects(
     first: Int
@@ -2712,7 +2726,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Container
   objects(
     first: Int
@@ -2931,7 +2945,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Container
   objects(
     first: Int
@@ -3127,7 +3141,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Container
   objects(
     first: Int
@@ -3325,7 +3339,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Container
   objects(
     first: Int
@@ -3520,7 +3534,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # CourseOfAction
   name: String!
   description: String
@@ -3698,7 +3712,7 @@ interface Identity {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Identity
   identity_class: String!
   name: String!
@@ -3873,7 +3887,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Identity
   identity_class: String!
   name: String!
@@ -4077,7 +4091,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Identity
   identity_class: String!
   name: String!
@@ -4257,7 +4271,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Identity
   identity_class: String!
   name: String!
@@ -4432,7 +4446,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Identity
   identity_class: String!
   name: String!
@@ -4630,7 +4644,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Indicator
   pattern_type: String
   pattern_version: String
@@ -4823,7 +4837,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Infrastructure
   name: String!
   aliases: [String]
@@ -4996,7 +5010,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # IntrusionSet
   name: String!
   description: String
@@ -5184,7 +5198,7 @@ interface Location {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Location
   name: String!
   description: String
@@ -5357,7 +5371,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Location
   name: String!
   description: String
@@ -5537,7 +5551,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Location
   name: String!
   description: String
@@ -5710,7 +5724,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Location
   name: String!
   description: String
@@ -5881,7 +5895,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Location
   name: String!
   description: String
@@ -6064,7 +6078,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Malware
   name: String!
   description: String
@@ -6246,7 +6260,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # ThreatActor
   name: String!
   description: String
@@ -6432,7 +6446,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Tool
   name: String!
   description: String
@@ -6608,7 +6622,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Vulnerability
   name: String!
   description: String
@@ -6792,7 +6806,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   # Incident
   name: String!
   description: String
@@ -11855,6 +11869,7 @@ type Query {
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
   creators(first: Int, search: String): CreatorConnection @auth(for: [KNOWLEDGE])
+  assignees(first: Int, search: String): AssigneeConnection @auth(for: [KNOWLEDGE])
   users(
     first: Int
     after: ID

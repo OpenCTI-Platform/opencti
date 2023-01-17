@@ -1,17 +1,30 @@
 import React, { Component } from 'react';
-import { compose, pathOr, pipe, map, union, filter } from 'ramda';
+import { compose, pathOr, pipe, map, union } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
+import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import IdentityCreation from '../identities/IdentityCreation';
-import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
+
+export const objectAssigneeFieldAssigneesSearchQuery = graphql`
+  query ObjectAssigneeFieldAssigneesSearchQuery($search: String, $first: Int) {
+    assignees(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          entity_type
+          name
+        }
+      }
+    }
+  }
+`;
 
 const styles = (theme) => ({
   icon: {
@@ -34,9 +47,8 @@ class ObjectAssigneeField extends Component {
     super(props);
     const { defaultObjectAssignee } = props;
     this.state = {
-      identityCreation: false,
       keyword: '',
-      identities: defaultObjectAssignee
+      assignees: defaultObjectAssignee
         ? [
           {
             label: defaultObjectAssignee.name,
@@ -51,7 +63,7 @@ class ObjectAssigneeField extends Component {
 
   componentDidMount() {
     this.subscription = SEARCH$.subscribe({
-      next: () => this.searchIdentities(),
+      next: () => this.searchAssignees(),
     });
   }
 
@@ -66,25 +78,15 @@ class ObjectAssigneeField extends Component {
     }
   }
 
-  handleOpenIdentityCreation() {
-    this.setState({ identityCreation: true });
-  }
-
-  handleCloseIdentityCreation() {
-    this.setState({ identityCreation: false });
-  }
-
-  searchIdentities() {
-    fetchQuery(identitySearchIdentitiesSearchQuery, {
-      types: ['Individual'],
+  searchAssignees() {
+    fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
       search: this.state.keyword,
       first: 10,
     })
       .toPromise()
       .then((data) => {
-        const identities = pipe(
-          pathOr([], ['identities', 'edges']),
-          filter((n) => n.node.isUser),
+        const assignees = pipe(
+          pathOr([], ['assignees', 'edges']),
           map((n) => ({
             label: n.node.name,
             value: n.node.id,
@@ -92,7 +94,7 @@ class ObjectAssigneeField extends Component {
             entity: n.node,
           })),
         )(data);
-        this.setState({ identities: union(this.state.identities, identities) });
+        this.setState({ assignees: union(this.state.assignees, assignees) });
       });
   }
 
@@ -102,11 +104,9 @@ class ObjectAssigneeField extends Component {
       name,
       style,
       classes,
-      setFieldValue,
       onChange,
       helpertext,
       disabled,
-      dryrun,
     } = this.props;
     return (
       <div>
@@ -120,12 +120,11 @@ class ObjectAssigneeField extends Component {
             variant: 'standard',
             label: t('Assignee(s)'),
             helperText: helpertext,
-            onFocus: this.searchIdentities.bind(this),
+            onFocus: this.searchAssignees.bind(this),
           }}
           noOptionsText={t('No available options')}
-          options={this.state.identities.sort((a, b) => a.label.localeCompare(b.label))}
+          options={this.state.assignees.sort((a, b) => a.label.localeCompare(b.label))}
           onInputChange={this.handleSearch.bind(this)}
-          openCreate={this.handleOpenIdentityCreation.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
           renderOption={(props, option) => (
             <li {...props}>
@@ -136,30 +135,6 @@ class ObjectAssigneeField extends Component {
             </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        />
-        <IdentityCreation
-          contextual={true}
-          onlyAssignees={true}
-          inputValue={this.state.keyword}
-          open={this.state.identityCreation}
-          handleClose={this.handleCloseIdentityCreation.bind(this)}
-          dryrun={dryrun}
-          creationCallback={(data) => {
-            setFieldValue(name, {
-              label: data.identityAdd.name,
-              value: data.identityAdd.id,
-              type: data.identityAdd.entity_type,
-              entity: data.identityAdd,
-            });
-            if (typeof onChange === 'function') {
-              onChange(name, {
-                label: data.identityAdd.name,
-                value: data.identityAdd.id,
-                type: data.identityAdd.entity_type,
-                entity: data.identityAdd,
-              });
-            }
-          }}
         />
       </div>
     );

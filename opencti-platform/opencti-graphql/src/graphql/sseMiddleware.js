@@ -400,9 +400,6 @@ const createSeeMiddleware = () => {
       }
       // Assignee filtering
       if (type === ASSIGNEE_FILTER) {
-        if (values.length === 0) {
-          return true;
-        }
         const assignees = [...(instance.object_assignee_refs ?? []), ...(instance.extensions[STIX_EXT_OCTI]?.object_assignee_refs ?? [])];
         const found = values.map((v) => v.id).some((r) => assignees.includes(r));
         if (!found) {

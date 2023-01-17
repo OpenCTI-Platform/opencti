@@ -294,6 +294,30 @@ FeedbackEditionOverviewProps
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
+          <ObjectAssigneeField
+            name="objectAssignee"
+            style={{ marginTop: 20, width: '100%' }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectAssignee" />
+            }
+            onChange={editor.changeAssignee}
+          />
+          {caseData.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Case"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
+              style={fieldSpacingContainerStyle}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
+              }
+            />
+          )}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}
@@ -319,30 +343,6 @@ FeedbackEditionOverviewProps
             handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))
             }
           />
-          <ObjectAssigneeField
-            name="objectAssignee"
-            style={{ marginTop: 20, width: '100%' }}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectAssignee" />
-            }
-            onChange={editor.changeAssignee}
-          />
-          {caseData.workflowEnabled && (
-            <StatusField
-              name="x_opencti_workflow_id"
-              type="Case"
-              onFocus={editor.changeFocus}
-              onChange={handleSubmitField}
-              setFieldValue={setFieldValue}
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              }
-            />
-          )}
         </Form>
       )}
     </Formik>

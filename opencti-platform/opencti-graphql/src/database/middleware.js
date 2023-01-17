@@ -168,7 +168,8 @@ import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectShareableContainer,
@@ -3204,21 +3205,13 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw FunctionalError('Cant find element to delete', { id });
   }
-  const { internalForceUpdate } = context;
   // Prevent individual deletion if linked to a user
-  if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information) && !internalForceUpdate) {
+  if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information)) {
     const args = { filters: [{ key: 'user_email', values: [element.contact_information] }], connectionFormat: false };
     const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
     if (users.length > 0) {
       throw FunctionalError('Cannot delete an individual corresponding to a user');
     }
-  }
-  // When delete a user, delete also the individual
-  if (element.entity_type === ENTITY_TYPE_USER) {
-    const args = { filters: [{ key: 'contact_information', values: [element.user_email] }], connectionFormat: false };
-    const individuals = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
-    const individual = R.head(individuals);
-    await internalDeleteElementById({ ...context, internalForceUpdate: true }, user, individual.id);
   }
   // Check inference operation
   checkIfInferenceOperationIsValid(user, element);

@@ -1173,6 +1173,11 @@ type CreatorConnection {
   edges: [CreatorEdge]
 }
 
+type AssigneeConnection {
+  pageInfo: PageInfo!
+  edges: [AssigneeEdge]
+}
+
 type UserEdge {
   cursor: String!
   node: User!
@@ -1183,10 +1188,22 @@ type CreatorEdge {
   node: Creator!
 }
 
+type AssigneeEdge {
+  cursor: String!
+  node: Assignee!
+}
+
 type Creator {
   id: ID!
   name: String!
   entity_type: String!
+}
+
+type Assignee {
+  id: ID!
+  name: String!
+  entity_type: String!
+  user_email: String!
 }
 
 type OtpElement {
@@ -1968,7 +1985,7 @@ interface StixDomainObject {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -2079,7 +2096,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   aliases: [String]
@@ -2204,7 +2221,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   aliases: [String]
@@ -2326,7 +2343,7 @@ interface Container {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   workflowEnabled: Boolean
@@ -2413,7 +2430,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   attribute_abstract: String
@@ -2556,7 +2573,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   first_observed: DateTime!
@@ -2673,7 +2690,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   explanation: String
@@ -2792,7 +2809,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
@@ -2908,7 +2925,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   x_opencti_aliases: [String]
@@ -3030,7 +3047,7 @@ interface Identity {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   identity_class: String!
   name: String!
   description: String
@@ -3147,7 +3164,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   identity_class: String!
   name: String!
   description: String
@@ -3292,7 +3309,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   identity_class: String!
   name: String!
   description: String
@@ -3413,7 +3430,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   identity_class: String!
   name: String!
   description: String
@@ -3529,7 +3546,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   identity_class: String!
   name: String!
   description: String
@@ -3668,7 +3685,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   pattern_type: String
   pattern_version: String
   pattern: String
@@ -3803,7 +3820,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   aliases: [String]
   description: String
@@ -3918,7 +3935,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   aliases: [String]
@@ -4050,7 +4067,7 @@ interface Location {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   latitude: Float
@@ -4165,7 +4182,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   latitude: Float
@@ -4286,7 +4303,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   latitude: Float
@@ -4400,7 +4417,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   latitude: Float
@@ -4512,7 +4529,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   latitude: Float
@@ -4636,7 +4653,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   aliases: [String]
@@ -4760,7 +4777,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   aliases: [String]
@@ -4888,7 +4905,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   aliases: [String]
@@ -5006,7 +5023,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   x_opencti_aliases: [String]
@@ -5132,7 +5149,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   aliases: [String]
@@ -7439,6 +7456,7 @@ type Query {
   otpGeneration: OtpElement
   user(id: String!): User
   creators(first: Int, search: String): CreatorConnection
+  assignees(first: Int, search: String): AssigneeConnection
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: [UsersFiltering], filterMode: FilterMode, search: String, toStix: Boolean): UserConnection
   sessions: [UserSession]
   role(id: String!): Role
@@ -8320,7 +8338,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   channel_types: [String]
@@ -8432,7 +8450,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   aliases: [String]
   creator: Creator
@@ -8538,7 +8556,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   event_types: [String]
@@ -8652,7 +8670,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
@@ -8771,7 +8789,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   name: String!
   description: String
   narrative_types: [String]
@@ -8885,7 +8903,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -8994,7 +9012,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   creator: Creator
   toStix: String
   importFiles(first: Int): FileConnection
@@ -9221,7 +9239,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: IndividualConnection
+  objectAssignee: AssigneeConnection
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!

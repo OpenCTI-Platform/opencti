@@ -144,6 +144,7 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION
 } from '../schema/stixMetaObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -1207,7 +1208,7 @@ export const CHECK_META_RELATIONSHIP_VALUES: { [k: string]: (fromType: string, t
   [RELATION_GRANTED_TO]: (fromType, toType) => !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType)
     || isStixDomainObjectLocation(fromType)) && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType,
   [RELATION_CREATED_BY]: (fromType, toType) => isStixDomainObjectIdentity(toType),
-  [RELATION_OBJECT_ASSIGNEE]: (fromType, toType) => ENTITY_TYPE_IDENTITY_INDIVIDUAL === toType,
+  [RELATION_OBJECT_ASSIGNEE]: (fromType, toType) => ENTITY_TYPE_USER === toType,
   [RELATION_OBJECT_MARKING]: (fromType, toType) => ENTITY_TYPE_MARKING_DEFINITION === toType,
   [RELATION_OBJECT]: (fromType,) => isStixDomainObjectContainer(fromType),
   [RELATION_OBJECT_LABEL]: (fromType, toType) => toType === ENTITY_TYPE_LABEL,

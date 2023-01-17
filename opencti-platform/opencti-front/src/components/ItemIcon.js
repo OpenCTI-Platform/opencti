@@ -111,6 +111,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Course-Of-Action':
       return <ProgressWrench style={style} fontSize={fontSize} role="img" />;
     case 'Individual':
+    case 'User':
       return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Organization':
     case 'Identity':

@@ -26,7 +26,7 @@ import {
 } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
@@ -50,6 +50,7 @@ import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from '../schema/stixCyberObservableRelationship';
 import { now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -75,7 +76,7 @@ export const batchStixDomainObjects = async (context, user, objectsIds) => {
 };
 
 export const batchAssignees = (context, user, stixDomainObjectIds) => {
-  return batchListThroughGetTo(context, user, stixDomainObjectIds, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
+  return batchListThroughGetTo(context, user, stixDomainObjectIds, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER);
 };
 
 // region time series

@@ -315,15 +315,6 @@ export const addUser = async (context, user, newUser) => {
   // Audit log
   const groups = defaultGroups.edges.map((g) => ({ id: g.node.id, name: g.node.name }));
   logAudit.info(user, USER_CREATION, { user: userEmail, roles: userRoles, groups });
-  // Create individual
-  const individual = {
-    name: userCreated.name,
-    contact_information: userCreated.user_email,
-    x_opencti_firstname: userCreated.firstname,
-    x_opencti_lastname: userCreated.lastname,
-    objectMarking: [MARKING_TLP_RED]
-  };
-  await addIndividual(context, user, individual);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 

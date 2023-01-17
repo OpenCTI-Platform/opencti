@@ -45,7 +45,10 @@ class IncidentComponent extends Component {
             <IncidentDetails incident={incident} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={incident} />
+            <StixDomainObjectOverview
+              stixDomainObject={incident}
+              displayAssignees={true}
+            />
           </Grid>
         </Grid>
         <Grid
@@ -81,7 +84,9 @@ class IncidentComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={incident.id}
-          defaultMarking={(incident.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarking={(incident.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IncidentEdition incidentId={incident.id} />
@@ -137,6 +142,15 @@ const Incident = createFragmentContainer(IncidentComponent, {
             id
             value
             color
+          }
+        }
+      }
+      objectAssignee {
+        edges {
+          node {
+            id
+            name
+            entity_type
           }
         }
       }
