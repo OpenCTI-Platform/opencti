@@ -9400,7 +9400,7 @@ input AdministrativeAreasFiltering {
 
 type AdministrativeAreaConnection {
   pageInfo: PageInfo!
-  edges: [AdministrativeAreaEdge]
+  edges: [AdministrativeAreaEdge!]
 }
 
 type AdministrativeAreaEdge {

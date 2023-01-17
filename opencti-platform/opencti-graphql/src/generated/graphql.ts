@@ -230,7 +230,7 @@ export type AdministrativeAreaAddInput = {
 
 export type AdministrativeAreaConnection = {
   __typename?: 'AdministrativeAreaConnection';
-  edges?: Maybe<Array<Maybe<AdministrativeAreaEdge>>>;
+  edges?: Maybe<Array<AdministrativeAreaEdge>>;
   pageInfo: PageInfo;
 };
 
@@ -24069,7 +24069,7 @@ export type ResolversTypes = ResolversObject<{
   AckDetails: ResolverTypeWrapper<AckDetails>;
   AdministrativeArea: ResolverTypeWrapper<BasicStoreEntityAdministrativeArea>;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
-  AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['AdministrativeAreaEdge']>>> }>;
+  AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>> }>;
   AdministrativeAreaEdge: ResolverTypeWrapper<Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversTypes['AdministrativeArea'] }>;
   AdministrativeAreasFilter: AdministrativeAreasFilter;
   AdministrativeAreasFiltering: AdministrativeAreasFiltering;
@@ -24756,7 +24756,7 @@ export type ResolversParentTypes = ResolversObject<{
   AckDetails: AckDetails;
   AdministrativeArea: BasicStoreEntityAdministrativeArea;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
-  AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['AdministrativeAreaEdge']>>> };
+  AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['AdministrativeAreaEdge']>> };
   AdministrativeAreaEdge: Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversParentTypes['AdministrativeArea'] };
   AdministrativeAreasFiltering: AdministrativeAreasFiltering;
   AppDebugDistribution: AppDebugDistribution;
@@ -25382,7 +25382,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type AdministrativeAreaConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeAreaConnection'] = ResolversParentTypes['AdministrativeAreaConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['AdministrativeAreaEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
