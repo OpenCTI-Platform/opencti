@@ -21,6 +21,7 @@ import {
   stixDomainObjectsExportPush,
   stixDomainObjectsExportAsk,
   stixDomainObjectsTimeSeriesByAuthor,
+  batchAssignees,
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
 import { pubsub } from '../database/redis';
@@ -29,6 +30,9 @@ import { filesListing } from '../database/file-storage';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObject';
 import { stixCoreObjectImportPush } from '../domain/stixCoreObject';
+import { batchLoader } from '../database/middleware';
+
+const assigneesLoader = batchLoader(batchAssignees);
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -58,11 +62,12 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    importFiles: (entity, { first }, context) => filesListing(context, context.user, first, `import/${entity.entity_type}/${entity.id}/`),
-    exportFiles: (entity, { first }, context) => filesListing(context, context.user, first, `export/${entity.entity_type}/${entity.id}/`),
-    status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
-    workflowEnabled: async (entity, _, context) => {
-      const statusesType = await findByType(context, context.user, entity.entity_type);
+    importFiles: (stixDomainObject, { first }, context) => filesListing(context, context.user, first, `import/${stixDomainObject.entity_type}/${stixDomainObject.id}/`),
+    exportFiles: (stixDomainObject, { first }, context) => filesListing(context, context.user, first, `export/${stixDomainObject.entity_type}/${stixDomainObject.id}/`),
+    status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
+    objectAssignee: (stixDomainObject, _, context) => assigneesLoader.load(stixDomainObject.id, context, context.user),
+    workflowEnabled: async (stixDomainObject, _, context) => {
+      const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
   },

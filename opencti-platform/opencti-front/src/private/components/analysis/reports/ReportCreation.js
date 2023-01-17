@@ -25,6 +25,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -122,6 +123,7 @@ class ReportCreation extends Component {
       R.assoc('report_types', values.report_types),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
@@ -131,7 +133,12 @@ class ReportCreation extends Component {
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_reports', this.props.paginationOptions, 'reportAdd');
+        insertNode(
+          store,
+          'Pagination_reports',
+          this.props.paginationOptions,
+          'reportAdd',
+        );
       },
       setSubmitting,
       onCompleted: () => {
@@ -150,10 +157,12 @@ class ReportCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
+        <Fab
+          onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}>
+          className={classes.createButton}
+        >
           <Add />
         </Fab>
         <Drawer
@@ -162,7 +171,8 @@ class ReportCreation extends Component {
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <div>
             <div className={classes.header}>
               <IconButton
@@ -174,9 +184,7 @@ class ReportCreation extends Component {
               >
                 <Close fontSize="small" color="primary" />
               </IconButton>
-              <Typography variant="h6">
-                {t('Create a report')}
-              </Typography>
+              <Typography variant="h6">{t('Create a report')}</Typography>
             </div>
             <div className={classes.container}>
               <Formik
@@ -188,6 +196,7 @@ class ReportCreation extends Component {
                   report_types: [],
                   createdBy: '',
                   objectMarking: [],
+                  objectAssignee: [],
                   objectLabel: [],
                   externalReferences: [],
                 }}
@@ -242,6 +251,10 @@ class ReportCreation extends Component {
                       multiline={true}
                       rows="4"
                       style={{ marginTop: 20 }}
+                    />
+                    <ObjectAssigneeField
+                      name="objectAssignee"
+                      style={{ marginTop: 20, width: '100%' }}
                     />
                     <CreatedByField
                       name="createdBy"

@@ -89,6 +89,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
   # Container
   objects(
     first: Int
@@ -159,6 +160,8 @@ enum CasesFilter {
   creator
   createdBy
   markedBy
+  labelledBy
+  assigneeTo
   x_opencti_workflow_id
   rating
   case_type
@@ -213,6 +216,7 @@ input CaseAddInput {
   objects: [String]
   createdBy: String
   objectMarking: [String]
+  objectAssignee: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]

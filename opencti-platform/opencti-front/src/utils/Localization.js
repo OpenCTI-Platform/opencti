@@ -2986,6 +2986,8 @@ const i18n = {
       Limit: 'Limite',
       'All threats': 'Toutes les menaces',
       on: 'le',
+      Use: 'Utiliser',
+      'to exclude items': 'pour exclure des items',
       // Time
       '24h': '24h',
       // Types
@@ -3201,7 +3203,6 @@ const i18n = {
       organization_vendor: 'Editeur',
       organization_other: 'Autre',
       obsContent: 'Contenu',
-      'Use Alt + click to exclude items': 'Utiliser Alt + clic pour exclure des items',
       filter_container_type: "Type d'analyse",
       filter_basedOn: 'Basé sur un observable',
       filter_sightedBy: 'Détecté par/dans',

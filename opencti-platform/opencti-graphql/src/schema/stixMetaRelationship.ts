@@ -1,8 +1,10 @@
 import * as R from 'ramda';
 import {
   ABSTRACT_STIX_META_RELATIONSHIP,
+  INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS,
+  INPUT_EXTERNAL_REFS,
+  INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -18,6 +20,7 @@ export const RELATION_OBJECT = 'object'; // object_refs
 export const RELATION_EXTERNAL_REFERENCE = 'external-reference'; // external_references
 export const RELATION_KILL_CHAIN_PHASE = 'kill-chain-phase'; // kill_chain_phases
 export const RELATION_GRANTED_TO = 'granted'; // granted_refs (OpenCTI)
+export const RELATION_OBJECT_ASSIGNEE = 'object-assignee';
 
 // Converter
 export const FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = {
@@ -29,6 +32,7 @@ export const FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string 
   [RELATION_OBJECT_LABEL]: 'labels',
   // OCTI
   [RELATION_GRANTED_TO]: 'granted_refs',
+  [RELATION_OBJECT_ASSIGNEE]: 'object_assignee_refs',
 };
 
 export const STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD: { [k: string]: string } = {
@@ -38,7 +42,8 @@ export const STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD: { [k: string]: string } = {
   external_references: INPUT_EXTERNAL_REFS,
   kill_chain_phases: INPUT_KILLCHAIN,
   labels: INPUT_LABELS,
-  granted_refs: INPUT_GRANTED_REFS
+  granted_refs: INPUT_GRANTED_REFS,
+  object_assignee_refs: INPUT_ASSIGNEE
 };
 
 export const metaFieldToStixAttribute = () => R.mergeAll(
@@ -55,6 +60,7 @@ export const STIX_META_RELATION_TO_FIELD: { [k: string]: string } = {
   [RELATION_OBJECT_MARKING]: INPUT_MARKINGS,
   [RELATION_OBJECT]: INPUT_OBJECTS,
   [RELATION_GRANTED_TO]: INPUT_GRANTED_REFS,
+  [RELATION_OBJECT_ASSIGNEE]: INPUT_ASSIGNEE,
 };
 
 export const fieldToMetaRelation = () => R.mergeAll(
@@ -67,7 +73,8 @@ export const STIX_EXTERNAL_META_RELATIONSHIPS = [
   RELATION_CREATED_BY,
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT,
-  RELATION_GRANTED_TO
+  RELATION_GRANTED_TO,
+  RELATION_OBJECT_ASSIGNEE,
 ];
 const STIX_INTERNAL_META_RELATIONSHIPS = [
   RELATION_OBJECT_LABEL,

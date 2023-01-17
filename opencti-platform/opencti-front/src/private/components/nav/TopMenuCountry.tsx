@@ -117,6 +117,26 @@ const TopMenuCountry: FunctionComponent = () => {
       >
         {t('Analysis')}
       </Button>
+      <Button
+        component={Link}
+        to={`/dashboard/locations/countries/${countryId}/sightings`}
+        variant={
+          location.pathname
+          === `/dashboard/locations/countries/${countryId}/sightings`
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname
+          === `/dashboard/locations/countries/${countryId}/sightings`
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Sightings')}
+      </Button>
       <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
         <Button
           component={Link}

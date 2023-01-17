@@ -93,6 +93,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     created: DateTime
     modified: DateTime
     x_opencti_graph_data: String
+    objectAssignee: AssigneeConnection
 
     # Technical
     creator: Creator

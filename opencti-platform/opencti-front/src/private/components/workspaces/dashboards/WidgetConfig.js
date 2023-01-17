@@ -1193,9 +1193,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                         {
                                           value: 'kill-chain-phase.internal_id',
                                         },
-                                        {
-                                          value: 'kill-chain-phase.internal_id',
-                                        },
                                       ].map((attribute) => (
                                         <MenuItem
                                           key={attribute.value}

@@ -291,6 +291,26 @@ export type ArtifactAddInput = {
   x_opencti_additional_names?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
+export type Assignee = {
+  __typename?: 'Assignee';
+  entity_type: Scalars['String'];
+  id: Scalars['ID'];
+  name: Scalars['String'];
+  user_email: Scalars['String'];
+};
+
+export type AssigneeConnection = {
+  __typename?: 'AssigneeConnection';
+  edges: Array<AssigneeEdge>;
+  pageInfo: PageInfo;
+};
+
+export type AssigneeEdge = {
+  __typename?: 'AssigneeEdge';
+  cursor: Scalars['String'];
+  node: Assignee;
+};
+
 export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'AttackPattern';
   aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -318,6 +338,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -540,6 +561,7 @@ export type AttackPatternEditMutationsRelationDeleteArgs = {
 
 export enum AttackPatternsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -1050,6 +1072,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -1208,6 +1231,7 @@ export type CampaignAddInput = {
   last_seen?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -1265,6 +1289,7 @@ export type CampaignEditMutationsRelationDeleteArgs = {
 
 export enum CampaignsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -1369,6 +1394,7 @@ export type Case = BasicObject & Container & StixCoreObject & StixDomainObject &
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -1556,6 +1582,7 @@ export type CaseAddInput = {
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -1582,12 +1609,14 @@ export type CaseEdge = {
 };
 
 export enum CasesFilter {
+  AssigneeTo = 'assigneeTo',
   CaseType = 'case_type',
   Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
@@ -1642,6 +1671,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -1821,6 +1851,7 @@ export type ChannelEdge = {
 
 export enum ChannelsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   ChannelTypes = 'channel_types',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -1854,6 +1885,7 @@ export enum ChannelsOrdering {
 
 export enum CitiesFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -1911,6 +1943,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -2182,6 +2215,7 @@ export type Container = {
   lang?: Maybe<Scalars['String']>;
   modified?: Maybe<Scalars['DateTime']>;
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -2372,6 +2406,7 @@ export type ContainerEditMutationsRelationDeleteArgs = {
 };
 
 export enum ContainersFilter {
+  AssigneeTo = 'assigneeTo',
   AttributeAbstract = 'attribute_abstract',
   Authors = 'authors',
   Confidence = 'confidence',
@@ -2423,6 +2458,7 @@ export type ContextData = {
 
 export enum CountriesFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -2476,6 +2512,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -2713,6 +2750,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -2929,6 +2967,7 @@ export type CourseOfActionEditMutationsRelationDeleteArgs = {
 
 export enum CoursesOfActionFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -3395,6 +3434,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -3627,6 +3667,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -4945,6 +4986,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -5521,6 +5563,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -6567,6 +6610,7 @@ export type IPv6AddrAddInput = {
 
 export enum IdentitiesFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -6622,6 +6666,7 @@ export type Identity = {
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -6867,6 +6912,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -7028,6 +7074,7 @@ export type IncidentAddInput = {
   last_seen?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -7087,6 +7134,7 @@ export type IncidentEditMutationsRelationDeleteArgs = {
 
 export enum IncidentsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -7152,6 +7200,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -7388,6 +7437,7 @@ export type IndicatorEditMutationsRelationDeleteArgs = {
 };
 
 export enum IndicatorsFilter {
+  AssigneeTo = 'assigneeTo',
   BasedOn = 'basedOn',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -7458,12 +7508,14 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   id: Scalars['ID'];
   identity_class: Scalars['String'];
   importFiles?: Maybe<FileConnection>;
+  isUser?: Maybe<Scalars['Boolean']>;
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']>;
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -7683,6 +7735,7 @@ export type IndividualEditMutationsRelationDeleteArgs = {
 
 export enum IndividualsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   ContactInformation = 'contact_information',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -7756,6 +7809,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -7971,6 +8025,7 @@ export type InfrastructureEditMutationsRelationDeleteArgs = {
 
 export enum InfrastructuresFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -8058,6 +8113,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -8219,6 +8275,7 @@ export type IntrusionSetAddInput = {
   last_seen?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -8278,6 +8335,7 @@ export type IntrusionSetEditMutationsRelationDeleteArgs = {
 
 export enum IntrusionSetsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -8509,6 +8567,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -8759,6 +8818,7 @@ export type Location = {
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -8981,6 +9041,7 @@ export enum LocationType {
 
 export enum LocationsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -9294,6 +9355,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -9457,6 +9519,7 @@ export type MalwareAddInput = {
   malware_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -9513,6 +9576,7 @@ export type MalwareEditMutationsRelationDeleteArgs = {
 
 export enum MalwaresFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -11528,6 +11592,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   name: Scalars['String'];
   narrative_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -11980,6 +12045,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   modified?: Maybe<Scalars['DateTime']>;
   note_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -12242,6 +12308,7 @@ export type NoteUserAddInput = {
 };
 
 export enum NotesFilter {
+  AssigneeTo = 'assigneeTo',
   AttributeAbstract = 'attribute_abstract',
   Authors = 'authors',
   Content = 'content',
@@ -12317,6 +12384,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
   number_observed: Scalars['Int'];
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -12556,6 +12624,7 @@ export type ObservedDataEditMutationsRelationDeleteArgs = {
 };
 
 export enum ObservedDatasFilter {
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -12613,6 +12682,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   lang?: Maybe<Scalars['String']>;
   modified?: Maybe<Scalars['DateTime']>;
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -12853,6 +12923,7 @@ export type OpinionEditMutationsRelationDeleteArgs = {
 };
 
 export enum OpinionsFilter {
+  AssigneeTo = 'assigneeTo',
   Authors = 'authors',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -12917,6 +12988,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -13147,6 +13219,7 @@ export enum OrganizationReliability {
 
 export enum OrganizationsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   ContactInformation = 'contact_information',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -13625,6 +13698,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -13844,6 +13918,7 @@ export type PositionEditMutationsRelationDeleteArgs = {
 
 export enum PositionsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -14123,6 +14198,7 @@ export type Provider = {
 export type Query = {
   __typename?: 'Query';
   about?: Maybe<AppInfo>;
+  assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
   bookmarks?: Maybe<StixDomainObjectConnection>;
@@ -14330,6 +14406,12 @@ export type Query = {
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
+};
+
+
+export type QueryAssigneesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -16203,6 +16285,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -16420,6 +16503,7 @@ export type RegionEditMutationsRelationDeleteArgs = {
 
 export enum RegionsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -16479,6 +16563,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -16663,6 +16748,7 @@ export type ReportAddInput = {
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -16726,6 +16812,7 @@ export type ReportEditMutationsRelationDeleteArgs = {
 };
 
 export enum ReportsFilter {
+  AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -16948,6 +17035,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -17165,6 +17253,7 @@ export type SectorEditMutationsRelationDeleteArgs = {
 
 export enum SectorsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -18597,6 +18686,7 @@ export type StixDomainObject = {
   lang?: Maybe<Scalars['String']>;
   modified?: Maybe<Scalars['DateTime']>;
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -18844,6 +18934,7 @@ export type StixDomainObjectEditMutationsRelationsAddArgs = {
 
 export enum StixDomainObjectsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
   ContainedBy = 'containedBy',
   Context = 'context',
@@ -19841,6 +19932,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -20060,6 +20152,7 @@ export type SystemEditMutationsRelationDeleteArgs = {
 
 export enum SystemsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -20457,6 +20550,7 @@ export type ThreatActor = BasicObject & StixCoreObject & StixDomainObject & Stix
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -20622,6 +20716,7 @@ export type ThreatActorAddInput = {
   last_seen?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
+  objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -20685,6 +20780,7 @@ export type ThreatActorEditMutationsRelationDeleteArgs = {
 
 export enum ThreatActorsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -20743,6 +20839,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -20958,6 +21055,7 @@ export type ToolEditMutationsRelationDeleteArgs = {
 
 export enum ToolsFilter {
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -21916,6 +22014,7 @@ export enum VocabularyOrdering {
 }
 
 export enum VulnerabilitiesFilter {
+  AssigneeTo = 'assigneeTo',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -21973,6 +22072,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -23137,6 +23237,9 @@ export type ResolversTypes = ResolversObject<{
   AppMemory: ResolverTypeWrapper<AppMemory>;
   Artifact: ResolverTypeWrapper<Omit<Artifact, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
   ArtifactAddInput: ArtifactAddInput;
+  Assignee: ResolverTypeWrapper<Assignee>;
+  AssigneeConnection: ResolverTypeWrapper<AssigneeConnection>;
+  AssigneeEdge: ResolverTypeWrapper<AssigneeEdge>;
   AttackPattern: ResolverTypeWrapper<Omit<AttackPattern, 'connectors' | 'coursesOfAction' | 'createdBy' | 'dataComponents' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentAttackPatterns' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'subAttackPatterns'> & { connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, coursesOfAction?: Maybe<ResolversTypes['CourseOfActionConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, dataComponents?: Maybe<ResolversTypes['DataComponentConnection']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, parentAttackPatterns?: Maybe<ResolversTypes['AttackPatternConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, subAttackPatterns?: Maybe<ResolversTypes['AttackPatternConnection']> }>;
   AttackPatternAddInput: AttackPatternAddInput;
   AttackPatternConnection: ResolverTypeWrapper<Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversTypes['AttackPatternEdge']> }>;
@@ -23807,6 +23910,9 @@ export type ResolversParentTypes = ResolversObject<{
   AppMemory: AppMemory;
   Artifact: Omit<Artifact, 'connectors' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
   ArtifactAddInput: ArtifactAddInput;
+  Assignee: Assignee;
+  AssigneeConnection: AssigneeConnection;
+  AssigneeEdge: AssigneeEdge;
   AttackPattern: Omit<AttackPattern, 'connectors' | 'coursesOfAction' | 'createdBy' | 'dataComponents' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentAttackPatterns' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'subAttackPatterns'> & { connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, coursesOfAction?: Maybe<ResolversParentTypes['CourseOfActionConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, dataComponents?: Maybe<ResolversParentTypes['DataComponentConnection']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, parentAttackPatterns?: Maybe<ResolversParentTypes['AttackPatternConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, subAttackPatterns?: Maybe<ResolversParentTypes['AttackPatternConnection']> };
   AttackPatternAddInput: AttackPatternAddInput;
   AttackPatternConnection: Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversParentTypes['AttackPatternEdge']> };
@@ -24450,6 +24556,26 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type AssigneeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Assignee'] = ResolversParentTypes['Assignee']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AssigneeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AssigneeConnection'] = ResolversParentTypes['AssigneeConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['AssigneeEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AssigneeEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AssigneeEdge'] = ResolversParentTypes['AssigneeEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Assignee'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type AttackPatternResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPattern'] = ResolversParentTypes['AttackPattern']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -24476,6 +24602,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AttackPatternNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -24684,6 +24811,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CampaignNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -24779,6 +24907,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CaseNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -24843,6 +24972,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ChannelNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -24903,6 +25033,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CityNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -25005,6 +25136,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ContainerNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -25083,6 +25215,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CountryNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -25154,6 +25287,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CourseOfActionNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -25329,6 +25463,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DataComponentNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -25389,6 +25524,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DataSourceNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -25727,6 +25863,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EventNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -25963,6 +26100,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<GroupingNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26197,6 +26335,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IdentityNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26268,6 +26407,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IncidentNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26346,6 +26486,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IndicatorNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26419,12 +26560,14 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IndividualImportFilesArgs>>;
+  isUser?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IndividualJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IndividualNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26515,6 +26658,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<InfrastructureNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26608,6 +26752,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IntrusionSetNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26762,6 +26907,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<LanguageNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26837,6 +26983,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<LocationNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -26987,6 +27134,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MalwareNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -27460,6 +27608,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   narrative_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NarrativeNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -27573,6 +27722,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   note_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NoteNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -27657,6 +27807,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ObservedDataNotesArgs>>;
   number_observed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -27726,6 +27877,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OpinionNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -27798,6 +27950,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OrganizationNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -27985,6 +28138,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PositionNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -28107,6 +28261,7 @@ export type ProviderResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
+  assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
   bookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, Partial<QueryBookmarksArgs>>;
@@ -28399,6 +28554,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<RegionNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -28471,6 +28627,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ReportNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -28659,6 +28816,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SectorNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -29126,6 +29284,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixDomainObjectNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -29571,6 +29730,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SystemNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -29762,6 +29922,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -29844,6 +30005,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ToolNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -30198,6 +30360,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<VulnerabilityNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
@@ -30508,6 +30671,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AppInfo?: AppInfoResolvers<ContextType>;
   AppMemory?: AppMemoryResolvers<ContextType>;
   Artifact?: ArtifactResolvers<ContextType>;
+  Assignee?: AssigneeResolvers<ContextType>;
+  AssigneeConnection?: AssigneeConnectionResolvers<ContextType>;
+  AssigneeEdge?: AssigneeEdgeResolvers<ContextType>;
   AttackPattern?: AttackPatternResolvers<ContextType>;
   AttackPatternConnection?: AttackPatternConnectionResolvers<ContextType>;
   AttackPatternEdge?: AttackPatternEdgeResolvers<ContextType>;

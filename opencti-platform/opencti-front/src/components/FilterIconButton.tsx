@@ -37,16 +37,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   filter1: {
     marginRight: 10,
+    lineHeight: 32,
   },
   filter2: {
     margin: '0 10px 10px 0',
+    lineHeight: 32,
   },
   filter3: {
     fontSize: 12,
-    lineHeight: '12px',
     height: 20,
     marginRight: 7,
     borderRadius: 10,
+    lineHeight: 32,
   },
   operator1: {
     fontFamily: 'Consolas, monaco, monospace',
@@ -64,15 +66,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 20,
     marginRight: 10,
   },
+  inlineOperator: {
+    display: 'inline-block',
+    height: '100%',
+    borderRadius: 0,
+    margin: '0 5px 0 5px',
+    padding: '0 5px 0 5px',
+    backgroundColor: 'rgba(255, 255, 255, .1)',
+    fontFamily: 'Consolas, monaco, monospace',
+  },
+  chipLabel: {
+    lineHeight: '32px',
+  },
 }));
 
 interface FilterIconButtonProps {
-  filters: Filters<{ id: string, value: string }[]>,
-  handleRemoveFilter?: (key: string) => void,
-  classNameNumber?: number,
-  styleNumber?: number,
-  dataColumns?: DataColumns,
-  disabledPossible?: boolean,
+  filters: Filters<{ id: string; value: string }[]>;
+  handleRemoveFilter?: (key: string) => void;
+  classNameNumber?: number;
+  styleNumber?: number;
+  dataColumns?: DataColumns;
+  disabledPossible?: boolean;
 }
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
@@ -111,58 +125,57 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
 
   const lastKey = last(toPairs(filters))?.[0];
 
-  return <div
-    className={finalClassName}
-    style={{ width: dataColumns?.filters.width }}
-  >
-    {
-      toPairs(filters).map((currentFilter) => {
+  return (
+    <div
+      className={finalClassName}
+      style={{ width: dataColumns?.filters.width }}
+    >
+      {toPairs(filters).map((currentFilter) => {
         const filterKey = currentFilter[0];
         const filterContent = currentFilter[1];
         const label = `${truncate(t(`filter_${filterKey}`), 20)}`;
         const negative = filterKey.endsWith('not_eq');
         const localFilterMode = negative ? t('AND') : t('OR');
         const values = (
-        <span>
-        {filterContent.map(
-          (n) => (
-            <span key={n.value}>
-              {n.value && (n.value).length > 0
-                ? truncate(n.value, 15)
-                : t('No label')}{' '}
-              {last(filterContent)?.value !== n.value && (
-                <Chip
-                  label={localFilterMode}
-                />
-              )}{' '}
-            </span>
-          ),
-        )}
-      </span>
+          <span>
+            {filterContent.map((n) => (
+              <span key={n.value}>
+                <span>
+                  {n.value && n.value.length > 0
+                    ? truncate(n.value, 15)
+                    : t('No label')}{' '}
+                </span>
+                {last(filterContent)?.value !== n.value && (
+                  <div className={classes.inlineOperator}>
+                    {localFilterMode}
+                  </div>
+                )}{' '}
+              </span>
+            ))}
+          </span>
         );
         return (
-        <span key={filterKey}>
-          <Chip
-          classes={{ root: classFilter }}
-          label={
-            <div>
-              <strong>{label}</strong>: {values}
-            </div>
-          }
-          disabled={disabledPossible ? Object.keys(filters).length === 1 : undefined}
-          onDelete={() => handleRemoveFilter?.(filterKey)}
-        />
-          {lastKey !== filterKey && (
+          <span key={filterKey}>
             <Chip
-              classes={{ root: classOperator }}
-              label={t('AND')}
+              classes={{ root: classFilter, label: classes.chipLabel }}
+              label={
+                <div>
+                  <strong>{label}</strong>: {values}
+                </div>
+              }
+              disabled={
+                disabledPossible ? Object.keys(filters).length === 1 : undefined
+              }
+              onDelete={() => handleRemoveFilter?.(filterKey)}
             />
-          )}
-      </span>
+            {lastKey !== filterKey && (
+              <Chip classes={{ root: classOperator }} label={t('AND')} />
+            )}
+          </span>
         );
-      })
-    }
-  </div>;
+      })}
+    </div>
+  );
 };
 
 export default FilterIconButton;

@@ -66,6 +66,15 @@ const feedbackFragment = graphql`
         }
       }
     }
+    objectAssignee {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
     x_opencti_stix_ids
     status {
       id
@@ -107,7 +116,10 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
           <FeedbackDetails caseData={caseData} />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={caseData} />
+          <StixDomainObjectOverview
+            stixDomainObject={caseData}
+            displayAssignees={true}
+          />
         </Grid>
       </Grid>
       <Grid

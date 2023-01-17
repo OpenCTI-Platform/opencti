@@ -66,6 +66,7 @@ const userResolvers = {
     role: (_, { id }, context) => findRoleById(context, context.user, id),
     roles: (_, args, context) => findRoles(context, context.user, args),
     creators: (_, args, context) => findAll(context, context.user, args),
+    assignees: (_, args, context) => findAll(context, context.user, args),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
     me: (_, args, context) => findById(context, context.user, context.user.id),

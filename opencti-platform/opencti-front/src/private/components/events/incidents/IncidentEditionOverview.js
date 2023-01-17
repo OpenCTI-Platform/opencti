@@ -15,10 +15,16 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertAssignees,
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -116,6 +122,7 @@ class IncidentEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -207,23 +214,54 @@ class IncidentEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeObjectAssignee(name, values) {
+    if (!this.props.enableReferences) {
+      const { report } = this.props;
+      const currentAssignees = R.pipe(
+        R.pathOr([], ['objectAssignee', 'edges']),
+        R.map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+        })),
+      )(report);
+      const added = R.difference(values, currentAssignees);
+      const removed = R.difference(currentAssignees, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: incidentMutationRelationAdd,
+          variables: {
+            id: this.props.report.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-assignee',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: incidentMutationRelationDelete,
+          variables: {
+            id: this.props.report.id,
+            toId: R.head(removed).value,
+            relationship_type: 'object-assignee',
+          },
+        });
+      }
+    }
+  }
+
   render() {
     const { t, incident, context, enableReferences } = this.props;
     const isInferred = incident.is_inferred;
     const createdBy = convertCreatedBy(incident);
     const objectMarking = convertMarkings(incident);
+    const objectAssignee = convertAssignees(incident);
     const status = convertStatus(t, incident);
-    const killChainPhases = R.pipe(
-      R.pathOr([], ['killChainPhases', 'edges']),
-      R.map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(incident);
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
-      R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('objectAssignee', objectAssignee),
       R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'name',
@@ -232,8 +270,8 @@ class IncidentEditionOverviewComponent extends Component {
         'description',
         'createdBy',
         'incident_type',
-        'killChainPhases',
         'objectMarking',
+        'objectAssignee',
         'x_opencti_workflow_id',
       ]),
     )(incident);
@@ -314,6 +352,17 @@ class IncidentEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
+            />
+            <ObjectAssigneeField
+              name="objectAssignee"
+              style={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldname="objectAssignee"
+                />
+              }
+              onChange={this.handleChangeObjectAssignee.bind(this)}
             />
             {incident.workflowEnabled && (
               <StatusField
@@ -401,6 +450,15 @@ const IncidentEditionOverview = createFragmentContainer(
               definition
               x_opencti_order
               x_opencti_color
+            }
+          }
+        }
+        objectAssignee {
+          edges {
+            node {
+              id
+              name
+              entity_type
             }
           }
         }

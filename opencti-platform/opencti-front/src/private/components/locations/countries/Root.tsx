@@ -140,13 +140,20 @@ const RootCountryComponent = ({ queryRef }) => {
               exact
               path="/dashboard/locations/countries/:countryId/sightings"
               render={(routeProps) => (
-                <EntityStixSightingRelationships
-                  entityId={country.id}
-                  entityLink={link}
-                  noPadding={true}
-                  isTo={true}
-                  {...routeProps}
-                />
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={country}
+                    PopoverComponent={CountryPopover}
+                  />
+                  <EntityStixSightingRelationships
+                    entityId={country.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                    {...routeProps}
+                  />
+                </React.Fragment>
               )}
             />
             <Route

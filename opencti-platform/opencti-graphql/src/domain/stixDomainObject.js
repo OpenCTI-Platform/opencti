@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
+  batchListThroughGetTo,
   createEntity,
   createRelation,
   createRelations,
@@ -39,12 +40,17 @@ import {
   ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey,
   STIX_META_RELATIONSHIPS_INPUTS,
 } from '../schema/general';
-import { isStixMetaRelationship, RELATION_CREATED_BY } from '../schema/stixMetaRelationship';
+import {
+  isStixMetaRelationship,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_ASSIGNEE,
+} from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from '../schema/stixCyberObservableRelationship';
 import { now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -67,6 +73,10 @@ export const findById = async (context, user, stixDomainObjectId) => storeLoadBy
 export const batchStixDomainObjects = async (context, user, objectsIds) => {
   const objects = await elFindByIds(context, user, objectsIds, { toMap: true });
   return objectsIds.map((id) => objects[id]);
+};
+
+export const batchAssignees = (context, user, stixDomainObjectIds) => {
+  return batchListThroughGetTo(context, user, stixDomainObjectIds, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER);
 };
 
 // region time series

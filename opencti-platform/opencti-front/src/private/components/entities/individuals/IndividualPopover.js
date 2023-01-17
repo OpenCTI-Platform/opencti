@@ -25,7 +25,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 
 const styles = (theme) => ({
   container: {
-    margin: 0,
+    margin: '3px 0 0 0',
   },
   drawerPaper: {
     minHeight: '100vh',

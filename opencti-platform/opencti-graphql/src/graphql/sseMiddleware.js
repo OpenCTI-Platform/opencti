@@ -59,6 +59,7 @@ const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
 const MARKING_FILTER = 'markedBy';
 const LABEL_FILTER = 'labelledBy';
 const CREATOR_FILTER = 'createdBy';
+const ASSIGNEE_FILTER = 'assigneeTo';
 const SCORE_FILTER = 'x_opencti_score';
 const DETECTION_FILTER = 'x_opencti_detection';
 const WORKFLOW_FILTER = 'x_opencti_workflow_id';
@@ -392,6 +393,24 @@ const createSeeMiddleware = () => {
             break;
           default:
             found = filterCreationRefs.includes(instance.created_by_ref);
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      // Assignee filtering
+      if (type === ASSIGNEE_FILTER) {
+        const assignees = [...(instance.object_assignee_refs ?? []), ...(instance.extensions[STIX_EXT_OCTI]?.object_assignee_refs ?? [])];
+        const extractedValues = values.map((v) => v.value);
+        switch (operator) {
+          case 'not_eq': // filterMode=and
+            found = !extractedValues.map((r) => !assignees.includes(r)).includes(false);
+            break;
+          case 'eq': // filterMode=or
+            found = extractedValues.some((r) => assignees.includes(r));
+            break;
+          default:
+            found = extractedValues.some((r) => assignees.includes(r));
         }
         if (!found) {
           return false;

@@ -141,13 +141,20 @@ const RootRegionComponent = ({ queryRef }) => {
               exact
               path="/dashboard/locations/regions/:regionId/sightings"
               render={(routeProps: any) => (
-                <EntityStixSightingRelationships
-                  entityId={region.id}
-                  entityLink={link}
-                  noPadding={true}
-                  isTo={true}
-                  {...routeProps}
-                />
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={region}
+                    PopoverComponent={<RegionPopover id={region.id} />}
+                  />
+                  <EntityStixSightingRelationships
+                    entityId={region.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                    {...routeProps}
+                  />
+                </React.Fragment>
               )}
             />
             <Route

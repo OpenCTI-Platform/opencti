@@ -16,6 +16,11 @@ export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []
   value: n.node.id,
 }));
 
+export const convertAssignees = (element) => (element?.objectAssignee?.edges ?? []).map((n) => ({
+  label: n.node.name,
+  value: n.node.id,
+}));
+
 export const convertOrganizations = (element) => R.pipe(
   R.pathOr([], ['objectOrganization', 'edges']),
   R.map((n) => ({
@@ -35,11 +40,13 @@ export const convertCreatedBy = (element) => (R.pathOr(null, ['createdBy', 'name
 
 export const handleChangesObjectMarking = (element, values) => {
   const currentMarkingDefinitions = convertMarkings(element);
-  const added = values.filter((v) => !currentMarkingDefinitions.map((c) => c.value)
-    .includes(v.value))
+  const added = values
+    .filter(
+      (v) => !currentMarkingDefinitions.map((c) => c.value).includes(v.value),
+    )
     .at(0);
-  const removed = currentMarkingDefinitions.filter((c) => !values.map((v) => v.value)
-    .includes(c.value))
+  const removed = currentMarkingDefinitions
+    .filter((c) => !values.map((v) => v.value).includes(c.value))
     .at(0);
   return { added, removed };
 };

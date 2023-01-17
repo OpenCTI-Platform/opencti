@@ -7,7 +7,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import {
   PersonOutlined,
-  PermIdentityOutlined,
+  AccountCircleOutlined,
   KeyboardArrowRightOutlined,
   HorizontalRule,
   Security,
@@ -61,7 +61,7 @@ class UserLineComponent extends Component {
         to={`/dashboard/settings/accesses/users/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {external ? <PermIdentityOutlined /> : <PersonOutlined />}
+          {external ? <AccountCircleOutlined /> : <PersonOutlined />}
         </ListItemIcon>
         <ListItemText
           primary={

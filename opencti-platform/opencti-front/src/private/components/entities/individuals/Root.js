@@ -196,13 +196,24 @@ class RootIndividual extends Component {
                       exact
                       path="/dashboard/entities/individuals/:individualId/sightings"
                       render={(routeProps) => (
-                        <EntityStixSightingRelationships
-                          entityId={props.individual.id}
-                          entityLink={link}
-                          noPadding={true}
-                          isTo={true}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            disableSharing={true}
+                            stixDomainObject={props.individual}
+                            PopoverComponent={<IndividualPopover />}
+                            onViewAs={this.handleChangeViewAs.bind(this)}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'Individual',
+                            )}
+                          />
+                          <EntityStixSightingRelationships
+                            entityId={props.individual.id}
+                            entityLink={link}
+                            noPadding={true}
+                            isTo={true}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route

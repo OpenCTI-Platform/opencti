@@ -7,7 +7,12 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
 
 const campaignResolvers = {
@@ -24,6 +29,7 @@ const campaignResolvers = {
   CampaignsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {

@@ -347,13 +347,7 @@ class IdentityCreation extends Component {
                       {t('Organization')}
                     </MenuItem>
                     {!onlyAuthors && (
-                      <MenuItem value="Region">{t('Region')}</MenuItem>
-                    )}
-                    {!onlyAuthors && (
-                      <MenuItem value="Country">{t('Country')}</MenuItem>
-                    )}
-                    {!onlyAuthors && (
-                      <MenuItem value="City">{t('City')}</MenuItem>
+                      <MenuItem value="System">{t('System')}</MenuItem>
                     )}
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
                   </Field>

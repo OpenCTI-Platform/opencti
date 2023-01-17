@@ -6,6 +6,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import {
+  convertAssignees,
   convertCreatedBy,
   convertMarkings,
   convertStatus,
@@ -22,6 +23,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import RatingField from '../../../../components/RatingField';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -95,6 +97,15 @@ const feedbackEditionOverviewFragment = graphql`
         }
       }
     }
+    objectAssignee {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
   }
 `;
 
@@ -165,6 +176,7 @@ FeedbackEditionOverviewProps
 
   const createdBy = convertCreatedBy(caseData);
   const objectMarking = convertMarkings(caseData);
+  const objectAssignee = convertAssignees(caseData);
   const status = convertStatus(t, caseData);
 
   const queries = {
@@ -221,6 +233,7 @@ FeedbackEditionOverviewProps
     rating: caseData.rating,
     createdBy,
     objectMarking,
+    objectAssignee,
     x_opencti_workflow_id: status,
   };
   return (
@@ -231,7 +244,7 @@ FeedbackEditionOverviewProps
       onSubmit={onSubmit}
     >
       {({ setFieldValue }) => (
-        <Form style={{ margin: '0px 0 20px 0' }}>
+        <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
             label={t('Case priority')}
             type="case_priority_ov"
@@ -281,6 +294,30 @@ FeedbackEditionOverviewProps
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
+          <ObjectAssigneeField
+            name="objectAssignee"
+            style={{ marginTop: 20, width: '100%' }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectAssignee" />
+            }
+            onChange={editor.changeAssignee}
+          />
+          {caseData.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Case"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
+              style={fieldSpacingContainerStyle}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
+              }
+            />
+          )}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}
@@ -306,22 +343,6 @@ FeedbackEditionOverviewProps
             handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))
             }
           />
-          {caseData.workflowEnabled && (
-            <StatusField
-              name="x_opencti_workflow_id"
-              type="Case"
-              onFocus={editor.changeFocus}
-              onChange={handleSubmitField}
-              setFieldValue={setFieldValue}
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              }
-            />
-          )}
         </Form>
       )}
     </Formik>

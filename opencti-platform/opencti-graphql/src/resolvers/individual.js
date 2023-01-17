@@ -1,4 +1,4 @@
-import { addIndividual, findAll, findById, batchOrganizations } from '../domain/individual';
+import { addIndividual, findAll, findById, batchOrganizations, isUser } from '../domain/individual';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -20,6 +20,7 @@ const individualResolvers = {
   },
   Individual: {
     organizations: (individual, _, context) => organizationsLoader.load(individual.id, context, context.user),
+    isUser: (individual, _, context) => isUser(context, context.user, individual.contact_information),
   },
   IndividualsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

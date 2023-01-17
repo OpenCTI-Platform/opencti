@@ -162,13 +162,20 @@ class RootSector extends Component {
                       exact
                       path="/dashboard/entities/sectors/:sectorId/sightings"
                       render={(routeProps) => (
-                        <EntityStixSightingRelationships
-                          entityId={props.sector.id}
-                          entityLink={link}
-                          noPadding={true}
-                          isTo={true}
-                          {...routeProps}
-                        />
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            disableSharing={true}
+                            stixDomainObject={props.sector}
+                            PopoverComponent={<SectorPopover />}
+                          />
+                          <EntityStixSightingRelationships
+                            entityId={props.sector.id}
+                            entityLink={link}
+                            noPadding={true}
+                            isTo={true}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route

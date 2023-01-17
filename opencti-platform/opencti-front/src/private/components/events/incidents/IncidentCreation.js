@@ -11,7 +11,10 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -23,6 +26,7 @@ import { insertNode } from '../../../../utils/store';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isEmptyField } from '../../../../utils/utils';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -92,12 +96,15 @@ const IncidentCreation = ({ paginationOptions }) => {
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const cleanedValues = isEmptyField(values.severity) ? R.dissoc('severity', values) : values;
+    const cleanedValues = isEmptyField(values.severity)
+      ? R.dissoc('severity', values)
+      : values;
     const adaptedValues = R.evolve(
       {
         confidence: () => parseInt(values.confidence, 10),
         createdBy: R.path(['value']),
         objectMarking: R.pluck('value'),
+        objectAssignee: R.pluck('value'),
         objectLabel: R.pluck('value'),
         objectOrganization: R.pluck('value'),
         externalReferences: R.pluck('value'),
@@ -168,6 +175,7 @@ const IncidentCreation = ({ paginationOptions }) => {
               description: '',
               createdBy: '',
               objectMarking: [],
+              objectAssignee: [],
               objectLabel: [],
               externalReferences: [],
             }}
@@ -175,7 +183,13 @@ const IncidentCreation = ({ paginationOptions }) => {
             onSubmit={onSubmit}
             onReset={() => setOpen(false)}
           >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -223,6 +237,10 @@ const IncidentCreation = ({ paginationOptions }) => {
                   label={t('Source')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
+                />
+                <ObjectAssigneeField
+                  name="objectAssignee"
+                  style={{ marginTop: 20, width: '100%' }}
                 />
                 <CreatedByField
                   name="createdBy"

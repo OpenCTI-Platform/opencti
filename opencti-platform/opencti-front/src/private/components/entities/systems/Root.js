@@ -22,6 +22,7 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -189,6 +190,30 @@ class RootSystem extends Component {
                           viewAs={viewAs}
                           onViewAs={this.handleChangeViewAs.bind(this)}
                         />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/entities/systems/:systemId/sightings"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            disableSharing={true}
+                            stixDomainObject={props.system}
+                            PopoverComponent={<SystemPopover />}
+                            onViewAs={this.handleChangeViewAs.bind(this)}
+                            enableReferences={props.settings.platform_enable_reference?.includes(
+                              'System',
+                            )}
+                          />
+                          <EntityStixSightingRelationships
+                            entityId={props.system.id}
+                            entityLink={link}
+                            noPadding={true}
+                            isTo={true}
+                            {...routeProps}
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route

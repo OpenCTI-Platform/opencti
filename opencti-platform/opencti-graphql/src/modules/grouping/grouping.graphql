@@ -89,6 +89,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     created: DateTime
     modified: DateTime
     x_opencti_graph_data: String
+    objectAssignee: AssigneeConnection
     # Container
     objects(
         first: Int

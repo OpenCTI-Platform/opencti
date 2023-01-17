@@ -89,6 +89,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     created: DateTime
     modified: DateTime
     x_opencti_graph_data: String
+    objectAssignee: AssigneeConnection
     # Narrative
     name: String!
     description: String
