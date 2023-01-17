@@ -144,6 +144,7 @@ class ListLinesContent extends Component {
       onToggleEntity,
       connectionKey,
       isTo,
+      redirectionMode,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -183,6 +184,7 @@ class ListLinesContent extends Component {
             isTo={isTo}
             onToggleShiftEntity={this._onRowShiftClick.bind(this)}
             index={index}
+            redirectionMode={redirectionMode}
           />
         ) : (
           React.cloneElement(LineComponent, {
@@ -203,6 +205,7 @@ class ListLinesContent extends Component {
             isTo,
             onToggleShiftEntity: this._onRowShiftClick.bind(this),
             index,
+            redirectionMode,
           })
         )}
       </div>
@@ -247,7 +250,7 @@ class ListLinesContent extends Component {
                       overscanRowCount={nbOfRowsToLoad}
                       rowCount={rowCount}
                       rowHeight={50}
-                      rowRenderer={this._rowRenderer}
+                      rowRenderer={this._rowRenderer.bind(this)}
                       scrollToIndex={-1}
                       scrollTop={scrollTop}
                       width={width}
@@ -288,6 +291,7 @@ ListLinesContent.propTypes = {
   selectAll: PropTypes.bool,
   connectionKey: PropTypes.string,
   isTo: PropTypes.bool,
+  redirectionMode: PropTypes.string,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ListLinesContent);

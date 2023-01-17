@@ -70,6 +70,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       viewAs: R.propOr(VIEW_AS_KNOWLEDGE, 'viewAs', this.params),
+      redirectionMode: R.propOr('overview', 'redirectionMode', this.params),
     };
   }
 
@@ -168,6 +169,10 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     this.setState({ numberOfElements });
   }
 
+  handleSwitchRedirectionMode(value) {
+    this.setState({ redirectionMode: value }, () => this.saveView());
+  }
+
   // eslint-disable-next-line class-methods-use-this
   buildColumns(helper) {
     const isRuntimeSort = helper.isRuntimeFieldEnable();
@@ -212,6 +217,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       filters,
       openExports,
       numberOfElements,
+      redirectionMode,
     } = this.state;
     const { stixDomainObjectOrStixCoreRelationship, authorId } = this.props;
     let exportContext = null;
@@ -239,6 +245,8 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             exportEntityType="Report"
             exportContext={exportContext}
             keyword={searchTerm}
+            handleSwitchRedirectionMode={this.handleSwitchRedirectionMode.bind(this)}
+            redirectionMode={redirectionMode}
             filters={filters}
             paginationOptions={paginationOptions}
             numberOfElements={numberOfElements}
@@ -267,6 +275,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
                   initialLoading={props === null}
                   onLabelClick={this.handleAddFilter.bind(this)}
                   setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  redirectionMode={redirectionMode}
                 />
               )}
             />

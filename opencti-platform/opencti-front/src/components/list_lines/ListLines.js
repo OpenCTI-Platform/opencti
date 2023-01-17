@@ -13,6 +13,8 @@ import {
   ArrowDropUp,
   FileDownloadOutlined,
   LibraryBooksOutlined,
+  PreviewOutlined,
+  SourceOutlined,
   ViewListOutlined,
   ViewModuleOutlined,
 } from '@mui/icons-material';
@@ -20,11 +22,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import {
-  GraphOutline,
-  FormatListGroup,
-  RelationManyToMany,
-} from 'mdi-material-ui';
+import { FormatListGroup, GraphOutline, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -178,6 +176,8 @@ class ListLines extends Component {
       enableNestedView,
       enableEntitiesView,
       currentView,
+      handleSwitchRedirectionMode,
+      redirectionMode,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -221,6 +221,48 @@ class ListLines extends Component {
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                 {t('entitie(s)')}
               </div>
+            )}
+            {handleSwitchRedirectionMode && (
+                <ToggleButtonGroup
+                  size="small"
+                  color="secondary"
+                  exclusive={true}
+                  onChange={(_, value) => {
+                    handleSwitchRedirectionMode(value);
+                  }}
+                  style={{ margin: '7px 20px 0 10px' }}
+                >
+                  <ToggleButton
+                    value="overview" aria-label="overview"
+                  >
+                    <Tooltip title={t('Redirecting to the Overview section')}>
+                      <PreviewOutlined
+                        fontSize="small"
+                        color={(!redirectionMode || redirectionMode === 'overview') ? 'secondary' : 'primary'}
+                      />
+                    </Tooltip>
+                  </ToggleButton>
+                  <ToggleButton
+                    value="knowledge" aria-label="knowledge"
+                  >
+                    <Tooltip title={t('Redirecting to the Knowledge section')}>
+                      <GraphOutline
+                        fontSize="small"
+                        color={redirectionMode === 'knowledge' ? 'secondary' : 'primary'}
+                      />
+                    </Tooltip>
+                  </ToggleButton>
+                  <ToggleButton
+                    value="content" aria-label="content"
+                  >
+                    <Tooltip title={t('Redirecting to the Content section')}>
+                      <SourceOutlined
+                        fontSize="small"
+                        color={redirectionMode === 'content' ? 'secondary' : 'primary'}
+                      />
+                    </Tooltip>
+                  </ToggleButton>
+            </ToggleButtonGroup>
             )}
             {(typeof handleChangeView === 'function'
               || typeof handleToggleExports === 'function') && (
@@ -289,7 +331,7 @@ class ListLines extends Component {
                 {typeof handleChangeView === 'function' && enableGraph && (
                   <ToggleButton value="graph" aria-label="graph">
                     <Tooltip title={t('Graph view')}>
-                      <GraphOutline fontSize="small" color="primary" />
+                      <VectorPolygon fontSize="small" color="primary" />
                     </Tooltip>
                   </ToggleButton>
                 )}
@@ -494,6 +536,8 @@ ListLines.propTypes = {
   enableNestedView: PropTypes.bool,
   enableEntitiesView: PropTypes.bool,
   currentView: PropTypes.string,
+  handleSwitchRedirectionMode: PropTypes.func,
+  redirectionMode: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);
