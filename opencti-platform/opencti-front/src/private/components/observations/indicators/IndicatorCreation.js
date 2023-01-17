@@ -346,6 +346,7 @@ const IndicatorCreation = ({ openExports, paginationOptions }) => {
                     type="checkbox"
                     name="x_opencti_detection"
                     label={t('Detection')}
+                    fullWidth={true}
                     containerstyle={{ marginTop: 20 }}
                   />
                   <Field
@@ -353,7 +354,8 @@ const IndicatorCreation = ({ openExports, paginationOptions }) => {
                     type="checkbox"
                     name="createObservables"
                     label={t('Create observables from this indicator')}
-                    containerstyle={{ marginTop: 20 }}
+                    fullWidth={true}
+                    containerstyle={{ marginTop: 10 }}
                   />
                   <div className={classes.buttons}>
                     <Button

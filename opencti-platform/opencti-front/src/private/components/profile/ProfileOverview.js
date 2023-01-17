@@ -47,7 +47,7 @@ const styles = () => ({
     height: '100%',
     margin: '0 auto',
     marginBottom: 30,
-    padding: '20px 20px 20px 20px',
+    padding: 20,
     textAlign: 'left',
     borderRadius: 6,
     position: 'relative',
@@ -232,7 +232,7 @@ const OtpComponent = ({ closeFunction }) => (
 
 const ProfileOverviewComponent = (props) => {
   const { t, fldt } = useFormatter();
-  const { me, subscriptionStatus, about, classes } = props;
+  const { me, subscriptionStatus, about, settings, classes } = props;
   const { external, otp_activated: useOtp } = me;
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
@@ -503,6 +503,7 @@ const ProfileOverviewComponent = (props) => {
                   startIcon={<NoEncryptionOutlined />}
                   onClick={disableOtp}
                   classes={{ root: classes.button }}
+                  disabled={settings.otp_mandatory}
                 >
                   {t('Disable two-factor authentication')}
                 </Button>
@@ -798,6 +799,11 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   about: graphql`
     fragment ProfileOverview_about on AppInfo {
       version
+    }
+  `,
+  settings: graphql`
+    fragment ProfileOverview_settings on Settings {
+      otp_mandatory
     }
   `,
 });

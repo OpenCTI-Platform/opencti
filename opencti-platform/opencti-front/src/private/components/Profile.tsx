@@ -20,6 +20,7 @@ export const profileQuery = graphql`
       ...ProfileOverview_about
     }
     settings {
+      ...ProfileOverview_settings
       platform_modules {
         id
         enable
@@ -43,6 +44,7 @@ const Profile = () => {
         <ProfileOverview
           me={me}
           about={about}
+          settings={settings}
           subscriptionStatus={subscriptionStatus}
         />
       </Suspense>
