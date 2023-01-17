@@ -4,7 +4,7 @@ import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor, EVENT_CURRENT_VERSION, lockResource, StreamProcessor } from '../database/redis';
-import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
   patchAttribute,
@@ -326,6 +326,7 @@ const initRuleManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let syncListening = true;
+  let running = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -336,6 +337,7 @@ const initRuleManager = () => {
     try {
       // Lock the manager
       lock = await lockResource([RULE_ENGINE_KEY]);
+      running = true;
       logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
       // Start the stream listening
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', true, ruleStreamHandler);
@@ -350,6 +352,7 @@ const initRuleManager = () => {
         logApp.error('[OPENCTI-MODULE] Rule engine failed to start', { error: e });
       }
     } finally {
+      running = false;
       if (streamProcessor) await streamProcessor.shutdown();
       if (lock) await lock.unlock();
     }
@@ -360,6 +363,14 @@ const initRuleManager = () => {
       scheduler = setIntervalAsync(async () => {
         await ruleHandler(ruleManager.lastEventId);
       }, SCHEDULE_TIME);
+    },
+    status: async () => {
+      logApp.info('[OPENCTI-MODULE] Rule engine declares itself');
+      return {
+        id: 'rule_engine',
+        enabled: booleanConf('rule_engine:enabled', false),
+        running,
+      };
     },
     shutdown: async () => {
       syncListening = false;

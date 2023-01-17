@@ -20,7 +20,7 @@ import {
   TASK_TYPE_RULE,
   updateTask,
 } from '../domain/task';
-import conf, { logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserById } from '../domain/user';
 import {
   createRelation,
@@ -78,6 +78,8 @@ const ACTION_ON_CONTAINER_FIELD = 'container-object';
 const ACTION_TYPE_ATTRIBUTE = 'ATTRIBUTE';
 const ACTION_TYPE_RELATION = 'RELATION';
 const ACTION_TYPE_REVERSED_RELATION = 'REVERSED_RELATION';
+
+let running = false;
 
 const findTaskToExecute = async (context) => {
   const tasks = await findAll(context, SYSTEM_USER, {
@@ -420,6 +422,7 @@ const taskHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
+    running = true;
     const context = executionContext('task_manager', SYSTEM_USER);
     const task = await findTaskToExecute(context);
     // region Task checking
@@ -472,6 +475,7 @@ const taskHandler = async () => {
       logApp.error('[OPENCTI-MODULE] Task manager fail to execute', { error: e });
     }
   } finally {
+    running = false;
     logApp.debug('[OPENCTI-MODULE] Task manager done');
     if (lock) await lock.unlock();
   }
@@ -484,6 +488,14 @@ const initTaskManager = () => {
       scheduler = setIntervalAsync(async () => {
         await taskHandler();
       }, SCHEDULE_TIME);
+    },
+    status: async () => {
+      logApp.info('[OPENCTI-MODULE] Task manager declares itself');
+      return {
+        id: 'task_scheduler',
+        enabled: booleanConf('task_scheduler:enabled', false),
+        running,
+      };
     },
     shutdown: async () => {
       if (scheduler) {
