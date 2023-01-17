@@ -19,6 +19,7 @@ import syncManager from './manager/syncManager';
 import retentionManager from './manager/retentionManager';
 import httpServer from './http/httpServer';
 import connectorManager from './manager/connectorManager';
+import clusterManager from './manager/clusterManager';
 
 // region static graphql modules
 import './modules/index';
@@ -90,6 +91,9 @@ export const startModules = async () => {
     logApp.info('[OPENCTI-MODULE] History manager not started (disabled by configuration)');
   }
   // endregion
+  // region Cluster manager
+  await clusterManager.start();
+  // endregion
 };
 
 export const shutdownModules = async () => {
@@ -149,6 +153,11 @@ export const shutdownModules = async () => {
     await historyManager.shutdown();
     logApp.info(`[OPENCTI-MODULE] History manager stopped in ${new Date().getTime() - stopTime} ms`);
   }
+  // endregion
+  // region Cluster manager
+  stopTime = new Date().getTime();
+  await clusterManager.shutdown();
+  logApp.info(`[OPENCTI-MODULE] Cluster manager stopped in ${new Date().getTime() - stopTime} ms`);
   // endregion
 };
 // endregion

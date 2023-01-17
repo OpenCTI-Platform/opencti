@@ -192,6 +192,11 @@ const initHistoryManager = () => {
         }
       }, SCHEDULE_TIME);
     },
+    declare: async () => {
+      if (syncListening) {
+        logApp.info(`[OPENCTI-MODULE] History manager declares itself as ${HISTORY_ENGINE_KEY}`);
+      }
+    },
     shutdown: async () => {
       syncListening = false;
       if (scheduler) {
