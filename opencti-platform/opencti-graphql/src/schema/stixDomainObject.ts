@@ -99,7 +99,7 @@ const STIX_DOMAIN_OBJECT_LOCATIONS: Array<string> = [
 schemaTypes.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATIONS);
 export const isStixDomainObjectLocation = (type: string): boolean => {
   const locationEntities = schemaTypes.get(ENTITY_TYPE_LOCATION);
-  return R.includes(type, locationEntities) || type === ENTITY_TYPE_LOCATION;
+  return locationEntities.includes(type) || type === ENTITY_TYPE_LOCATION;
 };
 
 export const STIX_DOMAIN_OBJECTS: Array<string> = [
