@@ -1,73 +1,73 @@
-import React, { useState } from "react";
-import { Field, Form, Formik } from "formik";
-import Drawer from "@mui/material/Drawer";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Fab from "@mui/material/Fab";
-import { Add, Close } from "@mui/icons-material";
-import * as Yup from "yup";
-import { graphql } from "react-relay";
-import * as R from "ramda";
-import makeStyles from "@mui/styles/makeStyles";
-import { useFormatter } from "../../../../components/i18n";
+import React, { useState } from 'react';
+import { Field, Form, Formik } from 'formik';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
+import * as Yup from 'yup';
+import { graphql } from 'react-relay';
+import * as R from 'ramda';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import {
   commitMutation,
   handleErrorInForm,
-} from "../../../../relay/environment";
-import TextField from "../../../../components/TextField";
-import CreatedByField from "../../common/form/CreatedByField";
-import ObjectLabelField from "../../common/form/ObjectLabelField";
-import ObjectMarkingField from "../../common/form/ObjectMarkingField";
-import MarkDownField from "../../../../components/MarkDownField";
-import ConfidenceField from "../../common/form/ConfidenceField";
-import ExternalReferencesField from "../../common/form/ExternalReferencesField";
-import { insertNode } from "../../../../utils/store";
-import OpenVocabField from "../../common/form/OpenVocabField";
-import { fieldSpacingContainerStyle } from "../../../../utils/field";
-import { isEmptyField } from "../../../../utils/utils";
-import ObjectAssigneeField from "../../common/form/ObjectAssigneeField";
+} from '../../../../relay/environment';
+import TextField from '../../../../components/TextField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkDownField from '../../../../components/MarkDownField';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import { insertNode } from '../../../../utils/store';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { isEmptyField } from '../../../../utils/utils';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
-    minHeight: "100vh",
-    width: "50%",
-    position: "fixed",
-    transition: theme.transitions.create("width", {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
   },
   createButton: {
-    position: "fixed",
+    position: 'fixed',
     bottom: 30,
     right: 30,
   },
   buttons: {
     marginTop: 20,
-    textAlign: "right",
+    textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.background.nav,
-    padding: "20px 20px 20px 60px",
+    padding: '20px 20px 20px 60px',
   },
   closeButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 12,
     left: 5,
-    color: "inherit",
+    color: 'inherit',
   },
   importButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 15,
     right: 20,
   },
   container: {
-    padding: "10px 20px 20px 20px",
+    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -79,18 +79,17 @@ const IncidentMutation = graphql`
   }
 `;
 
-const IncidentValidation = (t) =>
-  Yup.object().shape({
-    name: Yup.string().required(t("This field is required")),
-    confidence: Yup.number(),
-    incident_type: Yup.string(),
-    severity: Yup.string(),
-    source: Yup.string(),
-    description: Yup.string()
-      .min(3, t("The value is too short"))
-      .max(5000, t("The value is too long"))
-      .required(t("This field is required")),
-  });
+const IncidentValidation = (t) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
+  confidence: Yup.number(),
+  incident_type: Yup.string(),
+  severity: Yup.string(),
+  source: Yup.string(),
+  description: Yup.string()
+    .min(3, t('The value is too short'))
+    .max(5000, t('The value is too long'))
+    .required(t('This field is required')),
+});
 
 const IncidentCreation = ({ paginationOptions }) => {
   const classes = useStyles();
@@ -98,32 +97,31 @@ const IncidentCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const cleanedValues = isEmptyField(values.severity)
-      ? R.dissoc("severity", values)
+      ? R.dissoc('severity', values)
       : values;
     const adaptedValues = R.evolve(
       {
         confidence: () => parseInt(values.confidence, 10),
-        createdBy: R.path(["value"]),
-        objectMarking: R.pluck("value"),
-        objectAssignee: R.pluck("value"),
-        objectLabel: R.pluck("value"),
-        objectOrganization: R.pluck("value"),
-        externalReferences: R.pluck("value"),
+        createdBy: R.path(['value']),
+        objectMarking: R.pluck('value'),
+        objectAssignee: R.pluck('value'),
+        objectLabel: R.pluck('value'),
+        objectOrganization: R.pluck('value'),
+        externalReferences: R.pluck('value'),
       },
-      cleanedValues
+      cleanedValues,
     );
     commitMutation({
       mutation: IncidentMutation,
       variables: {
         input: adaptedValues,
       },
-      updater: (store) =>
-        insertNode(
-          store,
-          "Pagination_incidents",
-          paginationOptions,
-          "incidentAdd"
-        ),
+      updater: (store) => insertNode(
+        store,
+        'Pagination_incidents',
+        paginationOptions,
+        'incidentAdd',
+      ),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -164,18 +162,18 @@ const IncidentCreation = ({ paginationOptions }) => {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t("Create an incident")}</Typography>
+          <Typography variant="h6">{t('Create an incident')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik
             initialValues={{
-              name: "",
+              name: '',
               confidence: 75,
-              incident_type: "",
-              severity: "",
-              source: "",
-              description: "",
-              createdBy: "",
+              incident_type: '',
+              severity: '',
+              source: '',
+              description: '',
+              createdBy: '',
               objectMarking: [],
               objectAssignee: [],
               objectLabel: [],
@@ -192,23 +190,23 @@ const IncidentCreation = ({ paginationOptions }) => {
               setFieldValue,
               values,
             }) => (
-              <Form style={{ margin: "20px 0 20px 0" }}>
+              <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
                   variant="standard"
                   name="name"
-                  label={t("Name")}
+                  label={t('Name')}
                   fullWidth={true}
-                  detectDuplicate={["Incident"]}
+                  detectDuplicate={['Incident']}
                 />
                 <ConfidenceField
                   name="confidence"
-                  label={t("Confidence")}
+                  label={t('Confidence')}
                   fullWidth={true}
                   containerStyle={fieldSpacingContainerStyle}
                 />
                 <OpenVocabField
-                  label={t("Incident type")}
+                  label={t('Incident type')}
                   type="incident-type-ov"
                   name="incident_type"
                   containerStyle={fieldSpacingContainerStyle}
@@ -216,7 +214,7 @@ const IncidentCreation = ({ paginationOptions }) => {
                   onChange={setFieldValue}
                 />
                 <OpenVocabField
-                  label={t("Severity")}
+                  label={t('Severity')}
                   type="incident-severity-ov"
                   name="severity"
                   containerStyle={fieldSpacingContainerStyle}
@@ -226,7 +224,7 @@ const IncidentCreation = ({ paginationOptions }) => {
                 <Field
                   component={MarkDownField}
                   name="description"
-                  label={t("Description")}
+                  label={t('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows="4"
@@ -236,32 +234,32 @@ const IncidentCreation = ({ paginationOptions }) => {
                   component={TextField}
                   variant="standard"
                   name="source"
-                  label={t("Source")}
+                  label={t('Source')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
                 <ObjectAssigneeField
                   name="objectAssignee"
-                  style={{ marginTop: 20, width: "100%" }}
+                  style={{ marginTop: 20, width: '100%' }}
                 />
                 <CreatedByField
                   name="createdBy"
-                  style={{ marginTop: 20, width: "100%" }}
+                  style={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
                 />
                 <ObjectLabelField
                   name="objectLabel"
-                  style={{ marginTop: 20, width: "100%" }}
+                  style={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
                   values={values.objectLabel}
                 />
                 <ObjectMarkingField
                   name="objectMarking"
-                  style={{ marginTop: 20, width: "100%" }}
+                  style={{ marginTop: 20, width: '100%' }}
                 />
                 <ExternalReferencesField
                   name="externalReferences"
-                  style={{ marginTop: 20, width: "100%" }}
+                  style={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
                   values={values.externalReferences}
                 />
@@ -272,7 +270,7 @@ const IncidentCreation = ({ paginationOptions }) => {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t("Cancel")}
+                    {t('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
@@ -281,7 +279,7 @@ const IncidentCreation = ({ paginationOptions }) => {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t("Create")}
+                    {t('Create')}
                   </Button>
                 </div>
               </Form>
