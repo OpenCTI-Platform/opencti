@@ -6,7 +6,6 @@ import { ListItem, ListItemText } from '@mui/material';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
@@ -86,33 +85,31 @@ const EntitySettingAttributesConfiguration = ({
   }));
 
   return (
-    <Grid item={true} xs={6}>
-      <div>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Mandatory attributes')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <span>Mandatory attributes</span>
-          <List>
-            {mandatoryAttributes.map((attr) => (
-              <ListItem>
-                <ListItemText
-                  primary={
-                    <div>
-                      <span>{attr.name}</span>
-                      <Switch checked={attr.mandatory}
-                              disabled={attr.builtIn}
-                              onChange={(_, checked) => handleSubmitField(attr.name, checked)}
-                      />
-                    </div>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-      </div>
-    </Grid>
+    <div style={{ height: '100%' }}>
+      <Typography variant="h4" gutterBottom={true}>
+        {t('Mandatory attributes')}
+      </Typography>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <span>Mandatory attributes</span>
+        <List>
+          {mandatoryAttributes.map((attr) => (
+            <ListItem>
+              <ListItemText
+                primary={
+                  <div>
+                    <span>{attr.name}</span>
+                    <Switch checked={attr.mandatory}
+                            disabled={attr.builtIn}
+                            onChange={(_, checked) => handleSubmitField(attr.name, checked)}
+                    />
+                  </div>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Paper>
+    </div>
   );
 };
 

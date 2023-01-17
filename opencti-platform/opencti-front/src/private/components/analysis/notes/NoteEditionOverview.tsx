@@ -174,7 +174,7 @@ NoteEditionOverviewProps
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[]) => {
+  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[]) => {
     if (!enableReferences) {
       let finalValue = value ?? '';
       if (name === 'x_opencti_workflow_id') {
@@ -314,14 +314,12 @@ NoteEditionOverviewProps
             editContext={context}
           />
           <ConfidenceField
-            name="confidence"
             onFocus={handleChangeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+            entityType="Note"
           />
           <Field
             component={SliderField}

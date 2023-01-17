@@ -20,7 +20,7 @@ export const queryDefaultSubTypes = async (search : string | null = null) => {
 };
 
 const querySubType = async (subTypeId: string) => {
-  const attributes = schemaDefinition.getAttributes(subTypeId);
+  const attributes = schemaDefinition.getAttributeNames(subTypeId);
   if (attributes.length > 0) {
     return { id: subTypeId, label: subTypeId };
   }

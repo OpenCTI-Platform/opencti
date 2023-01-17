@@ -104,6 +104,7 @@ const Campaign = createFragmentContainer(CampaignComponent, {
     fragment Campaign_campaign on Campaign {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

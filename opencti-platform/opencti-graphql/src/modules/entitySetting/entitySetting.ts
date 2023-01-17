@@ -1,13 +1,11 @@
-import type { StoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
-import { ModuleDefinition, registerDefinition } from '../../types/module';
 import type { StixEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import entitySettingResolvers from './entitySetting-resolvers';
 import entitySettingTypeDefs from './entitySetting.graphql';
 import convertEntitySettingToStix from './entitySetting-converter';
 import {
-  attributeConfiguration,
+  attributeConfiguration, confidenceScale,
   validateEntitySettingCreation,
   validateEntitySettingUpdate
 } from './entitySetting-utils';
@@ -42,6 +40,7 @@ const ENTITY_SETTING_DEFINITION: ModuleRegisterDefinition<StoreEntityEntitySetti
     { name: 'platform_hidden_type', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'enforce_reference', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'attributes_configuration', type: 'json', mandatoryType: 'no', multiple: false, upsert: false, schemaDef: attributeConfiguration },
+    { name: 'confidence_scale', type: 'json', mandatoryType: 'no', multiple: false, upsert: true, schemaDef: confidenceScale },
   ],
   relations: [],
   representative: (stix: StixEntitySetting) => {

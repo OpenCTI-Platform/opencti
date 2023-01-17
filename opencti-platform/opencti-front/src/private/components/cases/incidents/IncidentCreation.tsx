@@ -117,6 +117,7 @@ const IncidentCreation = ({
       description: values.description,
       severity: values.severity,
       priority: values.priority,
+      confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
@@ -225,10 +226,8 @@ const IncidentCreation = ({
                   containerStyle={fieldSpacingContainerStyle}
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
                   containerStyle={fieldSpacingContainerStyle}
+                  entityType="Incident"
                 />
                 <Field
                   component={MarkDownField}

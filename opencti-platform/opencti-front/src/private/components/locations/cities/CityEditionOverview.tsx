@@ -124,7 +124,6 @@ const cityValidation = (t: (v: string) => string) => Yup.object().shape({
   longitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
   x_opencti_workflow_id: Yup.object(),
 });
-
 interface CityEditionOverviewProps {
   cityRef: CityEditionOverview_city$key,
   context: readonly ({

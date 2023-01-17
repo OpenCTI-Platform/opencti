@@ -258,14 +258,12 @@ const IntrusionSetEditionOverviewComponent = (props) => {
           }
         />
         <ConfidenceField
-          name="confidence"
           onFocus={handleChangeFocus}
-          onChange={handleSubmitField}
-          label={t('Confidence')}
-          fullWidth={true}
+          onSubmit={handleSubmitField}
           containerStyle={fieldSpacingContainerStyle}
           editContext={context}
           variant="edit"
+          entityType="Intrusion-Set"
         />
         <Field
           component={MarkDownField}

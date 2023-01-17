@@ -88,6 +88,7 @@ const Report = createFragmentContainer(ReportComponent, {
     fragment Report_report on Report {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

@@ -203,10 +203,8 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
         detectDuplicate={['Data-Source']}
       />
       <ConfidenceField
-        name="confidence"
-        label={t('Confidence')}
-        fullWidth={true}
         containerStyle={fieldSpacingContainerStyle}
+        entityType="Data-Source"
       />
       <Field
         component={MarkDownField}

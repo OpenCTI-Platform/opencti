@@ -3065,6 +3065,7 @@ enum OpinionsOrdering {
   objectMarking
   x_opencti_workflow_id
   creator
+  confidence
 }
 enum OpinionsFilter {
   explanation
@@ -3082,6 +3083,7 @@ enum OpinionsFilter {
   x_opencti_workflow_id
   revoked
   creator
+  confidence
 }
 input OpinionsFiltering {
   key: [OpinionsFilter!]!

@@ -205,7 +205,7 @@ IncidentEditionOverviewProps
 
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[] | null,
+    value: Option | string | string[] | null | number | number[],
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
@@ -280,14 +280,12 @@ IncidentEditionOverviewProps
             editContext={context}
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+            entityType="Case"
           />
           <Field
             component={MarkDownField}

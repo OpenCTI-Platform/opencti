@@ -230,9 +230,7 @@ const ReportCreation = ({ paginationOptions }) => {
                       multiple={true}
                     />
                     <ConfidenceField
-                      name="confidence"
-                      label={t('Confidence')}
-                      fullWidth={true}
+                      entityType="Report"
                       containerStyle={fieldSpacingContainerStyle}
                     />
                     <Field

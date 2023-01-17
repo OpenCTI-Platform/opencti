@@ -13,6 +13,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
 import EntitySettingAttributesConfiguration from './EntitySettingAttributesConfiguration';
+import EntitySettingConfidenceScale from './EntitySettingConfidenceScale';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -37,6 +38,7 @@ export const subTypeFragment = graphql`
       platform_entity_files_ref
       platform_hidden_type
       target_type
+      confidence_scale 
     }
     statuses {
       edges {
@@ -69,6 +71,8 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
     targetType: subType.id,
   });
 
+  const confidenceScale = subType?.settings?.confidence_scale;
+
   return (
     <>
       {queryRef && (
@@ -80,7 +84,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
           </Typography>
           <Grid container={true} spacing={3} style={{ paddingTop: 10 }}>
             <Grid item={true} xs={6}>
-              <div>
+              <div style={{ height: '100%' }}>
                 <Typography variant="h4" gutterBottom={true}>
                   {t('Configuration')}
                 </Typography>
@@ -99,12 +103,27 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
                 </Paper>
               </div>
             </Grid>
-            <EntitySettingAttributesConfiguration queryRef={queryRef} subType={subType}/>
+            <Grid item={true} xs={6}>
+              <EntitySettingAttributesConfiguration queryRef={queryRef} subType={subType}/>
+            </Grid>
           </Grid>
+          { confidenceScale ? (
+            <Grid container={true} spacing={3} style={{ paddingTop: 10 }}>
+              <Grid item={true} xs={12}>
+                <div style={{ marginTop: 30 }}>
+                  <Typography variant="h4" gutterBottom={true}>
+                    {t('Confidence Scale Configuration')}
+                  </Typography>
+                  <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <EntitySettingConfidenceScale queryRef={queryRef} />
+                  </Paper>
+                </div>
+              </Grid>
+            </Grid>
+          ) : <></> }
         </React.Suspense>
       )}
     </>
   );
 };
-
 export default SubType;

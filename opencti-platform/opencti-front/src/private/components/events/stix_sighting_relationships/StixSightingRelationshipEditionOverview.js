@@ -322,13 +322,11 @@ const StixSightingRelationshipEditionOverview = ({
               />
               <ConfidenceField
                 variant="edit"
-                name="confidence"
-                label={t('Confidence level')}
                 onFocus={handleChangeFocus}
-                onChange={handleSubmitField}
+                onSubmit={handleSubmitField}
                 editContext={editContext}
                 containerStyle={fieldSpacingContainerStyle}
-                disabled={inferred}
+                entityType="stix-sighting-relationship"
               />
               <Field
                 component={DateTimePickerField}

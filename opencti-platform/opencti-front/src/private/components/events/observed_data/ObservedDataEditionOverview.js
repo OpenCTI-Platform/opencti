@@ -294,14 +294,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 }
               />
               <ConfidenceField
-                name="confidence"
                 onFocus={handleChangeFocus}
-                onChange={handleSubmitField}
-                label={t('Confidence')}
-                fullWidth={true}
+                onSubmit={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
                 variant="edit"
+                entityType="Observed-Data"
               />
               {observedData.workflowEnabled && (
                 <StatusField

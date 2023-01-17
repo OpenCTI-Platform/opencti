@@ -205,9 +205,7 @@ const CampaignCreation = ({ paginationOptions }) => {
                   ]}
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
+                  entityType="Campaign"
                   containerStyle={fieldSpacingContainerStyle}
                 />
                 <Field

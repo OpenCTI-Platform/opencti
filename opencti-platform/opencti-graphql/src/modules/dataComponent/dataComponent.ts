@@ -1,6 +1,4 @@
 import dataComponentTypeDefs from './dataComponent.graphql';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_DATA_COMPONENT,

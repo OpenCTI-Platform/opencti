@@ -2669,6 +2669,7 @@ enum OpinionsOrdering {
   objectMarking
   x_opencti_workflow_id
   creator
+  confidence
 }
 
 enum OpinionsFilter {
@@ -2687,6 +2688,7 @@ enum OpinionsFilter {
   x_opencti_workflow_id
   revoked
   creator
+  confidence
 }
 
 input OpinionsFiltering {
@@ -9762,13 +9764,10 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean
   platform_hidden_type: Boolean
   enforce_reference: Boolean
+  confidence_scale: String
   attributes_configuration: String
   created_at: DateTime!
   updated_at: DateTime!
-}
-
-type AttributeConfiguration {
-  name: String
 }
 
 enum EntitySettingsOrdering {

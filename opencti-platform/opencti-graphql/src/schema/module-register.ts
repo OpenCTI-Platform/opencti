@@ -78,7 +78,7 @@ export interface ModuleRegisterDefinition<T extends StoreEntity> {
     multiple: boolean;
     checker: (fromType: string, toType: string) => boolean;
   }>;
-  converter: ConvertFn<T>;
+  converter: ConvertFn<T, any>;
   validators: {
     validatorCreation?: ValidatorFn,
     validatorUpdate?: ValidatorFn

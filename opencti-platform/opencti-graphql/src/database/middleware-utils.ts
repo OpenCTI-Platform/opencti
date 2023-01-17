@@ -121,17 +121,27 @@ export const validateInputUpdate = async (
   entitySetting: BasicStoreEntityEntitySetting,
   initial: Record<string, unknown>
 ) => {
+// Convert input to record
+  let inputs: Record<string, unknown> = {};
+  if (Array.isArray(input)) {
+    input.forEach((obj) => {
+      inputs[obj.key] = obj.value;
+    });
+  } else {
+    inputs = input;
+  }
+
   // Generic validator
-  validateSchemaAttributes(instanceType, input);
-  validateMandatoryAttributesOnUpdate(instanceType, input, entitySetting);
+  validateSchemaAttributes(instanceType, inputs);
+  validateMandatoryAttributesOnUpdate(instanceType, inputs, entitySetting);
 
   // Functional validator
   const validator = getEntityValidatorUpdate(instanceType);
 
   if (validator) {
-    const validate = await validator(context, user, input, initial);
+    const validate = await validator(context, user, inputs, initial);
     if (!validate) {
-      throw UnsupportedError('The input is not valid', { input });
+      throw UnsupportedError('The input is not valid', { inputs });
     }
   }
 };

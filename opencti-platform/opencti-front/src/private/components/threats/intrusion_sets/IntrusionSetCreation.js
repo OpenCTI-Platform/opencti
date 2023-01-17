@@ -190,9 +190,7 @@ const IntrusionSetCreation = ({ paginationOptions }) => {
                   ]}
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
+                  entityType="Intrusion-Set"
                   containerStyle={fieldSpacingContainerStyle}
                 />
                 <Field

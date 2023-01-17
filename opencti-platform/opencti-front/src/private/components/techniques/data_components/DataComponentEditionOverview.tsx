@@ -21,7 +21,6 @@ import { DataComponentEditionOverviewFieldPatchMutation } from './__generated__/
 import { DataComponentEditionOverviewFocusMutation } from './__generated__/DataComponentEditionOverviewFocusMutation.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const dataComponentMutationFieldPatch = graphql`
   mutation DataComponentEditionOverviewFieldPatchMutation(
@@ -115,24 +114,18 @@ const DataComponentEditionOverviewFragment = graphql`
   }
 `;
 
-const dataComponentValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string()
-      .required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-    references: Yup.array()
-      .required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-    confidence: Yup.number(),
-  };
-
-  shape = useCustomYup('Data-Component', shape, t);
-
-  return Yup.object().shape(shape);
-};
+const dataComponentValidation = (t: (message: string) => string) => Yup.object().shape({
+  name: Yup.string()
+    .required(t('This field is required')),
+  description: Yup.string()
+    .min(3, t('The value is too short'))
+    .max(5000, t('The value is too long'))
+    .required(t('This field is required')),
+  references: Yup.array()
+    .required(t('This field is required')),
+  x_opencti_workflow_id: Yup.object(),
+  confidence: Yup.number(),
+});
 
 interface DataComponentEditionOverviewComponentProps {
   data: DataComponentEditionOverview_dataComponent$key
@@ -181,11 +174,11 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
     });
   };
 
-  const handleSubmitField = (name: string, value: string | { label: string, color: string, value: string, order: string }) => {
+  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[]) => {
     if (!enableReferences) {
       let finalValue: string;
       if (name === 'x_opencti_workflow_id' && typeof value !== 'string') {
-        finalValue = value.value;
+        finalValue = (value as Option).value;
       } else {
         finalValue = value as string;
       }
@@ -319,14 +312,12 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
               }
             />
             <ConfidenceField
-              name="confidence"
               onFocus={handleChangeFocus}
-              onChange={handleSubmitField}
-              label={t('Confidence')}
-              fullWidth={true}
+              onSubmit={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
               editContext={context}
               variant="edit"
+              entityType="Data-Component"
             />
             <Field
               component={MarkDownField}

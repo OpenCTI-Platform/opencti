@@ -167,3 +167,16 @@ export const handleErrorInForm = (error, setErrors) => {
     MESSAGING$.messages.next(messages);
   }
 };
+
+export const handleError = (error) => {
+  if (error && error.res && error.res.errors) {
+    const messages = map(
+      (e) => ({
+        type: 'error',
+        text: pathOr(e.message, ['data', 'message'], e),
+      }),
+      error.res.errors,
+    );
+    MESSAGING$.messages.next(messages);
+  }
+};

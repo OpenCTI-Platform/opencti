@@ -340,15 +340,13 @@ const ReportEditionOverviewComponent = (props) => {
                       editContext={context}
                     />
                     <ConfidenceField
-                      name="confidence"
                       onFocus={handleChangeFocus}
-                      onChange={handleSubmitField}
-                      label={t('Confidence')}
-                      fullWidth={true}
+                      onSubmit={handleSubmitField}
                       containerStyle={fieldSpacingContainerStyle}
-                      editContext={context}
                       variant="edit"
-                    />
+                      editContext={context}
+                      entityType="Report"
+                      />
                     <Field
                       component={MarkDownField}
                       name="description"

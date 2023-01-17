@@ -37,7 +37,7 @@ export const entitySettingsEditField = async (context: AuthContext, user: AuthUs
 
 // -- INITIALIZATION --
 
-const addEntitySetting = async (context: AuthContext, user: AuthUser, entitySetting: Record<string, string | boolean>) => {
+const addEntitySetting = async (context: AuthContext, user: AuthUser, entitySetting: Record<string, string | boolean | object>) => {
   const created = await createEntity(context, user, entitySetting, ENTITY_TYPE_ENTITY_SETTING);
   await notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].ADDED_TOPIC, created, user);
 };
@@ -53,12 +53,12 @@ export const initCreateEntitySettings = async (context: AuthContext) => {
     // If setting not yet initialize, do it
     if (!currentEntityTypes.includes(entityType)) {
       const availableSettings = getAvailableSettings(entityType);
-      const entitySetting: Record<string, string | boolean> = {
-        target_type: entityType
+      const entitySetting: Record<string, string | boolean | object> = {
+        target_type: entityType,
       };
       availableSettings.forEach((key) => {
-        if (defaultEntitySetting[key]) {
-          entitySetting[key] = defaultEntitySetting[key]();
+        if (defaultEntitySetting[key] !== undefined) {
+          entitySetting[key] = defaultEntitySetting[key];
         }
       });
       await addEntitySetting(context, SYSTEM_USER, entitySetting);

@@ -203,9 +203,7 @@ const ThreatActorCreation = ({ paginationOptions }) => {
                   onChange={setFieldValue}
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
+                  entityType="Threat-Actor"
                   containerStyle={{ width: '100%', marginTop: 20 }}
                 />
                 <Field

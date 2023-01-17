@@ -200,10 +200,8 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       <ConfidenceField
-        name="confidence"
-        label={t('Confidence')}
-        fullWidth={true}
         containerStyle={fieldSpacingContainerStyle}
+        entityType="Opinion"
       />
       <CreatedByField
         name="createdBy"
