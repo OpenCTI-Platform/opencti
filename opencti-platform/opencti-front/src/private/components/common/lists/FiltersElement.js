@@ -15,7 +15,7 @@ import FilterAutocomplete from './FilterAutocomplete';
 const styles = (theme) => ({
   helpertext: {
     display: 'inline-block',
-    color: theme.palette.primary.main,
+    color: theme.palette.text.secondary,
     marginTop: 20,
   },
 });
@@ -39,58 +39,60 @@ const FiltersElement = ({
 
   return (
     <div>
-    <Grid container={true} spacing={2}>
-      {variant === FiltersVariant.dialog && (
-        <Grid item={true} xs={12}>
-          <TextField
-            label={t('Global keyword')}
-            variant="outlined"
-            size="small"
-            fullWidth={true}
-            value={keyword}
-            onChange={handleChangeKeyword}
-          />
-        </Grid>
-      )}
-      {R.filter(
-        (n) => noDirectFilters || !R.includes(n, directFilters),
-        availableFilterKeys,
-      ).map((filterKey) => {
-        if (
-          filterKey.endsWith('start_date')
-          || filterKey.endsWith('end_date')
-        ) {
+      <Grid container={true} spacing={2}>
+        {variant === FiltersVariant.dialog && (
+          <Grid item={true} xs={12}>
+            <TextField
+              label={t('Global keyword')}
+              variant="outlined"
+              size="small"
+              fullWidth={true}
+              value={keyword}
+              onChange={handleChangeKeyword}
+            />
+          </Grid>
+        )}
+        {R.filter(
+          (n) => noDirectFilters || !R.includes(n, directFilters),
+          availableFilterKeys,
+        ).map((filterKey) => {
+          if (
+            filterKey.endsWith('start_date')
+            || filterKey.endsWith('end_date')
+          ) {
+            return (
+              <Grid key={filterKey} item={true} xs={6}>
+                <FilterDate
+                  defaultHandleAddFilter={defaultHandleAddFilter}
+                  filterKey={filterKey}
+                  inputValues={inputValues}
+                  setInputValues={setInputValues}
+                  variant={variant}
+                />
+              </Grid>
+            );
+          }
+
           return (
             <Grid key={filterKey} item={true} xs={6}>
-              <FilterDate
-                defaultHandleAddFilter={defaultHandleAddFilter}
+              <FilterAutocomplete
                 filterKey={filterKey}
+                defaultHandleAddFilter={defaultHandleAddFilter}
                 inputValues={inputValues}
                 setInputValues={setInputValues}
-                variant={variant}
+                availableEntityTypes={availableEntityTypes}
+                availableRelationshipTypes={availableRelationshipTypes}
+                availableRelationFilterTypes={availableRelationFilterTypes}
+                allEntityTypes={allEntityTypes}
+                openOnFocus={true}
               />
             </Grid>
           );
-        }
-
-        return (
-          <Grid key={filterKey} item={true} xs={6}>
-            <FilterAutocomplete
-              filterKey={filterKey}
-              defaultHandleAddFilter={defaultHandleAddFilter}
-              inputValues={inputValues}
-              setInputValues={setInputValues}
-              availableEntityTypes={availableEntityTypes}
-              availableRelationshipTypes={availableRelationshipTypes}
-              availableRelationFilterTypes={availableRelationFilterTypes}
-              allEntityTypes={allEntityTypes}
-              openOnFocus={true}
-            />
-          </Grid>
-        );
-      })}
-    </Grid>
-      <div className={classes.helpertext}>{t('Use Alt + click to exclude items')}</div>
+        })}
+      </Grid>
+      <div className={classes.helpertext}>
+        {t('Use')} <code>alt</code> + <code>click</code> {t('to exclude items')}.
+      </div>
     </div>
   );
 };
