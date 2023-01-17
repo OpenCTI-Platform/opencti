@@ -49,7 +49,7 @@ const AdministrativeAreaEdition = ({ areaId }: { areaId: string }) => {
   };
 
   const queryRef = useQueryLoading<AdministrativeAreaEditionContainerQuery>(administrativeAreaEditionQuery, { id: areaId });
-  console.log(queryRef);
+
   return (
         <div>
             <Fab
