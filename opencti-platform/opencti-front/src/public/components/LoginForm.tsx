@@ -1,22 +1,20 @@
 import React from 'react';
-import withStyles from '@mui/styles/withStyles';
 import { Form, Formik, Field } from 'formik';
 import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
-import { graphql } from 'react-relay';
-import { withRouter } from 'react-router-dom';
+import { graphql, useMutation } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import * as PropTypes from 'prop-types';
 import { useCookies } from 'react-cookie';
-import { commitMutation } from '../../relay/environment';
-import inject18n from '../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
+import { useFormatter } from '../../components/i18n';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   login: {
     padding: 15,
   },
-});
+}));
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
@@ -24,41 +22,47 @@ const loginMutation = graphql`
   }
 `;
 
-const loginValidation = (t) => Yup.object().shape({
+const loginValidation = (t: (v: string) => string) => Yup.object().shape({
   email: Yup.string().required(t('This field is required')),
   password: Yup.string().required(t('This field is required')),
 });
 
+interface LoginFormValues {
+  email: string
+  password: string
+}
+
 const FLASH_COOKIE = 'opencti_flash';
-const LoginForm = (props) => {
-  const { classes, t, demo } = props;
+const LoginForm = () => {
+  const classes = useStyles();
+  const { t } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
-  const onSubmit = (values, { setSubmitting, setErrors }) => {
-    commitMutation({
-      mutation: loginMutation,
+  const [commitLoginMutation] = useMutation(loginMutation);
+  const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+    commitLoginMutation({
       variables: {
         input: values,
       },
-      onError: (error) => {
-        const errorMessage = props.t(R.head(error.res.errors).message);
-        setErrors({ email: errorMessage });
+      onError: () => {
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         window.location.reload();
       },
     });
   };
+
+  const initialValues = {
+    email: '',
+    password: '',
+  };
+
   return (
     <div className={classes.login}>
       <Formik
-        initialValues={{
-          email: demo ? 'demo@opencti.io' : '',
-          password: demo ? 'demo' : '',
-        }}
+        initialValues={initialValues}
         initialTouched={{ email: !R.isEmpty(flashError) }}
         initialErrors={{ email: !R.isEmpty(flashError) ? t(flashError) : '' }}
         validationSchema={loginValidation(t)}
@@ -98,11 +102,4 @@ const LoginForm = (props) => {
   );
 };
 
-LoginForm.propTypes = {
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  history: PropTypes.object,
-  demo: PropTypes.bool,
-};
-
-export default R.compose(inject18n, withRouter, withStyles(styles))(LoginForm);
+export default LoginForm;

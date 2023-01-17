@@ -43,7 +43,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
     count: 25,
     redirectionMode: 'overview',
   });
-  console.log(viewStorage);
   const {
     numberOfElements,
     filters,
@@ -53,7 +52,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
     openExports,
     redirectionMode,
   } = viewStorage;
-  console.log(redirectionMode);
   const {
     selectedElements,
     deSelectedElements,

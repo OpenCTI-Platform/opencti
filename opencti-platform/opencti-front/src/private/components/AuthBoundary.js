@@ -28,8 +28,11 @@ class AuthBoundaryComponent extends React.Component {
       if (includes('AuthRequired', types)) {
         return <RootPublic type="LOGIN" />;
       }
+      if (includes('OtpRequiredActivation', types)) {
+        return <RootPublic type="2FA_ACTIVATION" />;
+      }
       if (includes('OtpRequired', types)) {
-        return <RootPublic type="2FA" />;
+        return <RootPublic type="2FA_VALIDATION" />;
       }
     }
     return this.props.children;

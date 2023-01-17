@@ -63,60 +63,66 @@ const TopMenuSettings = ({ t, location, classes }) => (
         {t('Accesses')}
       </Button>
     </Security>
-    <Button
-      component={Link}
-      to="/dashboard/settings/workflow"
-      variant={
-        location.pathname.includes('/dashboard/settings/workflow')
-          ? 'contained'
-          : 'text'
-      }
-      size="small"
-      color={
-        location.pathname.includes('/dashboard/settings/workflow')
-          ? 'secondary'
-          : 'primary'
-      }
-      classes={{ root: classes.button }}
-    >
-      {t('Workflows')}
-    </Button>
-    <Button
-      component={Link}
-      to="/dashboard/settings/retention"
-      variant={
-        location.pathname.includes('/dashboard/settings/retention')
-          ? 'contained'
-          : 'text'
-      }
-      size="small"
-      color={
-        location.pathname.includes('/dashboard/settings/retention')
-          ? 'secondary'
-          : 'primary'
-      }
-      classes={{ root: classes.button }}
-    >
-      {t('Retention policies')}
-    </Button>
-    <Button
-      component={Link}
-      to="/dashboard/settings/rules"
-      variant={
-        location.pathname.includes('/dashboard/settings/rules')
-          ? 'contained'
-          : 'text'
-      }
-      size="small"
-      color={
-        location.pathname.includes('/dashboard/settings/rules')
-          ? 'secondary'
-          : 'primary'
-      }
-      classes={{ root: classes.button }}
-    >
-      {t('Rules engine')}
-    </Button>
+    <Security needs={[SETTINGS_SETACCESSES]}>
+      <Button
+        component={Link}
+        to="/dashboard/settings/workflow"
+        variant={
+          location.pathname.includes('/dashboard/settings/workflow')
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname.includes('/dashboard/settings/workflow')
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Workflows')}
+      </Button>
+    </Security>
+    <Security needs={[SETTINGS_SETACCESSES]}>
+      <Button
+        component={Link}
+        to="/dashboard/settings/retention"
+        variant={
+          location.pathname.includes('/dashboard/settings/retention')
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname.includes('/dashboard/settings/retention')
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Retention policies')}
+      </Button>
+    </Security>
+    <Security needs={[SETTINGS_SETACCESSES]}>
+      <Button
+        component={Link}
+        to="/dashboard/settings/rules"
+        variant={
+          location.pathname.includes('/dashboard/settings/rules')
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname.includes('/dashboard/settings/rules')
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Rules engine')}
+      </Button>
+    </Security>
     <Security needs={[SETTINGS_SETLABELS]}>
       <Button
         component={Link}

@@ -24,7 +24,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import OtpInput from 'react-otp-input';
 import DialogTitle from '@mui/material/DialogTitle';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -39,6 +39,7 @@ import UserSubscriptionPopover from './UserSubscriptionPopover';
 import Loader from '../../../components/Loader';
 import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
+import { OTP_CODE_SIZE } from '../../../public/components/OtpActivation';
 
 const styles = () => ({
   panel: {
@@ -46,18 +47,12 @@ const styles = () => ({
     height: '100%',
     margin: '0 auto',
     marginBottom: 30,
-    padding: '20px 20px 20px 20px',
+    padding: 20,
     textAlign: 'left',
     borderRadius: 6,
     position: 'relative',
   },
 });
-
-const useStyles = makeStyles(() => ({
-  button: {
-    marginTop: 20,
-  },
-}));
 
 const profileOverviewFieldPatch = graphql`
   mutation ProfileOverviewFieldPatchMutation(
@@ -126,17 +121,19 @@ const passwordValidation = (t) => Yup.object().shape({
 
 const Otp = ({ closeFunction, secret, uri }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   const theme = useTheme();
   const [otpQrImage, setOtpQrImage] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState(null);
+  const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data) => setCode(data);
-  const activateOtp = () => {
+  if (code.length === OTP_CODE_SIZE && !inputDisable) {
+    setInputDisable(true);
     commitMutation({
       mutation: validateOtpPatch,
       variables: { input: { secret, code } },
       onError: () => {
+        setInputDisable(false);
         setCode('');
         return setError(t('The code is not correct'));
       },
@@ -145,7 +142,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
         return closeFunction();
       },
     });
-  };
+  }
   useEffect(() => {
     qrcode.toDataURL(
       uri,
@@ -187,7 +184,8 @@ const Otp = ({ closeFunction, secret, uri }) => {
       <OtpInput
         value={code}
         onChange={handleChange}
-        numInputs={6}
+        numInputs={OTP_CODE_SIZE}
+        isDIsabled={inputDisable}
         isInputNum={true}
         shouldAutoFocus={true}
         inputStyle={{
@@ -210,15 +208,6 @@ const Otp = ({ closeFunction, secret, uri }) => {
           outline: 'none',
         }}
       />
-      <Button
-        classes={{ root: classes.button }}
-        variant="contained"
-        type="button"
-        color="secondary"
-        onClick={activateOtp}
-      >
-        {t('Enable')}
-      </Button>
     </div>
   );
 };
@@ -242,7 +231,8 @@ const OtpComponent = ({ closeFunction }) => (
 );
 
 const ProfileOverviewComponent = (props) => {
-  const { t, me, classes, fldt, subscriptionStatus, about } = props;
+  const { t, fldt } = useFormatter();
+  const { me, subscriptionStatus, about, settings, classes } = props;
   const { external, otp_activated: useOtp } = me;
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
@@ -513,6 +503,7 @@ const ProfileOverviewComponent = (props) => {
                   startIcon={<NoEncryptionOutlined />}
                   onClick={disableOtp}
                   classes={{ root: classes.button }}
+                  disabled={settings.otp_mandatory}
                 >
                   {t('Disable two-factor authentication')}
                 </Button>
@@ -808,6 +799,11 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   about: graphql`
     fragment ProfileOverview_about on AppInfo {
       version
+    }
+  `,
+  settings: graphql`
+    fragment ProfileOverview_settings on Settings {
+      otp_mandatory
     }
   `,
 });

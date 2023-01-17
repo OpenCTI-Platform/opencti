@@ -584,6 +584,8 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
     const uri = authenticator.keyuri(user.user_email, 'OpenCTI', secret);
     const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
     const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
+    context.req.session.user.otp_validated = isValidated;
+    context.req.session.user.otp_activated = true;
     return element;
   }
   throw AuthenticationFailure();
@@ -595,7 +597,7 @@ export const otpUserDeactivation = async (context, user, id) => {
   return element;
 };
 
-export const otpUserLogin = (req, user, { code }) => {
+export const otpUserLogin = async (req, user, { code }) => {
   if (!user.otp_activated) {
     throw AuthenticationFailure();
   }
@@ -622,7 +624,7 @@ export const logout = async (context, user, req, res) => {
   });
 };
 
-const buildSessionUser = (origin, impersonate, provider) => {
+const buildSessionUser = (origin, impersonate, provider, settings) => {
   const user = impersonate ?? origin;
   return {
     id: user.id,
@@ -633,8 +635,9 @@ const buildSessionUser = (origin, impersonate, provider) => {
     internal_id: user.internal_id,
     user_email: user.user_email,
     otp_activated: user.otp_activated,
-    otp_validated: !user.otp_activated || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
+    otp_validated: user.otp_validated || (!user.otp_activated && !settings.otp_mandatory) || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
     otp_secret: user.otp_secret,
+    otp_mandatory: settings.otp_mandatory,
     name: user.name,
     external: user.external,
     login_provider: provider,
@@ -720,8 +723,8 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
       logAudit.error(user, IMPERSONATE_ACTION, { to: applicantId });
     }
   }
-  const sessionUser = buildSessionUser(logged, impersonate, provider);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
   const hasSetAccessCapability = isUserHasCapability(logged, SETTINGS_SET_ACCESSES);
   if (!hasSetAccessCapability && settings.platform_organization && logged.organizations.length === 0) {
     throw AuthenticationFailure('You can\'t login without an organization');
@@ -780,7 +783,8 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     // If session is marked for refresh, reload the user data in the session
     // If session is old by a past application version, make a refresh
     if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
-      const { provider: userProvider, token: userToken } = req.session.session_provider;
+      const { session_provider } = req.session;
+      const { provider: userProvider, token: userToken } = session_provider;
       return internalAuthenticateUser(context, req, auth, userProvider, userToken);
     }
     // If everything ok, return the authenticated user.

@@ -28,8 +28,13 @@ const i18n = {
       lte: 'Inferior o igual a',
       Login: 'Usuario',
       'Two-factor authentication': 'Autenticación en dos pasos',
+      'Enforce two-factor authentication': 'Hacer cumplir la autenticación de dos factores',
       '2FA': '2FA',
       'Use 2FA authentication': 'Usa la autenticación en dos pasos',
+      'You need to validate your two-factor authentication. Please type the code generated in your application.':
+      'Debe validar su autenticación de dos factores. Por favor, escriba el código generado en su aplicación.',
+      'You need to activate a two-factor authentication. Please type the code generated in your application.':
+      'Necesitas activar una autenticación de dos factores. Por favor, escriba el código generado en su aplicación.',
       Search: 'Buscar',
       Active: 'Activo',
       'Last update': 'Última actualización',
@@ -1701,8 +1706,13 @@ const i18n = {
       lte: 'Inférieur ou égal à',
       Login: "Nom d'utilisateur",
       'Two-factor authentication': 'Authentification double facteur',
+      'Enforce two-factor authentication': "Imposer l'authentification double facteur",
       '2FA': 'ADF',
       'Use 2FA authentication': "Utiliser l'authentification à double facteur",
+      'You need to validate your two-factor authentication. Please type the code generated in your application.':
+      'Vous devez valider votre authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
+      'You need to activate a two-factor authentication. Please type the code generated in your application.':
+      'Vous devez activer une authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
       Search: 'Rechercher',
       Active: 'Actif',
       'Last update': 'Dernière mise à jour',
@@ -3364,8 +3374,13 @@ const i18n = {
       lte: '以下',
       Login: 'ログイン',
       'Two-factor authentication': '二要素認証',
+      'Enforce two-factor authentication': '二要素認証を強制する',
       '2FA': '2FA',
       'Use 2FA authentication': '二要素認証を使用する',
+      'You need to validate your two-factor authentication. Please type the code generated in your application.':
+      '二要素認証を検証する必要があります。アプリケーションで生成されたコードを入力してください。',
+      'You need to activate a two-factor authentication. Please type the code generated in your application.':
+      '二要素認証を有効にする必要があります。アプリケーションで生成されたコードを入力してください。',
       Search: '検索',
       Active: 'アクティブ',
       'Last update': '最終更新',
@@ -5001,7 +5016,12 @@ const i18n = {
       lte: '小於或等於',
       Login: '登录',
       'Two-factor authentication': '两因素身份验证',
+      'Enforce two-factor authentication': '强制执行两因素身份验证',
       'Use 2FA authentication': '使用 2FA 身份驗證',
+      'You need to validate your two-factor authentication. Please type the code generated in your application.':
+      '您需要验证您的双因素身份验证。请输入在您的应用程序中生成的代码。',
+      'You need to activate a two-factor authentication. Please type the code generated in your application.':
+      '您需要激活双因素身份验证。请输入在您的应用程序中生成的代码。',
       Search: '搜索',
       Active: '活跃',
       'Last update': '上次更新',

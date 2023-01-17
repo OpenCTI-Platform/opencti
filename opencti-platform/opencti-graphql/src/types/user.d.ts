@@ -33,7 +33,8 @@ interface AuthUser extends BasicStoreObject {
 }
 
 interface AuthContext {
-  source: string;
+  otp_mandatory: boolean
+  source: string
   tracing: TracingContext
-  user: AuthUser | undefined;
+  user: AuthUser | undefined
 }

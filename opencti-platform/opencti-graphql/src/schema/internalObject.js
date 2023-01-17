@@ -100,6 +100,7 @@ const internalObjectsAttributes = {
     'i_created_at_month',
     'i_created_at_year',
     'updated_at',
+    'otp_mandatory',
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: ['internal_id', 'standard_id', 'entity_type', 'lastRun', 'platformVersion'],
   [ENTITY_TYPE_MIGRATION_REFERENCE]: ['internal_id', 'standard_id', 'entity_type', 'title', 'timestamp'],

@@ -1063,7 +1063,7 @@ type Settings implements InternalObject & BasicObject {
   platform_url: String
   platform_email: String
   platform_modules: [Module!]
-  platform_providers: [Provider!]
+  platform_providers: [Provider!]!
   platform_language: String
   platform_theme: String
   platform_theme_dark_background: String
@@ -1094,6 +1094,7 @@ type Settings implements InternalObject & BasicObject {
   platform_entities_files_ref: [String!]
   created_at: DateTime!
   updated_at: DateTime!
+  otp_mandatory: Boolean
   editContext: [EditUserContext!]
 }
 
@@ -1224,6 +1225,7 @@ type User implements BasicObject & InternalObject {
   firstname: String
   otp_activated: Boolean
   otp_qr: String
+  otp_mandatory: Boolean
   lastname: String
   theme: String
   language: String
@@ -1262,6 +1264,7 @@ type MeUser implements BasicObject & InternalObject {
   capabilities: [Capability!]!
   allowed_marking: [MarkingDefinition!]
   userSubscriptions(first: Int): UserSubscriptionConnection
+  otp_mandatory: Boolean
 }
 
 type SessionDetail {
@@ -8126,6 +8129,7 @@ type Mutation {
   otpUserDeactivation(id: ID!): MeUser
   otpLogin(input: UserOTPLoginInput): Boolean
   settingsEdit(id: ID!): SettingsEditMutations
+  otpSetActivation(input: UserOTPActivationInput): User
   subTypeEdit(id: ID!): SubTypeEditMutations
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate!
   statusTemplateDelete(id: ID!): ID!

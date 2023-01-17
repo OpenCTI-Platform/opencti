@@ -3,6 +3,7 @@ import {
   PaletteOptions,
   TypeBackground,
   TypeText,
+  PaletteMode,
 } from '@mui/material/styles/createPalette';
 import { Theme as MuiTheme, ThemeOptions } from '@mui/material/styles/createTheme';
 
@@ -10,6 +11,7 @@ interface ExtendedColor extends PaletteColorOptions {
   main: string
   palette: ExtendedPaletteOptions
   text: Partial<TypeText>
+  mode: PaletteMode
 }
 
 interface ExtendedBackground extends TypeBackground {
@@ -24,6 +26,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   error: Partial<ExtendedColor>
   chip: Partial<ExtendedColor>
   secondary: Partial<ExtendedColor>
+  mode: PaletteMode
 }
 
 interface ExtendedThemeOptions extends ThemeOptions {

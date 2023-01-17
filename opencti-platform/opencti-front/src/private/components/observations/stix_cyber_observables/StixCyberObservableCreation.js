@@ -582,6 +582,7 @@ const StixCyberObservableCreation = ({
                               key={attribute.value}
                               name={attribute.value}
                               label={attribute.value}
+                              fullWidth={true}
                               containerstyle={{ marginTop: 20 }}
                             />
                           );

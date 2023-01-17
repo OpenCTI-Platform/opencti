@@ -9737,6 +9737,7 @@ export type MeUser = BasicObject & InternalObject & {
   name: Scalars['String'];
   objectOrganization?: Maybe<MeOrganizationConnection>;
   otp_activated?: Maybe<Scalars['Boolean']>;
+  otp_mandatory?: Maybe<Scalars['Boolean']>;
   otp_qr?: Maybe<Scalars['String']>;
   parent_types: Array<Scalars['String']>;
   standard_id: Scalars['String'];
@@ -10099,6 +10100,7 @@ export type Mutation = {
   otpActivation?: Maybe<MeUser>;
   otpDeactivation?: Maybe<MeUser>;
   otpLogin?: Maybe<Scalars['Boolean']>;
+  otpSetActivation?: Maybe<User>;
   otpUserDeactivation?: Maybe<MeUser>;
   pingConnector?: Maybe<Connector>;
   positionAdd?: Maybe<Position>;
@@ -10838,6 +10840,11 @@ export type MutationOtpActivationArgs = {
 
 export type MutationOtpLoginArgs = {
   input?: InputMaybe<UserOtpLoginInput>;
+};
+
+
+export type MutationOtpSetActivationArgs = {
+  input?: InputMaybe<UserOtpActivationInput>;
 };
 
 
@@ -17300,6 +17307,7 @@ export type Settings = BasicObject & InternalObject & {
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
+  otp_mandatory?: Maybe<Scalars['Boolean']>;
   parent_types: Array<Scalars['String']>;
   platform_email?: Maybe<Scalars['String']>;
   platform_enable_reference?: Maybe<Array<Scalars['String']>>;
@@ -17313,7 +17321,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_map_tile_server_light?: Maybe<Scalars['String']>;
   platform_modules?: Maybe<Array<Module>>;
   platform_organization?: Maybe<Organization>;
-  platform_providers?: Maybe<Array<Provider>>;
+  platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']>;
   platform_theme?: Maybe<Scalars['String']>;
   platform_theme_dark_accent?: Maybe<Scalars['String']>;
@@ -21298,6 +21306,7 @@ export type User = BasicObject & InternalObject & {
   name: Scalars['String'];
   objectOrganization?: Maybe<OrganizationConnection>;
   otp_activated?: Maybe<Scalars['Boolean']>;
+  otp_mandatory?: Maybe<Scalars['Boolean']>;
   otp_qr?: Maybe<Scalars['String']>;
   parent_types: Array<Maybe<Scalars['String']>>;
   roles: Array<Maybe<Role>>;
@@ -27257,6 +27266,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['MeOrganizationConnection']>, ParentType, ContextType>;
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27455,6 +27465,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpActivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, Partial<MutationOtpActivationArgs>>;
   otpDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   otpLogin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationOtpLoginArgs>>;
+  otpSetActivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationOtpSetActivationArgs>>;
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, Partial<MutationPositionAddArgs>>;
@@ -28880,6 +28891,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_enable_reference?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -28893,7 +28905,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
-  platform_providers?: Resolver<Maybe<Array<ResolversTypes['Provider']>>, ParentType, ContextType>;
+  platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_accent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30118,6 +30130,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   roles?: Resolver<Array<Maybe<ResolversTypes['Role']>>, ParentType, ContextType>;
