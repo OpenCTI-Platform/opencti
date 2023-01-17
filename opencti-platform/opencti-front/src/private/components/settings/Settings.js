@@ -581,8 +581,8 @@ const Settings = () => {
                       <List style={{ marginTop: -20 }}>
                         {authProviders.map((provider) => (
                           <ListItem key={provider.strategy} divider={true}>
-                            <ListItemIcon color="primary">
-                              <VpnKeyOutlined />
+                            <ListItemIcon>
+                              <VpnKeyOutlined color="primary" />
                             </ListItemIcon>
                             <ListItemText
                               primary={provider.name}

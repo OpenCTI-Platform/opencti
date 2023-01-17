@@ -1950,9 +1950,16 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
       const args = { filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }], connectionFormat: false };
       const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
-      const individualId = R.head(individuals).id;
-      const patch = { contact_information: updatedInstance.user_email, name: updatedInstance.name, firstname: updatedInstance.firstname, lastname: updatedInstance.lastname };
-      await patchAttribute(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL, patch, { bypassIndividualUpdate: true });
+      if (individuals.length > 0) {
+        const individualId = R.head(individuals).id;
+        const patch = {
+          contact_information: updatedInstance.user_email,
+          name: updatedInstance.name,
+          firstname: updatedInstance.firstname,
+          lastname: updatedInstance.lastname
+        };
+        await patchAttribute(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL, patch, { bypassIndividualUpdate: true });
+      }
     }
     // Return updated element after waiting for it.
     return { element: updatedInstance };
