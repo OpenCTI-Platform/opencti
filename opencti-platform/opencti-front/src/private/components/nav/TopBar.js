@@ -50,6 +50,7 @@ import TopMenuOrganization from './TopMenuOrganization';
 import TopMenuIndividual from './TopMenuIndividual';
 import TopMenuRegion from './TopMenuRegion';
 import TopMenuCountry from './TopMenuCountry';
+import TopMenuAdministrativeArea from './TopMenuAdministrativeArea';
 import TopMenuCity from './TopMenuCity';
 import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
@@ -330,6 +331,9 @@ const TopBar = ({
           )}
           {location.pathname.includes('/dashboard/locations/regions/') && (
             <TopMenuRegion />
+          )}
+          {location.pathname.includes('/dashboard/locations/areas/') && (
+              <TopMenuAdministrativeArea />
           )}
           {location.pathname.includes('/dashboard/locations/cities/') && (
             <TopMenuCity />
