@@ -36,7 +36,7 @@ import {
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
-import { generateStandardId, MARKING_TLP_RED } from '../schema/identifier';
+import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
@@ -63,7 +63,6 @@ import {
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntityFromCache } from '../database/cache';
-import { addIndividual } from './individual';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
