@@ -1,85 +1,87 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import CreatedByField from '../../common/form/CreatedByField';
-import MarkDownField from '../../../../components/MarkDownField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import ExternalReferencesField from '../../common/form/ExternalReferencesField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { insertNode } from '../../../../utils/store';
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import { Field, Form, Formik } from "formik";
+import withStyles from "@mui/styles/withStyles";
+import Drawer from "@mui/material/Drawer";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Fab from "@mui/material/Fab";
+import { Add, Close } from "@mui/icons-material";
+import * as Yup from "yup";
+import { graphql } from "react-relay";
+import * as R from "ramda";
+import { dayStartDate, parse } from "../../../../utils/Time";
+import inject18n from "../../../../components/i18n";
+import { commitMutation } from "../../../../relay/environment";
+import TextField from "../../../../components/TextField";
+import ObjectMarkingField from "../../common/form/ObjectMarkingField";
+import ObjectLabelField from "../../common/form/ObjectLabelField";
+import CreatedByField from "../../common/form/CreatedByField";
+import MarkDownField from "../../../../components/MarkDownField";
+import ConfidenceField from "../../common/form/ConfidenceField";
+import ExternalReferencesField from "../../common/form/ExternalReferencesField";
+import DateTimePickerField from "../../../../components/DateTimePickerField";
+import { fieldSpacingContainerStyle } from "../../../../utils/field";
+import OpenVocabField from "../../common/form/OpenVocabField";
+import { insertNode } from "../../../../utils/store";
+import ObjectAssigneeField from "../../common/form/ObjectAssigneeField";
+import { SubscriptionFocus } from "../../../../components/Subscription";
 
 const styles = (theme) => ({
   drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
+    minHeight: "100vh",
+    width: "50%",
+    position: "fixed",
+    overflow: "auto",
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
   },
   createButton: {
-    position: 'fixed',
+    position: "fixed",
     bottom: 30,
     right: 30,
   },
   buttons: {
     marginTop: 20,
-    textAlign: 'right',
+    textAlign: "right",
   },
   button: {
     marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
+    padding: "20px 20px 20px 60px",
   },
   closeButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 12,
     left: 5,
-    color: 'inherit',
+    color: "inherit",
   },
   importButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 15,
     right: 20,
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    padding: "10px 20px 20px 20px",
   },
   icon: {
     paddingTop: 4,
-    display: 'inline-block',
+    display: "inline-block",
     color: theme.palette.primary.main,
   },
   text: {
-    display: 'inline-block',
+    display: "inline-block",
     flexGrow: 1,
     marginLeft: 10,
   },
   autoCompleteIndicator: {
-    display: 'none',
+    display: "none",
   },
 });
 
@@ -91,15 +93,16 @@ const reportMutation = graphql`
   }
 `;
 
-const reportValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  published: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
-  confidence: Yup.number().required(t('This field is required')),
-  report_types: Yup.array().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const reportValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t("This field is required")),
+    published: Yup.date()
+      .typeError(t("The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)"))
+      .required(t("This field is required")),
+    confidence: Yup.number().required(t("This field is required")),
+    report_types: Yup.array().required(t("This field is required")),
+    description: Yup.string().nullable(),
+  });
 
 class ReportCreation extends Component {
   constructor(props) {
@@ -117,13 +120,14 @@ class ReportCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
-      R.assoc('confidence', parseInt(values.confidence, 10)),
-      R.assoc('published', parse(values.published).format()),
-      R.assoc('report_types', values.report_types),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
+      R.assoc("confidence", parseInt(values.confidence, 10)),
+      R.assoc("published", parse(values.published).format()),
+      R.assoc("report_types", values.report_types),
+      R.assoc("createdBy", values.createdBy?.value),
+      R.assoc("objectMarking", R.pluck("value", values.objectMarking)),
+      R.assoc("objectAssignee", R.pluck("value", values.objectAssignee)),
+      R.assoc("objectLabel", R.pluck("value", values.objectLabel)),
+      R.assoc("externalReferences", R.pluck("value", values.externalReferences))
     )(values);
     commitMutation({
       mutation: reportMutation,
@@ -131,7 +135,12 @@ class ReportCreation extends Component {
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_reports', this.props.paginationOptions, 'reportAdd');
+        insertNode(
+          store,
+          "Pagination_reports",
+          this.props.paginationOptions,
+          "reportAdd"
+        );
       },
       setSubmitting,
       onCompleted: () => {
@@ -150,10 +159,12 @@ class ReportCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
+        <Fab
+          onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}>
+          className={classes.createButton}
+        >
           <Add />
         </Fab>
         <Drawer
@@ -162,7 +173,8 @@ class ReportCreation extends Component {
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <div>
             <div className={classes.header}>
               <IconButton
@@ -174,20 +186,19 @@ class ReportCreation extends Component {
               >
                 <Close fontSize="small" color="primary" />
               </IconButton>
-              <Typography variant="h6">
-                {t('Create a report')}
-              </Typography>
+              <Typography variant="h6">{t("Create a report")}</Typography>
             </div>
             <div className={classes.container}>
               <Formik
                 initialValues={{
-                  name: '',
+                  name: "",
                   published: dayStartDate(),
                   confidence: 75,
-                  description: '',
+                  description: "",
                   report_types: [],
-                  createdBy: '',
+                  createdBy: "",
                   objectMarking: [],
+                  objectAssignee: [],
                   objectLabel: [],
                   externalReferences: [],
                 }}
@@ -202,26 +213,26 @@ class ReportCreation extends Component {
                   setFieldValue,
                   values,
                 }) => (
-                  <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Form style={{ margin: "20px 0 20px 0" }}>
                     <Field
                       component={TextField}
                       variant="standard"
                       name="name"
-                      label={t('Name')}
+                      label={t("Name")}
                       fullWidth={true}
                     />
                     <Field
                       component={DateTimePickerField}
                       name="published"
                       TextFieldProps={{
-                        label: t('Publication date'),
-                        variant: 'standard',
+                        label: t("Publication date"),
+                        variant: "standard",
                         fullWidth: true,
                         style: { marginTop: 20 },
                       }}
                     />
                     <OpenVocabField
-                      label={t('Report types')}
+                      label={t("Report types")}
                       type="report_types_ov"
                       name="report_types"
                       onChange={(name, value) => setFieldValue(name, value)}
@@ -230,37 +241,41 @@ class ReportCreation extends Component {
                     />
                     <ConfidenceField
                       name="confidence"
-                      label={t('Confidence')}
+                      label={t("Confidence")}
                       fullWidth={true}
                       containerStyle={fieldSpacingContainerStyle}
                     />
                     <Field
                       component={MarkDownField}
                       name="description"
-                      label={t('Description')}
+                      label={t("Description")}
                       fullWidth={true}
                       multiline={true}
                       rows="4"
                       style={{ marginTop: 20 }}
                     />
+                    <ObjectAssigneeField
+                      name="objectAssignee"
+                      style={{ marginTop: 20, width: "100%" }}
+                    />
                     <CreatedByField
                       name="createdBy"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={{ marginTop: 20, width: "100%" }}
                       setFieldValue={setFieldValue}
                     />
                     <ObjectLabelField
                       name="objectLabel"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={{ marginTop: 20, width: "100%" }}
                       setFieldValue={setFieldValue}
                       values={values.objectLabel}
                     />
                     <ObjectMarkingField
                       name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={{ marginTop: 20, width: "100%" }}
                     />
                     <ExternalReferencesField
                       name="externalReferences"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={{ marginTop: 20, width: "100%" }}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
@@ -271,7 +286,7 @@ class ReportCreation extends Component {
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Cancel')}
+                        {t("Cancel")}
                       </Button>
                       <Button
                         variant="contained"
@@ -280,7 +295,7 @@ class ReportCreation extends Component {
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Create')}
+                        {t("Create")}
                       </Button>
                     </div>
                   </Form>
