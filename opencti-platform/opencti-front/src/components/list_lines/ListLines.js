@@ -22,7 +22,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import { FormatListGroup, GraphOutline, RelationManyToMany } from 'mdi-material-ui';
+import { FormatListGroup, GraphOutline, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -222,7 +222,7 @@ class ListLines extends Component {
                 {t('entitie(s)')}
               </div>
             )}
-            {redirectionMode && (
+            {handleSwitchRedirectionMode && (
                 <ToggleButtonGroup
                   size="small"
                   color="secondary"
@@ -238,7 +238,7 @@ class ListLines extends Component {
                     <Tooltip title={t('Redirecting to the Overview section')}>
                       <PreviewOutlined
                         fontSize="small"
-                        color={redirectionMode === 'overview' ? 'secondary' : 'primary'}
+                        color={(!redirectionMode || redirectionMode === 'overview') ? 'secondary' : 'primary'}
                       />
                     </Tooltip>
                   </ToggleButton>
@@ -331,7 +331,7 @@ class ListLines extends Component {
                 {typeof handleChangeView === 'function' && enableGraph && (
                   <ToggleButton value="graph" aria-label="graph">
                     <Tooltip title={t('Graph view')}>
-                      <GraphOutline fontSize="small" color="primary" />
+                      <VectorPolygon fontSize="small" color="primary" />
                     </Tooltip>
                   </ToggleButton>
                 )}

@@ -16,9 +16,7 @@ import ItemStatus from '../../../../components/ItemStatus';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  StixCoreObjectOrStixCoreRelationshipContainerLine_node$data,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
+import { StixCoreObjectOrStixCoreRelationshipContainerLine_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -52,15 +50,20 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
-  node: StixCoreObjectOrStixCoreRelationshipContainerLine_node$data,
-  dataColumns: DataColumns,
-  onLabelClick: (key: string, id: string, value: string, event: SyntheticEvent) => void,
-  redirectionMode: string,
+  node: StixCoreObjectOrStixCoreRelationshipContainerLine_node$data;
+  dataColumns: DataColumns;
+  onLabelClick: (
+    key: string,
+    id: string,
+    value: string,
+    event: SyntheticEvent
+  ) => void;
+  redirectionMode: string;
 }
 
-export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps> = ({
-  node, dataColumns, onLabelClick, redirectionMode,
-}) => {
+export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
+StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
+> = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
 
@@ -70,7 +73,13 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
       divider={true}
       button={true}
       component={Link}
-      to={(redirectionMode === 'overview' || node.entity_type !== 'Report') ? `${resolveLink(node.entity_type)}/${node.id}` : `${resolveLink(node.entity_type)}/${node.id}/${redirectionMode}`}
+      to={
+        !redirectionMode
+        || redirectionMode === 'overview'
+        || node.entity_type !== 'Report'
+          ? `${resolveLink(node.entity_type)}/${node.id}`
+          : `${resolveLink(node.entity_type)}/${node.id}/${redirectionMode}`
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type={node.entity_type} />
@@ -373,23 +382,18 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
 export const StixCoreObjectOrStixCoreRelationshipContainerLine = StixCoreObjectOrStixCoreRelationshipContainerLineFragment;
 
 interface StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps {
-  dataColumns: DataColumns,
+  dataColumns: DataColumns;
 }
 
-export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionComponent<StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps> = ({
-  dataColumns,
-}) => {
+export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionComponent<
+StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
+> = ({ dataColumns }) => {
   const classes = useStyles();
 
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

@@ -93,7 +93,7 @@ const ReportLineComponent: FunctionComponent<ReportLineComponentProps> = ({
       divider={true}
       button={true}
       component={Link}
-      to={redirectionMode === 'overview' ? `/dashboard/analysis/reports/${node.id}` : `/dashboard/analysis/reports/${node.id}/${redirectionMode}`}
+      to={(!redirectionMode || redirectionMode === 'overview') ? `/dashboard/analysis/reports/${node.id}` : `/dashboard/analysis/reports/${node.id}/${redirectionMode}`}
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}

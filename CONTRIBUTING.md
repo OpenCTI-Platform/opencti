@@ -4,7 +4,7 @@ Thank you for reading this documentation and considering making your contributio
 
 In order to help you understand the project, where we are heading and how you can contribute, below are several resources and answers.
 
-Do not hesitate to shoot us an [email](mailto:contact@opencti.io) or join us on our [Slack channel](https://luatix.slack.com/). Most of the articles below are an introduction for our [detailed documentation](https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518).
+Do not hesitate to shoot us an [email](mailto:contact@opencti.io) or join us on our [Slack channel](https://community.filigran.io). Most of the articles below are an introduction for our [detailed documentation](https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518).
 
 
 ## Why contribute?
@@ -42,7 +42,7 @@ For general suggestions or questions about the project or the documentation, you
 
 * Just using OpenCTI and opening issues if everything is not working as expect will be a huge step forward. See our section about opening an issue. To report a bug, please refer to the [bug reporting module](https://github.com/OpenCTI-Platform/opencti/issues/new?assignees=&labels=&template=bug_report.md&title=). To suggest a new feature, please fill in the feature request [form](https://github.com/OpenCTI-Platform/opencti/issues/new?assignees=&labels=&template=feature_request.md&title=).
 
-* Don’t hesitate to flag us an issue with the documentation or the templates if you find them incomplete or not clear enough. You can do that either by opening a [bug report](https://github.com/OpenCTI-Platform/opencti/issues/new?assignees=&labels=&template=bug_report.md&title=) or by sending us a message on our [Slack channel](https://slack.luatix.org/).
+* Don’t hesitate to flag us an issue with the documentation or the templates if you find them incomplete or not clear enough. You can do that either by opening a [bug report](https://github.com/OpenCTI-Platform/opencti/issues/new?assignees=&labels=&template=bug_report.md&title=) or by sending us a message on our [Slack channel](https://community.filigran.io).
 
 * You can look through opened issues and help triage them (ask for more information, suggest workarounds, suggest label, flag issues etc.)
 
@@ -56,4 +56,4 @@ For general suggestions or questions about the project or the documentation, you
 
 ### How can you get in touch for other questions?
 
-If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://slack.luatix.org). You can also send us an [email](mailto:contact@opencti.io).
+If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://community.filigran.io). You can also send us an [email](mailto:contact@opencti.io).
