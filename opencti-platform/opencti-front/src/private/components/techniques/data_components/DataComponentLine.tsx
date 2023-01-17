@@ -62,6 +62,7 @@ const dataComponentFragment = graphql`
     description
     created
     modified
+    confidence
     objectLabel {
       edges {
         node {

@@ -142,6 +142,7 @@ const ObservedDataLineFragment = createFragmentContainer(
         first_observed
         last_observed
         number_observed
+        confidence
         createdBy {
           ... on Identity {
             id

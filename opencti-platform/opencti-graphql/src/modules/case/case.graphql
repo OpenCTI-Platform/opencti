@@ -147,6 +147,7 @@ enum CasesOrdering {
   markedBy
   x_opencti_workflow_id
   case_type
+  confidence
 }
 
 # Filtering
@@ -165,6 +166,7 @@ enum CasesFilter {
   x_opencti_workflow_id
   rating
   case_type
+  confidence
 }
 
 input CasesFiltering {

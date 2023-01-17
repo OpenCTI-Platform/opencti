@@ -20,6 +20,7 @@ import { buildDate } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const infrastructureMutationFieldPatch = graphql`
   mutation InfrastructureEditionOverviewFieldPatchMutation(
@@ -92,6 +93,7 @@ const infrastructureValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   references: Yup.array().required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
+  confidence: Yup.number(),
 });
 
 class InfrastructureEditionOverviewComponent extends Component {
@@ -275,6 +277,7 @@ class InfrastructureEditionOverviewComponent extends Component {
         'killChainPhases',
         'objectMarking',
         'x_opencti_workflow_id',
+        'confidence',
       ]),
     )(infrastructure);
     return (
@@ -329,6 +332,16 @@ class InfrastructureEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              variant="edit"
             />
             <Field
               component={DateTimePickerField}

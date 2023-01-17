@@ -1290,6 +1290,7 @@ export type CampaignEditMutationsRelationDeleteArgs = {
 export enum CampaignsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -1310,6 +1311,7 @@ export type CampaignsFiltering = {
 };
 
 export enum CampaignsOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   FirstSeen = 'first_seen',
@@ -1611,6 +1613,7 @@ export type CaseEdge = {
 export enum CasesFilter {
   AssigneeTo = 'assigneeTo',
   CaseType = 'case_type',
+  Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -1634,6 +1637,7 @@ export type CasesFiltering = {
 
 export enum CasesOrdering {
   CaseType = 'case_type',
+  Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -1853,6 +1857,7 @@ export enum ChannelsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
   ChannelTypes = 'channel_types',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -1873,6 +1878,7 @@ export type ChannelsFiltering = {
 
 export enum ChannelsOrdering {
   ChannelTypes = 'channel_types',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -3614,6 +3620,7 @@ export type DataComponentEdge = {
 
 export enum DataComponentsFilter {
   Aliases = 'aliases',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -3634,6 +3641,7 @@ export type DataComponentsFiltering = {
 };
 
 export enum DataComponentsOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -3850,6 +3858,7 @@ export type DataSourceEdge = {
 
 export enum DataSourcesFilter {
   Aliases = 'aliases',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -3870,6 +3879,7 @@ export type DataSourcesFiltering = {
 };
 
 export enum DataSourcesOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -7135,6 +7145,7 @@ export type IncidentEditMutationsRelationDeleteArgs = {
 export enum IncidentsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -7156,6 +7167,7 @@ export type IncidentsFiltering = {
 };
 
 export enum IncidentsOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   FirstSeen = 'first_seen',
@@ -7439,6 +7451,7 @@ export type IndicatorEditMutationsRelationDeleteArgs = {
 export enum IndicatorsFilter {
   AssigneeTo = 'assigneeTo',
   BasedOn = 'basedOn',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -8026,6 +8039,7 @@ export type InfrastructureEditMutationsRelationDeleteArgs = {
 export enum InfrastructuresFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -8049,6 +8063,7 @@ export type InfrastructuresFiltering = {
 };
 
 export enum InfrastructuresOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   FirstSeen = 'first_seen',
@@ -8336,6 +8351,7 @@ export type IntrusionSetEditMutationsRelationDeleteArgs = {
 export enum IntrusionSetsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -8356,6 +8372,7 @@ export type IntrusionSetsFiltering = {
 };
 
 export enum IntrusionSetsOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -9577,6 +9594,7 @@ export type MalwareEditMutationsRelationDeleteArgs = {
 export enum MalwaresFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -9600,6 +9618,7 @@ export type MalwaresFiltering = {
 };
 
 export enum MalwaresOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   FirstSeen = 'first_seen',
@@ -12632,6 +12651,7 @@ export type ObservedDataEditMutationsRelationDeleteArgs = {
 
 export enum ObservedDatasFilter {
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -12655,6 +12675,7 @@ export type ObservedDatasFiltering = {
 };
 
 export enum ObservedDatasOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -20789,6 +20810,7 @@ export type ThreatActorEditMutationsRelationDeleteArgs = {
 export enum ThreatActorsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -20809,6 +20831,7 @@ export type ThreatActorsFiltering = {
 };
 
 export enum ThreatActorsOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -21064,6 +21087,7 @@ export type ToolEditMutationsRelationDeleteArgs = {
 export enum ToolsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -21082,6 +21106,7 @@ export type ToolsFiltering = {
 };
 
 export enum ToolsOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -22024,6 +22049,7 @@ export enum VocabularyOrdering {
 
 export enum VulnerabilitiesFilter {
   AssigneeTo = 'assigneeTo',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -22047,6 +22073,7 @@ export type VulnerabilitiesFiltering = {
 };
 
 export enum VulnerabilitiesOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Creator = 'creator',

@@ -148,6 +148,7 @@ class Campaigns extends Component {
           'created_start_date',
           'created_end_date',
           'createdBy',
+          'confidence',
         ]}
       >
         <QueryRenderer
@@ -222,6 +223,7 @@ class Campaigns extends Component {
           'created_end_date',
           'createdBy',
           'revoked',
+          'confidence',
         ]}
       >
         <QueryRenderer

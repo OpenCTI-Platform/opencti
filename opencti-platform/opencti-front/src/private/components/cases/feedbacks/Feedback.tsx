@@ -35,6 +35,7 @@ const feedbackFragment = graphql`
     rating
     revoked
     description
+    confidence
     createdBy {
       ... on Identity {
         id

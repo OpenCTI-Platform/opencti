@@ -24,6 +24,8 @@ import Loader from '../../../../components/Loader';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
 import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -96,6 +98,7 @@ const channelValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  confidence: Yup.number(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -124,6 +127,7 @@ class ChannelCreation extends Component {
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const finalValues = R.pipe(
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('channel_types', R.pluck('value', values.channel_types)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -217,6 +221,7 @@ class ChannelCreation extends Component {
                           objectMarking: [],
                           objectLabel: [],
                           externalReferences: [],
+                          confidence: 75,
                         }}
                         validationSchema={channelValidation(t)}
                         onSubmit={this.onSubmit.bind(this)}
@@ -276,6 +281,12 @@ class ChannelCreation extends Component {
                               multiline={true}
                               rows="4"
                               style={{ marginTop: 20 }}
+                            />
+                            <ConfidenceField
+                              name="confidence"
+                              label={t('Confidence')}
+                              fullWidth={true}
+                              containerStyle={fieldSpacingContainerStyle}
                             />
                             <CreatedByField
                               name="createdBy"

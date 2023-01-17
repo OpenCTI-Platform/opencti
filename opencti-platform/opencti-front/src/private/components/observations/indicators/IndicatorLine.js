@@ -162,6 +162,7 @@ export const IndicatorLine = createFragmentContainer(IndicatorLineComponent, {
       x_opencti_score
       x_opencti_main_observable_type
       created
+      confidence
       objectMarking {
         edges {
           node {

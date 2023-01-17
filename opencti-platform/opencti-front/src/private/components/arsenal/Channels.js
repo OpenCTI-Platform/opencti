@@ -154,6 +154,7 @@ class Channels extends Component {
           'created_start_date',
           'created_end_date',
           'createdBy',
+          'confidence',
         ]}
       >
         <QueryRenderer

@@ -23,6 +23,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -81,6 +82,7 @@ const toolValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  confidence: Yup.number(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -109,6 +111,7 @@ class ToolCreation extends Component {
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const finalValues = R.pipe(
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
@@ -192,6 +195,7 @@ class ToolCreation extends Component {
                 objectLabel: [],
                 externalReferences: [],
                 tool_types: [],
+                confidence: 75,
               }}
               validationSchema={toolValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -221,6 +225,12 @@ class ToolCreation extends Component {
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                  />
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerStyle={fieldSpacingContainerStyle}
                   />
                   <KillChainPhasesField
                     name="killChainPhases"

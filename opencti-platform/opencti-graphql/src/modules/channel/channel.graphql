@@ -119,6 +119,7 @@ enum ChannelsOrdering {
     objectMarking
     objectLabel
     x_opencti_workflow_id
+    confidence
 }
 
 # Filtering
@@ -135,6 +136,7 @@ enum ChannelsFilter {
     assigneeTo
     labelledBy
     x_opencti_workflow_id
+    confidence
 }
 input ChannelsFiltering {
     key: [ChannelsFilter!]!

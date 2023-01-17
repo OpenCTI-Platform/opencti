@@ -90,6 +90,7 @@ const DataSources: FunctionComponent = () => {
           'created_end_date',
           'createdBy',
           'revoked',
+          'confidence',
         ]}
       >
         {queryRef && (

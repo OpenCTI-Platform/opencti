@@ -28,6 +28,7 @@ export interface StixCase extends StixDomainObject {
   severity: string,
   priority: string,
   rating: number,
+  confidence: number,
   object_refs: Array<string>,
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

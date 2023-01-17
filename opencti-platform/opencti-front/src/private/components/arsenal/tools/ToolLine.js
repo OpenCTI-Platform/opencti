@@ -115,6 +115,7 @@ const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
       name
       created
       modified
+      confidence
       objectLabel {
         edges {
           node {

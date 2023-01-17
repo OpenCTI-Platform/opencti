@@ -33,6 +33,7 @@ import {
 } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -127,6 +128,7 @@ const toolValidation = (t) => Yup.object().shape({
   references: Yup.array().required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
   tool_types: Yup.array(),
+  confidence: Yup.number(),
 });
 
 class ToolEditionOverviewComponent extends Component {
@@ -308,6 +310,7 @@ class ToolEditionOverviewComponent extends Component {
         'objectMarking',
         'x_opencti_workflow_id',
         'tool_types',
+        'confidence',
       ]),
     )(tool);
     return (
@@ -350,6 +353,16 @@ class ToolEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              variant="edit"
             />
             <KillChainPhasesField
               name="killChainPhases"
@@ -444,6 +457,7 @@ const ToolEditionOverview = createFragmentContainer(
         name
         description
         tool_types
+        confidence
         createdBy {
           ... on Identity {
             id
