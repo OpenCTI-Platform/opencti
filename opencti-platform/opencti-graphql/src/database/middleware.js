@@ -1711,8 +1711,8 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     throw FunctionalError('Cant find element to update', { id, type });
   }
   // Individual check
-  const { internalForceUpdate } = context;
-  if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !internalForceUpdate) {
+  const { bypassIndividualUpdate } = opts;
+  if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
     const args = { filters: [{ key: 'user_email', values: [initial.contact_information] }], connectionFormat: false };
     const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
     if (users.length > 0) {
@@ -1952,7 +1952,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
       const individualId = R.head(individuals).id;
       const patch = { contact_information: updatedInstance.user_email, name: updatedInstance.name, firstname: updatedInstance.firstname, lastname: updatedInstance.lastname };
-      await patchAttribute({ ...context, internalForceUpdate: true }, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL, patch);
+      await patchAttribute(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL, patch, { bypassIndividualUpdate: true });
     }
     // Return updated element after waiting for it.
     return { element: updatedInstance };

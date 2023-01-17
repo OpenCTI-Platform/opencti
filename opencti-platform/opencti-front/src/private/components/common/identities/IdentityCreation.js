@@ -282,15 +282,7 @@ class IdentityCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t,
-      inputValue,
-      open,
-      onlyAuthors,
-      onlyAssignees,
-      handleClose,
-      dryrun,
-    } = this.props;
+    const { t, inputValue, open, onlyAuthors, handleClose, dryrun } = this.props;
     return (
       <div>
         <Formik
@@ -348,15 +340,13 @@ class IdentityCreation extends Component {
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    {!onlyAuthors && !onlyAssignees && (
+                    {!onlyAuthors && (
                       <MenuItem value="Sector">{t('Sector')}</MenuItem>
                     )}
-                    {!onlyAssignees && (
-                      <MenuItem value="Organization">
-                        {t('Organization')}
-                      </MenuItem>
-                    )}
-                    {!onlyAuthors && !onlyAssignees && (
+                    <MenuItem value="Organization">
+                      {t('Organization')}
+                    </MenuItem>
+                    {!onlyAuthors && (
                       <MenuItem value="System">{t('System')}</MenuItem>
                     )}
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
@@ -420,7 +410,6 @@ IdentityCreation.propTypes = {
   t: PropTypes.func,
   contextual: PropTypes.bool,
   onlyAuthors: PropTypes.bool,
-  onlyAssignees: PropTypes.bool,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
   inputValue: PropTypes.string,
