@@ -401,7 +401,17 @@ const createSeeMiddleware = () => {
       // Assignee filtering
       if (type === ASSIGNEE_FILTER) {
         const assignees = [...(instance.object_assignee_refs ?? []), ...(instance.extensions[STIX_EXT_OCTI]?.object_assignee_refs ?? [])];
-        const found = values.map((v) => v.id).some((r) => assignees.includes(r));
+        const extractedValues = values.map((v) => v.value);
+        switch (operator) {
+          case 'not_eq': // filterMode=and
+            found = !extractedValues.map((r) => !assignees.includes(r)).includes(false);
+            break;
+          case 'eq': // filterMode=or
+            found = extractedValues.some((r) => assignees.includes(r));
+            break;
+          default:
+            found = extractedValues.some((r) => assignees.includes(r));
+        }
         if (!found) {
           return false;
         }
