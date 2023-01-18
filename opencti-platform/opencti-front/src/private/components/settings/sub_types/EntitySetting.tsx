@@ -3,6 +3,8 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import Switch from '@mui/material/Switch';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import Grid from '@mui/material/Grid';
+import { Tooltip } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
@@ -74,41 +76,58 @@ const EntitySetting = ({ queryRef }: { queryRef: PreloadedQuery<EntitySettingQue
   };
 
   return (
-    <div>
-      {entitySetting.platform_entity_files_ref !== null
-        && <div>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Entity automatic reference from files')}
-          </Typography>
+    <Grid container={true} spacing={3} >
+      <Grid item={true} xs={6}>
+        <div>
+          <Tooltip
+            title={entitySetting.platform_entity_files_ref === null
+              ? t('This configuration is not available for this entity type')
+              : t('This configuration enables an entity to automatically construct an external reference from the uploaded file.')}>
+
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Entity automatic reference from files')}
+            </Typography>
+          </Tooltip>
           <Switch
-            checked={entitySetting.platform_entity_files_ref}
+            disabled={entitySetting.platform_entity_files_ref === null}
+            checked={entitySetting.platform_entity_files_ref ?? false}
             onChange={() => handleSubmitField('platform_entity_files_ref', !entitySetting.platform_entity_files_ref)}
           />
         </div>
-      }
-      {entitySetting.platform_hidden_type !== null
-        && <div>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Hidden entity type')}
-          </Typography>
+        <div style={{ paddingTop: 10 }}>
+          <Tooltip
+            title={entitySetting.platform_hidden_type === null
+              ? t('This configuration is not available for this entity type')
+              : t('This configuration hidde a specific entity type across the entire platform.')}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Hidden entity type')}
+            </Typography>
+          </Tooltip>
           <Switch
-            checked={entitySetting.platform_hidden_type}
+            disabled={entitySetting.platform_hidden_type === null}
+            checked={entitySetting.platform_hidden_type ?? false}
             onChange={() => handleSubmitField('platform_hidden_type', !entitySetting.platform_hidden_type)}
           />
         </div>
-      }
-      {entitySetting.enforce_reference !== null
-        && <div>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Enforce reference on entity type')}
-          </Typography>
+      </Grid>
+      <Grid item={true} xs={6}>
+        <div>
+          <Tooltip
+            title={entitySetting.enforce_reference === null
+              ? t('This configuration is not available for this entity type')
+              : t('This configuration enables the requirement of a reference message on an entity update.')}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Enforce reference on entity type')}
+            </Typography>
+          </Tooltip>
           <Switch
-            checked={entitySetting.enforce_reference}
+            disabled={entitySetting.enforce_reference === null}
+            checked={entitySetting.enforce_reference ?? false}
             onChange={() => handleSubmitField('enforce_reference', !entitySetting.enforce_reference)}
           />
         </div>
-      }
-    </div>
+      </Grid>
+    </Grid>
   );
 };
 

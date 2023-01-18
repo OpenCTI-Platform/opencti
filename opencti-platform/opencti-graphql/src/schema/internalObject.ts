@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { ABSTRACT_INTERNAL_OBJECT, schemaTypes } from './general';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
-export const ENTITY_TYPE_ENTITY_SETTING = 'EntitySetting';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
 export const ENTITY_TYPE_MIGRATION_REFERENCE = 'MigrationReference';
 export const ENTITY_TYPE_RULE_MANAGER = 'RuleManager';

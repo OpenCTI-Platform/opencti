@@ -137,7 +137,6 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
-  ENTITY_TYPE_ENTITY_SETTING,
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_USER,
   isDatedInternalObject,
@@ -245,6 +244,7 @@ import {
   isEntityFieldAnOpenVocabulary,
   updateElasticVocabularyValue
 } from '../modules/vocabulary/vocabulary-utils';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1432,7 +1432,7 @@ const updateDateRangeValidation = (instance, inputs, from, to) => {
     throw DatabaseError(`You cant update an element with ${to} less than ${from}`, data);
   }
 };
-export const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) => {
+const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) => {
   // Upsert option is only useful to force aliases to be kept when upserting the entity
   const { impactStandardId = true, upsert = false } = opts;
   const elements = Array.isArray(inputs) ? inputs : [inputs];
@@ -3008,7 +3008,7 @@ const userHaveCapability = (user, capability) => {
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   return userCapabilities.includes(BYPASS) || userCapabilities.includes(capability);
 };
-export const createEntityRaw = async (context, user, input, type, opts = {}) => {
+const createEntityRaw = async (context, user, input, type, opts = {}) => {
   const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
   const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
   if (!isAllowedToByPass && entitySettings.get(type)?.enforce_reference) {

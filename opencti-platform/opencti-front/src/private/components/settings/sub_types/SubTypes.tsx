@@ -8,6 +8,8 @@ import SubTypesLines, { subTypesLinesQuery } from './SubTypesLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { SubTypeLineDummy } from './SubTypesLine';
 import { SubTypesLinesQuery } from './__generated__/SubTypesLinesQuery.graphql';
+import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import ToolBar from './ToolBar';
 
 const LOCAL_STORAGE_KEY_SUB_TYPES = 'view-sub-types';
 
@@ -18,6 +20,7 @@ const SubTypes = () => {
     paginationOptions,
   } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY_SUB_TYPES, {
     searchTerm: '',
+    numberOfElements: { number: 0, symbol: '', original: 0 },
   });
 
   const dataColumns = {
@@ -31,18 +34,43 @@ const SubTypes = () => {
   const { searchTerm } = viewStorage;
   const queryRef = useQueryLoading<SubTypesLinesQuery>(subTypesLinesQuery, paginationOptions);
 
+  const {
+    onToggleEntity,
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+    selectedElements,
+    deSelectedElements,
+    handleToggleSelectAll,
+    selectAll,
+  } = useEntityToggle(LOCAL_STORAGE_KEY_SUB_TYPES);
+
   return (
     <ListLines
       handleSearch={helpers.handleSearch}
       keyword={searchTerm}
       dataColumns={dataColumns}
+      iconExtension={true}
+      selectAll={selectAll}
+      handleToggleSelectAll={handleToggleSelectAll}
     >
       {queryRef && (
         <React.Suspense fallback={
           <>{Array.from(Array(20).keys())
             .map((idx) => <SubTypeLineDummy key={idx} dataColumns={dataColumns} />)}</>
         }>
-          <SubTypesLines queryRef={queryRef} keyword={searchTerm} dataColumns={dataColumns} />
+          <SubTypesLines queryRef={queryRef}
+                         keyword={searchTerm}
+                         dataColumns={dataColumns}
+                         setNumberOfElements={helpers.handleSetNumberOfElements}
+                         selectedElements={selectedElements}
+                         deSelectedElements={deSelectedElements}
+                         selectAll={selectAll}
+                         onToggleEntity={onToggleEntity}/>
+          <ToolBar keyword={searchTerm}
+                   numberOfSelectedElements={numberOfSelectedElements}
+                   selectedElements={selectedElements}
+                   selectAll={selectAll}
+                   handleClearSelectedElements={handleClearSelectedElements} />
         </React.Suspense>
       )}
     </ListLines>

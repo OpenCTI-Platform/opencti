@@ -8,8 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
 import EntitySetting, { entitySettingQuery } from './EntitySetting';
-import { SubType_subType$data, SubType_subType$key } from './__generated__/SubType_subType.graphql';
-import { computeTLabel } from './statusFormUtils';
+import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
@@ -46,13 +45,11 @@ export const subTypeFragment = graphql`
   }
 `;
 
-type SubTypeEntity = SubType_subType$data & { tlabel: string };
-
 const SubType = ({ data }: { data: SubType_subType$key }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
-  const subType = computeTLabel(useFragment(subTypeFragment, data), t) as SubTypeEntity;
+  const subType = useFragment(subTypeFragment, data);
   const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
 
   const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, { targetType: subType.id });
@@ -63,7 +60,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
         variant="h1"
         gutterBottom={true}
       >
-        {subType.tlabel}
+        {t(`entity_${subType.label}`)}
       </Typography>
       <Grid
         container={true}
@@ -71,9 +68,9 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
         style={{ paddingTop: 10 }}
       >
         <Grid item={true} xs={6}>
-          <div style={{ height: '100%' }}>
+          <div>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Basic information')}
+              {t('Configuration')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               {queryRef && (
@@ -81,9 +78,9 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
                   <EntitySetting queryRef={queryRef}/>
                 </React.Suspense>
               )}
-              <div style={{ marginTop: 20 }}>
+              <div>
                 <Typography variant="h3" gutterBottom={true}>
-                  {`${t('Workflow of')} ${subType.tlabel}`}
+                  {`${t('Workflow of')} ${t(`entity_${subType.label}`)}`}
                   <SubTypeStatusPopover subTypeId={subType.id} />
                 </Typography>
               </div>

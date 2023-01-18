@@ -8,13 +8,6 @@ export const statusValidation = (t: (name: string | object) => string) => Yup.ob
     .required(t('This field is required')),
 });
 
-export const computeTLabel = (entity: { label: string }, t: (v: string) => string) => {
-  return {
-    ...entity,
-    tlabel: t(`entity_${entity.label}`),
-  };
-};
-
 export interface StatusForm {
   template: {
     label: string,

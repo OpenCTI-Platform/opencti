@@ -31,14 +31,7 @@ import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
-import AutomaticTypesList from './entity_settings/AutomaticTypesList';
 import { entitySettingsQuery } from './sub_types/EntitySetting';
-import EnforceReferenceTypesList from './entity_settings/EnforceReferenceTypesList';
-import useGranted, {
-  SETTINGS_SETACCESSES,
-} from '../../../utils/hooks/useGranted';
-import HiddenTypesList from './HiddenTypesList';
-import AutomaticTypesList from './AutomaticTypesList';
 import SwitchField from '../../../components/SwitchField';
 
 const useStyles = makeStyles((theme) => ({
@@ -459,8 +452,6 @@ const Settings = () => {
                             {queryRef && (
                               <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                                  <HiddenTypesList queryRef={queryRef} />
-                                <AutomaticTypesList queryRef={queryRef} />
-                                <EnforceReferenceTypesList queryRef={queryRef} />
                               </React.Suspense>
                             )}
                             <div style={{ marginTop: 20 }}>

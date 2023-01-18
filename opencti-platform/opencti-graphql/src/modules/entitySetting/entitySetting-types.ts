@@ -2,6 +2,8 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
+export const ENTITY_TYPE_ENTITY_SETTING = 'EntitySetting';
+
 export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   target_type: string;
   platform_entity_files_ref: boolean;

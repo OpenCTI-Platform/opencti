@@ -3,7 +3,6 @@ import { pubsub } from '../database/redis';
 import { connectors } from '../database/repository';
 import {
   ENTITY_TYPE_CONNECTOR,
-  ENTITY_TYPE_ENTITY_SETTING,
   ENTITY_TYPE_RULE,
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_STATUS,
@@ -16,6 +15,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 
 const workflowStatuses = async (context: AuthContext) => {
   const reloadStatuses = async () => {

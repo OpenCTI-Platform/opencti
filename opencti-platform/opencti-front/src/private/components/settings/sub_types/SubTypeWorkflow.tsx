@@ -19,7 +19,6 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEditionQuery.graphql';
 import SubTypeWorkflowStatusPopover from './SubTypeWorkflowStatusPopover';
 import { SubTypeWorkflow_subType$data } from './__generated__/SubTypeWorkflow_subType.graphql';
-import { computeTLabel } from './statusFormUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -83,8 +82,6 @@ interface SubTypeEditionContainerProps {
   queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>,
 }
 
-type SubTypeEntity = SubTypeWorkflow_subType$data & { tlabel: string };
-
 const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
   handleClose,
   queryRef,
@@ -94,7 +91,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
   const queryData = usePreloadedQuery(subTypeWorkflowEditionQuery, queryRef);
 
   if (queryData.subType) {
-    const subType = computeTLabel(useFragment(subTypeWorkflowEditionFragment, queryData.subType) as SubTypeWorkflow_subType$data, t) as SubTypeEntity;
+    const subType = useFragment(subTypeWorkflowEditionFragment, queryData.subType) as SubTypeWorkflow_subType$data;
     return (
       <div>
         <div className={classes.header}>
@@ -108,7 +105,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {`${t('Workflow of')} ${subType.tlabel}`}
+            {`${t('Workflow of')} ${t(`entity_${subType.label}`)}`}
           </Typography>
           <div className="clearfix" />
         </div>

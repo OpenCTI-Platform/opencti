@@ -1,6 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../../schema/internalObject';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { EditInput, QueryEntitySettingsArgs } from '../../generated/graphql';
@@ -11,6 +10,7 @@ import { defaultEntitySetting, getAvailableSettings } from './entitySetting-util
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { UnsupportedError } from '../../config/errors';
 import { queryDefaultSubTypes } from '../../domain/subType';
+import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 
 // -- VALIDATION --
 

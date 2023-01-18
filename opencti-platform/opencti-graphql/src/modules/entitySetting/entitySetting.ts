@@ -1,10 +1,10 @@
 import { ModuleDefinition, registerDefinition } from '../../types/module';
 import type { StoreEntityEntitySetting } from './entitySetting-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../../schema/internalObject';
 import entitySettingResolvers from './entitySetting-resolvers';
 import entitySettingTypeDefs from './entitySetting.graphql';
 import convertEntitySettingToStix from './entitySetting-converter';
+import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 
 const TARGET_TYPE = 'target_type';
 

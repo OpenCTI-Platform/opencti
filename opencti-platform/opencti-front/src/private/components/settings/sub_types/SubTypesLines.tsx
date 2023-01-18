@@ -6,7 +6,8 @@ import SubTypeLine from './SubTypesLine';
 import { SubTypesLinesQuery } from './__generated__/SubTypesLinesQuery.graphql';
 import { SubTypesLines_subTypes$key } from './__generated__/SubTypesLines_subTypes.graphql';
 import { DataColumns } from '../../../../components/list_lines';
-import { computeTLabel } from './statusFormUtils';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
 export const subTypesLinesQuery = graphql`
   query SubTypesLinesQuery {
@@ -32,14 +33,22 @@ interface SubTypesLinesProps {
   queryRef: PreloadedQuery<SubTypesLinesQuery>
   keyword: string | undefined
   dataColumns: DataColumns
+  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements']
+  selectedElements: Record<string, { id: string }>
+  deSelectedElements: Record<string, { id: string }>
+  selectAll: boolean
+  onToggleEntity: (entity: { id: string }) => void
 }
-
-export type SubTypeEntity = { id: string, label: string, tlabel: string };
 
 const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
   queryRef,
   keyword,
   dataColumns,
+  setNumberOfElements,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleEntity,
 }) => {
   const data = usePreloadedFragment<
   SubTypesLinesQuery,
@@ -49,29 +58,45 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
     linesFragment: subTypesLinesFragment,
     queryRef,
   });
+
   const { t } = useFormatter();
 
-  const filterOnSubType = (subType: SubTypeEntity) => {
+  const filterOnSubType = ({ node }: { node: { label: string } }) => {
     if (keyword) {
-      return subType.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-        || subType.tlabel.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      return node.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+        || t(`entity_${node.label}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     }
     return true;
   };
-  const sortOnSubType = (a: SubTypeEntity, b: SubTypeEntity) => {
-    return (`${a.tlabel}`).localeCompare(`${b.tlabel}`);
+  const sortOnSubType = (edgeA: { node: { label: string } }, edgeB: { node: { label: string } }) => {
+    return t(`entity_${edgeA.node.label}`).localeCompare(t(`entity_${edgeB.node.label}`));
   };
 
-  const subTypes = (data?.subTypes?.edges ?? []).map((subType) => subType.node)
-    .map((subType) => (computeTLabel(subType, t) as SubTypeEntity))
+  const subTypes = (data?.subTypes?.edges ?? [])
     .filter(filterOnSubType)
     .sort(sortOnSubType);
 
+  setNumberOfElements({
+    number: subTypes.length.toString(),
+    symbol: '',
+    original: subTypes.length,
+  });
+
   return (
-    <>
-      {subTypes.map((subType) => <SubTypeLine
-        key={subType.id} subTypeId={subType.id} subTypeLabel={subType.tlabel} dataColumns={dataColumns}/>)}
-    </>
+    <ListLinesContent
+      initialLoading={false}
+      loadMore={() => {}}
+      hasMore={() => {}}
+      isLoading={() => false}
+      dataList={subTypes}
+      globalCount={subTypes.length}
+      LineComponent={SubTypeLine}
+      dataColumns={dataColumns}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      onToggleEntity={onToggleEntity}
+      selectAll={selectAll}
+    />
   );
 };
 

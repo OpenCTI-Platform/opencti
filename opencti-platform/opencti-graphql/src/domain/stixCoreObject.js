@@ -52,7 +52,7 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_ENTITY_SETTING } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
 import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
@@ -62,6 +62,7 @@ import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { getEntitiesFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 
 export const findAll = async (context, user, args) => {
   let types = [];
