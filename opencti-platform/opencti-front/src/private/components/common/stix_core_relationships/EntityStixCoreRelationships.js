@@ -509,6 +509,19 @@ class EntityStixCoreRelationships extends Component {
         - Object.keys(deSelectedElements || {}).length;
     }
     const finalView = currentView || view;
+    let availableFilterKeys = [
+      'relationship_type',
+      'entity_type',
+      'markedBy',
+      'labelledBy',
+      'createdBy',
+      'creator',
+      'created_start_date',
+      'created_end_date',
+    ];
+    if (relationshipTypes.includes('targets')) {
+      availableFilterKeys = [...availableFilterKeys, 'targets'];
+    }
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -538,17 +551,7 @@ class EntityStixCoreRelationships extends Component {
               exportEntityType="Stix-Core-Object"
               iconExtension={true}
               filters={filters}
-              availableFilterKeys={[
-                'relationship_type',
-                'entity_type',
-                'markedBy',
-                'labelledBy',
-                'createdBy',
-                'creator',
-                'created_start_date',
-                'created_end_date',
-                relationshipTypes.includes('targets') ? 'targets' : undefined,
-              ]}
+              availableFilterKeys={availableFilterKeys}
               availableRelationFilterTypes={{
                 targets: isRelationReversed
                   ? [
