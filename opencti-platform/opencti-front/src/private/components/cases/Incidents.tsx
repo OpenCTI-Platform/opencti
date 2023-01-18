@@ -83,19 +83,24 @@ const Incidents: FunctionComponent<CasesProps> = () => {
         width: '25%',
         isSortable: true,
       },
-      rating: {
-        label: 'Rating',
-        width: '8%',
+      priority: {
+        label: 'Priority',
+        width: '5%',
+        isSortable: true,
+      },
+      severity: {
+        label: 'Severity',
+        width: '5%',
         isSortable: true,
       },
       createdBy: {
         label: 'Author',
-        width: '12%',
+        width: '11%',
         isSortable: isRuntimeSort ?? false,
       },
       creator: {
         label: 'Creator',
-        width: '12%',
+        width: '11%',
         isSortable: isRuntimeSort ?? false,
       },
       objectLabel: {

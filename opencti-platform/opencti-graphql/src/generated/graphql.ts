@@ -1656,7 +1656,9 @@ export enum CasesFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Priority = 'priority',
   Rating = 'rating',
+  Severity = 'severity',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -1678,7 +1680,9 @@ export enum CasesOrdering {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Priority = 'priority',
   Rating = 'rating',
+  Severity = 'severity',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }

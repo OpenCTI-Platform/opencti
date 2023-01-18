@@ -101,7 +101,7 @@ const VulnerabilitiesLines: FunctionComponent<VulnerabilityLinesProps> = ({
     linesQuery: vulnerabilitiesLinesQuery,
     linesFragment: vulnerabilitiesLinesFragment,
     queryRef,
-    nodePath: ['vulnerabilities', 'edges'],
+    nodePath: ['vulnerabilities', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 

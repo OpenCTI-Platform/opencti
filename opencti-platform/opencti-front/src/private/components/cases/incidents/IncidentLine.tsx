@@ -20,7 +20,6 @@ import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
-import RatingField from '../../../../components/RatingField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -84,6 +83,8 @@ const caseFragment = graphql`
     case_type
     description
     rating
+    priority
+    severity
     created
     createdBy {
       ... on Identity {
@@ -183,14 +184,15 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
             </Tooltip>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.rating.width }}
+              style={{ width: dataColumns.priority.width }}
             >
-              <RatingField
-                rating={data.rating}
-                size="tiny"
-                readOnly={true}
-                style={{ paddingTop: 2 }}
-              />
+              {data.priority}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.severity.width }}
+            >
+              {data.severity}
             </div>
             <div
               className={classes.bodyItem}
@@ -283,7 +285,18 @@ export const IncidentLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.rating.width }}
+              style={{ width: dataColumns.priority.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.severity.width }}
             >
               <Skeleton
                 animation="wave"

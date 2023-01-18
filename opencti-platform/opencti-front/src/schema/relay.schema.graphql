@@ -9347,6 +9347,8 @@ enum CasesOrdering {
   markedBy
   x_opencti_workflow_id
   case_type
+  priority
+  severity
 }
 
 enum CasesFilter {
@@ -9364,6 +9366,8 @@ enum CasesFilter {
   x_opencti_workflow_id
   rating
   case_type
+  priority
+  severity
 }
 
 input CasesFiltering {
