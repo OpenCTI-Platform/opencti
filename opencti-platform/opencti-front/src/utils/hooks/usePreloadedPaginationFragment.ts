@@ -33,7 +33,6 @@ const usePreloadedPaginationFragment = <QueryType extends OperationType, Fragmen
   } = usePaginationFragment<QueryType, FragmentKey>(linesFragment, queryData);
   useEffect(() => {
     const deep_value = (nodePath ?? []).reduce((a, v) => a[v as keyof object], data) as number;
-    console.log(deep_value);
     if (setNumberOfElements && Number.isInteger(deep_value)) {
       setNumberOfElements(numberFormat(deep_value));
     }
