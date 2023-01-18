@@ -247,7 +247,7 @@ class DataSourceEditionContainer extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name='unit'
+                        name='period'
                         type='number'
                         fullWidth={true}
                         size='small'
@@ -273,7 +273,7 @@ class DataSourceEditionContainer extends Component {
                       <TaskType
                         component={SelectField}
                         variant='outlined'
-                        name='period'
+                        name='unit'
                         taskType='TimeUnit'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
