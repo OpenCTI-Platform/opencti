@@ -24,6 +24,7 @@ export const profileQuery = graphql`
       platform_modules {
         id
         enable
+        running
       }
       otp_mandatory
     }

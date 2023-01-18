@@ -1,6 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { lockResource, redisDeleteWorks, redisGetConnectorStatus, redisGetWork } from '../database/redis';
-import conf, { logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { connectors } from '../database/repository';
 import { elDeleteInstances, elUpdate } from '../database/engine';
@@ -16,6 +16,7 @@ import { now, sinceNowInDays } from '../utils/format';
 const SCHEDULE_TIME = conf.get('connector_manager:interval');
 const CONNECTOR_MANAGER_KEY = conf.get('connector_manager:lock_key');
 const CONNECTOR_WORK_RANGE = conf.get('connector_manager:works_day_range');
+let running = false;
 
 const closeOldWorks = async (context, connector) => {
   // Get current status from Redis
@@ -94,6 +95,7 @@ const connectorHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([CONNECTOR_MANAGER_KEY]);
+    running = true;
     const context = executionContext('connector_manager');
     // Execute the cleaning
     const platformConnectors = await connectors(context, SYSTEM_USER);
@@ -111,6 +113,7 @@ const connectorHandler = async () => {
       logApp.error('[OPENCTI-MODULE] Connector manager failed to start', { error: e });
     }
   } finally {
+    running = false;
     logApp.debug('[OPENCTI-MODULE] Connector manager done');
     if (lock) await lock.unlock();
   }
@@ -124,6 +127,13 @@ const initConnectorManager = () => {
       scheduler = setIntervalAsync(async () => {
         await connectorHandler();
       }, SCHEDULE_TIME);
+    },
+    status: async () => {
+      return {
+        id: 'CONNECTOR_MANAGER',
+        enable: booleanConf('connector_manager:enabled', false),
+        running,
+      };
     },
     shutdown: async () => {
       if (scheduler) {

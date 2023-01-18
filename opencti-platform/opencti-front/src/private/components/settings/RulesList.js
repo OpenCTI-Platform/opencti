@@ -725,6 +725,7 @@ export default createRefetchContainer(
           platform_modules {
             id
             enable
+            running
           }
         }
         stixDomainObjectsTimeSeries(

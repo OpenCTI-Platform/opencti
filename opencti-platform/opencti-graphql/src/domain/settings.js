@@ -1,19 +1,9 @@
 import { getHeapStatistics } from 'v8';
 import nconf from 'nconf';
-import { createEntity, updateAttribute, loadEntity } from '../database/middleware';
-import conf, {
-  baseUrl,
-  BUS_TOPICS,
-  ENABLED_EXPIRED_MANAGER,
-  ENABLED_HISTORY_MANAGER,
-  ENABLED_RETENTION_MANAGER,
-  ENABLED_RULE_ENGINE,
-  ENABLED_SUBSCRIPTION_MANAGER,
-  ENABLED_SYNC_MANAGER,
-  ENABLED_TASK_SCHEDULER,
-  PLATFORM_VERSION,
-} from '../config/conf';
-import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
+import * as R from 'ramda';
+import { createEntity, loadEntity, updateAttribute } from '../database/middleware';
+import conf, { baseUrl, BUS_TOPICS, PLATFORM_VERSION, } from '../config/conf';
+import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -25,15 +15,16 @@ export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
 };
 
-export const getModules = () => {
-  const modules = [];
-  modules.push({ id: 'EXPIRATION_SCHEDULER', enable: ENABLED_EXPIRED_MANAGER });
-  modules.push({ id: 'TASK_MANAGER', enable: ENABLED_TASK_SCHEDULER });
-  modules.push({ id: 'RULE_ENGINE', enable: ENABLED_RULE_ENGINE });
-  modules.push({ id: 'SUBSCRIPTION_MANAGER', enable: ENABLED_SUBSCRIPTION_MANAGER });
-  modules.push({ id: 'SYNC_MANAGER', enable: ENABLED_SYNC_MANAGER });
-  modules.push({ id: 'RETENTION_MANAGER', enable: ENABLED_RETENTION_MANAGER });
-  modules.push({ id: 'HISTORY_MANAGER', enable: ENABLED_HISTORY_MANAGER });
+export const getModules = async () => {
+  const instancesConfig = await getClusterInstances();
+  const allManagers = instancesConfig.map((i) => i.managers).flat();
+  const groupManagersById = R.groupBy((manager) => manager.id, allManagers);
+  const modules = Object.entries(groupManagersById).map(([id, managers]) => ({
+    id,
+    enable: managers.reduce((acc, m) => acc || m.enable, false),
+    running: managers.reduce((acc, m) => acc || m.running, false),
+  }));
+
   return modules;
 };
 

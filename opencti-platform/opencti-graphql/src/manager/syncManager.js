@@ -4,7 +4,7 @@ import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
 import https from 'node:https';
-import conf, { logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import Queue from '../utils/queue';
@@ -161,6 +161,7 @@ const syncManagerInstance = (syncId) => {
 const initSyncManager = () => {
   let scheduler;
   let syncListening = true;
+  let managerRunning = false;
   const syncManagers = new Map();
   const processStep = async () => {
     // Get syncs definition
@@ -215,6 +216,7 @@ const initSyncManager = () => {
     try {
       logApp.debug('[OPENCTI-MODULE] Running sync manager');
       lock = await lockResource([SYNC_MANAGER_KEY]);
+      managerRunning = true;
       await processingLoop();
     } catch (e) {
       if (e.name === TYPE_LOCK_ERROR) {
@@ -223,6 +225,7 @@ const initSyncManager = () => {
         logApp.error('[OPENCTI-MODULE] Sync manager failed to start', { error: e });
       }
     } finally {
+      managerRunning = false;
       logApp.debug('[OPENCTI-MODULE] Sync manager done');
       if (lock) await lock.unlock();
     }
@@ -233,6 +236,13 @@ const initSyncManager = () => {
       scheduler = setIntervalAsync(async () => {
         await syncManagerHandler();
       }, WAIT_TIME_ACTION);
+    },
+    status: async () => {
+      return {
+        id: 'SYNC_MANAGER',
+        enable: booleanConf('sync_manager:enabled', false),
+        running: managerRunning,
+      };
     },
     shutdown: async () => {
       syncListening = false;

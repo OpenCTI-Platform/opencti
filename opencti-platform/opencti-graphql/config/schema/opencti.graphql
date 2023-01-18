@@ -990,6 +990,7 @@ interface InternalObject {
 type Module {
   id: ID!
   enable: Boolean!
+  running: Boolean!
 }
 type Provider {
   name: String!
