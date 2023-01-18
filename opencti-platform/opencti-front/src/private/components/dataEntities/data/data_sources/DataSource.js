@@ -103,11 +103,18 @@ const EntityLocation = createFragmentContainer(DataSourceComponent, {
     fragment DataSource_data on DataSource {
       __typename
       id
-      created
-      modified
+      auto
       name
       scope
+      created
+      modified
+      contextual
       description
+      entity_type
+      update_frequency {
+        period
+        unit
+      }
       ...DataSourceDetails_data
     }
   `,
