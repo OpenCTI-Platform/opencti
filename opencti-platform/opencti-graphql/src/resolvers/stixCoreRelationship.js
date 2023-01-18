@@ -10,6 +10,7 @@ import {
   batchNotes,
   batchOpinions,
   batchReports,
+  batchCases,
   findAll,
   findById,
   stixCoreRelationshipAddRelation,
@@ -45,6 +46,7 @@ const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
+const casesLoader = batchLoader(batchCases);
 const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 const creatorsLoader = batchLoader(batchUsers);
 
@@ -74,6 +76,7 @@ const stixCoreRelationshipResolvers = {
     externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
     killChainPhases: (rel, _, context) => killChainPhasesLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
+    cases: (rel, _, context) => casesLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
     opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),

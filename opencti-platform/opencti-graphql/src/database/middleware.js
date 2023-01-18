@@ -1955,8 +1955,8 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         const patch = {
           contact_information: updatedInstance.user_email,
           name: updatedInstance.name,
-          firstname: updatedInstance.firstname,
-          lastname: updatedInstance.lastname
+          x_opencti_firstname: updatedInstance.firstname,
+          x_opencti_lastname: updatedInstance.lastname
         };
         await patchAttribute(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL, patch, { bypassIndividualUpdate: true });
       }

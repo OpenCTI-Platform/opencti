@@ -10,6 +10,7 @@ import {
   batchObservedData,
   batchOpinions,
   batchReports,
+  batchCases,
   findAll,
   findById,
   stixCoreObjectAddRelation,
@@ -51,6 +52,7 @@ const externalReferencesLoader = batchLoader(batchExternalReferences);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
+const casesLoader = batchLoader(batchCases);
 const observedDataLoader = batchLoader(batchObservedData);
 const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 
@@ -99,6 +101,7 @@ const stixCoreObjectResolvers = {
     objectOrganization: (stixCoreObject, _, context) => batchOrganizationsLoader.load(stixCoreObject.id, context, context.user),
     externalReferences: (stixCoreObject, _, context) => externalReferencesLoader.load(stixCoreObject.id, context, context.user),
     reports: (stixCoreObject, args, context) => reportsLoader.load(stixCoreObject.id, context, context.user, args),
+    cases: (stixCoreObject, args, context) => casesLoader.load(stixCoreObject.id, context, context.user, args),
     notes: (stixCoreObject, _, context) => notesLoader.load(stixCoreObject.id, context, context.user),
     opinions: (stixCoreObject, _, context) => opinionsLoader.load(stixCoreObject.id, context, context.user),
     observedData: (stixCoreObject, _, context) => observedDataLoader.load(stixCoreObject.id, context, context.user),

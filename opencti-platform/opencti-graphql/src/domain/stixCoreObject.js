@@ -61,6 +61,7 @@ import { isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } 
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -88,6 +89,10 @@ export const batchCreatedBy = async (context, user, stixCoreObjectIds) => {
 
 export const batchReports = async (context, user, stixCoreObjectIds, args = {}) => {
   return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, args);
+};
+
+export const batchCases = async (context, user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE, args);
 };
 
 export const batchNotes = (context, user, stixCoreObjectIds, args = {}) => {

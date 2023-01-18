@@ -58,7 +58,11 @@ import TopMenuProfile from './TopMenuProfile';
 import TopMenuTechniques from './TopMenuTechniques';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import {
+  EXPLORE,
+  KNOWLEDGE,
+  KNOWLEDGE_KNASKIMPORT,
+} from '../../../utils/hooks/useGranted';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
@@ -70,7 +74,8 @@ import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
 import TopMenuDataComponent from './TopMenuDataComponent';
 import TopMenuDataSource from './TopMenuDataSource';
-import TopMenuFeedback from './TopMenuFeedback';
+import TopMenuCaseIncident from './TopMenuCaseIncident';
+import TopMenuCaseFeedback from './TopMenuCaseFeedback';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
 
@@ -218,8 +223,11 @@ const TopBar = ({
             || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
             <TopMenuCases />
           )}
+          {location.pathname.includes('/dashboard/cases/incidents/') && (
+            <TopMenuCaseIncident />
+          )}
           {location.pathname.includes('/dashboard/cases/feedbacks/') && (
-            <TopMenuFeedback />
+            <TopMenuCaseFeedback />
           )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
@@ -499,11 +507,7 @@ const TopBar = ({
               >
                 {t('Profile')}
               </MenuItem>
-              <MenuItem
-                onClick={handleOpenDrawer}
-                >
-                {t('Feedback')}
-              </MenuItem>
+              <MenuItem onClick={handleOpenDrawer}>{t('Feedback')}</MenuItem>
               <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
             </Menu>
           </div>

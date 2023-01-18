@@ -54,6 +54,7 @@ import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { upload } from '../database/file-storage';
 import { buildFilters } from '../database/repository';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -108,6 +109,10 @@ export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => 
 
 export const batchReports = async (context, user, stixCoreRelationshipIds) => {
   return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+};
+
+export const batchCases = async (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE);
 };
 
 export const batchNotes = (context, user, stixCoreRelationshipIds) => {

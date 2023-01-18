@@ -22,6 +22,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     opinions(first: Int): OpinionConnection
     observedData(first: Int): ObservedDataConnection
     groupings(first: Int): GroupingConnection
+    cases(first: Int): CaseConnection
     stixCoreRelationships(
         first: Int
         after: ID

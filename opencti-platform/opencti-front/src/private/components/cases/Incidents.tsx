@@ -6,17 +6,20 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Filters } from '../../../components/list_lines';
 import {
   CasesFilter,
-  FeedbacksLinesPaginationQuery,
-  FeedbacksLinesPaginationQuery$variables,
-} from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
-import FeedbacksLines, {
-  feedbacksLinesQuery,
-} from './feedbacks/FeedbacksLines';
-import { FeedbackLineDummy } from './feedbacks/FeedbackLine';
+  IncidentsLinesCasesPaginationQuery,
+  IncidentsLinesCasesPaginationQuery$variables,
+} from './incidents/__generated__/IncidentsLinesCasesPaginationQuery.graphql';
+import IncidentsLines, {
+  incidentsLinesQuery,
+} from './incidents/IncidentsLines';
+import { IncidentLineDummy } from './incidents/IncidentLine';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
+import { IncidentLineCase_node$data } from './incidents/__generated__/IncidentLineCase_node.graphql';
 import ToolBar from '../data/ToolBar';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import IncidentCreation from './incidents/IncidentCreation';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -30,10 +33,10 @@ interface CasesProps {
 
 export const LOCAL_STORAGE_KEY_CASE = 'view-cases';
 
-const Feedbacks: FunctionComponent<CasesProps> = () => {
+const Incidents: FunctionComponent<CasesProps> = () => {
   const classes = useStyles();
   const { helper } = useContext(UserContext);
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesCasesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE,
     {
       searchTerm: '',
@@ -52,7 +55,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
     ...paginationOptions,
     filters: [
       ...(paginationOptions.filters ?? []),
-      { key, values: ['feedback'] },
+      { key, values: ['incident'] },
     ],
   };
   const {
@@ -63,7 +66,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<FeedbackLine_node$data>(LOCAL_STORAGE_KEY_CASE);
+  } = useEntityToggle<IncidentLineCase_node$data>(LOCAL_STORAGE_KEY_CASE);
   const renderLines = () => {
     const {
       sortBy,
@@ -116,8 +119,8 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
         isSortable: isRuntimeSort ?? false,
       },
     };
-    const queryRef = useQueryLoading<FeedbacksLinesPaginationQuery>(
-      feedbacksLinesQuery,
+    const queryRef = useQueryLoading<IncidentsLinesCasesPaginationQuery>(
+      incidentsLinesQuery,
       finalPaginationOptions,
     );
     return (
@@ -157,12 +160,12 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
                 {Array(20)
                   .fill(0)
                   .map((idx) => (
-                    <FeedbackLineDummy key={idx} dataColumns={dataColumns} />
+                    <IncidentLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
             }
           >
-            <FeedbacksLines
+            <IncidentsLines
               queryRef={queryRef}
               paginationOptions={finalPaginationOptions}
               dataColumns={dataColumns}
@@ -180,7 +183,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
               selectAll={selectAll}
               filters={{
                 entity_type: [{ id: 'Case', value: 'Case' }],
-                case_type: [{ id: 'feedback', value: 'feedback' }],
+                case_type: [{ id: 'incident', value: 'incident' }],
               }}
             />
           </React.Suspense>
@@ -188,8 +191,14 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
       </ListLines>
     );
   };
-
-  return <div className={classes.container}>{renderLines()}</div>;
+  return (
+    <div className={classes.container}>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <IncidentCreation paginationOptions={finalPaginationOptions} />
+      </Security>
+    </div>
+  );
 };
 
-export default Feedbacks;
+export default Incidents;

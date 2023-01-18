@@ -25,6 +25,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     opinions(first: Int): OpinionConnection
     observedData(first: Int): ObservedDataConnection
     groupings(first: Int): GroupingConnection
+    cases(first: Int): CaseConnection
     stixCoreRelationships(
         first: Int
         after: ID

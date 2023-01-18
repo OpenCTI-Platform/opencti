@@ -858,7 +858,7 @@ const useSearchEntities = ({
                 || availableEntityTypes.includes('Stix-Domain-Object')
               ) {
                 result = [
-                  ...(data?.scoTypes?.edges ?? []).map((n) => ({
+                  ...(data?.sdoTypes?.edges ?? []).map((n) => ({
                     label: t(`entity_${n.node.label}`),
                     value: n.node.label,
                     type: n.node.label,

@@ -4,32 +4,32 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { DataColumns } from '../../../../components/list_lines';
 import type { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { FeedbackLine, FeedbackLineDummy } from './FeedbackLine';
+import { IncidentLine, IncidentLineDummy } from './IncidentLine';
 import {
-  FeedbacksLinesPaginationQuery,
-  FeedbacksLinesPaginationQuery$variables,
-} from './__generated__/FeedbacksLinesPaginationQuery.graphql';
-import { FeedbacksLines_data$key } from './__generated__/FeedbacksLines_data.graphql';
-import { FeedbackLine_node$data } from './__generated__/FeedbackLine_node.graphql';
+  IncidentsLinesCasesPaginationQuery,
+  IncidentsLinesCasesPaginationQuery$variables,
+} from './__generated__/IncidentsLinesCasesPaginationQuery.graphql';
+import { IncidentsLinesCases_data$key } from './__generated__/IncidentsLinesCases_data.graphql';
+import { IncidentLineCase_node$data } from './__generated__/IncidentLineCase_node.graphql';
 
 const nbOfRowsToLoad = 50;
 
 interface CasesLinesProps {
-  paginationOptions?: FeedbacksLinesPaginationQuery$variables;
+  paginationOptions?: IncidentsLinesCasesPaginationQuery$variables;
   dataColumns: DataColumns;
-  queryRef: PreloadedQuery<FeedbacksLinesPaginationQuery>;
+  queryRef: PreloadedQuery<IncidentsLinesCasesPaginationQuery>;
   setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'];
-  selectedElements: Record<string, FeedbackLine_node$data>;
-  deSelectedElements: Record<string, FeedbackLine_node$data>;
+  selectedElements: Record<string, IncidentLineCase_node$data>;
+  deSelectedElements: Record<string, IncidentLineCase_node$data>;
   onToggleEntity: (
-    entity: FeedbackLine_node$data,
+    entity: IncidentLineCase_node$data,
     event: React.SyntheticEvent
   ) => void;
   selectAll: boolean;
 }
 
-export const feedbacksLinesQuery = graphql`
-  query FeedbacksLinesPaginationQuery(
+export const incidentsLinesQuery = graphql`
+  query IncidentsLinesCasesPaginationQuery(
     $search: String
     $count: Int
     $cursor: ID
@@ -37,7 +37,7 @@ export const feedbacksLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: [CasesFiltering!]
   ) {
-    ...FeedbacksLines_data
+    ...IncidentsLinesCases_data
       @arguments(
         search: $search
         count: $count
@@ -49,8 +49,8 @@ export const feedbacksLinesQuery = graphql`
   }
 `;
 
-const feedbacksLinesFragment = graphql`
-  fragment FeedbacksLines_data on Query
+const incidentsLinesFragment = graphql`
+  fragment IncidentsLinesCases_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int" }
@@ -59,7 +59,7 @@ const feedbacksLinesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "[CasesFiltering!]" }
   )
-  @refetchable(queryName: "FeedbackLinesRefetchQuery") {
+  @refetchable(queryName: "IncidentsCasesLinesRefetchQuery") {
     cases(
       search: $search
       first: $count
@@ -67,11 +67,11 @@ const feedbacksLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_cases") {
+    ) @connection(key: "Pagination_incidents_cases") {
       edges {
         node {
           id
-          ...FeedbackLine_node
+          ...IncidentLineCase_node
         }
       }
       pageInfo {
@@ -83,7 +83,7 @@ const feedbacksLinesFragment = graphql`
   }
 `;
 
-const FeedbacksLines: FunctionComponent<CasesLinesProps> = ({
+const IncidentsLines: FunctionComponent<CasesLinesProps> = ({
   setNumberOfElements,
   dataColumns,
   queryRef,
@@ -94,11 +94,11 @@ const FeedbacksLines: FunctionComponent<CasesLinesProps> = ({
   onToggleEntity,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  FeedbacksLinesPaginationQuery,
-  FeedbacksLines_data$key
+  IncidentsLinesCasesPaginationQuery,
+  IncidentsLinesCases_data$key
   >({
-    linesQuery: feedbacksLinesQuery,
-    linesFragment: feedbacksLinesFragment,
+    linesQuery: incidentsLinesQuery,
+    linesFragment: incidentsLinesFragment,
     queryRef,
     nodePath: ['cases', 'pageInfo', 'globalCount'],
     setNumberOfElements,
@@ -111,8 +111,8 @@ const FeedbacksLines: FunctionComponent<CasesLinesProps> = ({
       isLoading={isLoadingMore}
       dataList={data?.cases?.edges ?? []}
       globalCount={data?.cases?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-      LineComponent={FeedbackLine}
-      DummyLineComponent={FeedbackLineDummy}
+      LineComponent={IncidentLine}
+      DummyLineComponent={IncidentLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
@@ -124,4 +124,4 @@ const FeedbacksLines: FunctionComponent<CasesLinesProps> = ({
   );
 };
 
-export default FeedbacksLines;
+export default IncidentsLines;

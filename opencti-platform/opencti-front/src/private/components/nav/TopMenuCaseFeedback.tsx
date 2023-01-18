@@ -32,7 +32,7 @@ const styles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuFeedback: FunctionComponent = () => {
+const TopMenuCaseFeedback: FunctionComponent = () => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = styles();
@@ -48,7 +48,7 @@ const TopMenuFeedback: FunctionComponent = () => {
         classes={{ root: classes.buttonHome }}
       >
         <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
-        {t('Feedbacks')}
+        {t('Cases - Feedbacks')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"
@@ -130,4 +130,4 @@ const TopMenuFeedback: FunctionComponent = () => {
   );
 };
 
-export default TopMenuFeedback;
+export default TopMenuCaseFeedback;

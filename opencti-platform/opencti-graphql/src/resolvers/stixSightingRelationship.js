@@ -18,6 +18,7 @@ import {
   batchNotes,
   batchOpinions,
   batchReports,
+  batchCases,
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -37,6 +38,7 @@ const externalReferencesLoader = batchLoader(batchExternalReferences);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
+const casesLoader = batchLoader(batchCases);
 const creatorsLoader = batchLoader(batchUsers);
 const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 const loadByIdLoader = batchLoader(elBatchIds);
@@ -70,6 +72,7 @@ const stixSightingRelationshipResolvers = {
     objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),
     externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
+    cases: (rel, _, context) => casesLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
     opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),

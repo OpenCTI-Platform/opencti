@@ -699,6 +699,156 @@ export const buildCorrelationData = (
   };
 };
 
+export const buildCaseCorrelationData = (
+  originalObjects,
+  graphData,
+  t,
+  filterAdjust,
+) => {
+  const objects = R.map((n) => {
+    let { objectMarking } = n;
+    if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+      objectMarking = [
+        {
+          node: {
+            id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+            definition: t('None'),
+            definition_type: t('None'),
+          },
+        },
+      ];
+    } else {
+      objectMarking = R.map((m) => m.node, objectMarking.edges);
+    }
+    let { createdBy } = n;
+    if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
+      createdBy = {
+        id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+        name: t('None'),
+      };
+    }
+    return {
+      ...n,
+      objectMarking,
+      createdBy,
+      markedBy: objectMarking,
+    };
+  }, originalObjects);
+  const filteredObjects = applyNodeFilters(
+    R.filter((o) => o && o.id && o.entity_type && o.cases, objects),
+    [...filterAdjust.stixCoreObjectsTypes, ...['Case', 'cased-in']],
+    filterAdjust.markedBy,
+    filterAdjust.createdBy,
+    [],
+    filterAdjust.selectedTimeRangeInterval,
+  );
+  const thisCaseLinkNodes = R.filter(
+    (n) => n.cases && n.parent_types && n.cases.edges.length > 1,
+    filteredObjects,
+  );
+  const relatedCaseNodes = applyNodeFilters(
+    R.pipe(
+      R.map((n) => n.cases.edges),
+      R.flatten,
+      R.map((n) => {
+        let { objectMarking } = n.node;
+        if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+          objectMarking = [
+            {
+              node: {
+                id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+                definition: t('None'),
+                definition_type: t('None'),
+              },
+            },
+          ];
+        } else {
+          objectMarking = R.map((m) => m.node, objectMarking.edges);
+        }
+        let { createdBy } = n.node;
+        if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
+          createdBy = {
+            id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+            name: t('None'),
+          };
+        }
+        return {
+          ...n.node,
+          objectMarking,
+          createdBy,
+          markedBy: objectMarking,
+        };
+      }),
+      R.uniqBy(R.prop('id')),
+      R.map((n) => (n.defaultDate ? { ...n } : { ...n, defaultDate: jsDate(defaultDate(n)) })),
+    )(thisCaseLinkNodes),
+    [...filterAdjust.stixCoreObjectsTypes, ...['Case', 'cased-in']],
+    filterAdjust.markedBy,
+    filterAdjust.createdBy,
+    [],
+    filterAdjust.selectedTimeRangeInterval,
+    filterAdjust.keyword,
+  );
+  const links = R.pipe(
+    R.map((n) => R.map(
+      (e) => ({
+        id: R.concat(n.id, '-', e.id),
+        parent_types: ['basic-relationship', 'stix-meta-relationship'],
+        entity_type: 'basic-relationship',
+        relationship_type: 'caseed-in',
+        source: n.id,
+        target: e.id,
+        label: '',
+        name: '',
+        source_id: n.id,
+        target_id: e.id,
+        from: n.id,
+        to: n.id,
+        start_time: '',
+        stop_time: '',
+        defaultDate: jsDate(defaultDate(n)),
+        markedBy: n.markedBy,
+        createdBy: n.createdBy,
+      }),
+      R.filter(
+        (m) => m
+            && R.includes(
+              m.id,
+              R.map((o) => o.node.id, n.cases.edges),
+            ),
+      )(relatedCaseNodes),
+    )),
+    R.flatten,
+  )(thisCaseLinkNodes);
+  const combinedNodes = R.concat(thisCaseLinkNodes, relatedCaseNodes);
+  const nodes = R.pipe(
+    R.map((n) => ({
+      id: n.id,
+      val: graphLevel[n.entity_type] || graphLevel.Unknown,
+      name: defaultValue(n, true),
+      defaultDate: jsDate(defaultDate(n)),
+      label: truncate(
+        defaultValue(n),
+        n.entity_type === 'Attack-Pattern' ? 30 : 20,
+      ),
+      img: graphImages[n.entity_type] || graphImages.Unknown,
+      entity_type: n.entity_type,
+      rawImg: graphRawImages[n.entity_type] || graphRawImages.Unknown,
+      color: n.x_opencti_color || n.color || itemColor(n.entity_type, false),
+      parent_types: n.parent_types,
+      isObservable: !!n.observable_value,
+      markedBy: n.markedBy,
+      createdBy: n.createdBy,
+      fx: graphData[n.id] && graphData[n.id].x ? graphData[n.id].x : null,
+      fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
+    })),
+  )(combinedNodes);
+  return {
+    nodes,
+    links,
+  };
+};
+
 export const buildGraphData = (objects, graphData, t) => {
   const relationshipsIdsInNestedRelationship = R.pipe(
     R.filter(

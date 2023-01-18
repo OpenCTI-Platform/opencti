@@ -21,10 +21,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import FeedbackEditionContainer, {
-  feedbackEditionQuery,
-} from './FeedbackEditionContainer';
-import { FeedbackEditionContainerQuery } from './__generated__/FeedbackEditionContainerQuery.graphql';
+import IncidentEditionContainer, {
+  incidentEditionQuery,
+} from './IncidentEditionContainer';
+import { IncidentEditionContainerCaseQuery } from './__generated__/IncidentEditionContainerCaseQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -43,13 +43,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const feedbackPopoverDeletionMutation = graphql`
-  mutation FeedbackPopoverDeletionMutation($id: ID!) {
+const incidentPopoverDeletionMutation = graphql`
+  mutation IncidentPopoverCaseDeletionMutation($id: ID!) {
     caseDelete(id: $id)
   }
 `;
 
-const FeedbackPopover = ({ id }: { id: string }) => {
+const IncidentPopover = ({ id }: { id: string }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -58,9 +58,9 @@ const FeedbackPopover = ({ id }: { id: string }) => {
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
 
-  const [commit] = useMutation(feedbackPopoverDeletionMutation);
-  const queryRef = useQueryLoading<FeedbackEditionContainerQuery>(
-    feedbackEditionQuery,
+  const [commit] = useMutation(incidentPopoverDeletionMutation);
+  const queryRef = useQueryLoading<IncidentEditionContainerCaseQuery>(
+    incidentEditionQuery,
     { id },
   );
 
@@ -98,7 +98,7 @@ const FeedbackPopover = ({ id }: { id: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/cases/feedbacks');
+        navigate('/dashboard/cases/incidents');
       },
     });
   };
@@ -152,7 +152,7 @@ const FeedbackPopover = ({ id }: { id: string }) => {
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <FeedbackEditionContainer
+            <IncidentEditionContainer
               queryRef={queryRef}
               handleClose={handleClose}
             />
@@ -163,4 +163,4 @@ const FeedbackPopover = ({ id }: { id: string }) => {
   );
 };
 
-export default FeedbackPopover;
+export default IncidentPopover;
