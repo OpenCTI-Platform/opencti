@@ -89,6 +89,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     created: DateTime
     modified: DateTime
     x_opencti_graph_data: String
+    objectAssignee: AssigneeConnection
     # Location
     name: String!
     description: String

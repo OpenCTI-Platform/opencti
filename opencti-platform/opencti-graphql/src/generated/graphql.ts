@@ -62,6 +62,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
@@ -14853,9 +14854,9 @@ export type Provider = {
 export type Query = {
   __typename?: 'Query';
   about?: Maybe<AppInfo>;
-  assignees?: Maybe<AssigneeConnection>;
   administrativeArea?: Maybe<AdministrativeArea>;
   administrativeAreas?: Maybe<AdministrativeAreaConnection>;
+  assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
   bookmarks?: Maybe<StixDomainObjectConnection>;
@@ -25355,6 +25356,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AdministrativeAreaNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
