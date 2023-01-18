@@ -708,4 +708,12 @@ export const registerClusterInstance = async (instanceId: string, instanceConfig
     tx.zremrangebyscore('platform_cluster', '-inf', time - 120000);
   });
 };
+export const getClusterInstances = async () => {
+  const instances = await clientBase.zrange('platform_cluster', 0, -1);
+  if (instances) {
+    const instancesConfig = await clientBase.mget(...instances);
+    return (instancesConfig.filter((n) => n !== null) as string[]).map((n) => JSON.parse(n));
+  }
+  return [];
+};
 // endregion

@@ -10192,6 +10192,7 @@ export type Module = {
   __typename?: 'Module';
   enable: Scalars['Boolean'];
   id: Scalars['ID'];
+  running: Scalars['Boolean'];
 };
 
 export type MultiDistribution = {
@@ -27792,6 +27793,7 @@ export type MessagesStatsResolvers<ContextType = any, ParentType extends Resolve
 export type ModuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Module'] = ResolversParentTypes['Module']> = ResolversObject<{
   enable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

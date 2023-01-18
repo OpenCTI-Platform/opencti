@@ -491,8 +491,8 @@ const initTaskManager = () => {
     },
     status: async () => {
       return {
-        id: 'task_scheduler',
-        enabled: booleanConf('task_scheduler:enabled', false),
+        id: 'TASK_MANAGER',
+        enable: booleanConf('task_scheduler:enabled', false),
         running,
       };
     },

@@ -93,8 +93,8 @@ const initSubscriptionManager = () => {
     },
     status: async () => {
       return {
-        id: 'subscription_scheduler',
-        enabled: booleanConf('subscription_scheduler:enabled', false),
+        id: 'SUBSCRIPTION_MANAGER',
+        enable: booleanConf('subscription_scheduler:enabled', false),
         running,
       };
     },

@@ -130,8 +130,8 @@ const initConnectorManager = () => {
     },
     status: async () => {
       return {
-        id: 'connector_manager',
-        enabled: booleanConf('connector_manager:enabled', false),
+        id: 'CONNECTOR_MANAGER',
+        enable: booleanConf('connector_manager:enabled', false),
         running,
       };
     },

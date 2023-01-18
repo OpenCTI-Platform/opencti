@@ -197,8 +197,8 @@ const initHistoryManager = () => {
     },
     status: async () => {
       return {
-        id: 'history_manager',
-        enabled: booleanConf('history_manager:enabled', false),
+        id: 'HISTORY_MANAGER',
+        enable: booleanConf('history_manager:enabled', false),
         running,
       };
     },

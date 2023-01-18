@@ -36,6 +36,7 @@ const rootPrivateQuery = graphql`
       platform_modules {
         id
         enable
+        running
       }
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings

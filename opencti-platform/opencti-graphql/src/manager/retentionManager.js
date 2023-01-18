@@ -92,8 +92,8 @@ const initRetentionManager = () => {
     },
     status: async () => {
       return {
-        id: 'retention_manager',
-        enabled: booleanConf('retention_manager:enabled', false),
+        id: 'RETENTION_MANAGER',
+        enable: booleanConf('retention_manager:enabled', false),
         running,
       };
     },

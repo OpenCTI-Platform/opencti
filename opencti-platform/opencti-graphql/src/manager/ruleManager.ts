@@ -366,8 +366,8 @@ const initRuleManager = () => {
     },
     status: async () => {
       return {
-        id: 'rule_engine',
-        enabled: booleanConf('rule_engine:enabled', false),
+        id: 'RULE_ENGINE',
+        enable: booleanConf('rule_engine:enabled', false),
         running,
       };
     },
