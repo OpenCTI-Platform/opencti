@@ -102,7 +102,7 @@ class DeviceDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <div style={{ marginBottom: '23px' }}>
+              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -128,7 +128,7 @@ class DeviceDetailsComponent extends Component {
                   </Link>}
               </div>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={12}>
               <div>
                 <Typography
                   variant="h3"
@@ -170,11 +170,11 @@ class DeviceDetailsComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Installed Software')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <div style={{ float: 'left', margin: '0 0 0 5px' }}>
                   <Tooltip title={t('Installed Software')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
@@ -209,11 +209,11 @@ class DeviceDetailsComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Related Risks')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <div style={{ float: 'left', margin: '0 0 0 5px' }}>
                   <Tooltip title={t('Location')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>

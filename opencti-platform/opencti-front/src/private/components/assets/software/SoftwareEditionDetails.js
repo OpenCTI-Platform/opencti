@@ -151,6 +151,7 @@ class SoftwareEditionDetailsComponent extends Component {
       enableReferences,
       setFieldValue,
       values,
+      history
     } = this.props;
     // const initialValues = R.pipe(
     //   R.assoc('first_seen', dateFormat(software.first_seen)),
@@ -376,29 +377,40 @@ class SoftwareEditionDetailsComponent extends Component {
                   />
                 </Grid>
               </Grid>
-              <AddressField
-                setFieldValue={setFieldValue}
-                values={software}
-                addressValues={installedOn}
-                title='Installed on Asset'
-                name='installed_on'
-                helperText='Defines identifying information about an instance of software.'
-              />
-              <AddressField
-                setFieldValue={setFieldValue}
-                values={software}
-                addressValues={relatedRisk}
-                title='Related Risks'
-                name='related_risks'
-                helperText='Indicates the risks related to this entity.'
-              />
-              <HyperLinkField
-                setFieldValue={setFieldValue}
-                data={installedOn}
-                title='Installed on Asset'
-                name='installed_on'
-                helperText='Indicates the risks related to this entity.'
-              />
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='hardware'
+                  multiple={true}
+                  name="installed_on"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Installed On Assets'}
+                  data={software?.installed_on}
+                  title={'Installed On Assets'}
+                  setFieldValue={setFieldValue}
+                  history={history}
+                  link='/defender HQ/assets/devices'
+                />
+              </Grid>
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='risks'
+                  multiple={true}
+                  name="related_risks"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Related Risks'}
+                  data={software?.related_risks}
+                  title={'Related Risks'}
+                  setFieldValue={setFieldValue}
+                  history={history}
+                  link='/activities/risk_assessment/risks'
+                />
+              </Grid>
             </Grid>
           </Paper>
         </div>

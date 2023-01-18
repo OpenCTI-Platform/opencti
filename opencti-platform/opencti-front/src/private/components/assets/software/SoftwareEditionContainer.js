@@ -217,7 +217,7 @@ class SoftwareEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, software, refreshQuery,
+      t, classes, handleClose, software, refreshQuery, history
     } = this.props;
     const initialValues = R.pipe(
       R.assoc('id', software?.id || ''),
@@ -352,6 +352,7 @@ class SoftwareEditionContainer extends Component {
                       software={software}
                       setFieldValue={setFieldValue}
                       values={values}
+                      history={history}
                       // enableReferences={this.props.enableReferences}
                       // context={editContext}
                       handleClose={handleClose.bind(this)}

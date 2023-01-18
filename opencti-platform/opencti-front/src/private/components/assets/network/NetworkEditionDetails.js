@@ -23,6 +23,7 @@ import TextField from '../../../../components/TextField';
 import { adaptFieldValue } from '../../../../utils/String';
 import TaskType from '../../common/form/TaskType';
 import AddressField from '../../common/form/AddressField';
+import HyperLinkField from '../../common/form/HyperLinkField';
 
 const styles = () => ({
   paper: {
@@ -157,26 +158,7 @@ class NetworkEditionDetailsComponent extends Component {
   }
 
   render() {
-    const { t, classes, enableReferences, network } = this.props;
-    // const initialValues = pipe(
-    //   assoc('first_seen', dateFormat(network.first_seen)),
-    //   assoc('last_seen', dateFormat(network.last_seen)),
-    //   assoc(
-    //     'secondary_motivations',
-    //     network.secondary_motivations
-    //       ? network.secondary_motivations
-    //       : [],
-    //   ),
-    //   assoc('goals', join('\n', network.goals ? network.goals : [])),
-    //   pick([
-    //     'first_seen',
-    //     'last_seen',
-    //     'resource_level',
-    //     'primary_motivation',
-    //     'secondary_motivations',
-    //     'goals',
-    //   ]),
-    // )(network);
+    const { t, classes, enableReferences, network, setFieldValue } = this.props;
     return (
       <>
         <div style={{ height: '100%' }}>
@@ -363,22 +345,38 @@ class NetworkEditionDetailsComponent extends Component {
                   />
                 </Grid>
               </Grid>
-              <AddressField
-                setFieldValue={setFieldValue}
-                values={software}
-                addressValues={installedOn}
-                title='Installed on Asset'
-                name='installed_on'
-                helperText='Defines identifying information about an instance of software.'
-              />
-              <AddressField
-                setFieldValue={setFieldValue}
-                values={software}
-                addressValues={relatedRisk}
-                title='Related Risks'
-                name='related_risks'
-                helperText='Indicates the risks related to this entity.'
-              />
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='hardware'
+                  multiple={true}
+                  name="connected_assets"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Connected Assets'}
+                  data={network?.connected_assets}
+                  title={'Connected Assets'}
+                  setFieldValue={setFieldValue}
+                  link='/defender HQ/assets/devices'
+                />
+              </Grid>
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='risks'
+                  multiple={true}
+                  name="related_risks"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Related Risks'}
+                  data={network?.related_risks}
+                  title={'Related Risks'}
+                  setFieldValue={setFieldValue}
+                  link='/activities/risk_assessment/risks'
+                />
+              </Grid>
             </Grid>
           </Paper>
         </div>
