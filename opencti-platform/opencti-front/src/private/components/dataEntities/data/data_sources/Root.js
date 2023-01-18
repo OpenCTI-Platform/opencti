@@ -66,11 +66,11 @@ class RootDataSource extends Component {
         params: { dataSourceId },
       },
     } = this.props;
-    const link = `/data/data source/${dataSourceId}/knowledge`;
+    const link = `/data/data_source/${dataSourceId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
-        <Route path="/data/data source/:dataSourceId/knowledge">
+        <Route path="/data/data_source/:dataSourceId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -103,7 +103,7 @@ class RootDataSource extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/data/data source/:dataSourceId"
+                      path="/data/data_source/:dataSourceId"
                       render={(routeProps) => (
                         <DataSource
                           {...routeProps}

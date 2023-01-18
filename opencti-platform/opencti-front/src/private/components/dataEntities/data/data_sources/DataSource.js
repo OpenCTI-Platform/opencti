@@ -55,7 +55,7 @@ class DataSourceComponent extends Component {
             history={history}
             name={dataSource.name}
             cyioDomainObject={dataSource}
-            goBack='/data/data source'
+            goBack='/data/data_source'
             PopoverComponent={<DataSourcesPopover />}
             OperationsComponent={<DataSourcesDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
@@ -106,6 +106,7 @@ const EntityLocation = createFragmentContainer(DataSourceComponent, {
       created
       modified
       name
+      scope
       description
       ...DataSourceDetails_data
     }

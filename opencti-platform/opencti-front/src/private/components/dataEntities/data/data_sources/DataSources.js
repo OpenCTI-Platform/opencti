@@ -64,7 +64,7 @@ class DataSources extends Component {
       orderAsc,
       searchTerm,
     } = this.state;
-    if (this.props.history.location.pathname !== '/data/data source'
+    if (this.props.history.location.pathname !== '/data/data_source'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
@@ -110,7 +110,7 @@ class DataSources extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/data/data source');
+    this.props.history.push('/data/data_source');
   }
 
   handleDisplayEdit(selectedElements) {

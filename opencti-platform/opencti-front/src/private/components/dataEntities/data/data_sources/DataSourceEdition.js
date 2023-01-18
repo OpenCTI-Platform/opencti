@@ -52,12 +52,17 @@ Transition.displayName = 'TransitionSlide';
 
 const dataSourceEditionQuery = graphql`
   query DataSourceEditionQuery($id: ID!) {
-    oscalLocation(id: $id) {
+    dataSource(id: $id) {
       id
-      created
-      modified
       name
       description
+      scope
+      contextual
+      auto
+      update_frequency {
+        unit
+        period
+      }
     }
   }
 `;
@@ -72,13 +77,13 @@ class DataSourceEdition extends Component {
 
   render() {
     const {
-      classes, displayEdit, handleDisplayEdit, history, locationId,
+      classes, displayEdit, handleDisplayEdit, history, dataSourceId,
     } = this.props;
     return (
       <div className={classes.container}>
         <QueryRenderer
           query={dataSourceEditionQuery}
-          variables={{ id: locationId }}
+          variables={{ id: dataSourceId }}
           render={({ error, props }) => {
             if (error) {
               toastGenericError('Failed to edit Location');
@@ -88,7 +93,7 @@ class DataSourceEdition extends Component {
                 <DataSourceEditionContainer
                   displayEdit={displayEdit}
                   history={history}
-                  location={props.oscalLocation}
+                  dataSource={props.dataSource}
                   handleDisplayEdit={handleDisplayEdit}
                 />
               );
@@ -102,7 +107,7 @@ class DataSourceEdition extends Component {
 }
 
 DataSourceEdition.propTypes = {
-  locationId: PropTypes.string,
+  dataSourceId: PropTypes.string,
   displayEdit: PropTypes.bool,
   handleDisplayEdit: PropTypes.func,
   classes: PropTypes.object,

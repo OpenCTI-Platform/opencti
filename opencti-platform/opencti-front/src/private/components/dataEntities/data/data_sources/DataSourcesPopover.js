@@ -77,7 +77,7 @@ class DataSourcesPopover extends Component {
           <MenuItem
             className={classes.menuItem}
             divider={true}
-            onClick={() => history.push(`/data/data source/${node?.id}`)}
+            onClick={() => history.push(`/data/data_source/${node?.id}`)}
           >
             {t('View Details')}
           </MenuItem>         

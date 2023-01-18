@@ -13,21 +13,18 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import DialogContent from '@material-ui/core/DialogContent';
 import Slide from '@material-ui/core/Slide';
-import { Switch } from '@material-ui/core';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
+import MenuItem from '@material-ui/core/MenuItem';
 import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import SelectField from '../../../../../components/SelectField';
+import SwitchField from '../../../../../components/SwitchField';
 import TextField from '../../../../../components/TextField';
-import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
-import NewAddressField from '../../../common/form/NewAddressField';
 import TaskType from '../../../common/form/TaskType';
-import DataAddressField from '../../../common/form/DataAddressField';
-import EmailAddressField from '../../../common/form/EmailAddressField';
-import { telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
+import ScopeField from '../../../common/form/ScopeField';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -54,6 +51,11 @@ const styles = (theme) => ({
   buttonPopover: {
     textTransform: 'capitalize',
   },
+  textBase: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
   popoverDialog: {
     fontSize: '18px',
     lineHeight: '24px',
@@ -62,8 +64,8 @@ const styles = (theme) => ({
 });
 
 const dataSourcesCreationMutation = graphql`
-  mutation DataSourcesCreationMutation($input: OscalLocationAddInput) {
-    createOscalLocation (input: $input) {
+  mutation DataSourcesCreationMutation($input: DataSourceInput) {
+    createDataSource (input: $input) {
       id
     }
   }
@@ -77,38 +79,22 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 class DataSourcesCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-      onSubmit: false,
-      displayCancel: false,
-    };
-  }
-
-  handleCancelButton() {
-    this.setState({ displayCancel: false });
-  }
-
-  handleOpenCancelButton() {
-    this.setState({ displayCancel: true });
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = R.evolve(
-      {
-        address: () => values.address[0],
-      },
-      values,
-    );
+    const updatedFrequency = {
+      period: values.period,
+      unit: values.unit,
+    };
+    // const adaptedValues = R.evolve(
+    //   {
+    //     update_frequency: () => ({ period: values.period, unit: values.unit }),
+    //   },
+    //   values,
+    // );
     const finalValues = R.pipe(
-      R.dissoc('created'),
-      R.dissoc('modified'),
-    )(adaptedValues);
+      R.dissoc('unit'),
+      R.dissoc('period'),
+      R.assoc('update_frequency', updatedFrequency),
+    )(values);
     commitMutation({
       mutation: dataSourcesCreationMutation,
       variables: {
@@ -118,39 +104,12 @@ class DataSourcesCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.props.handleDataSourceCreation();
-        this.props.history.push('/data/data source');
+        this.props.history.push('/data/data_source');
       },
       onError: () => {
         toastGenericError('Failed to create location');
       },
     });
-    // commitMutation({
-    //   mutation: dataSourcesCreationMutation,
-    //   variables: {
-    //     input: values,
-    //   },
-    // //   // updater: (store) => insertNode(
-    // //   //   store,
-    // //   //   'Pagination_threatActors',
-    // //   //   this.props.paginationOptions,
-    // //   //   'threatActorAdd',
-    // //   // ),
-    //   setSubmitting,
-    //   onCompleted: () => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //   },
-    // });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  handleSubmit() {
-    this.setState({ onSubmit: true });
   }
 
   onReset() {
@@ -174,14 +133,13 @@ class DataSourcesCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               name: '',
-              created: null,
-              modified: null,
+              unit: '',
+              period: 0,
+              auto: false,
+              scope: [],
+              contextual: false,
               description: '',
-              address: [],
-              location_type: null,
-              location_class: null,
-              email_addresses: [],
-              telephone_numbers: [],
+              data_source_type: '',
             }}
             validationSchema={DataSourcesCreationValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -249,75 +207,163 @@ class DataSourcesCreation extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid xs={6} item={true}>
+                    <Grid item={true} xs={6}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Contextual')}
+                        {t('Every')}
                       </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Contextual')}>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Every')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <div>
-                        <Switch
-                          defaultChecked={true}
-                          color="primary"
-                        />
-                          {t('Only Contextual')}
-                      </div>
-                    </Grid>
-                    <Grid xs={6} item={true}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Trigger')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Trigger')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <TaskType
-                        name="implementation_point"
-                        taskType='ImplementationPoint'
+                      <Field
+                        component={TextField}
+                        name='unit'
+                        type='number'
                         fullWidth={true}
-                        style={{ height: '38.09px' }}
+                        size='small'
                         containerstyle={{ width: '100%' }}
                         variant='outlined'
                       />
                     </Grid>
-                    <Grid xs={12} item={true}>
+                    <Grid item={true} xs={6}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Scope')}
+                        {t('Update Frequency')}
                       </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Scope')}>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Update Frequency')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
                       <TaskType
-                        name="implementation_point"
-                        taskType='ImplementationPoint'
+                        component={SelectField}
+                        variant='outlined'
+                        name="period"
+                        taskType='TimeUnit'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Secure Connection')}
+                        </Typography>
+                        <Tooltip title={t('Secure Connection')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className={classes.textBase}>
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="contextual"
+                          containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                          inputProps={{ 'aria-label': 'ant design' }}
+                        />
+                        <Typography>Only Contextual</Typography>
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Trigger')}
+                        </Typography>
+                        <Tooltip title={t('Trigger')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
                         variant='outlined'
+                        name="auto"
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      >
+                        <MenuItem value={''}>
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={true}>
+                          {t('True')}
+                        </MenuItem>
+                        <MenuItem value={false}>
+                          {t('False')}
+                        </MenuItem>
+                      </Field>
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Data Usage Restriction')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Data Usage Restriction')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <TaskType
+                        component={SelectField}
+                        variant='outlined'
+                        name="data_source_type"
+                        taskType='DataSourceType'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Scope')}
+                        </Typography>
+                        <Tooltip title={t('Scope')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <ScopeField
+                        setFieldValue={setFieldValue}
+                        scopeValue={values.scope}
+                        name='scope'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                        variant='standard'
                       />
                     </Grid>
                   </Grid>

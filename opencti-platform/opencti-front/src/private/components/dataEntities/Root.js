@@ -89,7 +89,7 @@ class Root extends Component {
         {/* Data Source Section */}
         <BoundaryRoute
           exact
-          path="/data/data source"
+          path="/data/data_source"
           component={DataSources}
         />
 
@@ -140,7 +140,7 @@ class Root extends Component {
         {/* Data Source Root Path Section */}
         <BoundaryRoute
           exact
-          path="/data/data source/:dataSourceId"
+          path="/data/data_source/:dataSourceId"
           render={(routeProps) => <RootDataSource {...routeProps} me={me} />}
         />
       </Switch>

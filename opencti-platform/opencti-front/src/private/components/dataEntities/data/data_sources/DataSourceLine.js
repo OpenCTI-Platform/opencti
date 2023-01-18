@@ -7,24 +7,23 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import { Button, Chip } from '@material-ui/core';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
-import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import DataSourcesPopover from './DataSourcesPopover';
 import resetIcon from '../../../../../resources/images/dataSources/resetIcon.svg';
 import clearAllIcon from '../../../../../resources/images/dataSources/clearAllIcon.svg';
 import startIcon from '../../../../../resources/images/dataSources/startIcon.svg';
-import stopIcon from '../../../../../resources/images/dataSources/stopIcon.svg';
 
 const styles = (theme) => ({
   item: {
     '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: theme.palette.navAlt.background,
+      background: theme.palette.dataView.selectedBackgroundColor,
+      borderTop: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
+      borderBottom: `0.75px solid ${theme.palette.dataView.selectedBorder}`,
     },
     paddingLeft: 10,
     height: 50,
@@ -52,11 +51,6 @@ const styles = (theme) => ({
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
   chip: { borderRadius: '4px' },
 });
 
@@ -64,13 +58,11 @@ class DataSourceLineComponent extends Component {
   render() {
     const {
       t,
-      fd,
       classes,
       history,
       node,
       selectAll,
       dataColumns,
-      onLabelClick,
       onToggleEntity,
       selectedElements,
     } = this.props;
@@ -81,7 +73,7 @@ class DataSourceLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/data/data source/${node.id}`}
+        to={`/data/data_source/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
@@ -114,19 +106,23 @@ class DataSourceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.status.width }}
               >
-                <Chip label="ACTIVE" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
+                {node.status && (
+                  <Chip label={node.status} style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }} />
+                )}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.trigger.width }}
               >
-                <Chip variant="outlined" label="Automatic" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
+                {node.contextual && (
+                  <Chip variant="outlined" label={node.contextual} style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }} />
+                )}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.count.width }}
               >
-                10,000,000
+
               </div>
             </div>
           }
@@ -168,13 +164,12 @@ const DataSourceLineFragment = createFragmentContainer(
   {
     node: graphql`
       fragment DataSourceLine_node on DataSource {
-        __typename
         id
-        entity_type
-        description
         name
-        created
-        modified
+        status
+        contextual
+        description
+        entity_type
       }
     `,
   },

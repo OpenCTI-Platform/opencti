@@ -11,16 +11,17 @@ import {
   CogOutline,
 } from 'mdi-material-ui';
 import LaunchIcon from '@material-ui/icons/Launch';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import Typography from '@material-ui/core/Typography';
-import { Button, Grid, Chip, Box } from '@material-ui/core';
+import { Button, Grid, Chip, Tooltip } from '@material-ui/core';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Information } from 'mdi-material-ui';
 import rehypeRaw from 'rehype-raw';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
-import DataSourceInformationExchangePolicyPopover from './DataSourceInformationExchangePolicyPopover';
-import DataSourceConfigurationPopover from './DataSourceConfigurationPopover';
+import DataSourceWorks from './DataSourceWorks';
+import DataSourceConnectionPopover from './DataSourceConnectionPopover';
+import DataSourceDataUsageRestrictionsPopover from './DataSourceDataUsageRestrictionsPopover';
 
 const styles = (theme) => ({
   paper: {
@@ -34,14 +35,6 @@ const styles = (theme) => ({
     textAlign: 'left',
     fontSize: '16px',
     font: 'DIN Next LT Pro',
-  },
-  chip: {
-    color: theme.palette.header.text,
-    height: 25,
-    fontSize: 12,
-    padding: '14px 12px',
-    margin: '0 7px 7px 0',
-    backgroundColor: theme.palette.header.background,
   },
   scrollBg: {
     background: theme.palette.header.background,
@@ -64,12 +57,10 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
-  markingText: {
-    background: theme.palette.header.text,
-    color: 'black',
-    width: '100px',
-    textAlign: 'center',
-    padding: '3px 0',
+  textBase: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 5,
   },
   circleBorderBtn: {
     borderRadius: '1.8rem',
@@ -83,25 +74,25 @@ class DataSourceDetailsComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openInformationExchangePolicy: false,
-      openConfiguration: false,
+      openDataUsageRestrictions: false,
+      openConnection: false,
     };
   }
 
   handleOpenConfiguration() {
-    this.setState({ openConfiguration: true });
+    this.setState({ openConnection: true });
   }
 
-  handleCloseConfiguration() {
-    this.setState({ openConfiguration: false });
+  handleCloseConnection() {
+    this.setState({ openConnection: false });
   }
 
   handleOpenInformationExchangePolicy() {
-    this.setState({ openInformationExchangePolicy: true });
+    this.setState({ openDataUsageRestrictions: true });
   }
 
-  handleCloseInformationExchangePolicy() {
-    this.setState({ openInformationExchangePolicy: false });
+  handleCloseDataUsageRestrictions() {
+    this.setState({ openDataUsageRestrictions: false });
   }
 
   render() {
@@ -122,31 +113,16 @@ class DataSourceDetailsComponent extends Component {
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <Grid container item xs={12} spacing={1}>
-                <Grid item xs={6}>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                    >
-                      {t('Name')}
-                    </Typography>
-                    <div className="clearfix" />
-                    {dataSource.name && t(dataSource.name)}
-                  </div>
-                </Grid>
-                <Grid item xs={6}>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                    >
-                      {t('ID')}
-                    </Typography>
-                    <div className="clearfix" />
-                    {dataSource.id && t(dataSource.id)}
-                  </div>
+                <Grid item xs={12}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                  >
+                    {t('ID')}
+                  </Typography>
+                  <div className="clearfix" />
+                  {dataSource.id && t(dataSource.id)}
                 </Grid>
               </Grid>
               <Grid container item xs={12} spacing={1}>
@@ -241,7 +217,7 @@ class DataSourceDetailsComponent extends Component {
                       {t('Type')}
                     </Typography>
                     <div className="clearfix" />
-                    <Chip variant="outlined" label="EXTERNAL_IMPORT" style={{ backgroundColor: 'rgba(211, 19, 74, 0.2)' }} classes={{ root: classes.chip }} />
+                    <Chip variant="outlined" label={dataSource.entity_type} style={{ backgroundColor: 'rgba(211, 19, 74, 0.2)' }} classes={{ root: classes.chip }} />
                   </div>
                 </Grid>
                 <Grid item={true} xs={12}>
@@ -277,34 +253,70 @@ class DataSourceDetailsComponent extends Component {
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <Grid container item xs={12} spacing={1}>
-                <Grid item xs={12}>
-                  <div style={{ marginTop: '20px' }}>
+                <Grid item xs={6}>
+                  <div className={classes.textBase}>
                     <Typography
                       variant="h3"
                       color="textSecondary"
                       gutterBottom={true}
+                      style={{ margin: 0 }}
                     >
-                      {t('Total Entities Collected')}
+                      {t('Every')}
                     </Typography>
-                    <div className="clearfix" />
-                    {t('184,501')}
+                    <Tooltip
+                      title={t(
+                        'Every',
+                      )}
+                    >
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                    </Tooltip>
                   </div>
+                  <div className="clearfix" />
+                  {dataSource.update_frequency.period && t(dataSource.update_frequency.period)}
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item xs={6}>
+                  <div className={classes.textBase}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ margin: 0 }}
+                    >
+                      {t('Update Frequency')}
+                    </Typography>
+                    <Tooltip
+                      title={t(
+                        'Update Frequency',
+                      )}
+                    >
+                      <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {dataSource.update_frequency.unit && t(dataSource.update_frequency.unit)}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ margin: 0 }}
+                  >
+                    {t('Total Entities Collected')}
+                  </Typography>
+                  <div className="clearfix" />
+
+                </Grid>
+                <Grid item xs={6}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
                   >
-                    {t('State')}
+                    {t('Last Successful Run')}
                   </Typography>
                   <div className="clearfix" />
-                  <div className={classes.scrollBg}>
-                    <div className={classes.scrollDiv}>
-                      <div className={classes.scrollObj}>
-                      </div>
-                    </div>
-                  </div>
+
                 </Grid>
               </Grid>
               <Grid container item xs={12}>
@@ -317,7 +329,7 @@ class DataSourceDetailsComponent extends Component {
                       sx={{ mr: 5 }}
                       onClick={this.handleOpenConfiguration.bind(this)}
                     >
-                      {t('Configuration')}
+                      {t('Connection Info')}
                     </Button>
                   </div>
                 </Grid>
@@ -329,228 +341,28 @@ class DataSourceDetailsComponent extends Component {
                       startIcon={<LaunchIcon />}
                       onClick={this.handleOpenInformationExchangePolicy.bind(this)}
                     >
-                      {t('Information Exchange Policy')}
+                      {t('Data Usage Restrictions')}
                     </Button>
                   </div>
                 </Grid>
               </Grid>
             </Paper>
           </Grid>
+          <DataSourceWorks
+            dataSourceId={dataSource.id}
+          />
         </Grid>
-        <Grid container spacing={1}>
-          <Grid item xs={12}>
-            <div style={{ marginTop: '3%' }}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t('In Progress Works')}
-              </Typography>
-            </div>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-              <Grid container>
-                <Grid container item xs={6}>
-                  <Grid item xs={6}>
-                    <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Name')}
-                      </Typography>
-                      <div className="clearfix" />
-                      {dataSource.name && t(dataSource.name)}
-                    </div>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Status')}
-                      </Typography>
-                      <div className="clearfix" />
-                      <Chip variant="outlined" label="In Progress" style={{ backgroundColor: 'rgba(73, 184, 252, 0.2)' }} classes={{ root: classes.chip }} />
-                    </div>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div style={{ marginTop: '20px' }}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Work start time')}
-                      </Typography>
-                      <div className="clearfix" />
-                      {dataSource.created && fldt(dataSource.created)}
-                    </div>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div style={{ marginTop: '20px' }}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Work end time')}
-                      </Typography>
-                      <div className="clearfix" />
-                    </div>
-                  </Grid>
-                </Grid>
-                <Grid container item xs={6}>
-                  <Grid item xs={6}>
-                    <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Operations Completed')}
-                      </Typography>
-                      <div className="clearfix" />
-                      {t('0')}
-                    </div>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Total Number of Operations')}
-                      </Typography>
-                      <div className="clearfix" />
-                      {t('0')}
-                    </div>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box sx={{ width: '100%', mr: 1 }}>
-                        <LinearProgress value={60} variant="determinate" style={{ height: 10, borderRadius: 5 }} />
-                      </Box>
-                      <Box sx={{ minWidth: 35 }}>
-                        <Typography variant="body2" color="text.secondary">{t('60%')}</Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <div style={{ marginTop: '6%' }}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t('Completed Works')}
-              </Typography>
-            </div>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-              <Grid container>
-                <Grid container item xs={6}>
-                  <Grid item xs={6}>
-                    <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Name')}
-                      </Typography>
-                      <div className="clearfix" />
-                      {dataSource.name && t(dataSource.name)}
-                    </div>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Status')}
-                      </Typography>
-                      <div className="clearfix" />
-                      <Chip variant="outlined" label="Completed" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }} />
-                    </div>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div style={{ marginTop: '20px' }}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Work start time')}
-                      </Typography>
-                      <div className="clearfix" />
-                      {dataSource.created && fldt(dataSource.created)}
-                    </div>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div style={{ marginTop: '20px' }}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Work end time')}
-                      </Typography>
-                      <div className="clearfix" />
-                    </div>
-                  </Grid>
-                </Grid>
-                <Grid container item xs={6}>
-                  <Grid item xs={6}>
-                    <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Operations Completed')}
-                      </Typography>
-                      <div className="clearfix" />
-                      {t('0')}
-                    </div>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <div>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                      >
-                        {t('Total Number of Operations')}
-                      </Typography>
-                      <div className="clearfix" />
-                      {t('0')}
-                    </div>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box sx={{ width: '100%', mr: 1 }}>
-                        <LinearProgress value={100} variant="determinate" style={{ height: 10, borderRadius: 5 }} />
-                      </Box>
-                      <Box sx={{ minWidth: 35 }}>
-                        <Typography variant="body2" color="text.secondary">{t('100%')}</Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-        </Grid>
-        {/* <DataSourceConfigurationPopover
-          openConfiguration={this.state.openConfiguration}
-          handleCloseConfiguration={this.handleCloseConfiguration.bind(this)}
+        <DataSourceConnectionPopover
+          dataSource={dataSource}
+          openConnection={this.state.openConnection}
+          handleCloseConnection={this.handleCloseConnection.bind(this)}
         />
-        <DataSourceInformationExchangePolicyPopover
-          openInformationExchangePolicy={this.state.openInformationExchangePolicy}
-          handleCloseInformationExchangePolicy={this.handleCloseInformationExchangePolicy.bind(this)}
-        /> */}
+        <DataSourceDataUsageRestrictionsPopover
+          dataSource={dataSource}
+          refreshQuery={refreshQuery}
+          openDataUsageRestrictions={this.state.openDataUsageRestrictions}
+          handleCloseDataUsageRestrictions={this.handleCloseDataUsageRestrictions.bind(this)}
+        />
       </div>
     );
   }
@@ -579,6 +391,12 @@ const DataSourceDetails = createFragmentContainer(
         contextual
         description
         entity_type
+        update_frequency {
+          period
+          unit
+        }
+        ...DataSourceConnectionPopover_data
+        ...DataSourceDataUsageRestrictionsPopover_dataSource
       }
     `,
   },

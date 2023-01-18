@@ -12,25 +12,30 @@ import {
   Checkbox,
   Chip,
   Button,
-  CardActions,
 } from '@material-ui/core';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../../components/i18n';
-import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import DataSourcesPopover from './DataSourcesPopover';
 import resetIcon from '../../../../../resources/images/dataSources/resetIcon.svg';
 import clearAllIcon from '../../../../../resources/images/dataSources/clearAllIcon.svg';
 import startIcon from '../../../../../resources/images/dataSources/startIcon.svg';
-import stopIcon from '../../../../../resources/images/dataSources/stopIcon.svg';
 
 const styles = (theme) => ({
   card: {
     width: '100%',
     height: '319px',
     borderRadius: 9,
+    border: `1.5px solid ${theme.palette.dataView.border}`,
+  },
+  selectedItem: {
+    width: '100%',
+    height: '319px',
+    borderRadius: 9,
+    border: `1.5px solid ${theme.palette.dataView.selectedBorder}`,
+    background: theme.palette.dataView.selectedBackgroundColor,
   },
   cardDummy: {
     width: '100%',
@@ -60,10 +65,6 @@ const styles = (theme) => ({
     width: '100%',
     padding: '24px',
   },
-  description: {
-    height: 170,
-    overflow: 'hidden',
-  },
   objectLabel: {
     height: 45,
     paddingTop: 7,
@@ -73,21 +74,6 @@ const styles = (theme) => ({
     height: 120,
     overflow: 'hidden',
     marginTop: 15,
-  },
-  placeholderHeader: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  placeholderHeaderDark: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey[800],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
   },
   buttonRipple: {
     opacity: 0,
@@ -123,23 +109,28 @@ class DataSourceCardComponent extends Component {
   render() {
     const {
       t,
-      fsd,
       classes,
       node,
       selectAll,
       history,
       onToggleEntity,
-      onLabelClick,
       selectedElements,
     } = this.props;
     return (
-      <Card classes={{ root: classes.card }} raised={true} elevation={3}>
+      <Card
+        classes={{
+          root: (selectAll || node.id in (selectedElements || {}))
+            ? classes.selectedItem : classes.card,
+        }}
+        raised={true}
+        elevation={3}
+      >
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           TouchRippleProps={this.state.openMenu && { classes: { root: classes.buttonRipple } }}
-          to={`/data/data source/${node?.id}`}
+          to={`/data/data_source/${node?.id}`}
         >
           <CardContent className={classes.content}>
             <Grid
@@ -199,7 +190,9 @@ class DataSourceCardComponent extends Component {
                   >
                     {t('Status')}
                   </Typography>
-                  <Chip label="ACTIVE" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
+                  {node.status && (
+                    <Chip label={node.status} style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }} />
+                  )}
                 </div>
               </Grid>
             </Grid>
@@ -213,9 +206,6 @@ class DataSourceCardComponent extends Component {
                 >
                   {t('Count')}
                 </Typography>
-                <Typography>
-                  10,000,000
-                </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
@@ -226,7 +216,9 @@ class DataSourceCardComponent extends Component {
                 >
                   {t('Trigger')}
                 </Typography>
-                <Chip variant="outlined" label="Automatic" style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }}/>
+                {node.contextual && (
+                  <Chip variant="outlined" label={node.contextual} style={{ backgroundColor: 'rgba(64, 204, 77, 0.2)' }} classes={{ root: classes.chip }} />
+                )}
               </Grid>
             </Grid>
             <div className={classes.iconContainer}>
@@ -263,13 +255,12 @@ const DataSourceCardFragment = createFragmentContainer(
   {
     node: graphql`
       fragment DataSourceCard_node on DataSource {
-        __typename
         id
-        entity_type
-        description
         name
-        created
-        modified
+        status
+        contextual
+        description
+        entity_type
       }
     `,
   },

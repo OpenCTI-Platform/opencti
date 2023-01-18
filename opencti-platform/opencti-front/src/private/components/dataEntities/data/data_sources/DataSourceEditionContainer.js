@@ -10,38 +10,24 @@ import { Formik, Form, Field } from 'formik';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import NoteAddIcon from '@material-ui/icons/NoteAdd';
-import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import IconButton from '@material-ui/core/IconButton';
 import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
-import AddIcon from '@material-ui/icons/Add';
-import { MoreVertOutlined } from '@material-ui/icons';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation } from '../../../../../relay/environment';
-import { dateFormat, parse } from '../../../../../utils/Time';
 import { adaptFieldValue } from '../../../../../utils/String';
 import SelectField from '../../../../../components/SelectField';
+import SwitchField from '../../../../../components/SwitchField';
 import TextField from '../../../../../components/TextField';
-import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
-import ResponseType from '../../../common/form/ResponseType';
-import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
-import Source from '../../../common/form/Source';
 import { toastGenericError } from "../../../../../utils/bakedToast";
-import NewAddressField from '../../../common/form/NewAddressField';
-import DataAddressField from '../../../common/form/DataAddressField';
-import EmailAddressField from '../../../common/form/EmailAddressField';
-import { telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
 import TaskType from '../../../common/form/TaskType';
+import ScopeField from '../../../common/form/ScopeField';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -55,6 +41,11 @@ const styles = (theme) => ({
     marginBottom: '24px',
     overflowY: 'scroll',
     height: '650px',
+  },
+  textBase: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 5,
   },
   dialogClosebutton: {
     float: 'left',
@@ -80,7 +71,7 @@ const dataSourceEditionContainerMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editOscalLocation(id: $id, input: $input) {
+    editDataSource(id: $id, input: $input) {
       id
     }
   }
@@ -98,33 +89,10 @@ Transition.displayName = 'TransitionSlide';
 class DataSourceEditionContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      anchorEl: null,
-      details: false,
-      close: false,
-      onSubmit: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-    event.stopPropagation();
-  }
-
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleSubmit() {
-    this.setState({ onSumbit: true });
   }
 
   onReset() {
     this.props.handleDisplayEdit();
-  }
-
-  handleCancelCloseClick() {
-    this.setState({ close: false });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -145,22 +113,20 @@ class DataSourceEditionContainer extends Component {
     commitMutation({
       mutation: dataSourceEditionContainerMutation,
       variables: {
-        id: this.props.location.id,
+        id: this.props.dataSource.id,
         input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
-        this.props.history.push(`/data/data source/${this.props.location.id}`);
+        this.props.history.push(`/data/data_source/${this.props.dataSource.id}`);
       },
       onError: (err) => {
         console.error(err);
         toastGenericError('Request Failed');
       }
     });
-    this.setState({ onSubmit: true });
   }
 
   render() {
@@ -168,33 +134,28 @@ class DataSourceEditionContainer extends Component {
       classes,
       t,
       disabled,
-      remediation,
-      location,
+      dataSource,
     } = this.props;
     const initialValues = R.pipe(
-      R.assoc('id', location?.id),
-      R.assoc('name', location?.name || ''),
-      R.assoc('description', location?.description || ''),
-      R.assoc('address', location?.address || []),
-      R.assoc('telephone_numbers', location?.telephone_numbers || []),
-      R.assoc('email_addresses', location?.email_addresses || []),
-      R.assoc('created', location?.created || null),
-      R.assoc('modified', location?.modified || null),
-      R.assoc('location_class', location?.location_class || ''),
-      R.assoc('location_type', location?.location_type || ''),
+      R.assoc('name', dataSource?.name || ''),
+      R.assoc('auto', dataSource?.auto || ''),
+      R.assoc('scope', dataSource?.scope || []),
+      R.assoc('contextual', dataSource?.contextual || ''),
+      R.assoc('description', dataSource?.description || ''),
+      R.assoc('unit', dataSource?.update_frequency?.unit || ''),
+      R.assoc('period', dataSource?.update_frequency?.period || 0),
+      R.assoc('data_source_type', dataSource.data_source_type || ''),
       R.pick([
-        'id',
+        'unit',
         'name',
-        'address',
         'description',
-        'email_addresses',
-        'telephone_numbers',
-        'created',
-        'modified',
-        'location_class',
-        'location_type',
+        'period',
+        'contextual',
+        'data_source_type',
+        'auto',
+        'scope',
       ]),
-    )(remediation);
+    )(dataSource);
     return (
       <>
         <Dialog
@@ -220,97 +181,6 @@ class DataSourceEditionContainer extends Component {
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Location')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Id')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Id')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={TextField}
-                          name="id"
-                          fullWidth={true}
-                          disabled={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                        />
-                      </div>
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '12px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Created Date')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Created')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={DatePickerField}
-                          name="created"
-                          fullWidth={true}
-                          disabled={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
-                          style={{ height: '38.09px' }}
-                        />
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <div>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Modified Date')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Last Modified')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={DatePickerField}
-                          name="modified"
-                          fullWidth={true}
-                          disabled={true}
-                          size="small"
-                          variant='outlined'
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
-                    </Grid>
                     <Grid item={true} xs={12}>
                       <Typography
                         variant="h3"
@@ -367,22 +237,22 @@ class DataSourceEditionContainer extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Location Type')}
+                        {t('Every')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Location Type')} >
+                        <Tooltip title={t('Every')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <TaskType
-                        component={SelectField}
-                        variant='outlined'
-                        name="location_type"
-                        taskType='OscalLocationType'
+                      <Field
+                        component={TextField}
+                        name='unit'
+                        type='number'
                         fullWidth={true}
-                        style={{ height: '38.09px' }}
+                        size='small'
                         containerstyle={{ width: '100%' }}
+                        variant='outlined'
                       />
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -392,10 +262,10 @@ class DataSourceEditionContainer extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Location Class')}
+                        {t('Update Frequency')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Location Class')} >
+                        <Tooltip title={t('Update Frequency')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -403,66 +273,120 @@ class DataSourceEditionContainer extends Component {
                       <TaskType
                         component={SelectField}
                         variant='outlined'
-                        name="location_class"
-                        taskType='OscalLocationClass'
+                        name='period'
+                        taskType='TimeUnit'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Secure Connection')}
+                        </Typography>
+                        <Tooltip title={t('Secure Connection')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className={classes.textBase}>
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="contextual"
+                          containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
+                          inputProps={{ 'aria-label': 'ant design' }}
+                        />
+                        <Typography>Only Contextual</Typography>
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Trigger')}
+                        </Typography>
+                        <Tooltip title={t('Trigger')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="auto"
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      >
+                        <MenuItem value={''}>
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={true}>
+                          {t('True')}
+                        </MenuItem>
+                        <MenuItem value={false}>
+                          {t('False')}
+                        </MenuItem>
+                      </Field>
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Data Usage Restriction')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Data Usage Restriction')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <TaskType
+                        component={SelectField}
+                        variant='outlined'
+                        name='data_source_type'
+                        taskType='DataSourceType'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid item={true} xs={12}>
-                      <NewAddressField
-                        setFieldValue={setFieldValue}
-                        values={values}
-                        addressValues={values.address}
-                        title='Address'
-                        name='address'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <DataAddressField
-                        setFieldValue={setFieldValue}
-                        values={values}
-                        addressValues={values.telephone_numbers}
-                        title='Telephone numbers'
-                        name='telephone_numbers'
-                        validation={telephoneFormatRegex}
-                        helperText='Please enter a valid Telephone Number. Example: +1 999 999-9999'
-                      />
-                      <div style={{ marginTop: '10px' }}>
+                      <div className={classes.textBase}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
                           gutterBottom={true}
-                          style={{ float: 'left' }}
+                          style={{ margin: 0 }}
                         >
-                          {t('Marking')}
+                          {t('Scope')}
                         </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Marking')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
-                          fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
+                        <Tooltip title={t('Scope')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
                       </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <EmailAddressField
+                      <div className="clearfix" />
+                      <ScopeField
                         setFieldValue={setFieldValue}
-                        values={values}
-                        addressValues={values.email_addresses}
-                        title='Email Address'
-                        name='email_addresses'
-                        validation={emailAddressRegex}
-                        helperText='Please enter a valid Email Address. Example: support@darklight.ai'
+                        scopeValue={values.scope}
+                        name='scope'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                        variant='standard'
                       />
                     </Grid>
                   </Grid>
@@ -470,8 +394,7 @@ class DataSourceEditionContainer extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    onClick={() => this.props.handleDisplayEdit()}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -506,7 +429,7 @@ DataSourceEditionContainer.propTypes = {
   t: PropTypes.func,
   connectionKey: PropTypes.string,
   enableReferences: PropTypes.bool,
-  location: PropTypes.object,
+  dataSource: PropTypes.object,
 };
 
 export default compose(
