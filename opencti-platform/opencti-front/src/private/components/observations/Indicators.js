@@ -350,6 +350,7 @@ class Indicators extends Component {
                 'basedOn',
                 'revoked',
                 'creator',
+                'confidence',
               ]}
             >
               <QueryRenderer

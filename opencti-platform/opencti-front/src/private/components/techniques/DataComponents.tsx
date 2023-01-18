@@ -93,6 +93,7 @@ const DataComponents: FunctionComponent = () => {
           'created_end_date',
           'createdBy',
           'revoked',
+          'confidence',
         ]}
       >
         {queryRef && (

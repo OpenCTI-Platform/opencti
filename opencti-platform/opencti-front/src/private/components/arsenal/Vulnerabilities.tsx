@@ -103,6 +103,7 @@ const Vulnerabilities = () => {
           'x_opencti_attack_vector',
           'createdBy',
           'creator',
+          'confidence',
         ]}
       >
         {queryRef && (

@@ -168,6 +168,7 @@ const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
       severity
       created
       modified
+      confidence
       objectMarking {
         edges {
           node {

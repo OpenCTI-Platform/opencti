@@ -187,6 +187,7 @@ class ObservedDatas extends Component {
               'markedBy',
               'created_start_date',
               'created_end_date',
+              'confidence',
             ]}
           >
             <QueryRenderer

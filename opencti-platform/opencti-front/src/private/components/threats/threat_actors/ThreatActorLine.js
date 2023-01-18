@@ -118,6 +118,7 @@ const ThreatActorLineFragment = createFragmentContainer(
         name
         created
         modified
+        confidence
         objectLabel {
           edges {
             node {

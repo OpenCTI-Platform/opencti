@@ -116,6 +116,7 @@ const CampaignLineFragment = createFragmentContainer(CampaignLineComponent, {
       name
       created
       modified
+      confidence
       objectMarking {
         edges {
           node {

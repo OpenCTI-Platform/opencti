@@ -24,6 +24,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import RatingField from '../../../../components/RatingField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -65,6 +66,7 @@ const feedbackEditionOverviewFragment = graphql`
     revoked
     description
     rating
+    confidence
     creator {
       id
       name
@@ -148,6 +150,7 @@ const caseValidation = (t: (v: string) => string) => Yup.object().shape({
     .required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
   rating: Yup.number(),
+  confidence: Yup.number(),
 });
 
 interface FeedbackEditionOverviewProps {
@@ -194,8 +197,12 @@ FeedbackEditionOverviewProps
     const inputValues = Object.entries({
       x_opencti_workflow_id: values.x_opencti_workflow_id,
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
+
     editor.fieldPatch({
-      variables: { id: caseData.id, input: inputValues },
+      variables: {
+        id: caseData.id,
+        input: inputValues,
+      },
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -205,7 +212,7 @@ FeedbackEditionOverviewProps
 
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[] | null,
+    value: Option | string | string[] | number | null,
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
@@ -218,19 +225,21 @@ FeedbackEditionOverviewProps
           editor.fieldPatch({
             variables: {
               id: caseData.id,
-              input: { key: name, value: finalValue || '' },
+              input: [{ key: name, value: finalValue || '' }],
             },
           });
         })
         .catch(() => false);
     }
   };
+
   const initialValues = {
     name: caseData.name,
     description: caseData.description,
     priority: caseData.priority,
     severity: caseData.severity,
     rating: caseData.rating,
+    confidence: caseData.confidence,
     createdBy,
     objectMarking,
     objectAssignee,
@@ -334,6 +343,16 @@ FeedbackEditionOverviewProps
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }
             onChange={editor.changeMarking}
+          />
+          <ConfidenceField
+            name="confidence"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           <RatingField
             label={t('Rating')}

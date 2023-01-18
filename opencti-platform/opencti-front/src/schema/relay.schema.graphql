@@ -2164,6 +2164,7 @@ enum CampaignsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  confidence
 }
 
 enum CampaignsFilter {
@@ -2179,6 +2180,7 @@ enum CampaignsFilter {
   labelledBy
   x_opencti_workflow_id
   revoked
+  confidence
 }
 
 input CampaignsFiltering {
@@ -2517,6 +2519,7 @@ enum ObservedDatasOrdering {
   createdBy
   x_opencti_workflow_id
   objectMarking
+  confidence
 }
 
 enum ObservedDatasFilter {
@@ -2534,6 +2537,7 @@ enum ObservedDatasFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  confidence
 }
 
 input ObservedDatasFiltering {
@@ -3655,6 +3659,7 @@ enum IndicatorsFilter {
   sightedBy
   revoked
   creator
+  confidence
 }
 
 input IndicatorsFiltering {
@@ -3773,6 +3778,7 @@ enum InfrastructuresOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  confidence
 }
 
 enum InfrastructuresFilter {
@@ -3791,6 +3797,7 @@ enum InfrastructuresFilter {
   labelledBy
   x_opencti_workflow_id
   revoked
+  confidence
 }
 
 input InfrastructuresFiltering {
@@ -3892,6 +3899,7 @@ enum IntrusionSetsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  confidence
 }
 
 enum IntrusionSetsFilter {
@@ -3907,6 +3915,7 @@ enum IntrusionSetsFilter {
   labelledBy
   x_opencti_workflow_id
   revoked
+  confidence
 }
 
 input IntrusionSetsFiltering {
@@ -4613,6 +4622,7 @@ enum MalwaresOrdering {
   objectMarking
   objectLabel
   x_opencti_workflow_id
+  confidence
 }
 
 enum MalwaresFilter {
@@ -4631,6 +4641,7 @@ enum MalwaresFilter {
   assigneeTo
   labelledBy
   x_opencti_workflow_id
+  confidence
 }
 
 input MalwaresFiltering {
@@ -4741,6 +4752,7 @@ enum ThreatActorsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  confidence
 }
 
 enum ThreatActorsFilter {
@@ -4756,6 +4768,7 @@ enum ThreatActorsFilter {
   labelledBy
   x_opencti_workflow_id
   revoked
+  confidence
 }
 
 input ThreatActorsFiltering {
@@ -4872,6 +4885,7 @@ enum ToolsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  confidence
 }
 
 enum ToolsFilter {
@@ -4885,6 +4899,7 @@ enum ToolsFilter {
   assigneeTo
   labelledBy
   x_opencti_workflow_id
+  confidence
 }
 
 input ToolsFiltering {
@@ -4987,6 +5002,7 @@ enum VulnerabilitiesOrdering {
   updated_at
   x_opencti_workflow_id
   creator
+  confidence
 }
 
 enum VulnerabilitiesFilter {
@@ -5004,6 +5020,7 @@ enum VulnerabilitiesFilter {
   labelledBy
   x_opencti_workflow_id
   creator
+  confidence
 }
 
 input VulnerabilitiesFiltering {
@@ -5115,6 +5132,7 @@ enum IncidentsOrdering {
   updated_at
   x_opencti_workflow_id
   objectMarking
+  confidence
 }
 
 enum IncidentsFilter {
@@ -5131,6 +5149,7 @@ enum IncidentsFilter {
   assigneeTo
   labelledBy
   x_opencti_workflow_id
+  confidence
 }
 
 input IncidentsFiltering {
@@ -8433,6 +8452,7 @@ enum ChannelsOrdering {
   objectMarking
   objectLabel
   x_opencti_workflow_id
+  confidence
 }
 
 enum ChannelsFilter {
@@ -8448,6 +8468,7 @@ enum ChannelsFilter {
   assigneeTo
   labelledBy
   x_opencti_workflow_id
+  confidence
 }
 
 input ChannelsFiltering {
@@ -9001,6 +9022,7 @@ enum DataComponentsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  confidence
 }
 
 enum DataComponentsFilter {
@@ -9015,6 +9037,7 @@ enum DataComponentsFilter {
   labelledBy
   revoked
   x_opencti_workflow_id
+  confidence
 }
 
 input DataComponentsFiltering {
@@ -9112,6 +9135,7 @@ enum DataSourcesOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  confidence
 }
 
 enum DataSourcesFilter {
@@ -9126,6 +9150,7 @@ enum DataSourcesFilter {
   labelledBy
   revoked
   x_opencti_workflow_id
+  confidence
 }
 
 input DataSourcesFiltering {
@@ -9348,6 +9373,7 @@ enum CasesOrdering {
   markedBy
   x_opencti_workflow_id
   case_type
+  confidence
   priority
   severity
 }
@@ -9367,6 +9393,7 @@ enum CasesFilter {
   x_opencti_workflow_id
   rating
   case_type
+  confidence
   priority
   severity
 }

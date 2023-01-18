@@ -65,6 +65,7 @@ const dataSourceLineFragment = graphql`
     modified
     x_mitre_platforms
     collection_layers
+    confidence
     objectLabel {
       edges {
         node {

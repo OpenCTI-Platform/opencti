@@ -20,6 +20,7 @@ import Loader from '../../../../components/Loader';
 import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const channelMutationFieldPatch = graphql`
   mutation ChannelEditionOverviewFieldPatchMutation(
@@ -83,6 +84,7 @@ const channelValidation = (t) => Yup.object().shape({
   channel_types: Yup.array().required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
+  confidence: Yup.number(),
 });
 
 class ChannelEditionOverviewComponent extends Component {
@@ -219,6 +221,7 @@ class ChannelEditionOverviewComponent extends Component {
         'createdBy',
         'objectMarking',
         'x_opencti_workflow_id',
+        'confidence',
       ]),
     )(channel);
     return (
@@ -263,6 +266,16 @@ class ChannelEditionOverviewComponent extends Component {
                       containerStyle={fieldSpacingContainerStyle}
                       onSubmit={this.handleSubmitField.bind(this)}
                       onChange={(name, value) => setFieldValue(name, value)}
+                    />
+                    <ConfidenceField
+                      name="confidence"
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onChange={this.handleSubmitField.bind(this)}
+                      label={t('Confidence')}
+                      fullWidth={true}
+                      containerStyle={fieldSpacingContainerStyle}
+                      editContext={context}
+                      variant="edit"
                     />
                     <Field
                       component={MarkDownField}
@@ -358,6 +371,7 @@ const ChannelEditionOverview = createFragmentContainer(
         name
         channel_types
         description
+        confidence
         createdBy {
           ... on Identity {
             id

@@ -150,6 +150,7 @@ class Incidents extends Component {
           'created_start_date',
           'created_end_date',
           'createdBy',
+          'confidence',
         ]}
       >
         <QueryRenderer
@@ -251,6 +252,7 @@ class Incidents extends Component {
               'created_start_date',
               'created_end_date',
               'createdBy',
+              'confidence',
             ]}
           >
             <QueryRenderer

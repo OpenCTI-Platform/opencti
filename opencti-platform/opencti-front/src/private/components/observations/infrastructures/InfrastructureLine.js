@@ -118,6 +118,7 @@ const InfrastructureLineFragment = createFragmentContainer(
         name
         created
         modified
+        confidence
         objectMarking {
           edges {
             node {

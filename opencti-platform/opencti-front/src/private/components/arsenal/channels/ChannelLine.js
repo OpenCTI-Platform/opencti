@@ -112,6 +112,7 @@ export const ChannelLine = createFragmentContainer(ChannelLineComponent, {
       channel_types
       created
       modified
+      confidence
       objectLabel {
         edges {
           node {

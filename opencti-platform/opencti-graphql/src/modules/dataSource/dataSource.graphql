@@ -125,6 +125,7 @@ enum DataSourcesOrdering {
     created_at
     updated_at
     x_opencti_workflow_id
+    confidence
 }
 
 # Filtering
@@ -140,6 +141,7 @@ enum DataSourcesFilter {
     labelledBy
     revoked
     x_opencti_workflow_id
+    confidence
 }
 
 input DataSourcesFiltering {
