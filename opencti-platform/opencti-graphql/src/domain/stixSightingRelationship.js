@@ -34,6 +34,7 @@ import {
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { listRelations, storeLoadById } from '../database/middleware-loader';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, STIX_SIGHTING_RELATIONSHIP, args);
@@ -59,6 +60,10 @@ export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => 
 
 export const batchReports = async (context, user, stixCoreRelationshipIds) => {
   return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+};
+
+export const batchCases = async (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE);
 };
 
 export const batchNotes = (context, user, stixCoreRelationshipIds) => {

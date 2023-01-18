@@ -2,7 +2,7 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic
 import moment from 'moment';
 import { lockResource } from '../database/redis';
 import { findAll as findRetentionRulesToExecute } from '../domain/retentionRule';
-import conf, { logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
@@ -19,6 +19,7 @@ const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
 const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
 const RETENTION_INDICES = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS];
+let running = false;
 
 const executeProcessing = async (context, retentionRule) => {
   const { id, name, max_retention: maxDays, filters } = retentionRule;
@@ -57,6 +58,7 @@ const retentionHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([RETENTION_MANAGER_KEY]);
+    running = true;
     const context = executionContext('retention_manager');
     const retentionRules = await findRetentionRulesToExecute(context, RETENTION_MANAGER_USER, { connectionFormat: false });
     logApp.debug(`[OPENCTI] Retention manager execution for ${retentionRules.length} rules`);
@@ -75,6 +77,7 @@ const retentionHandler = async () => {
       logApp.error('[OPENCTI-MODULE] Retention manager fail to execute', { error: e });
     }
   } finally {
+    running = false;
     if (lock) await lock.unlock();
   }
 };
@@ -86,6 +89,13 @@ const initRetentionManager = () => {
       scheduler = setIntervalAsync(async () => {
         await retentionHandler();
       }, SCHEDULE_TIME);
+    },
+    status: async () => {
+      return {
+        id: 'RETENTION_MANAGER',
+        enable: booleanConf('retention_manager:enabled', false),
+        running,
+      };
     },
     shutdown: async () => {
       if (scheduler) {

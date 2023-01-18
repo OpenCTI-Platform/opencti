@@ -5,6 +5,7 @@ import {
   BiotechOutlined,
   TipsAndUpdatesOutlined,
   TaskAltOutlined,
+  WorkOutlineOutlined,
 } from '@mui/icons-material';
 import { Brain } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
@@ -31,7 +32,7 @@ const TopMenuCases = () => {
     <div>
       <Button
         component={Link}
-        to="/dashboard/cases/feedbacks"
+        to="/dashboard/cases/incidents"
         variant={
           location.pathname === '/dashboard/cases/incidents'
             ? 'contained'
@@ -44,7 +45,6 @@ const TopMenuCases = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={true}
       >
         <BiotechOutlined className={classes.icon} fontSize="small" />
         {t('Incident response')}
@@ -53,9 +53,7 @@ const TopMenuCases = () => {
         component={Link}
         to="/dashboard/cases/feedbacks"
         variant={
-          location.pathname === '/dashboard/cases/rfis'
-            ? 'contained'
-            : 'text'
+          location.pathname === '/dashboard/cases/rfis' ? 'contained' : 'text'
         }
         size="small"
         color={
@@ -90,11 +88,27 @@ const TopMenuCases = () => {
       </Button>
       <Button
         component={Link}
+        to="/dashboard/cases/others"
+        variant={
+          location.pathname === '/dashboard/cases/others' ? 'contained' : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === '/dashboard/cases/others'
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+        disabled={true}
+      >
+        <WorkOutlineOutlined className={classes.icon} fontSize="small" />
+        {t('Others')}
+      </Button>
+      <Button
+        component={Link}
         to="/dashboard/cases/feedbacks"
         variant={
-          location.pathname === '/dashboard/cases/tasks'
-            ? 'contained'
-            : 'text'
+          location.pathname === '/dashboard/cases/tasks' ? 'contained' : 'text'
         }
         size="small"
         color={

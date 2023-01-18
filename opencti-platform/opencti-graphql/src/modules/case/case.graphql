@@ -22,6 +22,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
   groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -119,7 +120,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   severity: String
   priority: String
   description: String
-  rating: Int!
+  rating: Int
   # Technical
   creator: Creator
   toStix: String
@@ -148,6 +149,8 @@ enum CasesOrdering {
   x_opencti_workflow_id
   case_type
   confidence
+  priority
+  severity
 }
 
 # Filtering
@@ -167,6 +170,8 @@ enum CasesFilter {
   rating
   case_type
   confidence
+  priority
+  severity
 }
 
 input CasesFiltering {

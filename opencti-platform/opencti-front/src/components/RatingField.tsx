@@ -60,7 +60,7 @@ const StyledRating = styled(Rating)(({ theme }) => ({
 
 interface RatingProps {
   label?: string;
-  rating: number;
+  rating: number | null;
   readOnly?: boolean;
   style?: Record<string, unknown>;
   size: 'tiny' | 'small' | 'large';
@@ -92,7 +92,7 @@ const RatingField: FunctionComponent<RatingProps> = ({
       )}
       <StyledRating
         name="highlight-selected-only"
-        value={rating}
+        value={rating ?? 0}
         IconContainerComponent={IconContainer}
         onChange={(_, value) => handleOnChange && handleOnChange(value)}
         highlightSelectedOnly

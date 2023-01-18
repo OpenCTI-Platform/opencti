@@ -38,6 +38,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase> = {
     { name: 'rating', type: 'numeric', multiple: false, upsert: true },
     { name: 'x_opencti_stix_ids', type: 'string', multiple: true, upsert: true },
     { name: 'confidence', type: 'numeric', multiple: false, upsert: true },
+    { name: 'x_opencti_graph_data', type: 'string', multiple: false, upsert: false },
   ],
   relations: [],
   converter: convertCaseToStix

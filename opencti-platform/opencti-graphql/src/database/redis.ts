@@ -697,4 +697,23 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
+export const registerClusterInstance = async (instanceId: string, instanceConfig: any) => {
+  await redisTx(clientBase, async (tx) => {
+    // add (or update if it already exists) a key with a TTL
+    tx.set(instanceId, JSON.stringify(instanceConfig), 'EX', 120);
+    // add/update the instance with its creation date in the ordered list of instances
+    const time = new Date().getTime();
+    tx.zadd('platform_cluster', time, instanceId);
+    // remove the too old keys from the list of instances
+    tx.zremrangebyscore('platform_cluster', '-inf', time - 120000);
+  });
+};
+export const getClusterInstances = async () => {
+  const instances = await clientBase.zrange('platform_cluster', 0, -1);
+  if (instances) {
+    const instancesConfig = await clientBase.mget(...instances);
+    return (instancesConfig.filter((n) => n !== null) as string[]).map((n) => JSON.parse(n));
+  }
+  return [];
+};
 // endregion

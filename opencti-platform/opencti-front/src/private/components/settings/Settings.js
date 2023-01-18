@@ -122,6 +122,7 @@ const settingsQuery = graphql`
       platform_modules {
         id
         enable
+        running
       }
       editContext {
         name

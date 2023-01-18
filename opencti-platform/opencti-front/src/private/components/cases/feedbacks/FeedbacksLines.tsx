@@ -59,7 +59,7 @@ const feedbacksLinesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "[CasesFiltering!]" }
   )
-  @refetchable(queryName: "CasesLinesRefetchQuery") {
+  @refetchable(queryName: "FeedbackLinesRefetchQuery") {
     cases(
       search: $search
       first: $count

@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
 
 export interface ModuleHelper {
@@ -14,7 +13,7 @@ const isFeatureEnable = (
   id: string,
 ) => {
   const flags = settings.platform_feature_flags ?? [];
-  const feature = R.find((f) => f.id === id, flags);
+  const feature = flags.find((f) => f.id === id);
   return feature !== undefined && feature.enable === true;
 };
 
@@ -23,7 +22,7 @@ const isModuleEnable = (
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
-  const module = R.find((f) => f.id === id, modules);
+  const module = modules.find((f) => f.id === id);
   return module !== undefined && module.enable === true;
 };
 

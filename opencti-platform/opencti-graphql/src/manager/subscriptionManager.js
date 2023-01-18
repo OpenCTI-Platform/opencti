@@ -4,7 +4,7 @@ import { lockResource } from '../database/redis';
 import { elList, ES_MAX_CONCURRENCY } from '../database/engine';
 import { READ_PLATFORM_INDICES } from '../database/utils';
 import { hoursAgo, minutesAgo, now, prepareDate, utcDate } from '../utils/format';
-import conf, { logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_USER_SUBSCRIPTION } from '../schema/internalObject';
 import { generateDigestForSubscription } from '../domain/userSubscription';
@@ -20,12 +20,14 @@ const SCHEDULE_TIME = conf.get('subscription_scheduler:interval');
 const SUBSCRIPTION_MANAGER_KEY = conf.get('subscription_scheduler:lock_key');
 
 const defaultCrons = ['5-minutes', '1-hours', '24-hours', '1-weeks', '1-months'];
+let running = false;
 
 const subscriptionHandler = async () => {
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([SUBSCRIPTION_MANAGER_KEY]);
+    running = true;
     const context = executionContext('subscription_manager');
     // Execute the cleaning
     const callback = async (elements) => {
@@ -74,6 +76,7 @@ const subscriptionHandler = async () => {
       logApp.error('[OPENCTI-MODULE] Subscription manager failed to start', { error: e });
     }
   } finally {
+    running = false;
     logApp.debug('[OPENCTI-MODULE] Subscription manager done');
     if (lock) await lock.unlock();
   }
@@ -87,6 +90,13 @@ const initSubscriptionManager = () => {
       scheduler = setIntervalAsync(async () => {
         await subscriptionHandler();
       }, SCHEDULE_TIME);
+    },
+    status: async () => {
+      return {
+        id: 'SUBSCRIPTION_MANAGER',
+        enable: booleanConf('subscription_scheduler:enabled', false),
+        running,
+      };
     },
     shutdown: async () => {
       if (scheduler) {

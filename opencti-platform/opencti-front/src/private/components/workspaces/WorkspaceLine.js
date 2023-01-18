@@ -4,7 +4,10 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { WorkOutlineOutlined } from '@mui/icons-material';
+import {
+  DashboardCustomizeOutlined,
+  TravelExploreOutlined,
+} from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
@@ -62,7 +65,11 @@ const WorkspaceLineComponent = ({ dataColumns, node }) => {
       to={`/dashboard/workspaces/${node.type}s/${node.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <WorkOutlineOutlined />
+        {node.type === 'dashboard' ? (
+          <DashboardCustomizeOutlined />
+        ) : (
+          <TravelExploreOutlined />
+        )}
       </ListItemIcon>
       <ListItemText
         primary={

@@ -78,13 +78,10 @@ const styles = (theme) => ({
           : 'rgba(0, 0, 0, .2)',
     },
   },
-});
-
-const inlineStyles = {
   itemAuthor: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
+    width: 120,
+    minWidth: 120,
+    maxWidth: 120,
     marginRight: 24,
     marginLeft: 24,
     whiteSpace: 'nowrap',
@@ -92,15 +89,19 @@ const inlineStyles = {
     textOverflow: 'ellipsis',
   },
   itemDate: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
+    width: 120,
+    minWidth: 120,
+    maxWidth: 120,
     marginRight: 24,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-};
+  itemMarking: {
+    width: 110,
+    paddingRight: 20,
+  },
+});
 
 const ReportDetailsComponent = (props) => {
   const { t, fldt, fsd, classes, report } = props;
@@ -192,13 +193,13 @@ const ReportDetailsComponent = (props) => {
                       </div>
                     }
                   />
-                  <div style={inlineStyles.itemAuthor}>
+                  <div className={classes.itemAuthor}>
                     {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
                   </div>
-                  <div style={inlineStyles.itemDate}>
+                  <div className={classes.itemDate}>
                     {fsd(relatedContainer.published)}
                   </div>
-                  <div style={{ width: 110, paddingRight: 20 }}>
+                  <div className={classes.itemMarking}>
                     <ItemMarkings
                       variant="inList"
                       markingDefinitionsEdges={

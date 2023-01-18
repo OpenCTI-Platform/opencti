@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
-import conf, { logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -141,6 +141,7 @@ const initHistoryManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let syncListening = true;
+  let running = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -151,6 +152,7 @@ const initHistoryManager = () => {
     try {
       // Lock the manager
       lock = await lockResource([HISTORY_ENGINE_KEY]);
+      running = true;
       logApp.info('[OPENCTI-MODULE] Running history manager');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', false, historyStreamHandler);
       await streamProcessor.start(lastEventId);
@@ -164,6 +166,7 @@ const initHistoryManager = () => {
         logApp.error('[OPENCTI-MODULE] history manager failed to start', { error: e });
       }
     } finally {
+      running = false;
       if (streamProcessor) await streamProcessor.shutdown();
       if (lock) await lock.unlock();
     }
@@ -191,6 +194,13 @@ const initHistoryManager = () => {
           await historyHandler(lastEventId);
         }
       }, SCHEDULE_TIME);
+    },
+    status: async () => {
+      return {
+        id: 'HISTORY_MANAGER',
+        enable: booleanConf('history_manager:enabled', false),
+        running,
+      };
     },
     shutdown: async () => {
       syncListening = false;

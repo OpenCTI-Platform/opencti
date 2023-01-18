@@ -41,6 +41,8 @@ const Resolver = () => {
                 redirectLink = `/dashboard/cases/incidents/${caseEntity.id}`;
               } else if (caseEntity.case_type === 'rfi') {
                 redirectLink = `/dashboard/cases/rfis/${caseEntity.id}`;
+              } else {
+                redirectLink = `/dashboard/cases/others/${caseEntity.id}`;
               }
               return (
                 <Redirect

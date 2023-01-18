@@ -5,6 +5,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Filters } from '../../../components/list_lines';
 import {
+  CasesFilter,
   FeedbacksLinesPaginationQuery,
   FeedbacksLinesPaginationQuery$variables,
 } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
@@ -46,6 +47,14 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
       },
     },
   );
+  const key: ReadonlyArray<CasesFilter> = ['case_type'];
+  const finalPaginationOptions = {
+    ...paginationOptions,
+    filters: [
+      ...(paginationOptions.filters ?? []),
+      { key, values: ['feedback'] },
+    ],
+  };
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -109,7 +118,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
     };
     const queryRef = useQueryLoading<FeedbacksLinesPaginationQuery>(
       feedbacksLinesQuery,
-      paginationOptions,
+      finalPaginationOptions,
     );
     return (
       <ListLines
@@ -127,7 +136,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
         exportEntityType="Case"
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={finalPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -155,7 +164,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
           >
             <FeedbacksLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={finalPaginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}

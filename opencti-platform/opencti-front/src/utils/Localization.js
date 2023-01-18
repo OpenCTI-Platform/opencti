@@ -1710,7 +1710,7 @@ const i18n = {
       '2FA': 'ADF',
       'Use 2FA authentication': "Utiliser l'authentification à double facteur",
       'You need to validate your two-factor authentication. Please type the code generated in your application.':
-      'Vous devez valider votre authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
+      'Vous devez valider votre  à deux facteurs. Veuillez saisir le code généré dans votre application.',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
       'Vous devez activer une authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
       Search: 'Rechercher',
