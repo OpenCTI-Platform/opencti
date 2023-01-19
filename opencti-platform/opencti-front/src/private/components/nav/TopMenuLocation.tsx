@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { CityVariantOutline, ImageArea } from 'mdi-material-ui';
+import { CityVariantOutline, TextureBox } from 'mdi-material-ui';
 import {
   PublicOutlined,
   PlaceOutlined,
@@ -78,21 +78,21 @@ const TopMenuLocation = () => {
       {!isEntityTypeHidden('AdministrativeArea') && (
           <Button
               component={Link}
-              to="/dashboard/locations/areas"
+              to="/dashboard/locations/administrative_areas"
               variant={
-                location.pathname.includes('/dashboard/locations/areas')
+                location.pathname.includes('/dashboard/locations/administrative_areas')
                   ? 'contained'
                   : 'text'
               }
               size="small"
               color={
-                location.pathname.includes('/dashboard/locations/areas')
+                location.pathname.includes('/dashboard/locations/administrative_areas')
                   ? 'secondary'
                   : 'primary'
               }
               classes={{ root: classes.button }}
           >
-            <ImageArea className={classes.icon} fontSize="small"/>
+            <TextureBox className={classes.icon} fontSize="small"/>
             {t('Areas')}
           </Button>
       )}

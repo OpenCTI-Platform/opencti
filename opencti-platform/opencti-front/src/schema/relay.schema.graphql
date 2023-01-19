@@ -9414,6 +9414,8 @@ input AdministrativeAreaAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String!
+  latitude: Float
+  longitude: Float
   x_opencti_aliases: [String]
   confidence: Int
   revoked: Boolean

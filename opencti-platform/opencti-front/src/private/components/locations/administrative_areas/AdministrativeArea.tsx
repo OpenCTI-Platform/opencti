@@ -126,7 +126,7 @@ const AdministrativeArea = ({ administrativeAreaData }: { administrativeAreaData
                 <Grid item={true} xs={6}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                         stixObjectOrStixRelationshipId={administrativeArea.id}
-                        stixObjectOrStixRelationshipLink={`/dashboard/locations/areas/${administrativeArea.id}/knowledge`}
+                        stixObjectOrStixRelationshipLink={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
                     />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -153,7 +153,7 @@ const AdministrativeArea = ({ administrativeAreaData }: { administrativeAreaData
                 defaultMarking={(administrativeArea.objectMarking?.edges ?? []).map((edge) => edge.node)}
             />
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <AdministrativeAreaEdition areaId={administrativeArea.id} />
+                <AdministrativeAreaEdition administrativeAreaId={administrativeArea.id} />
             </Security>
         </div>
   );

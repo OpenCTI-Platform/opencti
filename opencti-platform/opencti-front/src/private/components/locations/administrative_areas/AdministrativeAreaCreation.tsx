@@ -156,7 +156,7 @@ const AdministrativeAreaCreation = ({ paginationOptions }: { paginationOptions: 
                     >
                         <Close fontSize="small" color="primary" />
                     </IconButton>
-                    <Typography variant="h6">{t('Create an administrative area')}</Typography>
+                    <Typography variant="h6">{t('Create an Area')}</Typography>
                 </div>
                 <div className={classes.container}>
                     <Formik<AdministrativeAreaAddInput>

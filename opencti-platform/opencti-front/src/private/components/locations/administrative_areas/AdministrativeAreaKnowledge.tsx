@@ -36,8 +36,8 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
     administrativeAreaKnowledgeFragment,
     administrativeAreaData,
   );
-  console.log(`administrativeArea dans knowledge ${administrativeArea}`);
-  const link = `/dashboard/locations/areas/${administrativeArea.id}/knowledge`;
+  console.log(administrativeArea);
+  const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
 
   return (
         <div className={classes.container}>
@@ -50,7 +50,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
             <Switch>
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/relations/:relationId"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/relations/:relationId"
                     render={(routeProps: any) => (
                         <StixCoreRelationship
                             entityId={administrativeArea.id}
@@ -61,7 +61,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/sightings/:sightingId"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/sightings/:sightingId"
                     render={(routeProps: any) => (
                         <StixSightingRelationship
                             entityId={administrativeArea.id}
@@ -72,7 +72,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/overview"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/overview"
                     render={(routeProps: any) => (
                         <StixDomainObjectKnowledge
                             stixDomainObjectId={administrativeArea.id}
@@ -83,7 +83,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/related"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/related"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -112,7 +112,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/organizations"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/organizations"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -126,7 +126,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/countries"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/countries"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -140,7 +140,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/threat_actors"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/threat_actors"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -154,7 +154,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/intrusion_sets"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/intrusion_sets"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -168,7 +168,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/campaigns"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/campaigns"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -182,7 +182,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/incidents"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/incidents"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -196,7 +196,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/malwares"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/malwares"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -210,7 +210,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/attack_patterns"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/attack_patterns"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -224,7 +224,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/tools"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/tools"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
@@ -238,7 +238,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                 />
                 <Route
                     exact
-                    path="/dashboard/locations/areas/:areaId/knowledge/observables"
+                    path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/observables"
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}

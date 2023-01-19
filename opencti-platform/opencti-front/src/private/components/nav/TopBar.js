@@ -332,7 +332,7 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/locations/regions/') && (
             <TopMenuRegion />
           )}
-          {location.pathname.includes('/dashboard/locations/areas/') && (
+          {location.pathname.includes('/dashboard/locations/administrative_areas/') && (
               <TopMenuAdministrativeArea />
           )}
           {location.pathname.includes('/dashboard/locations/cities/') && (

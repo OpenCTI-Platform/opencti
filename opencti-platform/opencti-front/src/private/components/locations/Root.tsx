@@ -24,7 +24,7 @@ const Root = () => {
   } else if (!useIsHiddenEntity('Country')) {
     redirect = 'countries';
   } else if (!helper.isEntityTypeHidden('AdministrativeArea')) {
-    redirect = 'areas';
+    redirect = 'administrative_areas';
   } else if (!useIsHiddenEntity('City')) {
     redirect = 'cities';
   } else if (!useIsHiddenEntity('Position')) {
@@ -57,11 +57,11 @@ const Root = () => {
       />
         <BoundaryRoute
             exact
-            path="/dashboard/locations/areas"
+            path="/dashboard/locations/administrative_areas"
             component={AdministrativeAreas}
         />
         <BoundaryRoute
-            path="/dashboard/locations/areas/:areaId"
+            path="/dashboard/locations/administrative_areas/:administrativeAreaId"
             component={RootAdministrativeArea}
         />
       <BoundaryRoute

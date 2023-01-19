@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
-import { ImageArea } from 'mdi-material-ui';
+import { TextureBox } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
@@ -47,13 +47,13 @@ class TopMenuAdministrativeArea extends Component {
             <div>
                 <Button
                     component={Link}
-                    to="/dashboard/locations/areas"
+                    to="/dashboard/locations/administrative_areas"
                     variant="contained"
                     size="small"
                     color="primary"
                     classes={{ root: classes.buttonHome }}
                 >
-                    < ImageArea className={classes.icon} fontSize="small" />
+                    < TextureBox className={classes.icon} fontSize="small" />
                     {t('Areas')}
                 </Button>
                 <ArrowForwardIosOutlined
@@ -62,15 +62,15 @@ class TopMenuAdministrativeArea extends Component {
                 />
                 <Button
                     component={Link}
-                    to={`/dashboard/locations/areas/${administrativeAreaId}`}
+                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}`}
                     variant={
-                        location.pathname === `/dashboard/locations/areas/${administrativeAreaId}`
+                        location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}`
                           ? 'contained'
                           : 'text'
                     }
                     size="small"
                     color={
-                        location.pathname === `/dashboard/locations/areas/${administrativeAreaId}`
+                        location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}`
                           ? 'secondary'
                           : 'primary'
                     }
@@ -80,10 +80,10 @@ class TopMenuAdministrativeArea extends Component {
                 </Button>
                 <Button
                     component={Link}
-                    to={`/dashboard/locations/areas/${administrativeAreaId}/knowledge`}
+                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`}
                     variant={
                         location.pathname.includes(
-                          `/dashboard/locations/areas/${administrativeAreaId}/knowledge`,
+                          `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`,
                         )
                           ? 'contained'
                           : 'text'
@@ -91,7 +91,7 @@ class TopMenuAdministrativeArea extends Component {
                     size="small"
                     color={
                         location.pathname.includes(
-                          `/dashboard/locations/areas/${administrativeAreaId}/knowledge`,
+                          `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`,
                         )
                           ? 'secondary'
                           : 'primary'
@@ -102,17 +102,17 @@ class TopMenuAdministrativeArea extends Component {
                 </Button>
                 <Button
                     component={Link}
-                    to={`/dashboard/locations/areas/${administrativeAreaId}/analysis`}
+                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`}
                     variant={
                         location.pathname
-                        === `/dashboard/locations/areas/${administrativeAreaId}/analysis`
+                        === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`
                           ? 'contained'
                           : 'text'
                     }
                     size="small"
                     color={
                         location.pathname
-                        === `/dashboard/locations/areas/${administrativeAreaId}/analysis`
+                        === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`
                           ? 'secondary'
                           : 'primary'
                     }
@@ -122,17 +122,17 @@ class TopMenuAdministrativeArea extends Component {
                 </Button>
                 <Button
                     component={Link}
-                    to={`/dashboard/locations/areas/${administrativeAreaId}/sightings`}
+                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`}
                     variant={
                         location.pathname
-                        === `/dashboard/locations/areas/${administrativeAreaId}/sightings`
+                        === `/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`
                           ? 'contained'
                           : 'text'
                     }
                     size="small"
                     color={
                         location.pathname
-                        === `/dashboard/locations/areas/${administrativeAreaId}/sightings`
+                        === `/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`
                           ? 'secondary'
                           : 'primary'
                     }
@@ -143,15 +143,15 @@ class TopMenuAdministrativeArea extends Component {
                 <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
                     <Button
                         component={Link}
-                        to={`/dashboard/locations/areas/${administrativeAreaId}/files`}
+                        to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/files`}
                         variant={
-                            location.pathname === `/dashboard/locations/areas/${administrativeAreaId}/files`
+                            location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}/files`
                               ? 'contained'
                               : 'text'
                         }
                         size="small"
                         color={
-                            location.pathname === `/dashboard/locations/areas/${administrativeAreaId}/files`
+                            location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}/files`
                               ? 'secondary'
                               : 'primary'
                         }
@@ -162,15 +162,15 @@ class TopMenuAdministrativeArea extends Component {
                 </Security>
                 <Button
                     component={Link}
-                    to={`/dashboard/locations/areas/${administrativeAreaId}/history`}
+                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/history`}
                     variant={
-                        location.pathname === `/dashboard/locations/areas/${administrativeAreaId}/history`
+                        location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}/history`
                           ? 'contained'
                           : 'text'
                     }
                     size="small"
                     color={
-                        location.pathname === `/dashboard/locations/areas/${administrativeAreaId}/history`
+                        location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}/history`
                           ? 'secondary'
                           : 'primary'
                     }

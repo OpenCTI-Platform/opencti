@@ -63,14 +63,14 @@ const administrativeAreaQuery = graphql`
 `;
 
 const RootAdministrativeAreaComponent = ({ queryRef }) => {
-  const { areaId } = useParams() as { areaId: string };
-  const link = `/dashboard/locations/areas/${areaId}/knowledge`;
+  const { administrativeAreaId } = useParams() as { administrativeAreaId: string };
+  const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>>(
     () => ({
       subscription,
-      variables: { id: areaId },
+      variables: { id: administrativeAreaId },
     }),
-    [areaId],
+    [administrativeAreaId],
   );
   useSubscription(subConfig);
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
@@ -78,7 +78,7 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
   return (
         <div>
             <TopBar />
-            <Route path="/dashboard/locations/areas/:areaId/knowledge">
+            <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
                 <StixCoreObjectKnowledgeBar
                     stixCoreObjectLink={link}
                     availableSections={[
@@ -101,25 +101,25 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
                     <Switch>
                         <Route
                             exact
-                            path="/dashboard/locations/areas/:areaId"
+                            path="/dashboard/locations/administrative_areas/:administrativeArea"
                             render={() => <AdministrativeArea administrativeAreaData={administrativeArea} />}
                         />
                         <Route
                             exact
-                            path="/dashboard/locations/areas/:areaId/knowledge"
+                            path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
                             render={() => (
                                 <Redirect
-                                    to={`/dashboard/locations/areas/${areaId}/knowledge/overview`}
+                                    to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
                                 />
                             )}
                         />
                         <Route
-                            path="/dashboard/locations/areas/:areaId/knowledge"
+                            path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
                             render={() => <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />}
                         />
                         <Route
                             exact
-                            path="/dashboard/locations/areas/:areaId/analysis"
+                            path="/dashboard/locations/administrative_areas/:administrativeArea/analysis"
                             render={(routeProps) => (
                                 <React.Fragment>
                                     <StixDomainObjectHeader
@@ -136,7 +136,7 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
                         />
                         <Route
                             exact
-                            path="/dashboard/locations/areas/:areaId/sightings"
+                            path="/dashboard/locations/administrative_areas/:administrativeArea/sightings"
                             render={(routeProps) => (
                                 <EntityStixSightingRelationships
                                     entityId={administrativeArea.id}
@@ -149,7 +149,7 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
                         />
                         <Route
                             exact
-                            path="/dashboard/locations/areas/:areaId/files"
+                            path="/dashboard/locations/administrative_areas/:administrativeArea/files"
                             render={(routeProps) => (
                                 <React.Fragment>
                                     <StixDomainObjectHeader
@@ -169,7 +169,7 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
                         />
                         <Route
                             exact
-                            path="/dashboard/locations/areas/:areaId/history"
+                            path="/dashboard/locations/administrative_areas/:administrativeArea/history"
                             render={(routeProps) => (
                                 <React.Fragment>
                                     <StixDomainObjectHeader
@@ -179,7 +179,7 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
                                     />
                                     <StixCoreObjectHistory
                                         {...routeProps}
-                                        stixCoreObjectId={areaId}
+                                        stixCoreObjectId={administrativeAreaId}
                                     />
                                 </React.Fragment>
                             )}
@@ -194,8 +194,8 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
 };
 
 const RootAdministrativeArea = () => {
-  const { areaId } = useParams() as { areaId: string };
-  const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(administrativeAreaQuery, { id: areaId });
+  const { administrativeAreaId } = useParams() as { administrativeAreaId: string };
+  const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(administrativeAreaQuery, { id: administrativeAreaId });
   return queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <RootAdministrativeAreaComponent queryRef={queryRef} />

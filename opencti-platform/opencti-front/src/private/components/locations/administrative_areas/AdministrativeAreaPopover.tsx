@@ -93,7 +93,7 @@ const AdministrativeAreaPopover = ({ id }: { id: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/locations/areas');
+        navigate('/dashboard/locations/administrative_areas');
       },
     });
   };

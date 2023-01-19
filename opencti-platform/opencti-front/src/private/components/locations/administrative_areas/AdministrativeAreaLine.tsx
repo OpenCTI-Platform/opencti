@@ -5,7 +5,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { ImageArea } from 'mdi-material-ui';
+import { TextureBox } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
@@ -70,10 +70,10 @@ export const AdministrativeAreaLine: FunctionComponent<AdministrativeAreaLineCom
             divider={true}
             button={true}
             component={Link}
-            to={`/dashboard/locations/areas/${data.id}`}
+            to={`/dashboard/locations/administrative_areas/${data.id}`}
         >
             <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <ImageArea />
+                <TextureBox />
             </ListItemIcon>
             <ListItemText
                 primary={

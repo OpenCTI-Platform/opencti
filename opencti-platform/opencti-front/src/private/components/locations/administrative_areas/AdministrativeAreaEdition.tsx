@@ -31,7 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const AdministrativeAreaEdition = ({ areaId }: { areaId: string }) => {
+const AdministrativeAreaEdition = ({ administrativeAreaId }: { administrativeAreaId: string }) => {
   const classes = useStyles();
 
   const [open, setOpen] = useState<boolean>(false);
@@ -41,14 +41,14 @@ const AdministrativeAreaEdition = ({ areaId }: { areaId: string }) => {
   const handleClose = () => {
     commit({
       variables: {
-        id: areaId,
+        id: administrativeAreaId,
         input: { focusOn: '' },
       },
     });
     setOpen(false);
   };
 
-  const queryRef = useQueryLoading<AdministrativeAreaEditionContainerQuery>(administrativeAreaEditionQuery, { id: areaId });
+  const queryRef = useQueryLoading<AdministrativeAreaEditionContainerQuery>(administrativeAreaEditionQuery, { id: administrativeAreaId });
 
   return (
         <div>
