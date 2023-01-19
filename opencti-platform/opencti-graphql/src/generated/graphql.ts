@@ -217,6 +217,8 @@ export type AdministrativeAreaAddInput = {
   description: Scalars['String'];
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
+  latitude?: InputMaybe<Scalars['Float']>;
+  longitude?: InputMaybe<Scalars['Float']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
