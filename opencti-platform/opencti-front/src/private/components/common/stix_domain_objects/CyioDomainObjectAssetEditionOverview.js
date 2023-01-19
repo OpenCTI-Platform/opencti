@@ -175,6 +175,31 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
               </div>
             </Grid>
             <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Patch Level')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                    <Tooltip title={t('Patch Level')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    style={{ height: '38.09px' }}
+                    variant='outlined'
+                    name="patch_level"
+                    size='small'
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                  />
+                </Grid>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"

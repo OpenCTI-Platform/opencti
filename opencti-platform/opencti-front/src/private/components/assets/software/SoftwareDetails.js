@@ -89,23 +89,6 @@ class SoftwareDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {software.software_identifier && t(software.software_identifier)}
-              </Grid>
-              <Grid item={true} xs={6}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Patch Level')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
-                  <Tooltip title={t('Patch Level')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {software.patch_level && t(software.patch_level)}
               </Grid>              
             </Grid>
             <Grid container spacing={3} style={{marginBottom: "20px"}}>

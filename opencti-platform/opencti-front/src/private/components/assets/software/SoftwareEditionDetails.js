@@ -199,31 +199,6 @@ class SoftwareEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </Grid>
-                <Grid item={true} xs={6}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Patch Level')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
-                    <Tooltip title={t('Patch Level')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="patch_level"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                  />
-                </Grid>
               </Grid>
               <Grid container spacing={3}>
                 <Grid item={true} xs={6}>
@@ -386,7 +361,7 @@ class SoftwareEditionDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '90%' }}
-                  helperText={'Installed On Assets'}
+                  helperText={'Indicates connected hardware on this entity.'}
                   data={software?.installed_on}
                   title={'Installed On Assets'}
                   setFieldValue={setFieldValue}
@@ -403,7 +378,7 @@ class SoftwareEditionDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '90%' }}
-                  helperText={'Related Risks'}
+                  helperText={'Indicates the risks related to this entity.'}
                   data={software?.related_risks}
                   title={'Related Risks'}
                   setFieldValue={setFieldValue}

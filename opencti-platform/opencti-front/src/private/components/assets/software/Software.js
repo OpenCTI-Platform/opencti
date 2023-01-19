@@ -171,6 +171,7 @@ const Software = createFragmentContainer(SoftwareComponent, {
       description
       version
       vendor_name
+      patch_level
       asset_tag
       asset_type
       serial_number

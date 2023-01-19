@@ -64,7 +64,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const customTextField = (value, id, classes, history, link, handleDelete, index) => (
+const customTextField = (
+  value,
+  id,
+  fieldName,
+  classes,
+  history,
+  link,
+  handleDelete,
+  index,
+) => (
   <div style={{ display: 'flex' }}>
     <Link
       key={index}
@@ -76,9 +85,14 @@ const customTextField = (value, id, classes, history, link, handleDelete, index)
       <LaunchIcon fontSize="small" className={classes.launchIcon} />
       <div className={classes.linkTitle}>{value}</div>
     </Link>
-    <IconButton style={{ padding: '5px' }} onClick={() => handleDelete(index)}>
-      <Delete />
-    </IconButton>
+    {['installed_hardware', 'installed_software'].includes(fieldName) && (
+      <IconButton
+        style={{ padding: '5px' }}
+        onClick={() => handleDelete(index)}
+      >
+        <Delete />
+      </IconButton>
+    )}
   </div>
 );
 
@@ -156,7 +170,7 @@ const HyperLinks = (props) => {
               disableUnderline: true,
               startAdornment:
               // eslint-disable-next-line max-len
-              props.value.map((n, index) => customTextField(n.name, n.id, classes, history, props.link, props.handleDelete, index)),
+              props.value.map((n, index) => customTextField(n.name, n.id, props.field.name, classes, history, props.link, props.handleDelete, index)),
             }}
           />
         </div>

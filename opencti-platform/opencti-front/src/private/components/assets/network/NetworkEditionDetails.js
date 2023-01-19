@@ -354,7 +354,7 @@ class NetworkEditionDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '90%' }}
-                  helperText={'Connected Assets'}
+                  helperText={'Indicates connected hardware on this entity.'}
                   data={network?.connected_assets}
                   title={'Connected Assets'}
                   setFieldValue={setFieldValue}
@@ -370,7 +370,7 @@ class NetworkEditionDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '90%' }}
-                  helperText={'Related Risks'}
+                  helperText={'Indicates the risks related to this entity.'}
                   data={network?.related_risks}
                   title={'Related Risks'}
                   setFieldValue={setFieldValue}

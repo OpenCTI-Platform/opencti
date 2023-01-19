@@ -127,10 +127,11 @@ class DeviceEditionDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '90%' }}
-                  helperText={'Install OS'}
+                  helperText={'Indicates installed hardware on this entity.'}
                   data={device?.installed_hardware}
                   title={'Installed Hardware'}
                   setFieldValue={setFieldValue}
+                  link='/defender HQ/assets/devices'
                 />
               </Grid>
               <Grid item={true} xs={12}>
@@ -142,7 +143,7 @@ class DeviceEditionDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '90%' }}
-                  helperText={'Install OS'}
+                  helperText={'Indicateds installed software on this entity.'}
                   data={device?.installed_software}
                   title={'Installed Software'}
                   setFieldValue={setFieldValue}
@@ -158,7 +159,7 @@ class DeviceEditionDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '90%' }}
-                  helperText={'Related Risks'}
+                  helperText={'Indicates the risks related to this entity.'}
                   data={device?.related_risks}
                   title={'Related Risks'}
                   setFieldValue={setFieldValue}

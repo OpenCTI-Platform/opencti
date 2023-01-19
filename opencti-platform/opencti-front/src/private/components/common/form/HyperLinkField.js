@@ -114,25 +114,12 @@ const hyperLinkFieldHardwareAssetQuery = graphql`
   }
 `;
 
-const hyperLinkFieldRelatedRisksQuery = graphql`
-  query HyperLinkFieldRelatedRisksQuery{
-    risks {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
 class HyperLinkField extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
-      value: '',
+      value: "",
       error: false,
       isSubmitting: true,
       data: this.props?.data ? [...this.props.data] : [],
@@ -140,148 +127,147 @@ class HyperLinkField extends Component {
       softwareList: [],
       hardwareList: [],
       risksList: [],
+      list: [],
     };
   }
 
   componentDidMount() {
-
     {
-      this.props?.type === 'risks'
-      && (
-        fetchQuery(hyperLinkFieldRelatedRisksQuery)
-          .toPromise()
-          .then((data) => {
-            const relatedRisksEntities = R.pipe(
-              R.pathOr([], ['risks', 'edges']),
-              R.map((n) => {
-                return {
-                  id: n.node.id,
-                  name: n.node.name,
-                }
-              }),
-            )(data);
-            this.setState({
-              hardwareList: [...relatedRisksEntities],
-            });
-          })
-      ) 
-    }
-
-    {
-      this.props?.type === 'hardware'
-      && (
+      this.props?.type === "hardware" &&
         fetchQuery(hyperLinkFieldHardwareAssetQuery, {
-          filters: this.props.assetType ? [{ key: 'asset_type', values: ['computing_device'] }] : [],
+          filters: this.props.assetType
+            ? [{ key: "asset_type", values: ["computing_device"] }]
+            : [],
         })
           .toPromise()
           .then((data) => {
             const installedHardwareEntities = R.pipe(
-              R.pathOr([], ['hardwareAssetList', 'edges']),
+              R.pathOr([], ["hardwareAssetList", "edges"]),
               R.map((n) => {
                 return {
                   id: n.node.id,
                   name: n.node.name,
-                }
-              }),
+                };
+              })
             )(data);
             this.setState({
-              hardwareList: [...installedHardwareEntities],
+              list: [...installedHardwareEntities],
             });
-          })
-      ) 
-    }    
+          });
+    }
 
     {
-      this.props.type === 'software'
-        && (
-          fetchQuery(hyperLinkFieldSoftwareAssetQuery, {
-            filters: this.props.assetType ? [{ key: 'asset_type', values: [this.props.assetType] }] : [],
-          })
-            .toPromise()
-            .then((data) => {
-              const installedSoftwareEntities = R.pipe(
-                R.pathOr([], ['softwareAssetList', 'edges']),
-                R.map((n) => {
-                  const softwareName = R.concat(n.node.name, " ");
-                  const softwareNameWithVersion = R.concat(softwareName, n.node.version ? n.node.version : "");
-                  return {
-                    id: n.node.id,
-                    name: n.node.name,
-                    type: n.node.vendor_name,
-                    version: n.node.version,
-                    softwareNameWithVersion
-                  }
-                }),
-                R.sort(function(a, b) {
-                  return a.softwareNameWithVersion.localeCompare(b.softwareNameWithVersion, undefined, {
+      this.props.type === "software" &&
+        fetchQuery(hyperLinkFieldSoftwareAssetQuery, {
+          filters: this.props.assetType
+            ? [{ key: "asset_type", values: [this.props.assetType] }]
+            : [],
+        })
+          .toPromise()
+          .then((data) => {
+            const installedSoftwareEntities = R.pipe(
+              R.pathOr([], ["softwareAssetList", "edges"]),
+              R.map((n) => {
+                const softwareName = R.concat(n.node.name, " ");
+                const softwareNameWithVersion = R.concat(
+                  softwareName,
+                  n.node.version ? n.node.version : ""
+                );
+                return {
+                  id: n.node.id,
+                  name: softwareNameWithVersion,
+                };
+              }),
+              R.sort(function (a, b) {
+                return a.name.localeCompare(
+                  b.name,
+                  undefined,
+                  {
                     numeric: true,
-                    sensitivity: 'base'
-                  });
-                })
-              )(data);
-              this.setState({
-                softwareList: [...installedSoftwareEntities],
-              });
-            })
-        )
+                    sensitivity: "base",
+                  }
+                );
+              })
+            )(data);
+            this.setState({
+              list: [...installedSoftwareEntities],
+            });
+          });
     }
   }
 
-  handleAddSoftware(list) {   
-    const addItem = R.find(n => n.id === this.state.value)(list);
+  handleAddAsset(list) {
+    const addItem = R.find((n) => n.id === this.state.value)(list);
     this.setState({
       data: [...this.state.data, addItem],
-      value: '',
+      value: "",
       isSubmitting: false,
-     // filteredData:[...this.state.filteredData, addItem.id]
-    })    
-  }
-
-  handleSubmit() {
-    if(this.state.data.length === 0) {
-      this.setState({ open: false });
-
-      if(this.props.data !== this.state.date) {
-        this.setState({ open: false }, () => (
-          this.props.setFieldValue(this.props.name, [])
-        ));
-      }
-    } else {
-      const finalOutput = this.state.data.length === 0 ? [] : this.state.data.map(item => item.id);      
-      this.setState({ open: false }, () => (
-        this.props.setFieldValue(this.props.name, finalOutput)
-      ));
-    }    
-  }
-
-  handleDelete(key) {
-    this.setState({ data: this.state.data.filter((value, i) => i !== key) }, () => {
-      const finalOutput = this.state.data.length === 0 ? [] : this.state.data.map(item => item.id);      
-    return this.props.setFieldValue(this.props.name, finalOutput)
+      // filteredData:[...this.state.filteredData, addItem.id]
     });
   }
 
+  handleSubmit() {
+    if (this.state.data.length === 0) {
+      this.setState({ open: false });
+
+      if (this.props.data !== this.state.date) {
+        this.setState({ open: false }, () =>
+          this.props.setFieldValue(this.props.name, [])
+        );
+      }
+    } else {
+      const finalOutput =
+        this.state.data.length === 0
+          ? []
+          : this.state.data.map((item) => item.id);
+      this.setState({ open: false }, () =>
+        this.props.setFieldValue(this.props.name, finalOutput)
+      );
+    }
+  }
+
+  handleDelete(key) {
+    this.setState(
+      { data: this.state.data.filter((value, i) => i !== key) },
+      () => {
+        const finalOutput =
+          this.state.data.length === 0
+            ? []
+            : this.state.data.map((item) => item.id);
+        return this.props.setFieldValue(this.props.name, finalOutput);
+      }
+    );
+  }
+
   handleDeleteItem(key) {
-    this.setState({ 
+    this.setState({
       data: this.state.data.filter((value, i) => i !== key),
-      value: '',
+      value: "",
       isSubmitting: false,
     });
   }
 
   handleChange(event) {
-    this.setState({value: event.target.value});
+    this.setState({ value: event.target.value });
   }
 
-  renderSoftware() {  
+  render() {
     const {
-      t, classes, name, history, title, helperText, containerstyle, style, device
+      t,
+      classes,
+      name,
+      history,
+      title,
+      helperText,
+      containerstyle,
+      style,
     } = this.props;
-    const {
-      error, data
-    } = this.state;
-    
-      const installedOn = this.state.data.length > 0 ? R.map((n) => ({id: n.id , name: `${n.name} ${n.version ? n.version : ''}`}))(this.state.data) : [];
+    const { error, data } = this.state;
+
+    const installedOn =
+      this.state.data.length > 0
+        ? R.map((n) => ({ id: n.id, name: n.name }))(this.state.data)
+        : [];
     return (
       <>
         <div style={{ display: "flex", alignItems: "center" }}>
@@ -323,53 +309,53 @@ class HyperLinkField extends Component {
               alignItems: "center",
             }}
           >
-          <div style={{
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              width: '100%',
-              borderBottom: '1px #fff solid',
-            }}>
-            <FormControl style={{ width: "93%" }}>
-              <InputLabel id="demo-simple-select-label">Assets</InputLabel>
-              <Select
-                label={"Assets"}
-                labelId="demo-simple-select-label"
-                name={name}
-                fullWidth={true}
-                containerstyle={containerstyle}
-                // disabled={disabled || false}
-                // size={size}
-                style={style}
-                helperText={helperText}
-                value={this.state.value}
-                onChange={this.handleChange.bind(this)}
-                disableUnderline
-              >
-                {this.state.softwareList.length > 0 &&
-                  this.state.softwareList.map((data) => {
-                    return (
-                      data.softwareNameWithVersion && (
-                        <MenuItem key={data.id} value={data.id}>
-                          {t(data.softwareNameWithVersion)}
-                        </MenuItem>
-                      )
-                    );
-                  })}
-              </Select>
-            </FormControl>            
-            <IconButton
-              aria-label="toggle password visibility"
-              edge="end"
-              onClick={this.handleAddSoftware.bind(
-                this,
-                this.state.softwareList
-              )}
-              style={{ marginTop: "20px" }}
-              disabled={!this.state.value}
+            <div
+              style={{
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                width: "100%",
+                borderBottom: "1px #fff solid",
+              }}
             >
-              <AddIcon />
-            </IconButton></div>
+              <FormControl style={{ width: "93%" }}>
+                <InputLabel id="demo-simple-select-label">Assets</InputLabel>
+                <Select
+                  label={"Assets"}
+                  labelId="demo-simple-select-label"
+                  name={name}
+                  fullWidth={true}
+                  containerstyle={containerstyle}
+                  // disabled={disabled || false}
+                  // size={size}
+                  style={style}
+                  helperText={helperText}
+                  value={this.state.value}
+                  onChange={this.handleChange.bind(this)}
+                  disableUnderline
+                >
+                  {this.state.list.length > 0 &&
+                    this.state.list.map((data) => {
+                      return (
+                        data.name && (
+                          <MenuItem key={data.id} value={data.id}>
+                            {t(data.name)}
+                          </MenuItem>
+                        )
+                      );
+                    })}
+                </Select>
+              </FormControl>
+              <IconButton
+                aria-label="toggle password visibility"
+                edge="end"
+                onClick={this.handleAddAsset.bind(this, this.state.list)}
+                style={{ marginTop: "20px" }}
+                disabled={!this.state.value}
+              >
+                <AddIcon />
+              </IconButton>
+            </div>
           </DialogContent>
           <DialogContent>
             <div className={classes.scrollBg}>
@@ -414,151 +400,6 @@ class HyperLinkField extends Component {
         </Dialog>
       </>
     );
-  }
-
-  renderHardware() {  
-    const {
-      t, classes, name, link, title, helperText, containerstyle, style
-    } = this.props;
-    const {
-      error, data
-    } = this.state;
-    const installedOn = this.state.data.length > 0 ? R.map((n) => ({id: n.id , name: n?.name}))(this.state.data) : [];
-    return (
-      <>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Typography>{title && t(title)}</Typography>
-          <div style={{ float: "left", margin: "5px 0 0 5px" }}>
-            <Tooltip title={t(helperText)}>
-              <Information fontSize="inherit" color="disabled" />
-            </Tooltip>
-          </div>
-          {this.props.name === "installed_hardware" && (
-            <IconButton
-              size="small"
-              onClick={() => this.setState({ open: true })}
-            >
-              <AddIcon />
-            </IconButton>
-          )}
-        </div>
-        <Field
-          component={HyperLinks}
-          name={name}
-          fullWidth={true}
-          disabled={true}
-          multiline={true}
-          rows="3"
-          value={installedOn}
-          className={classes.textField}
-          InputProps={{
-            className: classes.inputTextField,
-          }}
-          variant="outlined"
-          link={link}
-          handleDelete={this.handleDelete.bind(this)}
-        />
-        <Dialog open={this.state.open} fullWidth={true} maxWidth="sm">
-          <DialogContent>{t(`Edit ${title}(s)`)}</DialogContent>
-          <DialogContent style={{ overflow: "hidden" }}>
-          <div style={{
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              width: '100%',
-              borderBottom: '1px #fff solid',
-            }}>
-              <FormControl style={{ width: "90%" }}>
-              <InputLabel id="demo-simple-select-label">Assets</InputLabel>
-              <Select
-                label={"Assets"}
-                labelId="demo-simple-select-label"
-                name={name}
-                fullWidth={true}
-                containerstyle={containerstyle}
-                style={style}
-                helperText={helperText}
-                value={this.state.value}
-                onChange={this.handleChange.bind(this)}
-                disableUnderline
-              >
-                {this.state.hardwareList.length > 0 &&
-                  this.state.hardwareList.map((data) => {
-                    return (
-                      data.name && (
-                        <MenuItem key={data.id} value={data.id}>
-                          {t(data.name)}
-                        </MenuItem>
-                      )
-                    );
-                  })}
-              </Select>
-            </FormControl>
-            <IconButton
-              aria-label="toggle password visibility"
-              edge="end"
-              onClick={this.handleAddSoftware.bind(this, this.state.hardwareList)}
-              style={{ marginTop: "20px" }}
-              disabled={!this.state.value}
-            >
-              <AddIcon />
-            </IconButton>
-            </div>
-            
-          </DialogContent>
-          <DialogContent>
-            <div className={classes.scrollBg}>
-              <div className={classes.scrollDiv}>
-                <div className={classes.scrollObj}>
-                  {data.map((item, key) => (
-                    <div
-                      key={key}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Typography>{item.name}</Typography>
-                      <IconButton
-                        onClick={this.handleDeleteItem.bind(this, key)}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-          <DialogActions className={classes.dialogAction}>
-            <Button
-              variant="outlined"
-              onClick={() => this.setState({ open: false, value: "" })}
-            >
-              {t("Cancel")}
-            </Button>
-            <Button
-              disabled={this.state.data.length === 0 ? true : this.state.isSubmitting}
-              variant="contained"
-              onClick={this.handleSubmit.bind(this)}
-              color="primary"
-            >
-              {t("Submit")}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
-    );
-  }
-
-  render() {
-    return (
-      <> 
-      {this.props.type === 'software' && this.renderSoftware()}
-      {this.props.type === 'hardware' && this.renderHardware()}
-      {this.props.type === 'risks' && this.renderHardware()}
-      </>     
-    )
   }
 }
 
