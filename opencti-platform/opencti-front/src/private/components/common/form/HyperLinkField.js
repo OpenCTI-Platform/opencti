@@ -277,12 +277,14 @@ class HyperLinkField extends Component {
               <Information fontSize="inherit" color="disabled" />
             </Tooltip>
           </div>
-          <IconButton
-            size="small"
-            onClick={() => this.setState({ open: true })}
-          >
-            <AddIcon />
-          </IconButton>
+          {["installed_hardware", "installed_software"].includes(this.props.name) && (
+            <IconButton
+              size="small"
+              onClick={() => this.setState({ open: true })}
+            >
+              <AddIcon />
+            </IconButton>
+          )}
         </div>
         <Field
           component={HyperLinks}
