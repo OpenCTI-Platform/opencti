@@ -113,7 +113,7 @@ const AdministrativeArea = ({ administrativeAreaData }: { administrativeAreaData
                         zoom={5}
                     />
                 </Grid>
-                <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+              <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
                     <StixDomainObjectOverview stixDomainObject={administrativeArea} />
                 </Grid>
             </Grid>
@@ -135,7 +135,7 @@ const AdministrativeArea = ({ administrativeAreaData }: { administrativeAreaData
                     />
                 </Grid>
             </Grid>
-            <Grid
+        <Grid
                 container={true}
                 spacing={3}
                 classes={{ container: classes.gridContainer }}
