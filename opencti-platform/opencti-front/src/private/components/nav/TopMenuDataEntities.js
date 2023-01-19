@@ -83,7 +83,7 @@ class TopMenuDataEntities extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('Data Sources')}
+          {t('Sources')}
         </Button>
       </div>
     );

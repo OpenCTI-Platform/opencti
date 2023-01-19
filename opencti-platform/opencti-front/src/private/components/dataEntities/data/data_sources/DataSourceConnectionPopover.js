@@ -30,6 +30,7 @@ import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
 import { toastGenericError } from "../../../../../utils/bakedToast";
 import AddressField from '../../../common/form/AddressField';
+import { httpHeaderRegex, CertificateRegex } from '../../../../../utils/Network';
 
 const styles = (theme) => ({
   container: {
@@ -399,21 +400,23 @@ export class DataSourceConnectionPopoverComponent extends Component {
                         setFieldValue={setFieldValue}
                         values={values}
                         addressValues={values.ca}
-                        title='CA'
+                        addIcon={true}
+                        title='Certificate Authority Files'
                         name='ca'
-                      // validation={macAddrRegex}
-                      // helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
+                        validation={CertificateRegex}
+                        helperText='Please enter a valid File. Example: /folder/example.crt'
                       />
                     </Grid>
                     <Grid item xs={12}>
                       <AddressField
                         setFieldValue={setFieldValue}
                         values={values}
+                        addIcon={true}
                         addressValues={values.headers}
-                        title='Headers'
+                        title='HTTP Headers'
                         name='headers'
-                      // validation={macAddrRegex}
-                      // helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
+                        validation={httpHeaderRegex}
+                        helperText='Please enter a valid HTTP Header. Example: header-name: header-value'
                       />
                     </Grid>
                     <Grid item={true} xs={12}>
@@ -475,7 +478,8 @@ export class DataSourceConnectionPopoverComponent extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name="passphrase"
+                        name='passphrase'
+                        type='password'
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
