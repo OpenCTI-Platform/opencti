@@ -364,7 +364,7 @@ const initRuleManager = () => {
         await ruleHandler(ruleManager.lastEventId);
       }, SCHEDULE_TIME);
     },
-    status: async () => {
+    status: () => {
       return {
         id: 'RULE_ENGINE',
         enable: booleanConf('rule_engine:enabled', false),

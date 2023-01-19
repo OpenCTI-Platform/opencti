@@ -11,56 +11,38 @@ import { registerClusterInstance } from '../database/redis';
 
 const SCHEDULE_TIME = 30000;
 
-export type Config = {
-  key: string,
-  enabled: boolean,
-  running: boolean,
+export type ClusterConfig = {
+  platform_id: string;
+  managers: {
+    id: string,
+    enable: boolean,
+    running: boolean
+  }[]
 };
 
 const initClusterManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
-  let configSubscription = {};
-  let configRule = {};
-  let configHistory = {};
-  let configTask = {};
-  let configExpiration = {};
-  let configSync = {};
-  let configRetention = {};
-
-  const clusterHandler = async (platform_id: string) => {
-    try {
-      // receive information from the managers every 30s
-      configSubscription = await subscriptionManager.status();
-      configRule = await ruleEngine.status();
-      configHistory = await historyManager.status();
-      configTask = await taskManager.status();
-      configExpiration = await expiredManager.status();
-      configSync = await syncManager.status();
-      configRetention = await retentionManager.status();
-    } finally {
-      const config_managers = [
-        configSubscription,
-        configRule,
-        configHistory,
-        configTask,
-        configExpiration,
-        configSync,
-        configRetention,
-      ];
-      const config_data = {
-        platform_id,
-        managers: config_managers,
-      };
-      await registerClusterInstance(platform_id, config_data);
-    }
+  const clusterHandler = async (platformId: string) => {
+    const managers = [
+      subscriptionManager.status(),
+      ruleEngine.status(),
+      historyManager.status(),
+      taskManager.status(),
+      expiredManager.status(),
+      syncManager.status(),
+      retentionManager.status(),
+    ];
+    const configData: ClusterConfig = { platform_id: platformId, managers };
+    await registerClusterInstance(platformId, configData);
   };
-
   return {
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Starting cluster manager');
-      const platform_id = `platform:instance:${process.pid}`;
+      const platformId = `platform:instance:${process.pid}`;
+      await clusterHandler(platformId);
+      // receive information from the managers every 30s
       scheduler = setIntervalAsync(async () => {
-        await clusterHandler(platform_id);
+        await clusterHandler(platformId);
       }, SCHEDULE_TIME);
     },
     shutdown: async () => {

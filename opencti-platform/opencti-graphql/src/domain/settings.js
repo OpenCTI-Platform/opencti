@@ -15,17 +15,20 @@ export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
 };
 
-export const getModules = async () => {
-  const instancesConfig = await getClusterInstances();
-  const allManagers = instancesConfig.map((i) => i.managers).flat();
+const getModules = (clusterConfig) => {
+  const allManagers = clusterConfig.map((i) => i.managers).flat();
   const groupManagersById = R.groupBy((manager) => manager.id, allManagers);
-  const modules = Object.entries(groupManagersById).map(([id, managers]) => ({
+  return Object.entries(groupManagersById).map(([id, managers]) => ({
     id,
     enable: managers.reduce((acc, m) => acc || m.enable, false),
     running: managers.reduce((acc, m) => acc || m.running, false),
   }));
+};
 
-  return modules;
+const getPlatformClusterInfo = (clusterConfig) => {
+  return {
+    instances_number: clusterConfig.length
+  };
 };
 
 export const getApplicationInfo = (context) => ({
@@ -41,10 +44,13 @@ export const getApplicationInfo = (context) => ({
 
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  const instancesConfig = await getClusterInstances();
   return {
     ...platformSettings,
     platform_url: baseUrl,
     platform_providers: PROVIDERS,
+    platform_cluster: getPlatformClusterInfo(instancesConfig),
+    platform_modules: getModules(instancesConfig),
     platform_reference_attachment: conf.get('app:reference_attachment'),
     platform_map_tile_server_dark: nconf.get('app:map_tile_server_dark'),
     platform_map_tile_server_light: nconf.get('app:map_tile_server_light'),

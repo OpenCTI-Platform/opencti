@@ -1047,6 +1047,10 @@ type Module {
   running: Boolean!
 }
 
+type Cluster {
+  instances_number: Int!
+}
+
 type Provider {
   name: String!
   type: String
@@ -1064,6 +1068,7 @@ type Settings implements InternalObject & BasicObject {
   platform_favicon: String
   platform_url: String
   platform_email: String
+  platform_cluster: Cluster!
   platform_modules: [Module!]
   platform_providers: [Provider!]!
   platform_language: String

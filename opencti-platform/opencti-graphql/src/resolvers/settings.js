@@ -2,7 +2,6 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   getApplicationInfo,
-  getModules,
   getSettings,
   settingsCleanContext,
   settingsEditContext,
@@ -25,7 +24,6 @@ const settingsResolvers = {
     relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
   },
   Settings: {
-    platform_modules: () => getModules(),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     editContext: (settings) => fetchEditContext(settings.id),

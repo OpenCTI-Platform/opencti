@@ -195,7 +195,7 @@ const initHistoryManager = () => {
         }
       }, SCHEDULE_TIME);
     },
-    status: async () => {
+    status: () => {
       return {
         id: 'HISTORY_MANAGER',
         enable: booleanConf('history_manager:enabled', false),

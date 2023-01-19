@@ -66,7 +66,7 @@ const initExpiredManager = () => {
         await expireHandler();
       }, SCHEDULE_TIME);
     },
-    status: async () => {
+    status: () => {
       return {
         id: 'EXPIRATION_SCHEDULER',
         enable: booleanConf('expiration_scheduler:enabled', false),

@@ -489,7 +489,7 @@ const initTaskManager = () => {
         await taskHandler();
       }, SCHEDULE_TIME);
     },
-    status: async () => {
+    status: () => {
       return {
         id: 'TASK_MANAGER',
         enable: booleanConf('task_scheduler:enabled', false),

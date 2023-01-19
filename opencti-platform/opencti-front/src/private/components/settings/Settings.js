@@ -120,6 +120,9 @@ const settingsQuery = graphql`
         enable
         running
       }
+      platform_cluster {
+        instances_number
+      }
       editContext {
         name
         focusOn
@@ -1003,10 +1006,13 @@ const Settings = () => {
                         render={({ props: aboutProps }) => {
                           if (aboutProps) {
                             const { version, dependencies } = aboutProps.about;
+                            const clusterInfo = settings.platform_cluster.instances_number > 1
+                              ? `Cluster of ${settings.platform_cluster.instances_number} nodes`
+                              : 'Single node';
                             return (
                               <List style={{ marginTop: -20 }}>
                                 <ListItem divider={true}>
-                                  <ListItemText primary={'OpenCTI'} />
+                                  <ListItemText primary={`OpenCTI (${clusterInfo})`} />
                                   <Chip label={version} color="primary" />
                                 </ListItem>
                                 <List component="div" disablePadding>

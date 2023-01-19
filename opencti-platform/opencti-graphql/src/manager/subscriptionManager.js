@@ -91,7 +91,7 @@ const initSubscriptionManager = () => {
         await subscriptionHandler();
       }, SCHEDULE_TIME);
     },
-    status: async () => {
+    status: () => {
       return {
         id: 'SUBSCRIPTION_MANAGER',
         enable: booleanConf('subscription_scheduler:enabled', false),

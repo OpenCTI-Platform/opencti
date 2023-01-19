@@ -90,7 +90,7 @@ const initRetentionManager = () => {
         await retentionHandler();
       }, SCHEDULE_TIME);
     },
-    status: async () => {
+    status: () => {
       return {
         id: 'RETENTION_MANAGER',
         enable: booleanConf('retention_manager:enabled', false),

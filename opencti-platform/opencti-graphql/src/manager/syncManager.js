@@ -237,7 +237,7 @@ const initSyncManager = () => {
         await syncManagerHandler();
       }, WAIT_TIME_ACTION);
     },
-    status: async () => {
+    status: () => {
       return {
         id: 'SYNC_MANAGER',
         enable: booleanConf('sync_manager:enabled', false),

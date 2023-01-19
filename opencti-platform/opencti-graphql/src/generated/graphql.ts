@@ -2216,6 +2216,11 @@ export type CityEditMutationsRelationDeleteArgs = {
   toId: Scalars['StixRef'];
 };
 
+export type Cluster = {
+  __typename?: 'Cluster';
+  instances_number: Scalars['Int'];
+};
+
 export type Connector = BasicObject & InternalObject & {
   __typename?: 'Connector';
   active?: Maybe<Scalars['Boolean']>;
@@ -17716,6 +17721,7 @@ export type Settings = BasicObject & InternalObject & {
   id: Scalars['ID'];
   otp_mandatory?: Maybe<Scalars['Boolean']>;
   parent_types: Array<Scalars['String']>;
+  platform_cluster: Cluster;
   platform_email?: Maybe<Scalars['String']>;
   platform_favicon?: Maybe<Scalars['String']>;
   platform_feature_flags?: Maybe<Array<Module>>;
@@ -23828,6 +23834,7 @@ export type ResolversTypes = ResolversObject<{
   CityConnection: ResolverTypeWrapper<Omit<CityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['CityEdge']>>> }>;
   CityEdge: ResolverTypeWrapper<Omit<CityEdge, 'node'> & { node: ResolversTypes['City'] }>;
   CityEditMutations: ResolverTypeWrapper<Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['City']>, contextPatch?: Maybe<ResolversTypes['City']>, fieldPatch?: Maybe<ResolversTypes['City']>, relationDelete?: Maybe<ResolversTypes['City']> }>;
+  Cluster: ResolverTypeWrapper<Cluster>;
   Connector: ResolverTypeWrapper<Omit<Connector, 'works'> & { works?: Maybe<Array<Maybe<ResolversTypes['Work']>>> }>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorType: ConnectorType;
@@ -24495,6 +24502,7 @@ export type ResolversParentTypes = ResolversObject<{
   CityConnection: Omit<CityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CityEdge']>>> };
   CityEdge: Omit<CityEdge, 'node'> & { node: ResolversParentTypes['City'] };
   CityEditMutations: Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['City']>, contextPatch?: Maybe<ResolversParentTypes['City']>, fieldPatch?: Maybe<ResolversParentTypes['City']>, relationDelete?: Maybe<ResolversParentTypes['City']> };
+  Cluster: Cluster;
   Connector: Omit<Connector, 'works'> & { works?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>> };
   ConnectorConfig: ConnectorConfig;
   ConstraintNumber: Scalars['ConstraintNumber'];
@@ -25631,6 +25639,11 @@ export type CityEditMutationsResolvers<ContextType = any, ParentType extends Res
   fieldPatch?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<CityEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<CityEditMutationsRelationAddArgs>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<CityEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ClusterResolvers<ContextType = any, ParentType extends ResolversParentTypes['Cluster'] = ResolversParentTypes['Cluster']> = ResolversObject<{
+  instances_number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -29510,6 +29523,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
@@ -31350,6 +31364,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CityConnection?: CityConnectionResolvers<ContextType>;
   CityEdge?: CityEdgeResolvers<ContextType>;
   CityEditMutations?: CityEditMutationsResolvers<ContextType>;
+  Cluster?: ClusterResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConstraintNumber?: GraphQLScalarType;

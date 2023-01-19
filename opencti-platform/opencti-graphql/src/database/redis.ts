@@ -41,6 +41,8 @@ import type {
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
+import { filterEmpty } from '../types/type-utils';
+import type { ClusterConfig } from '../manager/clusterManager';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
@@ -697,22 +699,27 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
-export const registerClusterInstance = async (instanceId: string, instanceConfig: any) => {
+// endregion
+
+// region cluster handling
+const CLUSTER_LIST_KEY = 'platform_cluster';
+const CLUSTER_NODE_EXPIRE = 120;
+export const registerClusterInstance = async (instanceId: string, instanceConfig: ClusterConfig) => {
   await redisTx(clientBase, async (tx) => {
     // add (or update if it already exists) a key with a TTL
-    tx.set(instanceId, JSON.stringify(instanceConfig), 'EX', 120);
+    tx.set(instanceId, JSON.stringify(instanceConfig), 'EX', CLUSTER_NODE_EXPIRE);
     // add/update the instance with its creation date in the ordered list of instances
     const time = new Date().getTime();
-    tx.zadd('platform_cluster', time, instanceId);
+    tx.zadd(CLUSTER_LIST_KEY, time, instanceId);
     // remove the too old keys from the list of instances
-    tx.zremrangebyscore('platform_cluster', '-inf', time - 120000);
+    tx.zremrangebyscore(CLUSTER_LIST_KEY, '-inf', time - (CLUSTER_NODE_EXPIRE * 1000));
   });
 };
 export const getClusterInstances = async () => {
-  const instances = await clientBase.zrange('platform_cluster', 0, -1);
+  const instances = await clientBase.zrange(CLUSTER_LIST_KEY, 0, -1);
   if (instances) {
     const instancesConfig = await clientBase.mget(...instances);
-    return (instancesConfig.filter((n) => n !== null) as string[]).map((n) => JSON.parse(n));
+    return instancesConfig.filter(filterEmpty).map((n) => JSON.parse(n));
   }
   return [];
 };
