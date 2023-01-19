@@ -1011,7 +1011,6 @@ type Settings implements InternalObject & BasicObject {
   platform_organization: Organization
   platform_title: String
   platform_favicon: String
-  platform_url: String
   platform_email: String @auth
   platform_cluster: Cluster! @auth
   platform_modules: [Module!] @auth

@@ -11,7 +11,7 @@ import {
 } from '../database/middleware';
 import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { baseUrl, BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, getBaseUrl } from '../config/conf';
 import { FROM_START_STR, hoursAgo, minutesAgo, prepareDate } from '../utils/format';
 import { SYSTEM_USER } from '../utils/access';
 import { findAll as findAllStixCoreRelationships } from './stixCoreRelationship';
@@ -100,6 +100,7 @@ export const userSubscriptionEditContext = async (context, user, subscriptionId,
 };
 
 export const generateDigestForSubscription = async (context, subscription) => {
+  const baseUrl = getBaseUrl(context.req);
   // Resolve the user
   const rawUser = await resolveUserById(context, subscription.user_id);
   if (!rawUser) {

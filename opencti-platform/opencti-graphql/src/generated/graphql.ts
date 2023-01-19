@@ -17753,7 +17753,6 @@ export type Settings = BasicObject & InternalObject & {
   platform_theme_light_primary?: Maybe<Scalars['String']>;
   platform_theme_light_secondary?: Maybe<Scalars['String']>;
   platform_title?: Maybe<Scalars['String']>;
-  platform_url?: Maybe<Scalars['String']>;
   standard_id: Scalars['String'];
   updated_at: Scalars['DateTime'];
 };
@@ -29555,7 +29554,6 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_theme_light_primary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_light_secondary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  platform_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

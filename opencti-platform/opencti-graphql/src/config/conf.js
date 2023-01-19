@@ -294,11 +294,23 @@ const AppBasePath = BasePathConfig.endsWith('/') ? BasePathConfig.slice(0, -1) :
 export const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
 
 const BasePathUrl = nconf.get('app:base_url')?.trim() ?? '';
-export const baseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathUrl;
+const baseUrl = BasePathUrl.endsWith('/') ? BasePathUrl.slice(0, -1) : BasePathUrl;
 
-export const formatPath = (pathToFormat) => {
-  const withStartSlash = pathToFormat.startsWith('/') ? pathToFormat : `/${pathToFormat}`;
-  return withStartSlash.endsWith('/') ? withStartSlash.slice(0, -1) : withStartSlash;
+export const getBaseUrl = (req) => {
+  // If base url is defined, take it in priority
+  if (baseUrl) {
+    // Always append base path to the uri
+    return baseUrl + basePath;
+  }
+  // If no base url, try to infer the uri from the request
+  if (req) {
+    const [, port] = req.headers.host ? req.headers.host.split(':') : [];
+    const isCustomPort = port !== '80' && port !== '443';
+    const httpPort = isCustomPort && port ? `:${port}` : '';
+    return `${req.protocol}://${req.hostname}${httpPort}${basePath}`;
+  }
+  // If no base url and no request, send only the base path
+  return basePath;
 };
 
 export const configureCA = (certificates) => {
