@@ -9,7 +9,6 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import {
   MoreVert,
   GroupOutlined,
-  Check,
   CheckCircleOutlined,
   DoNotDisturbOnOutlined,
 } from '@mui/icons-material';
