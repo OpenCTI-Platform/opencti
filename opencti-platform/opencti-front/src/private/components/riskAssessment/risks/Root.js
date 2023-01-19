@@ -121,7 +121,7 @@ class RootRisk extends Component {
                           {...routeProps}
                           refreshQuery={retry}
                           remediation={props.risk}
-                          riskId={props.risk.id}
+                          riskId={props.risk}
                         />
                       )}
                     />
