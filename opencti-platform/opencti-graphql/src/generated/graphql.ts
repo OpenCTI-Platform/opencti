@@ -39,6 +39,7 @@ export type AckDetails = {
 
 export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'AdministrativeArea';
+  cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
   country?: Maybe<Country>;
@@ -86,6 +87,11 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
+};
+
+
+export type AdministrativeAreaCasesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -2211,8 +2217,8 @@ export enum CitiesOrdering {
 
 export type City = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'City';
-  cases?: Maybe<CaseConnection>;
   administrativeArea?: Maybe<AdministrativeArea>;
+  cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
   country?: Maybe<Country>;
@@ -24135,8 +24141,7 @@ export type ResolversTypes = ResolversObject<{
   CitiesFilter: CitiesFilter;
   CitiesFiltering: CitiesFiltering;
   CitiesOrdering: CitiesOrdering;
-  City: ResolverTypeWrapper<Omit<City, 'administrativeArea' | 'connectors' | 'country' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { administrativeArea?: Maybe<ResolversTypes['AdministrativeArea']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, country?: Maybe<ResolversTypes['Country']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
-  City: ResolverTypeWrapper<Omit<City, 'cases' | 'connectors' | 'country' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, country?: Maybe<ResolversTypes['Country']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
+  City: ResolverTypeWrapper<Omit<City, 'administrativeArea' | 'cases' | 'connectors' | 'country' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { administrativeArea?: Maybe<ResolversTypes['AdministrativeArea']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, country?: Maybe<ResolversTypes['Country']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   CityAddInput: CityAddInput;
   CityConnection: ResolverTypeWrapper<Omit<CityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['CityEdge']>>> }>;
   CityEdge: ResolverTypeWrapper<Omit<CityEdge, 'node'> & { node: ResolversTypes['City'] }>;
@@ -24808,7 +24813,7 @@ export type ResolversParentTypes = ResolversObject<{
   ChannelEdge: Omit<ChannelEdge, 'node'> & { node: ResolversParentTypes['Channel'] };
   ChannelsFiltering: ChannelsFiltering;
   CitiesFiltering: CitiesFiltering;
-  City: Omit<City, 'administrativeArea' | 'connectors' | 'country' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { administrativeArea?: Maybe<ResolversParentTypes['AdministrativeArea']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, country?: Maybe<ResolversParentTypes['Country']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
+  City: Omit<City, 'administrativeArea' | 'cases' | 'connectors' | 'country' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { administrativeArea?: Maybe<ResolversParentTypes['AdministrativeArea']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, country?: Maybe<ResolversParentTypes['Country']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   CityAddInput: CityAddInput;
   CityConnection: Omit<CityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CityEdge']>>> };
   CityEdge: Omit<CityEdge, 'node'> & { node: ResolversParentTypes['City'] };
@@ -25335,6 +25340,7 @@ export type AckDetailsResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type AdministrativeAreaResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeArea'] = ResolversParentTypes['AdministrativeArea']> = ResolversObject<{
+  cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<AdministrativeAreaCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AdministrativeAreaConnectorsArgs>>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
@@ -25944,6 +25950,7 @@ export type ChannelEdgeResolvers<ContextType = any, ParentType extends Resolvers
 
 export type CityResolvers<ContextType = any, ParentType extends ResolversParentTypes['City'] = ResolversParentTypes['City']> = ResolversObject<{
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType>;
+  cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CityCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CityConnectorsArgs>>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;

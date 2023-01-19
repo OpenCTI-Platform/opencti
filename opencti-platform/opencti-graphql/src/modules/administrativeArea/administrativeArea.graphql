@@ -97,6 +97,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     longitude: Float
     precision: Float
     x_opencti_aliases: [String]
+    cases(first: Int): CaseConnection
     # AdministrativeArea
     country: Country
     # Technical
