@@ -56,9 +56,6 @@ const countryQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -125,6 +122,7 @@ const RootCountryComponent = ({ queryRef }) => {
               render={(routeProps) => (
                 <React.Fragment>
                   <StixDomainObjectHeader
+                    entityType={'Country'}
                     disableSharing={true}
                     stixDomainObject={country}
                     PopoverComponent={CountryPopover}
@@ -162,6 +160,7 @@ const RootCountryComponent = ({ queryRef }) => {
               render={(routeProps) => (
                 <React.Fragment>
                   <StixDomainObjectHeader
+                    entityType={'Country'}
                     disableSharing={true}
                     stixDomainObject={country}
                     PopoverComponent={CountryPopover}
@@ -182,6 +181,7 @@ const RootCountryComponent = ({ queryRef }) => {
               render={(routeProps) => (
                 <React.Fragment>
                   <StixDomainObjectHeader
+                    entityType={'Country'}
                     disableSharing={true}
                     stixDomainObject={country}
                     PopoverComponent={CountryPopover}

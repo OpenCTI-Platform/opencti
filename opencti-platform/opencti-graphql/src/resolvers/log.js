@@ -20,9 +20,16 @@ const logResolvers = {
       return findUser || SYSTEM_USER;
     },
   },
+  // Backward compatibility
   ContextData: {
-    references: (data, _, context) => Promise.all((data.references || [])
-      .map((n) => storeLoadById(context, context.user, n.id, ENTITY_TYPE_EXTERNAL_REFERENCE))),
+    external_references: (data, _, context) => {
+      const refPromises = Promise.all(
+        (data.references || []).map((id) => storeLoadById(context, context.user, id, ENTITY_TYPE_EXTERNAL_REFERENCE))
+      ).then((refs) => refs.filter((element) => element !== undefined));
+
+      return Promise.resolve(data.external_references ?? [])
+        .then((externalReferences) => refPromises.then((refs) => externalReferences.concat(refs)));
+    }
   },
   LogsFilter: {
     entity_id: 'context_data.id',

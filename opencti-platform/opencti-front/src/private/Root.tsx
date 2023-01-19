@@ -26,8 +26,6 @@ const rootPrivateQuery = graphql`
     settings {
       platform_map_tile_server_dark
       platform_map_tile_server_light
-      platform_hidden_types
-      platform_entities_files_ref
       platform_theme
       platform_feature_flags {
         id
@@ -44,16 +42,19 @@ const rootPrivateQuery = graphql`
     about {
       version
     }
+    entitySettings {
+      ...EntitySettingConnection_entitySettings
+    }
   }
 `;
 
 const Root = () => {
   const data = useLazyLoadQuery<RootPrivateQuery>(rootPrivateQuery, {});
-  const { me, settings } = data;
+  const { me, settings, entitySettings } = data;
   // TODO : Use the hook useHelper when all project is pure function //
   const helper = platformModuleHelper(settings);
   return (
-    <UserContext.Provider value={{ me, settings, helper }}>
+    <UserContext.Provider value={{ me, settings, entitySettings, helper }}>
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>

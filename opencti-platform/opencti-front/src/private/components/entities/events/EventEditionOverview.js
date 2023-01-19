@@ -20,7 +20,7 @@ import {
   convertMarkings,
   convertStatus,
 } from '../../../../utils/edition';
-import { buildDate } from '../../../../utils/Time';
+import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -137,6 +137,8 @@ class EventEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('start_time', parse(values.start_time).format()),
+      R.assoc('stop_time', parse(values.stop_time).format()),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -394,6 +396,7 @@ EventEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   event: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const EventEditionOverview = createFragmentContainer(

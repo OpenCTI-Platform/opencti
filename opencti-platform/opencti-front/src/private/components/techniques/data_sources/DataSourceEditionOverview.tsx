@@ -140,10 +140,10 @@ interface DataSourceEditionOverviewProps {
 interface DataSourceEditionFormValues {
   name: string,
   description: string | null,
-  x_opencti_workflow_id: string | { label: string, color: string, value: string, order: string }
-  createdBy: Option,
+  x_opencti_workflow_id: Option,
+  createdBy: Option | undefined,
   confidence: number | null,
-  x_mitre_platforms: string[],
+  x_mitre_platforms: string[] | null,
   collection_layers: string[],
   objectMarking: Option[],
   message?: string,
@@ -158,10 +158,6 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
 }) => {
   const { t } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
-
-  const createdBy = convertCreatedBy(dataSource);
-  const objectMarking = convertMarkings(dataSource);
-  const status = convertStatus(t, dataSource);
 
   const [commitRelationAdd] = useMutation(dataSourceMutationRelationAdd);
   const [commitRelationDelete] = useMutation(dataSourceMutationRelationDelete);
@@ -180,14 +176,15 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
   };
 
   const onSubmit: FormikConfig<DataSourceEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
-    const { message, references } = values;
+    const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
 
     const inputValues = Object.entries({
+      ...otherValues,
       createdBy: values.createdBy?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
-      x_opencti_workflow_id: values.x_opencti_workflow_id,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     commitFieldPatch({
@@ -265,10 +262,9 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
   const initialValues = {
     name: dataSource.name,
     description: dataSource.description,
-    createdBy,
-    objectMarking,
-    status,
-    x_opencti_workflow_id: dataSource.x_opencti_stix_ids,
+    createdBy: convertCreatedBy(dataSource),
+    objectMarking: convertMarkings(dataSource),
+    x_opencti_workflow_id: convertStatus(t, dataSource) as Option,
     confidence: dataSource.confidence,
     x_mitre_platforms: dataSource.x_mitre_platforms,
     collection_layers: dataSource.collection_layers,

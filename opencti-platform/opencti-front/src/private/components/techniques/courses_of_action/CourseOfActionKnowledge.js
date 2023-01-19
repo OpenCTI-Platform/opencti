@@ -17,13 +17,12 @@ const styles = () => ({
 
 class CourseOfActionKnowledgeComponent extends Component {
   render() {
-    const { classes, courseOfAction, enableReferences } = this.props;
+    const { classes, courseOfAction } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
-          enableReferences={enableReferences}
           isOpenctiAlias={true}
         />
         <Switch>

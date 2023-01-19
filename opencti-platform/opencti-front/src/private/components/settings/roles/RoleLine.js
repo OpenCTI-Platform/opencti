@@ -6,7 +6,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert, Security, Check } from '@mui/icons-material';
+import {
+  MoreVert,
+  Security,
+  CheckCircleOutlined,
+  DoNotDisturbOnOutlined,
+} from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
@@ -65,7 +70,11 @@ class RoleLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.default_assignation.width }}
               >
-                {node.default_assignation ? <Check /> : '-'}
+                {node.default_assignation ? (
+                  <CheckCircleOutlined fontSize="small" color="success" />
+                ) : (
+                  <DoNotDisturbOnOutlined fontSize="small" color="primary" />
+                )}
               </div>
               <div
                 className={classes.bodyItem}

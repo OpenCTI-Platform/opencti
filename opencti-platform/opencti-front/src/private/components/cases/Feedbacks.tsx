@@ -28,7 +28,7 @@ interface CasesProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE = 'view-cases';
+export const LOCAL_STORAGE_KEY_CASE = 'view-cases-feedbacks';
 
 const Feedbacks: FunctionComponent<CasesProps> = () => {
   const classes = useStyles();

@@ -36,9 +36,6 @@ export const individualEditionQuery = graphql`
     individual(id: $id) {
       ...IndividualEditionContainer_individual
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -89,13 +86,7 @@ class IndividualEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IndividualEditionContainer
-                    individual={props.individual}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Individual',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <IndividualEditionContainer individual={props.individual} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

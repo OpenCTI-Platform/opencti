@@ -33,9 +33,6 @@ export const indicatorEditionQuery = graphql`
     indicator(id: $id) {
       ...IndicatorEditionContainer_indicator
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -78,13 +75,7 @@ const IndicatorEdition = ({ indicatorId }) => {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IndicatorEditionContainer
-                    indicator={props.indicator}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Indicator',
-                    )}
-                    handleClose={handleClose}
-                  />
+                  <IndicatorEditionContainer indicator={props.indicator} handleClose={handleClose} />
                 );
               }
               return <Loader variant="inElement" />;

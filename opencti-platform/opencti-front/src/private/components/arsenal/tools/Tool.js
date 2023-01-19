@@ -29,13 +29,13 @@ const styles = () => ({
 
 class ToolComponent extends Component {
   render() {
-    const { classes, tool, enableReferences } = this.props;
+    const { classes, tool } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Tool'}
           stixDomainObject={tool}
           PopoverComponent={<ToolPopover />}
-          enableReferences={enableReferences}
         />
         <Grid
           container={true}
@@ -96,7 +96,6 @@ ToolComponent.propTypes = {
   tool: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  enableReferences: PropTypes.bool,
 };
 
 const Tool = createFragmentContainer(ToolComponent, {

@@ -56,9 +56,6 @@ const campaignQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -122,9 +119,6 @@ class RootCampaign extends Component {
                         <Campaign
                           {...routeProps}
                           campaign={props.campaign}
-                          enableReferences={props.settings.platform_enable_reference?.includes(
-                            'Campaign',
-                          )}
                         />
                       )}
                     />
@@ -152,11 +146,9 @@ class RootCampaign extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Campaign'}
                             stixDomainObject={props.campaign}
                             PopoverComponent={<CampaignPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Campaign',
-                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -173,6 +165,7 @@ class RootCampaign extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Campaign'}
                             stixDomainObject={props.campaign}
                             PopoverComponent={<CampaignPopover />}
                           />
@@ -200,6 +193,7 @@ class RootCampaign extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Campaign'}
                             stixDomainObject={props.campaign}
                             PopoverComponent={<CampaignPopover />}
                           />
@@ -219,11 +213,9 @@ class RootCampaign extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Campaign'}
                             stixDomainObject={props.campaign}
                             PopoverComponent={<CampaignPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Campaign',
-                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

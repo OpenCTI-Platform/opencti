@@ -52,16 +52,17 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, storeFileConverter, upload } from '../database/file-storage';
 import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
-import { getEntityFromCache } from '../database/cache';
+import { getEntitiesFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -289,9 +290,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     lock = await lockResource(participantIds);
     const { internal_id: internalId } = previous;
     const { filename } = await file;
-    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const entityTypesForAutoExternalReferences = settings.platform_entities_files_ref ?? [];
-    const isAutoExternal = entityTypesForAutoExternalReferences.includes(previous.entity_type);
+    const entitySettings = await getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING);
+    const entitySetting = entitySettings.find((es) => es.target_type === previous.entity_type);
+    const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
     const filePath = `import/${previous.entity_type}/${internalId}`;
     // 01. Upload the file
     const meta = { entity_id: internalId };

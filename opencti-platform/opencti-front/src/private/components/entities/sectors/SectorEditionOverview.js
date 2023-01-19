@@ -324,6 +324,7 @@ SectorEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   sector: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const SectorEditionOverview = createFragmentContainer(

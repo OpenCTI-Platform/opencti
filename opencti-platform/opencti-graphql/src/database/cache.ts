@@ -6,7 +6,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 
 const cache: any = {};
 
-const buildStoreEntityMap = (entities: Array<BasicStoreEntity>) => {
+const buildStoreEntityMap = <T extends BasicStoreEntity>(entities: Array<T>) => {
   const entityById = new Map();
   for (let i = 0; i < entities.length; i += 1) {
     const entity = entities[i];

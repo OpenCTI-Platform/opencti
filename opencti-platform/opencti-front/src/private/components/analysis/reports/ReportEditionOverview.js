@@ -149,7 +149,7 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('published', parse(values.published).format()),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('report_types', R.pluck('value', values.report_types)),
+      R.assoc('report_types', values.report_types),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
       R.toPairs,
@@ -476,6 +476,7 @@ ReportEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   report: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const ReportEditionOverview = createFragmentContainer(

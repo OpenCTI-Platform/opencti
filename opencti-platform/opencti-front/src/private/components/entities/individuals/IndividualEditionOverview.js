@@ -152,10 +152,7 @@ class IndividualEditionOverviewComponent extends Component {
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
     commitMutation({
       mutation: individualMutationFieldPatch,
@@ -187,10 +184,7 @@ class IndividualEditionOverviewComponent extends Component {
             mutation: individualMutationFieldPatch,
             variables: {
               id: this.props.individual.id,
-              input: {
-                key: name,
-                value: finalValue ?? '',
-              },
+              input: { key: name, value: finalValue ?? '' },
             },
           });
         })
@@ -271,7 +265,7 @@ class IndividualEditionOverviewComponent extends Component {
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={individualValidation(t)}
-        onSubmit={() => true}
+        onSubmit={this.onSubmit.bind(this)}
       >
         {({
           submitForm,
@@ -385,6 +379,7 @@ IndividualEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   individual: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const IndividualEditionOverview = createFragmentContainer(

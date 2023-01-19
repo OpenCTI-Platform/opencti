@@ -15,6 +15,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 
 const workflowStatuses = async (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -58,6 +59,12 @@ const platformSettings = async (context: AuthContext) => {
   };
   return { values: await reloadSettings(), fn: reloadSettings };
 };
+const platformEntitySettings = async (context: AuthContext) => {
+  const reloadEntitySettings = async () => {
+    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING], { connectionFormat: false });
+  };
+  return { values: await reloadEntitySettings(), fn: reloadEntitySettings };
+};
 
 const initCacheManager = () => {
   let subscribeIdentifier: number;
@@ -71,6 +78,7 @@ const initCacheManager = () => {
       writeCacheForEntity(ENTITY_TYPE_RULE, await platformRules(context));
       writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, await platformMarkings(context));
       writeCacheForEntity(ENTITY_TYPE_SETTINGS, await platformSettings(context));
+      writeCacheForEntity(ENTITY_TYPE_ENTITY_SETTING, await platformEntitySettings(context));
       writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, await platformOrganizations(context));
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait

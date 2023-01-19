@@ -36,6 +36,7 @@ class OrganizationComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Organization'}
           disableSharing={true}
           stixDomainObject={organization}
           isOpenctiAlias={true}

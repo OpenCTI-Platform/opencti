@@ -1,6 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { styled, makeStyles, useTheme } from '@mui/styles';
+import { makeStyles, styled, useTheme } from '@mui/styles';
 import Toolbar from '@mui/material/Toolbar';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
@@ -12,31 +12,19 @@ import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import {
   AssignmentOutlined,
   CasesOutlined,
+  ChevronLeft,
+  ChevronRight,
   ConstructionOutlined,
   DashboardOutlined,
   LayersOutlined,
   MapOutlined,
-  ChevronRight,
-  ChevronLeft,
 } from '@mui/icons-material';
-import {
-  Binoculars,
-  CogOutline,
-  Database,
-  FlaskOutline,
-  FolderTableOutline,
-  Timetable,
-} from 'mdi-material-ui';
+import { Binoculars, CogOutline, Database, FlaskOutline, FolderTableOutline, Timetable } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
-import { UserContext } from '../../../utils/hooks/useAuth';
 import Security from '../../../utils/Security';
-import useGranted, {
-  KNOWLEDGE,
-  MODULES,
-  SETTINGS,
-  TAXIIAPI_SETCOLLECTIONS,
-} from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../relay/environment';
+import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -100,7 +88,6 @@ const LeftBar = () => {
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
-  const { helper } = useContext(UserContext);
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToModules = useGranted([MODULES]);
   const [navOpen, setNavOpen] = useState(
@@ -119,32 +106,12 @@ const LeftBar = () => {
   } else {
     toData = '/dashboard/data/taxii';
   }
-  const hideThreats = helper.isEntityTypeHidden('Threats')
-    || (helper.isEntityTypeHidden('Threat-Actor')
-      && helper.isEntityTypeHidden('Intrusion-Set')
-      && helper.isEntityTypeHidden('Campaign'));
-  const hideEntities = helper.isEntityTypeHidden('Entities')
-    || (helper.isEntityTypeHidden('Sector')
-      && helper.isEntityTypeHidden('Event')
-      && helper.isEntityTypeHidden('Organization')
-      && helper.isEntityTypeHidden('System')
-      && helper.isEntityTypeHidden('Individual'));
-  const hideArsenal = helper.isEntityTypeHidden('Arsenal')
-    || (helper.isEntityTypeHidden('Malware')
-      && helper.isEntityTypeHidden('Channel')
-      && helper.isEntityTypeHidden('Tool')
-      && helper.isEntityTypeHidden('Vulnerability'));
-  const hideTechniques = helper.isEntityTypeHidden('Techniques')
-    || (helper.isEntityTypeHidden('Attack-Pattern')
-      && helper.isEntityTypeHidden('Narrative')
-      && helper.isEntityTypeHidden('Course-Of-Action')
-      && helper.isEntityTypeHidden('Data-Component')
-      && helper.isEntityTypeHidden('Data-Source'));
-  const hideLocations = helper.isEntityTypeHidden('Locations')
-    || (helper.isEntityTypeHidden('Region')
-      && helper.isEntityTypeHidden('Country')
-      && helper.isEntityTypeHidden('City')
-      && helper.isEntityTypeHidden('Position'));
+
+  const hideThreats = useIsHiddenEntities('Threat-Actor', 'Intrusion-Set', 'Campaign');
+  const hideEntities = useIsHiddenEntities('Sector', 'Event', 'Organization', 'System', 'Individual');
+  const hideArsenal = useIsHiddenEntities('Malware', 'Channel', 'Tool', 'Vulnerability');
+  const hideTechniques = useIsHiddenEntities('Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source');
+  const hideLocations = useIsHiddenEntities('Region', 'Country', 'City', 'Position');
   return (
     <Drawer
       variant="permanent"

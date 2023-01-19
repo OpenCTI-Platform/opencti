@@ -57,7 +57,6 @@
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/luatix-dark/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png",
-    "enforce_references": [],
     "reference_attachment": false,
     "python_execution": "native",
     "admin": {
@@ -78,7 +77,7 @@
     "enabled": true,
     "lock_key": "connector_manager_lock",
     "works_day_range": 7,
-    "interval": 15000
+    "interval": 60000
   },
   "task_scheduler": {
     "enabled": true,

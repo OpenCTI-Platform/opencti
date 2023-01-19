@@ -354,7 +354,7 @@ type ContextData {
   to_id: String
   message: String!
   commit: String
-  references: [ExternalReference!]
+  external_references: [ExternalReference!]
 }
 type Log {
   id: ID!
@@ -603,6 +603,7 @@ type SubType {
   label: String!
   statuses: StatusConnection
   workflowEnabled: Boolean
+  settings: EntitySetting
 }
 
 ############## Statuses
@@ -647,7 +648,7 @@ type Status {
 }
 type StatusConnection {
   pageInfo: PageInfo!
-  edges: [StatusEdge]
+  edges: [StatusEdge!]!
 }
 type StatusEdge {
   cursor: String!
@@ -1034,11 +1035,8 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
-  platform_enable_reference: [String!] @auth
   platform_reference_attachment: Boolean @auth
   platform_feature_flags: [Module!] @auth
-  platform_hidden_types: [String!] @auth
-  platform_entities_files_ref: [String!] @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   otp_mandatory: Boolean @auth
@@ -6399,7 +6397,7 @@ type ToolEdge {
   cursor: String!
   node: Tool!
 }
-type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
+type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6578,7 +6576,7 @@ type VulnerabilityEdge {
   cursor: String!
   node: Vulnerability!
 }
-type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
+type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -11358,6 +11356,7 @@ union StixObjectOrStixRelationship =
   | DataComponent
   | DataSource
   | Case
+  | EntitySetting
 union StixCoreObjectOrStixCoreRelationship =
     #### Stix Core Objects
   ## Stix Domain Objects
@@ -11421,6 +11420,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | DataComponent
   | DataSource
   | Case
+  | EntitySetting
 
 enum StixRelationshipsOrdering {
   entity_type

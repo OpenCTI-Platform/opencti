@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Redirect } from 'react-router-dom';
+import { Redirect, Switch } from 'react-router-dom';
 import Settings from './Settings';
 import Users from './Users';
 import RootUser from './users/Root';
@@ -10,14 +10,15 @@ import MarkingDefinitions from './MarkingDefinitions';
 import Rules from './Rules';
 import KillChainPhases from './KillChainPhases';
 import Labels from './Labels';
-import Workflow from './Workflow';
 import Retention from './Retention';
 import { BoundaryRoute } from '../Error';
 import Security from '../../../utils/Security';
 import { SETTINGS } from '../../../utils/hooks/useGranted';
-import StatusTemplates from './workflow/StatusTemplates';
+import StatusTemplates from './status_templates/StatusTemplates';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
+import SubTypes from './sub_types/SubTypes';
+import RootSubType from './sub_types/Root';
 
 const Root = () => (
   <Switch>
@@ -59,17 +60,18 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/workflow"
-        render={() => <Redirect to="/dashboard/settings/workflow/workflows" />}
+        path="/dashboard/settings/entity_types"
+        component={SubTypes}
+      />
+      <BoundaryRoute
+        path="/dashboard/settings/entity_types/:subTypeId"
+        render={() => (
+          <RootSubType />
+        )}
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/workflow/workflows"
-        component={Workflow}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/workflow/statusTemplates"
+        path="/dashboard/settings/vocabularies/statusTemplates"
         component={StatusTemplates}
       />
       <BoundaryRoute

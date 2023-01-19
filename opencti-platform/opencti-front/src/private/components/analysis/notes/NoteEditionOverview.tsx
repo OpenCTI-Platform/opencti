@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
 import { Field, Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -26,14 +27,22 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
 import SliderField from '../../../../components/SliderField';
+import { adaptFieldValue } from '../../../../utils/String';
+import CommitMessage from '../../common/form/CommitMessage';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     noteEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...NoteEditionOverview_note
         ...Note_note
       }
@@ -104,11 +113,21 @@ interface NoteEditionOverviewProps {
     readonly name: string;
   } | null)[]
   | null;
+  enableReferences?: boolean
+  handleClose: () => void
+}
+
+interface NoteEditionFormValues {
+  message?: string
+  references?: Option[]
+  createdBy?: Option
+  x_opencti_workflow_id: Option
+  objectMarking?: Option[]
 }
 
 const NoteEditionOverviewComponent: FunctionComponent<
 NoteEditionOverviewProps
-> = ({ note, context }) => {
+> = ({ note, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -129,58 +148,87 @@ NoteEditionOverviewProps
     });
   };
 
-  const handleSubmitField = (
-    name: string,
-    value: Option | string | string[],
-  ) => {
-    let finalValue = value ?? '';
-    if (name === 'x_opencti_workflow_id') {
-      finalValue = (value as Option).value;
-    }
-    noteValidation(t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitFieldPatch({
-          variables: {
-            id: note.id,
-            input: [{ key: name, value: finalValue }],
-          },
-        });
-      })
-      .catch(() => false);
-  };
+  const onSubmit: FormikConfig<NoteEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
 
-  const handleChangeCreatedBy = (_: string, value: Option) => {
+    const inputValues = Object.entries({
+      ...otherValues,
+      createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
+
     commitFieldPatch({
       variables: {
         id: note.id,
-        input: [{ key: 'createdBy', value: [value.value] }],
+        input: inputValues,
+        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        references: commitReferences,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        handleClose();
       },
     });
   };
 
-  const handleChangeObjectMarking = (_: string, values: Option[]) => {
-    const { added, removed } = handleChangesObjectMarking(note, values);
+  const handleSubmitField = (name: string, value: Option | string | string[]) => {
+    if (!enableReferences) {
+      let finalValue = value ?? '';
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = (value as Option).value;
+      }
+      noteValidation(t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitFieldPatch({
+            variables: {
+              id: note.id,
+              input: [{ key: name, value: finalValue }],
+            },
+          });
+        })
+        .catch(() => false);
+    }
+  };
 
-    if (added) {
-      commitRelationAdd({
+  const handleChangeCreatedBy = (_: string, value: Option) => {
+    if (!enableReferences) {
+      commitFieldPatch({
         variables: {
           id: note.id,
-          input: {
-            toId: added.value,
-            relationship_type: 'object-marking',
-          },
+          input: [{ key: 'createdBy', value: [value.value] }],
         },
       });
     }
-    if (removed) {
-      commitRelationDelete({
-        variables: {
-          id: note.id,
-          toId: removed.value,
-          relationship_type: 'object-marking',
-        },
-      });
+  };
+
+  const handleChangeObjectMarking = (_: string, values: Option[]) => {
+    if (!enableReferences) {
+      const { added, removed } = handleChangesObjectMarking(note, values);
+
+      if (added) {
+        commitRelationAdd({
+          variables: {
+            id: note.id,
+            input: {
+              toId: added.value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed) {
+        commitRelationDelete({
+          variables: {
+            id: note.id,
+            toId: removed.value,
+            relationship_type: 'object-marking',
+          },
+        });
+      }
     }
   };
 
@@ -193,7 +241,7 @@ NoteEditionOverviewProps
     likelihood: note.likelihood,
     createdBy: convertCreatedBy(note),
     objectMarking: convertMarkings(note),
-    x_opencti_workflow_id: convertStatus(t, note),
+    x_opencti_workflow_id: convertStatus(t, note) as Option,
   };
 
   return (
@@ -201,9 +249,15 @@ NoteEditionOverviewProps
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={noteValidation(t)}
-      onSubmit={() => {}}
+      onSubmit={onSubmit}
     >
-      {({ setFieldValue }) => (
+      {({
+        submitForm,
+        isSubmitting,
+        validateForm,
+        setFieldValue,
+        values,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={DateTimePickerField}
@@ -320,6 +374,16 @@ NoteEditionOverviewProps
             }
             onChange={handleChangeObjectMarking}
           />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting}
+              validateForm={validateForm}
+              setFieldValue={setFieldValue}
+              values={values}
+              id={note.id}
+            />
+          )}
         </Form>
       )}
     </Formik>

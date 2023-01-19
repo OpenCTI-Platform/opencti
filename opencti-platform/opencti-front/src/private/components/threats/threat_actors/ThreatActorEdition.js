@@ -36,9 +36,6 @@ export const threatActorEditionQuery = graphql`
     threatActor(id: $id) {
       ...ThreatActorEditionContainer_threatActor
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -88,13 +85,7 @@ class ThreatActorEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ThreatActorEditionContainer
-                    threatActor={props.threatActor}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Threat-Actor',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <ThreatActorEditionContainer threatActor={props.threatActor} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

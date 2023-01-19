@@ -1,5 +1,6 @@
 import { findAll, findById as findSubTypeById, findById } from '../domain/subType';
 import { createStatus, getTypeStatuses, statusDelete, statusEditField } from '../domain/status';
+import { findByType } from '../modules/entitySetting/entitySetting-domain';
 
 const subTypeResolvers = {
   Query: {
@@ -12,6 +13,7 @@ const subTypeResolvers = {
       return statusesEdges.edges.length > 0;
     },
     statuses: (current, _, context) => getTypeStatuses(context, context.user, current.id),
+    settings: (current, _, context) => findByType(context, context.user, current.id),
   },
   Mutation: {
     subTypeEdit: (_, { id }, context) => ({

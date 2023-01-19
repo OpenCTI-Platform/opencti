@@ -38,18 +38,9 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent> = {
     },
   },
   attributes: [
-    {
-      name: 'name',
-      type: 'string',
-      multiple: false,
-      upsert: true
-    },
-    {
-      name: 'description',
-      type: 'string',
-      multiple: false,
-      upsert: true
-    },
+    { name: 'name', type: 'string', multiple: false, upsert: true },
+    { name: 'description', type: 'string', multiple: false, upsert: true },
+    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
   ],
   relations: [
     {

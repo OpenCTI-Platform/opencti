@@ -31,7 +31,6 @@ interface DataComponentKnowledgeProps {
 
 const DataComponentKnowledge: FunctionComponent<DataComponentKnowledgeProps> = ({
   data,
-  enableReferences,
 }) => {
   const classes = useStyles();
 
@@ -42,7 +41,6 @@ const DataComponentKnowledge: FunctionComponent<DataComponentKnowledgeProps> = (
       <StixDomainObjectHeader
         stixDomainObject={dataComponent}
         PopoverComponent={<DataComponentPopover dataComponentId={dataComponent.id} />}
-        enableReferences={enableReferences}
       />
       <Switch>
         <Route

@@ -368,7 +368,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
                             <ExternalReferencePopover
                               id={externalReference.id}
-                              entityId={stixCoreObjectId}
                               handleRemove={() => handleOpenDialog(externalReferenceEdge)
                               }
                             />
@@ -429,7 +428,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
                         <Security needs={[KNOWLEDGE_KNUPDATE]}>
                           <ExternalReferencePopover
                             id={externalReference.id}
-                            entityId={stixCoreObjectId}
                             isExternalReferenceAttachment={isFileAttached}
                             handleRemove={() => handleOpenDialog(externalReferenceEdge)
                             }

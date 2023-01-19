@@ -17,14 +17,19 @@ import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { graphql, createRefetchContainer } from 'react-relay';
-import { ArrowDropDown, ArrowDropUp, Extension } from '@mui/icons-material';
+import {
+  ArrowDropDownOutlined,
+  ArrowDropUpOutlined,
+  ExtensionOutlined,
+  DeleteOutlined,
+  PlaylistRemoveOutlined,
+} from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
-import { LayersRemove, Delete } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import { Link, withRouter } from 'react-router-dom';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -205,9 +210,9 @@ class ConnectorsStatusComponent extends Component {
   SortHeader(field, label, isSortable) {
     const { t } = this.props;
     const sortComponent = this.state.orderAsc ? (
-      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
+      <ArrowDropDownOutlined style={inlineStylesHeaders.iconSort} />
     ) : (
-      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
+      <ArrowDropUpOutlined style={inlineStylesHeaders.iconSort} />
     );
     if (isSortable) {
       return (
@@ -238,9 +243,9 @@ class ConnectorsStatusComponent extends Component {
           'messages',
           filter(
             (o) => o.name.includes(
-              (i.connector_type === 'INTERNAL_ENRICHMENT'
+              i.connector_type === 'INTERNAL_ENRICHMENT'
                 ? `listen_${i.id}`
-                : `push_${i.id}`),
+                : `push_${i.id}`,
             ),
             queues,
           )[0],
@@ -258,7 +263,7 @@ class ConnectorsStatusComponent extends Component {
     return (
       <Card variant="outlined">
         <CardHeader
-          avatar={<Extension className={classes.icon} />}
+          avatar={<ExtensionOutlined className={classes.icon} />}
           title={t('Registered connectors')}
           style={{ paddingBottom: 0 }}
         />
@@ -305,7 +310,7 @@ class ConnectorsStatusComponent extends Component {
                 <ListItemIcon
                   style={{ color: connector.active ? '#4caf50' : '#f44336' }}
                 >
-                  <Extension />
+                  <ExtensionOutlined />
                 </ListItemIcon>
                 <ListItemText
                   primary={
@@ -362,7 +367,7 @@ class ConnectorsStatusComponent extends Component {
                         color="primary"
                         size="large"
                       >
-                        <LayersRemove />
+                        <PlaylistRemoveOutlined />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('Clear this connector')}>
@@ -373,7 +378,7 @@ class ConnectorsStatusComponent extends Component {
                         disabled={connector.active}
                         size="large"
                       >
-                        <Delete />
+                        <DeleteOutlined />
                       </IconButton>
                     </Tooltip>
                   </Security>

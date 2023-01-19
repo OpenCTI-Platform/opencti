@@ -55,9 +55,6 @@ const narrativeQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -121,9 +118,6 @@ class RootNarrative extends Component {
                         <Narrative
                           {...routeProps}
                           narrative={props.narrative}
-                          enableReferences={props.settings.platform_enable_reference?.includes(
-                            'Narrative',
-                          )}
                         />
                       )}
                     />
@@ -151,11 +145,9 @@ class RootNarrative extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Narrative'}
                             stixDomainObject={props.narrative}
                             PopoverComponent={<NarrativePopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Narrative',
-                            )}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
@@ -172,6 +164,7 @@ class RootNarrative extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Narrative'}
                             stixDomainObject={props.narrative}
                             PopoverComponent={<NarrativePopover />}
                           />
@@ -189,11 +182,9 @@ class RootNarrative extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Narrative'}
                             stixDomainObject={props.narrative}
                             PopoverComponent={<NarrativePopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Narrative',
-                            )}
                           />
                           <FileManager
                             {...routeProps}
@@ -211,11 +202,9 @@ class RootNarrative extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Narrative'}
                             stixDomainObject={props.narrative}
                             PopoverComponent={<NarrativePopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Narrative',
-                            )}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

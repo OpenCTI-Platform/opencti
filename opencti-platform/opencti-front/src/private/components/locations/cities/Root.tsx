@@ -56,9 +56,6 @@ const cityQuery = graphql`
     connectorsForExport {
       ...FileManager_connectorsExport
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -124,6 +121,7 @@ const RootCityComponent = ({ queryRef }) => {
               render={(routeProps) => (
                 <React.Fragment>
                   <StixDomainObjectHeader
+                    entityType={'City'}
                     disableSharing={true}
                     stixDomainObject={city}
                     PopoverComponent={CityPopover}
@@ -161,6 +159,7 @@ const RootCityComponent = ({ queryRef }) => {
               render={(routeProps) => (
                 <React.Fragment>
                   <StixDomainObjectHeader
+                    entityType={'City'}
                     disableSharing={true}
                     stixDomainObject={city}
                     PopoverComponent={CityPopover}
@@ -181,6 +180,7 @@ const RootCityComponent = ({ queryRef }) => {
               render={(routeProps) => (
                 <React.Fragment>
                   <StixDomainObjectHeader
+                    entityType={'City'}
                     disableSharing={true}
                     stixDomainObject={city}
                     PopoverComponent={CityPopover}

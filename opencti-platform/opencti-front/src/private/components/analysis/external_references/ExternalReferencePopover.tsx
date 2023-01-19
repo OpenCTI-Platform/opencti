@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import Alert from '@mui/material/Alert';
@@ -23,7 +22,6 @@ import { Theme } from '../../../../components/Theme';
 import {
   ExternalReferencePopoverEditionQuery$data,
 } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
-import { deleteNodeFromId } from '../../../../utils/store';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -66,12 +64,10 @@ const externalReferenceEditionQuery = graphql`
 interface ExternalReferencePopoverProps {
   id: string,
   handleRemove: (() => void) | undefined,
-  entityId: string,
   isExternalReferenceAttachment?: boolean
 }
 
-const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, handleRemove, entityId,
-  isExternalReferenceAttachment }) => {
+const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, handleRemove, isExternalReferenceAttachment }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const history = useHistory();
@@ -114,9 +110,7 @@ const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps>
       variables: {
         id,
       },
-      updater: (store: RecordSourceSelectorProxy) => {
-        deleteNodeFromId(store, entityId, 'Pagination_externalReferences', {}, id);
-      },
+      updater: undefined,
       onCompleted: () => {
         setDeleting(false);
         handleClose();

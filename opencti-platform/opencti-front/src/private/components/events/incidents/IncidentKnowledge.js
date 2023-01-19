@@ -28,6 +28,7 @@ class IncidentKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Incident'}
           stixDomainObject={incident}
           PopoverComponent={<IncidentPopover />}
         />

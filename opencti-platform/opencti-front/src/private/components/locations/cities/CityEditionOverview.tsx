@@ -260,7 +260,6 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
     x_opencti_workflow_id: status,
     createdBy,
     objectMarking,
-    status,
   };
 
   return (

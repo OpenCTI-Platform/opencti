@@ -43,6 +43,7 @@ const CountryKnowledgeComponent = ({
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'Country'}
         disableSharing={true}
         stixDomainObject={country}
         PopoverComponent={CountryPopover}

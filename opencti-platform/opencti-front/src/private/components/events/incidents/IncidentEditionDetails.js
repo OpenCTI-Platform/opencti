@@ -42,9 +42,15 @@ const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     incidentEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...IncidentEditionDetails_incident
       }
     }
@@ -108,7 +114,7 @@ class IncidentEditionDetailsComponent extends Component {
     commitMutation({
       mutation: incidentMutationFieldPatch,
       variables: {
-        id: this.props.campaign.id,
+        id: this.props.incident.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -157,7 +163,13 @@ class IncidentEditionDetailsComponent extends Component {
         validationSchema={incidentValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >
-        {(submitForm, isSubmitting, validateForm, setFieldValue, values) => (
+        {({
+          submitForm,
+          isSubmitting,
+          validateForm,
+          setFieldValue,
+          values,
+        }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={DateTimePickerField}
@@ -242,6 +254,7 @@ IncidentEditionDetailsComponent.propTypes = {
   t: PropTypes.func,
   incident: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const IncidentEditionDetails = createFragmentContainer(

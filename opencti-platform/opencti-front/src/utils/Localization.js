@@ -50,6 +50,8 @@ const i18n = {
       'Affected software': 'Aplicaciones afectadas',
       'Do you want to delete this status template?':
         '¿Desea eliminar esta plantilla de estado?',
+      'Do you want to remove this status?':
+        '¿Quieres eliminar este estado?',
       'Create a status template': 'Crear una plantilla de estado',
       'Update a status template': 'Actualizar una plantilla de estado',
       'Do you want to delete this entity?': '¿Quieres borrar esta entidad?',
@@ -220,7 +222,14 @@ const i18n = {
       'Dark (with background)': 'Oscuro (con fondo)',
       'Dark (without background)': 'Oscuro (sin fondo)',
       Language: 'Idioma',
+      'This configuration is not available for this entity type': 'Esta configuración no está disponible para este tipo de entidad',
       'Hidden entity types': 'Tipos de entidad ocultos',
+      'Hidden entity type': 'Tipo de entidad ocultos',
+      'This configuration hidde a specific entity type across the entire platform.': 'Esta configuración oculta un tipo de entidad específico en toda la plataforma.',
+      'Enforce reference on entity types': 'Hacer cumplir la referencia en los tipos de entidad',
+      'Enforce reference on entity type': 'Hacer cumplir la referencia en el tipo de entidad',
+      'This configuration enables the requirement of a reference message on an entity update.': 'Esta configuración habilita el requisito de un mensaje de referencia en una actualización de entidad.',
+      'This configuration enables an entity to automatically construct an external reference from the uploaded file.': 'Esta configuración permite que una entidad construya automáticamente una referencia externa a partir del archivo cargado.',
       'Dark theme': 'Tema oscuro',
       'Light theme': 'Tema claro',
       'Background color': 'Color de fondo',
@@ -542,6 +551,7 @@ const i18n = {
       'Launch an import': 'Lanzar una importación',
       Data: 'Datos',
       Settings: 'Parámetros',
+      'Entity settings': 'Configuración de la entidad',
       'Dashboard settings': 'Cuadro de mando de configuración',
       About: 'Acerca de',
       General: 'General',
@@ -1665,6 +1675,7 @@ const i18n = {
       HISTORY_MANAGER: 'Gestor del historial',
       'Workflow of': 'Flujo de trabajo de',
       'Create a status': 'Crear un estado',
+      'Update a status': 'Actualizar un estado',
       'Clear all works': 'Eliminar todas las tareas',
       'Do you want to reset the state of this connector?':
         '¿Quieres reiniciar el estado de este conector?',
@@ -1674,8 +1685,11 @@ const i18n = {
       disagree: 'en desacuerdo',
       neutral: 'neutral',
       agree: 'de acuerdo',
+      'Entity automatic reference from files': 'Referencia automática de entidad desde archivos',
+      'Entities automatic reference from files': 'Referencia automática de entidades desde archivos',
       'suggestion_threats-indicators':
         'La acción de crear `indica` reñacopmes emtre los indicadores y la amenaza seleccionada, después añade todas las relaciones al contenedor.',
+      Collapse: 'Colapso',
     },
     'fr-fr': {
       // Titles
@@ -1710,7 +1724,7 @@ const i18n = {
       '2FA': 'ADF',
       'Use 2FA authentication': "Utiliser l'authentification à double facteur",
       'You need to validate your two-factor authentication. Please type the code generated in your application.':
-      'Vous devez valider votre  à deux facteurs. Veuillez saisir le code généré dans votre application.',
+      'Vous devez valider votre authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
       'Vous devez activer une authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
       Search: 'Rechercher',
@@ -1728,6 +1742,8 @@ const i18n = {
       'Affected software': 'Logiciels affectés',
       'Do you want to delete this status template?':
         'Souhaitez-vous supprimer ce template de statut ?',
+      'Do you want to remove this status?':
+        'Voulez-vous supprimer ce statut ?',
       'Create a status template': 'Créer un template de statut',
       'Update a status template': 'Modifier un template de statut',
       'Do you want to delete this entity?':
@@ -1878,6 +1894,7 @@ const i18n = {
         'La règle a été déséactivée, purge lancée...',
       'Rules engine': 'Moteur de règles',
       'Launch rescan': 'Lancer le re-scan',
+      'Enable this feature': 'Activer cette fonctionnalité',
       'Enabled the ': 'Activée le ',
       'Never enabled': 'Jamais activée',
       Information: 'Informations',
@@ -1922,7 +1939,14 @@ const i18n = {
       'Dark (with background)': 'Sombre (avec arrière-plan)',
       'Dark (without background)': 'Sombre (sans arrière-plan)',
       Language: 'Langue',
+      'This configuration is not available for this entity type': 'Cette configuration n\'est pas disponible pour ce type d\'entité',
       'Hidden entity types': "Types d'entité cachés",
+      'Hidden entity type': "Type d'entité caché",
+      'This configuration hidde a specific entity type across the entire platform.': 'Cette configuration masque un type d\'entité spécifique sur l\'ensemble de la plateforme.',
+      'Enforce reference on entity types': 'Appliquer la référence sur les types d\'entités',
+      'Enforce reference on entity type': 'Appliquer la référence au type d\'entité',
+      'This configuration enables the requirement of a reference message on an entity update.': 'Cette configuration permet l\'exigence d\'un message de référence sur une mise à jour d\'entité.',
+      'This configuration enables an entity to automatically construct an external reference from the uploaded file.': 'Cette configuration permet à une entité de construire automatiquement une référence externe à partir du fichier téléchargé.',
       Automatic: 'Automatique',
       Manual: 'Manuel',
       'Automatic trigger': 'Déclenchement automatique',
@@ -2231,6 +2255,7 @@ const i18n = {
       'Launch an import': 'Lancer un import',
       Data: 'Données',
       Settings: 'Paramètres',
+      'Entity settings': 'Paramètres de l\'entité',
       'Dashboard settings': 'Paramètres du tableau de bord',
       About: 'A propos',
       General: 'Général',
@@ -3334,6 +3359,7 @@ const i18n = {
       HISTORY_MANAGER: "Manager d'historique",
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
+      'Update a status': 'Mettre à jour un statut',
       'Clear all works': 'Nettoyer toutes les exécutions',
       'Do you want to reset the state of this connector?':
         "Souhaitez-vous réinitialiser l'état de ce connecteur ?",
@@ -3343,8 +3369,11 @@ const i18n = {
       disagree: 'désapprouve',
       neutral: 'neutre',
       agree: 'approuve',
+      'Entity automatic reference from files': 'Référence automatique d\'entité à partir de fichiers',
+      'Entities automatic reference from files': 'Référence automatique des entités à partir des fichiers',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
+      Collapse: 'Réduire',
     },
     'ja-jp': {
       // Titles
@@ -3396,6 +3425,8 @@ const i18n = {
       'Affected software': '影響を受けるソフトウェア',
       'Do you want to delete this status template?':
         'このステータステンプレートを削除しますか?',
+      'Do you want to remove this status?':
+        'このステータスを削除しますか?',
       'Create a status template': '状態テンプレートを作成する',
       'Update a status template': '状態テンプレートを更新する',
       'Do you want to delete this entity?': 'このエンティティを削除しますか？',
@@ -3551,7 +3582,14 @@ const i18n = {
       'Dark (with background)': 'ダークテーマ (背景有り)',
       'Dark (without background)': 'ダークテーマ (背景無し)',
       Language: '言語',
+      'This configuration is not available for this entity type': 'この構成は、このエンティティ タイプでは使用できません',
       'Hidden entity types': '非表示のエンティティ種別',
+      'Hidden entity type': '非表示のエンティティ種別',
+      'This configuration hidde a specific entity type across the entire platform.': 'この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。',
+      'Enforce reference on entity types': 'エンティティ タイプの参照を強制する',
+      'Enforce reference on entity type': 'エンティティ タイプの参照を強制する',
+      'This configuration enables the requirement of a reference message on an entity update.': 'この構成により、エンティティ更新時の参照メッセージの要件が有効になります。',
+      'This configuration enables an entity to automatically construct an external reference from the uploaded file.': 'この構成により、エンティティはアップロードされたファイルから外部参照を自動的に構築できます。',
       'Dark theme': 'ダークテーマ',
       'Light theme': 'ライトテーマ',
       'Background color': '背景色',
@@ -3869,6 +3907,7 @@ const i18n = {
       'Launch an import': 'インポート開始',
       Data: 'データ',
       Settings: '設定',
+      'Entity settings': 'エンティティ設定',
       'Dashboard settings': 'ダッシュボードの設定',
       About: 'OpenCTIについて',
       General: '全般',
@@ -4977,6 +5016,7 @@ const i18n = {
       HISTORY_MANAGER: 'ヒストリーマネージャ',
       'Workflow of': 'ワークフロー',
       'Create a status': 'ステータスの作成',
+      'Update a status': 'ステータスを更新する',
       'Clear all works': '全ての作業を削除',
       'Do you want to reset the state of this connector?':
         'このコネクタの状態をリセットしますか？',
@@ -4986,8 +5026,11 @@ const i18n = {
       disagree: '反対',
       neutral: '中立',
       agree: '賛成',
+      'Entity automatic reference from files': 'ファイルからのエンティティ自動参照',
+      'Entities automatic reference from files': 'ファイルからのエンティティ自動参照',
       'suggestion_threats-indicators':
         'インジケータと脅威に `指し示す` のリレーションシップを作成したあと、全てのリレーションシップをコンテナに追加する。',
+      Collapse: '崩壊',
     },
     'zh-cn': {
       // Titles
@@ -5036,6 +5079,7 @@ const i18n = {
       'Global keyword': '全局关键词',
       'Search for a threat...': '搜索威胁...',
       'Do you want to delete this status template?': '想要刪除此狀態範本？',
+      'Do you want to remove this status?': '您要删除此状态吗？',
       'Create a status template': '創建狀態範本',
       'Update a status template': '更新狀態範本',
       'Do you want to delete this file?': '你想删除这个文件吗？',
@@ -5167,7 +5211,14 @@ const i18n = {
       'Dark (with background)': '暗色(带背景)',
       'Dark (without background)': '暗色(无背景)',
       Language: '语言',
+      'This configuration is not available for this entity type': '此配置不适用于此实体类型',
       'Hidden entity types': '隐藏的实体类型',
+      'Hidden entity type': '隐藏的实体类型',
+      'This configuration hidde a specific entity type across the entire platform.': '此配置隐藏了整个平台的特定实体类型。',
+      'Enforce reference on entity types': '对实体类型强制引用',
+      'Enforce reference on entity type': '对实体类型强制引用',
+      'This configuration enables the requirement of a reference message on an entity update.': '此配置启用了对实体更新的参考消息的要求。',
+      'This configuration enables an entity to automatically construct an external reference from the uploaded file.': '此配置使实体能够从上传的文件自动构建外部引用。',
       Automatic: '自动',
       Manual: '手动',
       'Automatic trigger': '自动触发',
@@ -5457,6 +5508,7 @@ const i18n = {
       'Launch an import': '启动导入',
       Data: '数据',
       Settings: '设置',
+      'Entity settings': '实体设置',
       'Dashboard settings': '仪表盘设置',
       About: '关于',
       General: '通用',
@@ -6520,6 +6572,7 @@ const i18n = {
       HISTORY_MANAGER: '历史经理',
       'Workflow of': '的工作流程',
       'Create a status': '创建状态',
+      'Update a status': '更新状态',
       'Clear all works': '清除所有作品',
       'Do you want to reset the state of this connector?':
         '是否要重置此连接器的状态？',
@@ -6537,8 +6590,11 @@ const i18n = {
       disagree: '不同意',
       neutral: '中性的',
       agree: '同意',
+      'Entity automatic reference from files': '文件中的实体自动引用',
+      'Entities automatic reference from files': '从文件中自动引用实体',
       'suggestion_threats-indicators':
-        'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
+        '在指标和所选威胁之间创建“指示”关系，然后将所有关系添加到容器中',
+      Collapse: '坍塌',
     },
     'en-us': {
       gt: 'Greater than',

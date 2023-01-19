@@ -10,7 +10,7 @@ import {
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
-import useHelper from '../../../utils/hooks/useHelper';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -26,14 +26,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const TopMenuLocation = () => {
+  const classes = useStyles();
   const location = useLocation();
   const { t } = useFormatter();
-  const classes = useStyles();
-  const { isEntityTypeHidden } = useHelper();
 
   return (
     <div>
-      {!isEntityTypeHidden('Locations') && !isEntityTypeHidden('Region') && (
+      {!useIsHiddenEntity('Region') && (
         <Button
           component={Link}
           to="/dashboard/locations/regions"
@@ -54,7 +53,7 @@ const TopMenuLocation = () => {
           {t('Regions')}
         </Button>
       )}
-      {!isEntityTypeHidden('Country') && (
+      {!useIsHiddenEntity('Country') && (
         <Button
           component={Link}
           to="/dashboard/locations/countries"
@@ -75,7 +74,7 @@ const TopMenuLocation = () => {
           {t('Countries')}
         </Button>
       )}
-      {!isEntityTypeHidden('City') && (
+      {!useIsHiddenEntity('City') && (
         <Button
           component={Link}
           to="/dashboard/locations/cities"
@@ -96,7 +95,7 @@ const TopMenuLocation = () => {
           {t('Cities')}
         </Button>
       )}
-      {!isEntityTypeHidden('Position') && (
+      {!useIsHiddenEntity('Position') && (
         <Button
           component={Link}
           to="/dashboard/locations/positions"

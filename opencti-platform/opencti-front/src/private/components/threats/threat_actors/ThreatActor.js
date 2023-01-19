@@ -29,13 +29,13 @@ const styles = () => ({
 
 class ThreatActorComponent extends Component {
   render() {
-    const { classes, threatActor, enableReferences } = this.props;
+    const { classes, threatActor } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Threat-Actor'}
           stixDomainObject={threatActor}
           PopoverComponent={<ThreatActorPopover />}
-          enableReferences={enableReferences}
         />
         <Grid
           container={true}
@@ -96,7 +96,6 @@ ThreatActorComponent.propTypes = {
   threatActor: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  enableReferences: PropTypes.bool,
 };
 
 const ThreatActor = createFragmentContainer(ThreatActorComponent, {

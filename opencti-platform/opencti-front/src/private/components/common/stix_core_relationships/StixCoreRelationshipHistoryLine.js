@@ -312,8 +312,8 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
           className={classes.content}
           style={{
             height:
-              node.context_data.references
-              && node.context_data.references.length > 0
+              node.context_data.external_references
+              && node.context_data.external_references.length > 0
                 ? 'auto'
                 : 40,
           }}
@@ -342,10 +342,10 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
                 </Markdown>
               </div>
             </Tooltip>
-            {node.context_data.references
-              && node.context_data.references.length > 0 && (
+            {node.context_data.external_references
+              && node.context_data.external_references.length > 0 && (
                 <List>
-                  {node.context_data.references.map((externalReference) => {
+                  {node.context_data.external_references.map((externalReference) => {
                     const externalReferenceId = externalReference.external_id
                       ? `(${externalReference.external_id})`
                       : '';
@@ -484,12 +484,11 @@ const StixCoreRelationshipHistoryLine = createFragmentContainer(
         context_data {
           message
           commit
-          references {
+          external_references {
             id
             source_name
             external_id
             url
-            created
             description
           }
         }

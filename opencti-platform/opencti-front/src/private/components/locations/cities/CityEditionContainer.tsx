@@ -10,6 +10,7 @@ import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -54,9 +55,6 @@ export const cityEditionQuery = graphql`
         focusOn
       }
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 const CityEditionContainer: FunctionComponent<CityEditionContainerProps> = ({ queryRef, handleClose }) => {
@@ -89,7 +87,7 @@ const CityEditionContainer: FunctionComponent<CityEditionContainerProps> = ({ qu
       <div className={classes.container}>
         <CityEditionOverview
           cityRef={queryData.city}
-          enableReferences={queryData.settings.platform_enable_reference?.includes('City')}
+          enableReferences={useIsEnforceReference('City')}
           context={queryData.city.editContext}
           handleClose={handleClose}
         />

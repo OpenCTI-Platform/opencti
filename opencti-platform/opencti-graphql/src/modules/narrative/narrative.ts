@@ -34,6 +34,7 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative> = {
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'narrative_types', type: 'string', multiple: true, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
+    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
   ],
   relations: [
     { name: RELATION_SUBNARRATIVE_OF,

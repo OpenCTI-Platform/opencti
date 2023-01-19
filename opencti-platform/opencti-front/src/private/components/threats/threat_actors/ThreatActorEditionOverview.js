@@ -274,7 +274,8 @@ class ThreatActorEditionOverviewComponent extends Component {
               containerStyle={{ width: '100%', marginTop: 20 }}
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={(name, value) => setFieldValue(name, value)}
             />
             <ConfidenceField
               name="confidence"

@@ -336,6 +336,7 @@ CampaignEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   campaign: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const CampaignEditionOverview = createFragmentContainer(

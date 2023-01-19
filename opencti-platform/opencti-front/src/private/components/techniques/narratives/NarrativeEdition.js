@@ -36,9 +36,6 @@ export const narrativeEditionQuery = graphql`
     narrative(id: $id) {
       ...NarrativeEditionContainer_narrative
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -89,13 +86,7 @@ class NarrativeEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <NarrativeEditionContainer
-                    narrative={props.narrative}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Narrative',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <NarrativeEditionContainer narrative={props.narrative} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

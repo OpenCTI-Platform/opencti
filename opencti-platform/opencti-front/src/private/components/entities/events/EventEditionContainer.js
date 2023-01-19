@@ -1,16 +1,15 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import EventEditionOverview from './EventEditionOverview';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -37,49 +36,43 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
-});
+}));
 
-class EventEditionContainer extends Component {
-  render() {
-    const { t, classes, handleClose, event } = this.props;
-    const { editContext } = event;
-    return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an event')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <EventEditionOverview
-            event={this.props.event}
-            enableReferences={this.props.enableReferences}
-            context={editContext}
-            handleClose={handleClose.bind(this)}
-          />
-        </div>
+const EventEditionContainer = (props) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+
+  const { handleClose, event } = props;
+  const { editContext } = event;
+
+  return (
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update an event')}
+        </Typography>
+        <SubscriptionAvatars context={editContext} />
+        <div className="clearfix" />
       </div>
-    );
-  }
-}
-
-EventEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  event: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+      <div className={classes.container}>
+        <EventEditionOverview
+          event={event}
+          enableReferences={useIsEnforceReference('Event')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+      </div>
+    </div>
+  );
 };
 
 const EventEditionFragment = createFragmentContainer(EventEditionContainer, {
@@ -95,7 +88,4 @@ const EventEditionFragment = createFragmentContainer(EventEditionContainer, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(EventEditionFragment);
+export default EventEditionFragment;

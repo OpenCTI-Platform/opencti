@@ -36,9 +36,6 @@ export const toolEditionQuery = graphql`
     tool(id: $id) {
       ...ToolEditionContainer_tool
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -89,13 +86,7 @@ class ToolEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ToolEditionContainer
-                    tool={props.tool}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'Tool',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <ToolEditionContainer tool={props.tool} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

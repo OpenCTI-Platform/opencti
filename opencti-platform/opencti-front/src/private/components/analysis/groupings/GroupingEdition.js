@@ -33,9 +33,6 @@ export const groupingEditionQuery = graphql`
     grouping(id: $id) {
       ...GroupingEditionContainer_grouping
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -77,13 +74,7 @@ const GroupingEdition = ({ groupingId }) => {
           render={({ props }) => {
             if (props) {
               return (
-                <GroupingEditionContainer
-                  grouping={props.grouping}
-                  enableReferences={props.settings.platform_enable_reference?.includes(
-                    'Grouping',
-                  )}
-                  handleClose={handleClose}
-                />
+                <GroupingEditionContainer grouping={props.grouping} handleClose={handleClose} />
               );
             }
             return <Loader variant="inElement" />;

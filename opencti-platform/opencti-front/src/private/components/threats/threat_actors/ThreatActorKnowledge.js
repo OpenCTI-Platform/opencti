@@ -24,14 +24,14 @@ const styles = () => ({
 
 class ThreatActorKnowledgeComponent extends Component {
   render() {
-    const { classes, threatActor, enableReferences } = this.props;
+    const { classes, threatActor } = this.props;
     const link = `/dashboard/threats/threat_actors/${threatActor.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Threat-Actor'}
           stixDomainObject={threatActor}
           PopoverComponent={<ThreatActorPopover />}
-          enableReferences={enableReferences}
         />
         <Route
           exact
@@ -281,7 +281,6 @@ ThreatActorKnowledgeComponent.propTypes = {
   threatActor: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  enableReferences: PropTypes.bool,
 };
 
 const ThreatActorKnowledge = createFragmentContainer(

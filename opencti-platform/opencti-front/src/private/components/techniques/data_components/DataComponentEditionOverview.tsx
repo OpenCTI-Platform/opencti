@@ -143,7 +143,7 @@ interface DataComponentAddInput {
   description: string | null,
   createdBy: Option | undefined,
   objectMarking: Option[],
-  x_opencti_workflow_id: string | { label: string, color: string, value: string, order: string },
+  x_opencti_workflow_id: Option,
   confidence: number | null,
   message?: string
   references?: Option[]
@@ -257,6 +257,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
     const inputValues = Object.entries({
       ...otherValues,
       createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({
       key,
@@ -282,7 +283,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
     description: dataComponent.description,
     createdBy: convertCreatedBy(dataComponent),
     objectMarking: convertMarkings(dataComponent),
-    x_opencti_workflow_id: convertStatus(t, dataComponent),
+    x_opencti_workflow_id: convertStatus(t, dataComponent) as Option,
     confidence: dataComponent.confidence,
   };
   return (
@@ -354,10 +355,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
             )}
             <CreatedByField
               name="createdBy"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+              style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -366,10 +364,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+              style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus context={context} fieldname="objectMarking" />
               }

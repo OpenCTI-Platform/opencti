@@ -344,6 +344,7 @@ IntrusionSetEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   intrusionSet: PropTypes.object,
   context: PropTypes.array,
+  enableReferences: PropTypes.bool,
 };
 
 const IntrusionSetEditionOverview = createFragmentContainer(

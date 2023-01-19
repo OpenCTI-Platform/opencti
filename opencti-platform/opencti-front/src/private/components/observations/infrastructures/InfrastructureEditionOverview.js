@@ -16,7 +16,7 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { buildDate } from '../../../../utils/Time';
+import { buildDate, parse } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -26,9 +26,15 @@ const infrastructureMutationFieldPatch = graphql`
   mutation InfrastructureEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
   ) {
     infrastructureEdit(id: $id) {
-      fieldPatch(input: $input) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         ...InfrastructureEditionOverview_infrastructure
         ...Infrastructure_infrastructure
       }
@@ -118,6 +124,16 @@ class InfrastructureEditionOverviewComponent extends Component {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+      R.assoc('infrastructure_types', values.infrastructure_types),
+      R.assoc(
+        'first_seen',
+        values.first_seen ? parse(values.first_seen).format() : null,
+      ),
+      R.assoc(
+        'last_seen',
+        values.last_seen ? parse(values.last_seen).format() : null,
+      ),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -139,22 +155,24 @@ class InfrastructureEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    let finalValue = value;
-    if (name === 'x_opencti_workflow_id') {
-      finalValue = value.value;
+    if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = value.value;
+      }
+      infrastructureValidation(this.props.t)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitMutation({
+            mutation: infrastructureMutationFieldPatch,
+            variables: {
+              id: this.props.infrastructure.id,
+              input: { key: name, value: finalValue ?? '' },
+            },
+          });
+        })
+        .catch(() => false);
     }
-    infrastructureValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: infrastructureMutationFieldPatch,
-          variables: {
-            id: this.props.infrastructure.id,
-            input: { key: name, value: finalValue ?? '' },
-          },
-        });
-      })
-      .catch(() => false);
   }
 
   handleChangeCreatedBy(name, value) {
@@ -170,37 +188,39 @@ class InfrastructureEditionOverviewComponent extends Component {
   }
 
   handleChangeObjectMarking(name, values) {
-    const { infrastructure } = this.props;
-    const currentMarkingDefinitions = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(infrastructure);
-    const added = R.difference(values, currentMarkingDefinitions);
-    const removed = R.difference(currentMarkingDefinitions, values);
-    if (added.length > 0) {
-      commitMutation({
-        mutation: infrastructureMutationRelationAdd,
-        variables: {
-          id: this.props.infrastructure.id,
-          input: {
-            toId: R.head(added).value,
+    if (!this.props.enableReferences) {
+      const { infrastructure } = this.props;
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
+          label: n.node.definition,
+          value: n.node.id,
+        })),
+      )(infrastructure);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
+      if (added.length > 0) {
+        commitMutation({
+          mutation: infrastructureMutationRelationAdd,
+          variables: {
+            id: this.props.infrastructure.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'object-marking',
+            },
+          },
+        });
+      }
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: infrastructureMutationRelationDelete,
+          variables: {
+            id: this.props.infrastructure.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
-        },
-      });
-    }
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: infrastructureMutationRelationDelete,
-        variables: {
-          id: this.props.infrastructure.id,
-          toId: R.head(removed).value,
-          relationship_type: 'object-marking',
-        },
-      });
+        });
+      }
     }
   }
 

@@ -31,7 +31,7 @@ interface HistoryContext {
   from_id?: string | undefined;
   to_id?: string | undefined;
   commit?: string | undefined;
-  references?: Array<string>;
+  external_references?: Array<string>;
 }
 
 interface HistoryData extends BasicStoreEntity {
@@ -78,7 +78,7 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
     if (event.data.type === EVENT_TYPE_UPDATE) {
       const updateEvent: UpdateEvent = event.data as UpdateEvent;
       contextData.commit = updateEvent.commit?.message;
-      contextData.references = updateEvent.commit?.references;
+      contextData.external_references = updateEvent.commit?.external_references ?? [];
     }
     if (stix.type === 'relationship') {
       const rel: StixRelation = stix as StixRelation;

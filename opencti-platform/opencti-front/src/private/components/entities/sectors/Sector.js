@@ -33,6 +33,7 @@ class SectorComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Sector'}
           disableSharing={true}
           stixDomainObject={sector}
           isOpenctiAlias={true}

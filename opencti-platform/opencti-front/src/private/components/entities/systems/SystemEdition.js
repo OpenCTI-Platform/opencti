@@ -36,9 +36,6 @@ export const systemEditionQuery = graphql`
     system(id: $id) {
       ...SystemEditionContainer_system
     }
-    settings {
-      platform_enable_reference
-    }
   }
 `;
 
@@ -89,13 +86,7 @@ class SystemEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <SystemEditionContainer
-                    system={props.system}
-                    enableReferences={props.settings.platform_enable_reference?.includes(
-                      'System',
-                    )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <SystemEditionContainer system={props.system} handleClose={this.handleClose.bind(this)} />
                 );
               }
               return <Loader variant="inElement" />;

@@ -9,8 +9,8 @@ import {
 } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
-import useHelper from '../../../utils/hooks/useHelper';
 import { Theme } from '../../../components/Theme';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -29,11 +29,9 @@ const TopMenuTechniques = () => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = useStyles();
-  const { isEntityTypeHidden } = useHelper();
   return (
     <div>
-      {!isEntityTypeHidden('Techniques')
-        && !isEntityTypeHidden('Attack-Pattern') && (
+      {!useIsHiddenEntity('Attack-Pattern') && (
           <Button
             component={Link}
             to="/dashboard/techniques/attack_patterns"
@@ -58,7 +56,7 @@ const TopMenuTechniques = () => {
             {t('Attack Patterns')}
           </Button>
       )}
-      {!isEntityTypeHidden('Narrative') && (
+      {!useIsHiddenEntity('Narrative') && (
         <Button
           component={Link}
           to="/dashboard/techniques/narratives"
@@ -79,7 +77,7 @@ const TopMenuTechniques = () => {
           {t('Narratives')}
         </Button>
       )}
-      {!isEntityTypeHidden('Course-Of-Action') && (
+      {!useIsHiddenEntity('Course-Of-Action') && (
         <Button
           component={Link}
           to="/dashboard/techniques/courses_of_action"
@@ -100,7 +98,7 @@ const TopMenuTechniques = () => {
           {t('Courses of action')}
         </Button>
       )}
-      {!isEntityTypeHidden('Data-Component') && (
+      {!useIsHiddenEntity('Data-Component') && (
         <Button
           component={Link}
           to="/dashboard/techniques/data_components"
@@ -121,7 +119,7 @@ const TopMenuTechniques = () => {
           {t('Data components')}
         </Button>
       )}
-      {!isEntityTypeHidden('Data-Source') && (
+      {!useIsHiddenEntity('Data-Source') && (
         <Button
           component={Link}
           to="/dashboard/techniques/data_sources"
