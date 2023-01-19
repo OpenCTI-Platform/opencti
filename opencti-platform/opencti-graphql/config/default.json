@@ -77,7 +77,7 @@
     "enabled": true,
     "lock_key": "connector_manager_lock",
     "works_day_range": 7,
-    "interval": 15000
+    "interval": 60000
   },
   "task_scheduler": {
     "enabled": true,

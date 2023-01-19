@@ -154,7 +154,7 @@ export const VocabularyLineDummy = ({
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
-                  width={value.width}
+                  width="90%"
                   height={20}
                 />
               </div>

@@ -30,6 +30,13 @@ export const subTypeFragment = graphql`
     id
     label
     workflowEnabled
+    settings {
+      id
+      enforce_reference
+      platform_entity_files_ref
+      platform_hidden_type
+      target_type
+    }
     statuses {
       edges {
         node {
@@ -52,21 +59,16 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   const subType = useFragment(subTypeFragment, data);
   const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
 
-  const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, { targetType: subType.id });
+  const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, {
+    targetType: subType.id,
+  });
 
   return (
     <>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-      >
+      <Typography variant="h1" gutterBottom={true}>
         {t(`entity_${subType.label}`)}
       </Typography>
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ paddingTop: 10 }}
-      >
+      <Grid container={true} spacing={3} style={{ paddingTop: 10 }}>
         <Grid item={true} xs={6}>
           <div>
             <Typography variant="h4" gutterBottom={true}>
@@ -74,17 +76,22 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               {queryRef && (
-                <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                  <EntitySetting queryRef={queryRef}/>
+                <React.Suspense
+                  fallback={<Loader variant={LoaderVariant.inElement} />}
+                >
+                  <EntitySetting queryRef={queryRef} />
                 </React.Suspense>
               )}
-              <div>
+              <div style={{ marginTop: 10 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {`${t('Workflow of')} ${t(`entity_${subType.label}`)}`}
                   <SubTypeStatusPopover subTypeId={subType.id} />
                 </Typography>
               </div>
-              <ItemStatusTemplate statuses={statuses} disabled={!subType.workflowEnabled} />
+              <ItemStatusTemplate
+                statuses={statuses}
+                disabled={!subType.workflowEnabled}
+              />
             </Paper>
           </div>
         </Grid>

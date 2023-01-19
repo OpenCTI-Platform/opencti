@@ -1,7 +1,12 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import { ClearOutlined, CloseOutlined } from '@mui/icons-material';
+import {
+  ClearOutlined,
+  VisibilityOffOutlined,
+  FileOpenOutlined,
+  LocalOfferOutlined,
+} from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Toolbar from '@mui/material/Toolbar';
@@ -11,9 +16,12 @@ import Button from '@mui/material/Button';
 import Switch from '@mui/material/Switch';
 import { useFragment, useMutation } from 'react-relay';
 import * as R from 'ramda';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import MessageIcon from '@mui/icons-material/Message';
-import DescriptionIcon from '@mui/icons-material/Description';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { entitySettingFragment, entitySettingsPatch } from './EntitySetting';
@@ -68,11 +76,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const ToolBar: FunctionComponent<{
-  keyword: string | undefined
-  numberOfSelectedElements: number
-  selectedElements: Record<string, { id: string }>
-  selectAll: boolean
-  handleClearSelectedElements: () => void
+  keyword: string | undefined;
+  numberOfSelectedElements: number;
+  selectedElements: Record<string, { id: string }>;
+  selectAll: boolean;
+  handleClearSelectedElements: () => void;
 }> = ({
   keyword,
   numberOfSelectedElements,
@@ -83,23 +91,40 @@ const ToolBar: FunctionComponent<{
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const entitySettings = useEntitySettings().edges.map((edgeNode) => edgeNode.node)
-    .map((node) => useFragment(entitySettingFragment, node) as EntitySetting_entitySetting$data);
+  const entitySettings = useEntitySettings()
+    .edges.map((edgeNode) => edgeNode.node)
+    .map(
+      (node) => useFragment(
+        entitySettingFragment,
+        node,
+      ) as EntitySetting_entitySetting$data,
+    );
   let entitySettingsSelected: EntitySetting_entitySetting$data[];
   if (selectAll) {
     entitySettingsSelected = entitySettings;
   } else {
-    entitySettingsSelected = entitySettings.filter((node) => R.values(selectedElements).map((n) => n.id).includes(node.target_type));
+    entitySettingsSelected = entitySettings.filter((node) => R.values(selectedElements)
+      .map((n) => n.id)
+      .includes(node.target_type));
   }
-  const entitySettingsSelectedFiltered = entitySettingsSelected.filter((node) => {
-    if (keyword) {
-      return node.target_type.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-        || t(`entity_${node.target_type}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-    }
-    return true;
-  });
+  const entitySettingsSelectedFiltered = entitySettingsSelected.filter(
+    (node) => {
+      if (keyword) {
+        return (
+          node.target_type.toLowerCase().indexOf(keyword.toLowerCase())
+            !== -1
+          || t(`entity_${node.target_type}`)
+            .toLowerCase()
+            .indexOf(keyword.toLowerCase()) !== -1
+        );
+      }
+      return true;
+    },
+  );
 
-  const [navOpen, setNavOpen] = useState<boolean>(localStorage.getItem('navOpen') === 'true');
+  const [navOpen, setNavOpen] = useState<boolean>(
+    localStorage.getItem('navOpen') === 'true',
+  );
   useEffect(() => {
     const subscription = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -112,7 +137,9 @@ const ToolBar: FunctionComponent<{
   const [description, setDescription] = useState<string>('');
   const [value, setValue] = useState<boolean>(false);
   const [key, setKey] = useState<string>('');
-  const [notAvailableSetting, setNotAvailableSetting] = useState<EntitySetting_entitySetting$data[]>([]);
+  const [notAvailableSetting, setNotAvailableSetting] = useState<
+  EntitySetting_entitySetting$data[]
+  >([]);
 
   const [commit] = useMutation(entitySettingsPatch);
 
@@ -123,21 +150,33 @@ const ToolBar: FunctionComponent<{
   };
 
   const retrieveNotAvailableSetting = (currentKey: string) => {
-    return entitySettingsSelectedFiltered.filter((node) => node[currentKey as keyof EntitySetting_entitySetting$data] === null);
+    return entitySettingsSelectedFiltered.filter(
+      (node) => node[currentKey as keyof EntitySetting_entitySetting$data] === null,
+    );
   };
 
   const handleOpenFilesRef = () => {
     handleOpen();
     setTitle(t('Entities automatic reference from files'));
-    setDescription(t('This configuration enables an entity to automatically construct an external reference from the uploaded file.'));
+    setDescription(
+      t(
+        'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
+      ),
+    );
     setKey('platform_entity_files_ref');
-    setNotAvailableSetting(retrieveNotAvailableSetting('platform_entity_files_ref'));
+    setNotAvailableSetting(
+      retrieveNotAvailableSetting('platform_entity_files_ref'),
+    );
   };
 
   const handleOpenHidden = () => {
     handleOpen();
     setTitle(t('Hidden entity types'));
-    setDescription(t('This configuration hidde a specific entity type across the entire platform.'));
+    setDescription(
+      t(
+        'This configuration hidde a specific entity type across the entire platform.',
+      ),
+    );
     setKey('platform_hidden_type');
     setNotAvailableSetting(retrieveNotAvailableSetting('platform_hidden_type'));
   };
@@ -145,14 +184,22 @@ const ToolBar: FunctionComponent<{
   const handleOpenEnforceRef = () => {
     handleOpen();
     setTitle(t('Enforce reference on entity types'));
-    setDescription(t('This configuration enables the requirement of a reference message on an entity update.'));
+    setDescription(
+      t(
+        'This configuration enables the requirement of a reference message on an entity update.',
+      ),
+    );
     setKey('enforce_reference');
     setNotAvailableSetting(retrieveNotAvailableSetting('enforce_reference'));
   };
 
   const handleAction = () => {
     const ids = entitySettingsSelectedFiltered
-      .filter((node) => !notAvailableSetting.map((n) => n.target_type).includes(node.target_type))
+      .filter(
+        (node) => !notAvailableSetting
+          .map((n) => n.target_type)
+          .includes(node.target_type),
+      )
       .map((node) => node.id);
     commit({
       variables: {
@@ -181,8 +228,10 @@ const ToolBar: FunctionComponent<{
           color="inherit"
           variant="subtitle1"
         >
-          <span className={classes.titleNumber}>{numberOfSelectedElements}</span>
-          {' '}{t('selected')}{' '}
+          <span className={classes.titleNumber}>
+            {numberOfSelectedElements}
+          </span>{' '}
+          {t('selected')}{' '}
           <IconButton
             aria-label="clear"
             disabled={numberOfSelectedElements === 0}
@@ -196,12 +245,17 @@ const ToolBar: FunctionComponent<{
           <span>
             <IconButton
               aria-label="files-ref"
-              disabled={numberOfSelectedElements === 0 || numberOfSelectedElements === retrieveNotAvailableSetting('platform_entity_files_ref').length}
+              disabled={
+                numberOfSelectedElements === 0
+                || numberOfSelectedElements
+                  === retrieveNotAvailableSetting('platform_entity_files_ref')
+                    .length
+              }
               onClick={handleOpenFilesRef}
               color="primary"
               size="small"
             >
-              <DescriptionIcon fontSize="small" />
+              <FileOpenOutlined fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
@@ -209,12 +263,16 @@ const ToolBar: FunctionComponent<{
           <span>
             <IconButton
               aria-label="hidden-entity"
-              disabled={numberOfSelectedElements === 0 || numberOfSelectedElements === retrieveNotAvailableSetting('platform_hidden_type').length}
+              disabled={
+                numberOfSelectedElements === 0
+                || numberOfSelectedElements
+                  === retrieveNotAvailableSetting('platform_hidden_type').length
+              }
               onClick={handleOpenHidden}
               color="primary"
               size="small"
             >
-              <VisibilityOffIcon fontSize="small" />
+              <VisibilityOffOutlined fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
@@ -222,61 +280,61 @@ const ToolBar: FunctionComponent<{
           <span>
             <IconButton
               aria-label="enforce-ref"
-              disabled={numberOfSelectedElements === 0 || numberOfSelectedElements === retrieveNotAvailableSetting('enforce_reference').length}
+              disabled={
+                numberOfSelectedElements === 0
+                || numberOfSelectedElements
+                  === retrieveNotAvailableSetting('enforce_reference').length
+              }
               onClick={handleOpenEnforceRef}
               color="primary"
               size="small"
             >
-              <MessageIcon fontSize="small" />
+              <LocalOfferOutlined fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
       </Toolbar>
-
-      <Drawer
+      <Dialog
         open={display}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
+        PaperProps={{ elevation: 1 }}
+        keepMounted={true}
         onClose={handleClose}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <CloseOutlined fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{title}</Typography>
-        </div>
-        <div className={classes.container} style={{ marginTop: 20 }}>
-          {notAvailableSetting.length > 0
-            && <Alert severity="warning" style={{ marginBottom: 20 }}>
-              {t(
-                `This setting is not available for this entity types: 
-                ${notAvailableSetting.map((node) => t(`entity_${node.target_type}`)).join(', ')}`,
-              )}
-            </Alert>
-          }
-          <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 20 }}>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogContent>
+          <Alert severity="info" style={{ marginBottom: 20 }}>
             {description}
-          </Typography>
-          <Switch checked={value} onChange={() => setValue(!value)} />
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAction}
-            >
-              {t('Update')}
-            </Button>
-          </div>
-        </div>
-      </Drawer>
+            {notAvailableSetting.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <strong>
+                  {t(
+                    'Be careful, this setting is not available for the following selected entity types: ',
+                  )}
+                  <span>
+                    {notAvailableSetting
+                      .map((node) => t(`entity_${node.target_type}`))
+                      .join(', ')}
+                  </span>
+                </strong>
+              </div>
+            )}
+          </Alert>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Switch checked={value} onChange={() => setValue(!value)} />
+              }
+              label={t('Enable this feature')}
+            />
+          </FormGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>{t('Cancel')}</Button>
+          <Button variant="text" color="secondary" onClick={handleAction}>
+            {t('Update')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Drawer>
   );
 };

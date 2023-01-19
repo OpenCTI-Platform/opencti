@@ -22,6 +22,14 @@ const subTypesLinesFragment = graphql`
         node {
           id
           label
+          workflowEnabled
+          settings {
+            id
+            enforce_reference
+            platform_entity_files_ref
+            platform_hidden_type
+            target_type
+          }
           ...SubType_subType
         }
       }
@@ -30,14 +38,14 @@ const subTypesLinesFragment = graphql`
 `;
 
 interface SubTypesLinesProps {
-  queryRef: PreloadedQuery<SubTypesLinesQuery>
-  keyword: string | undefined
-  dataColumns: DataColumns
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements']
-  selectedElements: Record<string, { id: string }>
-  deSelectedElements: Record<string, { id: string }>
-  selectAll: boolean
-  onToggleEntity: (entity: { id: string }) => void
+  queryRef: PreloadedQuery<SubTypesLinesQuery>;
+  keyword: string | undefined;
+  dataColumns: DataColumns;
+  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'];
+  selectedElements: Record<string, { id: string }>;
+  deSelectedElements: Record<string, { id: string }>;
+  selectAll: boolean;
+  onToggleEntity: (entity: { id: string }) => void;
 }
 
 const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
@@ -63,13 +71,22 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
 
   const filterOnSubType = ({ node }: { node: { label: string } }) => {
     if (keyword) {
-      return node.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-        || t(`entity_${node.label}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      return (
+        node.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+        || t(`entity_${node.label}`)
+          .toLowerCase()
+          .indexOf(keyword.toLowerCase()) !== -1
+      );
     }
     return true;
   };
-  const sortOnSubType = (edgeA: { node: { label: string } }, edgeB: { node: { label: string } }) => {
-    return t(`entity_${edgeA.node.label}`).localeCompare(t(`entity_${edgeB.node.label}`));
+  const sortOnSubType = (
+    edgeA: { node: { label: string } },
+    edgeB: { node: { label: string } },
+  ) => {
+    return t(`entity_${edgeA.node.label}`).localeCompare(
+      t(`entity_${edgeB.node.label}`),
+    );
   };
 
   const subTypes = (data?.subTypes?.edges ?? [])

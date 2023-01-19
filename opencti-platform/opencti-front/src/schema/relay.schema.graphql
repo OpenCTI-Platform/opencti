@@ -620,6 +620,7 @@ type SubType {
   label: String!
   statuses: StatusConnection
   workflowEnabled: Boolean
+  settings: EntitySetting
 }
 
 enum StatusTemplateOrdering {
