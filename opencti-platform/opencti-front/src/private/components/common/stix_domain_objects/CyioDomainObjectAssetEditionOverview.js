@@ -337,6 +337,8 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 />
               </div>
             </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <div>
                 <Typography

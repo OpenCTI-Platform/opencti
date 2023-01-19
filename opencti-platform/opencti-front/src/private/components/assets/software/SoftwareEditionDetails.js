@@ -177,7 +177,7 @@ class SoftwareEditionDetailsComponent extends Component {
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
               <Grid container spacing={3}>
-                <Grid item={true} xs={6}>
+                <Grid item={true} xs={12}>
                   <Typography
                     variant="h3"
                     color="textSecondary"

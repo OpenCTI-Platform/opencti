@@ -17,10 +17,9 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     borderRadius: '5px',
     lineHeight: '20px',
-    maxHeight: '132px',
-    height: '160px',
+    maxHeight: '97px',
     overflow: 'hidden',
-    padding: '10px 5px 10px 15px',
+    padding: '5px 5px 10px 15px',
   },
   scrollDiv: {
     width: '100%',
@@ -56,6 +55,7 @@ const useStyles = makeStyles((theme) => ({
     maxHeight: '132px',
     overflowY: 'auto',
     height: '160px',
+    paddingTop: 0,
   },
   hideText: {
     '& .MuiInputBase-input': {

@@ -271,13 +271,17 @@ class HyperLinkField extends Component {
     return (
       <>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <Typography>{title && t(title)}</Typography>
+          <Typography variant="h3" color="textSecondary" gutterBottom={true}>
+            {title && t(title)}
+          </Typography>
           <div style={{ float: "left", margin: "5px 0 0 5px" }}>
             <Tooltip title={t(helperText)}>
               <Information fontSize="inherit" color="disabled" />
             </Tooltip>
           </div>
-          {["installed_hardware", "installed_software"].includes(this.props.name) && (
+          {["installed_hardware", "installed_software"].includes(
+            this.props.name
+          ) && (
             <IconButton
               size="small"
               onClick={() => this.setState({ open: true })}
@@ -320,7 +324,7 @@ class HyperLinkField extends Component {
                 borderBottom: "1px #fff solid",
               }}
             >
-              <FormControl style={{ width: "93%" }}>
+              <FormControl style={{ width: "91%" }}>
                 <InputLabel id="demo-simple-select-label">Assets</InputLabel>
                 <Select
                   label={"Assets"}

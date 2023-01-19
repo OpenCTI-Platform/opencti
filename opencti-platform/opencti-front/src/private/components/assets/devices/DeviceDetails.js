@@ -77,7 +77,7 @@ const styles = (theme) => ({
     width: '100%',
   },
   launchIcon: {
-    marginRight: '5%',
+    marginRight: '1%',
   },
   linkTitle: {
     color: '#fff',
@@ -155,7 +155,7 @@ class DeviceDetailsComponent extends Component {
                             className={classes.link}
                             onClick={() => (history.push(`/defender HQ/assets/devices/${data.id}`))}
                           >
-                            <LaunchIcon fontSize="inherit" className={classes.launchIcon} /> <div className={classes.linkTitle}>{data?.name && t(data.name)}</div>
+                            <LaunchIcon fontSize="small" className={classes.launchIcon} /> <div className={classes.linkTitle}>{data?.name && t(data.name)}</div>
                           </Link>                        
                       ))}
                     </div>
