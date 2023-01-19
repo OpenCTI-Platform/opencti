@@ -6,7 +6,7 @@ import {
   OrderMode,
   PaginationOptions,
 } from '../../components/list_lines';
-import { isUniqFilter } from '../filters/filtersUtils';
+import { BackendFilters, isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
 import { DataComponentsLinesPaginationQuery$variables } from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 
@@ -25,7 +25,6 @@ export interface LocalStorage {
   types?: string[];
   view?: string;
   zoom?: Record<string, unknown>;
-  additionnalFilters?: { key: string, values: string[], operator: string, filterMode: string }[] | undefined;
   redirectionMode?: string,
 }
 
@@ -41,6 +40,7 @@ export interface UseLocalStorageHelpers {
     original?: number;
   }) => void;
   handleSetRedirectionMode: (value: string) => void;
+  handleAddProperty: (field: string, value: unknown) => void;
 }
 
 export const localStorageToPaginationOptions = <U>({
@@ -48,20 +48,18 @@ export const localStorageToPaginationOptions = <U>({
   filters,
   sortBy,
   orderAsc,
-  additionnalFilters,
   ...props
-}: LocalStorage & Omit<U, 'filters'>): unknown extends U
-    ? PaginationOptions
-    : U => {
+}: LocalStorage & Omit<U, 'filters'>, additionnalFilters?: BackendFilters)
+  : unknown extends U ? PaginationOptions : U => {
   // Remove only display options, not query linked
   const localOptions = { ...props };
   delete localOptions.openExports;
   delete localOptions.numberOfElements;
   delete localOptions.view;
   delete localOptions.zoom;
-  let finalFilters = filters ? convertFilters(filters) : undefined;
-  if (finalFilters && additionnalFilters) {
-    finalFilters = (finalFilters as { key: string, values: string[], operator: string, filterMode: string }[]).concat(additionnalFilters);
+  let finalFilters = filters ? convertFilters(filters) : [];
+  if (additionnalFilters) {
+    finalFilters = finalFilters.concat(additionnalFilters);
   }
   return {
     ...localOptions,
@@ -82,14 +80,13 @@ export type HandleAddFilter = (
 export type UseLocalStorage = [
   value: LocalStorage,
   setValue: Dispatch<SetStateAction<LocalStorage>>,
-  helpers: UseLocalStorageHelpers,
 ];
 
 const buildParamsFromHistory = (params: LocalStorage) => removeEmptyFields({
   filters:
-      params.filters && Object.keys(params.filters).length > 0
-        ? JSON.stringify(params.filters)
-        : undefined,
+    params.filters && Object.keys(params.filters).length > 0
+      ? JSON.stringify(params.filters)
+      : undefined,
   zoom: JSON.stringify(params.zoom),
   searchTerm: params.searchTerm,
   sortBy: params.sortBy,
@@ -182,6 +179,29 @@ const useLocalStorage = (
     }
   };
 
+  return [storedValue, setValue];
+};
+
+export type PaginationLocalStorage<U = Record<string, unknown>> = {
+  viewStorage: LocalStorage;
+  helpers: UseLocalStorageHelpers;
+  paginationOptions: U;
+};
+
+export const usePaginationLocalStorage = <U>(
+  key: string,
+  initialValue: LocalStorage,
+  additionalFilters?: BackendFilters,
+): PaginationLocalStorage<U> => {
+  const [viewStorage, setValue] = useLocalStorage(key, initialValue);
+  const paginationOptions = localStorageToPaginationOptions<DataComponentsLinesPaginationQuery$variables>(
+    {
+      ...viewStorage,
+      count: 25,
+    },
+    additionalFilters,
+  );
+
   const helpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
     handleRemoveFilter: (value: string) => setValue((c) => ({
@@ -193,6 +213,9 @@ const useLocalStorage = (
       sortBy: field,
       orderAsc: order,
     })),
+    handleAddProperty: (field: string, value: unknown) => {
+      setValue((c) => ({ ...c, [field]: value }));
+    },
     handleAddFilter: (
       k: string,
       id: string,
@@ -203,7 +226,7 @@ const useLocalStorage = (
         event.stopPropagation();
         event.preventDefault();
       }
-      if ((storedValue?.filters?.[k]?.length ?? 0) > 0) {
+      if ((viewStorage?.filters?.[k]?.length ?? 0) > 0) {
         setValue((c) => ({
           ...c,
           filters: {
@@ -232,7 +255,7 @@ const useLocalStorage = (
       symbol?: string;
       original?: number;
     }) => {
-      if (!R.equals(nbElements, storedValue.numberOfElements)) {
+      if (!R.equals(nbElements, viewStorage.numberOfElements)) {
         setValue((c) => {
           const { number, symbol, original } = nbElements;
           return {
@@ -252,26 +275,6 @@ const useLocalStorage = (
     },
   };
 
-  return [storedValue, setValue, helpers];
-};
-
-type PaginationLocalStorage<U> = {
-  viewStorage: LocalStorage;
-  helpers: UseLocalStorageHelpers;
-  paginationOptions: U;
-};
-
-export const usePaginationLocalStorage = <U>(
-  key: string,
-  initialValue: LocalStorage,
-): PaginationLocalStorage<U> => {
-  const [viewStorage, , helpers] = useLocalStorage(key, initialValue);
-  const paginationOptions = localStorageToPaginationOptions<DataComponentsLinesPaginationQuery$variables>(
-    {
-      ...viewStorage,
-      count: 25,
-    },
-  );
   return {
     viewStorage,
     helpers,

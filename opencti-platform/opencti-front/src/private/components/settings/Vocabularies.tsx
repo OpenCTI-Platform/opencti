@@ -3,12 +3,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import { useParams } from 'react-router-dom';
 import ListLines from '../../../components/list_lines/ListLines';
-import useLocalStorage, {
-  localStorageToPaginationOptions,
-} from '../../../utils/hooks/useLocalStorage';
-import VocabulariesLines, {
-  vocabulariesLinesQuery,
-} from './attributes/VocabulariesLines';
+import { localStorageToPaginationOptions, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import VocabulariesLines, { vocabulariesLinesQuery } from './attributes/VocabulariesLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { VocabulariesLines_DataQuery$variables } from './attributes/__generated__/VocabulariesLines_DataQuery.graphql';
 import { VocabulariesLinesPaginationQuery } from './attributes/__generated__/VocabulariesLinesPaginationQuery.graphql';
@@ -40,17 +36,16 @@ const Vocabularies = () => {
   const params = useParams() as { category: string };
   const { typeToCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);
-  const [
+  const {
     viewStorage,
-    _,
-    {
+    helpers: {
       handleAddFilter,
       handleSort,
       handleSearch,
       handleRemoveFilter,
       handleSetNumberOfElements,
     },
-  ] = useLocalStorage(`view-vocabulary-${category}`, {
+  } = usePaginationLocalStorage(`view-vocabulary-${category}`, {
     sortBy: 'name',
     orderAsc: true,
     searchTerm: '',

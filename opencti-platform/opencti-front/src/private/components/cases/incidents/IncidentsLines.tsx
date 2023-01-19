@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { DataColumns } from '../../../../components/list_lines';
-import type { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { IncidentLine, IncidentLineDummy } from './IncidentLine';
 import {
@@ -18,7 +18,7 @@ interface CasesLinesProps {
   paginationOptions?: IncidentsLinesCasesPaginationQuery$variables;
   dataColumns: DataColumns;
   queryRef: PreloadedQuery<IncidentsLinesCasesPaginationQuery>;
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   selectedElements: Record<string, IncidentLineCase_node$data>;
   deSelectedElements: Record<string, IncidentLineCase_node$data>;
   onToggleEntity: (

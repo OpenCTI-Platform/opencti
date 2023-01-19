@@ -3,13 +3,10 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import StatusTemplateLine, { DataColumnsType } from './StatusTemplateLine';
 import StatusTemplateLineDummy from './StatusTemplateLineDummy';
-import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  StatusTemplatesLinesPaginationQuery,
-  StatusTemplatesLinesPaginationQuery$variables,
-} from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import { StatusTemplatesLinesPaginationQuery, StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 import { StatusTemplatesLines_data$key } from './__generated__/StatusTemplatesLines_data.graphql';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
@@ -17,7 +14,7 @@ interface StatusTemplatesLinesProps {
   queryRef: PreloadedQuery<StatusTemplatesLinesPaginationQuery>,
   dataColumns: DataColumnsType,
   paginationOptions: StatusTemplatesLinesPaginationQuery$variables,
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'],
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
 }
 
 export const statusTemplatesLinesQuery = graphql`

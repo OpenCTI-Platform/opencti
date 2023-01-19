@@ -5,9 +5,7 @@ import { React } from 'mdi-material-ui';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
 import StixCyberObservablesRightBar from './stix_cyber_observables/StixCyberObservablesRightBar';
 import Security from '../../../utils/Security';
-import useLocalStorage, {
-  localStorageToPaginationOptions,
-} from '../../../utils/hooks/useLocalStorage';
+import { localStorageToPaginationOptions, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixCyberObservablesLines, {
   stixCyberObservablesLinesQuery,
@@ -39,7 +37,7 @@ const LOCAL_STORAGE_KEY = 'view-stix-cyber-observables';
 const StixCyberObservables: FunctionComponent = () => {
   const classes = useStyles();
 
-  const [viewStorage, setViewStorage, helpers] = useLocalStorage(
+  const { viewStorage, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
@@ -67,14 +65,11 @@ const StixCyberObservables: FunctionComponent = () => {
     handleToggleExports,
     handleAddFilter,
     handleSetNumberOfElements,
+    handleAddProperty,
   } = helpers;
 
-  const [selectedElements, setSelectedElements] = useState<
-  Record<string, StixCyberObservableLine_node$data>
-  >({});
-  const [deSelectedElements, setDeSelectedElements] = useState<
-  Record<string, StixCyberObservableLine_node$data>
-  >({});
+  const [selectedElements, setSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
+  const [deSelectedElements, setDeSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
 
   const paginationOptions = localStorageToPaginationOptions<StixCyberObservablesLinesPaginationQuery$variables>(
     {
@@ -87,20 +82,14 @@ const StixCyberObservables: FunctionComponent = () => {
 
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
-      setViewStorage((c) => ({
-        ...c,
-        types: types.filter((t: string) => t !== type),
-      }));
+      handleAddProperty('types', types.filter((x) => x !== type));
     } else {
-      setViewStorage((c) => ({
-        ...c,
-        types: types ? [...types, type] : [type],
-      }));
+      handleAddProperty('types', types ? [...types, type] : [type]);
     }
   };
 
   const handleClear = () => {
-    setViewStorage((c) => ({ ...c, types: [] }));
+    handleAddProperty('types', []);
   };
 
   const handleToggleSelectEntity = (

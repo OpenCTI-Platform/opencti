@@ -7,7 +7,7 @@ import { SubTypesLinesQuery } from './__generated__/SubTypesLinesQuery.graphql';
 import { SubTypesLines_subTypes$key } from './__generated__/SubTypesLines_subTypes.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 export const subTypesLinesQuery = graphql`
   query SubTypesLinesQuery {
@@ -41,7 +41,7 @@ interface SubTypesLinesProps {
   queryRef: PreloadedQuery<SubTypesLinesQuery>;
   keyword: string | undefined;
   dataColumns: DataColumns;
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   selectedElements: Record<string, { id: string }>;
   deSelectedElements: Record<string, { id: string }>;
   selectAll: boolean;

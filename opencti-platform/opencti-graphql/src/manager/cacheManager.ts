@@ -1,13 +1,7 @@
 import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { pubsub } from '../database/redis';
 import { connectors } from '../database/repository';
-import {
-  ENTITY_TYPE_CONNECTOR,
-  ENTITY_TYPE_RULE,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_STATUS_TEMPLATE
-} from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
 import { EntityOptions, listAllEntities } from '../database/middleware-loader';

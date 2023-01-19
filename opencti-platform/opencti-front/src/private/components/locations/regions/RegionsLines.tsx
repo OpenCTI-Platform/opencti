@@ -1,9 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { RegionLineComponent, RegionLineDummy } from './RegionLine';
-import { RegionsLinesPaginationQuery, RegionsLinesPaginationQuery$variables } from './__generated__/RegionsLinesPaginationQuery.graphql';
+import {
+  RegionsLinesPaginationQuery,
+  RegionsLinesPaginationQuery$variables,
+} from './__generated__/RegionsLinesPaginationQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { RegionsLines_data$key } from './__generated__/RegionsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -14,7 +17,7 @@ interface RegionsLinesProps {
   queryRef: PreloadedQuery<RegionsLinesPaginationQuery>,
   dataColumns: DataColumns,
   paginationOptions?: RegionsLinesPaginationQuery$variables,
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'],
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
 }
 
 export const regionsLinesQuery = graphql`

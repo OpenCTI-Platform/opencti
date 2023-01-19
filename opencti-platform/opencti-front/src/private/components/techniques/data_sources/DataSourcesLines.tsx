@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataSourceLineComponent, DataSourceLineDummy } from './DataSourceLine';
 import {
@@ -17,7 +17,7 @@ interface DataSourceLinesProps {
   queryRef: PreloadedQuery<DataSourcesLinesPaginationQuery>,
   dataColumns: DataColumns,
   paginationOptions?: DataSourcesLinesPaginationQuery$variables,
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'],
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
   onLabelClick: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void,
 }
 
