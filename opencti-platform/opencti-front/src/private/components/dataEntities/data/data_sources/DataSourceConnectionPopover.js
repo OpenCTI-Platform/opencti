@@ -16,19 +16,11 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import Switch from '@material-ui/core/Switch';
-import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../../components/i18n';
-import { commitMutation } from '../../../../../relay/environment';
-import { parse } from '../../../../../utils/Time';
-import { adaptFieldValue } from '../../../../../utils/String';
 import TextField from '../../../../../components/TextField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import SwitchField from '../../../../../components/SwitchField';
-import ResponseType from '../../../common/form/ResponseType';
-import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
-import Source from '../../../common/form/Source';
-import { toastGenericError } from "../../../../../utils/bakedToast";
+import SelectField from '../../../../../components/SelectField';
 import AddressField from '../../../common/form/AddressField';
 import { httpHeaderRegex, CertificateRegex } from '../../../../../utils/Network';
 
@@ -124,6 +116,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
       R.assoc('query_initial', connectionInformation?.query_initial || ''),
       R.assoc('query_index_field', connectionInformation?.query_index_field || ''),
       R.assoc('passphrase', connectionInformation?.passphrase || ''),
+      R.assoc('connector_type', connectionInformation?.connector_type || ''),
       R.assoc('listen', connectionInformation?.listen || ''),
       R.assoc('listen_exchange', connectionInformation?.listen_exchange || ''),
       R.assoc('headers', connectionInformation?.headers || ''),
@@ -145,6 +138,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
         'api_key',
         'username',
         'query_index_field',
+        'connector_type',
         'passphrase',
         'listen',
         'listen_exchange',
@@ -227,7 +221,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                         variant='outlined'
                       />
                     </Grid>
-                    <Grid item={true} xs={12}>
+                    <Grid item={true} xs={6}>
                       <div className={classes.textBase}>
                         <Typography
                           variant="h3"
@@ -250,6 +244,31 @@ export class DataSourceConnectionPopoverComponent extends Component {
                         />
                         <Typography>Yes</Typography>
                       </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Connector Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Connector Type')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        name="connector_type"
+                        fullWidth={true}
+                        size="small"
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                        variant='outlined'
+                      />
                     </Grid>
                     <Grid item={true} xs={6}>
                       <Typography
