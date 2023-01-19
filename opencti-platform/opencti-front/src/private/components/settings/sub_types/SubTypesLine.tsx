@@ -127,13 +127,13 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.enforce_reference.width }}
             >
-              {node?.settings?.enforce_reference ? (
+              {node.settings?.enforce_reference ? (
                 <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
                 <DoNotDisturbOnOutlined
                   fontSize="small"
                   color={
-                    node?.settings?.enforce_reference === null
+                    node.settings?.enforce_reference === null
                       ? 'disabled'
                       : 'primary'
                   }
@@ -144,13 +144,13 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.automatic_references.width }}
             >
-              {node?.settings?.platform_entity_files_ref ? (
+              {node.settings?.platform_entity_files_ref ? (
                 <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
                 <DoNotDisturbOnOutlined
                   fontSize="small"
                   color={
-                    node?.settings?.platform_entity_files_ref === null
+                    node.settings?.platform_entity_files_ref === null
                       ? 'disabled'
                       : 'primary'
                   }
@@ -161,13 +161,13 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.hidden.width }}
             >
-              {node?.settings?.platform_hidden_type ? (
+              {node.settings?.platform_hidden_type ? (
                 <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
                 <DoNotDisturbOnOutlined
                   fontSize="small"
                   color={
-                    node?.settings?.platform_hidden_type === null
+                    node.settings?.platform_hidden_type === null
                       ? 'disabled'
                       : 'primary'
                   }
