@@ -134,6 +134,7 @@ class RootOrganization extends Component {
                 'malwares',
                 'attack_patterns',
                 'tools',
+                'vulnerabilities',
                 'observables',
               ]}
             />
