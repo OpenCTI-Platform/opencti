@@ -351,7 +351,7 @@ export const stixCyberObservablesExportAsk = async (context, user, args) => {
     exportType,
     maxMarkingDefinition
   );
-  return map((w) => workToExportFile(w), works);
+  return works.map((w) => workToExportFile(w));
 };
 export const stixCyberObservableExportAsk = async (context, user, args) => {
   const { format, exportType, stixCyberObservableId = null, maxMarkingDefinition = null } = args;

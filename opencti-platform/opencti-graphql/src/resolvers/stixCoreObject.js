@@ -1,7 +1,7 @@
-import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import {
   askElementEnrichmentForConnector,
+  batchCases,
   batchCreatedBy,
   batchExternalReferences,
   batchLabels,
@@ -10,7 +10,6 @@ import {
   batchObservedData,
   batchOpinions,
   batchReports,
-  batchCases,
   findAll,
   findById,
   stixCoreObjectAddRelation,
@@ -121,7 +120,7 @@ const stixCoreObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
       importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(context, context.user, id, file, noTriggerImport),
-      exportAsk: (args) => stixCoreObjectExportAsk(context, context.user, R.assoc('stixCoreObjectId', id, args)),
+      exportAsk: (args) => stixCoreObjectExportAsk(context, context.user, { ...args, stixCoreObjectId: id }),
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
     }),
     stixCoreObjectsExportAsk: (_, args, context) => stixCoreObjectsExportAsk(context, context.user, args),

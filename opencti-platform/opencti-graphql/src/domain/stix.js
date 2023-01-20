@@ -1,11 +1,6 @@
 import mime from 'mime-types';
-import { assoc, invertObj, map, pipe, propOr } from 'ramda';
-import {
-  batchListThroughGetTo,
-  deleteElementById,
-  mergeEntities,
-  updateAttribute
-} from '../database/middleware';
+import { invertObj, map } from 'ramda';
+import { batchListThroughGetTo, deleteElementById, mergeEntities, updateAttribute } from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -132,25 +127,19 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
 export const exportTransformFilters = (listFilters, filterOptions, orderOptions) => {
   const filtersInversed = invertObj(filterOptions);
   const orderingInversed = invertObj(orderOptions);
-  return pipe(
-    assoc(
-      'filters',
-      map(
-        (n) => ({
-          key: n.key in filtersInversed ? filtersInversed[n.key] : n.key,
-          values: n.values,
-          operator: n.operator ? n.operator : 'eq',
-        }),
-        propOr([], 'filters', listFilters)
-      )
+  return {
+    ...listFilters,
+    orderBy: listFilters.orderBy in orderingInversed
+      ? orderingInversed[listFilters.orderBy]
+      : listFilters.orderBy,
+    filters: (listFilters.filters ?? []).map(
+      (n) => ({
+        key: n.key in filtersInversed ? filtersInversed[n.key] : n.key,
+        values: n.values,
+        operator: n.operator ?? 'eq',
+      })
     ),
-    assoc(
-      'orderBy',
-      listFilters.orderBy in orderingInversed
-        ? orderingInversed[listFilters.orderBy]
-        : listFilters.orderBy
-    )
-  )(listFilters);
+  };
 };
 
 export const batchObjectOrganizations = (context, user, stixCoreObjectIds) => {

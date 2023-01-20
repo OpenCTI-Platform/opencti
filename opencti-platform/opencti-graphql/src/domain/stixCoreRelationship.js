@@ -163,6 +163,7 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
   const filtersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsFilter;
   const ordersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsOrdering;
   let newArgsFiltersFilters = argsFilters.filters;
+  console.log('argsFilters.filters', argsFilters.filters);
   const initialParams = {};
   if (argsFilters.filters && argsFilters.filters.length > 0) {
     if (argsFilters.filters.filter((n) => n.key.includes('relationship_type')).length > 0) {
@@ -194,7 +195,11 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('toTypes'));
     }
   }
-  const finalArgsFilter = R.assoc('filters', newArgsFiltersFilters, argsFilters);
+  console.log('newArgsFiltersFilters', newArgsFiltersFilters);
+  const finalArgsFilter = {
+    ...argsFilters,
+    filters: newArgsFiltersFilters
+  };
   const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
   const works = await askListExport(context, user, format, type, listParams, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
