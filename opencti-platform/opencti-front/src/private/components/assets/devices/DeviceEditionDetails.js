@@ -21,6 +21,7 @@ import PortsField from '../../common/form/PortsField';
 import AddressField from '../../common/form/AddressField';
 import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../utils/Network';
 import TaskType from '../../common/form/TaskType';
+import HyperLinkField from '../../common/form/HyperLinkField';
 
 const styles = () => ({
   paper: {
@@ -80,6 +81,7 @@ class DeviceEditionDetailsComponent extends Component {
       values,
       isSubmitting,
       setFieldValue,
+      device,
     } = this.props;
     return (
       <div>
@@ -89,8 +91,8 @@ class DeviceEditionDetailsComponent extends Component {
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={6}>
-                <div style={{ marginBottom: '45px' }}>
+              <Grid item={true} xs={12}>
+                <div>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -115,32 +117,56 @@ class DeviceEditionDetailsComponent extends Component {
                     containerstyle={{ width: '100%' }}
                   />
                 </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Installed Software')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Installed Software')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <InstalledAsset
-                    component={SelectField}
-                    variant='outlined'
-                    type='software'
-                    multiple={true}
-                    name="installed_software"
-                    // disabled={true}
-                    fullWidth={true}
-                    style={{ height: '38.09px', maxWidth: '300px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
+              </Grid>
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='hardware'
+                  multiple={true}
+                  name="installed_hardware"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Indicates installed hardware on this entity.'}
+                  data={device?.installed_hardware}
+                  title={'Installed Hardware'}
+                  setFieldValue={setFieldValue}
+                  link='/defender HQ/assets/devices'
+                />
+              </Grid>
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='software'
+                  multiple={true}
+                  name="installed_software"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Indicateds installed software on this entity.'}
+                  data={device?.installed_software}
+                  title={'Installed Software'}
+                  setFieldValue={setFieldValue}
+                  link='/defender HQ/assets/software'
+                />
+              </Grid>
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='risks'
+                  multiple={true}
+                  name="related_risks"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Indicates the risks related to this entity.'}
+                  data={device?.related_risks}
+                  title={'Related Risks'}
+                  setFieldValue={setFieldValue}
+                  link='/activities/risk_assessment/risks'
+                />
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -164,6 +190,32 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Model')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Model')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="model"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -186,6 +238,32 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 19 }}
+                  >
+                    {t('Baseline Configuration Name')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
+                    <Tooltip title={t('Baseline Configuration Name')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="baseline_configuration_name"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -209,6 +287,32 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('URI')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('URI')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="uri"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -231,6 +335,80 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('BIOS ID')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('BIOS ID')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="bios_id"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Host Name')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Host Name')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="hostname"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('FQDN')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                    <Tooltip title={t('Outlined')} >
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <Field
+                    component={TextField}
+                    variant='outlined'
+                    name="fqdn"
+                    size='small'
+                    fullWidth={true}
+                  />
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -258,6 +436,8 @@ class DeviceEditionDetailsComponent extends Component {
                     <Typography>Yes</Typography>
                   </div>
                 </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -285,50 +465,8 @@ class DeviceEditionDetailsComponent extends Component {
                     <Typography>Yes</Typography>
                   </div>
                 </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Host Name')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Host Name')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="hostname"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('FQDN')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Outlined')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="fqdn"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -359,33 +497,6 @@ class DeviceEditionDetailsComponent extends Component {
                     variant="h3"
                     color="textSecondary"
                     gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Installed Hardware')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                    <Tooltip title={t('Installed Hardware')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <InstalledAsset
-                    component={SelectField}
-                    variant='outlined'
-                    type='hardware'
-                    multiple={true}
-                    name="installed_hardware"
-                    // disabled={true}
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
                     style={{ float: 'left', marginTop: 15 }}
                   >
                     {t('Location')}
@@ -405,94 +516,8 @@ class DeviceEditionDetailsComponent extends Component {
                     variant='outlined'
                   />
                 </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Model')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Model')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="model"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 19 }}
-                  >
-                    {t('Baseline Configuration Name')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
-                    <Tooltip title={t('Baseline Configuration Name')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="baseline_configuration_name"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('URI')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('URI')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="uri"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('BIOS ID')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('BIOS ID')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="bios_id"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -520,6 +545,8 @@ class DeviceEditionDetailsComponent extends Component {
                     <Typography>Yes</Typography>
                   </div>
                 </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -547,6 +574,8 @@ class DeviceEditionDetailsComponent extends Component {
                     containerstyle={{ width: '100%' }}
                   />
                 </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -569,6 +598,8 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <div>
                   <Typography
                     variant="h3"
@@ -663,6 +694,10 @@ const DeviceEditionDetails = createFragmentContainer(
     device: graphql`
       fragment DeviceEditionDetails_device on HardwareAsset {
         installed_software {
+          name
+        }
+        related_risks {
+          id
           name
         }
         connected_to_network {

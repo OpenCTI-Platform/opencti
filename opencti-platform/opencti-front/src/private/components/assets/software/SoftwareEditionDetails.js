@@ -21,6 +21,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import TaskType from '../../common/form/TaskType';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import AddressField from '../../common/form/AddressField';
+import HyperLinkField from '../../common/form/HyperLinkField';
 
 const styles = () => ({
   paper: {
@@ -147,13 +149,17 @@ class SoftwareEditionDetailsComponent extends Component {
       software,
       context,
       enableReferences,
+      setFieldValue,
+      values,
+      history
     } = this.props;
     // const initialValues = R.pipe(
     //   R.assoc('first_seen', dateFormat(software.first_seen)),
     //   R.assoc('last_seen', dateFormat(software.last_seen)),
     //   R.pick(['first_seen', 'last_seen', 'objective']),
     // )(software);
-
+    const installedOn = R.map((n) => n.name)(values.installed_on) || [];
+    const relatedRisk = R.map((n) => n.name)(values.related_risks) || [];
     return (
       <>
         {/* // <Formik
@@ -171,7 +177,7 @@ class SoftwareEditionDetailsComponent extends Component {
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Grid container={true} spacing={3}>
               <Grid container spacing={3}>
-                <Grid item={true} xs={6}>
+                <Grid item={true} xs={12}>
                   <Typography
                     variant="h3"
                     color="textSecondary"
@@ -191,31 +197,6 @@ class SoftwareEditionDetailsComponent extends Component {
                     name="software_identifier"
                     size='small'
                     fullWidth={true}
-                  />
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Patch Level')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
-                    <Tooltip title={t('Patch Level')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="patch_level"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                   />
                 </Grid>
               </Grid>
@@ -371,6 +352,40 @@ class SoftwareEditionDetailsComponent extends Component {
                   />
                 </Grid>
               </Grid>
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='hardware'
+                  multiple={true}
+                  name="installed_on"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Indicates connected hardware on this entity.'}
+                  data={software?.installed_on}
+                  title={'Installed On Assets'}
+                  setFieldValue={setFieldValue}
+                  history={history}
+                  link='/defender HQ/assets/devices'
+                />
+              </Grid>
+              <Grid item={true} xs={12}>
+                <HyperLinkField
+                  variant='outlined'
+                  type='risks'
+                  multiple={true}
+                  name="related_risks"
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '90%' }}
+                  helperText={'Indicates the risks related to this entity.'}
+                  data={software?.related_risks}
+                  title={'Related Risks'}
+                  setFieldValue={setFieldValue}
+                  history={history}
+                  link='/activities/risk_assessment/risks'
+                />
+              </Grid>
             </Grid>
           </Paper>
         </div>
@@ -461,6 +476,17 @@ const SoftwareEditionDetails = createFragmentContainer(
         patch_level
         installation_id
         implementation_point
+        installed_on {
+          id
+          entity_type
+          vendor_name
+          name
+          version
+        }
+        related_risks {
+          id
+          name
+        }
       }
     `,
   },
