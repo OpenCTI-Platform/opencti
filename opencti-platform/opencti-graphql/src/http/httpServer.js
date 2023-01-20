@@ -13,7 +13,6 @@ import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession, initializeSession } from '../database/session';
 import { checkSystemDependencies } from '../initialization';
-import { getSettings } from '../domain/settings';
 import { executionContext } from '../utils/access';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -23,7 +22,7 @@ const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 
-const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
+const onHealthCheck = () => checkSystemDependencies();
 
 const createHttpServer = async () => {
   const app = express();
