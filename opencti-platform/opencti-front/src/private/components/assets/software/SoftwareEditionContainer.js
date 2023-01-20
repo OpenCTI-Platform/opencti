@@ -135,6 +135,7 @@ class SoftwareEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    
     const filteredValue = {};
     const { totalInitial } = this.state;
     const adaptedValues = R.evolve(
@@ -216,7 +217,7 @@ class SoftwareEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, software, refreshQuery,
+      t, classes, handleClose, software, refreshQuery, history
     } = this.props;
     const initialValues = R.pipe(
       R.assoc('id', software?.id || ''),
@@ -239,6 +240,8 @@ class SoftwareEditionContainer extends Component {
       R.assoc('implementation_point', software?.implementation_point || ''),
       R.assoc('is_scanned', software?.is_scanned),      
       R.assoc('last_scanned', software?.last_scanned),
+      R.assoc('installed_on', software?.installed_on || []),
+      R.assoc('related_risks', software?.related_risks || []),
       R.pick([
         'id',
         'asset_id',
@@ -260,6 +263,8 @@ class SoftwareEditionContainer extends Component {
         'implementation_point',
         'is_scanned',
         'last_scanned',
+        'installed_on',
+        'related_risks',
       ]),
     )(software);
     return (
@@ -273,6 +278,8 @@ class SoftwareEditionContainer extends Component {
           {({
             submitForm,
             isSubmitting,
+            setFieldValue,
+            values,
           }) => (
             <>
               <div className={classes.header}>
@@ -343,6 +350,9 @@ class SoftwareEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <SoftwareEditionDetails
                       software={software}
+                      setFieldValue={setFieldValue}
+                      values={values}
+                      history={history}
                       // enableReferences={this.props.enableReferences}
                       // context={editContext}
                       handleClose={handleClose.bind(this)}
@@ -485,6 +495,17 @@ const SoftwareEditionFragment = createFragmentContainer(
         implementation_point
         is_scanned
         last_scanned
+        installed_on {
+          id
+          entity_type
+          vendor_name
+          name
+          version
+        }
+        related_risks {
+          id
+          name
+        }
         # ...SoftwareEditionOverview_software
         # editContext {
         #   name

@@ -89,23 +89,6 @@ class SoftwareDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {software.software_identifier && t(software.software_identifier)}
-              </Grid>
-              <Grid item={true} xs={6}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Patch Level')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
-                  <Tooltip title={t('Patch Level')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {software.patch_level && t(software.patch_level)}
               </Grid>              
             </Grid>
             <Grid container spacing={3} style={{marginBottom: "20px"}}>
@@ -218,13 +201,13 @@ class SoftwareDetailsComponent extends Component {
                 {software.last_scanned && fldt(software.last_scanned)}
               </Grid>
             </Grid>
-            <Grid container spacing={3}>
-              <Grid item={true} xs={6}>
+            <Grid container spacing={1}>
+              <Grid item={true} xs={12}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Installed on Assets')}
                 </Typography>
@@ -247,12 +230,12 @@ class SoftwareDetailsComponent extends Component {
                   </div>
                 </div>
               </Grid>       
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={12}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20  }}
+                  style={{ float: 'left'  }}
                 >
                   {t('Related Risks')}
                 </Typography>
