@@ -71,9 +71,9 @@ class AddressField extends Component {
   }
 
   handleAddAddress() {
-    if (!this.props.validation.test(this.state.value)) {
+    if (this.props.validation && !this.props.validation.test(this.state.value)) {
       return this.setState({ error: true });
-     } 
+    }
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
@@ -95,7 +95,7 @@ class AddressField extends Component {
 
   render() {
     const {
-      t, fldt, classes, name, title, helperText,
+      t, fldt, classes, name, title, helperText, addIcon,
     } = this.props;
     const {
       error, ipAddress,
@@ -112,7 +112,11 @@ class AddressField extends Component {
             </Tooltip>
           </div>
           <IconButton size='small' onClick={() => this.setState({ open: true })}>
-            <Edit fontSize='small' />
+            {addIcon ? (
+              <AddIcon fontSize='small' />
+            ) : (
+              <Edit fontSize='small' />
+            )}
           </IconButton>
         </div>
         <Field
@@ -135,7 +139,7 @@ class AddressField extends Component {
           maxWidth='sm'
         >
           <DialogContent>
-            {t(`Edit ${title}(es)`)}
+            {t(`Edit ${title}${addIcon ? '' : '(es)'}`)}
           </DialogContent>
           <DialogContent style={{ overflow: 'hidden' }}>
             <TextField
@@ -201,6 +205,7 @@ class AddressField extends Component {
 }
 
 AddressField.propTypes = {
+  addIcon: PropTypes.bool,
   name: PropTypes.string,
   device: PropTypes.object,
   classes: PropTypes.object,

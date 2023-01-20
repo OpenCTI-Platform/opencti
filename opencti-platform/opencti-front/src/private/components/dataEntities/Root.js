@@ -21,16 +21,8 @@ import LocationsEntities from './data/locations/LocationsEntities';
 import ResponsiblePartiesEntities from './data/responsibleParties/ResponsiblePartiesEntities';
 import ExternalReferencesEntities from './data/external_references/ExternalReferencesEntities';
 import AssessmentPlatformsEntities from './data/assessment_platform/AssessmentPlatformsEntities';
-import DataSources from './DataSources';
-import RolesDataSource from './data/roles/RolesDataSource';
-import TasksDataSource from './data/tasks/TasksDataSource';
-import NotesDataSource from './data/notes/NotesDataSource';
-import LabelsDataSource from './data/labels/LabelsDataSource';
-import PartiesDataSource from './data/parties/PartiesDataSource';
-import LocationsDataSource from './data/locations/LocationsDataSource';
-import ResponsiblePartiesDataSource from './data/responsibleParties/ResponsiblePartyDataSource';
-import ExternalReferencesDataSource from './data/external_references/ExternalReferencesDataSource';
-import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
+import DataSources from './data/data_sources/DataSources';
+import RootDataSource from './data/data_sources/Root';
 
 class Root extends Component {
   render() {
@@ -97,53 +89,8 @@ class Root extends Component {
         {/* Data Source Section */}
         <BoundaryRoute
           exact
-          path="/data/data source"
+          path="/data/data_source"
           component={DataSources}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/responsibility"
-          component={RolesDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/tasks"
-          component={TasksDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/notes"
-          component={NotesDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/labels"
-          component={LabelsDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/parties"
-          component={PartiesDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/locations"
-          component={LocationsDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/assessment_platform"
-          component={AssessmentPlatformsDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/responsible_parties"
-          component={ResponsiblePartiesDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/data source/external_references"
-          component={ExternalReferencesDataSource}
         />
 
         {/* Entities Root Path Section */}
@@ -191,10 +138,11 @@ class Root extends Component {
         />
 
         {/* Data Source Root Path Section */}
-        {/* <BoundaryRoute
-          path="/data/data source/:dataSourceId"
-          render={(routeProps) => <RootDevice {...routeProps} me={me} />}
-        /> */}
+        <BoundaryRoute
+          exact
+          path="/data/data_source/:dataSourceId"
+          render={(routeProps) => <RootDataSource {...routeProps} me={me} />}
+        />
       </Switch>
     );
   }
