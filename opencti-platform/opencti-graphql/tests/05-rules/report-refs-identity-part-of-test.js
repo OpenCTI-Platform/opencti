@@ -1,11 +1,11 @@
 import { expect, it, describe } from 'vitest';
-import { FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
+import { ADMIN_USER, FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
 import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import {
   createRelation,
   deleteElementById,
-  deleteRelationsByFromAndTo,
+  deleteRelationsByFromAndTo, internalDeleteElementById,
   storeLoadByIdWithRefs
 } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
@@ -45,8 +45,31 @@ describe('Report refs identity rule', () => {
       // -> REPORT - ref - IDENTITY F
       // 4. Remove a ref from report
       // 5. Remove a part of relation
+      try { /* R */ await internalDeleteElementById(testContext, ADMIN_USER, 'report--f7c415dc-ad05-5344-a660-8b2a5a7f95a9'); } catch { /* empty */ }
+      try { /* A */ await internalDeleteElementById(testContext, ADMIN_USER, 'identity--64205318-75a2-5432-af33-fd23c6674350'); } catch { /* empty */ }
+      try { /* B */ await internalDeleteElementById(testContext, ADMIN_USER, 'identity--737fbae1-683b-5f44-8a13-aee74d894f15'); } catch { /* empty */ }
+      try { /* C */ await internalDeleteElementById(testContext, ADMIN_USER, 'identity--039e6dd8-7496-5961-999c-ce14babbc365'); } catch { /* empty */ }
+      try { /* D */ await internalDeleteElementById(testContext, ADMIN_USER, 'identity--1e93f9b8-94c6-545b-a12b-00bd69362de8'); } catch { /* empty */ }
+      try { /* E */ await internalDeleteElementById(testContext, ADMIN_USER, 'identity--685fc232-fb4a-551f-811e-269a30207877'); } catch { /* empty */ }
+      try { /* F */ await internalDeleteElementById(testContext, ADMIN_USER, 'identity--c5892349-e5d9-5a3c-a2f9-37e1a0cf01b6'); } catch { /* empty */ }
+      // const A = await addOrganization(testContext, SYSTEM_USER, { name: 'Report TEST_RULE - IDENTITY A' });
+      // console.log('A', A.standard_id);
+      // const B = await addOrganization(testContext, SYSTEM_USER, { name: 'Report TEST_RULE - IDENTITY B' });
+      // console.log('B', B.standard_id);
+      // const C = await addOrganization(testContext, SYSTEM_USER, { name: 'Report TEST_RULE - IDENTITY C' });
+      // console.log('C', C.standard_id);
+      // const D = await addOrganization(testContext, SYSTEM_USER, { name: 'Report TEST_RULE - IDENTITY D' });
+      // console.log('D', D.standard_id);
+      // const E = await addOrganization(testContext, SYSTEM_USER, { name: 'Report TEST_RULE - IDENTITY E' });
+      // console.log('E', E.standard_id);
+      // const F = await addOrganization(testContext, SYSTEM_USER, { name: 'Report TEST_RULE - IDENTITY F' });
+      // console.log('F', F.standard_id);
+      // expect(null).not.toBeNull();
 
       await startModules();
+      await wait(2 * TEN_SECONDS); // Wait for all managers to be started
+      await disableRule(ReportRefsIdentityPartOfRule.id);
+
       // Delete all reports
       const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT], { connectionFormat: false });
       await elDeleteElements(testContext, SYSTEM_USER, reports, storeLoadByIdWithRefs);

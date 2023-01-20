@@ -113,23 +113,8 @@ interface StixCyberObject extends StixObject {
 // --- STIX Meta Objects
 
 // Extension
-interface StixExtension extends StixObject {
-  type: 'extension-definition';
-  created_by_ref: StixId;
-  created: Date;
-  modified: Date;
-  revoked: boolean;
-  labels: Array<string>; // optional
-  external_references?: Array<StixInternalExternalReference>; // optional
-  object_marking_refs: Array<StixId>; // optional
-  // Extension Definition Specific Properties
-  // name, description, schema, version, extension_types, extension_properties
-  name: string;
-  description: string;
-  schema: string;
-  version: string;
-  extension_types: Array<'new-sdo' | 'new-sco' | 'property-extension'>;
-  extension_properties?: Array<string>;
+interface StixContainerExtension extends StixOpenctiExtension {
+  object_refs_inferred: Array<StixId>; // optional
 }
 
 // Language
@@ -145,5 +130,8 @@ interface StixMarkingsObject extends StixObject {
 }
 
 // Stix core definition
-export type StixCoreObject = StixDomainObject | StixRelation | StixSighting | StixCyberObject;
-// | StixMarkingsObject | StixExternalReference | StixKillChainPhase;
+export type StixCoreObject = StixDomainObject | StixCyberObject | StixRelation | StixSighting;
+
+// export const isStixCoreObjectHaveCreator = (stix: StixCoreObject): stix is StixDomainObject | StixRelation | StixSighting => {
+//   return Object.prototype.hasOwnProperty.call(stix as StixDomainObject, 'created_by_ref');
+// };

@@ -17,6 +17,7 @@ import { statusFieldStatusesSearchQuery } from '../../private/components/common/
 import { useFormatter } from '../../components/i18n';
 import { vocabCategoriesQuery } from '../hooks/useVocabularyCategory';
 import { vocabularySearchQuery } from '../../private/components/settings/VocabularyQuery';
+import { objectAssigneeFieldAssigneesSearchQuery } from '../../private/components/common/form/ObjectAssigneeField';
 
 const filtersAllTypesQuery = graphql`
   query useSearchEntitiesAllTypesQuery {
@@ -292,6 +293,24 @@ const useSearchEntities = ({
               })),
             )(data);
             unionSetEntities('creator', creators);
+          });
+        break;
+      case 'assigneeTo':
+        fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const assigneeToEntities = R.pipe(
+              R.pathOr([], ['assignees', 'edges']),
+              R.map((n) => ({
+                label: n.node.name,
+                value: n.node.id,
+                type: 'User',
+              })),
+            )(data);
+            unionSetEntities('assigneeTo', assigneeToEntities);
           });
         break;
       case 'createdBy':
@@ -626,6 +645,33 @@ const useSearchEntities = ({
         }));
         unionSetEntities('revoked', revokedEntities);
         break;
+      case 'is_read':
+        // eslint-disable-next-line no-case-declarations
+        const isReadEntities = ['true', 'false'].map((n) => ({
+          label: t(n),
+          value: n,
+          type: 'Vocabulary',
+        }));
+        unionSetEntities('is_read', isReadEntities);
+        break;
+      case 'priority':
+        fetchQuery(attributesSearchQuery, {
+          attributeName: 'priority',
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const priorityEntities = (data?.runtimeAttributes?.edges ?? []).map(
+              (n) => ({
+                label: n.node.value,
+                value: n.node.value,
+                type: 'Vocabulary',
+              }),
+            );
+            unionSetEntities('priority', priorityEntities);
+          });
+        break;
       case 'pattern_type':
         // eslint-disable-next-line no-case-declarations
         const patternTypesEntities = [
@@ -653,11 +699,13 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const severityEntities = (data?.runtimeAttributes?.edges ?? []).map((n) => ({
-              label: n.node.value,
-              value: n.node.value,
-              type: 'Vocabulary',
-            }));
+            const severityEntities = (data?.runtimeAttributes?.edges ?? []).map(
+              (n) => ({
+                label: n.node.value,
+                value: n.node.value,
+                type: 'Vocabulary',
+              }),
+            );
             unionSetEntities('x_opencti_base_severity', severityEntities);
           });
         break;
@@ -669,7 +717,9 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const attackVectorEntities = (data?.runtimeAttributes?.edges ?? []).map((n) => ({
+            const attackVectorEntities = (
+              data?.runtimeAttributes?.edges ?? []
+            ).map((n) => ({
               label: n.node.value,
               value: n.node.value,
               type: 'Vocabulary',
@@ -685,7 +735,9 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const attackVectorEntities = (data?.runtimeAttributes?.edges ?? []).map((n) => ({
+            const attackVectorEntities = (
+              data?.runtimeAttributes?.edges ?? []
+            ).map((n) => ({
               label: n.node.value,
               value: n.node.value,
               type: 'Vocabulary',
@@ -723,7 +775,9 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const organizationTypeEntities = (data?.runtimeAttributes?.edges ?? []).map((n) => ({
+            const organizationTypeEntities = (
+              data?.runtimeAttributes?.edges ?? []
+            ).map((n) => ({
               label: n.node.value,
               value: n.node.value,
               type: 'Vocabulary',

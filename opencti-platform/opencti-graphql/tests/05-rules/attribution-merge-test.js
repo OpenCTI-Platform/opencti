@@ -21,6 +21,7 @@ describe('Attribute use rule when merging', () => {
     async () => {
       // Start
       await startModules();
+      await wait(2 * TEN_SECONDS); // Wait for all managers to be started
       // ---- Create the dataset
       // 01. Create a threat actor
       const threat = await addThreatActor(testContext, SYSTEM_USER, { name: 'MY TREAT ACTOR' });

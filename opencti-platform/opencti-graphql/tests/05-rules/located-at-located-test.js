@@ -27,6 +27,7 @@ describe('Located at located rule', () => {
     'Should rule successfully activated',
     async () => {
       await startModules();
+      await wait(2 * TEN_SECONDS); // Wait for all managers to be started
       const TLP_CLEAR_INSTANCE = await internalLoadById(testContext, SYSTEM_USER, TLP_CLEAR_ID);
       const TLP_TEST_INSTANCE = await internalLoadById(testContext, SYSTEM_USER, TLP_TEST_ID);
       // Check that no inferences exists
@@ -35,7 +36,7 @@ describe('Located at located rule', () => {
       // ---- base
       // HIETZING > located-in > FRANCE (Start: 2020-02-29T23:00:00.000Z, Stop: 2020-02-29T23:00:00.000Z, Confidence: 30)
       // BRETAGNE > located-in > FRANCE (Start: none, Stop: none, Confidence: 0)
-      // FRANCE > located-in > WESTERN EUROPE (Start: none, Stop: none, Confidence: 0)
+      // FRANCE > located-in > WESTERN EUROPE (Start: none, Stop: none, Confidence: 15)
       // WESTERN EUROPE > located-in > EUROPE  (Start: none, Stop: none, Confidence: 0)
       // ---- inferences that will be created
       // HIETZING > located-in > WESTERN EUROPE (Start: 2020-02-29T23:00:00.000Z, Stop: 2020-02-29T23:00:00.000Z, Confidence: 15)
@@ -47,15 +48,15 @@ describe('Located at located rule', () => {
       const afterActivationRelations = await getInferences(RELATION_LOCATED_AT);
       const hietzingToWesternEurope = await inferenceLookup(afterActivationRelations, HIETZING, WESTERN_EUROPE, RELATION_LOCATED_AT);
       expect(hietzingToWesternEurope).not.toBeNull();
-      expect(hietzingToWesternEurope.confidence).toBe(23); // AVG 2 relations (30 + 0) = 15
+      expect(hietzingToWesternEurope.confidence).toBe(23); // AVG 2 relations (30 + 15) = 45
       expect(hietzingToWesternEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToWesternEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
       const hietzingToEurope = await inferenceLookup(afterActivationRelations, HIETZING, EUROPE, RELATION_LOCATED_AT);
       expect(hietzingToEurope).not.toBeNull();
       // For confidence we have 2 explanations
-      // HIETZING > located-in > WESTERN EUROPE [Confidence: 15] > located-in > EUROPE [Confidence: 0] = 8
-      // HIETZING > located-in > FRANCE [Confidence: 30] > located-in > EUROPE  [Confidence: 0] = 15
-      expect(hietzingToEurope.confidence).toBe(21); // AVG 2 relations (15 + 8) = 12
+      // HIETZING > located-in > WESTERN EUROPE [Confidence: 23] > located-in > EUROPE [Confidence: 15] = 38/2 = 19
+      // HIETZING > located-in > FRANCE [Confidence: 30] > located-in > EUROPE  [Confidence: 15] = 45/2 = 22
+      expect(hietzingToEurope.confidence).toBe(21); // AVG 2 relations (19 + 22) = 41
       expect(hietzingToEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToEurope[RULE].length).toBe(2);

@@ -27,7 +27,10 @@ export interface LocalStorage {
   types?: string[];
   view?: string;
   zoom?: Record<string, unknown>;
-  redirectionMode?: string,
+  redirectionMode?: string;
+  selectAll?: boolean;
+  selectedElements?: Record<string, unknown>;
+  deSelectedElements?: Record<string, unknown>;
 }
 
 export interface UseLocalStorageHelpers {
@@ -56,6 +59,10 @@ const localStorageToPaginationOptions = ({
   const localOptions = { ...props };
   delete localOptions.redirectionMode;
   delete localOptions.openExports;
+  delete localOptions.selectAll;
+  delete localOptions.redirectionMode;
+  delete localOptions.selectedElements;
+  delete localOptions.deSelectedElements;
   delete localOptions.numberOfElements;
   delete localOptions.view;
   delete localOptions.zoom;
@@ -89,9 +96,9 @@ export type UseLocalStorage = [
 
 const buildParamsFromHistory = (params: LocalStorage) => removeEmptyFields({
   filters:
-    params.filters && Object.keys(params.filters).length > 0
-      ? JSON.stringify(params.filters)
-      : undefined,
+      params.filters && Object.keys(params.filters).length > 0
+        ? JSON.stringify(params.filters)
+        : undefined,
   zoom: JSON.stringify(params.zoom),
   searchTerm: params.searchTerm,
   sortBy: params.sortBy,

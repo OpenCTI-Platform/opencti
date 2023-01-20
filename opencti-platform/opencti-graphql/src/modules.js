@@ -1,17 +1,16 @@
 import conf, {
   ENABLED_API,
+  ENABLED_CONNECTOR_MANAGER,
   ENABLED_EXPIRED_MANAGER,
-  ENABLED_SUBSCRIPTION_MANAGER,
+  ENABLED_HISTORY_MANAGER,
+  ENABLED_NOTIFICATION_MANAGER, ENABLED_PUBLISHER_MANAGER,
+  ENABLED_RETENTION_MANAGER,
   ENABLED_RULE_ENGINE,
+  ENABLED_SYNC_MANAGER,
   ENABLED_TASK_SCHEDULER,
   logApp,
-  ENABLED_SYNC_MANAGER,
-  ENABLED_RETENTION_MANAGER,
-  ENABLED_HISTORY_MANAGER,
-  ENABLED_CONNECTOR_MANAGER,
 } from './config/conf';
 import expiredManager from './manager/expiredManager';
-import subscriptionManager from './manager/subscriptionManager';
 import taskManager from './manager/taskManager';
 import ruleEngine from './manager/ruleManager';
 import historyManager from './manager/historyManager';
@@ -20,6 +19,8 @@ import retentionManager from './manager/retentionManager';
 import httpServer from './http/httpServer';
 import connectorManager from './manager/connectorManager';
 import clusterManager from './manager/clusterManager';
+import notificationManager from './manager/notificationManager';
+import publisherManager from './manager/publisherManager';
 
 // region static graphql modules
 import './modules/index';
@@ -56,6 +57,20 @@ export const startModules = async () => {
     logApp.info('[OPENCTI-MODULE] Retention manager not started (disabled by configuration)');
   }
   // endregion
+  // region Notification manager
+  if (ENABLED_NOTIFICATION_MANAGER) {
+    await notificationManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Notification manager not started (disabled by configuration)');
+  }
+  // endregion
+  // region Notification manager
+  if (ENABLED_PUBLISHER_MANAGER) {
+    await publisherManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Publisher manager not started (disabled by configuration)');
+  }
+  // endregion
   // region Task manager
   if (ENABLED_TASK_SCHEDULER) {
     await taskManager.start();
@@ -68,13 +83,6 @@ export const startModules = async () => {
     await ruleEngine.start();
   } else {
     logApp.info('[OPENCTI-MODULE] Rule engine not started (disabled by configuration)');
-  }
-  // endregion
-  // region Subscription manager
-  if (ENABLED_SUBSCRIPTION_MANAGER) {
-    await subscriptionManager.start();
-  } else {
-    logApp.info('[OPENCTI-MODULE] Subscription manager not started (disabled by configuration)');
   }
   // endregion
   // region Sync manager
@@ -119,6 +127,20 @@ export const shutdownModules = async () => {
     logApp.info(`[OPENCTI-MODULE] Retention manager stopped in ${new Date().getTime() - stopTime} ms`);
   }
   // endregion
+  // region Notification manager
+  if (ENABLED_NOTIFICATION_MANAGER) {
+    stopTime = new Date().getTime();
+    await notificationManager.shutdown();
+    logApp.info(`[OPENCTI-MODULE] Notification manager stopped in ${new Date().getTime() - stopTime} ms`);
+  }
+  // endregion
+  // region Publisher manager
+  if (ENABLED_PUBLISHER_MANAGER) {
+    stopTime = new Date().getTime();
+    await publisherManager.shutdown();
+    logApp.info(`[OPENCTI-MODULE] Publisher manager stopped in ${new Date().getTime() - stopTime} ms`);
+  }
+  // endregion
   // region Task manager
   if (ENABLED_TASK_SCHEDULER) {
     stopTime = new Date().getTime();
@@ -131,13 +153,6 @@ export const shutdownModules = async () => {
     stopTime = new Date().getTime();
     await ruleEngine.shutdown();
     logApp.info(`[OPENCTI-MODULE] Rule engine stopped in ${new Date().getTime() - stopTime} ms`);
-  }
-  // endregion
-  // region Subscription manager
-  if (ENABLED_SUBSCRIPTION_MANAGER) {
-    stopTime = new Date().getTime();
-    await subscriptionManager.shutdown();
-    logApp.info(`[OPENCTI-MODULE] Subscription manager stopped in  ${new Date().getTime() - stopTime} ms`);
   }
   // endregion
   // region Sync manager

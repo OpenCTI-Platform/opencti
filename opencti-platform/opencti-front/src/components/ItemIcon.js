@@ -76,13 +76,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Vocabulary':
       return <ShortTextOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Marking-Definition':
-      return (
-        <CenterFocusStrongOutlined
-          style={style}
-          fontSize={fontSize}
-          role="img"
-        />
-      );
+      return <CenterFocusStrongOutlined style={style} fontSize={fontSize} role="img" />;
     case 'External-Reference':
       return (
         <LocalOfferOutlined style={style} fontSize={fontSize} role="img" />

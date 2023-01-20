@@ -303,7 +303,7 @@ const executeRuleElementRescan = async (context, user, actionContext, element) =
       if (needRescan) {
         const data = await stixLoadById(context, user, element.internal_id);
         const event = buildInternalEvent(EVENT_TYPE_CREATE, data);
-        await rulesApplyHandler(context, user, [event]);
+        await rulesApplyHandler(context, user, [event], rulesToApply);
       }
     } else if (isStixObject(element.entity_type)) {
       const listCallback = async (relations) => {

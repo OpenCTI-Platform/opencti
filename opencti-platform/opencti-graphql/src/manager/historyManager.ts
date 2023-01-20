@@ -6,7 +6,7 @@ import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from 
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import type { StreamEvent, UpdateEvent } from '../types/event';
+import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
@@ -44,7 +44,7 @@ interface HistoryData extends BasicStoreEntity {
   context_data: HistoryContext;
 }
 
-export const eventsApplyHandler = async (context: AuthContext, events: Array<StreamEvent>) => {
+export const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
@@ -118,7 +118,7 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Str
   await elIndexElements(context, SYSTEM_USER, `history (${historyElements.length})`, historyElements);
 };
 
-const historyStreamHandler = async (streamEvents: Array<StreamEvent>) => {
+const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
   try {
     // Create list of events to process
     // Events must be in a compatible version and not inferences events
@@ -155,7 +155,7 @@ const initHistoryManager = () => {
       lock = await lockResource([HISTORY_ENGINE_KEY]);
       running = true;
       logApp.info('[OPENCTI-MODULE] Running history manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', false, historyStreamHandler);
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler);
       await streamProcessor.start(lastEventId);
       while (syncListening) {
         await wait(WAIT_TIME_ACTION);

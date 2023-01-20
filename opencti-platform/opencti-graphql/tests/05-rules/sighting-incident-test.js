@@ -32,6 +32,7 @@ describe('Sighting incident rule', () => {
     async () => {
       // ---- 01. Test live behaviors
       await startModules();
+      await wait(2 * TEN_SECONDS); // Wait for all managers to be started
       await activateRule(RuleSightingIncident.id);
       // Check default state
       // All sighted indicators are revoked

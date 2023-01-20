@@ -1,16 +1,37 @@
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import type { BasicStoreEntity } from '../types/store';
+import type { BasicStoreIdentifier } from '../types/store';
 import { UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
+import type { StixId } from '../types/stix-common';
+import {
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_STREAM_COLLECTION,
+  ENTITY_TYPE_USER
+} from '../schema/internalObject';
+import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
+
+const STORE_ENTITIES_LINKS: Record<string, string[]> = {
+  // Filters must be reset depending on stream and triggers modifications
+  [ENTITY_TYPE_STREAM_COLLECTION]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  [ENTITY_TYPE_TRIGGER]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  // Users must be reset depending on roles and groups modifications
+  [ENTITY_TYPE_ROLE]: [ENTITY_TYPE_USER],
+  [ENTITY_TYPE_GROUP]: [ENTITY_TYPE_USER],
+};
 
 const cache: any = {};
 
-const buildStoreEntityMap = <T extends BasicStoreEntity>(entities: Array<T>) => {
+const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>) => {
   const entityById = new Map();
   for (let i = 0; i < entities.length; i += 1) {
     const entity = entities[i];
-    const ids = [entity.internal_id, entity.standard_id, ...(entity.x_opencti_stix_ids ?? [])];
+    const ids = [entity.internal_id, ...(entity.x_opencti_stix_ids ?? [])];
+    if (entity.standard_id) {
+      ids.push(entity.standard_id);
+    }
     for (let index = 0; index < ids.length; index += 1) {
       const id = ids[index];
       entityById.set(id, entity);
@@ -24,15 +45,17 @@ export const writeCacheForEntity = (entityType: string, data: unknown) => {
 };
 
 export const resetCacheForEntity = (entityType: string) => {
-  if (cache[entityType]) {
-    cache[entityType].values = undefined;
-  } else {
-    // This entity type is not part of the caching system
-  }
+  const types = [entityType, ...(STORE_ENTITIES_LINKS[entityType] ?? [])];
+  types.forEach((type) => {
+    if (cache[type]) {
+      cache[type].values = undefined;
+    } else {
+      // This entity type is not part of the caching system
+    }
+  });
 };
 
-export const getEntitiesFromCache = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, type: string)
-: Promise<Array<T>> => {
+export const getEntitiesFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<Array<T>> => {
   const getEntitiesFromCacheFn = async (): Promise<Array<T> | Map<string, T>> => {
     const fromCache = cache[type];
     if (!fromCache) {
@@ -49,12 +72,12 @@ export const getEntitiesFromCache = async <T extends BasicStoreEntity>(context: 
   }, getEntitiesFromCacheFn);
 };
 
-export const getEntitiesMapFromCache = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, type: string): Promise<Map<string, T>> => {
+export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<Map<string | StixId, T>> => {
   const data = await getEntitiesFromCache(context, user, type);
   return buildStoreEntityMap(data);
 };
 
-export const getEntityFromCache = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {
+export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {
   const data = await getEntitiesFromCache<T>(context, user, type);
   return data[0];
 };

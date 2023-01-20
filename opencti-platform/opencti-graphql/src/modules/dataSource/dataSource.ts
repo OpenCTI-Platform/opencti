@@ -1,14 +1,14 @@
 import dataSourceTypeDefs from './dataSource.graphql';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
-import type { StoreEntityDataSource } from './dataSource-types';
+import type { StixDataSource, StoreEntityDataSource } from './dataSource-types';
 import dataSourceResolvers from './dataSource-resolvers';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import convertDataSourceToStix from './dataSource-converter';
 import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
-const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource> = {
+const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource> = {
   type: {
     id: 'dataSources',
     name: ENTITY_TYPE_DATA_SOURCE,
@@ -38,6 +38,9 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource> = {
     { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
   ],
   relations: [],
+  representative: (stix: StixDataSource) => {
+    return stix.name;
+  },
   converter: convertDataSourceToStix
 };
 

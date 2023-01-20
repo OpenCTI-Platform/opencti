@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixDomain, cleanObject } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject, convertObjectReferences } from '../../database/stix-converter';
 import type { StixGrouping, StoreEntityGrouping } from './grouping-types';
 import { INPUT_OBJECTS } from '../../schema/general';
 
@@ -15,6 +15,7 @@ const convertGroupingToStix = (instance: StoreEntityGrouping): StixGrouping => {
       [STIX_EXT_OCTI]: cleanObject({
         ...grouping.extensions[STIX_EXT_OCTI],
         extension_type: 'property-extension',
+        object_refs_inferred: convertObjectReferences(instance, true),
       })
     }
   };

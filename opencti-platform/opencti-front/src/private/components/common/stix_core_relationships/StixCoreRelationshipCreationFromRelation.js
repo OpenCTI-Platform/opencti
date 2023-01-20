@@ -597,7 +597,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             display={this.state.open}
             inputValue={this.state.search}
             paginationOptions={stixDomainObjectsPaginationOptions}
-            stixCoreObjectTypes={stixCoreObjectTypes}
+            stixDomainObjectTypes={stixCoreObjectTypes}
           />
         </div>
       </div>

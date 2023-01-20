@@ -26,7 +26,7 @@ const executeProcessing = async (context, retentionRule) => {
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
   const jsonFilters = JSON.parse(filters || '{}');
   const before = utcDate().subtract(maxDays, 'days');
-  const queryOptions = convertFiltersToQueryOptions(jsonFilters, { before });
+  const queryOptions = await convertFiltersToQueryOptions(context, jsonFilters, { before });
   const opts = { ...queryOptions, first: RETENTION_BATCH_SIZE };
   const result = await elPaginate(context, RETENTION_MANAGER_USER, RETENTION_INDICES, opts);
   const remainingDeletions = result.pageInfo.globalCount;

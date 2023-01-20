@@ -8,17 +8,10 @@ import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
-import List from '@mui/material/List';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import Grid from '@mui/material/Grid';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { SendClockOutline } from 'mdi-material-ui';
 import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import ListItem from '@mui/material/ListItem';
 import Alert from '@mui/material/Alert';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
@@ -34,17 +27,18 @@ import {
   QueryRenderer,
 } from '../../../relay/environment';
 import { OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
-import UserSubscriptionCreation from './UserSubscriptionCreation';
-import UserSubscriptionPopover from './UserSubscriptionPopover';
 import Loader from '../../../components/Loader';
 import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { OTP_CODE_SIZE } from '../../../public/components/OtpActivation';
 
 const styles = () => ({
-  panel: {
+  container: {
+    width: 900,
+    margin: '0 auto',
+  },
+  paper: {
     width: '100%',
-    height: '100%',
     margin: '0 auto',
     marginBottom: 30,
     padding: 20,
@@ -231,12 +225,10 @@ const OtpComponent = ({ closeFunction }) => (
 );
 
 const ProfileOverviewComponent = (props) => {
-  const { t, fldt } = useFormatter();
-  const { me, subscriptionStatus, about, settings, classes } = props;
+  const { t, me, classes, about, settings } = props;
   const { external, otp_activated: useOtp } = me;
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
-  const subscriptionEdges = me.userSubscriptions?.edges ?? [];
   const fieldNames = [
     'name',
     'description',
@@ -289,9 +281,8 @@ const ProfileOverviewComponent = (props) => {
       },
     });
   };
-
   return (
-    <div>
+    <div className={classes.container}>
       <Dialog
         open={display2FA}
         PaperProps={{ elevation: 1 }}
@@ -305,332 +296,247 @@ const ProfileOverviewComponent = (props) => {
           <OtpComponent closeFunction={() => setDisplay2FA(false)} />
         </DialogContent>
       </Dialog>
-      <Grid container={true} spacing={3}>
-        <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} variant="outlined">
-            <Typography variant="h1" gutterBottom={true}>
-              {t('Profile')} {external && `(${t('external')})`}
-            </Typography>
-            <Formik
-              enableReinitialize={true}
-              initialValues={initialValues}
-              validationSchema={userValidation(t)}
-            >
-              {() => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    disabled={external}
-                    label={t('Name')}
-                    fullWidth={true}
-                    onSubmit={handleSubmitField}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="user_email"
-                    disabled={external}
-                    label={t('Email address')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                    onSubmit={handleSubmitField}
-                  />
-                  <ObjectOrganizationField
-                    name="objectOrganization"
-                    label="Organizations"
-                    disabled={true}
-                    style={{ marginTop: 20, width: '100%' }}
-                    outlined={false}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="firstname"
-                    label={t('Firstname')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                    onSubmit={handleSubmitField}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="lastname"
-                    label={t('Lastname')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                    onSubmit={handleSubmitField}
-                  />
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="theme"
-                    label={t('Theme')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'theme',
-                      id: 'theme',
-                    }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                    onChange={handleSubmitField}
-                  >
-                    <MenuItem value="default">{t('Default')}</MenuItem>
-                    <MenuItem value="dark">{t('Dark')}</MenuItem>
-                    <MenuItem value="light">{t('Light')}</MenuItem>
-                  </Field>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="language"
-                    label={t('Language')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'language',
-                      id: 'language',
-                    }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                    onChange={handleSubmitField}
-                  >
-                    <MenuItem value="auto">
-                      <em>{t('Automatic')}</em>
-                    </MenuItem>
-                    <MenuItem value="en-us">English</MenuItem>
-                    <MenuItem value="fr-fr">Français</MenuItem>
-                    <MenuItem value="es-es">Español</MenuItem>
-                    <MenuItem value="ja-jp">日本語</MenuItem>
-                    <MenuItem value="zh-cn">简化字</MenuItem>
-                  </Field>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows={4}
-                    style={{ marginTop: 20 }}
-                    onSubmit={handleSubmitField}
-                  />
-                </Form>
-              )}
-            </Formik>
-          </Paper>
-        </Grid>
-        <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} variant="outlined">
-            <Typography variant="h1" gutterBottom={true}>
-              {t('Subscriptions & digests')}
-            </Typography>
-            <UserSubscriptionCreation
-              userId={me.id}
-              disabled={!subscriptionStatus}
-            />
-            {!subscriptionStatus && (
-              <Alert severity="info" style={{ marginTop: 20 }}>
-                {t(
-                  'To use this feature, your platform administrator must enable the subscription manager in the config.',
-                )}
-              </Alert>
-            )}
-            {subscriptionEdges.length > 0 ? (
-              <div style={{ marginTop: 10 }}>
-                <List>
-                  {subscriptionEdges.map((userSubscriptionEdge) => {
-                    const userSubscription = userSubscriptionEdge.node;
-                    return (
-                      <ListItem
-                        key={userSubscription.id}
-                        classes={{ root: classes.item }}
-                        divider={true}
-                        disabled={!subscriptionStatus}
-                      >
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <SendClockOutline />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={userSubscription.name}
-                          secondary={`${
-                            userSubscription.cron === '5-minutes'
-                              ? t('As it happens')
-                              : userSubscription.cron
-                          } - ${t('Last run:')} ${fldt(
-                            userSubscription.last_run,
-                          )}`}
-                        />
-                        <ListItemSecondaryAction>
-                          <UserSubscriptionPopover
-                            userId={me.id}
-                            userSubscriptionId={userSubscription.id}
-                            paginationOptions={null}
-                            disabled={!subscriptionStatus}
-                          />
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              </div>
-            ) : (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t('You have no subscription for the moment.')}
-                </span>
-              </div>
-            )}
-          </Paper>
-        </Grid>
-        <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} variant="outlined">
-            <Typography
-              variant="h1"
-              gutterBottom={true}
-              style={{ float: 'left' }}
-            >
-              {t('Authentication')}
-            </Typography>
-            <div style={{ float: 'right', marginTop: -5 }}>
-              {useOtp && (
-                <Button
-                  type="button"
-                  color="primary"
-                  startIcon={<NoEncryptionOutlined />}
-                  onClick={disableOtp}
-                  classes={{ root: classes.button }}
-                  disabled={settings.otp_mandatory}
-                >
-                  {t('Disable two-factor authentication')}
-                </Button>
-              )}
-              {!useOtp && (
-                <Button
-                  type="button"
-                  color="secondary"
-                  startIcon={<LockOutlined />}
-                  onClick={() => setDisplay2FA(true)}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Enable two-factor authentication')}
-                </Button>
-              )}
-            </div>
-            <div className="clearfix" />
-            <Formik
-              enableReinitialize={true}
-              initialValues={{
-                current_password: '',
-                password: '',
-                confirmation: '',
-              }}
-              validationSchema={passwordValidation(t)}
-              onSubmit={handleSubmitPasswords}
-            >
-              {({ submitForm, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="current_password"
-                    label={t('Current password')}
-                    type="password"
-                    fullWidth={true}
-                    disabled={external}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="password"
-                    label={t('New password')}
-                    type="password"
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                    disabled={external}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="confirmation"
-                    label={t('Confirmation')}
-                    type="password"
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                    disabled={external}
-                  />
-                  <div style={{ marginTop: 20 }}>
-                    <Button
-                      variant="contained"
-                      type="button"
-                      color="primary"
-                      onClick={submitForm}
-                      disabled={external || isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Update')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </Paper>
-        </Grid>
-        <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} variant="outlined">
-            <Typography variant="h1" gutterBottom={true}>
-              {t('API access')}
-            </Typography>
-            <div style={{ marginTop: 20 }}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t('OpenCTI version')}
-              </Typography>
-              <pre>{about.version}</pre>
-              <Typography
-                variant="h4"
-                gutterBottom={true}
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Typography variant="h1" gutterBottom={true}>
+          {t('Profile')} {external && `(${t('external')})`}
+        </Typography>
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={userValidation(t)}
+        >
+          {() => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                disabled={external}
+                label={t('Name')}
+                fullWidth={true}
+                onSubmit={handleSubmitField}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="user_email"
+                disabled={external}
+                label={t('Email address')}
+                fullWidth={true}
                 style={{ marginTop: 20 }}
+                onSubmit={handleSubmitField}
+              />
+              <ObjectOrganizationField
+                name="objectOrganization"
+                label="Organizations"
+                disabled={true}
+                style={{ marginTop: 20, width: '100%' }}
+                outlined={false}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="firstname"
+                label={t('Firstname')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onSubmit={handleSubmitField}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="lastname"
+                label={t('Lastname')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onSubmit={handleSubmitField}
+              />
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="theme"
+                label={t('Theme')}
+                fullWidth={true}
+                inputProps={{
+                  name: 'theme',
+                  id: 'theme',
+                }}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+                onChange={handleSubmitField}
               >
-                {t('API key')}
-              </Typography>
-              <pre>{me.api_token}</pre>
-              {me.id !== OPENCTI_ADMIN_UUID && (
+                <MenuItem value="default">{t('Default')}</MenuItem>
+                <MenuItem value="dark">{t('Dark')}</MenuItem>
+                <MenuItem value="light">{t('Light')}</MenuItem>
+              </Field>
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="language"
+                label={t('Language')}
+                fullWidth={true}
+                inputProps={{
+                  name: 'language',
+                  id: 'language',
+                }}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+                onChange={handleSubmitField}
+              >
+                <MenuItem value="auto">
+                  <em>{t('Automatic')}</em>
+                </MenuItem>
+                <MenuItem value="en-us">English</MenuItem>
+                <MenuItem value="fr-fr">Français</MenuItem>
+                <MenuItem value="es-es">Español</MenuItem>
+                <MenuItem value="ja-jp">日本語</MenuItem>
+                <MenuItem value="zh-cn">简化字</MenuItem>
+              </Field>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows={4}
+                style={{ marginTop: 20 }}
+                onSubmit={handleSubmitField}
+              />
+            </Form>
+          )}
+        </Formik>
+      </Paper>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Typography variant="h1" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Authentication')}
+        </Typography>
+        <div style={{ float: 'right', marginTop: -5 }}>
+          {useOtp && (
+            <Button
+              type="button"
+              color="primary"
+              startIcon={<NoEncryptionOutlined />}
+              onClick={disableOtp}
+              classes={{ root: classes.button }}
+              disabled={settings.otp_mandatory}
+            >
+              {t('Disable two-factor authentication')}
+            </Button>
+          )}
+          {!useOtp && (
+            <Button
+              type="button"
+              color="secondary"
+              startIcon={<LockOutlined />}
+              onClick={() => setDisplay2FA(true)}
+              classes={{ root: classes.button }}
+            >
+              {t('Enable two-factor authentication')}
+            </Button>
+          )}
+        </div>
+        <div className="clearfix" />
+        <Formik
+          enableReinitialize={true}
+          initialValues={{
+            current_password: '',
+            password: '',
+            confirmation: '',
+          }}
+          validationSchema={passwordValidation(t)}
+          onSubmit={handleSubmitPasswords}
+        >
+          {({ submitForm, isSubmitting }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="current_password"
+                label={t('Current password')}
+                type="password"
+                fullWidth={true}
+                disabled={external}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="password"
+                label={t('New password')}
+                type="password"
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                disabled={external}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="confirmation"
+                label={t('Confirmation')}
+                type="password"
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                disabled={external}
+              />
+              <div style={{ marginTop: 20 }}>
                 <Button
                   variant="contained"
+                  type="button"
                   color="primary"
-                  onClick={renewToken}
+                  onClick={submitForm}
+                  disabled={external || isSubmitting}
+                  classes={{ root: classes.button }}
                 >
-                  {t('Renew')}
+                  {t('Update')}
                 </Button>
-              )}
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Required headers')}
-              </Typography>
-              <pre>
-                Content-Type: application/json
-                <br />
-                Authorization: Bearer {me.api_token}
-              </pre>
-              <Button
-                variant="contained"
-                color="primary"
-                component={Link}
-                to="/graphql"
-                target="_blank"
-              >
-                {t('Playground')}
-              </Button>
-            </div>
-          </Paper>
-        </Grid>
-      </Grid>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </Paper>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Typography variant="h1" gutterBottom={true}>
+          {t('API access')}
+        </Typography>
+        <div style={{ marginTop: 20 }}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t('OpenCTI version')}
+          </Typography>
+          <pre>{about.version}</pre>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('API key')}
+          </Typography>
+          <pre>{me.api_token}</pre>
+          {me.id !== OPENCTI_ADMIN_UUID && (
+            <Button variant="contained" color="primary" onClick={renewToken}>
+              {t('Renew')}
+            </Button>
+          )}
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Required headers')}
+          </Typography>
+          <pre>
+            Content-Type: application/json
+            <br />
+            Authorization: Bearer {me.api_token}
+          </pre>
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to="/graphql"
+            target="_blank"
+          >
+            {t('Playground')}
+          </Button>
+        </div>
+      </Paper>
     </div>
   );
 };
@@ -640,7 +546,6 @@ ProfileOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   me: PropTypes.object,
-  subscriptionStatus: PropTypes.bool,
 };
 
 const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
@@ -662,135 +567,6 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
         edges {
           node {
             name
-          }
-        }
-      }
-      userSubscriptions(first: 200)
-        @connection(key: "Pagination_userSubscriptions") {
-        edges {
-          node {
-            id
-            name
-            options
-            cron
-            filters
-            last_run
-            entities {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreObject {
-                created_at
-                createdBy {
-                  ... on Identity {
-                    id
-                    name
-                    entity_type
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
-                }
-              }
-              ... on StixDomainObject {
-                created
-              }
-              ... on AttackPattern {
-                name
-                x_mitre_id
-              }
-              ... on Campaign {
-                name
-                first_seen
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Note {
-                attribute_abstract
-                content
-              }
-              ... on ObservedData {
-                first_observed
-                last_observed
-              }
-              ... on Opinion {
-                opinion
-              }
-              ... on Report {
-                name
-                published
-              }
-              ... on Grouping {
-                name
-                description
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on System {
-                name
-              }
-              ... on Indicator {
-                name
-                valid_from
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-                first_seen
-                last_seen
-              }
-              ... on ThreatActor {
-                name
-                first_seen
-                last_seen
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on Incident {
-                name
-                first_seen
-                last_seen
-              }
-            }
           }
         }
       }

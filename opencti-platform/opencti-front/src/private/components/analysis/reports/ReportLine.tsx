@@ -59,15 +59,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface ReportLineComponentProps {
   node: ReportLine_node$data;
   dataColumns: DataColumns;
-  onLabelClick: (key: string, id: string, value: string, event: React.SyntheticEvent) => void;
+  onLabelClick: (
+    key: string,
+    id: string,
+    value: string,
+    event: React.SyntheticEvent
+  ) => void;
   selectedElements: Record<string, ReportLine_node$data>;
   deSelectedElements: Record<string, ReportLine_node$data>;
-  onToggleEntity: (entity: ReportLine_node$data, event?: React.SyntheticEvent) => void;
+  onToggleEntity: (
+    entity: ReportLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: ReportLine_node$data,
-    event?: React.SyntheticEvent,
+    event?: React.SyntheticEvent
   ) => void;
   index: number;
   redirectionMode: string;
@@ -93,7 +101,11 @@ const ReportLineComponent: FunctionComponent<ReportLineComponentProps> = ({
       divider={true}
       button={true}
       component={Link}
-      to={(!redirectionMode || redirectionMode === 'overview') ? `/dashboard/analysis/reports/${node.id}` : `/dashboard/analysis/reports/${node.id}/${redirectionMode}`}
+      to={
+        !redirectionMode || redirectionMode === 'overview'
+          ? `/dashboard/analysis/reports/${node.id}`
+          : `/dashboard/analysis/reports/${node.id}/${redirectionMode}`
+      }
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
@@ -252,7 +264,9 @@ interface ReportLineDummyProps {
   dataColumns: DataColumns;
 }
 
-export const ReportLineDummy: FunctionComponent<ReportLineDummyProps> = ({ dataColumns }) => {
+export const ReportLineDummy: FunctionComponent<ReportLineDummyProps> = ({
+  dataColumns,
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

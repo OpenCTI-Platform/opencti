@@ -442,7 +442,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           display={open}
           inputValue={search}
           paginationOptions={stixDomainObjectsPaginationOptions}
-          stixCoreObjectTypes={stixCoreObjectTypes}
+          stixDomainObjectTypes={stixCoreObjectTypes}
         />
       </div>
     );

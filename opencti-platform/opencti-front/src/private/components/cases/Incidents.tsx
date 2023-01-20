@@ -146,7 +146,8 @@ const Incidents: FunctionComponent<CasesProps> = () => {
         iconExtension={true}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'assignee',
+          'assigneeTo',
+          'priority',
           'labelledBy',
           'createdBy',
           'creator',

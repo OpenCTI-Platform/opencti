@@ -36,12 +36,8 @@ export const createStreamCollection = async (context, user, input) => {
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
   // Create groups relations
   const relBuilder = (g) => ({ fromId: g, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
-  await createRelations(
-    context,
-    user,
-    relatedGroups.map((g) => relBuilder(g))
-  );
-  return data;
+  await createRelations(context, user, relatedGroups.map((g) => relBuilder(g)));
+  return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].ADDED_TOPIC, data, user);
 };
 export const streamCollectionGroups = async (context, user, collection) => {
   return listThroughGetFrom(context, user, collection.id, RELATION_ACCESSES_TO, ENTITY_TYPE_GROUP);

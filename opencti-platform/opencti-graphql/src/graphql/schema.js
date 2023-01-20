@@ -67,7 +67,6 @@ import feedResolvers from '../resolvers/feed';
 import taskResolvers from '../resolvers/task';
 import retentionResolvers from '../resolvers/retentionRule';
 import streamResolvers from '../resolvers/stream';
-import userSubscriptionResolvers from '../resolvers/userSubscription';
 import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
@@ -144,7 +143,6 @@ const schemaResolvers = [
   taxiiResolvers,
   feedResolvers,
   streamResolvers,
-  userSubscriptionResolvers,
   statusResolvers,
   logResolvers,
   rabbitmqMetricsResolvers,

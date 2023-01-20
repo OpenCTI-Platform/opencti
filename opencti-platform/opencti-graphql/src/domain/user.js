@@ -170,8 +170,7 @@ export const computeAvailableMarkings = (markings, all) => {
   return R.uniqBy((m) => m.id, computedMarkings);
 };
 
-export const getUserAndGlobalMarkings = async (context, userId, capabilities) => {
-  const userGroups = await listThroughGetTo(context, SYSTEM_USER, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilities) => {
   const groupIds = userGroups.map((r) => r.id);
   const userCapabilities = map((c) => c.name, capabilities);
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
@@ -666,20 +665,23 @@ const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
   }
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const batchOpts = { batched: false, paginate: false };
-  const organizations = await batchOrganizations(context, SYSTEM_USER, client.id, { ...batchOpts, withInferences: false });
+  const args = { filters: [{ key: 'contact_information', values: [client.user_email] }], connectionFormat: false };
+  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+  const organizationsPromise = batchOrganizations(context, SYSTEM_USER, client.id, { ...batchOpts, withInferences: false });
+  const userGroupsPromise = listThroughGetTo(context, SYSTEM_USER, client.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const allowed_organizations = await batchOrganizations(context, SYSTEM_USER, client.id, batchOpts);
   const userOrganizations = allowed_organizations.map((m) => m.internal_id);
   const isUserPlatform = settings.platform_organization ? userOrganizations.includes(settings.platform_organization) : true;
   const capabilities = await getCapabilities(context, client.id, isUserPlatform);
-  const marking = await getUserAndGlobalMarkings(context, client.id, capabilities);
-  const args = { filters: [{ key: 'contact_information', values: [client.user_email] }], connectionFormat: false };
-  const individuals = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+  const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
+  const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
   const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
   return {
     ...client,
     capabilities,
+    groups,
     organizations,
     allowed_organizations,
     individual_id: individualId,
@@ -803,7 +805,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     try {
       const user = await resolveUserByToken(context, tokenUUID);
       if (user) {
-        return authenticateUser(context, req, user, loginProvider, tokenUUID);
+        return await authenticateUser(context, req, user, loginProvider, tokenUUID);
       }
       return user;
     } catch (err) {

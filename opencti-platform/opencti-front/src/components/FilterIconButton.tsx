@@ -166,7 +166,11 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
               disabled={
                 disabledPossible ? Object.keys(filters).length === 1 : undefined
               }
-              onDelete={() => handleRemoveFilter?.(filterKey)}
+              onDelete={
+                handleRemoveFilter
+                  ? () => handleRemoveFilter?.(filterKey)
+                  : undefined
+              }
             />
             {lastKey !== filterKey && (
               <Chip classes={{ root: classOperator }} label={t('AND')} />

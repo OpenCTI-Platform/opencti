@@ -23,6 +23,8 @@ generates:
         Vocabulary: ../modules/vocabulary/vocabulary-types#BasicStoreEntityVocabulary
         AdministrativeArea: ../modules/administrativeArea/administrativeArea-types#BasicStoreEntityAdministrativeArea
         Case: ../modules/case/case-types#BasicStoreEntityCase
+        Notification: ../modules/notification/notification-types#BasicStoreEntityNotification
+        Trigger: ../modules/notification/notification-types#BasicStoreEntityTrigger
         EntitySetting: ../modules/entitySetting/entitySetting-types#BasicStoreEntityEntitySetting
   ./graphql.schema.json:
     plugins:

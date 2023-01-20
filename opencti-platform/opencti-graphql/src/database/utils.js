@@ -28,7 +28,6 @@ export const INTERNAL_SYNC_QUEUE = 'sync';
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_DELETE = 'delete';
 export const EVENT_TYPE_DEPENDENCIES = 'init-dependencies';
-export const EVENT_TYPE_DELETE_DEPENDENCIES = 'delete-dependencies';
 export const EVENT_TYPE_INIT = 'init-create';
 export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_MERGE = 'merge';
@@ -241,11 +240,12 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   throw DatabaseError(`Cant find index for type ${conceptType}`);
 };
 
-const extractEntityMainValue = (entityData) => {
+// TODO migrate to extractStixRepresentative from convertStoreToStix
+export const extractEntityRepresentative = (entityData) => {
   let mainValue;
   if (isStixCyberObservable(entityData.entity_type)) {
     mainValue = observableValue(entityData);
-  } else if (isNotEmptyField(entityData.definition)) { // TODO Improve the entity domain main value extractor
+  } else if (isNotEmptyField(entityData.definition)) {
     mainValue = entityData.definition;
   } else if (isNotEmptyField(entityData.value)) {
     mainValue = entityData.value;
@@ -280,12 +280,12 @@ const extractEntityMainValue = (entityData) => {
 };
 
 export const generateMergeMessage = (instance, sources) => {
-  const name = extractEntityMainValue(instance);
-  const sourcesNames = sources.map((source) => extractEntityMainValue(source)).join(', ');
+  const name = extractEntityRepresentative(instance);
+  const sourcesNames = sources.map((source) => extractEntityRepresentative(source)).join(', ');
   return `merges ${instance.entity_type} \`${sourcesNames}\` in \`${name}\``;
 };
 const generateCreateDeleteMessage = (type, instance) => {
-  const name = extractEntityMainValue(instance);
+  const name = extractEntityRepresentative(instance);
   if (isStixObject(instance.entity_type)) {
     let entityType = instance.entity_type;
     if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
@@ -294,12 +294,12 @@ const generateCreateDeleteMessage = (type, instance) => {
     return `${type}s a ${entityType} \`${name}\``;
   }
   if (isStixRelationship(instance.entity_type)) {
-    const from = extractEntityMainValue(instance.from);
+    const from = extractEntityRepresentative(instance.from);
     let fromType = instance.from.entity_type;
     if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
       fromType = 'File';
     }
-    const to = extractEntityMainValue(instance.to);
+    const to = extractEntityRepresentative(instance.to);
     let toType = instance.to.entity_type;
     if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
       toType = 'File';
@@ -338,7 +338,7 @@ export const generateUpdateMessage = (inputs) => {
       if (isNotEmptyField(values)) {
         // If update is based on internal ref, we need to extract the value
         if (metaFieldToStixAttribute()[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
-          message = values.map((val) => truncate(extractEntityMainValue(val))).join(', ');
+          message = values.map((val) => truncate(extractEntityRepresentative(val))).join(', ');
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
         } else if (isJsonAttribute(key)) {

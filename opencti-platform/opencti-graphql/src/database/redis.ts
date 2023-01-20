@@ -16,10 +16,9 @@ import {
   generateDeleteMessage,
   generateMergeMessage,
   isEmptyField,
-  isInferredIndex,
   waitInSec,
 } from './utils';
-import { INTERNAL_EXPORTABLE_TYPES, isStixExportableData } from '../schema/stixCoreObject';
+import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
 import RedisStore, { REDIS_PREFIX } from './sessionStore-redis';
@@ -29,12 +28,12 @@ import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
+  BaseEvent,
   CreateEventOpts,
   DeleteEvent,
-  Event,
   EventOpts,
-  MergeEvent,
-  StreamEvent,
+  MergeEvent, SseEvent,
+  StreamDataEvent,
   UpdateEvent,
   UpdateEventOpts
 } from '../types/event';
@@ -45,9 +44,9 @@ import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../manager/clusterManager';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
-const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => readFileSync(path));
-const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
+export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
+export const NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}stream.notification`;
 
 export const EVENT_CURRENT_VERSION = '4';
 const BASE_DATABASE = 0; // works key for tracking / stream
@@ -55,9 +54,7 @@ const CONTEXT_DATABASE = 1; // locks / user context
 const REDIS_EXPIRE_TIME = 90;
 const MAX_RETRY_COMMAND = 10;
 
-const isStreamPublishable = (instance: StoreObject, opts: EventOpts) => {
-  const isInferredInstance = isInferredIndex(instance._index);
-  if (isInferredInstance && !INCLUDE_INFERENCES) return false;
+const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
 
@@ -88,20 +85,20 @@ const createRedisClient = (provider: string, database?: number): Redis => {
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   client.defineCommand('cacheGet', {
     lua:
-      'local index = 1\n'
-      + 'local resolvedKeys = redis.call(\'mget\', unpack(KEYS))\n'
-      + 'for p, k in pairs(resolvedKeys) do \n'
-      + '    if (k==nil or (type(k) == "boolean" and not k)) then \n'
-      + '        index = index+1\n'
-      + '    elseif (k:sub(0, 1) == "@") then \n'
-      + '        local subKey = "cache:" .. k:sub(2, #k)\n'
-      + '        resolvedKeys[index] = redis.call(\'get\', subKey)\n'
-      + '        index = index+1\n'
-      + '    else \n'
-      + '        index = index+1\n'
-      + '    end\n'
-      + 'end\n'
-      + 'return resolvedKeys\n',
+        'local index = 1\n'
+        + 'local resolvedKeys = redis.call(\'mget\', unpack(KEYS))\n'
+        + 'for p, k in pairs(resolvedKeys) do \n'
+        + '    if (k==nil or (type(k) == "boolean" and not k)) then \n'
+        + '        index = index+1\n'
+        + '    elseif (k:sub(0, 1) == "@") then \n'
+        + '        local subKey = "cache:" .. k:sub(2, #k)\n'
+        + '        resolvedKeys[index] = redis.call(\'get\', subKey)\n'
+        + '        index = index+1\n'
+        + '    else \n'
+        + '        index = index+1\n'
+        + '    end\n'
+        + 'end\n'
+        + 'return resolvedKeys\n',
   });
   return client;
 };
@@ -372,8 +369,9 @@ export const cacheGet = async (id: string | Array<string>): Promise<StoreObject 
 };
 // endregion
 
-// region opencti stream
+// region opencti data stream
 const streamTrimming = conf.get('redis:trimming') || 0;
+const notificationTrimming = conf.get('redis:notification_trimming') || 50000;
 const mapJSToStream = (event: any) => {
   const cmdArgs: Array<string> = [];
   Object.keys(event).forEach((key) => {
@@ -385,8 +383,8 @@ const mapJSToStream = (event: any) => {
   });
   return cmdArgs;
 };
-const pushToStream = async (context: AuthContext, user: AuthUser, client: Redis, instance: StoreObject, event: Event, opts: EventOpts) => {
-  if (isStreamPublishable(instance, opts)) {
+const pushToStream = async (context: AuthContext, user: AuthUser, client: Redis, event: BaseEvent, opts: EventOpts = {}) => {
+  if (isStreamPublishable(opts)) {
     const pushToStreamFn = async () => {
       if (streamTrimming) {
         await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
@@ -405,6 +403,7 @@ interface MergeImpacts {
   updatedRelations: Array<string>;
   dependencyDeletions: Array<StoreObject>;
 }
+
 const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>, impacts: MergeImpacts): MergeEvent => {
   const message = generateMergeMessage(instance, sourceEntities);
   const { updatedRelations, dependencyDeletions } = impacts;
@@ -413,7 +412,7 @@ const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreO
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_MERGE,
-    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
+    scope: 'external',
     message,
     origin: user.origin,
     data: currentStix,
@@ -437,17 +436,15 @@ export const storeMergeEvent = async (
 ) => {
   try {
     const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
-    await pushToStream(context, user, clientBase, mergedInstance, event, opts);
+    await pushToStream(context, user, clientBase, event, opts);
     return event;
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
 };
 // Update
-const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts): UpdateEvent => {
+export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObject, stix: StixCoreObject, message: string, opts: UpdateEventOpts = {}): UpdateEvent => {
   // Build and send the event
-  const stix = convertStoreToStix(instance) as StixCoreObject;
-  const previousStix = convertStoreToStix(previous) as StixCoreObject;
   const patch = jsonpatch.compare(previousStix, stix);
   const previousPatch = jsonpatch.compare(stix, previousStix);
   if (patch.length === 0 || previousPatch.length === 0) {
@@ -459,7 +456,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_UPDATE,
-    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
+    scope: 'external',
     message,
     origin: user.origin,
     data: stix,
@@ -470,11 +467,20 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
     }
   };
 };
+export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
+  await pushToStream(context, user, clientBase, event);
+};
+const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts): UpdateEvent => {
+  // Build and send the event
+  const stix = convertStoreToStix(instance) as StixCoreObject;
+  const previousStix = convertStoreToStix(previous) as StixCoreObject;
+  return buildStixUpdateEvent(user, previousStix, stix, message, opts);
+};
 export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
       const event = buildUpdateEvent(user, previous, instance, message, opts);
-      await pushToStream(context, user, clientBase, instance, event, opts);
+      await pushToStream(context, user, clientBase, event, opts);
       return event;
     }
     return undefined;
@@ -483,12 +489,12 @@ export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, pre
   }
 };
 // Create
-export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): Event => {
+export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): StreamDataEvent => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_CREATE,
-    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
+    scope: 'external',
     message,
     origin: user.origin,
     data: stix,
@@ -500,7 +506,7 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
       const { withoutMessage = false } = opts;
       const message = withoutMessage ? '-' : generateCreateMessage(instance);
       const event = buildCreateEvent(user, instance, message);
-      await pushToStream(context, user, clientBase, instance, event, opts);
+      await pushToStream(context, user, clientBase, event, opts);
       return event;
     }
     return undefined;
@@ -512,7 +518,7 @@ export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUse
   try {
     if (isStixExportableData(instance)) {
       const event = buildCreateEvent(user, instance, message);
-      await pushToStream(context, user, clientBase, instance, event, opts);
+      await pushToStream(context, user, clientBase, event, opts);
       return event;
     }
     return undefined;
@@ -532,7 +538,7 @@ export const buildDeleteEvent = async (
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_DELETE,
-    scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
+    scope: 'external',
     message,
     origin: user.origin,
     data: stix,
@@ -546,7 +552,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
     if (isStixExportableData(instance)) {
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message, deletions);
-      await pushToStream(context, user, clientBase, instance, event, opts);
+      await pushToStream(context, user, clientBase, event, opts);
       return event;
     }
     return undefined;
@@ -556,7 +562,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
 };
 export const deleteStream = () => clientBase.call('DEL', REDIS_STREAM_NAME);
 
-const mapStreamToJS = ([id, data]: any): StreamEvent => {
+const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
   const count = data.length / 2;
   const obj: any = {};
   for (let i = 0; i < count; i += 1) {
@@ -593,7 +599,17 @@ export interface StreamProcessor {
   shutdown: () => Promise<void>;
 }
 
-export const createStreamProcessor = (user: AuthUser, provider: string, withInternal: boolean, callback: any): StreamProcessor => {
+interface StreamOption {
+  withInternal: boolean;
+  streamName: string;
+}
+
+export const createStreamProcessor = <T extends BaseEvent> (
+  user: AuthUser,
+  provider: string,
+  callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
+  opts: StreamOption = { withInternal: false, streamName: REDIS_STREAM_NAME }
+): StreamProcessor => {
   let client: Redis;
   let startEventId: string;
   let processingLoopPromise: Promise<void>;
@@ -615,16 +631,16 @@ export const createStreamProcessor = (user: AuthUser, provider: string, withInte
         'BLOCK',
         STREAM_BATCH_TIME,
         'STREAMS',
-        REDIS_STREAM_NAME,
+        opts.streamName,
         startEventId
       ) as any[];
       // Process the event results
       if (streamResult && streamResult.length > 0) {
         const [, results] = streamResult[0];
-        const lastElementId = await processStreamResult(results, callback, withInternal);
+        const lastElementId = await processStreamResult(results, callback, opts.withInternal);
         startEventId = lastElementId || startEventId;
       } else {
-        await processStreamResult([], callback, withInternal);
+        await processStreamResult([], callback, opts.withInternal);
       }
     } catch (err) {
       logApp.error(`Error in redis streams read for ${provider}`, { error: err });
@@ -663,6 +679,17 @@ export const createStreamProcessor = (user: AuthUser, provider: string, withInte
       }
     },
   };
+};
+// endregion
+
+// region opencti notification stream
+export const storeNotificationEvent = async (context: AuthContext, event: any) => {
+  await clientBase.call('XADD', NOTIFICATION_STREAM_NAME, 'MAXLEN', '~', notificationTrimming, '*', ...mapJSToStream(event));
+};
+export const fetchRangeNotifications = async <T extends BaseEvent> (start: Date, end: Date): Promise<Array<T>> => {
+  const streamResult = await clientBase.call('XRANGE', NOTIFICATION_STREAM_NAME, start.getTime(), end.getTime()) as any[];
+  const streamElements: Array<SseEvent<T>> = R.map((r) => mapStreamToJS(r), streamResult);
+  return streamElements.filter((s) => s.event === 'live').map((e) => e.data);
 };
 // endregion
 

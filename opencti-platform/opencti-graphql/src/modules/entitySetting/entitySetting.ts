@@ -1,5 +1,5 @@
 import { ModuleDefinition, registerDefinition } from '../../types/module';
-import type { StoreEntityEntitySetting } from './entitySetting-types';
+import type { StixEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import entitySettingResolvers from './entitySetting-resolvers';
 import entitySettingTypeDefs from './entitySetting.graphql';
@@ -8,7 +8,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 
 const TARGET_TYPE = 'target_type';
 
-const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting> = {
+const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting, StixEntitySetting> = {
   type: {
     id: 'entitysettings',
     name: ENTITY_TYPE_ENTITY_SETTING,
@@ -36,6 +36,9 @@ const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting> = {
     { name: 'enforce_reference', type: 'boolean', multiple: false, upsert: true },
   ],
   relations: [],
+  representative: (stix: StixEntitySetting) => {
+    return stix.target_type;
+  },
   converter: convertEntitySettingToStix
 };
 

@@ -1,5 +1,16 @@
 import * as R from 'ramda';
-import { addNote, findAll, findById, } from '../domain/note';
+import {
+  addNote,
+  findAll,
+  findById,
+  noteContainsStixObjectOrStixRelationship,
+  notesDistributionByEntity,
+  notesNumber,
+  notesNumberByEntity,
+  notesTimeSeries,
+  notesTimeSeriesByAuthor,
+  notesTimeSeriesByEntity
+} from '../domain/note';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -35,6 +46,30 @@ const noteResolvers = {
   Query: {
     note: (_, { id }, context) => findById(context, context.user, id),
     notes: (_, args, context) => findAll(context, context.user, args),
+    notesTimeSeries: (_, args, context) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return notesTimeSeriesByEntity(context, context.user, args);
+      }
+      if (args.authorId && args.authorId.length > 0) {
+        return notesTimeSeriesByAuthor(context, context.user, args);
+      }
+      return notesTimeSeries(context, context.user, args);
+    },
+    notesNumber: (_, args, context) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return notesNumberByEntity(context, context.user, args);
+      }
+      return notesNumber(context, context.user, args);
+    },
+    notesDistribution: (_, args, context) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return notesDistributionByEntity(context, context.user, args);
+      }
+      return [];
+    },
+    noteContainsStixObjectOrStixRelationship: (_, args, context) => {
+      return noteContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+    },
   },
   NotesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

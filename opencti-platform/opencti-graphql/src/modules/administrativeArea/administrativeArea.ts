@@ -9,8 +9,9 @@ import { REL_BUILT_IN } from '../../database/stix';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_LOCATION } from '../../schema/general';
+import type { StixLocation } from '../../types/stix-sdo';
 
-const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrativeArea> = {
+const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrativeArea, StixLocation> = {
   type: {
     id: 'administrativeAreas',
     name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
@@ -49,6 +50,9 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
       ]
     },
   ],
+  representative(instance: StixLocation): string {
+    return instance.name;
+  },
   converter: convertAdministrativeAreaToStix
 };
 
