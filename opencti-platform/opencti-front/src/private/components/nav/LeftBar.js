@@ -36,7 +36,10 @@ import useGranted, {
   TAXIIAPI_SETCOLLECTIONS,
 } from '../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../relay/environment';
-import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
+import {
+  useIsHiddenEntities,
+  useIsHiddenEntity,
+} from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -209,7 +212,7 @@ const LeftBar = () => {
               )}
             </MenuItem>
           </StyledTooltip>
-          <Security needs={[SETTINGS]}>
+          {!useIsHiddenEntity('Case') && (
             <StyledTooltip title={!navOpen && t('Cases')} placement="right">
               <MenuItem
                 component={Link}
@@ -229,7 +232,7 @@ const LeftBar = () => {
                 )}
               </MenuItem>
             </StyledTooltip>
-          </Security>
+          )}
           <StyledTooltip title={!navOpen && t('Events')} placement="right">
             <MenuItem
               component={Link}

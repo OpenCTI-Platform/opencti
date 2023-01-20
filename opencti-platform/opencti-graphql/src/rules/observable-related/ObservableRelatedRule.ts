@@ -7,7 +7,6 @@ import { createRuleContent } from '../rules';
 import { computeAverage } from '../../database/utils';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { StixRelation } from '../../types/stix-sro';
-import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
@@ -15,9 +14,8 @@ import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
-  const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
+  const applyUpsert = async (data: StixRelation): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
-    const events: Array<Event> = [];
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
     const sourceRef = extensions[STIX_EXT_OCTI].source_ref;
@@ -48,10 +46,7 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const input = { fromId: targetRef, toId, relationship_type: RELATION_RELATED_TO };
-        const inferredRelation = await createInferredRelation(context, input, ruleContent) as RelationCreation;
-        if (inferredRelation.event) {
-          events.push(inferredRelation.event);
-        }
+        await createInferredRelation(context, input, ruleContent);
         // -----------------------------------------------------------------------------------------------------------
         // Create relation TO = FROM
         // Create the inferred relation
@@ -62,24 +57,20 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
-        const reverseInferredRelation = await createInferredRelation(context, reverseInput, reverseRuleContent) as RelationCreation;
-        if (reverseInferredRelation.event) {
-          events.push(reverseInferredRelation.event);
-        }
+        await createInferredRelation(context, reverseInput, reverseRuleContent);
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
     await listAllRelations(context, RULE_MANAGER_USER, RELATION_RELATED_TO, listFromArgs);
-    return events;
   };
   // Contract
-  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
-    return deleteInferredRuleElement(def.id, element, deletedDependencies) as Promise<Array<Event>>;
+  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
+    await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (element: StixRelation): Promise<Array<Event>> => {
+  const insert = async (element: StixRelation): Promise<void> => {
     return applyUpsert(element);
   };
-  const update = async (element: StixRelation): Promise<Array<Event>> => {
+  const update = async (element: StixRelation): Promise<void> => {
     return applyUpsert(element);
   };
   return { ...def, insert, update, clean };

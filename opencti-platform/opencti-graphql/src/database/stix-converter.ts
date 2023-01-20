@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 import { version as uuidVersion } from 'uuid';
-import { isEmptyField, isInferredIndex } from './utils';
+import { extractEntityRepresentative, isEmptyField, isInferredIndex } from './utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import {
   INPUT_BCC,
   INPUT_BELONGS_TO,
@@ -114,7 +114,7 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
-import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
+import { FROM_START, FROM_START_STR, hashValue, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
@@ -192,13 +192,13 @@ const cleanDate = (date: Date | string | undefined): string | undefined => {
   }
   return date;
 };
-const convertObjectReferences = (instance: StoreEntity) => {
+export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
   const objectRefs = instance[INPUT_OBJECTS] ?? [];
   return objectRefs.filter((r) => {
     // If related relation not available, it's just a creation, so inferred false
-    if (!r.i_relation) return true;
+    if (!r.i_relation) return !isInferred;
     // If related relation is available, select accordingly
-    return isInferredIndex(r.i_relation._index) === false;
+    return isInferredIndex(r.i_relation._index) === isInferred;
   }).map((m) => m.standard_id);
 };
 
@@ -595,6 +595,12 @@ const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixRepor
     report_types: instance.report_types,
     published: instance.published,
     object_refs: convertObjectReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...report.extensions[STIX_EXT_OCTI],
+        object_refs_inferred: convertObjectReferences(instance, true),
+      })
+    }
   };
 };
 const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote => {
@@ -608,6 +614,12 @@ const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote =>
     object_refs: convertObjectReferences(instance),
     note_types: instance.note_types,
     likelihood: instance.likelihood,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...note.extensions[STIX_EXT_OCTI],
+        object_refs_inferred: convertObjectReferences(instance, true),
+      })
+    }
   };
 };
 const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
@@ -619,6 +631,12 @@ const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.Sti
     last_observed: instance.last_observed,
     number_observed: instance.number_observed,
     object_refs: convertObjectReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...observedData.extensions[STIX_EXT_OCTI],
+        object_refs_inferred: convertObjectReferences(instance, true),
+      })
+    }
   };
 };
 const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpinion => {
@@ -630,6 +648,12 @@ const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpin
     authors: instance.authors,
     opinion: instance.opinion,
     object_refs: convertObjectReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...opinion.extensions[STIX_EXT_OCTI],
+        object_refs_inferred: convertObjectReferences(instance, true),
+      })
+    }
   };
 };
 
@@ -1095,9 +1119,11 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
         extension_type: isBuiltin ? 'property-extension' : 'new-sro',
+        source_value: extractEntityRepresentative(instance.from),
         source_ref: instance.from.internal_id,
         source_type: instance.from.entity_type,
         source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
+        target_value: extractEntityRepresentative(instance.to),
         target_ref: instance.to.internal_id,
         target_type: instance.to.entity_type,
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
@@ -1116,17 +1142,19 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
     last_seen: cleanDate(instance.last_seen),
     count: instance.attribute_count,
     sighting_of_ref: instance.from.standard_id,
-    where_sighted_refs: instance.to.standard_id ? [instance.to.standard_id] : [],
+    where_sighted_refs: [instance.to.standard_id],
     summary: instance.summary,
     observed_data_refs: [], // TODO Add support
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
+        sighting_of_value: extractEntityRepresentative(instance.from),
         sighting_of_ref: instance.from.internal_id,
         sighting_of_type: instance.from.entity_type,
         sighting_of_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
-        where_sighted_refs: instance.to.internal_id ? [instance.to.internal_id] : [],
-        where_sighted_types: instance.to.entity_type ? [instance.to.entity_type] : [],
+        where_sighted_values: [extractEntityRepresentative(instance.to)],
+        where_sighted_refs: [instance.to.internal_id],
+        where_sighted_types: [instance.to.entity_type],
         where_sighted_refs_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
         negative: instance.x_opencti_negative,
       })
@@ -1237,19 +1265,18 @@ const convertEmailMimePartToStix = (instance: StoreCyberObservable): SCO.StixEma
 };
 
 // CONVERTERS
-export type ConvertFn<T extends StoreEntity> = (instance: T) => S.StixObject;
-const stixDomainConverters = new Map<string, ConvertFn<any>>();
-const stixMetaConverters = new Map<string, ConvertFn<any>>();
-export const registerStixDomainConverter = <T extends StoreEntity>(type: string, convertFn: ConvertFn<T>) => {
+export type ConvertFn<T extends StoreEntity, Z extends S.StixObject> = (instance: T) => Z;
+const stixDomainConverters = new Map<string, ConvertFn<any, any>>();
+const stixMetaConverters = new Map<string, ConvertFn<any, any>>();
+export const registerStixDomainConverter = <T extends StoreEntity, Z extends S.StixObject>(type: string, convertFn: ConvertFn<T, Z>) => {
   stixDomainConverters.set(type, convertFn);
 };
-export const registerStixMetaConverter = <T extends StoreEntity>(type: string, convertFn: ConvertFn<T>) => {
+export const registerStixMetaConverter = <T extends StoreEntity, Z extends S.StixObject>(type: string, convertFn: ConvertFn<T, Z>) => {
   stixMetaConverters.set(type, convertFn);
 };
 
 const convertToStix = (instance: StoreObject): S.StixObject => {
   const type = instance.entity_type;
-  // If not found try with classic
   if (!isBasicObject(type) && !isBasicRelationship(type)) {
     throw UnsupportedError(`Type ${type} cannot be converted to Stix`, { instance });
   }
@@ -1386,6 +1413,9 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     if (ENTITY_AUTONOMOUS_SYSTEM === type) {
       return convertAutonomousSystemToStix(cyber, type);
     }
+    if (ENTITY_BANK_ACCOUNT === type) {
+      return convertBankAccountToStix(cyber, type);
+    }
     if (ENTITY_CRYPTOGRAPHIC_WALLET === type) {
       return convertCryptocurrencyWalletToStix(cyber, type);
     }
@@ -1437,9 +1467,6 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     if (ENTITY_TEXT === type) {
       return convertTextToStix(cyber, type);
     }
-    if (ENTITY_BANK_ACCOUNT === type) {
-      return convertBankAccountToStix(cyber, type);
-    }
     if (ENTITY_PHONE_NUMBER === type) {
       return convertPhoneNumberToStix(cyber, type);
     }
@@ -1474,4 +1501,204 @@ export const convertStoreToStix = (instance: StoreObject): S.StixObject => {
     throw FunctionalError('Invalid stix data conversion', { data: instance });
   }
   return stix;
+};
+
+export type RepresentativeFn<T extends S.StixObject> = (instance: T) => string;
+const stixRepresentativeConverters = new Map<string, RepresentativeFn<any>>();
+export const registerStixRepresentativeConverter = (type: string, convertFn: RepresentativeFn<any>) => {
+  stixRepresentativeConverters.set(type, convertFn);
+};
+
+export const extractStixRepresentative = (stix: S.StixObject): string => {
+  const entityType = stix.extensions[STIX_EXT_OCTI].type;
+  // region Modules
+  const convertFn = stixRepresentativeConverters.get(entityType);
+  if (convertFn) {
+    return convertFn(stix);
+  }
+  // endregion
+  // region Relationship
+  if (isStixRelationship(entityType)) {
+    const relation = stix as SRO.StixRelation;
+    const fromValue = relation.extensions[STIX_EXT_OCTI].source_value;
+    const targetValue = relation.extensions[STIX_EXT_OCTI].target_value;
+    return `${fromValue} ${relation.relationship_type} ${targetValue}`;
+  }
+  // endregion
+  // region Sighting
+  if (isStixSightingRelationship(entityType)) {
+    const sighting = stix as SRO.StixSighting;
+    const fromValue = sighting.extensions[STIX_EXT_OCTI].sighting_of_value;
+    const targetValues = sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
+    return `${fromValue} sighted in ${targetValues.join(', ')}`;
+  }
+  // endregion
+  // region Entities
+  if (isStixDomainObjectIdentity(entityType)) {
+    return (stix as SDO.StixIdentity).name;
+  }
+  if (isStixDomainObjectLocation(entityType)) {
+    return (stix as SDO.StixLocation).name;
+  }
+  if (entityType === ENTITY_TYPE_CONTAINER_REPORT) {
+    return (stix as SDO.StixReport).name;
+  }
+  if (entityType === ENTITY_TYPE_MALWARE) {
+    return (stix as SDO.StixMalware).name;
+  }
+  if (entityType === ENTITY_TYPE_INFRASTRUCTURE) {
+    return (stix as SDO.StixInfrastructure).name;
+  }
+  if (entityType === ENTITY_TYPE_ATTACK_PATTERN) {
+    return (stix as SDO.StixAttackPattern).name;
+  }
+  if (entityType === ENTITY_TYPE_CAMPAIGN) {
+    return (stix as SDO.StixCampaign).name;
+  }
+  if (entityType === ENTITY_TYPE_THREAT_ACTOR) {
+    return (stix as SDO.StixThreatActor).name;
+  }
+  if (entityType === ENTITY_TYPE_CONTAINER_NOTE) {
+    return (stix as SDO.StixNote).abstract;
+  }
+  if (entityType === ENTITY_TYPE_CONTAINER_OPINION) {
+    return (stix as SDO.StixOpinion).opinion;
+  }
+  if (entityType === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
+    const observed = stix as SDO.StixObservedData;
+    const from = observed.first_observed?.toISOString() ?? '-inf';
+    const to = observed.last_observed?.toISOString() ?? '+inf';
+    return `${from} - ${to}`;
+  }
+  if (entityType === ENTITY_TYPE_COURSE_OF_ACTION) {
+    return (stix as SDO.StixCourseOfAction).name;
+  }
+  if (entityType === ENTITY_TYPE_INCIDENT) {
+    return (stix as SDO.StixIncident).name;
+  }
+  if (entityType === ENTITY_TYPE_INDICATOR) {
+    return (stix as SDO.StixIndicator).name;
+  }
+  if (entityType === ENTITY_TYPE_INTRUSION_SET) {
+    return (stix as SDO.StixIntrusionSet).name;
+  }
+  if (entityType === ENTITY_TYPE_TOOL) {
+    return (stix as SDO.StixTool).name;
+  }
+  if (entityType === ENTITY_TYPE_VULNERABILITY) {
+    return (stix as SDO.StixVulnerability).name;
+  }
+  // endregion
+  // region meta entities
+  if (entityType === ENTITY_TYPE_MARKING_DEFINITION) {
+    return (stix as SMO.StixMarkingDefinition).name;
+  }
+  if (entityType === ENTITY_TYPE_LABEL) {
+    return (stix as SMO.StixLabel).value;
+  }
+  if (entityType === ENTITY_TYPE_EXTERNAL_REFERENCE) {
+    const externalRef = stix as SMO.StixExternalReference;
+    return `${externalRef.source_name}${externalRef.external_id ? ` (${externalRef.external_id})` : ''}`;
+  }
+  if (entityType === ENTITY_TYPE_KILL_CHAIN_PHASE) {
+    return (stix as SMO.StixKillChainPhase).kill_chain_name;
+  }
+  // endregion
+  // region Meta observable
+  if (entityType === ENTITY_WINDOWS_REGISTRY_VALUE_TYPE) {
+    const registry = stix as SCO.StixWindowsRegistryValueType;
+    return registry.name ?? registry.data ?? 'Unknown';
+  }
+  if (entityType === ENTITY_EMAIL_MIME_PART_TYPE) {
+    return (stix as SCO.StixEmailBodyMultipart).description;
+  }
+  // endregion
+  // region Observables
+  if (entityType === ENTITY_HASHED_OBSERVABLE_ARTIFACT) {
+    const artifact = stix as SCO.StixArtifact;
+    return hashValue(artifact) ?? artifact.payload_bin ?? artifact.url ?? 'Unknown';
+  }
+  if (entityType === ENTITY_AUTONOMOUS_SYSTEM) {
+    const autonomous = stix as SCO.StixAutonomousSystem;
+    return autonomous.name ?? autonomous.number ?? 'unknown';
+  }
+  if (entityType === ENTITY_BANK_ACCOUNT) {
+    const bankAccount = stix as SCO.StixBankAccount;
+    return bankAccount.iban ?? bankAccount.account_number ?? 'Unknown';
+  }
+  if (entityType === ENTITY_CRYPTOGRAPHIC_WALLET) {
+    return (stix as SCO.StixCryptocurrencyWallet).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_DIRECTORY) {
+    return (stix as SCO.StixDirectory).path ?? 'Unknown';
+  }
+  if (entityType === ENTITY_DOMAIN_NAME) {
+    return (stix as SCO.StixDomainName).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_EMAIL_ADDR) {
+    return (stix as SCO.StixEmailAddress).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_EMAIL_MESSAGE) {
+    const email = stix as SCO.StixEmailMessage;
+    return email.body ?? email.subject ?? 'Unknown';
+  }
+  if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+    const file = stix as SCO.StixFile;
+    return hashValue(file) ?? file.name ?? 'Unknown';
+  }
+  if (entityType === ENTITY_HOSTNAME) {
+    return (stix as SCO.StixHostname).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_IPV4_ADDR) {
+    return (stix as SCO.StixIPv4Address).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_IPV6_ADDR) {
+    return (stix as SCO.StixIPv6Address).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_MAC_ADDR) {
+    return (stix as SCO.StixMacAddress).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_MEDIA_CONTENT) {
+    const media = stix as SCO.StixMediaContent;
+    return media.content ?? media.title ?? media.url ?? 'Unknown';
+  }
+  if (entityType === ENTITY_MUTEX) {
+    return (stix as SCO.StixMutex).name ?? 'Unknown';
+  }
+  if (entityType === ENTITY_NETWORK_TRAFFIC) {
+    return String((stix as SCO.StixNetworkTraffic).dst_port ?? 'Unknown');
+  }
+  if (entityType === ENTITY_PROCESS) {
+    const process = stix as SCO.StixProcess;
+    return String(process.pid ?? process.command_line ?? 'Unknown');
+  }
+  if (entityType === ENTITY_SOFTWARE) {
+    return (stix as SCO.StixSoftware).name ?? 'Unknown';
+  }
+  if (entityType === ENTITY_TEXT) {
+    return (stix as SCO.StixText).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_PHONE_NUMBER) {
+    return (stix as SCO.StixPhoneNumber).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_PAYMENT_CARD) {
+    const paymentCard = stix as SCO.StixPaymentCard;
+    return paymentCard.card_number ?? paymentCard.holder_name ?? 'Unknown';
+  }
+  if (entityType === ENTITY_URL) {
+    return (stix as SCO.StixURL).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_USER_ACCOUNT) {
+    const userAccount = stix as SCO.StixUserAccount;
+    return userAccount.account_login ?? userAccount.user_id ?? 'Unknown';
+  }
+  if (entityType === ENTITY_WINDOWS_REGISTRY_KEY) {
+    return (stix as SCO.StixWindowsRegistryKey).key ?? 'Unknown';
+  }
+  if (entityType === ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE) {
+    const x509 = stix as SCO.StixX509Certificate;
+    return hashValue(x509) ?? x509.subject ?? x509.issuer ?? 'Unknown';
+  }
+  // endregion
+  throw UnsupportedError(`No representative extractor available for ${entityType}`);
 };

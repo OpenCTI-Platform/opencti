@@ -7,7 +7,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { SETTINGS_SETACCESSES, SETTINGS_SETLABELS } from '../../../utils/hooks/useGranted';
+import {
+  SETTINGS_SETACCESSES,
+  SETTINGS_SETLABELS,
+} from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { RETENTION_MANAGER, RULE_ENGINE } from '../../../utils/platformModulesHelper';
 

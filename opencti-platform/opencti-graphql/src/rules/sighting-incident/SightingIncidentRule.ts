@@ -15,7 +15,6 @@ import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../schema/stixCoreRela
 import { listAllRelations } from '../../database/middleware-loader';
 import type { StixIndicator } from '../../types/stix-sdo';
 import type { StixSighting } from '../../types/stix-sro';
-import type { Event, RelationCreation } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
@@ -38,8 +37,7 @@ const ruleSightingIncidentBuilder = () => {
       stixSightingId,
     ];
   };
-  const handleIndicatorUpsert = async (context: AuthContext, indicator: StixIndicator): Promise<Array<Event>> => {
-    const events: Array<Event> = [];
+  const handleIndicatorUpsert = async (context: AuthContext, indicator: StixIndicator): Promise<void> => {
     const { extensions } = indicator;
     const indicatorId = extensions[STIX_EXT_OCTI].id;
     const { name, pattern, revoked, object_marking_refs, confidence } = indicator;
@@ -59,53 +57,40 @@ const ruleSightingIncidentBuilder = () => {
         const ruleContentData = { ...ruleBaseContent, first_seen, last_seen };
         const ruleContent = createRuleContent(id, dependencies, explanation, ruleContentData);
         const inferredEntity = await createInferredEntity(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
-        if (inferredEntity.event) {
-          events.push(inferredEntity.event as Event);
-        }
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
         const created = inferredEntity.element as StoreObject;
         const incidentToIndicator = { fromId: created.internal_id, toId: indicatorId, relationship_type: RELATION_RELATED_TO };
-        const incidentToIndicatorCreation = await createInferredRelation(context, incidentToIndicator, ruleRelContent) as RelationCreation;
-        if (incidentToIndicatorCreation.event) {
-          events.push(incidentToIndicatorCreation.event);
-        }
+        await createInferredRelation(context, incidentToIndicator, ruleRelContent);
         // Create **Incident C** `targets` **identity B**
-
         const incidentToIdentity = { fromId: created.internal_id, toId: identityId, relationship_type: RELATION_TARGETS };
-        const incidentToIdentityCreation = await createInferredRelation(context, incidentToIdentity, ruleRelContent) as RelationCreation;
-        if (incidentToIdentityCreation.event) {
-          events.push(incidentToIdentityCreation.event);
-        }
+        await createInferredRelation(context, incidentToIdentity, ruleRelContent);
       }
     }
-    return events;
   };
   const handleIndicatorRelationUpsert = async (context: AuthContext, sightingRelation: StixSighting) => {
     const indicatorId = sightingRelation.extensions[STIX_EXT_OCTI].sighting_of_ref;
     const sightingIndicator = await stixLoadById(context, RULE_MANAGER_USER, indicatorId);
     return handleIndicatorUpsert(context, sightingIndicator as StixIndicator);
   };
-  const applyUpsert = async (data: StixIndicator | StixSighting): Promise<Array<Event>> => {
+  const applyUpsert = async (data: StixIndicator | StixSighting): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
-    const events: Array<Event> = [];
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_INDICATOR) {
-      return handleIndicatorUpsert(context, data as StixIndicator);
+      await handleIndicatorUpsert(context, data as StixIndicator);
     }
     if (entityType === STIX_SIGHTING_RELATIONSHIP) {
-      return handleIndicatorRelationUpsert(context, data as StixSighting);
+      await handleIndicatorRelationUpsert(context, data as StixSighting);
     }
-    return events;
   };
   // Contract
-  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
-    return deleteInferredRuleElement(def.id, element, deletedDependencies) as Promise<Array<Event>>;
+  const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
+    await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (element: StixIndicator | StixSighting): Promise<Array<Event>> => {
+  const insert = async (element: StixIndicator | StixSighting): Promise<void> => {
     return applyUpsert(element);
   };
-  const update = async (element: StixIndicator | StixSighting): Promise<Array<Event>> => {
+  const update = async (element: StixIndicator | StixSighting): Promise<void> => {
     return applyUpsert(element);
   };
   return { ...def, insert, update, clean };

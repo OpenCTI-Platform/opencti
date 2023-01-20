@@ -56,6 +56,8 @@ export const ENTITY_TYPE_INCIDENT = 'Incident';
 export const ENTITY_TYPE_DATA_COMPONENT = 'Data-Component';
 export const ENTITY_TYPE_DATA_SOURCE = 'Data-Source';
 
+export const ENTITY_TYPE_RESOLVED_FILTERS = 'Resolved-Filters';
+
 const STIX_DOMAIN_OBJECT_CONTAINERS: Array<string> = [
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,

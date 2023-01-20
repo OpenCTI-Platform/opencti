@@ -173,7 +173,7 @@ class ContainerAddStixCoreObjects extends Component {
         confidence={confidence}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
-        stixCoreObjectTypes={
+        stixDomainObjectTypes={
           targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
             ? targetStixCoreObjectTypes
             : []

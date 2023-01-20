@@ -332,7 +332,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const email = userinfo[emailAttribute];
             const firstname = userinfo[firstnameAttribute];
             const lastname = userinfo[lastnameAttribute];
-            const opts = { providerRoles: rolesToAssociate, providerGroups: groupsToAssociate, providerOrganizations: organizationsToAssociate };
+            const opts = {
+              providerRoles: rolesToAssociate,
+              providerGroups: groupsToAssociate,
+              providerOrganizations: organizationsToAssociate
+            };
             providerLoginHandler({ email, name, firstname, lastname }, done, opts);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
@@ -340,6 +344,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         });
         passport.use(providerRef, openIDStrategy);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+      }).catch((err) => {
+        logApp.error(`[OPENID] ${providerRef} fail to initialize, provider will be disable`, { error: err });
       });
     }
     if (strategy === STRATEGY_FACEBOOK) {

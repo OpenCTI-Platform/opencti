@@ -89,9 +89,14 @@
     "lock_key": "expired_manager_lock",
     "interval": 300000
   },
-  "subscription_scheduler": {
-    "enabled": false,
-    "lock_key": "subscription_manager_lock",
+  "notification_manager": {
+    "enabled": true,
+    "lock_key": "notification_manager_lock",
+    "interval": 10000
+  },
+  "publisher_manager": {
+    "enabled": true,
+    "lock_key": "publisher_manager_lock",
     "interval": 10000
   },
   "sync_manager": {
@@ -111,7 +116,6 @@
     "ca": [],
     "port": 6379,
     "trimming": 0,
-    "include_inferences": false,
     "use_as_cache": false
   },
   "elasticsearch": {

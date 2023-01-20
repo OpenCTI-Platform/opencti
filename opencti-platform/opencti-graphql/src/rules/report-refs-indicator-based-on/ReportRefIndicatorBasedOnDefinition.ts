@@ -2,7 +2,6 @@ import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import type { RuleBehavior, RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
-import { RELATION_OBJECT } from '../../schema/stixMetaRelationship';
 
 const id = 'report_ref_indicator_based_on';
 const name = 'Observables propagation in reports';
@@ -48,7 +47,7 @@ const display = {
 };
 
 // For rescan
-const scan: RuleFilters = { types: [RELATION_OBJECT], fromTypes: [ENTITY_TYPE_CONTAINER_REPORT], toTypes: [ENTITY_TYPE_INDICATOR] };
+const scan: RuleFilters = { types: [ENTITY_TYPE_CONTAINER_REPORT] };
 
 // For live
 const scopes: Array<RuleScope> = [
@@ -58,10 +57,6 @@ const scopes: Array<RuleScope> = [
   },
   {
     filters: { types: [RELATION_BASED_ON], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE] },
-    attributes: [],
-  },
-  {
-    filters: { types: [RELATION_OBJECT], fromTypes: [ENTITY_TYPE_CONTAINER_REPORT], toTypes: [ENTITY_TYPE_INDICATOR] },
     attributes: [],
   },
 ];

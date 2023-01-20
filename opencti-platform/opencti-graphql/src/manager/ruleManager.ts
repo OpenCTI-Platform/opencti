@@ -3,18 +3,18 @@ import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { createStreamProcessor, EVENT_CURRENT_VERSION, lockResource, StreamProcessor } from '../database/redis';
-import conf, { booleanConf, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
-  createEntity,
-  patchAttribute,
-  stixLoadById,
-  storeLoadByIdWithRefs
-} from '../database/middleware';
+  createStreamProcessor,
+  EVENT_CURRENT_VERSION,
+  lockResource,
+  REDIS_STREAM_NAME,
+  StreamProcessor
+} from '../database/redis';
+import conf, { booleanConf, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
+import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
-  EVENT_TYPE_DELETE_DEPENDENCIES,
   EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
   isEmptyField,
@@ -37,12 +37,12 @@ import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type {
+  BaseEvent,
+  DataEvent,
   DeleteEvent,
-  DependenciesDeleteEvent,
-  Event,
   MergeEvent,
-  RuleEvent,
-  StreamEvent,
+  SseEvent,
+  StreamDataEvent,
   UpdateEvent
 } from '../types/event';
 import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
@@ -68,7 +68,7 @@ export const getManagerInfo = async (context: AuthContext, user: AuthUser): Prom
   return { activated: ENABLED_RULE_ENGINE, ...ruleStatus };
 };
 
-export const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
+export const buildInternalEvent = (type: 'update' | 'create' | 'delete', stix: StixCoreObject): StreamDataEvent => {
   return {
     version: EVENT_CURRENT_VERSION,
     type,
@@ -79,9 +79,9 @@ export const buildInternalEvent = (type: string, stix: StixCoreObject): Event =>
   };
 };
 
-const ruleMergeHandler = async (context: AuthContext, event: MergeEvent): Promise<Array<Event>> => {
+const ruleMergeHandler = async (context: AuthContext, event: MergeEvent): Promise<Array<BaseEvent>> => {
   const { data, context: eventContext } = event;
-  const events: Array<Event> = [];
+  const events: Array<BaseEvent> = [];
   // region 01 - Generate events for deletion
   // -- sources
   const sourceDeleteEvents = (eventContext.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
@@ -182,7 +182,7 @@ const isMatchRuleFilters = (rule: RuleDefinition, element: StixCoreObject): bool
   return evaluations.reduce((a, b) => a || b);
 };
 
-const handleRuleError = async (event: RuleEvent, error: unknown) => {
+const handleRuleError = async (event: BaseEvent, error: unknown) => {
   const { type } = event;
   logApp.error(`[OPENCTI-MODULE] Rule error applying ${type} event`, { event, error });
 };
@@ -197,7 +197,7 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   await elList<BasicStoreCommon>(context, RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
 };
 
-export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<RuleEvent>, forRules: Array<RuleRuntime> = []) => {
+export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<DataEvent>, forRules: Array<RuleRuntime> = []) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
@@ -210,9 +210,9 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
         const mergeEvent = event as MergeEvent;
-        const derivedEvents = await ruleMergeHandler(context, mergeEvent);
+        const mergeEvents = await ruleMergeHandler(context, mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        await rulesApplyHandler(context, user, derivedEvents);
+        await rulesApplyHandler(context, user, mergeEvents);
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
@@ -221,11 +221,6 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
         const contextDeletionsIds = (deleteEvent.context?.deletions ?? []).map((d) => d.extensions[STIX_EXT_OCTI].id);
         const deletionIds = [internalId, ...contextDeletionsIds];
         await applyCleanupOnDependencyIds(deletionIds);
-      }
-      // In case of direct dependencies deletion (refs), call clean on every dependencies
-      if (type === EVENT_TYPE_DELETE_DEPENDENCIES) {
-        const deleteEvent = event as DependenciesDeleteEvent;
-        await applyCleanupOnDependencyIds(deleteEvent.data.ids);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
@@ -245,8 +240,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           }
           // Rule match, need to apply
           if (isCurrentMatched) {
-            const derivedEvents = await rule.update(data, updateEvent);
-            await rulesApplyHandler(context, user, derivedEvents);
+            await rule.update(data, updateEvent);
           }
         }
       }
@@ -256,8 +250,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           const rule = rules[ruleIndex];
           const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
-            const derivedEvents = await rule.insert(data);
-            await rulesApplyHandler(context, user, derivedEvents);
+            await rule.insert(data);
           }
         }
       }
@@ -283,29 +276,24 @@ export const rulesCleanHandler = async (
         const processingElement: StoreObject = await storeLoadByIdWithRefs(context, RULE_MANAGER_USER, instance.internal_id);
         // In case of "inference of inference", element can be recursively cleanup by the deletion system
         if (processingElement) {
-          const derivedEvents = await rule.clean(processingElement, deletedDependencies);
-          await rulesApplyHandler(context, user, derivedEvents);
+          await rule.clean(processingElement, deletedDependencies);
         }
       }
     }
   }
 };
 
-const ruleStreamHandler = async (streamEvents: Array<StreamEvent>, lastEventId: string) => {
+const ruleStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => {
   const context = executionContext('rule_manager', RULE_MANAGER_USER);
   // Create list of events to process
   // Events must be in a compatible version and not inferences events
   // Inferences directly handle recursively by the manager
   const compatibleEvents = streamEvents.filter((event) => {
     const eventVersion = parseInt(event.data?.version ?? '0', 10);
-    const isCompatibleVersion = eventVersion >= MIN_LIVE_STREAM_EVENT_VERSION;
-    if (!isCompatibleVersion) {
-      return false;
-    }
-    return !(event.data?.data?.extensions[STIX_EXT_OCTI].is_inferred ?? false);
+    return eventVersion >= MIN_LIVE_STREAM_EVENT_VERSION;
   });
   if (compatibleEvents.length > 0) {
-    const ruleEvents: Array<Event> = compatibleEvents.map((e) => e.data);
+    const ruleEvents: Array<BaseEvent> = compatibleEvents.map((e) => e.data);
     // Execute the events
     await rulesApplyHandler(context, RULE_MANAGER_USER, ruleEvents);
   }
@@ -340,7 +328,8 @@ const initRuleManager = () => {
       running = true;
       logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
       // Start the stream listening
-      streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', true, ruleStreamHandler);
+      const opts = { withInternal: true, streamName: REDIS_STREAM_NAME };
+      streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler, opts);
       await streamProcessor.start(lastEventId);
       while (syncListening) {
         await wait(WAIT_TIME_ACTION);

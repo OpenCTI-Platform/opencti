@@ -28,13 +28,14 @@ const i18n = {
       lte: 'Inferior o igual a',
       Login: 'Usuario',
       'Two-factor authentication': 'Autenticación en dos pasos',
-      'Enforce two-factor authentication': 'Hacer cumplir la autenticación de dos factores',
+      'Enforce two-factor authentication':
+        'Hacer cumplir la autenticación de dos factores',
       '2FA': '2FA',
       'Use 2FA authentication': 'Usa la autenticación en dos pasos',
       'You need to validate your two-factor authentication. Please type the code generated in your application.':
-      'Debe validar su autenticación de dos factores. Por favor, escriba el código generado en su aplicación.',
+        'Debe validar su autenticación de dos factores. Por favor, escriba el código generado en su aplicación.',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
-      'Necesitas activar una autenticación de dos factores. Por favor, escriba el código generado en su aplicación.',
+        'Necesitas activar una autenticación de dos factores. Por favor, escriba el código generado en su aplicación.',
       Search: 'Buscar',
       Active: 'Activo',
       'Last update': 'Última actualización',
@@ -50,8 +51,7 @@ const i18n = {
       'Affected software': 'Aplicaciones afectadas',
       'Do you want to delete this status template?':
         '¿Desea eliminar esta plantilla de estado?',
-      'Do you want to remove this status?':
-        '¿Quieres eliminar este estado?',
+      'Do you want to remove this status?': '¿Quieres eliminar este estado?',
       'Create a status template': 'Crear una plantilla de estado',
       'Update a status template': 'Actualizar una plantilla de estado',
       'Do you want to delete this entity?': '¿Quieres borrar esta entidad?',
@@ -223,14 +223,20 @@ const i18n = {
       'Dark (with background)': 'Oscuro (con fondo)',
       'Dark (without background)': 'Oscuro (sin fondo)',
       Language: 'Idioma',
-      'This configuration is not available for this entity type': 'Esta configuración no está disponible para este tipo de entidad',
+      'This configuration is not available for this entity type':
+        'Esta configuración no está disponible para este tipo de entidad',
       'Hidden entity types': 'Tipos de entidad ocultos',
       'Hidden entity type': 'Tipo de entidad ocultos',
-      'This configuration hidde a specific entity type across the entire platform.': 'Esta configuración oculta un tipo de entidad específico en toda la plataforma.',
-      'Enforce reference on entity types': 'Hacer cumplir la referencia en los tipos de entidad',
-      'Enforce reference on entity type': 'Hacer cumplir la referencia en el tipo de entidad',
-      'This configuration enables the requirement of a reference message on an entity update.': 'Esta configuración habilita el requisito de un mensaje de referencia en una actualización de entidad.',
-      'This configuration enables an entity to automatically construct an external reference from the uploaded file.': 'Esta configuración permite que una entidad construya automáticamente una referencia externa a partir del archivo cargado.',
+      'This configuration hidde a specific entity type across the entire platform.':
+        'Esta configuración oculta un tipo de entidad específico en toda la plataforma.',
+      'Enforce reference on entity types':
+        'Hacer cumplir la referencia en los tipos de entidad',
+      'Enforce reference on entity type':
+        'Hacer cumplir la referencia en el tipo de entidad',
+      'This configuration enables the requirement of a reference message on an entity update.':
+        'Esta configuración habilita el requisito de un mensaje de referencia en una actualización de entidad.',
+      'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
+        'Esta configuración permite que una entidad construya automáticamente una referencia externa a partir del archivo cargado.',
       'Dark theme': 'Tema oscuro',
       'Light theme': 'Tema claro',
       'Background color': 'Color de fondo',
@@ -473,9 +479,12 @@ const i18n = {
       'The alias has been added': 'El alias has sido añadido',
       'Settings have been updated': 'La configuración ha sido actualizada',
       'Export the entity': 'Exportar la entidad',
-      'Redirecting to the Overview section': 'Redireccionamiento a la sección Información general',
-      'Redirecting to the Knowledge section': 'Redireccionamiento a la sección Conocimiento',
-      'Redirecting to the Content section': 'Redireccionamiento a la sección Contenido',
+      'Redirecting to the Overview section':
+        'Redireccionamiento a la sección Información general',
+      'Redirecting to the Knowledge section':
+        'Redireccionamiento a la sección Conocimiento',
+      'Redirecting to the Content section':
+        'Redireccionamiento a la sección Contenido',
       'Cards view': 'Vista por tarjetas',
       'Lines view': 'Vista por líneas',
       'Graph view': 'Vista en grafo',
@@ -1332,6 +1341,7 @@ const i18n = {
       reversed: 'invertido',
       Limit: 'Límite',
       'All threats': 'Todas las amenazas',
+      Assignees: 'Referencias',
       // Time
       '24h': '24 h',
       // Types
@@ -1563,7 +1573,8 @@ const i18n = {
       organization_vendor: 'Fabricante',
       organization_other: 'Otro',
       obsContent: 'Contenido',
-      'Use Alt + click to exclude items': 'Usar Alt + clic para excluir elementos',
+      'Use Alt + click to exclude items':
+        'Usar Alt + clic para excluir elementos',
       filter_container_type: 'Tipo de análisis',
       filter_basedOn: 'Basado en un observable',
       filter_sightedBy: 'Detectado por/en',
@@ -1644,6 +1655,9 @@ const i18n = {
       filter_malware_types: 'Tipos de malware',
       filter_malware_types_not_eq: 'NO Tipos de malware',
       filter_targets: 'Entidad de destino',
+      filter_assigneeTo: 'Referente',
+      filter_priority: 'Prioridad',
+      filter_is_read: '¿Es leído?',
       EXTERNAL_IMPORT: 'Importación de datos',
       INTERNAL_IMPORT_FILE: 'Importación de ficheros',
       INTERNAL_EXPORT_FILE: 'Exportación de ficheros',
@@ -1677,6 +1691,8 @@ const i18n = {
       SYNC_MANAGER: 'Gestor de sincronización',
       SUBSCRIPTION_MANAGER: 'Gestor de suscripciones',
       RETENTION_MANAGER: 'Gestor de retención',
+      PUBLISHER_MANAGER: 'Gestor de publicaciones de notificacione',
+      NOTIFICATION_MANAGER: 'Gestor de generación de notificaciones',
       HISTORY_MANAGER: 'Gestor del historial',
       'Workflow of': 'Flujo de trabajo de',
       'Create a status': 'Crear un estado',
@@ -1690,8 +1706,10 @@ const i18n = {
       disagree: 'en desacuerdo',
       neutral: 'neutral',
       agree: 'de acuerdo',
-      'Entity automatic reference from files': 'Referencia automática de entidad desde archivos',
-      'Entities automatic reference from files': 'Referencia automática de entidades desde archivos',
+      'Entity automatic reference from files':
+        'Referencia automática de entidad desde archivos',
+      'Entities automatic reference from files':
+        'Referencia automática de entidades desde archivos',
       'suggestion_threats-indicators':
         'La acción de crear `indica` reñacopmes emtre los indicadores y la amenaza seleccionada, después añade todas las relaciones al contenedor.',
       Collapse: 'Colapso',
@@ -1725,13 +1743,14 @@ const i18n = {
       lte: 'Inférieur ou égal à',
       Login: "Nom d'utilisateur",
       'Two-factor authentication': 'Authentification double facteur',
-      'Enforce two-factor authentication': "Imposer l'authentification double facteur",
+      'Enforce two-factor authentication':
+        "Imposer l'authentification double facteur",
       '2FA': 'ADF',
       'Use 2FA authentication': "Utiliser l'authentification à double facteur",
       'You need to validate your two-factor authentication. Please type the code generated in your application.':
-      'Vous devez valider votre authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
+        'Vous devez valider votre authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
-      'Vous devez activer une authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
+        'Vous devez activer une authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
       Search: 'Rechercher',
       Active: 'Actif',
       'Last update': 'Dernière mise à jour',
@@ -1747,8 +1766,7 @@ const i18n = {
       'Affected software': 'Logiciels affectés',
       'Do you want to delete this status template?':
         'Souhaitez-vous supprimer ce template de statut ?',
-      'Do you want to remove this status?':
-        'Voulez-vous supprimer ce statut ?',
+      'Do you want to remove this status?': 'Voulez-vous supprimer ce statut ?',
       'Create a status template': 'Créer un template de statut',
       'Update a status template': 'Modifier un template de statut',
       'Do you want to delete this entity?':
@@ -1946,14 +1964,20 @@ const i18n = {
       'Dark (with background)': 'Sombre (avec arrière-plan)',
       'Dark (without background)': 'Sombre (sans arrière-plan)',
       Language: 'Langue',
-      'This configuration is not available for this entity type': 'Cette configuration n\'est pas disponible pour ce type d\'entité',
+      'This configuration is not available for this entity type':
+        "Cette configuration n'est pas disponible pour ce type d'entité",
       'Hidden entity types': "Types d'entité cachés",
       'Hidden entity type': "Type d'entité caché",
-      'This configuration hidde a specific entity type across the entire platform.': 'Cette configuration masque un type d\'entité spécifique sur l\'ensemble de la plateforme.',
-      'Enforce reference on entity types': 'Appliquer la référence sur les types d\'entités',
-      'Enforce reference on entity type': 'Appliquer la référence au type d\'entité',
-      'This configuration enables the requirement of a reference message on an entity update.': 'Cette configuration permet l\'exigence d\'un message de référence sur une mise à jour d\'entité.',
-      'This configuration enables an entity to automatically construct an external reference from the uploaded file.': 'Cette configuration permet à une entité de construire automatiquement une référence externe à partir du fichier téléchargé.',
+      'This configuration hidde a specific entity type across the entire platform.':
+        "Cette configuration masque un type d'entité spécifique sur l'ensemble de la plateforme.",
+      'Enforce reference on entity types':
+        "Appliquer la référence sur les types d'entités",
+      'Enforce reference on entity type':
+        "Appliquer la référence au type d'entité",
+      'This configuration enables the requirement of a reference message on an entity update.':
+        "Cette configuration permet l'exigence d'un message de référence sur une mise à jour d'entité.",
+      'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
+        'Cette configuration permet à une entité de construire automatiquement une référence externe à partir du fichier téléchargé.',
       Automatic: 'Automatique',
       Manual: 'Manuel',
       'Automatic trigger': 'Déclenchement automatique',
@@ -2183,9 +2207,12 @@ const i18n = {
       'The alias has been added': "L'alias a bien été ajouté",
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       'Export the entity': "Exporter l'entité",
-      'Redirecting to the Overview section': 'Redirection vers la section Vue d’ensemble',
-      'Redirecting to the Knowledge section': 'Redirection vers la section Connaissances',
-      'Redirecting to the Content section': 'Redirection vers la section Contenu',
+      'Redirecting to the Overview section':
+        'Redirection vers la section Vue d’ensemble',
+      'Redirecting to the Knowledge section':
+        'Redirection vers la section Connaissances',
+      'Redirecting to the Content section':
+        'Redirection vers la section Contenu',
       'Cards view': 'Vue cartes',
       'Lines view': 'Vue lignes',
       'Graph view': 'Vue graphe',
@@ -2264,7 +2291,7 @@ const i18n = {
       'Launch an import': 'Lancer un import',
       Data: 'Données',
       Settings: 'Paramètres',
-      'Entity settings': 'Paramètres de l\'entité',
+      'Entity settings': "Paramètres de l'entité",
       'Dashboard settings': 'Paramètres du tableau de bord',
       About: 'A propos',
       General: 'Général',
@@ -3036,9 +3063,23 @@ const i18n = {
       reversed: 'inversé',
       Limit: 'Limite',
       'All threats': 'Toutes les menaces',
+      Assignees: 'Référents',
       on: 'le',
       Use: 'Utiliser',
+      'Notifications and triggers': 'Notifications et déclencheurs',
+      'Triggers and digests': 'Déclencheurs et résumés',
       'to exclude items': 'pour exclure des items',
+      'Live trigger': 'Déclencheur live',
+      'Regular digest': 'Résumé régulier',
+      'Create a live trigger': 'Créer un déclencheur live',
+      'Update a trigger': 'Modifier un déclencheur',
+      'Create a regular digest': 'Créer un résumé régulier',
+      'Triggering on': 'Se déclenche sur',
+      'User interface': 'Interface utilisateur',
+      Notification: 'Notification',
+      Creation: 'Création',
+      Modification: 'Modification',
+      Deletion: 'Suppression',
       // Time
       '24h': '24h',
       // Types
@@ -3334,6 +3375,9 @@ const i18n = {
       filter_malware_types: 'Type de code malveillant',
       filter_malware_types_not_eq: 'SANS Type de code malveillant',
       filter_targets: 'Entité cible',
+      filter_assigneeTo: 'Référent',
+      filter_priority: 'Priorité',
+      filter_is_read: 'Est lu?',
       EXTERNAL_IMPORT: 'Import de données',
       INTERNAL_IMPORT_FILE: 'Import de fichiers',
       INTERNAL_EXPORT_FILE: 'Export de fichiers',
@@ -3367,6 +3411,8 @@ const i18n = {
       SYNC_MANAGER: 'Manager de synchronisation',
       SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
       RETENTION_MANAGER: 'Manager de rétention',
+      PUBLISHER_MANAGER: 'Manager de publication de notifications',
+      NOTIFICATION_MANAGER: 'Manager de génération de notifications',
       HISTORY_MANAGER: "Manager d'historique",
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
@@ -3380,8 +3426,10 @@ const i18n = {
       disagree: 'désapprouve',
       neutral: 'neutre',
       agree: 'approuve',
-      'Entity automatic reference from files': 'Référence automatique d\'entité à partir de fichiers',
-      'Entities automatic reference from files': 'Référence automatique des entités à partir des fichiers',
+      'Entity automatic reference from files':
+        "Référence automatique d'entité à partir de fichiers",
+      'Entities automatic reference from files':
+        'Référence automatique des entités à partir des fichiers',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       Collapse: 'Réduire',
@@ -3418,9 +3466,9 @@ const i18n = {
       '2FA': '2FA',
       'Use 2FA authentication': '二要素認証を使用する',
       'You need to validate your two-factor authentication. Please type the code generated in your application.':
-      '二要素認証を検証する必要があります。アプリケーションで生成されたコードを入力してください。',
+        '二要素認証を検証する必要があります。アプリケーションで生成されたコードを入力してください。',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
-      '二要素認証を有効にする必要があります。アプリケーションで生成されたコードを入力してください。',
+        '二要素認証を有効にする必要があります。アプリケーションで生成されたコードを入力してください。',
       Search: '検索',
       Active: 'アクティブ',
       'Last update': '最終更新',
@@ -3436,8 +3484,7 @@ const i18n = {
       'Affected software': '影響を受けるソフトウェア',
       'Do you want to delete this status template?':
         'このステータステンプレートを削除しますか?',
-      'Do you want to remove this status?':
-        'このステータスを削除しますか?',
+      'Do you want to remove this status?': 'このステータスを削除しますか?',
       'Create a status template': '状態テンプレートを作成する',
       'Update a status template': '状態テンプレートを更新する',
       'Do you want to delete this entity?': 'このエンティティを削除しますか？',
@@ -3594,14 +3641,19 @@ const i18n = {
       'Dark (with background)': 'ダークテーマ (背景有り)',
       'Dark (without background)': 'ダークテーマ (背景無し)',
       Language: '言語',
-      'This configuration is not available for this entity type': 'この構成は、このエンティティ タイプでは使用できません',
+      'This configuration is not available for this entity type':
+        'この構成は、このエンティティ タイプでは使用できません',
       'Hidden entity types': '非表示のエンティティ種別',
       'Hidden entity type': '非表示のエンティティ種別',
-      'This configuration hidde a specific entity type across the entire platform.': 'この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。',
-      'Enforce reference on entity types': 'エンティティ タイプの参照を強制する',
+      'This configuration hidde a specific entity type across the entire platform.':
+        'この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。',
+      'Enforce reference on entity types':
+        'エンティティ タイプの参照を強制する',
       'Enforce reference on entity type': 'エンティティ タイプの参照を強制する',
-      'This configuration enables the requirement of a reference message on an entity update.': 'この構成により、エンティティ更新時の参照メッセージの要件が有効になります。',
-      'This configuration enables an entity to automatically construct an external reference from the uploaded file.': 'この構成により、エンティティはアップロードされたファイルから外部参照を自動的に構築できます。',
+      'This configuration enables the requirement of a reference message on an entity update.':
+        'この構成により、エンティティ更新時の参照メッセージの要件が有効になります。',
+      'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
+        'この構成により、エンティティはアップロードされたファイルから外部参照を自動的に構築できます。',
       'Dark theme': 'ダークテーマ',
       'Light theme': 'ライトテーマ',
       'Background color': '背景色',
@@ -3842,8 +3894,10 @@ const i18n = {
       'Settings have been updated': '設定を変更しました',
       'Export the entity': 'エンティティの出力',
       'Redirecting to the Overview section': '概要セクションへのリダイレクト',
-      'Redirecting to the Knowledge section': 'ナレッジセクションへのリダイレクト',
-      'Redirecting to the Content section': 'コンテンツセクションへのリダイレクト',
+      'Redirecting to the Knowledge section':
+        'ナレッジセクションへのリダイレクト',
+      'Redirecting to the Content section':
+        'コンテンツセクションへのリダイレクト',
       'Cards view': 'カード表示',
       'Lines view': 'ライン表示',
       'Graph view': 'グラフ表示',
@@ -4687,6 +4741,7 @@ const i18n = {
       reversed: '反転した',
       Limit: 'リミット',
       'All threats': 'すべての脅威',
+      Assignees: '譲受人',
       // Time
       '24h': '24時間',
       // Types
@@ -4916,7 +4971,8 @@ const i18n = {
       organization_vendor: 'ベンダー',
       organization_other: 'その他',
       obsContent: 'コンテンツ',
-      'Use Alt + click to exclude items': 'Alt + クリックを使用して項目を除外する',
+      'Use Alt + click to exclude items':
+        'Alt + クリックを使用して項目を除外する',
       filter_container_type: '分析の種別',
       filter_basedOn: '観測結果をベースにする',
       filter_sightedBy: '目撃情報',
@@ -4996,6 +5052,9 @@ const i18n = {
       filter_malware_types: 'マルウェア種別',
       filter_malware_types_not_eq: 'マルウェア種別なし',
       filter_targets: 'ターゲットのエンティティ',
+      filter_assigneeTo: '譲受人',
+      filter_priority: '優先順位',
+      filter_is_read: '読まれる？',
       EXTERNAL_IMPORT: 'データインポート',
       INTERNAL_IMPORT_FILE: 'ファイルインポート',
       INTERNAL_EXPORT_FILE: 'ファイルエクスポート',
@@ -5029,6 +5088,8 @@ const i18n = {
       SYNC_MANAGER: 'シンクマネージャ',
       SUBSCRIPTION_MANAGER: 'サブスクリプションマネージャ',
       RETENTION_MANAGER: 'リテンションマネージャ',
+      PUBLISHER_MANAGER: 'M通知発行マネージャ',
+      NOTIFICATION_MANAGER: '通知生成マネージャ',
       HISTORY_MANAGER: 'ヒストリーマネージャ',
       'Workflow of': 'ワークフロー',
       'Create a status': 'ステータスの作成',
@@ -5042,8 +5103,10 @@ const i18n = {
       disagree: '反対',
       neutral: '中立',
       agree: '賛成',
-      'Entity automatic reference from files': 'ファイルからのエンティティ自動参照',
-      'Entities automatic reference from files': 'ファイルからのエンティティ自動参照',
+      'Entity automatic reference from files':
+        'ファイルからのエンティティ自動参照',
+      'Entities automatic reference from files':
+        'ファイルからのエンティティ自動参照',
       'suggestion_threats-indicators':
         'インジケータと脅威に `指し示す` のリレーションシップを作成したあと、全てのリレーションシップをコンテナに追加する。',
       Collapse: '崩壊',
@@ -5078,9 +5141,9 @@ const i18n = {
       'Enforce two-factor authentication': '强制执行两因素身份验证',
       'Use 2FA authentication': '使用 2FA 身份驗證',
       'You need to validate your two-factor authentication. Please type the code generated in your application.':
-      '您需要验证您的双因素身份验证。请输入在您的应用程序中生成的代码。',
+        '您需要验证您的双因素身份验证。请输入在您的应用程序中生成的代码。',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
-      '您需要激活双因素身份验证。请输入在您的应用程序中生成的代码。',
+        '您需要激活双因素身份验证。请输入在您的应用程序中生成的代码。',
       Search: '搜索',
       Active: '活跃',
       'Last update': '上次更新',
@@ -5228,14 +5291,18 @@ const i18n = {
       'Dark (with background)': '暗色(带背景)',
       'Dark (without background)': '暗色(无背景)',
       Language: '语言',
-      'This configuration is not available for this entity type': '此配置不适用于此实体类型',
+      'This configuration is not available for this entity type':
+        '此配置不适用于此实体类型',
       'Hidden entity types': '隐藏的实体类型',
       'Hidden entity type': '隐藏的实体类型',
-      'This configuration hidde a specific entity type across the entire platform.': '此配置隐藏了整个平台的特定实体类型。',
+      'This configuration hidde a specific entity type across the entire platform.':
+        '此配置隐藏了整个平台的特定实体类型。',
       'Enforce reference on entity types': '对实体类型强制引用',
       'Enforce reference on entity type': '对实体类型强制引用',
-      'This configuration enables the requirement of a reference message on an entity update.': '此配置启用了对实体更新的参考消息的要求。',
-      'This configuration enables an entity to automatically construct an external reference from the uploaded file.': '此配置使实体能够从上传的文件自动构建外部引用。',
+      'This configuration enables the requirement of a reference message on an entity update.':
+        '此配置启用了对实体更新的参考消息的要求。',
+      'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
+        '此配置使实体能够从上传的文件自动构建外部引用。',
       Automatic: '自动',
       Manual: '手动',
       'Automatic trigger': '自动触发',
@@ -6261,6 +6328,7 @@ const i18n = {
       reversed: '反转',
       Limit: '限制',
       'All threats': '所有威胁',
+      Assignees: '受让人',
       // Time
       '24h': '24小时',
       // Types
@@ -6557,6 +6625,9 @@ const i18n = {
       filter_malware_types: '恶意软件类型',
       filter_malware_types_not_eq: '非恶意软件类型',
       filter_targets: '目标实体',
+      filter_assigneeTo: '受让人',
+      filter_priority: '优先',
+      filter_is_read: '是读？',
       EXTERNAL_IMPORT: '外部导入',
       INTERNAL_IMPORT_FILE: '导入文件',
       INTERNAL_EXPORT_FILE: '导出文件',
@@ -6590,6 +6661,8 @@ const i18n = {
       SYNC_MANAGER: '同步管理器',
       SUBSCRIPTION_MANAGER: '订阅管理器',
       RETENTION_MANAGER: '保留管理器',
+      PUBLISHER_MANAGER: '通知發布經理',
+      NOTIFICATION_MANAGER: '通知生成管理器',
       HISTORY_MANAGER: '历史经理',
       'Workflow of': '的工作流程',
       'Create a status': '创建状态',
@@ -6927,6 +7000,9 @@ const i18n = {
       filter_malware_types: 'Malware types',
       filter_malware_types_not_eq: 'NOT Malware types',
       filter_targets: 'Target entity',
+      filter_assigneeTo: 'Assignee',
+      filter_priority: 'Priority',
+      filter_is_read: 'Is read?',
       EXTERNAL_IMPORT: 'Data import',
       INTERNAL_IMPORT_FILE: 'Files import',
       INTERNAL_EXPORT_FILE: 'Files export',
@@ -6954,6 +7030,8 @@ const i18n = {
       SYNC_MANAGER: 'Synchronization manager',
       SUBSCRIPTION_MANAGER: 'Subscriptions manager',
       RETENTION_MANAGER: 'Retention manager',
+      PUBLISHER_MANAGER: 'Notification publishing manager',
+      NOTIFICATION_MANAGER: 'Notification generation manager',
       HISTORY_MANAGER: 'History manager',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',

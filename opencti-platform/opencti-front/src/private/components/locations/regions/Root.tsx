@@ -190,6 +190,7 @@ const RootRegion = () => {
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
           availableSections={[
+            'regions',
             'countries',
             'cities',
             'threats',

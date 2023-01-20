@@ -4,6 +4,7 @@ import './language/language';
 import './event/event';
 import './grouping/grouping';
 import './narrative/narrative';
+import './notification/notification';
 import './dataComponent/dataComponent';
 import './dataSource/dataSource';
 import './vocabulary/vocabulary';

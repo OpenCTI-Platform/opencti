@@ -16,6 +16,11 @@ export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []
   value: n.node.id,
 }));
 
+export const convertTriggers = (element) => (element?.triggers ?? []).map((n) => ({
+  label: n.name,
+  value: n.id,
+}));
+
 export const convertAssignees = (element) => (element?.objectAssignee?.edges ?? []).map((n) => ({
   label: n.node.name,
   value: n.node.id,

@@ -607,11 +607,12 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 display={this.state.open}
                 inputValue={this.state.search}
                 paginationOptions={stixDomainObjectsPaginationOptions}
-                targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+                stixDomainObjectTypes={targetStixDomainObjectTypes}
               />
           )}
           {targetEntities.length === 0
-            && !targetStixDomainObjectTypes
+            && (!targetStixDomainObjectTypes
+              || targetStixDomainObjectTypes.length === 0)
             && targetStixCyberObservableTypes
             && targetStixCyberObservableTypes.length > 0 && (
               <StixCyberObservableCreation

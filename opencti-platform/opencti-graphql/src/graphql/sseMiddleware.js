@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
-import conf, { basePath, booleanConf, logApp } from '../config/conf';
+import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION, STREAM_BATCH_TIME } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
@@ -26,7 +26,7 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, executionContext, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, isUserCanAccessStixElement } from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import {
@@ -37,15 +37,10 @@ import {
 } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import {
-  adaptFiltersFrontendFormat,
-  convertFiltersFrontendFormat,
-  convertFiltersToQueryOptions,
-  TYPE_FILTER
-} from '../utils/filtering';
+import { convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
-import { internalLoadById, listAllRelations, listEntities } from '../database/middleware-loader';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { listAllRelations, listEntities } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 const broadcastClients = {};
@@ -54,36 +49,6 @@ const DEFAULT_LIVE_STREAM = 'live';
 const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
-const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
-
-const MARKING_FILTER = 'markedBy';
-const LABEL_FILTER = 'labelledBy';
-const CREATOR_FILTER = 'createdBy';
-const ASSIGNEE_FILTER = 'assigneeTo';
-const SCORE_FILTER = 'x_opencti_score';
-const DETECTION_FILTER = 'x_opencti_detection';
-const WORKFLOW_FILTER = 'x_opencti_workflow_id';
-const CONFIDENCE_FILTER = 'confidence';
-const REVOKED_FILTER = 'revoked';
-const PATTERN_FILTER = 'pattern_type';
-const INDICATOR_FILTER = 'indicator_types';
-
-const filterCacheResolver = async (context, values, filterCache) => {
-  const filterIds = values.map((v) => v.id);
-  const filterRefs = [];
-  for (let i = 0; i < filterIds.length; i += 1) {
-    const filterId = filterIds[i];
-    const fromCache = filterCache.get(filterId);
-    if (fromCache) {
-      filterRefs.push(fromCache.standard_id);
-    } else {
-      const creator = await internalLoadById(context, SYSTEM_USER, filterId);
-      filterRefs.push(creator.standard_id);
-      filterCache.set(filterId, creator);
-    }
-  }
-  return filterRefs;
-};
 
 const createBroadcastClient = (channel) => {
   let lastHeartbeat;
@@ -245,7 +210,7 @@ const createSeeMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res);
-      const processor = createStreamProcessor(sessionUser, sessionUser.user_email, false, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(sessionUser, sessionUser.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
@@ -287,205 +252,6 @@ const createSeeMiddleware = () => {
       res.statusMessage = `Error in connection management: ${err.message}`;
       res.status(500).end();
     }
-  };
-  const isInstanceMatchFilters = async (context, user, instance, filters, filterCache) => {
-    const instanceAccessible = await isUserCanAccessStixElement(context, user, instance);
-    if (!instanceAccessible) {
-      return false;
-    }
-    // Pre-filter transformation to handle specific frontend format
-    const adaptedFilters = convertFiltersFrontendFormat(filters);
-    // User is granted, but we still need to apply filters if needed
-    for (let index = 0; index < adaptedFilters.length; index += 1) {
-      const { key: type, operator, values } = adaptedFilters[index];
-      let found = false;
-      // Markings filtering
-      if (type === MARKING_FILTER) {
-        if (values.length === 0) {
-          return true;
-        }
-        const markings = instance.object_marking_refs || [];
-        const filterMarkingRefs = await filterCacheResolver(context, values, filterCache);
-        switch (operator) {
-          case 'not_eq': // filterMode=and
-            found = !filterMarkingRefs.map((r) => !markings.includes(r)).includes(false);
-            break;
-          case 'eq': // filterMode=or
-            found = filterMarkingRefs.some((r) => markings.includes(r));
-            break;
-          default:
-            found = filterMarkingRefs.some((r) => markings.includes(r));
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // Entity type filtering
-      if (type === TYPE_FILTER) {
-        const instanceType = instance.extensions[STIX_EXT_OCTI].type;
-        const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
-        if (values.length === 0) {
-          found = true;
-        } else {
-          switch (operator) {
-            case 'not_eq': // filterMode=and
-              found = !values.map((filter) => !instanceAllTypes.includes(filter.id)).includes(false);
-              break;
-            case 'eq': // filterMode=or
-              found = values.some((filter) => instanceAllTypes.includes(filter.id));
-              break;
-            default:
-              found = values.some((filter) => instanceAllTypes.includes(filter.id));
-          }
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // Indicator type filtering
-      if (type === INDICATOR_FILTER) {
-        const indicators = [...(instance.indicator_types ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.indicator_types ?? [])];
-        const extractedValues = values.map((v) => v.value);
-        switch (operator) {
-          case 'not_eq': // filterMode=and
-            found = !extractedValues.map((r) => !indicators.includes(r)).includes(false);
-            break;
-          case 'eq': // filterMode=or
-            found = extractedValues.some((r) => indicators.includes(r));
-            break;
-          default:
-            found = extractedValues.some((r) => indicators.includes(r));
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // Workflow
-      if (type === WORKFLOW_FILTER) {
-        const workflowId = instance.extensions[STIX_EXT_OCTI].workflow_id;
-        const extractedValues = values.map((v) => v.id);
-        switch (operator) {
-          case 'not_eq': // filterMode=and
-            found = !extractedValues.includes(workflowId);
-            break;
-          case 'eq': // filterMode=or
-            found = extractedValues.includes(workflowId);
-            break;
-          default:
-            found = extractedValues.includes(workflowId);
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // Creator filtering
-      if (type === CREATOR_FILTER) {
-        if (values.length === 0) {
-          return true;
-        }
-        const filterCreationRefs = await filterCacheResolver(context, values, filterCache);
-        switch (operator) {
-          case 'not_eq': // filterMode=and
-            found = !filterCreationRefs.includes(instance.created_by_ref);
-            break;
-          case 'eq': // filterMode=or
-            found = filterCreationRefs.includes(instance.created_by_ref);
-            break;
-          default:
-            found = filterCreationRefs.includes(instance.created_by_ref);
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // Assignee filtering
-      if (type === ASSIGNEE_FILTER) {
-        const assignees = [...(instance.object_assignee_refs ?? []), ...(instance.extensions[STIX_EXT_OCTI]?.object_assignee_refs ?? [])];
-        const extractedValues = values.map((v) => v.value);
-        switch (operator) {
-          case 'not_eq': // filterMode=and
-            found = !extractedValues.map((r) => !assignees.includes(r)).includes(false);
-            break;
-          case 'eq': // filterMode=or
-            found = extractedValues.some((r) => assignees.includes(r));
-            break;
-          default:
-            found = extractedValues.some((r) => assignees.includes(r));
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // Labels filtering
-      if (type === LABEL_FILTER) {
-        const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
-        const extractedValues = values.map((v) => v.value);
-        switch (operator) {
-          case 'not_eq': // filterMode=and
-            found = !extractedValues.map((r) => !labels.includes(r)).includes(false);
-            break;
-          case 'eq': // filterMode=or
-            found = extractedValues.some((r) => labels.includes(r));
-            break;
-          default:
-            found = extractedValues.some((r) => labels.includes(r));
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // Boolean filtering
-      if (type === REVOKED_FILTER || type === DETECTION_FILTER) {
-        const { id } = R.head(values);
-        found = (id === 'true') === instance.revoked;
-        if (!found) {
-          return false;
-        }
-      }
-      // Numeric filtering
-      if (type === SCORE_FILTER || type === CONFIDENCE_FILTER) {
-        const { id } = R.head(values);
-        const numeric = parseInt(id, 10);
-        switch (operator) {
-          case 'lt':
-            found = instance[type] < numeric;
-            break;
-          case 'lte':
-            found = instance[type] <= numeric;
-            break;
-          case 'gt':
-            found = instance[type] > numeric;
-            break;
-          case 'gte':
-            found = instance[type] >= numeric;
-            break;
-          default:
-            found = instance[type] === numeric;
-        }
-        if (!found) {
-          return false;
-        }
-      }
-      // String filtering
-      if (type === PATTERN_FILTER) { // filterMode by default
-        const currentPattern = instance[type];
-        const extractedIds = values.map((v) => v.id);
-        switch (operator) {
-          case 'not_eq': // filterMode=and
-            found = !extractedIds.includes(currentPattern);
-            break;
-          case 'eq': // filterMode=or
-            found = extractedIds.includes(currentPattern);
-            break;
-          default:
-            found = extractedIds.includes(currentPattern);
-        }
-        if (!found) {
-          return false;
-        }
-      }
-    }
-    return true;
   };
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
@@ -566,7 +332,7 @@ const createSeeMiddleware = () => {
     }
     return match;
   };
-  const publishRelationDependencies = async (context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element) => {
+  const publishRelationDependencies = async (context, client, noDependencies, cache, channel, req, streamFilters, element) => {
     const { user } = req.session;
     const { id: eventId, data: eventData } = element;
     const { type, data: stix, message } = eventData;
@@ -574,12 +340,11 @@ const createSeeMiddleware = () => {
     const fromId = isRel ? stix.source_ref : stix.sighting_of_ref;
     const toId = isRel ? stix.target_ref : stix.where_sighted_refs[0];
     // Pre-filter by type to prevent resolutions as much as possible.
-    const filters = adaptFiltersFrontendFormat(streamFilters);
-    if (filters.entity_type && filters.entity_type.values.length > 0) {
+    if (streamFilters.entity_type && streamFilters.entity_type.values.length > 0) {
       const fromType = isRel ? stix.extensions[STIX_EXT_OCTI].source_type : stix.extensions[STIX_EXT_OCTI].sighting_of_type;
-      const matchingFrom = isFiltersEntityTypeMatch(filters, fromType);
+      const matchingFrom = isFiltersEntityTypeMatch(streamFilters, fromType);
       const toType = isRel ? stix.extensions[STIX_EXT_OCTI].target_type : stix.extensions[STIX_EXT_OCTI].where_sighted_types[0];
-      const matchingTo = isFiltersEntityTypeMatch(filters, toType);
+      const matchingTo = isFiltersEntityTypeMatch(streamFilters, toType);
       if (!matchingFrom && !matchingTo) {
         return;
       }
@@ -588,8 +353,8 @@ const createSeeMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
-      const isFromVisible = await isInstanceMatchFilters(context, user, fromStix, streamFilters, filterCache);
-      const isToVisible = await isInstanceMatchFilters(context, user, toStix, streamFilters, filterCache);
+      const isFromVisible = await isStixMatchFilters(context, user, fromStix, streamFilters);
+      const isToVisible = await isStixMatchFilters(context, user, toStix, streamFilters);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
         // From or to are visible, consider it as a dependency
@@ -639,7 +404,6 @@ const createSeeMiddleware = () => {
     const { id } = req.params;
     try {
       const cache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
-      const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       const { user } = req.session;
       // If stream is starting after, we need to use the main database to catchup
       const context = executionContext('live_stream');
@@ -655,12 +419,6 @@ const createSeeMiddleware = () => {
       const publishDeletion = noDelete === false;
       const withInferences = (req.query['with-inferences'] || req.headers['with-inferences']) === 'true';
       if (withInferences) {
-        // Check if platform option is enable
-        if (!INCLUDE_INFERENCES) {
-          res.statusMessage = 'This live stream requires activated redis include_inferences option';
-          res.status(400).end();
-          return;
-        }
         queryIndices.push(READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS);
       }
       // Build filters
@@ -714,7 +472,7 @@ const createSeeMiddleware = () => {
       }
       // Init stream and broadcasting
       const userEmail = user.user_email;
-      const processor = createStreamProcessor(user, userEmail, false, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
         // Process the stream elements
         for (let index = 0; index < elements.length; index += 1) {
           const element = elements[index];
@@ -727,10 +485,10 @@ const createSeeMiddleware = () => {
             // Check for inferences
             const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
             if (!isInferredData || (isInferredData && withInferences)) {
-              const isCurrentlyVisible = await isInstanceMatchFilters(context, user, stix, streamFilters, filterCache);
+              const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, streamFilters);
               if (type === EVENT_TYPE_UPDATE) {
                 const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
-                const isPreviouslyVisible = await isInstanceMatchFilters(context, user, previous, streamFilters, filterCache);
+                const isPreviouslyVisible = await isStixMatchFilters(context, user, previous, streamFilters);
                 if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                   client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                 } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
@@ -742,7 +500,7 @@ const createSeeMiddleware = () => {
                 } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                   // In case of relationship publication, from or to can be related to something that
                   // is part of the filtering. We can consider this as dependencies
-                  await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                  await publishRelationDependencies(context, client, noDependencies, cache, channel, req, streamFilters, element);
                 } else { // Update but not visible - entity type
                   // Entity can be part of a container that is authorized by the filters
                   // If it's the case, the element must be published
@@ -754,7 +512,7 @@ const createSeeMiddleware = () => {
                   for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
                     const container = containers[containerIndex];
                     const stixContainer = convertStoreToStix(container);
-                    const containerMatch = await isInstanceMatchFilters(context, user, stixContainer, streamFilters, filterCache);
+                    const containerMatch = await isStixMatchFilters(context, user, stixContainer, streamFilters);
                     if (containerMatch) {
                       isContainerMatching = true;
                       break;
@@ -778,11 +536,9 @@ const createSeeMiddleware = () => {
               } else if (isRelation && publishDependencies) { // Not an update and not visible
                 // In case of relationship publication, from or to can be related to something that
                 // is part of the filtering. We can consider this as dependencies
-                await publishRelationDependencies(context, client, noDependencies, cache, filterCache, channel, req, streamFilters, element);
+                await publishRelationDependencies(context, client, noDependencies, cache, channel, req, streamFilters, element);
               }
             }
-            // Delete eventual filtering cache
-            filterCache.delete(stix.extensions[STIX_EXT_OCTI].id);
           }
           client.sendHeartbeat(eventId);
         }
@@ -829,7 +585,7 @@ const createSeeMiddleware = () => {
           await wait(channel.delay);
           return channel.connected();
         };
-        const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startIsoDate, before: recoverIsoDate });
+        const queryOptions = await convertFiltersToQueryOptions(context, streamFilters, { after: startIsoDate, before: recoverIsoDate });
         queryOptions.callback = queryCallback;
         await elList(context, user, queryIndices, queryOptions);
       }

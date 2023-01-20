@@ -7,7 +7,7 @@ import {
   ENTITY_TYPE_DATA_SOURCE
 } from '../../schema/stixDomainObject';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import type { StoreEntityDataComponent } from './dataComponent-types';
+import type { StixDataComponent, StoreEntityDataComponent } from './dataComponent-types';
 import { INPUT_DATA_SOURCE } from './dataComponent-types';
 import dataComponentResolvers from './dataComponent-resolver';
 import convertDataComponentToStix from './dataComponent-converter';
@@ -16,7 +16,7 @@ import { REL_EXTENDED } from '../../database/stix';
 import { ATTRIBUTE_DATA_SOURCE, RELATION_DATA_SOURCE } from './dataComponent-domain';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
-const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent> = {
+const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, StixDataComponent> = {
   type: {
     id: 'dataComponents',
     name: ENTITY_TYPE_DATA_COMPONENT,
@@ -62,6 +62,9 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent> = {
       checker: (fromType, toType) => toType === ENTITY_TYPE_DATA_SOURCE
     }
   ],
+  representative: (stix: StixDataComponent) => {
+    return stix.name;
+  },
   converter: convertDataComponentToStix
 };
 

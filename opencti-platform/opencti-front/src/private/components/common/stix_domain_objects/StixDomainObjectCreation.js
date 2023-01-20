@@ -3,7 +3,17 @@ import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
-import { assoc, compose, dissoc, filter, includes, map, pipe, pluck, split } from 'ramda';
+import {
+  assoc,
+  compose,
+  dissoc,
+  filter,
+  includes,
+  map,
+  pipe,
+  pluck,
+  split,
+} from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -24,7 +34,10 @@ import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ConfidenceField from '../form/ConfidenceField';
-import { typesWithOpenCTIAliases, typesWithoutAliases } from '../../../../utils/Entity';
+import {
+  typesWithOpenCTIAliases,
+  typesWithoutAliases,
+} from '../../../../utils/Entity';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../form/OpenVocabField';
 
@@ -347,7 +360,7 @@ class StixDomainObjectCreation extends Component {
   }
 
   renderEntityTypesList() {
-    const { t, stixCoreObjectTypes } = this.props;
+    const { t, stixDomainObjectTypes } = this.props;
     return (
       <QueryRenderer
         query={stixDomainObjectCreationAllTypesQuery}
@@ -371,14 +384,14 @@ class StixDomainObjectCreation extends Component {
             );
             const availableEntityTypes = R.filter((n) => {
               if (
-                !stixCoreObjectTypes
-                || stixCoreObjectTypes.length === 0
-                || stixCoreObjectTypes.includes('Stix-Domain-Object')
+                !stixDomainObjectTypes
+                || stixDomainObjectTypes.length === 0
+                || stixDomainObjectTypes.includes('Stix-Domain-Object')
               ) {
                 return true;
               }
               if (
-                stixCoreObjectTypes.includes('Identity')
+                stixDomainObjectTypes.includes('Identity')
                 && [
                   'Sector',
                   'Organization',
@@ -390,12 +403,12 @@ class StixDomainObjectCreation extends Component {
                 return true;
               }
               if (
-                stixCoreObjectTypes.includes('Location')
+                stixDomainObjectTypes.includes('Location')
                 && ['Region', 'Country', 'City', 'Location'].includes(n.value)
               ) {
                 return true;
               }
-              return !!stixCoreObjectTypes.includes(n.value);
+              return !!stixDomainObjectTypes.includes(n.value);
             }, entitiesTypes);
             return (
               <Field
@@ -619,7 +632,7 @@ class StixDomainObjectCreation extends Component {
 StixDomainObjectCreation.propTypes = {
   paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
-  stixCoreObjectTypes: PropTypes.array,
+  stixDomainObjectTypes: PropTypes.array,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

@@ -7,7 +7,7 @@
     "sync_direct_start_remote_uri": "http://localhost:4200/graphql",
     "sync_restore_start_remote_uri": "http://localhost:4200/graphql",
     "app_logs": {
-      "logs_level": "error",
+      "logs_level": "info",
       "logs_files": false,
       "logs_console": true
     },

@@ -13,10 +13,12 @@ import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-  ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_OBJECT,
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
+import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 
@@ -82,10 +84,6 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}SYNC_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}SYNC_ADDED_TOPIC`,
   },
-  [O.ENTITY_TYPE_USER_SUBSCRIPTION]: {
-    EDIT_TOPIC: `${TOPIC_PREFIX}USER_SUBSCRIPTION_EDIT_TOPIC`,
-    ADDED_TOPIC: `${TOPIC_PREFIX}USER_SUBSCRIPTION_ADDED_TOPIC`,
-  },
   [M.ENTITY_TYPE_MARKING_DEFINITION]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}MARKING_DEFINITION_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}MARKING_DEFINITION_ADDED_TOPIC`,
@@ -136,6 +134,14 @@ export const BUS_TOPICS = {
   [ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}STIX_CYBER_OBSERVABLE_RELATIONSHIP_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}STIX_CYBER_OBSERVABLE_RELATIONSHIP_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_NOTIFICATION]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NOTIFICATION_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NOTIFICATION_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_TRIGGER]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_TRIGGER_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_TRIGGER_ADDED_TOPIC`,
   },
 };
 
@@ -342,6 +348,8 @@ export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
 export const ENABLED_METRICS = booleanConf('app:telemetry:metrics:enabled', false);
 export const ENABLED_RETENTION_MANAGER = booleanConf('retention_manager:enabled', true);
+export const ENABLED_NOTIFICATION_MANAGER = booleanConf('notification_manager:enabled', true);
+export const ENABLED_PUBLISHER_MANAGER = booleanConf('publisher_manager:enabled', true);
 export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
 // Default deactivated managers
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
@@ -349,7 +357,6 @@ export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', fals
 export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
-export const ENABLED_SUBSCRIPTION_MANAGER = booleanConf('subscription_scheduler:enabled', false);
 export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);
 
 export const ELASTIC_CREATION_PATTERN = nconf.get('elasticsearch:index_creation_pattern');

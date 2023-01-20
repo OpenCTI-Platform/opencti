@@ -2,14 +2,14 @@ import narrativeTypeDefs from './narrative.graphql';
 import convertNarrativeToStix from './narrative-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import narrativeResolvers from './narrative-resolver';
-import { ENTITY_TYPE_NARRATIVE, StoreEntityNarrative } from './narrative-types';
+import { ENTITY_TYPE_NARRATIVE, StixNarrative, StoreEntityNarrative } from './narrative-types';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
 import { REL_NEW } from '../../database/stix';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
-const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative> = {
+const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative> = {
   type: {
     id: 'narratives',
     name: ENTITY_TYPE_NARRATIVE,
@@ -42,6 +42,9 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative> = {
         { name: ENTITY_TYPE_NARRATIVE, type: REL_NEW },
       ] },
   ],
+  representative: (stix: StixNarrative) => {
+    return stix.name;
+  },
   converter: convertNarrativeToStix
 };
 

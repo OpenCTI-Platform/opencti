@@ -23,11 +23,10 @@ const MITRE = 'identity--f11b0831-e7e6-5214-9431-ccf054e53e94'; // Organization 
 const CBRICKSDOC = 'indicator--c5c0c0f9-dfa1-5b7d-a12a-ea95072d3e45'; // indicator C
 
 describe('Observed sighting rule', () => {
-  const assertInferencesSize = async (expected) => {
+  const fetchInferences = async () => {
+    console.log(`${new Date().toISOString()} >> Waiting 10 sec`);
     await wait(TEN_SECONDS); // let some time to rule manager to create the elements
-    const inferences = await getInferences(STIX_SIGHTING_RELATIONSHIP);
-    expect(inferences.length).toBe(expected);
-    return inferences;
+    return getInferences(STIX_SIGHTING_RELATIONSHIP);
   };
 
   it(
@@ -35,12 +34,15 @@ describe('Observed sighting rule', () => {
     async () => {
       // ---- 01. Test live behaviors
       await startModules();
+      await wait(2 * TEN_SECONDS); // Wait for all managers to be started
       await activateRule(RuleObserveSighting.id);
       // Check default state
-      await assertInferencesSize(0);
+      let inferences = await fetchInferences();
+      expect(inferences.length).toBe(0);
       // OBSERVED_DATA have no created-by Organization (must be updated)
       await patchAttribute(testContext, SYSTEM_USER, OBSERVED_DATA, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { createdBy: ANSSI });
-      await assertInferencesSize(0);
+      inferences = await fetchInferences();
+      expect(inferences.length).toBe(0);
       // PARADISE_RANSOMWARE is not based on an Indicator (relation must be created)
       const cbrickToFile = await createRelation(testContext, SYSTEM_USER, {
         fromId: CBRICKSDOC,
@@ -53,7 +55,8 @@ describe('Observed sighting rule', () => {
         relationship_type: RELATION_BASED_ON,
         objectMarking: [TLP_CLEAR_ID],
       });
-      const afterLiveRelations = await assertInferencesSize(1);
+      const afterLiveRelations = await fetchInferences();
+      expect(afterLiveRelations.length).toBe(1);
       const cbrickToAnssi = await inferenceLookup(afterLiveRelations, CBRICKSDOC, ANSSI, STIX_SIGHTING_RELATIONSHIP);
       expect(cbrickToAnssi).not.toBeNull();
       expect(cbrickToAnssi[RULE].length).toBe(1);
@@ -65,17 +68,20 @@ describe('Observed sighting rule', () => {
       expect((cbrickToAnssi.object_marking_refs || []).length).toBe(0);
       // Change the organization
       await patchAttribute(testContext, SYSTEM_USER, OBSERVED_DATA, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { createdBy: MITRE });
-      const afterOrgaRelations = await assertInferencesSize(1);
+      const afterOrgaRelations = await fetchInferences();
+      expect(afterOrgaRelations.length).toBe(1);
       const cbrickToMitre = await inferenceLookup(afterOrgaRelations, CBRICKSDOC, MITRE, STIX_SIGHTING_RELATIONSHIP);
       expect(cbrickToMitre).not.toBeNull();
       // Invalidate the rule with x_opencti_detection = true
       await patchAttribute(testContext, SYSTEM_USER, CBRICKSDOC, ENTITY_TYPE_INDICATOR, { x_opencti_detection: true });
-      await assertInferencesSize(1);
+      inferences = await fetchInferences();
+      expect(inferences.length).toBe(1);
       // ---- 02. Test rescan behavior
       // Disable the rule
       await disableRule(RuleObserveSighting.id);
       await activateRule(RuleObserveSighting.id);
-      const afterRescan = await assertInferencesSize(1);
+      const afterRescan = await fetchInferences();
+      expect(afterRescan.length).toBe(1);
       const cbrickToMitreRescan = await inferenceLookup(afterRescan, CBRICKSDOC, MITRE, STIX_SIGHTING_RELATIONSHIP);
       expect(cbrickToMitreRescan).not.toBeNull();
       expect(cbrickToMitreRescan[RULE].length).toBe(1);
@@ -87,7 +93,8 @@ describe('Observed sighting rule', () => {
       expect((cbrickToMitreRescan.object_marking_refs || []).length).toBe(0);
       // Cleanup
       await internalDeleteElementById(testContext, SYSTEM_USER, cbrickToFile.internal_id);
-      await assertInferencesSize(0);
+      inferences = await fetchInferences();
+      expect(inferences.length).toBe(0);
       // Disable the rule
       await disableRule(RuleObserveSighting.id);
       // Stop modules

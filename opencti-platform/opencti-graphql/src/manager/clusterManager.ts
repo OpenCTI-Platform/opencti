@@ -3,11 +3,12 @@ import { v4 as uuid } from 'uuid';
 import conf, { logApp } from '../config/conf';
 import historyManager from './historyManager';
 import ruleEngine from './ruleManager';
-import subscriptionManager from './subscriptionManager';
 import taskManager from './taskManager';
 import expiredManager from './expiredManager';
 import syncManager from './syncManager';
 import retentionManager from './retentionManager';
+import publisherManager from './publisherManager';
+import notificationManager from './notificationManager';
 import { registerClusterInstance } from '../database/redis';
 
 const SCHEDULE_TIME = 30000;
@@ -26,13 +27,14 @@ const initClusterManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   const clusterHandler = async (platformId: string) => {
     const managers = [
-      subscriptionManager.status(),
       ruleEngine.status(),
       historyManager.status(),
       taskManager.status(),
       expiredManager.status(),
       syncManager.status(),
       retentionManager.status(),
+      publisherManager.status(),
+      notificationManager.status(),
     ];
     const configData: ClusterConfig = { platform_id: platformId, managers };
     await registerClusterInstance(platformId, configData);

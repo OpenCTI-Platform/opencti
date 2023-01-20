@@ -66,7 +66,13 @@ interface StoreFile {
   mime_type: string;
 }
 
-interface BasicStoreBase {
+interface BasicStoreIdentifier {
+  internal_id: string;
+  standard_id?: StixId;
+  x_opencti_stix_ids?: Array<StixId>;
+}
+
+interface BasicStoreBase extends BasicStoreIdentifier {
   _index: string;
   standard_id: StixId;
   internal_id: string;
@@ -541,6 +547,14 @@ interface BasicWorkflowTemplateEntity extends BasicStoreEntity {
   color: string;
 }
 
+interface BasicStreamEntity extends BasicStoreEntity {
+  filters: string;
+}
+
+interface BasicTriggerEntity extends BasicStoreEntity {
+  filters: string;
+}
+
 interface BasicWorkflowStatusEntity extends BasicStoreEntity {
   template_id: string;
   type: string;
@@ -549,7 +563,9 @@ interface BasicWorkflowStatusEntity extends BasicStoreEntity {
 }
 
 export interface BasicStoreSettings extends BasicStoreEntity {
+  platform_email: string;
   platform_organization: string;
+  platform_theme_dark_background: string;
 }
 
 type BasicStoreObject = BasicStoreEntity | BasicStoreCyberObservable | BasicStoreRelation;

@@ -4,10 +4,10 @@ import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
 import caseResolvers from './case-resolvers';
-import { ENTITY_TYPE_CONTAINER_CASE, StoreEntityCase } from './case-types';
+import { ENTITY_TYPE_CONTAINER_CASE, StixCase, StoreEntityCase } from './case-types';
 import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 
-const CASE_DEFINITION: ModuleDefinition<StoreEntityCase> = {
+const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   type: {
     id: 'cases',
     name: ENTITY_TYPE_CONTAINER_CASE,
@@ -41,6 +41,9 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase> = {
     { name: 'x_opencti_graph_data', type: 'string', multiple: false, upsert: false },
   ],
   relations: [],
+  representative: (stix: StixCase) => {
+    return stix.name;
+  },
   converter: convertCaseToStix
 };
 

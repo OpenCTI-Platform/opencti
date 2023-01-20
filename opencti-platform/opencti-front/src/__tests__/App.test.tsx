@@ -7,7 +7,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import { CompatRouter } from 'react-router-dom-v5-compat';
 import AppIntlProvider from '../components/AppIntlProvider';
-import Profile from '../private/components/Profile';
+import Profile from '../private/components/profile/Profile';
 import { APP_BASE_PATH } from '../relay/environment';
 
 afterEach(cleanup);

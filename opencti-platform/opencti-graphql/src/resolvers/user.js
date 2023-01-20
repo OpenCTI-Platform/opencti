@@ -48,7 +48,6 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
-import { getUserSubscriptions } from '../domain/userSubscription';
 import { executionContext } from '../utils/access';
 import { fetchSessionTtl, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 
@@ -78,10 +77,8 @@ const userResolvers = {
     roles: (current, _, context) => rolesLoader.load(current.id, context, context.user),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
-    userSubscriptions: (current, _, context) => getUserSubscriptions(context, context.user, current.id),
   },
   MeUser: {
-    userSubscriptions: (current, _, context) => getUserSubscriptions(context, context.user, current.id),
     objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
   },
   UserSession: {

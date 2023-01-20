@@ -566,41 +566,6 @@ enum StreamCollectionOrdering {
   description
 }
 
-type UserSubscription {
-  id: ID!
-  user_id: String
-  user: User
-  name: String
-  options: [String]
-  entities_ids: [String]
-  entities: [StixDomainObject]
-  filters: String
-  cron: String
-  last_run: DateTime!
-}
-
-type UserSubscriptionConnection {
-  pageInfo: PageInfo!
-  edges: [UserSubscriptionEdge]
-}
-
-type UserSubscriptionEdge {
-  cursor: String!
-  node: UserSubscription!
-}
-
-input UserSubscriptionAddInput {
-  name: String!
-  options: [String]
-  entities_ids: [String]
-  filters: String
-  cron: String
-}
-
-enum UserSubscriptionOrdering {
-  created_at
-}
-
 enum SubTypesOrdering {
   label
 }
@@ -1243,7 +1208,6 @@ type User implements BasicObject & InternalObject {
   updated_at: DateTime!
   allowed_marking: [MarkingDefinition]
   sessions: [SessionDetail]
-  userSubscriptions(first: Int): UserSubscriptionConnection
   editContext: [EditUserContext!]
 }
 
@@ -1267,7 +1231,6 @@ type MeUser implements BasicObject & InternalObject {
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
   allowed_marking: [MarkingDefinition!]
-  userSubscriptions(first: Int): UserSubscriptionConnection
   otp_mandatory: Boolean
 }
 
@@ -5254,6 +5217,7 @@ enum StixCyberObservablesOrdering {
   updated_at
   observable_value
   objectMarking
+  createdBy
   creator
 }
 
@@ -7564,8 +7528,6 @@ type Query {
   feed(id: String!): Feed
   feeds(first: Int, after: ID, orderBy: FeedOrdering, orderMode: OrderingMode, search: String): FeedConnection
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String): StreamCollectionConnection
-  userSubscription(id: String!): UserSubscription
-  userSubscriptions(first: Int, after: ID, orderBy: UserSubscriptionOrdering, orderMode: OrderingMode, search: String): UserSubscriptionConnection
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   status(id: String!): Status
@@ -7612,6 +7574,10 @@ type Query {
   containersObjectsOfObject(id: String!, types: [String], filters: [ContainersFiltering], filterMode: FilterMode, search: String): StixObjectOrStixRelationshipConnection
   note(id: String): Note
   notes(first: Int, after: ID, orderBy: NotesOrdering, orderMode: OrderingMode, filters: [NotesFiltering], filterMode: FilterMode, search: String, toStix: Boolean): NoteConnection
+  notesNumber(objectId: String, endDate: DateTime): Number
+  notesTimeSeries(objectId: String, authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+  notesDistribution(objectId: String, field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String): [Distribution]
+  noteContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   observedData(id: String): ObservedData
   observedDatas(first: Int, after: ID, orderBy: ObservedDatasOrdering, orderMode: OrderingMode, filters: [ObservedDatasFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ObservedDataConnection
   observedDatasTimeSeries(objectId: String, authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
@@ -7718,6 +7684,13 @@ type Query {
   groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   narrative(id: String!): Narrative
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering!], filterMode: FilterMode, search: String): NarrativeConnection
+  trigger(id: String!): Trigger
+  triggers(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, search: String): TriggerConnection
+  myTriggers(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, search: String): TriggerConnection
+  notification(id: String!): Notification
+  notifications(first: Int, after: ID, orderBy: NotificationsOrdering, orderMode: OrderingMode, filters: [NotificationsFiltering!], filterMode: FilterMode, search: String): NotificationConnection
+  myNotifications(first: Int, after: ID, orderBy: NotificationsOrdering, orderMode: OrderingMode, filters: [NotificationsFiltering!], filterMode: FilterMode, search: String): NotificationConnection
+  myUnreadNotificationsCount: Int
   dataComponent(id: String!): DataComponent
   dataComponents(first: Int, after: ID, orderBy: DataComponentsOrdering, orderMode: OrderingMode, filters: [DataComponentsFiltering!], filterMode: FilterMode, search: String): DataComponentConnection
   dataSource(id: String!): DataSource
@@ -7750,6 +7723,7 @@ type Subscription {
   stixSightingRelationship(id: ID!): StixSightingRelationship
   stixCyberObservableRelationship(id: ID!): StixCyberObservableRelationship
   externalReference(id: ID!): ExternalReference
+  notification: Notification
 }
 
 type WorkEditMutations {
@@ -7829,11 +7803,6 @@ type StreamCollectionEditMutations {
   fieldPatch(input: [EditInput]!): StreamCollection
   addGroup(id: ID!): StreamCollection
   deleteGroup(id: ID!): StreamCollection
-}
-
-type UserSubscriptionEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!): UserSubscription
 }
 
 type SynchronizerEditMutations {
@@ -8249,8 +8218,6 @@ type Mutation {
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations
-  userSubscriptionAdd(input: UserSubscriptionAddInput): UserSubscription
-  userSubscriptionEdit(id: ID!): UserSubscriptionEditMutations
   stixEdit(id: ID!): StixEditMutations
   markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
   markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations
@@ -8370,6 +8337,12 @@ type Mutation {
   narrativeContextClean(id: ID!): Narrative
   narrativeRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
   narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative
+  triggerDelete(id: ID!): ID
+  triggerFieldPatch(id: ID!, input: [EditInput!]!): Trigger
+  triggerLiveAdd(input: TriggerLiveAddInput!): Trigger
+  triggerDigestAdd(input: TriggerDigestAddInput!): Trigger
+  notificationDelete(id: ID!): ID
+  notificationMarkRead(id: ID!, read: Boolean!): Notification
   dataComponentAdd(input: DataComponentAddInput!): DataComponent
   dataComponentDelete(id: ID!): ID
   dataComponentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataComponent
@@ -8978,6 +8951,147 @@ input NarrativeAddInput {
   update: Boolean
 }
 
+enum TriggerType {
+  live
+  digest
+}
+
+enum TriggerEventType {
+  create
+  update
+  delete
+}
+
+enum TriggerFilter {
+  trigger_type
+  created
+  event_types
+}
+
+input TriggersFiltering {
+  key: [TriggerFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+enum TriggersOrdering {
+  name
+  created
+  event_types
+  trigger_type
+  outcomes
+}
+
+type Trigger implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created: DateTime
+  modified: DateTime
+  name: String!
+  description: String
+  user_ids: [StixRef!]!
+  trigger_type: TriggerType!
+  event_types: [TriggerEventType!]
+  filters: String
+  outcomes: [StixRef!]!
+  trigger_ids: [String]
+  triggers: [Trigger]
+  period: DigestPeriod
+  trigger_time: String
+}
+
+type TriggerConnection {
+  pageInfo: PageInfo!
+  edges: [TriggerEdge]
+}
+
+type TriggerEdge {
+  cursor: String!
+  node: Trigger!
+}
+
+type NotificationEvent {
+  message: String!
+  instance_id: String!
+  operation: String!
+}
+
+type NotificationContent {
+  title: String!
+  events: [NotificationEvent!]!
+}
+
+type Notification implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  created: DateTime
+  name: String!
+  notification_type: String!
+  parent_types: [String]!
+  content: [NotificationContent!]!
+  is_read: Boolean!
+  user_id: String
+  created_at: DateTime
+  updated_at: DateTime
+}
+
+enum NotificationsOrdering {
+  name
+  created
+}
+
+enum NotificationFilter {
+  created
+  is_read
+}
+
+input NotificationsFiltering {
+  key: [NotificationFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type NotificationConnection {
+  pageInfo: PageInfo!
+  edges: [NotificationEdge]
+}
+
+type NotificationEdge {
+  cursor: String!
+  node: Notification!
+}
+
+enum DigestPeriod {
+  hour
+  day
+  week
+  month
+}
+
+input TriggerLiveAddInput {
+  name: name_String_NotNull_minLength_1!
+  description: String
+  event_types: [TriggerEventType!]!
+  outcomes: [StixRef!]!
+  filters: String
+}
+
+scalar name_String_NotNull_minLength_1
+
+input TriggerDigestAddInput {
+  name: name_String_NotNull_minLength_1!
+  description: String
+  trigger_ids: [String!]!
+  period: DigestPeriod!
+  trigger_time: String
+  outcomes: [StixRef!]!
+}
+
 type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -9317,8 +9431,6 @@ input VocabularyAddInput {
   aliases: [String!]
   update: Boolean
 }
-
-scalar name_String_NotNull_minLength_1
 
 type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObject & StixObject & Location {
   id: ID!

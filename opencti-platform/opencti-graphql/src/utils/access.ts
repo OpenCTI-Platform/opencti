@@ -29,6 +29,7 @@ export const SYSTEM_USER: AuthUser = {
   inside_platform_organization: true,
   origin: { user_id: OPENCTI_SYSTEM_UUID },
   roles: [{ name: ROLE_ADMINISTRATOR }],
+  groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
   allowed_organizations: [],
@@ -46,6 +47,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   inside_platform_organization: true,
   origin: { user_id: RETENTION_MANAGER_USER_UUID },
   roles: [{ name: ROLE_ADMINISTRATOR }],
+  groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
   allowed_organizations: [],
@@ -63,6 +65,7 @@ export const RULE_MANAGER_USER: AuthUser = {
   inside_platform_organization: true,
   origin: { user_id: RULE_MANAGER_USER_UUID },
   roles: [{ name: ROLE_ADMINISTRATOR }],
+  groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
   allowed_organizations: [],
@@ -120,7 +123,7 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     return elements;
   }
   // If not filter by the inner markings
-  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
   return elements.filter((element) => {
     // 1. Check markings

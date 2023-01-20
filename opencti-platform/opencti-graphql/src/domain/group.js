@@ -33,8 +33,8 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
-export const batchMembers = async (context, user, groupIds) => {
-  return batchListThroughGetFrom(context, user, groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+export const batchMembers = async (context, user, groupIds, opts = {}) => {
+  return batchListThroughGetFrom(context, user, groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER, opts);
 };
 
 export const batchMarkingDefinitions = async (context, user, groupIds) => {

@@ -15,7 +15,6 @@ import {
 import {
   buildPagination,
   computeAverage,
-  EVENT_TYPE_DELETE_DEPENDENCIES,
   fillTimeSeries,
   generateCreateMessage,
   generateUpdateMessage,
@@ -128,7 +127,6 @@ import {
 } from '../schema/stixCyberObservableRelationship';
 import {
   fieldToMetaRelation,
-  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
@@ -204,12 +202,12 @@ import {
   BYPASS,
   BYPASS_REFERENCE,
   executionContext,
-  userFilterStoreElements,
   isBypassUser,
   isUserCanAccessStoreElement,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
-  SYSTEM_USER
+  SYSTEM_USER,
+  userFilterStoreElements
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
@@ -1301,7 +1299,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
-    return storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
+    return await storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
     });
   } catch (err) {
@@ -2047,7 +2045,7 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
   logApp.info('Upsert inferred relation', { relation: patch });
-  return patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
+  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 // endregion
 
@@ -2703,7 +2701,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     }
   }
   // Build lock ids
-  const inputIds = getInputIds(relationshipType, resolvedInput);
+  const inputIds = getInputIds(relationshipType, resolvedInput, fromRule);
   if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
   if (isImpactedTypeAndSide(relationshipType, ROLE_TO)) inputIds.push(to.internal_id);
   const participantIds = inputIds.filter((e) => !locks.includes(e));
@@ -2751,7 +2749,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     if (existingRelationship) {
       // If upsert come from a rule, do a specific upsert.
       if (fromRule) {
-        return upsertRelationRule(context, existingRelationship, input, { ...opts, locks: participantIds });
+        return await upsertRelationRule(context, existingRelationship, input, { ...opts, locks: participantIds });
       }
       // If not upsert the element
       dataRel = await upsertElementRaw(context, user, existingRelationship, relationshipType, resolvedInput);
@@ -2833,7 +2831,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
   };
   const patch = createRuleDataPatch(instance);
   const inputRelation = { ...instance, ...patch };
-  logApp.info('Create inferred relation', { relation: inputRelation });
+  logApp.info('Create inferred relation', inputRelation);
   return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
 };
 /* istanbul ignore next */
@@ -3023,7 +3021,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
   const resolvedInput = await inputResolveRefs(context, user, input, type);
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
-  const participantIds = getInputIds(type, resolvedInput);
+  const participantIds = getInputIds(type, resolvedInput, fromRule);
   // Create the element
   let lock;
   try {
@@ -3063,7 +3061,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
           throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds });
         }
         // If upsert come from a rule, do a specific upsert.
-        return upsertEntityRule(context, R.head(filteredEntities), input, { ...opts, locks: participantIds });
+        return await upsertEntityRule(context, R.head(filteredEntities), input, { ...opts, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
         dataEntity = await upsertElementRaw(context, user, R.head(filteredEntities), type, resolvedInput);
@@ -3173,7 +3171,7 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
   const patch = createRuleDataPatch(instance);
   const inputEntity = { ...instance, ...patch };
   logApp.info('Create inferred entity', { entity: inputEntity });
-  return createEntityRaw(context, RULE_MANAGER_USER, inputEntity, type, opts);
+  return await createEntityRaw(context, RULE_MANAGER_USER, inputEntity, type, opts);
 };
 // endregion
 
@@ -3266,7 +3264,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
   // Check if deletion is really targeting an inference
   const isInferred = isInferredIndex(instance._index);
   if (!isInferred) {
-    throw UnsupportedError('Instance is not inferred, cant be deleted');
+    throw UnsupportedError(`Instance ${instance.id} is not inferred, cant be deleted`);
   }
   // Delete inference
   const fromRule = RULE_PREFIX + rule;
@@ -3277,7 +3275,6 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
   }
   const monoRule = rules.length === 1;
   // Cleanup all explanation that match the dependency id
-  const derivedEvents = [];
   const elementsRule = instance[completeRuleName];
   const rebuildRuleContent = [];
   for (let index = 0; index < elementsRule.length; index += 1) {
@@ -3294,48 +3291,27 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
         logApp.info('Delete inferred element', { rule, id: instance.id });
-        // If inference is a meta relationship just delete and generate an internal event
-        if (isStixMetaRelationship(instance.entity_type)) {
-          // Delete the meta and start an unshare background task if needed
-          const deletionPromise = elDeleteElements(context, RULE_MANAGER_USER, [instance], storeLoadByIdWithRefs);
-          const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, instance);
-          await Promise.all([deletionPromise, taskPromise]);
-          // Deleting meta must be converted to a special dependency deletion
-          // This type of event will be handle by the stream to cleanup inferences.
-          const deleteEvent = {
-            type: EVENT_TYPE_DELETE_DEPENDENCIES,
-            data: { ids: [`${instance.to.internal_id}_ref`] }
-          };
-          derivedEvents.push(deleteEvent);
-        } else {
-          const deletionData = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
-          derivedEvents.push(deletionData.event);
-        }
+        const deletionData = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
         logApp.info('Delete inferred element', { id: instance.id, type: instance.entity_type });
-      } else {
-        // If not we need to clean the rule and keep the element for other rules.
-        logApp.info('Cleanup inferred element', { rule, id: instance.id });
-        const input = { [completeRuleName]: null };
-        const upsertOpts = { fromRule, ruleOverride: true };
-        const { event } = await upsertRelationRule(context, instance, input, upsertOpts);
-        if (event) {
-          derivedEvents.push(event);
-        }
+        return deletionData.event;
       }
-    } else {
-      logApp.info('Upsert inferred element', { rule, id: instance.id });
-      // Rule still have other explanation, update the rule
-      const input = { [completeRuleName]: rebuildRuleContent };
-      const ruleOpts = { fromRule, ruleOverride: true };
-      const { event } = await upsertRelationRule(context, instance, input, ruleOpts);
-      if (event) {
-        derivedEvents.push(event);
-      }
+      // If not we need to clean the rule and keep the element for other rules.
+      logApp.info('Cleanup inferred element', { rule, id: instance.id });
+      const input = { [completeRuleName]: null };
+      const upsertOpts = { fromRule, ruleOverride: true };
+      const { event } = await upsertRelationRule(context, instance, input, upsertOpts);
+      return event;
     }
+    logApp.info('Upsert inferred element', { rule, id: instance.id });
+    // Rule still have other explanation, update the rule
+    const input = { [completeRuleName]: rebuildRuleContent };
+    const ruleOpts = { fromRule, ruleOverride: true };
+    const { event } = await upsertRelationRule(context, instance, input, ruleOpts);
+    return event;
   } catch (e) {
     logApp.error('Error deleting inference', { error: e.message });
   }
-  return derivedEvents;
+  return undefined;
 };
 export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   /* istanbul ignore if */

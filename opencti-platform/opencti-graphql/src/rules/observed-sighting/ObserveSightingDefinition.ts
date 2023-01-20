@@ -1,6 +1,5 @@
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
-import { RELATION_OBJECT } from '../../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { RULES_ATTRIBUTES_BEHAVIOR } from '../rules';
 import type { RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
@@ -47,22 +46,10 @@ const display = {
 };
 
 // For rescan
-const scan: RuleFilters = {
-  types: [RELATION_OBJECT],
-  fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA],
-  toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
-};
+const scan: RuleFilters = { types: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA] };
 
 // For live
 const scopes: Array<RuleScope> = [
-  {
-    filters: {
-      types: [RELATION_OBJECT],
-      fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA],
-      toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
-    },
-    attributes: [],
-  },
   {
     filters: {
       types: [RELATION_BASED_ON],

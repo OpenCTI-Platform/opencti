@@ -82,12 +82,10 @@ const Reports: FunctionComponent<ReportsProps> = ({
   } = useEntityToggle<ReportLine_node$data>(
     'view-reports',
   );
-
   const queryRef = useQueryLoading<ReportsLinesPaginationQuery>(
     reportsLinesQuery,
     paginationOptions,
   );
-
   const renderLines = (helper: ModuleHelper | undefined) => {
     let exportContext = null;
     if (objectId) {
@@ -172,12 +170,13 @@ const Reports: FunctionComponent<ReportsProps> = ({
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
-            'report_types',
             'x_opencti_workflow_id',
+            'assigneeTo',
             'labelledBy',
             'createdBy',
             'creator',
             'markedBy',
+            'report_types',
             'confidence',
             'published_start_date',
             'published_end_date',

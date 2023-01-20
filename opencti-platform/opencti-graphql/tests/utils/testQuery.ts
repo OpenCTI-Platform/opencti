@@ -60,6 +60,7 @@ export const ADMIN_USER: AuthUser = {
   name: 'admin',
   user_email: 'admin@opencti.io',
   roles: [{ name: ROLE_ADMINISTRATOR }],
+  groups: [],
   capabilities: [{ name: BYPASS }],
   all_marking: [],
   allowed_organizations: [],

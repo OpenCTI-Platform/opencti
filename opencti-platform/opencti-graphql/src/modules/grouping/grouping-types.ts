@@ -1,6 +1,5 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixDomainObject, StixOpenctiExtensionProperty, StixId } from '../../types/stix-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { StixContainer } from '../../types/stix-sdo';
 
 export const ENTITY_TYPE_CONTAINER_GROUPING = 'Grouping';
 
@@ -21,14 +20,10 @@ export interface StoreEntityGrouping extends StoreEntity {
 // endregion
 
 // region Stix type
-export interface StixGrouping extends StixDomainObject {
+export interface StixGrouping extends StixContainer {
   name: string;
   description: string;
   context: string;
-  object_refs: Array<StixId>;
-  extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionProperty
-  };
 }
 // endregion
 

@@ -33,11 +33,6 @@ export const smtpIsAlive = async () => {
 };
 
 export const sendMail = async (args) => {
-  const { to, subject, html } = args;
-  await transporter.sendMail({
-    from: conf.get('smtp:from_email') || 'notifications@opencti.io',
-    to,
-    subject,
-    html,
-  });
+  const { from, to, subject, html } = args;
+  await transporter.sendMail({ from, to, subject, html });
 };

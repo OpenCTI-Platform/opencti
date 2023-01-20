@@ -21,6 +21,7 @@ import {
   WebAssetOutlined,
   TerminalOutlined,
   SurroundSoundOutlined,
+  PublicOutlined,
 } from '@mui/icons-material';
 import {
   Gauge,
@@ -38,6 +39,7 @@ import {
   ServerNetwork,
   FlaskOutline,
   LaptopAccount,
+  GlobeModel,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
@@ -107,6 +109,38 @@ class StixCoreObjectKnowledgeBar extends Component {
                   <ListItemText primary={t('Sectors')} />
                 </MenuItem>
               )}
+              {includes('regions', availableSections) && (
+                <MenuItem
+                  component={Link}
+                  to={`${stixCoreObjectLink}/regions`}
+                  selected={
+                    location.pathname === `${stixCoreObjectLink}/regions`
+                  }
+                  dense={false}
+                  classes={{ root: classes.item }}
+                >
+                  <ListItemIcon style={{ minWidth: 35 }}>
+                    <PublicOutlined />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Regions')} />
+                </MenuItem>
+              )}
+              {includes('countries', availableSections) && (
+                <MenuItem
+                  component={Link}
+                  to={`${stixCoreObjectLink}/countries`}
+                  selected={
+                    location.pathname === `${stixCoreObjectLink}/countries`
+                  }
+                  dense={false}
+                  classes={{ root: classes.item }}
+                >
+                  <ListItemIcon style={{ minWidth: 35 }}>
+                    <FlagOutlined />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Countries')} />
+                </MenuItem>
+              )}
               {includes('cities', availableSections) && (
                 <MenuItem
                   component={Link}
@@ -155,22 +189,6 @@ class StixCoreObjectKnowledgeBar extends Component {
                   <ListItemText primary={t('Individuals')} />
                 </MenuItem>
               )}
-              {includes('countries', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/countries`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/countries`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <FlagOutlined />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Countries')} />
-                </MenuItem>
-              )}
               {includes('locations', availableSections) && (
                 <MenuItem
                   component={Link}
@@ -182,7 +200,7 @@ class StixCoreObjectKnowledgeBar extends Component {
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <FlagOutlined />
+                    <GlobeModel />
                   </ListItemIcon>
                   <ListItemText primary={t('Locations')} />
                 </MenuItem>
@@ -222,6 +240,38 @@ class StixCoreObjectKnowledgeBar extends Component {
                   <ListItemText primary={t('Sectors')} />
                 </MenuItem>
               )}
+              {includes('regions', availableSections) && (
+                <MenuItem
+                  component={Link}
+                  to={`${stixCoreObjectLink}/regions`}
+                  selected={
+                    location.pathname === `${stixCoreObjectLink}/regions`
+                  }
+                  dense={false}
+                  classes={{ root: classes.item }}
+                >
+                  <ListItemIcon style={{ minWidth: 35 }}>
+                    <PublicOutlined />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Regions')} />
+                </MenuItem>
+              )}
+              {includes('countries', availableSections) && (
+                <MenuItem
+                  component={Link}
+                  to={`${stixCoreObjectLink}/countries`}
+                  selected={
+                    location.pathname === `${stixCoreObjectLink}/countries`
+                  }
+                  dense={false}
+                  classes={{ root: classes.item }}
+                >
+                  <ListItemIcon style={{ minWidth: 35 }}>
+                    <FlagOutlined />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Countries')} />
+                </MenuItem>
+              )}
               {includes('cities', availableSections) && (
                 <MenuItem
                   component={Link}
@@ -236,6 +286,22 @@ class StixCoreObjectKnowledgeBar extends Component {
                     <CityVariantOutline />
                   </ListItemIcon>
                   <ListItemText primary={t('Cities')} />
+                </MenuItem>
+              )}
+              {includes('locations', availableSections) && (
+                <MenuItem
+                  component={Link}
+                  to={`${stixCoreObjectLink}/locations`}
+                  selected={
+                    location.pathname === `${stixCoreObjectLink}/locations`
+                  }
+                  dense={false}
+                  classes={{ root: classes.item }}
+                >
+                  <ListItemIcon style={{ minWidth: 35 }}>
+                    <GlobeModel />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Locations')} />
                 </MenuItem>
               )}
               {includes('organizations', availableSections) && (
@@ -268,38 +334,6 @@ class StixCoreObjectKnowledgeBar extends Component {
                     <GroupOutlined />
                   </ListItemIcon>
                   <ListItemText primary={t('Individuals')} />
-                </MenuItem>
-              )}
-              {includes('countries', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/countries`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/countries`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <FlagOutlined />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Countries')} />
-                </MenuItem>
-              )}
-              {includes('locations', availableSections) && (
-                <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/locations`}
-                  selected={
-                    location.pathname === `${stixCoreObjectLink}/locations`
-                  }
-                  dense={false}
-                  classes={{ root: classes.item }}
-                >
-                  <ListItemIcon style={{ minWidth: 35 }}>
-                    <FlagOutlined />
-                  </ListItemIcon>
-                  <ListItemText primary={t('Locations')} />
                 </MenuItem>
               )}
               {includes('used_tools', availableSections) && (

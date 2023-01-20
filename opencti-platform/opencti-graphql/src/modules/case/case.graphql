@@ -194,7 +194,7 @@ type CaseEdge {
 
 # Queries
 type Query {
-  case(id: String!): Case @auth(for: [SETTINGS])
+  case(id: String!): Case @auth(for: [KNOWLEDGE])
   cases(
     first: Int
     after: ID
@@ -204,7 +204,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CaseConnection @auth(for: [SETTINGS])
+  ): CaseConnection @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
@@ -236,10 +236,10 @@ input CaseAddInput {
 
 type Mutation {
   caseAdd(input: CaseAddInput!): Case @auth
-  caseDelete(id: ID!): ID @auth(for: [SETTINGS])
-  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [SETTINGS])
-  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case @auth(for: [SETTINGS])
-  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [SETTINGS])
-  caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [SETTINGS])
-  caseContextClean(id: ID!): Case @auth(for: [SETTINGS])
+  caseDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseContextClean(id: ID!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -11,7 +11,6 @@ import type {
   EditInput,
   QueryStatusesArgs,
   QueryStatusTemplatesArgs,
-  Status,
   StatusAddInput,
   StatusTemplate,
   StatusTemplateAddInput,
@@ -31,12 +30,12 @@ export const findTemplateById = (context: AuthContext, user: AuthUser, statusTem
 export const findAllTemplates = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
-export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<Status> => {
+export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<BasicWorkflowStatus> => {
   const platformStatuses = await getEntitiesFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const basicWorkflowStatus = platformStatuses.find((status) => status.id === statusId);
-  return basicWorkflowStatus ?? await storeLoadById(context, user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
+  return basicWorkflowStatus ?? await storeLoadById(context, user, statusId, ENTITY_TYPE_STATUS) as unknown as BasicWorkflowStatus;
 };
-export const findByType = async (context: AuthContext, user: AuthUser, statusType: string): Promise<Array<Status>> => {
+export const findByType = async (context: AuthContext, user: AuthUser, statusType: string): Promise<Array<BasicWorkflowStatus>> => {
   const platformStatuses = await getEntitiesFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return platformStatuses.filter((status) => status.type === statusType);
 };

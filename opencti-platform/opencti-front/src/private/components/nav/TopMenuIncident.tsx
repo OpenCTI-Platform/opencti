@@ -36,10 +36,7 @@ const TopMenuIncident = () => {
   const { t } = useFormatter();
   const { incidentId } = useParams() as { incidentId: string };
   const classes = useStyles();
-  const isUploaderOrExporter = useGranted([
-    KNOWLEDGE_KNUPLOAD,
-    KNOWLEDGE_KNGETEXPORT,
-  ]);
+  const isUploaderOrExporter = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]);
   const computePath = (path?: string) => `/dashboard/events/incidents/${incidentId}${path ?? ''}`;
   const isCompatiblePath = (path?: string) => (path ? location.pathname.includes(computePath(path)) : location.pathname === computePath(path));
   const computeVariant = (path?: string) => (isCompatiblePath(path) ? 'contained' : 'text');

@@ -7,7 +7,7 @@ export type BackendFilters = { key: string, values: string[], operator: string, 
 
 export const onlyGroupOrganization = ['x_opencti_workflow_id'];
 export const directFilters = [
-  'report_types',
+  'is_read',
   'channel_types',
   'x_opencti_detection',
   'sightedBy',
@@ -86,13 +86,6 @@ export const entityTypes = [
   'Domain-Name',
   'Email-Addr',
   'Email-Message',
-];
-export const relationTypes = [
-  'Stix-Core-Relationship',
-  'indicates',
-  'targets',
-  'uses',
-  'located-at',
 ];
 
 export const isUniqFilter = (key: string) => uniqFilters.includes(key)

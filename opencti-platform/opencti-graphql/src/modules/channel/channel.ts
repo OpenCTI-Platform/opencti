@@ -22,7 +22,7 @@ import {
   ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
 import channelResolvers from './channel-resolver';
-import { ENTITY_TYPE_CHANNEL, StoreEntityChannel } from './channel-types';
+import { ENTITY_TYPE_CHANNEL, StixChannel, StoreEntityChannel } from './channel-types';
 import type { ModuleDefinition } from '../../types/module';
 import { registerDefinition } from '../../types/module';
 import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
@@ -40,7 +40,7 @@ import {
 import { REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
-const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
+const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
   type: {
     id: 'channels',
     name: ENTITY_TYPE_CHANNEL,
@@ -110,6 +110,9 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel> = {
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
       ] }
   ],
+  representative: (stix: StixChannel) => {
+    return stix.name;
+  },
   converter: convertChannelToStix
 };
 

@@ -89,7 +89,6 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { TYPE_FILTER } from '../utils/filtering';
 import { convertTypeToStixType } from './stix-converter';
 
 const ELK_ENGINE = 'elk';
@@ -233,7 +232,7 @@ export const elRawSearch = (context, user, types, query) => {
         // Result must be always accurate to prevent data duplication and unwanted behaviors
         // If any shard fail during query, engine throw a lock exception with shards information
         throw EngineShardsError({ shards: parsedSearch._shards });
-      } else {
+      } else if (failures.length > 0) {
         // At least log the situation
         const message = `[SEARCH] Search meet ${failures.length} shards failure, please check your configuration`;
         logApp.error(message, { shards: parsedSearch._shards });
@@ -1126,7 +1125,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       const { key, values, nested, operator = 'eq', filterMode: localFilterMode = 'or' } = validFilters[index];
       const arrayKeys = Array.isArray(key) ? key : [key];
       // In case of entity_type filters, we also look by default in the parent_types property.
-      const validKeys = R.uniq(arrayKeys.includes(TYPE_FILTER) ? [...arrayKeys, 'parent_types'] : arrayKeys);
+      const validKeys = R.uniq(arrayKeys.includes('entity_type') ? [...arrayKeys, 'parent_types'] : arrayKeys);
       // TODO IF KEY is PART OF Rule we need to add extra fields search
       // TODO Add connections like filters to have native fromId, toId filters handling.
       // See opencti-front\src\private\components\events\StixSightingRelationships.tsx
