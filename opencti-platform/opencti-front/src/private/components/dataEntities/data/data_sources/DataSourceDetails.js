@@ -272,7 +272,7 @@ class DataSourceDetailsComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  {dataSource.update_frequency.period && t(dataSource.update_frequency.period)}
+                  {dataSource.update_frequency && t(dataSource.update_frequency.period)}
                 </Grid>
                 <Grid item xs={6}>
                   <div className={classes.textBase}>
@@ -293,7 +293,7 @@ class DataSourceDetailsComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  {dataSource.update_frequency.unit && t(dataSource.update_frequency.unit)}
+                  {dataSource.update_frequency && t(dataSource.update_frequency.unit)}
                 </Grid>
                 <Grid item xs={6}>
                   <Typography
