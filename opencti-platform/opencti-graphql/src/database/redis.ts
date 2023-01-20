@@ -717,7 +717,7 @@ export const registerClusterInstance = async (instanceId: string, instanceConfig
 };
 export const getClusterInstances = async () => {
   const instances = await clientBase.zrange(CLUSTER_LIST_KEY, 0, -1);
-  if (instances) {
+  if (instances && instances.length > 0) {
     const instancesConfig = await clientBase.mget(...instances);
     return instancesConfig.filter(filterEmpty).map((n) => JSON.parse(n));
   }
