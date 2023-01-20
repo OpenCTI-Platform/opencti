@@ -81,7 +81,7 @@ const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEd
                     <Close fontSize="small" color="primary" />
                 </IconButton>
                 <Typography variant="h6" classes={{ root: classes.title }}>
-                    {t('Update an administrative Area')}
+                    {t('Update an area')}
                 </Typography>
                 <SubscriptionAvatars context={queryData.administrativeArea.editContext} />
                 <div className="clearfix" />
