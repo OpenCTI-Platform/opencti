@@ -54,7 +54,7 @@ Transition.displayName = 'TransitionSlide';
 
 const DataSourcesDeletionDarklightMutation = graphql`
   mutation DataSourcesDeletionDarklightMutation($id: ID!) {
-  deleteOscalRole(id: $id)
+  deleteDataSource(id: $id)
 }
 `;
 
