@@ -2,7 +2,7 @@ import { getHeapStatistics } from 'v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { createEntity, loadEntity, updateAttribute } from '../database/middleware';
-import conf, { BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
+import conf, { BUS_TOPICS, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -47,6 +47,7 @@ export const getSettings = async (context) => {
   const instancesConfig = await getClusterInstances();
   return {
     ...platformSettings,
+    platform_url: getBaseUrl(context.req),
     platform_providers: PROVIDERS,
     platform_cluster: getPlatformClusterInfo(instancesConfig),
     platform_modules: getModules(instancesConfig),
