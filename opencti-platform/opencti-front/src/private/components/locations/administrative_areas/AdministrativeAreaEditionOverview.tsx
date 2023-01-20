@@ -25,8 +25,10 @@ const administrativeAreaMutationFieldPatch = graphql`
     mutation AdministrativeAreaEditionOverviewFieldPatchMutation(
         $id: ID!
         $input: [EditInput]!
+        $commitMessage: String
+        $references: [String]
     ) {
-        administrativeAreaFieldPatch(id: $id, input: $input){
+        administrativeAreaFieldPatch(id: $id, input: $input, commitMessage: $commitMessage, references: $references){
                 ...AdministrativeAreaEditionOverview_administrativeArea
                 ...AdministrativeArea_administrativeArea
             }
@@ -251,7 +253,6 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
     objectMarking,
     status,
   };
-
   return (
         <Formik
             enableReinitialize={true}
