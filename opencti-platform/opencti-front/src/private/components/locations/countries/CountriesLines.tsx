@@ -8,7 +8,7 @@ import {
   CountriesLinesPaginationQuery,
   CountriesLinesPaginationQuery$variables,
 } from './__generated__/CountriesLinesPaginationQuery.graphql';
-import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfRowsToLoad = 50;
@@ -17,7 +17,7 @@ interface CountriesLinesProps {
   queryRef: PreloadedQuery<CountriesLinesPaginationQuery>,
   dataColumns: DataColumns,
   paginationOptions?: CountriesLinesPaginationQuery$variables,
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'],
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
 }
 
 export const countriesLinesQuery = graphql`

@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { VulnerabilityLine, VulnerabilityLineDummy } from './VulnerabilityLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import {
   VulnerabilitiesLinesPaginationQuery,
   VulnerabilitiesLinesPaginationQuery$variables,
@@ -17,7 +17,7 @@ interface VulnerabilityLinesProps {
   queryRef: PreloadedQuery<VulnerabilitiesLinesPaginationQuery>;
   dataColumns: DataColumns;
   paginationOptions?: VulnerabilitiesLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   onLabelClick: (
     k: string,
     id: string,

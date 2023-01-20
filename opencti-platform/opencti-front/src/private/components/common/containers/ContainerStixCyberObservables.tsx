@@ -7,9 +7,7 @@ import ContainerStixCyberObservablesLines, { containerStixCyberObservablesLinesQ
 import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
 import { defaultValue } from '../../../../utils/Graph';
-import useLocalStorage, {
-  localStorageToPaginationOptions,
-} from '../../../../utils/hooks/useLocalStorage';
+import { localStorageToPaginationOptions, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
 import { Filters } from '../../../../components/list_lines';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
@@ -70,12 +68,10 @@ interface ContainerStixCyberObservablesComponentProps {
 
 const LOCAL_STORAGE_KEY = 'view-container-stix-cyber-observables';
 
-const ContainerStixCyberObservablesComponent: FunctionComponent<
-ContainerStixCyberObservablesComponentProps
-> = ({ container }) => {
+const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyberObservablesComponentProps> = ({ container }) => {
   const classes = useStyles();
 
-  const [viewStorage, setViewStorage, helpers] = useLocalStorage(
+  const { viewStorage, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
@@ -103,6 +99,7 @@ ContainerStixCyberObservablesComponentProps
     handleToggleExports,
     handleAddFilter,
     handleSetNumberOfElements,
+    handleAddProperty,
   } = helpers;
 
   const [selectedElements, setSelectedElements] = useState<
@@ -146,12 +143,9 @@ ContainerStixCyberObservablesComponentProps
 
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
-      setViewStorage((c) => ({ ...c, types: types.filter((x) => x !== type) }));
+      handleAddProperty('types', types.filter((x) => x !== type));
     } else {
-      setViewStorage((c) => ({
-        ...c,
-        types: types ? [...types, type] : [type],
-      }));
+      handleAddProperty('types', types ? [...types, type] : [type]);
     }
   };
 
@@ -182,7 +176,7 @@ ContainerStixCyberObservablesComponentProps
   );
 
   const handleClear = () => {
-    setViewStorage((c) => ({ ...c, types: [] }));
+    handleAddProperty('types', []);
   };
 
   const handleToggleSelectEntity = (

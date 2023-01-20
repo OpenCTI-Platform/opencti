@@ -6,7 +6,7 @@ import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
-import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import {
   ReportsLinesPaginationQuery,
   ReportsLinesPaginationQuery$variables,
@@ -31,9 +31,26 @@ const Reports: FunctionComponent<ReportsProps> = ({
   objectId,
   authorId,
   onChangeOpenExports,
-  match,
 }) => {
-  const [viewStorage, _, storageHelpers] = useLocalStorage(LOCAL_STORAGE_KEY, {
+  const additionnalFilters = [];
+  if (authorId) {
+    additionnalFilters.push({
+      key: 'createdBy',
+      values: [authorId],
+      operator: 'eq',
+      filterMode: 'or',
+    });
+  }
+  if (objectId) {
+    additionnalFilters.push({
+      key: 'objectContains',
+      values: [objectId],
+      operator: 'eq',
+      filterMode: 'or',
+    });
+  }
+
+  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     numberOfElements: { number: 0, symbol: '', original: 0 },
     filters: {} as Filters,
     searchTerm: '',
@@ -42,7 +59,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     openExports: false,
     count: 25,
     redirectionMode: 'overview',
-  });
+  }, additionnalFilters);
   const {
     numberOfElements,
     filters,
@@ -62,45 +79,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
   } = useEntityToggle<ReportLine_node$data>(
     'view-reports',
   );
-
-  const { reportType } = match.params;
-
-  const reportFilterClass = reportType !== 'all' && reportType !== undefined
-    ? reportType.replace(/_/g, ' ')
-    : '';
-
-  const additionnalFilters = [];
-  if (reportFilterClass) {
-    additionnalFilters.push({
-      key: 'report_types',
-      values: [reportFilterClass],
-      operator: 'eq',
-      filterMode: 'or',
-    });
-  }
-  if (authorId) {
-    additionnalFilters.push({
-      key: 'createdBy',
-      values: [authorId],
-      operator: 'eq',
-      filterMode: 'or' });
-  }
-  if (objectId) {
-    additionnalFilters.push({
-      key: 'objectContains',
-      values: [objectId],
-      operator: 'eq',
-      filterMode: 'or' });
-  }
-
-  const paginationOptions = localStorageToPaginationOptions<ReportsLinesPaginationQuery$variables>({
-    filters,
-    search: searchTerm,
-    sortBy,
-    orderAsc,
-    additionnalFilters,
-    count: 25,
-  });
 
   const queryRef = useQueryLoading<ReportsLinesPaginationQuery>(
     reportsLinesQuery,
@@ -238,7 +216,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 handleClearSelectedElements={handleClearSelectedElements}
                 type="Report"
               />
-              </React.Suspense>
+            </React.Suspense>
           )}
         </ListLines>
       </div>

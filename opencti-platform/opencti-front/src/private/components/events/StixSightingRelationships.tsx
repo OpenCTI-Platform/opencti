@@ -5,7 +5,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import StixSightingRelationshipsLines, {
   stixSightingRelationshipsLinesQuery,
 } from './stix_sighting_relationships/StixSightingRelationshipsLines';
-import useLocalStorage, { localStorageToPaginationOptions } from '../../../utils/hooks/useLocalStorage';
+import { localStorageToPaginationOptions, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../components/list_lines';
 import {
   StixSightingRelationshipsLinesPaginationQuery$variables,
@@ -61,7 +61,7 @@ const dataColumns = {
 const LOCAL_STORAGE_KEY = 'view-stix-sighting-relationships';
 
 const StixSightingRelationships = () => {
-  const [viewStorage, _, storageHelpers] = useLocalStorage(LOCAL_STORAGE_KEY, {
+  const { viewStorage, helpers: storageHelpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
     numberOfElements: { number: 0, symbol: '' },
     filters: {} as Filters,
     searchTerm: '',

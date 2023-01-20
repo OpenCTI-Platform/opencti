@@ -3,11 +3,14 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import { DataComponentsLines_data$key } from './__generated__/DataComponentsLines_data.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { DataComponentsLinesPaginationQuery, DataComponentsLinesPaginationQuery$variables } from './__generated__/DataComponentsLinesPaginationQuery.graphql';
+import {
+  DataComponentsLinesPaginationQuery,
+  DataComponentsLinesPaginationQuery$variables,
+} from './__generated__/DataComponentsLinesPaginationQuery.graphql';
 import DataComponentLineDummy from './DataComponentLineDummy';
 import DataComponentLine from './DataComponentLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
@@ -16,7 +19,7 @@ interface DataComponentsLinesProps {
   onLabelClick: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void,
   paginationOptions: DataComponentsLinesPaginationQuery$variables,
   queryRef: PreloadedQuery<DataComponentsLinesPaginationQuery>,
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'],
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
 }
 
 export const dataComponentsLinesQuery = graphql`

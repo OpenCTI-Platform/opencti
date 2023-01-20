@@ -3,6 +3,8 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
+export type BackendFilters = { key: string, values: string[], operator: string, filterMode: string }[];
+
 export const onlyGroupOrganization = ['x_opencti_workflow_id'];
 export const directFilters = [
   'report_types',

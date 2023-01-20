@@ -7,7 +7,7 @@ import {
   ReportsLinesPaginationQuery,
   ReportsLinesPaginationQuery$variables,
 } from './__generated__/ReportsLinesPaginationQuery.graphql';
-import { HandleAddFilter, UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
 import { ReportsLines_data$key } from './__generated__/ReportsLines_data.graphql';
 import { ReportLine_node$data } from './__generated__/ReportLine_node.graphql';
@@ -94,7 +94,7 @@ const reportsLineFragment = graphql`
 `;
 
 interface ReportsLinesProps {
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   dataColumns: DataColumns;
   paginationOptions: ReportsLinesPaginationQuery$variables;
   queryRef: PreloadedQuery<ReportsLinesPaginationQuery>;
