@@ -88,19 +88,19 @@ const AdministrativeAreasLines: FunctionComponent<AdministrativeAreasLinesProps>
   });
 
   return (
-        <ListLinesContent
-            initialLoading={!data}
-            hasMore={hasMore}
-            loadMore={loadMore}
-            isLoading={isLoadingMore}
-            dataList={data?.administrativeAreas?.edges ?? []}
-            globalCount={data?.administrativeAreas?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-            LineComponent={AdministrativeAreaLine}
-            DummyLineComponent={AdministrativeAreaLineDummy}
-            dataColumns={dataColumns}
-            nbOfRowsToLoad={nbOfRowsToLoad}
-            paginationOptions={paginationOptions}
-        />
+    <ListLinesContent
+      initialLoading={!data}
+      hasMore={hasMore}
+      loadMore={loadMore}
+      isLoading={isLoadingMore}
+      dataList={data?.administrativeAreas?.edges ?? []}
+      globalCount={data?.administrativeAreas?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={AdministrativeAreaLine}
+      DummyLineComponent={AdministrativeAreaLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+    />
   );
 };
 

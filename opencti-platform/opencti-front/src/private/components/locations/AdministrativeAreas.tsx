@@ -53,50 +53,50 @@ const AdministrativeAreas: FunctionComponent = () => {
     const queryRef = useQueryLoading<AdministrativeAreasLinesPaginationQuery>(administrativeAreasLinesQuery, paginationOptions);
 
     return (
-            <ListLines
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={dataColumns}
-                handleSort={helpers.handleSort}
-                handleSearch={helpers.handleSearch}
-                handleAddFilter={helpers.handleAddFilter}
-                handleRemoveFilter={helpers.handleRemoveFilter}
-                handleToggleExports={helpers.handleToggleExports}
-                openExports={openExports}
-                exportEntityType="AdministrativeArea"
-                keyword={searchTerm}
-                filters={filters}
-                paginationOptions={paginationOptions}
-                numberOfElements={numberOfElements}
-                availableFilterKeys={[
-                  'created_start_date',
-                  'created_end_date',
-                  'createdBy',
-                ]}
-            >
-                {queryRef && (
-                    <React.Suspense fallback={
-                        <>{Array(20).fill(0).map((idx) => (<AdministrativeAreaLineDummy key={idx} dataColumns={dataColumns} />))}</>
-                    }>
-                        <AdministrativeAreasLines
-                            queryRef={queryRef}
-                            paginationOptions={paginationOptions}
-                            dataColumns={dataColumns}
-                            setNumberOfElements={helpers.handleSetNumberOfElements}
-                        />
-                    </React.Suspense>
-                )}
-            </ListLines>
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleToggleExports={helpers.handleToggleExports}
+        openExports={openExports}
+        exportEntityType="AdministrativeArea"
+        keyword={searchTerm}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+        ]}
+      >
+        {queryRef && (
+          <React.Suspense fallback={
+            <>{Array(20).fill(0).map((idx) => (<AdministrativeAreaLineDummy key={idx} dataColumns={dataColumns} />))}</>
+          }>
+            <AdministrativeAreasLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
+            />
+          </React.Suspense>
+        )}
+      </ListLines>
     );
   };
 
   return (
-        <div>
-            {renderLines()}
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <AdministrativeAreaCreation paginationOptions={paginationOptions} />
-            </Security>
-        </div>
+    <div>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <AdministrativeAreaCreation paginationOptions={paginationOptions} />
+      </Security>
+    </div>
   );
 };
 

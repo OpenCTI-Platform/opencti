@@ -54,9 +54,6 @@ export const administrativeAreaEditionQuery = graphql`
                 focusOn
             }
         }
-        settings {
-            platform_enable_reference
-        }
     }
 `;
 const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEditionContainerProps> = ({ queryRef, handleClose }) => {
@@ -89,7 +86,6 @@ const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEd
             <div className={classes.container}>
                 <AdministrativeAreaEditionOverview
                     administrativeAreaRef={queryData.administrativeArea}
-                    enableReferences={queryData.settings.platform_enable_reference?.includes('AdministrativeArea')}
                     context={queryData.administrativeArea.editContext}
                     handleClose={handleClose}
                 />

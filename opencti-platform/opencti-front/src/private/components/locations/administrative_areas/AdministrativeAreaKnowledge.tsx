@@ -36,7 +36,6 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
     administrativeAreaKnowledgeFragment,
     administrativeAreaData,
   );
-  console.log(administrativeArea);
   const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
 
   return (

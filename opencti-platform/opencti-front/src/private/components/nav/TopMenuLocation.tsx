@@ -74,8 +74,7 @@ const TopMenuLocation = () => {
           {t('Countries')}
         </Button>
       )}
-      {!useIsHiddenEntity('City') && (
-      {!isEntityTypeHidden('AdministrativeArea') && (
+      {!useIsHiddenEntity('AdministrativeArea') && (
           <Button
               component={Link}
               to="/dashboard/locations/administrative_areas"
@@ -95,8 +94,8 @@ const TopMenuLocation = () => {
             <TextureBox className={classes.icon} fontSize="small"/>
             {t('Areas')}
           </Button>
-      )}
-      {!isEntityTypeHidden('City') && (
+      ) }
+      {!useIsHiddenEntity('City') && (
         <Button
           component={Link}
           to="/dashboard/locations/cities"
