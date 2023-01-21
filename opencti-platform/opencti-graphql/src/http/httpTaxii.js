@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
-import { basePath } from '../config/conf';
+import { basePath, getBaseUrl } from '../config/conf';
 import { AuthRequired, ForbiddenAccess, UnsupportedError } from '../config/errors';
 import {
   restAllCollections,
@@ -9,7 +9,7 @@ import {
   restCollectionStix,
   restLoadCollectionById,
 } from '../domain/taxii';
-import { BYPASS, executionContext, getBaseUrl } from '../utils/access';
+import { BYPASS, executionContext } from '../utils/access';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
@@ -55,7 +55,7 @@ const initTaxiiApi = (app) => {
       const discovery = {
         title: 'OpenCTI TAXII Server',
         description: 'This TAXII Server exposes OpenCTI data through taxii protocol',
-        default: '/root',
+        default: `${getBaseUrl(req)}/taxii2/root`,
         api_roots: [`${getBaseUrl(req)}/taxii2/root`],
       };
       res.json(discovery);

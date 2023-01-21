@@ -1,9 +1,7 @@
 import * as R from 'ramda';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
-import type { Request } from 'express';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { basePath, baseUrl } from '../config/conf';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -106,19 +104,6 @@ export const INTERNAL_USERS = {
   [SYSTEM_USER.id]: SYSTEM_USER,
   [RETENTION_MANAGER_USER.id]: RETENTION_MANAGER_USER,
   [RULE_MANAGER_USER.id]: RULE_MANAGER_USER
-};
-
-export const getBaseUrl = (req: Request): string => {
-  if (baseUrl) {
-    return baseUrl;
-  }
-  if (req) {
-    const [, port] = req.headers.host ? req.headers.host.split(':') : [];
-    const isCustomPort = port !== '80' && port !== '443';
-    const httpPort = isCustomPort && port ? `:${port}` : '';
-    return `${req.protocol}://${req.hostname}${httpPort}${basePath}`;
-  }
-  return basePath;
 };
 
 export const isBypassUser = (user: AuthUser): boolean => {

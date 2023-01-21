@@ -1,5 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
-import { baseUrl, BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, getBaseUrl } from '../config/conf';
 import {
   references,
   addExternalReference,
@@ -31,7 +31,12 @@ const externalReferenceResolvers = {
     creator: 'creator_id',
   },
   ExternalReference: {
-    url: (externalReference) => (externalReference.fileId ? (baseUrl + externalReference.url) : externalReference.url),
+    url: (externalReference, _, context) => {
+      if (externalReference.fileId) {
+        return getBaseUrl(context.req) + externalReference.url;
+      }
+      return externalReference.url;
+    },
     references: (container, args, context) => references(context, context.user, container.id, args),
     editContext: (externalReference) => fetchEditContext(externalReference.id),
     jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.id, args),
