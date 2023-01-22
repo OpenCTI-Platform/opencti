@@ -1,18 +1,14 @@
 import { UserInputError } from 'apollo-server-express';
-import { compareValues, filterValues, updateQuery, checkIfValidUUID, CyioError } from '../../utils.js';
+import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue, CyioError } from '../../utils.js';
 import {
   getReducer,
   connectionInformationPredicateMap,
   singularizeSchema,
   deleteConnectionInformationQuery,
-  // deleteConnectionInformationByIriQuery,
-  deleteMultipleConnectionInformationQuery,
   insertConnectionInformationQuery,
   selectAllConnectionInformationQuery,
   selectConnectionInformationQuery,
   selectConnectionInformationByIriQuery,
-  attachToConnectionInformationQuery,
-  detachFromConnectionInformationQuery,
 } from '../schema/sparql/connectionInformation.js';
 
 export const findConnectionConfigById = async (connectionId, dbName, dataSources, selectMap) => {
@@ -178,7 +174,7 @@ export const createConnectionConfig = async (input, dbName, selectMap, dataSourc
   }
 
   // retrieve the newly created Connection Information to be returned
-  const select = selectConnectionInformationQuery(id, selectMap.getNode("createConnectionConfig"));
+  const select = selectConnectionInformationQuery(connectionId, selectMap.getNode("createConnectionConfig"));
   const result = await dataSources.Stardog.queryById({
     dbName: 'cyio-config',
     sparqlQuery: select,
@@ -223,17 +219,17 @@ export const deleteConnectionConfigById = async (connectionId, dbName, dataSourc
       throw e
     }
     
-    if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
-    return id;
+    return connectionId;
   } 
 
   if (Array.isArray(connectionId)) {
-    let response;
-    for (let item of connectionId) {
-      if (!checkIfValidUUID(item)) throw new CyioError(`Invalid identifier: ${item}`);  
+    let removedIds = []
+    for (let itemId of connectionId) {
+      let response;
+      if (!checkIfValidUUID(itemId)) throw new CyioError(`Invalid identifier: ${itemId}`);  
 
       // check if object with id exists
-      let sparqlQuery = selectConnectionInformationQuery(connectionId, select);
+      let sparqlQuery = selectConnectionInformationQuery(itemId, select);
       try {
         response = await dataSources.Stardog.queryById({
           dbName: 'cyio-config',
@@ -246,23 +242,24 @@ export const deleteConnectionConfigById = async (connectionId, dbName, dataSourc
         throw e
       }
       
-      if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
+      if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${itemId}`);
+
+      sparqlQuery = deleteConnectionInformationQuery(itemId);
+      try {
+        response = await dataSources.Stardog.delete({
+          dbName: 'cyio-config',
+          sparqlQuery,
+          queryId: "Delete Connection Information"
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      
+      removedIds.push(itemId);
     }
 
-    let sparqlQuery = deleteMultipleConnectionInformationQuery(connectionId);
-    try {
-      response = await dataSources.Stardog.delete({
-        dbName: 'cyio-config',
-        sparqlQuery,
-        queryId: "Delete multiple Connection Information"
-      });
-    } catch (e) {
-      console.log(e)
-      throw e
-    }
-    
-    if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
-    return id;
+    return removedIds;
   }
 };
 
@@ -327,6 +324,15 @@ export const editConnectionConfigById = async (connectionId, input, dbName, data
     let value, fieldType, objectType, objArray, iris=[];
     for (value of editItem.value) {
       switch(editItem.key) {
+        case 'connector_type':
+          if (!validateEnumValue(value, 'ConnectorType', schema)) throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+          editItem.value[0] = value.replace(/_/g,'-').toLowerCase();
+          fieldType = 'simple';
+          break;
+        case 'http_request_method':
+          if (!validateEnumValue(value, 'HttpRequestMethod', schema)) throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+          fieldType = 'simple';
+          break;
         default:
           fieldType = 'simple';
           break;
@@ -383,7 +389,7 @@ export const editConnectionConfigById = async (connectionId, input, dbName, data
 
   const select = selectConnectionInformationQuery(connectionId, selectMap.getNode("editConnectionConfig"));
   const result = await dataSources.Stardog.queryById({
-    dbName,
+    dbName: 'cyio-config',
     sparqlQuery: select,
     queryId: "Select Connection Information",
     singularizeSchema
@@ -391,3 +397,4 @@ export const editConnectionConfigById = async (connectionId, input, dbName, data
   const reducer = getReducer("CONNECTION-INFORMATION");
   return reducer(result[0]);
 };
+

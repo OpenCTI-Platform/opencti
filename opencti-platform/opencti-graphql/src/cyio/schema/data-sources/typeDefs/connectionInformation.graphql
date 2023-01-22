@@ -15,7 +15,7 @@ extend type Query {
 # declares the mutation entry-points for this type
 extend type Mutation {
   deleteConnectionConfigs(ids: [ID!]!): [ID]  @hasPermission(resources: "DataSource:delete")
-  createConnectionConfig(input: ConnectionInformationInput): DataSource  @hasPermission(resources: "DataSource:update")
+  createConnectionConfig(input: ConnectionInformationInput): ConnectionInformation  @hasPermission(resources: "DataSource:update")
   deleteConnectionConfig(id: ID!): String! @hasPermission(resources: "DataSource:delete")
   editConnectionConfig(id: ID!, input: [EditInput]!, commitMessage: String): ConnectionInformation @hasPermission(resources: "DataSource:update")
 }
@@ -44,6 +44,8 @@ type ConnectionInformation implements BasicObject {
   display_name: String
   "Identifies a human-readable description of the connection and its purpose"
   description: String
+  "Indicates the type of the connector"
+  connector_type: ConnectorType!
   "Indicates the requirement for a secure (e.g., TLS) connection"
   secure: Boolean!
   "Indicates the name of the host or IP address of the connection"
@@ -60,6 +62,10 @@ type ConnectionInformation implements BasicObject {
   query_sleep_interval: Int
   "Indicates the file(s) containing the Certificate Authority for the connection.  The value must be a file path that includes the name of the file."
   ca: [String]
+  "Indicates the method to be used when making an HTTP request"
+  http_request_method: HttpRequestMethod
+  "Indicates the set of headers to be used"
+  headers: [String!]
   "Indicates the API key to be used by the connection"
   api_key: String
   "Indicates the username to be used to establish the connection"
@@ -77,12 +83,18 @@ type ConnectionInformation implements BasicObject {
 }
 
 input ConnectionInformationInput {
+  "Identifies the name of the connection"
+  name: String!
+  "Identifies a human-readable description of the connection and its purpose"
+  description: String
+  "Indicates the type of the connector"
+  connector_type: ConnectorType!
   "Indicates the requirement for a secure (e.g., TLS) connection"
   secure: Boolean!
   "Indicates the name of the host or IP address of the connection"
   host: String!
   "Indications the port number to be used by the connection"
-  port: Int
+  port: Int @constraint(min: 0, max: 65535)
   "Indicates the query or body to be used by the connection on subsequent queries."
   query: String!
   "Indicates the query or body to be used by the connection on an initial retrieval or reset."
@@ -90,15 +102,45 @@ input ConnectionInformationInput {
   "Indicates the field/header to be used as the value of the index when required to make multiple queries to pagination through larger result sets."
   query_index_field: String
   "Indicates the required minimum time, in seconds, between consecutive queries."
-  query_sleep_interval: Int!
-  "Indicates the file(s) containing the Certificate Authority for the connection.  The value must be a file path that includes the name of the file."
-  ca: [String]
+  query_sleep_interval: Int! @constraint(min:1, max:60)
+  "Indicates the method to be used when making an HTTP request"
+  http_request_method: HttpRequestMethod
+  "Indicates the set of headers to be used"
+  headers: [String!]
   "Indicates the API key to be used by the connection"
   api_key: String
+  "Indicates the file(s) containing the Certificate Authority for the connection.  The value must be a file path that includes the name of the file."
+  ca: [String]
   "Indicates the username to be used to establish the connection"
   username: String
   "Indicates the passphrase to be used to establish the connection"
   passphrase: String
+  "Indicates the topic on which connector is to listen for data"
+  listen: String
+  "Indicates the exchange on which connector is to listen for data"
+  listen_exchange: String
+  "Indicates the topic on which connector is to push data"
+  push: String
+  "Indicates the exchange on which connector is to push data"
+  push_exchange: String
+}
+
+enum ConnectorType {
+  "Indicates the connector uses GitHub API"
+  GITHUB
+  "Indicates the connection uses file download"
+  FILE_DOWNLOAD
+  "Indicates the connector uses RESTful API"
+  RESTFUL_API
+}
+
+enum HttpRequestMethod {
+  "Indicates request is a representation of the specified resource."
+  GET
+  "Indicates request submits an entity to the specified resource, often causing a change in state or side effects on the server."
+  POST
+  "Indicates request replaces all current representations of the target resource with the request payload."
+  PUT
 }
 
 # Ordering

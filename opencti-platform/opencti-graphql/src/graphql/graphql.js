@@ -89,6 +89,7 @@ const createApolloServer = (app) => {
       Artemis: new Artemis( ),
       DynamoDB: new DynamoDB( ),
     }),
+    // TODO: Remove/disable playground in server
     playground: {
       cdnUrl,
       settings: {

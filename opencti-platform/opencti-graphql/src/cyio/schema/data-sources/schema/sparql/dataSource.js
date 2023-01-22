@@ -44,6 +44,8 @@ const dataSourceReducer = (item) => {
     ...(item.auto !== undefined && { auto: item.auto }),
     ...(item.scope && { scope: item.scope }),
     ...(item.last_ingest_artifact && { last_ingest_artifact: item.last_ingest_artifact }),
+    ...(item.last_success && { last_success: item.last_success }),
+    ...(item.count && { count: item.count }),
     // hints for field-level resolver queries
     ...(item.update_frequency && { update_frequency_iri: item.update_frequency }),
     ...(item.connection_information && { connection_information_iri: item.connection_information }),
@@ -100,11 +102,11 @@ export const insertDataSourceQuery = (propValues) => {
     GRAPH ${iri} {
       ${iri} a <http://darklight.ai/ns/cyio/datasource#DataSource> .
       ${iri} a <http://darklight.ai/ns/common#Object> .
-      ${iri} <http://darklight.ai/ns/common#id> "${id}".
+      ${iri} <http://darklight.ai/ns/common#id> "${id}" .
       ${iri} <http://darklight.ai/ns/common#object_type> "data-source" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates.join(". \n")}
+      ${insertPredicates.join(" . \n")}
     }
   }
   `;
@@ -378,7 +380,7 @@ export const dataSourcePredicateMap = {
   },
   description: {
     predicate: "<http://darklight.ai/ns/cyio/datasource#description>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US` : null,  this.predicate, "description");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   data_source_type: {
@@ -393,12 +395,12 @@ export const dataSourcePredicateMap = {
   },
   contextual: {
     predicate: "<http://darklight.ai/ns/cyio/datasource#contextual>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "contextual");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null,  this.predicate, "contextual");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   auto: {
     predicate: "<http://darklight.ai/ns/cyio/datasource#auto>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "auto");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null,  this.predicate, "auto");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   scope: {
@@ -409,6 +411,11 @@ export const dataSourcePredicateMap = {
   last_ingest_artifact: {
     predicate: "<http://darklight.ai/ns/cyio/datasource#last_ingest_artifact>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "last_ingest_artifact");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  last_success: {
+    predicate: "<http://darklight.ai/ns/cyio/datasource#last_success>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "last_success");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   update_frequency: {
@@ -488,6 +495,7 @@ export const singularizeSchema = {
     "contextual": true,
     "auto": true,
     "last_ingest_artifact": true,
+    "last_success": true,
     "update_frequency": true,
     "connection_information": true,
     "iep": true,

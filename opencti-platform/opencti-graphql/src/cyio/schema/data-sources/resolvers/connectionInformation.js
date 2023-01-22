@@ -18,6 +18,12 @@ import {
       deleteConnectionConfigs: async (_, { ids }, { dbName, dataSources }) => deleteConnectionConfigById( ids, dbName, dataSources),
       editConnectionConfig: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editConnectionConfigById(id, input, dbName, dataSources, selectMap, schema),
     },
+    // Map enum GraphQL values to data model required values
+    ConnectorType: {
+      GITHUB: 'github',
+      FILE_DOWNLOAD: 'file-download',
+      RESTFUL_API: 'restful-api',
+    },
   };
 
   export default cyioConnectionInformationResolvers;
