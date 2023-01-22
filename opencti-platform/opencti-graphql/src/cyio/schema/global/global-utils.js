@@ -128,7 +128,7 @@ export const selectObjectIriByIdQuery = (id, type) => {
   FROM <tag:stardog:api:context:local>
   WHERE {
       ?iri a <${objectMap[type].classIri}> .
-      ?iri <http://darklight.ai/ns/common#id> "${id}" .
+      ?iri <http://darklight.ai/ns/common#id>|<http://docs.oasis-open.org/ns/cti#id> "${id}" .
   }
   `
 }
@@ -349,7 +349,7 @@ export const objectMap = {
     attachQuery: attachToDataMarkingQuery,
     detachQuery: detachFromDataMarkingQuery,
     graphQLType: "DataMarkingObject",
-    classIri: "<http://docs.oasis-open.org/ns/cti/data-marking#MarkingDefinition",
+    classIri: "http://docs.oasis-open.org/ns/cti/data-marking#MarkingDefinition",
     iriTemplate: "http://cyio.darklight.ai/marking-definition"
   },
   "mitigating-factor": {

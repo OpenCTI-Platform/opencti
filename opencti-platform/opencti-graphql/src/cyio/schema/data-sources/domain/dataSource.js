@@ -1,6 +1,5 @@
 import { UserInputError } from 'apollo-server-express';
-import { validateEnumValue } from '../../utils.js';
-import { compareValues, filterValues, updateQuery, checkIfValidUUID, CyioError } from '../../utils.js';
+import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue, CyioError } from '../../utils.js';
 import conf from '../../../../config/conf';
 import {
   getReducer,
@@ -8,7 +7,7 @@ import {
   singularizeSchema,
   deleteDataSourceQuery,
   // deleteDataSourceByIriQuery,
-  deleteMultipleDataSourcesQuery,
+  // deleteMultipleDataSourcesQuery,
   insertDataSourceQuery,
   selectAllDataSourcesQuery,
   selectDataSourceQuery,
@@ -22,12 +21,11 @@ import {
 } from '../schema/sparql/dataSource.js';
 import {
   deleteConnectionInformationQuery,
+  deleteConnectionInformationByIriQuery,
   insertConnectionInformationQuery,
-  selectConnectionInformationByIriQuery,
+  // selectConnectionInformationByIriQuery,
 } from '../schema/sparql/connectionInformation.js';
-import {
-  selectDataMarkingByIriQuery,  
-} from '../../data-markings/schema/sparql/dataMarkings.js';
+import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
 
 
 export const findDataSourceById = async (id, dbName, dataSources, selectMap) => {
@@ -182,22 +180,20 @@ export const createDataSource = async (input, dbName, selectMap, dataSources) =>
   }
   // END WORKAROUND
 
-  let frequency, frequencyProps = {};
+  let frequencyProps = {};
   if (input.update_frequency !== undefined) {
-    frequency = input.update_frequency;
     for (let [key, value] of Object.entries(input.update_frequency)) frequencyProps[key] = value;
     delete input.update_frequency;
   }
 
-  let connection, connectionProps = {};
+  let connectionProps = {};
   if (input.connection_information !== undefined) {
-    connection = input.connection_information;
     for (let [key, value] of Object.entries(input.connection_information)) connectionProps[key] = value;
     delete input.connection_information;
   }
 
   if (input.iep !== undefined) {
-    let query = selectObjectIriByIdQuery( input.id, 'data-marking');
+    let query = selectObjectIriByIdQuery( input.iep, 'marking-definition');
     let result = await dataSources.Stardog.queryById({
       dbName: 'cyio-config',
       sparqlQuery: query,
@@ -210,19 +206,19 @@ export const createDataSource = async (input, dbName, selectMap, dataSources) =>
 
   // create the Data Source
   let response;
-  let {iri, id:dataSourceId, query} = insertDataSourceQuery(input);
+  let {iri, id: dataSourceId, query} = insertDataSourceQuery(input);
   try {
     response = await dataSources.Stardog.create({
       dbName: 'cyio-config',
       sparqlQuery: query,
-      queryId: "Create Note"
+      queryId: "Create Data Source"
       });
   } catch (e) {
     console.log(e)
     throw e
   }
 
-  if (frequencyProps !== undefined ) {
+  if (Object.keys(frequencyProps).length !== 0 ) {
     let {iri, id, query} = insertFrequencyTimingQuery(frequencyProps);
     try {
       // Create Frequency Timing 
@@ -250,8 +246,8 @@ export const createDataSource = async (input, dbName, selectMap, dataSources) =>
     }
   }
 
-  if (connectionProps !== undefined) {
-    let {iri, id, query} = insertConnectionQuery(connectionProps);
+  if (Object.keys(connectionProps).length !== 0) {
+    let {iri, id, query} = insertConnectionInformationQuery(connectionProps);
     try {
       // Create the connection information 
       response = await dataSources.Stardog.create({
@@ -279,19 +275,21 @@ export const createDataSource = async (input, dbName, selectMap, dataSources) =>
   }
 
   // retrieve the newly created Data Source to be returned
-  const select = selectDataSourceQuery(id, selectMap.getNode("createDataSource"));
+  const select = selectDataSourceQuery(dataSourceId, selectMap.getNode("createDataSource"));
   const result = await dataSources.Stardog.queryById({
     dbName: 'cyio-config',
     sparqlQuery: select,
     queryId: "Select Data Source",
     singularizeSchema
   });
+  if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${dataSourceId}`);
+
   const reducer = getReducer("DATA-SOURCE");
   return reducer(result[0]);
 };
 
 export const deleteDataSourceById = async (id, dbName, dataSources) => {  
-  let select = ['id','object_type'];
+  let select = ['id','object_type','update_frequency','connection_information'];
   if (!Array.isArray(id)) {
     if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);
 
@@ -311,6 +309,36 @@ export const deleteDataSourceById = async (id, dbName, dataSources) => {
     }
     if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
+    // Delete any associated update frequency
+    if (response[0].update_frequency) {
+      let sparqlQuery = deleteFrequencyTimingByIriQuery(response[0].update_frequency);
+      try {
+        let results = await dataSources.Stardog.delete({
+          dbName: 'cyio-config',
+          sparqlQuery,
+          queryId: "Delete Update Frequency"
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    }
+
+    // Delete any associated connection information
+    if (response[0].connection_information) {
+      let sparqlQuery = deleteConnectionInformationByIriQuery(response[0].connection_information);
+      try {
+        let results = await dataSources.Stardog.delete({
+          dbName: 'cyio-config',
+          sparqlQuery,
+          queryId: "Delete Connection Information"
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    }
+
     // delete the object
     sparqlQuery = deleteDataSourceQuery(id);
     try {
@@ -324,17 +352,17 @@ export const deleteDataSourceById = async (id, dbName, dataSources) => {
       throw e
     }
     
-    if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
     return id;
   } 
 
   if (Array.isArray(id)) {
-    let response;
-    for (let item of id) {
-      if (!checkIfValidUUID(item)) throw new CyioError(`Invalid identifier: ${item}`);  
+    let removedIds = []
+    for (let itemId of id) {
+      let response;
+      if (!checkIfValidUUID(itemId)) throw new CyioError(`Invalid identifier: ${itemId}`);  
 
       // check if object with id exists
-      let sparqlQuery = selectDataSourceQuery(id, select);
+      let sparqlQuery = selectDataSourceQuery(itemId, select);
       try {
         response = await dataSources.Stardog.queryById({
           dbName: 'cyio-config',
@@ -347,23 +375,55 @@ export const deleteDataSourceById = async (id, dbName, dataSources) => {
         throw e
       }
       
-      if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
+      if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${itemId}`);
+
+      // Delete any associated update frequency
+      if (response[0].update_frequency) {
+        let sparqlQuery = deleteFrequencyTimingByIriQuery(response[0].update_frequency);
+        try {
+          let results = await dataSources.Stardog.delete({
+            dbName: 'cyio-config',
+            sparqlQuery,
+            queryId: "Delete Update Frequency"
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
+
+      // Delete any associated connection information
+      if (response[0].connection_information) {
+        let sparqlQuery = deleteConnectionInformationByIriQuery(response[0].update_frequency);
+        try {
+          let results = await dataSources.Stardog.delete({
+            dbName: 'cyio-config',
+            sparqlQuery,
+            queryId: "Delete Connection Information"
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
+
+      // delete the object
+      sparqlQuery = deleteDataSourceQuery(itemId);
+      try {
+        let results = await dataSources.Stardog.delete({
+          dbName: 'cyio-config',
+          sparqlQuery,
+          queryId: "Delete Data Source"
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+
+      removedIds.push(itemId);
     }
 
-    let sparqlQuery = deleteMultipleDataSourcesQuery(id);
-    try {
-      response = await dataSources.Stardog.delete({
-        dbName: 'cyio-config',
-        sparqlQuery,
-        queryId: "Delete multiple Data Sources"
-      });
-    } catch (e) {
-      console.log(e)
-      throw e
-    }
-    
-    if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
-    return id;
+    return removedIds;
   }
 };
 
@@ -430,10 +490,12 @@ export const editDataSourceById = async (dataSourceId, input, dbName, dataSource
       switch(editItem.key) {
         case 'data_source_type':
           if (!validateEnumValue(value, 'DataSourceType', schema)) throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+          editItem.value[0] = value.replace(/_/g,'-').toLowerCase();
           fieldType = 'simple';
           break;
         case 'status':
           if (!validateEnumValue(value, 'DataSourceStatus', schema)) throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+          editItem.value[0] = value.replace(/_/g,'-').toLowerCase();
           fieldType = 'simple';
           break;
         case 'update_frequency':
@@ -444,19 +506,19 @@ export const editDataSourceById = async (dataSourceId, input, dbName, dataSource
 
               // detach the private FrequencyTiming object
               let query = detachFromDataSourceQuery(dataSourceId, 'update_frequency', frequency);
-              await dataSources.Stardog.delete({
-                dbName: 'cyio-config',
-                sparqlQuery: query,
-                queryId: "Detach FrequencyTiming from Data Source"
-              });
+              // await dataSources.Stardog.delete({
+              //   dbName: 'cyio-config',
+              //   sparqlQuery: query,
+              //   queryId: "Detach FrequencyTiming from Data Source"
+              // });
 
               // Delete the Frequency object since its private to the Data Source
               query = deleteFrequencyTimingQuery(frequency);
-              await dataSources.Stardog.delete({
-                dbName: 'cyio-config',
-                sparqlQuery: query,
-                queryId: "Delete Frequency Timing"
-              });  
+              // await dataSources.Stardog.delete({
+              //   dbName: 'cyio-config',
+              //   sparqlQuery: query,
+              //   queryId: "Delete Frequency Timing"
+              // });  
             }
           }
           if (editItem.operation !== 'delete') {
@@ -471,24 +533,23 @@ export const editDataSourceById = async (dataSourceId, input, dbName, dataSource
 
             // create the instance of the Frequency Timing
             const { iri, id, query } = insertFrequencyTimingQuery(frequency);
-            await dataSources.Stardog.create({
-              dbName: 'cyio-config',
-              sparqlQuery: query,
-              queryId: "Create Frequency Timing of Data Source"
-            });
+            // await dataSources.Stardog.create({
+            //   dbName: 'cyio-config',
+            //   sparqlQuery: query,
+            //   queryId: "Create Frequency Timing of Data Source"
+            // });
 
             // attach the new Frequency Timing to the Data Source
             let attachQuery = attachToDataSourceQuery(dataSourceId, 'update_frequency', iri);
-            await dataSources.Stardog.create({
-              dbName: 'cyio-config',
-              sparqlQuery: attachQuery,
-              queryId: "Attach Frequency Timing object to Data Source"
-            });
+            // await dataSources.Stardog.create({
+            //   dbName: 'cyio-config',
+            //   sparqlQuery: attachQuery,
+            //   queryId: "Attach Frequency Timing object to Data Source"
+            // });
           }
           fieldType = 'complex';
           editItem.operation  = 'skip';
           break;
-
         case 'connection_information':
           if (editItem.operation !== 'add') {
             // find the existing update frequency of the Data Source
@@ -497,19 +558,19 @@ export const editDataSourceById = async (dataSourceId, input, dbName, dataSource
 
               // detach the private Connection Information object
               let query = detachFromDataSourceQuery(dataSourceId, 'connection_information', connection);
-              await dataSources.Stardog.delete({
-                dbName: 'cyio-config',
-                sparqlQuery: query,
-                queryId: "Detach Connection Information from Data Source"
-              });
+              // await dataSources.Stardog.delete({
+              //   dbName: 'cyio-config',
+              //   sparqlQuery: query,
+              //   queryId: "Detach Connection Information from Data Source"
+              // });
 
               // Delete the Connection Information object since its private to the Data Source
               query = deleteConnectionInformationQuery(connection);
-              await dataSources.Stardog.delete({
-                dbName: 'cyio-config',
-                sparqlQuery: query,
-                queryId: "Delete Connection Information"
-              });  
+              // await dataSources.Stardog.delete({
+              //   dbName: 'cyio-config',
+              //   sparqlQuery: query,
+              //   queryId: "Delete Connection Information"
+              // });  
             }
           }
           if (editItem.operation !== 'delete') {
@@ -522,31 +583,29 @@ export const editDataSourceById = async (dataSourceId, input, dbName, dataSource
               connection = objArray;
             }
 
-            // create the instance of the Frequency Timing
+            // create the instance of the Connection Information
             const { iri, id, query } = insertConnectionInformationQuery(connection);
-            await dataSources.Stardog.create({
-              dbName: 'cyio-config',
-              sparqlQuery: query,
-              queryId: "Create Connection Information of Data Source"
-            });
+            // await dataSources.Stardog.create({
+            //   dbName: 'cyio-config',
+            //   sparqlQuery: query,
+            //   queryId: "Create Connection Information of Data Source"
+            // });
 
-            // attach the new Frequency Timing to the Data Source
+            // attach the new Connection Information to the Data Source
             let attachQuery = attachToDataSourceQuery(dataSourceId, 'connection_information', iri);
-            await dataSources.Stardog.create({
-              dbName: 'cyio-config',
-              sparqlQuery: attachQuery,
-              queryId: "Attach Connection Information object to Data Source"
-            });
+            // await dataSources.Stardog.create({
+            //   dbName: 'cyio-config',
+            //   sparqlQuery: attachQuery,
+            //   queryId: "Attach Connection Information object to Data Source"
+            // });
           }
           fieldType = 'complex';
           editItem.operation  = 'skip';
           break;
-
         case 'iep':
-          objectType = 'data-marking';
+          objectType = 'marking-definition';
           fieldType = 'id';
           break;
-
         default:
           fieldType = 'simple';
           break;

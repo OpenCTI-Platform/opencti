@@ -1,5 +1,4 @@
 import { compareValues, CyioError } from '../../utils.js';
-import { UserInputError } from 'apollo-server-errors';
 import conf from '../../../../config/conf.js';
 import { 
   entitiesCountQuery,

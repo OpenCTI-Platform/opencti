@@ -43,7 +43,7 @@ export const ResourceNotFoundError = (data) =>
 // CATEGORY_TECHNICAL
 export const DatabaseError = (reason, data) =>
   error('DatabaseError', 'A database error has occurred', {
-    reason: reason || 'No reason specify',
+    reason: reason || 'No reason specified',
     http_status: 500,
     category: CATEGORY_TECHNICAL,
     ...data,
@@ -51,7 +51,7 @@ export const DatabaseError = (reason, data) =>
 
 export const ConfigurationError = (reason, data) =>
   error('ConfigurationError', 'A configuration error has occurred', {
-    reason: reason || 'No reason specify',
+    reason: reason || 'No reason specified',
     http_status: 500,
     category: CATEGORY_TECHNICAL,
     ...data,
@@ -59,7 +59,7 @@ export const ConfigurationError = (reason, data) =>
 
 export const UnknownError = (reason, data) =>
   error('UnknownError', 'An unknown error has occurred', {
-    reason: reason || 'No reason specify',
+    reason: reason || 'No reason specified',
     http_status: 500,
     category: CATEGORY_TECHNICAL,
     ...data,
@@ -68,15 +68,24 @@ export const UnknownError = (reason, data) =>
 export const UNSUPPORTED_ERROR = 'UnsupportedError';
 export const UnsupportedError = (reason, data) =>
   error(UNSUPPORTED_ERROR, 'Unsupported operation', {
-    reason: reason || 'No reason specify',
+    reason: reason || 'No reason specified',
     http_status: 500,
     category: CATEGORY_BUSINESS,
     ...data,
   });
 
-export const FunctionalError = (reason, data) =>
+  export const NOT_IMPLEMENTED_ERROR = 'NotImplementedError';
+  export const NotImplementedError = (reason, data) =>
+    error(UNSUPPORTED_ERROR, 'Operation not implemented', {
+      reason: reason || 'No reason specified',
+      http_status: 501,
+      category: CATEGORY_BUSINESS,
+      ...data,
+    });
+  
+  export const FunctionalError = (reason, data) =>
   error('FunctionalError', 'Business validation', {
-    reason: reason || 'No reason specify',
+    reason: reason || 'No reason specified',
     http_status: 400,
     category: CATEGORY_BUSINESS,
     ...data,
@@ -94,7 +103,7 @@ export const LockTimeoutError = (data) =>
 export const TYPE_DUPLICATE_ENTRY = 'DuplicateEntryError';
 export const DuplicateEntryError = (reason, data) =>
   error(TYPE_DUPLICATE_ENTRY, 'Existing element', {
-    reason: reason || 'No reason specify',
+    reason: reason || 'No reason specified',
     http_status: 500,
     category: CATEGORY_BUSINESS,
     ...data,
