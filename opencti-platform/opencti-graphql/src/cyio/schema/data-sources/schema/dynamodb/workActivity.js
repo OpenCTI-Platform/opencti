@@ -24,9 +24,14 @@ export const selectSourceActivityByIdQuery = (id, since, sortOrder = 'DESC', lim
   const daysBack = conf.get('dynamodb:tables:ingest-activity:days-back') || '2';
   let limit = (limitValue ? limitValue : 5);
   let ordering = (sortOrder.toUpperCase() === 'ASC' ? true : false);
-  if (since === undefined) {
+  if (since === undefined || since === null) {
     since = new Date();
     since.setDate(since.getDate() - parseInt(daysBack));
+  }
+
+  // convert since to a string if its a Date object
+  if (since instanceof Date) {
+    since = since.toISOString();
   }
 
   const params =  {
@@ -34,7 +39,7 @@ export const selectSourceActivityByIdQuery = (id, since, sortOrder = 'DESC', lim
     KeyConditionExpression: `${partitionKeyName} = :partitionKey AND ${sortKeyName} >= :sortKey`,
     ExpressionAttributeValues: {
       ":partitionKey": { S: id },
-      ":sortKey": {S: since.toISOString()},
+      ":sortKey": {S: since},
     },
     ScanIndexForward: ordering,
     Limit: limit,

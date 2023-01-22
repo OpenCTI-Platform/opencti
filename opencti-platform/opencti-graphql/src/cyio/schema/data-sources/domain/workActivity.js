@@ -18,7 +18,6 @@ export const findSourceActivityById = async (sourceId, since, dataSources) => {
   if (!checkIfValidUUID(sourceId)) throw new CyioError(`Invalid identifier: ${sourceId}`);
 
   // Lookup the ingest activity records for this data source by the id of the data source
-  let sortOrder
   let data;
   try {
     const queryParams = selectSourceActivityByIdQuery(sourceId, since, 'DESC', 5);
@@ -74,21 +73,3 @@ export const findSourceActivityById = async (sourceId, since, dataSources) => {
   return activities;
 };
 
-// export const findActivityMessagesById = async (parent, dbName, dataSources, selectMap) => {
-//   // ensure the id is a valid UUID
-//   if (!checkIfValidUUID(parent.message_ids)) throw new CyioError(`Invalid identifier: ${id}`);  
-// };
-
-// export const findActivityErrorsById = async (parent, dbName, dataSources, selectMap) => {
-//   // ensure the id is a valid UUID
-//   if (!checkIfValidUUID(parent.error_ids)) throw new CyioError(`Invalid identifier: ${id}`);  
-// };
-
-// export const findActivityTrackingById = async (parent, dbName, dataSources, selectMap) => {
-//   // ensure the id is a valid UUID
-//   if (!checkIfValidUUID(parent.tracking_id)) throw new CyioError(`Invalid identifier: ${id}`);  
-// };
-
-// export const findInitiatorById = async (parent, dbName, dataSources, selectMap) => {
-//   return null;
-// };
