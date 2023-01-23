@@ -8,7 +8,7 @@ import { initializeRedisClients } from './database/redis';
 export const boot = async () => {
   logApp.info('[OPENCTI] Starting platform');
   try {
-    await initializeRedisClients();
+    initializeRedisClients();
     await checkSystemDependencies();
     // Init the cache manager
     await cacheManager.start();
