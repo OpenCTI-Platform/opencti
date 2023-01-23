@@ -11,7 +11,7 @@ import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { checkPythonAvailability } from './python/pythonBridge';
-import { cachePurge, lockResource, redisIsAlive } from './database/redis';
+import { lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
@@ -352,7 +352,6 @@ const isCompatiblePlatform = async (context) => {
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {
-    await cachePurge();
     lock = await lockResource([PLATFORM_LOCK_ID]);
     const context = executionContext('platform_initialization');
     logApp.info('[INIT] Starting platform initialization');

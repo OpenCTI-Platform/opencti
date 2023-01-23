@@ -28,7 +28,7 @@ import {
   stixCyberObservablesNumber,
   stixCyberObservablesTimeSeries
 } from '../domain/stixCyberObservable';
-import { pubsub } from '../database/redis';
+import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { stixCoreObjectImportPush, stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/file-storage';
@@ -134,7 +134,7 @@ const stixCyberObservableResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         stixCyberObservableEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

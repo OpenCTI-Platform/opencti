@@ -1,12 +1,25 @@
 import session from 'express-session';
 import nconf from 'nconf';
 import * as R from 'ramda';
-import { createMemorySessionStore, createRedisSessionStore } from './redis';
 import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
+import SessionStoreMemory from './sessionStore-memory';
+import RedisStore from './sessionStore-redis';
+import { utcDate } from '../utils/format';
 
 let appSessionHandler;
 const sessionManager = nconf.get('app:session_manager');
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
+
+const createMemorySessionStore = () => {
+  return new SessionStoreMemory({
+    checkPeriod: 3600000, // prune expired entries every 1h
+  });
+};
+const createRedisSessionStore = () => {
+  return new RedisStore({
+    ttl: conf.get('app:session_timeout'),
+  });
+};
 
 const createSessionMiddleware = () => {
   const isRedisSession = sessionManager === 'shared';
@@ -39,15 +52,18 @@ export const findSessions = () => {
   const { store } = applicationSession();
   return new Promise((accept) => {
     store.all((err, result) => {
-      const sessionsPerUser = R.groupBy(
-        (s) => s.user.id,
-        R.filter((n) => n.user, result)
-      );
+      const sessionsPerUser = R.groupBy((s) => s.user.id, R.filter((n) => n.user, result));
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
-        return {
-          user_id: k,
-          sessions: v.map((s) => ({ id: s.id, created: s.user.session_creation })),
-        };
+        const userSessions = v.map((s) => {
+          const timeBeforeExpiration = utcDate(s.cookie.expires).diff(utcDate(), 'seconds');
+          return {
+            id: s.redis_key_id,
+            created: s.user.session_creation,
+            ttl: timeBeforeExpiration,
+            originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
+          };
+        });
+        return { user_id: k, sessions: userSessions };
       });
       accept(sessions);
     });
@@ -61,15 +77,6 @@ export const findUserSessions = async (userId) => {
     return R.head(userSessions).sessions;
   }
   return [];
-};
-
-export const fetchSessionTtl = (id) => {
-  const { store } = applicationSession();
-  return new Promise((accept) => {
-    store.expiration(id, (err, ttl) => {
-      accept(ttl);
-    });
-  });
 };
 
 export const killSession = (id) => {

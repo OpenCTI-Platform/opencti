@@ -34,7 +34,7 @@ import {
   stixCoreObjectsTimeSeriesByAuthor,
   stixCoreRelationships,
 } from '../domain/stixCoreObject';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { filesListing } from '../database/file-storage';
@@ -133,7 +133,7 @@ const stixCoreObjectResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         stixCoreObjectEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

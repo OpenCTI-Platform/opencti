@@ -350,7 +350,6 @@ export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
 export const ENABLED_SUBSCRIPTION_MANAGER = booleanConf('subscription_scheduler:enabled', false);
-export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);
 
 export const ELASTIC_CREATION_PATTERN = nconf.get('elasticsearch:index_creation_pattern');
 

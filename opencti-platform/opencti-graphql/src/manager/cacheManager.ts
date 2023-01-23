@@ -1,5 +1,5 @@
 import { logApp, TOPIC_PREFIX } from '../config/conf';
-import { pubsub } from '../database/redis';
+import { pubSubSubscription } from '../database/redis';
 import { connectors } from '../database/repository';
 import {
   ENTITY_TYPE_CONNECTOR,
@@ -9,7 +9,7 @@ import {
   ENTITY_TYPE_STATUS_TEMPLATE
 } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import type { BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
+import type { BasicStoreEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
 import { EntityOptions, listAllEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
@@ -68,7 +68,7 @@ const platformEntitySettings = async (context: AuthContext) => {
 };
 
 const initCacheManager = () => {
-  let subscribeIdentifier: number;
+  let subscribeIdentifier: { topic: string; unsubscribe: () => void; };
   return {
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Initializing cache manager');
@@ -83,16 +83,16 @@ const initCacheManager = () => {
       writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, await platformOrganizations(context));
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
-      subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {
+      subscribeIdentifier = await pubSubSubscription<{ instance: BasicStoreEntity }>(`${TOPIC_PREFIX}*`, (event) => {
         const { instance } = event;
         // Invalid cache if any entity has changed.
         resetCacheForEntity(instance.entity_type);
-      }, { pattern: true });
+      });
       logApp.info('[OPENCTI-MODULE] Cache manager initialized');
     },
     shutdown: async () => {
       if (subscribeIdentifier) {
-        pubsub.unsubscribe(subscribeIdentifier);
+        subscribeIdentifier.unsubscribe();
       }
       return true;
     }

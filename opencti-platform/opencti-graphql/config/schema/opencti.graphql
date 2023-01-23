@@ -1209,6 +1209,7 @@ type SessionDetail {
   id: ID!
   created: DateTime
   ttl: Int
+  originalMaxAge: Int
 }
 type UserSession {
   user: User

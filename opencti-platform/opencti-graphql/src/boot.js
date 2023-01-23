@@ -2,11 +2,13 @@ import { getStoppingState, logApp, setStoppingState } from './config/conf';
 import platformInit, { checkSystemDependencies } from './initialization';
 import { startModules, shutdownModules } from './modules';
 import cacheManager from './manager/cacheManager';
+import { initializeRedisClients } from './database/redis';
 
 // eslint-disable-next-line import/prefer-default-export
 export const boot = async () => {
   logApp.info('[OPENCTI] Starting platform');
   try {
+    await initializeRedisClients();
     await checkSystemDependencies();
     // Init the cache manager
     await cacheManager.start();

@@ -11,7 +11,7 @@ import {
   killChainPhaseEditContext,
   killChainPhaseEditField,
 } from '../domain/killChainPhase';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 
@@ -40,7 +40,7 @@ const killChainPhaseResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         killChainPhaseEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

@@ -80,9 +80,8 @@ import {
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
-import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
-import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
 import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -818,30 +817,6 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
   return hits;
 };
 
-const loadFromCache = async (user, id, type) => {
-  const data = await cacheGet(id);
-  const cachedValues = data ? Object.values(data).filter((e) => isNotEmptyField(e)) : [];
-  const cached = R.flatten(cachedValues.map((v) => getInstanceIds(v)));
-  const accessible = R.filter((instance) => {
-    if (!instance) {
-      return false;
-    }
-    const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
-    if (!isBypass) {
-      const dataMarkings = instance.object_marking_refs || [];
-      const userMarkings = (user.allowed_marking || []).map((a) => a.internal_id);
-      const isUserHaveAccess = dataMarkings.length === 0 || dataMarkings.every((m) => userMarkings.includes(m));
-      if (!isUserHaveAccess) {
-        return false;
-      }
-    }
-    // Check type
-    const dataTypes = [instance.entity_type, ...getParentTypes(instance.entity_type)];
-    return !(type && !dataTypes.includes(type));
-  }, data || {});
-  const uniqByInternal = R.mergeAll(Object.entries(accessible).map(([, v]) => ({ [v.internal_id]: v })));
-  return { cached, accessible: uniqByInternal };
-};
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
@@ -849,77 +824,70 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
-  const { cached, accessible } = await loadFromCache(user, ids, type);
-  const cacheHits = { ...accessible };
-  const remainingIds = processIds.filter((id) => !cached.includes(id));
-  const elasticHits = {};
-  if (remainingIds.length > 0) {
-    // const startTime = Date.now();
-    const groupIds = R.splitEvery(MAX_SPLIT, remainingIds);
-    for (let index = 0; index < groupIds.length; index += 1) {
-      const mustTerms = [];
-      const workingIds = groupIds[index];
-      const idsTermsPerType = [];
-      const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-      if (isStixObjectAliased(type) || forceAliases) {
-        elementTypes.push(INTERNAL_IDS_ALIASES);
+  const hits = {};
+  // const startTime = Date.now();
+  const groupIds = R.splitEvery(MAX_SPLIT, idsArray);
+  for (let index = 0; index < groupIds.length; index += 1) {
+    const mustTerms = [];
+    const workingIds = groupIds[index];
+    const idsTermsPerType = [];
+    const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
+    if (isStixObjectAliased(type) || forceAliases) {
+      elementTypes.push(INTERNAL_IDS_ALIASES);
+    }
+    for (let i = 0; i < workingIds.length; i += 1) {
+      const id = workingIds[i];
+      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+        const elementType = elementTypes[indexType];
+        const term = { [`${elementType}.keyword`]: id };
+        idsTermsPerType.push({ term });
       }
-      for (let i = 0; i < workingIds.length; i += 1) {
-        const id = workingIds[i];
-        for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-          const elementType = elementTypes[indexType];
-          const term = { [`${elementType}.keyword`]: id };
-          idsTermsPerType.push({ term });
-        }
-      }
-      const should = {
+    }
+    const should = {
+      bool: {
+        should: idsTermsPerType,
+        minimum_should_match: 1,
+      },
+    };
+    mustTerms.push(should);
+    if (type) {
+      const shouldType = {
         bool: {
-          should: idsTermsPerType,
+          should: [
+            { match_phrase: { 'entity_type.keyword': type } },
+            { match_phrase: { 'parent_types.keyword': type } },
+          ],
           minimum_should_match: 1,
         },
       };
-      mustTerms.push(should);
-      if (type) {
-        const shouldType = {
+      mustTerms.push(shouldType);
+    }
+    const markingRestrictions = await buildDataRestrictions(context, user);
+    mustTerms.push(...markingRestrictions.must);
+    const query = {
+      index: indices,
+      size: MAX_SEARCH_SIZE,
+      ignore_throttled: ES_IGNORE_THROTTLED,
+      body: {
+        query: {
           bool: {
-            should: [
-              { match_phrase: { 'entity_type.keyword': type } },
-              { match_phrase: { 'parent_types.keyword': type } },
-            ],
-            minimum_should_match: 1,
-          },
-        };
-        mustTerms.push(shouldType);
-      }
-      const markingRestrictions = await buildDataRestrictions(context, user);
-      mustTerms.push(...markingRestrictions.must);
-      const query = {
-        index: indices,
-        size: MAX_SEARCH_SIZE,
-        ignore_throttled: ES_IGNORE_THROTTLED,
-        body: {
-          query: {
-            bool: {
-              must: mustTerms,
-              must_not: markingRestrictions.must_not,
-            },
+            must: mustTerms,
+            must_not: markingRestrictions.must_not,
           },
         },
-      };
-      logApp.debug('[SEARCH] elInternalLoadById', { query });
-      const searchType = `${ids} (${type !== null ? type : 'Any'})`;
-      const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-        throw DatabaseError('[SEARCH] Error loading ids', { error: err, query });
-      });
-      for (let j = 0; j < data.hits.hits.length; j += 1) {
-        const hit = data.hits.hits[j];
-        const element = elDataConverter(hit);
-        elasticHits[element.internal_id] = element;
-      }
-      await cacheSet(Object.values(elasticHits));
+      },
+    };
+    logApp.debug('[SEARCH] elInternalLoadById', { query });
+    const searchType = `${ids} (${type !== null ? type : 'Any'})`;
+    const data = await elRawSearch(context, user, searchType, query).catch((err) => {
+      throw DatabaseError('[SEARCH] Error loading ids', { error: err, query });
+    });
+    for (let j = 0; j < data.hits.hits.length; j += 1) {
+      const hit = data.hits.hits[j];
+      const element = elDataConverter(hit);
+      hits[element.internal_id] = element;
     }
   }
-  const hits = { ...cacheHits, ...elasticHits };
   return toMap ? hits : Object.values(hits);
 };
 
@@ -1796,9 +1764,8 @@ export const elDeleteInstances = async (instances) => {
     const bodyDelete = instances.flatMap((doc) => {
       return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
     });
-    const cachePromise = cacheDel(instances);
     const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
-    await Promise.all([cachePromise, bulkPromise]);
+    await Promise.all([bulkPromise]);
   }
 };
 const elRemoveRelationConnection = async (context, user, relsFromTo) => {
@@ -1850,9 +1817,8 @@ const elRemoveRelationConnection = async (context, user, relsFromTo) => {
       return updates;
     });
     const bodyUpdate = R.flatten(bodyUpdateRaw);
-    const cachePromise = cacheDel(dataIds);
     const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-    await Promise.all([cachePromise, bulkPromise]);
+    await Promise.all([bulkPromise]);
   }
 };
 
@@ -2048,8 +2014,7 @@ export const elIndexElements = async (context, user, message, elements) => {
     ]);
     if (bodyUpdate.length > 0) {
       const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-      const cachePromise = cacheDel(elementsToUpdate);
-      await Promise.all([cachePromise, bulkPromise]);
+      await Promise.all([bulkPromise]);
     }
     return transformedElements.length;
   };
@@ -2079,11 +2044,9 @@ export const elUpdateAttributeValue = async (context, key, previousValue, value)
       query,
     },
   };
-  const cachePromise = cachePurge();
-  const updatePromise = elRawUpdateByQuery(params).catch((err) => {
+  await elRawUpdateByQuery(params).catch((err) => {
     throw DatabaseError('[SEARCH] Updating attribute value fail', { error: err, key, value });
   });
-  await Promise.all([cachePromise, updatePromise]);
 };
 export const elUpdateRelationConnections = async (elements) => {
   if (elements.length > 0) {
@@ -2094,8 +2057,7 @@ export const elUpdateRelationConnections = async (elements) => {
       { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
     ]);
     const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-    const cachePromise = cacheDel(elements);
-    await Promise.all([cachePromise, bulkPromise]);
+    await Promise.all([bulkPromise]);
   }
 };
 export const elUpdateEntityConnections = async (elements) => {
@@ -2134,9 +2096,7 @@ export const elUpdateEntityConnections = async (elements) => {
         },
       ];
     });
-    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-    const cachePromise = cacheDel(elements);
-    await Promise.all([cachePromise, bulkPromise]);
+    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
   }
 };
 
@@ -2168,14 +2128,13 @@ export const elUpdateElement = async (instance) => {
   // Update the element it self
   const esData = prepareElementForIndexing(instance);
   // Set the cache
-  const cachePromise = cacheDel([esData]);
   const replacePromise = elReplace(instance._index, instance.internal_id, { doc: esData });
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {
     connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name });
   }
-  return Promise.all([cachePromise, replacePromise, connectionPromise]);
+  return Promise.all([replacePromise, connectionPromise]);
 };
 
 export const getStats = () => {

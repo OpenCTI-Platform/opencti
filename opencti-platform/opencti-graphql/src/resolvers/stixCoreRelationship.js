@@ -26,7 +26,7 @@ import {
   stixCoreRelationshipsMultiTimeSeries,
   stixCoreRelationshipsDistribution,
 } from '../domain/stixCoreRelationship';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
@@ -116,7 +116,7 @@ const stixCoreRelationshipResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         stixCoreRelationshipEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnected, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

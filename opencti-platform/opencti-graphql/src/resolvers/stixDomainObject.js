@@ -24,7 +24,7 @@ import {
   batchAssignees,
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
-import { pubsub } from '../database/redis';
+import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/file-storage';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
@@ -96,7 +96,7 @@ const stixDomainObjectResolvers = {
         stixDomainObjectEditContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT];
         const filtering = withFilter(
-          () => pubsub.asyncIterator([bus.EDIT_TOPIC, bus.CONTEXT_TOPIC]),
+          () => pubSubAsyncIterator([bus.EDIT_TOPIC, bus.CONTEXT_TOPIC]),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

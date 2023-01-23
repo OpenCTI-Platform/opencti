@@ -43,14 +43,14 @@ import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
 import { LOGIN_ACTION } from '../config/audit';
 import { getUserSubscriptions } from '../domain/userSubscription';
 import { executionContext } from '../utils/access';
-import { fetchSessionTtl, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
+import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 
 const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);
@@ -86,9 +86,6 @@ const userResolvers = {
   },
   UserSession: {
     user: (session, _, context) => usersLoader.load(session.user_id, context, context.user),
-  },
-  SessionDetail: {
-    ttl: (session) => fetchSessionTtl(session.id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
@@ -171,7 +168,7 @@ const userResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         userEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

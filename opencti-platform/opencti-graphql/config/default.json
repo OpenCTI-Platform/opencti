@@ -105,14 +105,13 @@
     "interval": 60000
   },
   "redis": {
+    "mode": "single",
     "namespace": "",
     "hostname": "localhost",
     "use_ssl": false,
     "ca": [],
     "port": 6379,
-    "trimming": 0,
-    "include_inferences": false,
-    "use_as_cache": false
+    "trimming": 0
   },
   "elasticsearch": {
     "index_prefix": "opencti",
