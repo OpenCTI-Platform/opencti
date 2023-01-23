@@ -34,8 +34,8 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
   attributes: [
     { name: 'name', type: 'string', multiple: false, upsert: true },
     { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'latitude', type: 'numeric', multiple: false, upsert: true },
-    { name: 'longitude', type: 'numeric', multiple: false, upsert: true },
+    { name: 'latitude', type: 'string', multiple: false, upsert: true },
+    { name: 'longitude', type: 'string', multiple: false, upsert: true },
     { name: 'x_opencti_stix_ids', type: 'string', multiple: true, upsert: true },
     { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
   ],
