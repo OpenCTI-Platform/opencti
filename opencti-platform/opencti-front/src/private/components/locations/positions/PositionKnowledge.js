@@ -235,7 +235,7 @@ class PositionKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={position.id}
-                relationshipTypes={['related-to']}
+                relationshipTypes={['related-to', 'located-at']}
                 stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 allDirections={true}

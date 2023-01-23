@@ -208,7 +208,12 @@ class ChannelKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={channel.id}
-                relationshipTypes={['related-to']}
+                relationshipTypes={[
+                  'related-to',
+                  'publishes',
+                  'uses',
+                  'belongs-to',
+                ]}
                 stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 allDirections={true}

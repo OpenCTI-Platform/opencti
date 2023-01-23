@@ -41,8 +41,8 @@ type EntitySettingEdge {
 
 # Queries
 type Query {
-  entitySetting(id: String!): EntitySetting @auth(for: [SETTINGS])
-  entitySettingByType(targetType: String!): EntitySetting @auth(for: [SETTINGS])
+  entitySetting(id: String!): EntitySetting @auth
+  entitySettingByType(targetType: String!): EntitySetting @auth
   entitySettings(
     first: Int
     after: ID
@@ -51,7 +51,7 @@ type Query {
     filters: [EntitySettingsFiltering!]
     filterMode: FilterMode
     search: String
-  ): EntitySettingConnection @auth(for: [SETTINGS])
+  ): EntitySettingConnection @auth
 }
 
 # Mutations

@@ -115,7 +115,7 @@ class InfrastructureKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
-              relationshipTypes={['related-to']}
+              relationshipTypes={['related-to', 'communicates-with', 'consists-of']}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}
