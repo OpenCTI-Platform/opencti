@@ -1,6 +1,7 @@
 import { beforeAll, afterAll, vi } from 'vitest';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeSession } from '../../src/database/session';
+import { initializeRedisClients } from '../../src/database/redis';
 
 vi.mock('../../src/database/migration', () => ({
   applyMigration: () => Promise.resolve(),
@@ -8,6 +9,7 @@ vi.mock('../../src/database/migration', () => ({
 }));
 
 beforeAll(async () => {
+  initializeRedisClients();
   initializeSession();
   await cacheManager.start();
 });

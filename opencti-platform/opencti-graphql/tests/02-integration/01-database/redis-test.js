@@ -34,13 +34,11 @@ describe('Redis context management', () => {
   const input = { field: 'test', data: 'random' };
 
   it('should set context for a user', async () => {
-    const setContext = await setEditContext(user, contextInstanceId, input);
-    expect(setContext).toEqual('OK');
-    let getContext = await fetchEditContext(contextInstanceId);
-    expect(input.data).toEqual(head(getContext).data);
-    const deletedContext = await delEditContext(user, contextInstanceId);
-    expect(deletedContext).toEqual(1);
-    getContext = await fetchEditContext(contextInstanceId);
+    await setEditContext(user, contextInstanceId, input);
+    const initialContext = await fetchEditContext(contextInstanceId);
+    expect(input.data).toEqual(head(initialContext).data);
+    await delEditContext(user, contextInstanceId);
+    const getContext = await fetchEditContext(contextInstanceId);
     expect(getContext).toEqual([]);
   });
 

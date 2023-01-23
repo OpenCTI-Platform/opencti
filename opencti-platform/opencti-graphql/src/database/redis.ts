@@ -73,6 +73,15 @@ const redisOptions = (): RedisOptions => ({
   showFriendlyErrorStack: DEV_MODE,
 });
 
+const generateNatMap = (mappings: [{ nat: string; host: string; port: number; }]): Record<string, { host: string; port: number; }> => {
+  const natMap: Record<string, { host: string; port: number; }> = {};
+  for (let i = 0; i < mappings.length; i += 1) {
+    const mapping = mappings[i];
+    natMap[mapping.nat] = { host: mapping.host, port: mapping.port };
+  }
+  return natMap;
+};
+
 const clusterOptions = (): ClusterOptions => ({
   keyPrefix: REDIS_PREFIX,
   lazyConnect: true,
@@ -80,6 +89,7 @@ const clusterOptions = (): ClusterOptions => ({
   enableOfflineQueue: true,
   redisOptions: redisOptions(),
   scaleReads: conf.get('redis:scale_reads') ?? 'all',
+  natMap: generateNatMap(conf.get('redis:nat_map') ?? []),
   showFriendlyErrorStack: DEV_MODE,
 });
 
@@ -265,7 +275,7 @@ const FIVE_MINUTES = 5 * 60;
 export const setEditContext = async (user: AuthUser, instanceId: string, input: EditContext) => {
   const data = R.assoc('name', user.user_email, input);
   const listIds = [`context:instance:${instanceId}`, `context:user:${user.id}`];
-  return setKeyWithList(`edit:${instanceId}:${user.id}`, listIds, data, FIVE_MINUTES);
+  await setKeyWithList(`edit:${instanceId}:${user.id}`, listIds, data, FIVE_MINUTES);
 };
 export const fetchEditContext = async (instanceId: string) => {
   return keysFromList(`context:instance:${instanceId}`, FIVE_MINUTES);
