@@ -64,6 +64,7 @@ const externalReferencesEntityEditionContainerMutation = graphql`
 
 const ExternalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
+  url: Yup.string().url(t('The value must be a valid URL (scheme://host:port/path). For example, https://cyio.darklight.ai')),
 });
 
 class ExternalReferenceEntityEditionContainer extends Component {
@@ -99,13 +100,14 @@ class ExternalReferenceEntityEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const result = R.reject(R.equals(''))(values);
     const finalValues = R.pipe(
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
       })),
-    )(values);
+    )(result);
     commitMutation({
       mutation: externalReferencesEntityEditionContainerMutation,
       variables: {

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
-import { compose } from 'ramda';
+import { compose, equals, reject } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
@@ -58,6 +58,7 @@ const entitiesExternalReferencesCreationMutation = graphql`
 
 const ExternalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
+  url: Yup.string().url(t('The value must be a valid URL (scheme://host:port/path). For example, https://cyio.darklight.ai')),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -86,10 +87,11 @@ class EntitiesExternalReferencesCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const result = reject(equals(''))(values);
     commitMutation({
       mutation: entitiesExternalReferencesCreationMutation,
       variables: {
-        input: values,
+        input: result,
       },
       setSubmitting,
       pathname: '/data/entities/external_references',
