@@ -131,7 +131,7 @@ const AdministrativeAreaPopover = ({ id }: { id: string }) => {
             >
                 <DialogContent>
                     <DialogContentText>
-                        {t('Do you want to delete this administrative area?')}
+                        {t('Do you want to delete this area?')}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
