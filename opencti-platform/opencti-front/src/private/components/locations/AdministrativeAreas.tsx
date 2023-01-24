@@ -63,7 +63,7 @@ const AdministrativeAreas: FunctionComponent = () => {
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="AdministrativeArea"
+        exportEntityType="Administrative-Area"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
