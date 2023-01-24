@@ -95,7 +95,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     const administrativeArea = await elLoadById(testContext, ADMIN_USER, 'location--861af688-581e-4571-a0d9-955c9096fb42');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: administrativeArea.internal_id }, // b30d4250-5133-4b6c-9b60-a32f852ca950
+      variables: { id: administrativeArea.internal_id }, // f036de6b-10d9-4e85-a13f-0d013b2393e6
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.administrativeArea).not.toBeNull();

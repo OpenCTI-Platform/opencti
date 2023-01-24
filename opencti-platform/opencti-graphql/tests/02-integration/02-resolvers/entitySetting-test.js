@@ -60,7 +60,7 @@ describe('EntitySetting resolver standard behavior', () => {
     const context = executionContext('test');
     await initCreateEntitySettings(context);
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
-    expect(queryResult.data.entitySettings.edges.length).toEqual(33);
+    expect(queryResult.data.entitySettings.edges.length).toEqual(34);
 
     const entitySettingDataComponent = queryResult.data.entitySettings.edges.filter((entitySetting) => entitySetting.node.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP)[0];
     expect(entitySettingDataComponent.platform_entity_files_ref).toSatisfy((s) => s === null || s === undefined);
