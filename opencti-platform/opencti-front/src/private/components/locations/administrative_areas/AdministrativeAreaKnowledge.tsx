@@ -241,7 +241,7 @@ const AdministrativeAreaKnowledge = ({ administrativeAreaData }: { administrativ
                     render={(routeProps: any) => (
                         <EntityStixCoreRelationships
                             entityId={administrativeArea.id}
-                            relationshipTypes={['related-to']}
+                            relationshipTypes={['related-to', 'located-at']}
                             stixCoreObjectTypes={['Stix-Cyber-Observable']}
                             entityLink={link}
                             allDirections={true}
