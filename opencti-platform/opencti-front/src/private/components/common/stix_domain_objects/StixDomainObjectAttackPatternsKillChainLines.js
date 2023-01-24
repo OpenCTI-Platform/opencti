@@ -44,13 +44,12 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
 
   handleToggleLine(lineKey) {
     this.setState({
-      expandedLines: R.assoc(
-        lineKey,
-        this.state.expandedLines[lineKey] !== undefined
+      expandedLines: {
+        ...this.state.expandedLines,
+        [lineKey]: this.state.expandedLines[lineKey] !== undefined
           ? !this.state.expandedLines[lineKey]
           : false,
-        this.state.expandedLines,
-      ),
+      },
     });
   }
 
@@ -69,10 +68,10 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
     const filterByKeyword = (n) => searchTerm === ''
       || n.to.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.to.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || R.propOr('', 'x_mitre_id', n.to)
+      || (n.to.x_mitre_id ?? '')
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1
-      || R.propOr('', 'subattackPatterns_text', n.to)
+      || (n.to.subattackPatterns_text ?? '')
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
     const stixRelationshipsEdges = data.stixCoreRelationships.edges.map((n) => (n.node.to.entity_type === 'Attack-Pattern'
@@ -116,7 +115,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
             (o) => `${o.node.x_mitre_id} ${o.node.name} ${o.node.description}`,
           ),
           R.join(' | '),
-        )(R.pathOr([], ['subAttackPatterns', 'edges'], n.to)),
+        )(n.to?.subAttackPatterns?.edges ?? []),
         n,
       )),
       R.sortWith([R.descend(R.prop('years'))]),
@@ -219,7 +218,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                               <ItemMarkings
                                 variant="inList"
                                 markingDefinitionsEdges={
-                                  attackPattern.markingDefinitions.edges
+                                  attackPattern.markingDefinitions?.edges ?? []
                                 }
                                 limit={1}
                               />
