@@ -54,11 +54,18 @@ const styles = (theme) => ({
     backgroundImage: `url(${theme.waterMark})`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: '50% 70%;',
-    overflow: 'hidden',
+    overflowX: 'hidden',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
+    '@media (min-height: 200px)': {
+      overflowY: 'auto',
+      overflowX: 'hidden',
+    },
+    '@media (min-height: 250px)': {
+      overflow: 'hidden',
+    },
   },
   gridOpen: {
     display: 'grid',
