@@ -1,12 +1,12 @@
 import dataSourceTypeDefs from './dataSource.graphql';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import type { StixDataSource, StoreEntityDataSource } from './dataSource-types';
 import dataSourceResolvers from './dataSource-resolvers';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import convertDataSourceToStix from './dataSource-converter';
 import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import type { ModuleDefinition } from '../../schema/module';
+import { registerDefinition } from '../../schema/module';
 
 const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource> = {
   type: {
@@ -30,12 +30,11 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
-    { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'x_mitre_platforms', type: 'string', multiple: true, upsert: true },
-    { name: 'collection_layers', type: 'string', multiple: true, upsert: true },
-    { name: 'dataComponents', type: 'string', multiple: true, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'x_mitre_platforms', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Platforms' },
+    { name: 'collection_layers', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Layers' },
+    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
   representative: (stix: StixDataSource) => {

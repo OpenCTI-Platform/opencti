@@ -10,15 +10,15 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   isStixCyberObservableRelationship,
-  STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE
 } from '../schema/stixCyberObservableRelationship';
-import { isStixMetaRelationship, metaFieldToStixAttribute } from '../schema/stixMetaRelationship';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { isDictionaryAttribute, isJsonAttribute } from '../schema/fieldDataAdapter';
 import { truncate } from '../utils/mailData';
+import { isDictionaryAttribute, isJsonAttribute } from '../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -327,17 +327,14 @@ export const generateUpdateMessage = (inputs) => {
     return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
       let message = 'nothing';
       let convertedKey = key;
-      if (metaFieldToStixAttribute()[key]) {
-        convertedKey = metaFieldToStixAttribute()[key];
-      }
-      if (STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
-        convertedKey = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key];
+      if (schemaRelationsRefDefinition.inputNameToStixName[key]) {
+        convertedKey = schemaRelationsRefDefinition.inputNameToStixName[key];
       }
       const fromArray = Array.isArray(value) ? value : [value];
       const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
       if (isNotEmptyField(values)) {
         // If update is based on internal ref, we need to extract the value
-        if (metaFieldToStixAttribute()[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
+        if (schemaRelationsRefDefinition.inputNameToStixName[key]) {
           message = values.map((val) => truncate(extractEntityRepresentative(val))).join(', ');
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');

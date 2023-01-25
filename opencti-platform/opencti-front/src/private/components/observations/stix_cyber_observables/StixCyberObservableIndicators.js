@@ -254,7 +254,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to create a STIX Indcator from this observable?')}
+              {t('Do you want to create a STIX Indicator from this observable?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

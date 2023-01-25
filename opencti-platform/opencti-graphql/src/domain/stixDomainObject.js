@@ -32,22 +32,21 @@ import {
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
-  stixDomainObjectOptions,
 } from '../schema/stixDomainObject';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   buildRefRelationKey,
-  STIX_META_RELATIONSHIPS_INPUTS,
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from '../schema/stixCyberObservableRelationship';
 import { now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -253,8 +252,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   }
   // Check is a real update was done
   const updateWithoutMeta = R.pipe(
-    R.omit(STIX_META_RELATIONSHIPS_INPUTS),
-    R.omit(STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS),
+    R.omit(schemaRelationsRefDefinition.getName()),
   )(updatedElem);
   const isUpdated = !R.equals(stixDomainObject, updateWithoutMeta);
   if (isUpdated) {

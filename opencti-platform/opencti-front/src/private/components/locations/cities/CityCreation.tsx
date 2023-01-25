@@ -22,6 +22,7 @@ import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLine
 import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -74,16 +75,22 @@ const cityMutation = graphql`
   }
 `;
 
-const cityValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  latitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-  longitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-});
+const cityValidation = (t: (message: string) => string) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+  };
+
+  shape = useCustomYup('City', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface CityAddInput {
   name: string
@@ -109,6 +116,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
   const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues: CityCreationMutation$variables['input'] = {
       name: values.name,
+      description: values.description,
       latitude: parseFloat(values.latitude),
       longitude: parseFloat(values.longitude),
       objectMarking: values.objectMarking.map(({ value }) => value),

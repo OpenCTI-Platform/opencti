@@ -21,6 +21,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -87,11 +88,17 @@ const attackPatternMutation = graphql`
   }
 `;
 
-const attackPatternValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  x_mitre_id: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-});
+const attackPatternValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    x_mitre_id: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Attack-Pattern', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);

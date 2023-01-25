@@ -23,6 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const styles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -84,15 +85,16 @@ const regionMutation = graphql`
   }
 `;
 
-const regionValidation = (t: (message: string) => string) => Yup.object()
-  .shape({
-    name: Yup.string()
-      .required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-  });
+const regionValidation = (t: (message: string) => string) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Region', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface RegionAddInput {
   name: string

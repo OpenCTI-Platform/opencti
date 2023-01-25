@@ -3,11 +3,10 @@ import convertNarrativeToStix from './narrative-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import narrativeResolvers from './narrative-resolver';
 import { ENTITY_TYPE_NARRATIVE, StixNarrative, StoreEntityNarrative } from './narrative-types';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import { REL_NEW } from '../../database/stix';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { ModuleDefinition, registerDefinition } from '../../schema/module';
 
 const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative> = {
   type: {
@@ -31,10 +30,10 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
-    { name: 'narrative_types', type: 'string', multiple: true, upsert: true },
-    { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'narrative_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [
     { name: RELATION_SUBNARRATIVE_OF,

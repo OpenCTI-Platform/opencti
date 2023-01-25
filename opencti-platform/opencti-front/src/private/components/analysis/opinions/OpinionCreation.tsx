@@ -28,6 +28,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { OpinionsLinesPaginationQuery$variables } from './__generated__/OpinionsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -86,11 +87,17 @@ export const opinionCreationMutation = graphql`
   }
 `;
 
-const opinionValidation = (t: (message: string) => string) => Yup.object().shape({
-  opinion: Yup.string().required(t('This field is required')),
-  explanation: Yup.string().nullable(),
-  confidence: Yup.number(),
-});
+const opinionValidation = (t: (message: string) => string) => {
+  let shape = {
+    opinion: Yup.string().required(t('This field is required')),
+    explanation: Yup.string().nullable(),
+    confidence: Yup.number(),
+  };
+
+  shape = useCustomYup('Opinion', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface OpinionAddInput {
   opinion: string
@@ -258,7 +265,7 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
             >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t('Create a opinions')}</Typography>
+            <Typography variant="h6">{t('Create an opinion')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik<OpinionAddInput>

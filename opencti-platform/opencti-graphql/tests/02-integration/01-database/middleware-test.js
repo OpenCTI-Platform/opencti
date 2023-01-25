@@ -1,6 +1,7 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import {
+  createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -8,24 +9,19 @@ import {
   distributionRelations,
   mergeEntities,
   patchAttribute,
+  storeLoadByIdWithRefs,
   timeSeriesEntities,
   timeSeriesRelations,
   updateAttribute,
-  createEntity,
-  storeLoadByIdWithRefs,
 } from '../../../src/database/middleware';
 import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
-import {
-  elFindByIds,
-  elLoadById,
-  ES_IGNORE_THROTTLED,
-  elRawSearch
-} from '../../../src/database/engine';
+import { elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INTRUSION_SET,
@@ -61,13 +57,16 @@ import {
   internalLoadById,
   listAllRelations,
   listEntities,
-  listRelations, storeLoadById
+  listRelations,
+  storeLoadById
 } from '../../../src/database/middleware-loader';
 import { addThreatActor } from '../../../src/domain/threatActor';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
-import { querySubTypes } from '../../../src/domain/subType';
+import { findAll } from '../../../src/domain/subType';
+import { validateInputCreation, validateInputUpdate } from '../../../src/database/middleware-utils';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -96,7 +95,7 @@ describe('Basic and utils', () => {
 
 describe('Loaders', () => {
   it('should load subTypes values', async () => {
-    const stixObservableSubTypes = await querySubTypes({ type: 'Stix-Cyber-Observable' });
+    const stixObservableSubTypes = await findAll({ type: 'Stix-Cyber-Observable' });
     expect(stixObservableSubTypes).not.toBeNull();
     expect(stixObservableSubTypes.edges.length).toEqual(29);
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);
@@ -1069,5 +1068,52 @@ describe('Elements impacts deletions', () => {
     await deleteElementById(testContext, ADMIN_USER, resolvedMalware.internal_id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, indicator.internal_id, ENTITY_TYPE_INDICATOR);
     await deleteElementById(testContext, ADMIN_USER, label.internal_id, ENTITY_TYPE_LABEL);
+  });
+});
+
+describe('Create and Update Validation', () => {
+  it('should validate format schema attribute at creation', async () => {
+    const attributesConfiguration = JSON.stringify([{ name: 'description', mandatory: true }]); // Valid JSON format for Entity Setting
+    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
+    await validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, null);
+  });
+  it('should invalidate format schema attribute at creation', async () => {
+    const attributesConfiguration = JSON.stringify([{ alias: 'confidence', mandatory: true }]); // Invalid JSON format for Entity Setting
+    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
+    await expect(validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, null)).rejects.toThrow();
+  });
+
+  it('should validate mandatory attributes at creation', async () => {
+    const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }, { name: 'x_opencti_workflow_id', mandatory: false }]); // Valid attributes for Data Component
+    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
+    const dataComponent = { name: 'entity name', confidence: 50 };
+    await validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting);
+  });
+  it('should invalidate mandatory attributes at creation', async () => {
+    const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }, { name: 'x_opencti_workflow_id', mandatory: false }]); // Valid attributes for Data Component
+    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
+    const dataComponent = { name: 'entity name' }; // Missed confidence
+    await expect(validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting)).rejects.toThrow();
+  });
+
+  it('should validate schema at update', async () => {
+    const dataComponent = { description: 'description' };
+    const dataComponentInitial = { name: 'initial name', confidence: 50 };
+    await validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, null, dataComponentInitial);
+  });
+
+  it('should validate mandatory attributes at update', async () => {
+    const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }, { name: 'x_opencti_workflow_id', mandatory: false }]); // Valid attributes for Data Component
+    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
+    const dataComponent = { name: 'update name' };
+    const dataComponentInitial = { name: 'initial name', confidence: 50 };
+    await validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting, dataComponentInitial);
+  });
+  it('should invalidate mandatory attributes at update', async () => {
+    const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }]); // Valid attributes for Data Component
+    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
+    const dataComponent = { confidence: '' }; // Missed confidence
+    const dataComponentInitial = { name: 'initial name' };
+    await expect(validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting, dataComponentInitial)).rejects.toThrow();
   });
 });

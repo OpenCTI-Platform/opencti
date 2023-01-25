@@ -25,6 +25,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -91,15 +92,21 @@ const reportMutation = graphql`
   }
 `;
 
-const reportValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  published: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
-  confidence: Yup.number(),
-  report_types: Yup.array().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const reportValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    published: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    report_types: Yup.array(),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Report', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const ReportCreation = ({ paginationOptions }) => {
   const classes = useStyles();

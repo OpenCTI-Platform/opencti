@@ -22,6 +22,7 @@ import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated
 import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -76,16 +77,22 @@ const administrativeAreaMutation = graphql`
   }
 `;
 
-const administrativeAreaValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  latitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-  longitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-});
+const administrativeAreaValidation = (t: (message: string) => string) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+  };
+
+  shape = useCustomYup('Administrative-Area', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface AdministrativeAreaAddInput {
   name: string

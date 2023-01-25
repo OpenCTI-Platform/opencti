@@ -78,31 +78,32 @@ describe('EntitySetting resolver standard behavior', () => {
     expect(queryResult.data.entitySettingByType.platform_entity_files_ref).toSatisfy((s) => s === null || s === undefined);
     expect(queryResult.data.entitySettingByType.platform_hidden_type).toBeFalsy();
   });
-  it('should update entity setting by id', async () => {
-    let queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: { ids: [entitySettingIdCoreRelationship], input: { key: 'platform_entity_files_ref', value: ['true'] } },
-    });
-    expect(queryResult.errors.length > 0).toBeTruthy();
-
-    queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: { ids: [entitySettingIdCoreRelationship], input: { key: 'enforce_reference', value: ['true'] } },
-    });
-    expect(queryResult.data.entitySettingsFieldPatch[0].enforce_reference).toBeTruthy();
-  });
-  it('should mass update entity settings by ids', async () => {
-    let queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: { ids: [entitySettingIdCoreRelationship], input: { key: 'platform_entity_files_ref', value: ['true'] } },
-    });
-    expect(queryResult.errors.length > 0).toBeTruthy();
-
-    queryResult = await queryAsAdmin({
+  it('should update entity settings by ids - valid', async () => {
+    const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { ids: [entitySettingIdCoreRelationship], input: { key: 'enforce_reference', value: ['true'] } },
     });
     const entityTypeDataComponent = queryResult.data.entitySettingsFieldPatch.filter((entityType) => entityType.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP)[0];
     expect(entityTypeDataComponent.enforce_reference).toBeTruthy();
+    // Clean
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdCoreRelationship], input: { key: 'enforce_reference', value: ['false'] } },
+    });
+  });
+  it('should update entity settings by ids - invalid option setting', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdCoreRelationship], input: { key: 'platform_entity_files_ref', value: ['true'] } },
+    });
+    expect(queryResult.errors.length > 0).toBeTruthy();
+  });
+  it('should update entity settings by ids - invalid mandatory attributes', async () => {
+    const attributesConfiguration = JSON.stringify([{ name: 'newfield', mandatory: true }]);
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdCoreRelationship], input: { attributes_configuration: attributesConfiguration } },
+    });
+    expect(queryResult.errors.length > 0).toBeTruthy();
   });
 });

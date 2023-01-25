@@ -6,7 +6,6 @@ import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -14,6 +13,8 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
@@ -77,32 +78,35 @@ const courseOfActionMutationRelationDelete = graphql`
   }
 `;
 
-const courseOfActionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  x_opencti_threat_hunting: Yup.string().nullable(),
-  x_opencti_log_sources: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-  x_mitre_id: Yup.string().nullable(),
-});
+const courseOfActionValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    x_opencti_threat_hunting: Yup.string().nullable(),
+    x_opencti_log_sources: Yup.string().nullable(),
+    x_mitre_id: Yup.string().nullable(),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Course-Of-Action', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const CourseOfActionEditionOverviewComponent = (props) => {
   const { courseOfAction, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: courseOfActionEditionOverviewFocus,
-    variables: {
-      id: courseOfAction.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const courseOfActionValidator = courseOfActionValidation(t);
+
+  const queries = {
+    fieldPatch: courseOfActionMutationFieldPatch,
+    relationAdd: courseOfActionMutationRelationAdd,
+    relationDelete: courseOfActionMutationRelationDelete,
+    editionFocus: courseOfActionEditionOverviewFocus,
+  };
+  const editor = useFormEditor(courseOfAction, enableReferences, queries, courseOfActionValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -119,8 +123,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: courseOfActionMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: courseOfAction.id,
         input: inputValues,
@@ -128,7 +131,6 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -145,11 +147,10 @@ const CourseOfActionEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      courseOfActionValidation(t)
+      courseOfActionValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: courseOfActionMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: courseOfAction.id,
               input: { key: name, value: finalValue ?? '' },
@@ -159,64 +160,11 @@ const CourseOfActionEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: courseOfActionMutationFieldPatch,
-        variables: {
-          id: courseOfAction.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
 
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(courseOfAction);
-
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-
-      if (added.length > 0) {
-        commitMutation({
-          mutation: courseOfActionMutationRelationAdd,
-          variables: {
-            id: courseOfAction.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: courseOfActionMutationRelationDelete,
-          variables: {
-            id: courseOfAction.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(courseOfAction);
-  const objectMarking = convertMarkings(courseOfAction);
-  const status = convertStatus(t, courseOfAction);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(courseOfAction)),
+    R.assoc('objectMarking', convertMarkings(courseOfAction)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, courseOfAction)),
     R.pick([
       'name',
       'description',
@@ -233,7 +181,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={courseOfActionValidation(t)}
+        validationSchema={courseOfActionValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -249,7 +197,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -262,7 +210,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               label={t('External ID')}
               fullWidth={true}
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="x_mitre_id" />
@@ -276,7 +224,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -290,13 +238,10 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_threat_hunting"
-                />
+                <SubscriptionFocus context={context} fieldName="x_opencti_threat_hunting" />
               }
             />
             <Field
@@ -308,28 +253,22 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_log_sources"
-                />
+                <SubscriptionFocus context={context} fieldName="x_opencti_log_sources" />
               }
             />
             {courseOfAction.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Course-Of-Action"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -340,18 +279,15 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage

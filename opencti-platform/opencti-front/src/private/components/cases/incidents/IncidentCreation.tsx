@@ -26,6 +26,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -78,9 +79,15 @@ const incidentMutation = graphql`
   }
 `;
 
-const caseValidation = () => Yup.object().shape({
-  description: Yup.string().nullable(),
-});
+const caseValidation = (t: (message: string) => string) => {
+  let shape = {
+    description: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Case', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface FormikCaseAddInput {
   name: string
@@ -190,7 +197,7 @@ const IncidentCreation = ({
               externalReferences: [],
               file: undefined,
             }}
-            validationSchema={caseValidation()}
+            validationSchema={caseValidation(t)}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

@@ -29,6 +29,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -85,27 +86,33 @@ const indicatorMutation = graphql`
   }
 `;
 
-const indicatorValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  indicator_types: Yup.array(),
-  confidence: Yup.number(),
-  description: Yup.string().nullable(),
-  x_opencti_score: Yup.number().nullable(),
-  pattern: Yup.string().required(t('This field is required')),
-  pattern_type: Yup.string().required(t('This field is required')),
-  valid_from: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  valid_until: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  x_opencti_main_observable_type: Yup.string().required(
-    t('This field is required'),
-  ),
-  x_opencti_detection: Yup.boolean(),
-  createObservables: Yup.boolean(),
-  x_mitre_platforms: Yup.array(),
-});
+const indicatorValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    indicator_types: Yup.array(),
+    confidence: Yup.number(),
+    pattern: Yup.string().required(t('This field is required')),
+    pattern_type: Yup.string().required(t('This field is required')),
+    x_opencti_main_observable_type: Yup.string().required(
+      t('This field is required'),
+    ),
+    valid_from: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    valid_until: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    x_mitre_platforms: Yup.array(),
+    x_opencti_score: Yup.number().nullable(),
+    description: Yup.string().nullable(),
+    x_opencti_detection: Yup.boolean(),
+    createObservables: Yup.boolean(),
+  };
+
+  shape = useCustomYup('Indicator', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);

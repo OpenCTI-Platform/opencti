@@ -1,5 +1,35 @@
-import * as R from 'ramda';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, schemaTypes } from './general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from './general';
+import {
+  AttributeDefinition,
+  confidence,
+  created,
+  createdAt,
+  entityType,
+  internalId,
+  lang,
+  modified,
+  relationshipType,
+  revoked,
+  specVersion,
+  standardId,
+  updatedAt,
+  xOpenctiStixIds
+} from './attribute-definition';
+import { schemaAttributesDefinition } from './schema-attributes';
+import { schemaRelationsRefDefinition } from './schema-relationsRef';
+import {
+  ENTITY_DIRECTORY,
+  ENTITY_DOMAIN_NAME,
+  ENTITY_EMAIL_MESSAGE,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+  ENTITY_IPV4_ADDR,
+  ENTITY_IPV6_ADDR,
+  ENTITY_NETWORK_TRAFFIC,
+  ENTITY_PROCESS,
+  ENTITY_WINDOWS_REGISTRY_KEY,
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
+} from './stixCyberObservable';
+import type { RelationRefDefinition } from './relationRef-definition';
 
 // Inputs
 export const INPUT_OPERATING_SYSTEM = 'operatingSystems';
@@ -62,234 +92,291 @@ export const RELATION_VALUES = 'values';
 export const RELATION_LINKED = 'x_opencti_linked-to';
 export const RELATION_SERVICE_DLL = 'service-dll';
 
-export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = {
-  [RELATION_OPERATING_SYSTEM]: 'operating_system_refs',
-  [RELATION_SAMPLE]: 'sample_ref',
-  [RELATION_CONTAINS]: 'contains_refs',
-  [RELATION_RESOLVES_TO]: 'resolves_to_refs',
-  [RELATION_BELONGS_TO]: 'belongs_to_refs',
-  [RELATION_FROM]: 'from_ref',
-  [RELATION_SENDER]: 'sender_ref',
-  [RELATION_TO]: 'to_refs',
-  [RELATION_CC]: 'cc_refs',
-  [RELATION_BCC]: 'bcc_refs',
-  [RELATION_RAW_EMAIL]: 'raw_email_ref',
-  [RELATION_BODY_RAW]: 'body_raw_ref',
-  [RELATION_PARENT_DIRECTORY]: 'parent_directory_ref',
-  [RELATION_CONTENT]: 'content_ref',
-  [RELATION_SRC]: 'src_ref',
-  [RELATION_DST]: 'dst_ref',
-  [RELATION_SRC_PAYLOAD]: 'src_payload_ref',
-  [RELATION_DST_PAYLOAD]: 'dst_payload_ref',
-  [RELATION_ENCAPSULATES]: 'encapsulates_refs',
-  [RELATION_ENCAPSULATED_BY]: 'encapsulated_by_ref',
-  [RELATION_OPENED_CONNECTION]: 'opened_connection_refs',
-  [RELATION_CREATOR_USER]: 'creator_user_ref',
-  [RELATION_IMAGE]: 'image_ref',
-  [RELATION_PARENT]: 'parent_ref',
-  [RELATION_CHILD]: 'child_refs',
-  [RELATION_BODY_MULTIPART]: 'body_multipart',
-  [RELATION_VALUES]: 'values_refs',
-  [RELATION_LINKED]: 'x_opencti_linked_to_refs',
-  [RELATION_SERVICE_DLL]: 'service_dll_refs',
+// -- RELATIONS REF ---
+
+// Not used ? TODO: remove
+
+// const operatingSystems: RelationRefDefinition = {
+//   name: INPUT_OPERATING_SYSTEM,
+//   databaseName: RELATION_OPERATING_SYSTEM,
+//   stixName: 'operating_system_refs',
+//   multiple: true,
+// };
+// const sample: RelationRefDefinition = {
+//   name: INPUT_SAMPLE,
+//   databaseName: RELATION_SAMPLE,
+//   stixName: 'sample_ref',
+//   multiple: false,
+// };
+
+const contains: RelationRefDefinition = {
+  inputName: INPUT_CONTAINS,
+  databaseName: RELATION_CONTAINS,
+  stixName: 'contains_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const resolvesTo: RelationRefDefinition = {
+  inputName: INPUT_RESOLVES_TO,
+  databaseName: RELATION_RESOLVES_TO,
+  stixName: 'resolves_to_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const belongsTo: RelationRefDefinition = {
+  inputName: INPUT_BELONGS_TO,
+  databaseName: RELATION_BELONGS_TO,
+  stixName: 'belongs_to_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const from: RelationRefDefinition = {
+  inputName: INPUT_FROM,
+  databaseName: RELATION_FROM,
+  stixName: 'from_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const sender: RelationRefDefinition = {
+  inputName: INPUT_SENDER,
+  databaseName: RELATION_SENDER,
+  stixName: 'sender_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const to: RelationRefDefinition = {
+  inputName: INPUT_TO,
+  databaseName: RELATION_TO,
+  stixName: 'to_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const cc: RelationRefDefinition = {
+  inputName: INPUT_CC,
+  databaseName: RELATION_CC,
+  stixName: 'cc_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const bcc: RelationRefDefinition = {
+  inputName: INPUT_BCC,
+  databaseName: RELATION_BCC,
+  stixName: 'bcc_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const rawEmail: RelationRefDefinition = {
+  inputName: INPUT_RAW_EMAIL,
+  databaseName: RELATION_RAW_EMAIL,
+  stixName: 'raw_email_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const bodyRaw: RelationRefDefinition = {
+  inputName: INPUT_BODY_RAW,
+  databaseName: RELATION_BODY_RAW,
+  stixName: 'body_raw_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const parentDirectory: RelationRefDefinition = {
+  inputName: INPUT_PARENT_DIRECTORY,
+  databaseName: RELATION_PARENT_DIRECTORY,
+  stixName: 'parent_directory_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const obsContent: RelationRefDefinition = {
+  inputName: INPUT_CONTENT,
+  databaseName: RELATION_CONTENT,
+  stixName: 'content_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const src: RelationRefDefinition = {
+  inputName: INPUT_SRC,
+  databaseName: RELATION_SRC,
+  stixName: 'src_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const dst: RelationRefDefinition = {
+  inputName: INPUT_DST,
+  databaseName: RELATION_DST,
+  stixName: 'dst_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const srcPayload: RelationRefDefinition = {
+  inputName: INPUT_SRC_PAYLOAD,
+  databaseName: RELATION_SRC_PAYLOAD,
+  stixName: 'src_payload_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const dstPayload: RelationRefDefinition = {
+  inputName: INPUT_DST_PAYLOAD,
+  databaseName: RELATION_DST_PAYLOAD,
+  stixName: 'dst_payload_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const encapsulates: RelationRefDefinition = {
+  inputName: INPUT_ENCAPSULATES,
+  databaseName: RELATION_ENCAPSULATES,
+  stixName: 'encapsulates_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const encapsulatedBy: RelationRefDefinition = {
+  inputName: INPUT_ENCAPSULATED_BY,
+  databaseName: RELATION_ENCAPSULATED_BY,
+  stixName: 'encapsulated_by_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const openedConnections: RelationRefDefinition = {
+  inputName: INPUT_OPENED_CONNECTION,
+  databaseName: RELATION_OPENED_CONNECTION,
+  stixName: 'opened_connection_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const creatorUser: RelationRefDefinition = {
+  inputName: INPUT_CREATOR_USER,
+  databaseName: RELATION_CREATOR_USER,
+  stixName: 'creator_user_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const image: RelationRefDefinition = {
+  inputName: INPUT_IMAGE,
+  databaseName: RELATION_IMAGE,
+  stixName: 'image_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const parent: RelationRefDefinition = {
+  inputName: INPUT_PARENT,
+  databaseName: RELATION_PARENT,
+  stixName: 'parent_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
+const child: RelationRefDefinition = {
+  inputName: INPUT_CHILD,
+  databaseName: RELATION_CHILD,
+  stixName: 'child_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const bodyMultipart: RelationRefDefinition = {
+  inputName: INPUT_BODY_MULTIPART,
+  databaseName: RELATION_BODY_MULTIPART,
+  stixName: 'body_multipart',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const values: RelationRefDefinition = { // Not in standard
+  inputName: INPUT_VALUES,
+  databaseName: RELATION_VALUES,
+  stixName: 'values_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+// Not used ? TODO: remove
+// const xOpenctiLinkedTo: RelationRefDefinition = { // Not in standard
+//   name: INPUT_LINKED,
+//   databaseName: RELATION_LINKED,
+//   stixName: 'x_opencti_linked_to_refs',
+//   multiple: true,
+// };
+const serviceDlls: RelationRefDefinition = {
+  inputName: INPUT_SERVICE_DLL,
+  databaseName: RELATION_SERVICE_DLL,
+  stixName: 'service_dll_refs',
+  mandatoryType: 'no',
+  multiple: true,
 };
 
-export const STIX_ATTRIBUTE_TO_CYBER_RELATIONS = R.mergeAll(
-  Object.keys(FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE).map((k) => ({
-    [FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE[k]]: k,
-  }))
-);
+export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS: RelationRefDefinition[] = [
+  // operatingSystems,
+  // sample,
+  contains,
+  resolvesTo,
+  belongsTo,
+  from,
+  sender,
+  to,
+  cc,
+  bcc,
+  rawEmail,
+  bodyRaw,
+  parentDirectory,
+  obsContent,
+  src,
+  dst,
+  srcPayload,
+  dstPayload,
+  encapsulates,
+  encapsulatedBy,
+  openedConnections,
+  creatorUser,
+  image,
+  parent,
+  child,
+  bodyMultipart,
+  values,
+  // xOpenctiLinkedTo,
+  serviceDlls
+];
+// schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 
-export const STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD: { [k: string]: string } = {
-  operating_system_refs: INPUT_OPERATING_SYSTEM,
-  sample_ref: INPUT_SAMPLE,
-  contains_refs: INPUT_CONTAINS,
-  resolves_to_refs: INPUT_RESOLVES_TO,
-  belongs_to_refs: INPUT_BELONGS_TO,
-  from_ref: INPUT_FROM,
-  sender_ref: INPUT_SENDER,
-  to_refs: INPUT_TO,
-  cc_refs: INPUT_CC,
-  bcc_refs: INPUT_BCC,
-  raw_email_ref: INPUT_RAW_EMAIL,
-  body_raw_ref: INPUT_BODY_RAW,
-  parent_directory_ref: INPUT_PARENT_DIRECTORY,
-  content_ref: INPUT_CONTENT,
-  src_ref: INPUT_SRC,
-  dst_ref: INPUT_DST,
-  src_payload_ref: INPUT_SRC_PAYLOAD,
-  dst_payload_ref: INPUT_DST_PAYLOAD,
-  encapsulates_refs: INPUT_ENCAPSULATES,
-  encapsulated_by_ref: INPUT_ENCAPSULATED_BY,
-  opened_connection_refs: INPUT_OPENED_CONNECTION,
-  creator_user_ref: INPUT_CREATOR_USER,
-  image_ref: INPUT_IMAGE,
-  parent_ref: INPUT_PARENT,
-  child_refs: INPUT_CHILD,
-  body_multipart: INPUT_BODY_MULTIPART,
-  values_refs: INPUT_VALUES,
-  x_opencti_linked_to_refs: INPUT_LINKED,
-  service_dll_refs: INPUT_SERVICE_DLL,
-};
-export const STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
-  Object.keys(STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD).map((k) => ({
-    [STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[k]]: k,
-  }))
-);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DIRECTORY, [contains]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_STIX_FILE, [contains, parentDirectory, obsContent]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DOMAIN_NAME, [resolvesTo, to]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_IPV4_ADDR, [resolvesTo, belongsTo]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_IPV6_ADDR, [resolvesTo, belongsTo]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MESSAGE, [from, sender, to, cc, bcc, rawEmail, bodyRaw, bodyMultipart]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_NETWORK_TRAFFIC, [src, dst, srcPayload, dstPayload, encapsulates, encapsulatedBy]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PROCESS, [openedConnections, creatorUser, image, parent, child, serviceDlls]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_KEY, [creatorUser]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_VALUE_TYPE, [values]);
 
-export const STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD: { [k: string]: string } = {
-  [RELATION_OPERATING_SYSTEM]: INPUT_OPERATING_SYSTEM,
-  [RELATION_SAMPLE]: INPUT_SAMPLE,
-  [RELATION_CONTAINS]: INPUT_CONTAINS,
-  [RELATION_RESOLVES_TO]: INPUT_RESOLVES_TO,
-  [RELATION_BELONGS_TO]: INPUT_BELONGS_TO,
-  [RELATION_FROM]: INPUT_FROM,
-  [RELATION_SENDER]: INPUT_SENDER,
-  [RELATION_TO]: INPUT_TO,
-  [RELATION_CC]: INPUT_CC,
-  [RELATION_BCC]: INPUT_BCC,
-  [RELATION_RAW_EMAIL]: INPUT_RAW_EMAIL,
-  [RELATION_BODY_RAW]: INPUT_BODY_RAW,
-  [RELATION_PARENT_DIRECTORY]: INPUT_PARENT_DIRECTORY,
-  [RELATION_CONTENT]: INPUT_CONTENT,
-  [RELATION_SRC]: INPUT_SRC,
-  [RELATION_DST]: INPUT_DST,
-  [RELATION_SRC_PAYLOAD]: INPUT_SRC_PAYLOAD,
-  [RELATION_DST_PAYLOAD]: INPUT_DST_PAYLOAD,
-  [RELATION_ENCAPSULATES]: INPUT_ENCAPSULATES,
-  [RELATION_ENCAPSULATED_BY]: INPUT_ENCAPSULATED_BY,
-  [RELATION_OPENED_CONNECTION]: INPUT_OPENED_CONNECTION,
-  [RELATION_CREATOR_USER]: INPUT_CREATOR_USER,
-  [RELATION_IMAGE]: INPUT_IMAGE,
-  [RELATION_PARENT]: INPUT_PARENT,
-  [RELATION_CHILD]: INPUT_CHILD,
-  [RELATION_BODY_MULTIPART]: INPUT_BODY_MULTIPART,
-  [RELATION_VALUES]: INPUT_VALUES,
-  [RELATION_LINKED]: INPUT_LINKED,
-  [RELATION_SERVICE_DLL]: INPUT_SERVICE_DLL,
-};
+// -- TYPES --
 
-export const CYBER_OBSERVABLE_FIELD_TO_META_RELATION = R.mergeAll(
-  Object.keys(STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD).map((k) => ({
-    [STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD[k]]: k,
-  }))
-);
+schemaAttributesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, STIX_CYBER_OBSERVABLE_RELATIONSHIPS.map((arr) => arr.databaseName));
+export const isStixCyberObservableRelationship = (type: string) => schemaAttributesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP).includes(type)
+  || type === ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP;
 
-const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
-  RELATION_OPERATING_SYSTEM,
-  RELATION_SAMPLE,
-  RELATION_CONTAINS,
-  RELATION_RESOLVES_TO,
-  RELATION_BELONGS_TO,
-  RELATION_FROM,
-  RELATION_SENDER,
-  RELATION_TO,
-  RELATION_CC,
-  RELATION_BCC,
-  RELATION_RAW_EMAIL,
-  RELATION_BODY_RAW,
-  RELATION_PARENT_DIRECTORY,
-  RELATION_CONTENT,
-  RELATION_SRC,
-  RELATION_DST,
-  RELATION_SRC_PAYLOAD,
-  RELATION_DST_PAYLOAD,
-  RELATION_ENCAPSULATES,
-  RELATION_ENCAPSULATED_BY,
-  RELATION_OPENED_CONNECTION,
-  RELATION_CREATOR_USER,
-  RELATION_IMAGE,
-  RELATION_PARENT,
-  RELATION_CHILD,
-  RELATION_BODY_MULTIPART,
-  RELATION_VALUES,
-  RELATION_LINKED,
-  RELATION_SERVICE_DLL
-];
-schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
-export const SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
-  INPUT_SAMPLE,
-  INPUT_FROM,
-  INPUT_SENDER,
-  INPUT_RAW_EMAIL,
-  INPUT_BODY_RAW,
-  INPUT_PARENT_DIRECTORY,
-  INPUT_CONTENT,
-  INPUT_SRC,
-  INPUT_DST,
-  INPUT_SRC_PAYLOAD,
-  INPUT_DST_PAYLOAD,
-  INPUT_ENCAPSULATED_BY,
-  INPUT_CREATOR_USER,
-  INPUT_IMAGE,
-  INPUT_PARENT,
-  INPUT_BODY_MULTIPART,
-];
-export const MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
-  INPUT_OPERATING_SYSTEM,
-  INPUT_CONTAINS,
-  INPUT_RESOLVES_TO,
-  INPUT_BELONGS_TO,
-  INPUT_TO,
-  INPUT_CC,
-  INPUT_BCC,
-  INPUT_ENCAPSULATES,
-  INPUT_OPENED_CONNECTION,
-  INPUT_CHILD,
-  INPUT_BODY_MULTIPART,
-  INPUT_VALUES,
-  INPUT_LINKED,
-  INPUT_SERVICE_DLL,
-];
-export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
-  ...SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
-  ...MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
-];
-export const isStixCyberObservableRelationship = (type: string): boolean => STIX_CYBER_OBSERVABLE_RELATIONSHIPS.includes(type);
-export const SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
-  RELATION_FROM,
-  RELATION_SENDER,
-  RELATION_RAW_EMAIL,
-  RELATION_BODY_RAW,
-  RELATION_PARENT_DIRECTORY,
-  RELATION_CONTENT,
-  RELATION_SRC,
-  RELATION_DST,
-  RELATION_SRC_PAYLOAD,
-  RELATION_DST_PAYLOAD,
-  RELATION_ENCAPSULATED_BY,
-  RELATION_CREATOR_USER,
-  RELATION_IMAGE,
-  RELATION_PARENT,
-  RELATION_BODY_MULTIPART,
-];
-export const isSingleStixCyberObservableRelationship = (type: string): boolean => SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS.includes(type);
-export const isSingleStixCyberObservableRelationshipInput = (input: string): boolean => SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.includes(input);
+// -- ATTRIBUTES -
 
-export const stixCyberObservableRelationshipsAttributes = [
-  'internal_id',
-  'standard_id',
-  'entity_type',
-  'created_at',
-  'i_created_at_day',
-  'i_created_at_month',
-  'i_created_at_year',
-  'updated_at',
-  'x_opencti_stix_ids',
-  'spec_version',
-  'revoked',
-  'confidence',
-  'lang',
-  'created',
-  'modified',
-  'relationship_type',
-  'start_time',
-  'i_start_time_day',
-  'i_start_time_month',
-  'i_start_time_month',
-  'stop_time',
-  'i_stop_time_day',
-  'i_stop_time_month',
-  'i_stop_time_year',
+const stixCyberObservableRelationshipsAttributes: AttributeDefinition[] = [
+  internalId,
+  standardId,
+  entityType,
+  xOpenctiStixIds,
+  specVersion,
+  createdAt,
+  updatedAt,
+  { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+
+  revoked,
+  confidence,
+  lang,
+  created,
+  modified,
+  relationshipType,
+  { name: 'start_time', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_start_time_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_start_time_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_start_time_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'stop_time', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_stop_time_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_stop_time_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_stop_time_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
 ];
-STIX_CYBER_OBSERVABLE_RELATIONSHIPS.map((obsType) => schemaTypes.registerAttributes(obsType, stixCyberObservableRelationshipsAttributes));
+schemaAttributesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP)
+  .forEach((obsType) => schemaAttributesDefinition.registerAttributes(obsType, stixCyberObservableRelationshipsAttributes));

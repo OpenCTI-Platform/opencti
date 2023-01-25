@@ -21,6 +21,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -73,17 +74,18 @@ const organizationMutation = graphql`
   }
 `;
 
-const organizationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  x_opencti_organization_type: Yup.string().required(
-    t('This field is required'),
-  ),
-  x_opencti_reliability: Yup.string().required(t('This field is required')),
-});
+const organizationValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    x_opencti_organization_type: Yup.string().nullable(),
+    x_opencti_reliability: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Organization', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);

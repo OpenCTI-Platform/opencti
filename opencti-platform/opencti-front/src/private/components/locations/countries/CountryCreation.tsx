@@ -23,6 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -84,15 +85,17 @@ const countryMutation = graphql`
   }
 `;
 
-const countryValidation = (t: (message: string) => string) => Yup.object()
-  .shape({
+const countryValidation = (t: (message: string) => string) => {
+  let shape = {
     name: Yup.string()
       .required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-  });
+    description: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Country', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface CountryAddInput {
   name: string

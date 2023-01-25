@@ -6,7 +6,6 @@ import * as R from 'ramda';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -16,6 +15,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionOverviewFieldPatchMutation(
@@ -79,30 +80,33 @@ const campaignMutationRelationDelete = graphql`
   }
 `;
 
-const campaignValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
+const campaignValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Campaign', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const CampaignEditionOverviewComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: campaignEditionOverviewFocus,
-    variables: {
-      id: campaign.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const campaignValidator = campaignValidation(t);
+
+  const queries = {
+    fieldPatch: campaignMutationFieldPatch,
+    relationAdd: campaignMutationRelationAdd,
+    relationDelete: campaignMutationRelationDelete,
+    editionFocus: campaignEditionOverviewFocus,
+  };
+  const editor = useFormEditor(campaign, enableReferences, queries, campaignValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -119,8 +123,7 @@ const CampaignEditionOverviewComponent = (props) => {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: campaignMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: campaign.id,
         input: inputValues,
@@ -128,7 +131,6 @@ const CampaignEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -142,11 +144,10 @@ const CampaignEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      campaignValidation(t)
+      campaignValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: campaignMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: campaign.id,
               input: { key: name, value: finalValue ?? '' },
@@ -156,64 +157,11 @@ const CampaignEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: campaignMutationFieldPatch,
-        variables: {
-          id: campaign.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
 
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(campaign);
-
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-
-      if (added.length > 0) {
-        commitMutation({
-          mutation: campaignMutationRelationAdd,
-          variables: {
-            id: campaign.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: campaignMutationRelationDelete,
-          variables: {
-            id: campaign.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(campaign);
-  const objectMarking = convertMarkings(campaign);
-  const status = convertStatus(t, campaign);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(campaign)),
+    R.assoc('objectMarking', convertMarkings(campaign)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, campaign)),
     R.pick([
       'name',
       'confidence',
@@ -227,7 +175,7 @@ const CampaignEditionOverviewComponent = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={campaignValidation(t)}
+        validationSchema={campaignValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -243,7 +191,7 @@ const CampaignEditionOverviewComponent = (props) => {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -251,7 +199,7 @@ const CampaignEditionOverviewComponent = (props) => {
             />
             <ConfidenceField
               name="confidence"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
@@ -267,7 +215,7 @@ const CampaignEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -277,15 +225,12 @@ const CampaignEditionOverviewComponent = (props) => {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Campaign"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -296,24 +241,22 @@ const CampaignEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                setFieldValue={setFieldValue}open={false}
+                setFieldValue={setFieldValue}
+                open={false}
                 values={values.references}
                 id={campaign.id}
               />

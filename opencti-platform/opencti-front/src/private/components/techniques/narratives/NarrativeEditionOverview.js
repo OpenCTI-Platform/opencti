@@ -6,7 +6,6 @@ import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -14,6 +13,8 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const narrativeMutationFieldPatch = graphql`
   mutation NarrativeEditionOverviewFieldPatchMutation(
@@ -70,29 +71,35 @@ const narrativeMutationRelationDelete = graphql`
   }
 `;
 
-const narrativeValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
+const narrativeValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string()
+      .min(3, t('The value is too short'))
+      .max(5000, t('The value is too long'))
+      .required(t('This field is required')),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Narrative', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const NarrativeEditionOverviewComponent = (props) => {
   const { narrative, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: narrativeEditionOverviewFocus,
-    variables: {
-      id: narrative.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const narrativeValidator = narrativeValidation(t);
+
+  const queries = {
+    fieldPatch: narrativeMutationFieldPatch,
+    relationAdd: narrativeMutationRelationAdd,
+    relationDelete: narrativeMutationRelationDelete,
+    editionFocus: narrativeEditionOverviewFocus,
+  };
+  const editor = useFormEditor(narrative, enableReferences, queries, narrativeValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -109,8 +116,7 @@ const NarrativeEditionOverviewComponent = (props) => {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: narrativeMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: narrative.id,
         input: inputValues,
@@ -118,7 +124,6 @@ const NarrativeEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -132,11 +137,10 @@ const NarrativeEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      narrativeValidation(t)
+      narrativeValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: narrativeMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: narrative.id,
               input: { key: name, value: finalValue },
@@ -146,64 +150,11 @@ const NarrativeEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: narrativeMutationFieldPatch,
-        variables: {
-          id: narrative.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
 
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(narrative);
-
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-
-      if (added.length > 0) {
-        commitMutation({
-          mutation: narrativeMutationRelationAdd,
-          variables: {
-            id: narrative.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: narrativeMutationRelationDelete,
-          variables: {
-            id: narrative.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(narrative);
-  const objectMarking = convertMarkings(narrative);
-  const status = convertStatus(t, narrative);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(narrative)),
+    R.assoc('objectMarking', convertMarkings(narrative)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, narrative)),
     R.pick([
       'name',
       'description',
@@ -216,7 +167,7 @@ const NarrativeEditionOverviewComponent = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={narrativeValidation(t)}
+        validationSchema={narrativeValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -232,7 +183,7 @@ const NarrativeEditionOverviewComponent = (props) => {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -246,7 +197,7 @@ const NarrativeEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -256,15 +207,12 @@ const NarrativeEditionOverviewComponent = (props) => {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Narrative"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -275,18 +223,15 @@ const NarrativeEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage

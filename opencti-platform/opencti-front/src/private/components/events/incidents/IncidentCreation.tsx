@@ -30,6 +30,7 @@ import { Option } from '../../common/form/ReferenceField';
 import {
   IncidentsCardsAndLinesPaginationQuery$variables,
 } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -82,17 +83,20 @@ const IncidentMutation = graphql`
   }
 `;
 
-const IncidentValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  incident_type: Yup.string(),
-  severity: Yup.string(),
-  source: Yup.string(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-});
+const incidentValidation = (t: (message: string) => string) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    incident_type: Yup.string(),
+    severity: Yup.string(),
+    source: Yup.string(),
+    description: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Incident', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface IncidentAddInput {
   name: string
@@ -192,7 +196,7 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={IncidentValidation(t)}
+            validationSchema={incidentValidation(t)}
             onSubmit={onSubmit}
             onReset={() => setOpen(false)}
           >
@@ -274,7 +278,7 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
                   name="externalReferences"
                   style={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
-                  values={values.externalReferences }
+                  values={values.externalReferences}
                 />
                 <div className={classes.buttons}>
                   <Button

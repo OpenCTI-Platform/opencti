@@ -21,6 +21,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -73,14 +74,17 @@ const intrusionSetMutation = graphql`
   }
 `;
 
-const intrusionSetValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-});
+const intrusionSetValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Intrusion-Set', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const IntrusionSetCreation = ({ paginationOptions }) => {
   const classes = useStyles();

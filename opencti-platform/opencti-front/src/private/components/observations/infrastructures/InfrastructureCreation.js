@@ -25,6 +25,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -77,19 +78,24 @@ const infrastructureMutation = graphql`
   }
 `;
 
-const infrastructureValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-});
+const infrastructureValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    infrastructure_types: Yup.array().nullable(),
+    confidence: Yup.number(),
+    first_seen: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  };
+
+  shape = useCustomYup('Infrastructure', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);

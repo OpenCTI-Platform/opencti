@@ -34,6 +34,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import SliderField from '../../../../components/SliderField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -102,16 +103,22 @@ export const noteCreationMutation = graphql`
   }
 `;
 
-const noteValidation = (t: (message: string) => string) => Yup.object().shape({
-  created: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
-  attribute_abstract: Yup.string().nullable(),
-  content: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  note_types: Yup.array(),
-  likelihood: Yup.number().min(0).max(100),
-});
+const noteValidation = (t: (message: string) => string) => {
+  let shape = {
+    created: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    attribute_abstract: Yup.string().nullable(),
+    content: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    note_types: Yup.array(),
+    likelihood: Yup.number().min(0).max(100),
+  };
+
+  shape = useCustomYup('Note', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface NoteAddInput {
   created: Date
@@ -141,11 +148,13 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
+
   const [open, setOpen] = useState(false);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
+
   const initialValues: NoteAddInput = {
     created: dayStartDate(),
     attribute_abstract: '',

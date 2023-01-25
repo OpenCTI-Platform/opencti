@@ -23,8 +23,6 @@ import {
 } from '../../schema/stixDomainObject';
 import channelResolvers from './channel-resolver';
 import { ENTITY_TYPE_CHANNEL, StixChannel, StoreEntityChannel } from './channel-types';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
@@ -39,6 +37,8 @@ import {
 } from '../../schema/stixCyberObservable';
 import { REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import type { ModuleDefinition } from '../../schema/module';
+import { registerDefinition } from '../../schema/module';
 
 const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
   type: {
@@ -62,11 +62,10 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
-    { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'channel_types', type: 'string', multiple: true, upsert: true },
-    { name: 'x_opencti_stix_ids', type: 'string', multiple: true, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'channel_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Channel types' },
+    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [
     { name: RELATION_TARGETS,

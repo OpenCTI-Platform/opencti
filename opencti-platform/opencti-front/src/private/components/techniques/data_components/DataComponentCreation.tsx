@@ -28,6 +28,7 @@ import { DataComponentsLinesPaginationQuery$variables } from './__generated__/Da
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -89,16 +90,17 @@ const dataComponentMutation = graphql`
   }
 `;
 
-const dataComponentValidation = (t: (message: string) => string) => Yup.object()
-  .shape({
-    name: Yup.string()
-      .required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
+const dataComponentValidation = (t: (message: string) => string) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
     confidence: Yup.number(),
-  });
+  };
+
+  shape = useCustomYup('Data-Component', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface DataComponentAddInput {
   name: string,
@@ -155,7 +157,7 @@ const DataComponentCreation: FunctionComponent<{
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map((v) => v.value),
-      confidence: () => parseInt(String(values.confidence), 10),
+      confidence: parseInt(String(values.confidence), 10),
     };
     commit({
       variables: {

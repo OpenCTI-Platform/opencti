@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { generateAliasesId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
-import { STIX_META_RELATION_TO_FIELD } from '../../../src/schema/stixMetaRelationship';
+import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
 describe('identifier', () => {
   it('should name correctly normalize', () => {
@@ -144,10 +144,10 @@ describe('identifier', () => {
   });
 
   it('should relation to input name', () => {
-    let name = STIX_META_RELATION_TO_FIELD['object-marking'];
+    let name = schemaRelationsRefDefinition.databaseNameToInputName['object-marking'];
     expect(name).toEqual('objectMarking');
     // eslint-disable-next-line dot-notation
-    name = STIX_META_RELATION_TO_FIELD.object;
+    name = schemaRelationsRefDefinition.databaseNameToInputName.object;
     expect(name).toEqual('objects');
   });
 

@@ -3,9 +3,8 @@ import convertGroupingToStix from './grouping-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import groupingResolvers from './grouping-resolver';
 import { ENTITY_TYPE_CONTAINER_GROUPING, StixGrouping, StoreEntityGrouping } from './grouping-types';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { ModuleDefinition, registerDefinition } from '../../schema/module';
 
 const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> = {
   type: {
@@ -29,10 +28,10 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
-    { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'context', type: 'string', multiple: false, upsert: true },
-    { name: 'x_opencti_graph_data', type: 'string', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'context', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   relations: [],
   representative: (stix: StixGrouping) => {

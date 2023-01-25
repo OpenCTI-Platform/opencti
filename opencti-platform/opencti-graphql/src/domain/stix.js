@@ -15,11 +15,11 @@ import {
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   isStixDomainObjectShareableContainer,
-  STIX_DOMAIN_OBJECTS,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   INPUT_GRANTED_REFS
@@ -30,6 +30,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './task';
 import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById } from '../database/middleware-loader';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -165,10 +166,11 @@ export const batchObjectOrganizations = (context, user, stixCoreObjectIds) => {
 };
 
 const createSharingTask = async (context, type, containerId, organizationId) => {
-  const allowedDomainsShared = STIX_DOMAIN_OBJECTS.filter((s) => {
-    if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
-    return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));
-  });
+  const allowedDomainsShared = schemaAttributesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT)
+    .filter((s) => {
+      if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
+      return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));
+    });
   const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
   const filters = {
     containedBy: [{ id: containerId, value: containerId }],

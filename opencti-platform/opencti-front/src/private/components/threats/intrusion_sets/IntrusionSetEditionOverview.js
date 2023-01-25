@@ -6,7 +6,6 @@ import * as R from 'ramda';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -16,6 +15,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionOverviewFieldPatchMutation(
@@ -79,30 +80,33 @@ const intrusionSetMutationRelationDelete = graphql`
   }
 `;
 
-const intrusionSetValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
+const intrusionSetValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Intrusion-Set', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const IntrusionSetEditionOverviewComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: intrusionSetEditionOverviewFocus,
-    variables: {
-      id: intrusionSet.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const intrusionSetValidator = intrusionSetValidation(t);
+
+  const queries = {
+    fieldPatch: intrusionSetMutationFieldPatch,
+    relationAdd: intrusionSetMutationRelationAdd,
+    relationDelete: intrusionSetMutationRelationDelete,
+    editionFocus: intrusionSetEditionOverviewFocus,
+  };
+  const editor = useFormEditor(intrusionSet, enableReferences, queries, intrusionSetValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -119,8 +123,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: intrusionSetMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: intrusionSet.id,
         input: inputValues,
@@ -128,7 +131,6 @@ const IntrusionSetEditionOverviewComponent = (props) => {
         commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -142,11 +144,10 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      intrusionSetValidation(t)
+      intrusionSetValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: intrusionSetMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: intrusionSet.id,
               input: { key: name, value: finalValue ?? '' },
@@ -156,59 +157,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: intrusionSetMutationFieldPatch,
-        variables: {
-          id: intrusionSet.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
 
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(intrusionSet);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-
-      if (added.length > 0) {
-        commitMutation({
-          mutation: intrusionSetMutationRelationAdd,
-          variables: {
-            id: intrusionSet.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: intrusionSetMutationRelationDelete,
-          variables: {
-            id: intrusionSet.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(intrusionSet);
-  const objectMarking = convertMarkings(intrusionSet);
-  const status = convertStatus(t, intrusionSet);
   const killChainPhases = R.pipe(
     R.pathOr([], ['killChainPhases', 'edges']),
     R.map((n) => ({
@@ -217,10 +166,10 @@ const IntrusionSetEditionOverviewComponent = (props) => {
     })),
   )(intrusionSet);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
+    R.assoc('createdBy', convertCreatedBy(intrusionSet)),
     R.assoc('killChainPhases', killChainPhases),
-    R.assoc('x_opencti_workflow_id', status),
-    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, intrusionSet)),
+    R.assoc('objectMarking', convertMarkings(intrusionSet)),
     R.pick([
       'name',
       'confidence',
@@ -235,7 +184,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
   <Formik
     enableReinitialize={true}
     initialValues={initialValues}
-    validationSchema={intrusionSetValidation(t)}
+    validationSchema={intrusionSetValidator}
     onSubmit={onSubmit}
   >
     {({
@@ -251,7 +200,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
           name="name"
           label={t('Name')}
           fullWidth={true}
-          onFocus={handleChangeFocus}
+          onFocus={editor.changeFocus}
           onSubmit={handleSubmitField}
           helperText={
             <SubscriptionFocus context={context} fieldName="name" />
@@ -259,7 +208,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
         />
         <ConfidenceField
           name="confidence"
-          onFocus={handleChangeFocus}
+          onFocus={editor.changeFocus}
           onChange={handleSubmitField}
           label={t('Confidence')}
           fullWidth={true}
@@ -275,7 +224,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
           multiline={true}
           rows="4"
           style={{ marginTop: 20 }}
-          onFocus={handleChangeFocus}
+          onFocus={editor.changeFocus}
           onSubmit={handleSubmitField}
           helperText={
             <SubscriptionFocus context={context} fieldName="description" />
@@ -285,15 +234,12 @@ const IntrusionSetEditionOverviewComponent = (props) => {
           <StatusField
             name="x_opencti_workflow_id"
             type="Intrusion-Set"
-            onFocus={handleChangeFocus}
+            onFocus={editor.changeFocus}
             onChange={handleSubmitField}
             setFieldValue={setFieldValue}
             style={{ marginTop: 20 }}
             helpertext={
-              <SubscriptionFocus
-                context={context}
-                fieldName="x_opencti_workflow_id"
-              />
+              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
             }
           />
         )}
@@ -304,7 +250,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
           helpertext={
             <SubscriptionFocus context={context} fieldName="createdBy" />
           }
-          onChange={handleChangeCreatedBy}
+          onChange={editor.changeCreated}
         />
         <ObjectMarkingField
           name="objectMarking"
@@ -315,7 +261,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
               fieldname="objectMarking"
             />
           }
-          onChange={handleChangeObjectMarking}
+          onChange={editor.changeMarking}
         />
         {enableReferences && (
           <CommitMessage

@@ -23,6 +23,7 @@ import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -75,17 +76,23 @@ const observedDataCreationMutation = graphql`
   }
 `;
 
-const observedDataValidation = (t) => Yup.object().shape({
-  objects: Yup.array().required(t('This field is required')),
-  first_observed: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
-  last_observed: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
-  number_observed: Yup.number().required(t('This field is required')),
-  confidence: Yup.number(),
-});
+const observedDataValidation = (t) => {
+  let shape = {
+    objects: Yup.array().min(1),
+    first_observed: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    last_observed: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    number_observed: Yup.number(),
+    confidence: Yup.number(),
+  };
+
+  shape = useCustomYup('Observed-Data', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const ObservedDataCreation = ({ paginationOptions }) => {
   const classes = useStyles();

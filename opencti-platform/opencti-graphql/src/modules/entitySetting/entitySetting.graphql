@@ -8,6 +8,7 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean @auth
   platform_hidden_type: Boolean @auth
   enforce_reference: Boolean @auth
+  attributes_configuration: String @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
 }

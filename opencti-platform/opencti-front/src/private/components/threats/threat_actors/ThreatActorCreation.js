@@ -21,6 +21,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -73,15 +74,18 @@ const threatActorMutation = graphql`
   }
 `;
 
-const threatActorValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  threat_actor_types: Yup.array(),
-  confidence: Yup.number(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-});
+const threatActorValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    threat_actor_types: Yup.array(),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+  };
+
+  shape = useCustomYup('Threat-Actor', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const ThreatActorCreation = ({ paginationOptions }) => {
   const classes = useStyles();

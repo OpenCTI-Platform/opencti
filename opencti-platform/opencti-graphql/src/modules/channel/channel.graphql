@@ -175,7 +175,7 @@ input ChannelAddInput {
     stix_id: StixId
     x_opencti_stix_ids: [StixId]
     name: String! @constraint(minLength: 2)
-    description: String!
+    description: String
     channel_types: [String]
     aliases: [String]
     confidence: Int

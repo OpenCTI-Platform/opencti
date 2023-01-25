@@ -177,8 +177,8 @@ input EventAddInput {
     stix_id: StixId
     x_opencti_stix_ids: [StixId]
     name: String! @constraint(minLength: 2)
-    description: String!
-    event_types: [String]
+    description: String
+    event_types: [String!]
     start_time: DateTime
     stop_time: DateTime
     aliases: [String]

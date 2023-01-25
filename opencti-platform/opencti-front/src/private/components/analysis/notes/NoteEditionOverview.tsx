@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
-import { Field, Formik, Form } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
@@ -9,26 +9,21 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-  handleChangesObjectMarking,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatedByField from '../../common/form/CreatedByField';
-import useGranted, {
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
 import SliderField from '../../../../components/SliderField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -89,21 +84,28 @@ const noteMutationRelationDelete = graphql`
   }
 `;
 
-const noteValidation = (t: (v: string) => string) => Yup.object().shape({
-  created: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
-  attribute_abstract: Yup.string().nullable(),
-  content: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  note_types: Yup.array(),
-  likelihood: Yup.number()
-    .min(0)
-    .max(100)
-    .transform((value) => (Number.isNaN(value) ? null : value))
-    .nullable(true),
-  x_opencti_workflow_id: Yup.object(),
-});
+const noteValidation = (t: (message: string) => string) => {
+  let shape = {
+    created: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    attribute_abstract: Yup.string().nullable(),
+    content: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    note_types: Yup.array(),
+    likelihood: Yup.number()
+      .min(0)
+      .max(100)
+      .transform((value) => (Number.isNaN(value) ? null : value))
+      .nullable(true),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Note', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface NoteEditionOverviewProps {
   note: NoteEditionOverview_note$data;
@@ -131,22 +133,15 @@ NoteEditionOverviewProps
   const { t } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
+  const noteValidator = noteValidation(t);
 
-  const [commitRelationAdd] = useMutation(noteMutationRelationAdd);
-  const [commitRelationDelete] = useMutation(noteMutationRelationDelete);
-  const [commitFieldPatch] = useMutation(noteMutationFieldPatch);
-  const [commitEditionFocus] = useMutation(noteEditionOverviewFocus);
-
-  const handleChangeFocus = (name: string) => {
-    commitEditionFocus({
-      variables: {
-        id: note.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
+  const queries = {
+    fieldPatch: noteMutationFieldPatch,
+    relationAdd: noteMutationRelationAdd,
+    relationDelete: noteMutationRelationDelete,
+    editionFocus: noteEditionOverviewFocus,
   };
+  const editor = useFormEditor(note, enableReferences, queries, noteValidator);
 
   const onSubmit: FormikConfig<NoteEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
@@ -160,7 +155,7 @@ NoteEditionOverviewProps
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
-    commitFieldPatch({
+    editor.fieldPatch({
       variables: {
         id: note.id,
         input: inputValues,
@@ -180,10 +175,10 @@ NoteEditionOverviewProps
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      noteValidation(t)
+      noteValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitFieldPatch({
+          editor.fieldPatch({
             variables: {
               id: note.id,
               input: [{ key: name, value: finalValue }],
@@ -191,44 +186,6 @@ NoteEditionOverviewProps
           });
         })
         .catch(() => false);
-    }
-  };
-
-  const handleChangeCreatedBy = (_: string, value: Option) => {
-    if (!enableReferences) {
-      commitFieldPatch({
-        variables: {
-          id: note.id,
-          input: [{ key: 'createdBy', value: [value.value] }],
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (_: string, values: Option[]) => {
-    if (!enableReferences) {
-      const { added, removed } = handleChangesObjectMarking(note, values);
-
-      if (added) {
-        commitRelationAdd({
-          variables: {
-            id: note.id,
-            input: {
-              toId: added.value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed) {
-        commitRelationDelete({
-          variables: {
-            id: note.id,
-            toId: removed.value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
     }
   };
 
@@ -248,7 +205,7 @@ NoteEditionOverviewProps
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={noteValidation(t)}
+      validationSchema={noteValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -261,7 +218,7 @@ NoteEditionOverviewProps
           <Field
             component={DateTimePickerField}
             name="created"
-            onFocus={handleChangeFocus}
+            onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
               label: t('Publication date'),
@@ -279,7 +236,7 @@ NoteEditionOverviewProps
             label={t('Abstract')}
             fullWidth={true}
             style={{ marginTop: 20 }}
-            onFocus={handleChangeFocus}
+            onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus
@@ -296,7 +253,7 @@ NoteEditionOverviewProps
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
-            onFocus={handleChangeFocus}
+            onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="content" />
@@ -315,7 +272,7 @@ NoteEditionOverviewProps
           />
           <ConfidenceField
             name="confidence"
-            onFocus={handleChangeFocus}
+            onFocus={editor.changeFocus}
             onChange={handleSubmitField}
             label={t('Confidence')}
             fullWidth={true}
@@ -331,7 +288,7 @@ NoteEditionOverviewProps
             label={t('Likelihood')}
             fullWidth={true}
             style={{ marginTop: 20 }}
-            onFocus={handleChangeFocus}
+            onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helpertext={
               <SubscriptionFocus context={context} fieldName="likelihood" />
@@ -342,14 +299,14 @@ NoteEditionOverviewProps
               name="createdBy"
               style={{ marginTop: 10, width: '100%' }}
               setFieldValue={setFieldValue}
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
           )}
           {note.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Note"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
@@ -371,7 +328,7 @@ NoteEditionOverviewProps
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }
-            onChange={handleChangeObjectMarking}
+            onChange={editor.changeMarking}
           />
           {enableReferences && (
             <CommitMessage

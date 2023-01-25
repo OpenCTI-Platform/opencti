@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import { FormikConfig } from 'formik/dist/types';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -15,11 +14,11 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
-import { AdministrativeAreaEditionOverview_administrativeArea$key } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
-import { AdministrativeAreaEditionOverviewRelationAddMutation } from './__generated__/AdministrativeAreaEditionOverviewRelationAddMutation.graphql';
-import { AdministrativeAreaEditionOverviewFieldPatchMutation } from './__generated__/AdministrativeAreaEditionOverviewFieldPatchMutation.graphql';
-import { AdministrativeAreaEditionOverviewFocusMutation } from './__generated__/AdministrativeAreaEditionOverviewFocusMutation.graphql';
-import { AdministrativeAreaEditionOverviewRelationDeleteMutation } from './__generated__/AdministrativeAreaEditionOverviewRelationDeleteMutation.graphql';
+import {
+  AdministrativeAreaEditionOverview_administrativeArea$key,
+} from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const administrativeAreaMutationFieldPatch = graphql`
     mutation AdministrativeAreaEditionOverviewFieldPatchMutation(
@@ -107,13 +106,24 @@ export const administrativeAreaEditionOverviewFragment = graphql`
     }
 `;
 
-const administrativeAreaValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable().max(5000, t('The value is too long')),
-  latitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
-  longitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
-  x_opencti_workflow_id: Yup.object(),
-});
+const administrativeAreaValidation = (t: (message: string) => string) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Administrative-Area', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface AdministrativeAreaEditionOverviewProps {
   administrativeAreaRef: AdministrativeAreaEditionOverview_administrativeArea$key,
@@ -138,84 +148,15 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
   const { t } = useFormatter();
 
   const administrativeArea = useFragment(administrativeAreaEditionOverviewFragment, administrativeAreaRef);
+  const administrativeAreaValidator = administrativeAreaValidation(t);
 
-  const createdBy = convertCreatedBy(administrativeArea);
-  const objectMarking = convertMarkings(administrativeArea);
-  const status = convertStatus(t, administrativeArea);
-
-  const [commitRelationAdd] = useMutation<AdministrativeAreaEditionOverviewRelationAddMutation>(administrativeAreaMutationRelationAdd);
-  const [commitRelationDelete] = useMutation<AdministrativeAreaEditionOverviewRelationDeleteMutation>(administrativeAreaMutationRelationDelete);
-  const [commitFieldPatch] = useMutation<AdministrativeAreaEditionOverviewFieldPatchMutation>(administrativeAreaMutationFieldPatch);
-  const [commitEditionFocus] = useMutation<AdministrativeAreaEditionOverviewFocusMutation>(administrativeAreaEditionOverviewFocus);
-
-  const handleChangeCreatedBy = (_: string, value: Option) => {
-    if (!enableReferences) {
-      commitFieldPatch({
-        variables: {
-          id: administrativeArea.id,
-          input: [{ key: 'createdBy', value: [value.value] }],
-        },
-      });
-    }
+  const queries = {
+    fieldPatch: administrativeAreaMutationFieldPatch,
+    relationAdd: administrativeAreaMutationRelationAdd,
+    relationDelete: administrativeAreaMutationRelationDelete,
+    editionFocus: administrativeAreaEditionOverviewFocus,
   };
-  const handleChangeObjectMarking = (_: string, values: Option[]) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = (administrativeArea.objectMarking?.edges ?? []).map(({ node }) => ({ label: node.definition, value: node.id }));
-      const added = R.difference(values, currentMarkingDefinitions).at(0);
-      const removed = R.difference(currentMarkingDefinitions, values).at(0);
-      if (added) {
-        commitRelationAdd({
-          variables: {
-            id: administrativeArea.id,
-            input: {
-              toId: added.value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed) {
-        commitRelationDelete({
-          variables: {
-            id: administrativeArea.id,
-            toId: removed.value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const handleSubmitField = (name: string, value: Option | string) => {
-    if (!enableReferences) {
-      let finalValue: string = value as string;
-      if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
-      }
-      administrativeAreaValidation(t)
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          commitFieldPatch({
-            variables: {
-              id: administrativeArea.id,
-              input: [{ key: name, value: [finalValue ?? ''] }],
-            },
-          });
-        })
-        .catch(() => false);
-    }
-  };
-
-  const handleChangeFocus = (name: string) => {
-    commitEditionFocus({
-      variables: {
-        id: administrativeArea.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  };
+  const editor = useFormEditor(administrativeArea, enableReferences, queries, administrativeAreaValidator);
 
   const onSubmit: FormikConfig<AdministrativeAreaEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
@@ -229,7 +170,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
-    commitFieldPatch({
+    editor.fieldPatch({
       variables: {
         id: administrativeArea.id,
         input: inputValues,
@@ -243,21 +184,40 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
     });
   };
 
+  const handleSubmitField = (name: string, value: Option | string) => {
+    if (!enableReferences) {
+      let finalValue: string = value as string;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = (value as Option).value;
+      }
+      administrativeAreaValidator
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          editor.fieldPatch({
+            variables: {
+              id: administrativeArea.id,
+              input: [{ key: name, value: [finalValue ?? ''] }],
+            },
+          });
+        })
+        .catch(() => false);
+    }
+  };
+
   const initialValues = {
     name: administrativeArea.name,
     description: administrativeArea.description,
     latitude: administrativeArea.latitude,
     longitude: administrativeArea.longitude,
-    x_opencti_workflow_id: status,
-    createdBy,
-    objectMarking,
-    status,
+    createdBy: convertCreatedBy(administrativeArea),
+    objectMarking: convertMarkings(administrativeArea),
+    x_opencti_workflow_id: convertStatus(t, administrativeArea) as Option,
   };
   return (
         <Formik
             enableReinitialize={true}
             initialValues={initialValues as never}
-            validationSchema={administrativeAreaValidation(t)}
+            validationSchema={administrativeAreaValidator}
             onSubmit={onSubmit}
         >
             {({
@@ -273,7 +233,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                         name="name"
                         label={t('Name')}
                         fullWidth={true}
-                        onFocus={handleChangeFocus}
+                        onFocus={editor.changeFocus}
                         onSubmit={handleSubmitField}
                         helperText={
                             <SubscriptionFocus context={context} fieldName="name" />
@@ -287,7 +247,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                         multiline={true}
                         rows="4"
                         style={{ marginTop: 20 }}
-                        onFocus={handleChangeFocus}
+                        onFocus={editor.changeFocus}
                         onSubmit={handleSubmitField}
                         helperText={
                             <SubscriptionFocus context={context} fieldName="description" />
@@ -300,7 +260,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                         name="latitude"
                         label={t('Latitude')}
                         fullWidth={true}
-                        onFocus={handleChangeFocus}
+                        onFocus={editor.changeFocus}
                         onSubmit={handleSubmitField}
                         helperText={
                             <SubscriptionFocus context={context} fieldName="latitude" />
@@ -313,7 +273,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                         name="longitude"
                         label={t('Longitude')}
                         fullWidth={true}
-                        onFocus={handleChangeFocus}
+                        onFocus={editor.changeFocus}
                         onSubmit={handleSubmitField}
                         helperText={
                             <SubscriptionFocus context={context} fieldName="longitude" />
@@ -323,7 +283,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                         <StatusField
                             name="x_opencti_workflow_id"
                             type="AdministrativeArea"
-                            onFocus={handleChangeFocus}
+                            onFocus={editor.changeFocus}
                             onChange={handleSubmitField}
                             setFieldValue={setFieldValue}
                             style={{ marginTop: 20 }}
@@ -342,7 +302,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                         helpertext={
                             <SubscriptionFocus context={context} fieldName="createdBy" />
                         }
-                        onChange={handleChangeCreatedBy}
+                        onChange={editor.changeCreated}
                     />
                     <ObjectMarkingField
                         name="objectMarking"
@@ -353,7 +313,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                                 fieldname="objectMarking"
                             />
                         }
-                        onChange={handleChangeObjectMarking}
+                        onChange={editor.changeMarking}
                     />
                     {enableReferences && (
                         <CommitMessage

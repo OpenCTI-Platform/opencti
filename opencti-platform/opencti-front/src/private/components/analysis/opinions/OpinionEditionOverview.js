@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -16,6 +15,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const opinionMutationFieldPatch = graphql`
   mutation OpinionEditionOverviewFieldPatchMutation(
@@ -76,26 +77,33 @@ const opinionMutationRelationDelete = graphql`
   }
 `;
 
-const opinionValidation = (t) => Yup.object().shape({
-  opinion: Yup.string().required(t('This field is required')),
-  explanation: Yup.string().nullable(),
-  confidence: Yup.number(),
-  x_opencti_workflow_id: Yup.object(),
-});
+const opinionValidation = (t) => {
+  let shape = {
+    opinion: Yup.string().required(t('This field is required')),
+    explanation: Yup.string().nullable(),
+    confidence: Yup.number(),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Opinion', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const OpinionEditionOverviewComponent = (props) => {
   const { opinion, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: opinionEditionOverviewFocus,
-    variables: {
-      id: opinion.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const opinionValidator = opinionValidation(t);
+
+  const queries = {
+    fieldPatch: opinionMutationFieldPatch,
+    relationAdd: opinionMutationRelationAdd,
+    relationDelete: opinionMutationRelationDelete,
+    editionFocus: opinionEditionOverviewFocus,
+  };
+  const editor = useFormEditor(opinion, enableReferences, queries, opinionValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -112,8 +120,7 @@ const OpinionEditionOverviewComponent = (props) => {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: opinionMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: opinion.id,
         input: inputValues,
@@ -121,7 +128,6 @@ const OpinionEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -135,11 +141,10 @@ const OpinionEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      opinionValidation(t)
+      opinionValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: opinionMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: opinion.id,
               input: { key: name, value: finalValue ?? '' },
@@ -150,64 +155,10 @@ const OpinionEditionOverviewComponent = (props) => {
     }
   };
 
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: opinionMutationFieldPatch,
-        variables: {
-          id: opinion.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(opinion);
-
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-
-      if (added.length > 0) {
-        commitMutation({
-          mutation: opinionMutationRelationAdd,
-          variables: {
-            id: opinion.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: opinionMutationRelationDelete,
-          variables: {
-            id: opinion.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(opinion);
-  const objectMarking = convertMarkings(opinion);
-  const status = convertStatus(t, opinion);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(opinion)),
+    R.assoc('objectMarking', convertMarkings(opinion)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, opinion)),
     R.pick([
       'opinion',
       'explanation',
@@ -221,7 +172,7 @@ const OpinionEditionOverviewComponent = (props) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={opinionValidation(t)}
+      validationSchema={opinionValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -236,7 +187,7 @@ const OpinionEditionOverviewComponent = (props) => {
               label={t('Opinion')}
               type="opinion-ov"
               name="opinion"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
@@ -252,7 +203,7 @@ const OpinionEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="content" />
@@ -260,7 +211,7 @@ const OpinionEditionOverviewComponent = (props) => {
             />
             <ConfidenceField
               name="confidence"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
@@ -272,15 +223,12 @@ const OpinionEditionOverviewComponent = (props) => {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Opinion"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -291,7 +239,7 @@ const OpinionEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -302,7 +250,7 @@ const OpinionEditionOverviewComponent = (props) => {
                   fieldname="objectMarking"
                 />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage

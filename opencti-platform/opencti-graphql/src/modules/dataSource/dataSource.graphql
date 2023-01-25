@@ -192,7 +192,7 @@ input DataSourceAddInput {
     clientMutationId: String
     update: Boolean
     name: String! @constraint(minLength: 2)
-    description: String!
+    description: String
     aliases: [String]
     x_mitre_platforms: [String!]
     collection_layers: [String!]

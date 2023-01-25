@@ -91,7 +91,12 @@ import {
   storeMergeEvent,
   storeUpdateEvent,
 } from './redis';
-import { cleanStixIds, STIX_SPEC_VERSION, stixCyberObservableFieldsForType, } from './stix';
+import {
+  cleanStixIds,
+  STIX_SPEC_VERSION,
+  stixCyberObservableFieldsForType,
+  stixNotCyberObservableFields,
+} from './stix';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -101,7 +106,6 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
-  DEPS_KEYS,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -111,24 +115,12 @@ import {
   INPUT_OBJECTS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
-  MULTIPLE_META_RELATIONSHIPS_INPUTS,
   REL_INDEX_PREFIX,
   RULE_PREFIX,
-  schemaTypes,
-  STIX_META_RELATIONSHIPS_INPUTS,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
+import { INPUT_FROM, isStixCyberObservableRelationship, } from '../schema/stixCyberObservableRelationship';
 import {
-  CYBER_OBSERVABLE_FIELD_TO_META_RELATION,
-  INPUT_FROM,
-  isStixCyberObservableRelationship,
-  MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
-  STIX_ATTRIBUTE_TO_CYBER_RELATIONS,
-  STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE,
-  STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
-} from '../schema/stixCyberObservableRelationship';
-import {
-  fieldToMetaRelation,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
@@ -145,20 +137,13 @@ import {
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
-  booleanAttributes,
-  dateAttributes,
   dateForEndAttributes,
   dateForLimitsAttributes,
   dateForStartAttributes,
   extractNotFuzzyHashValues,
-  isDateAttribute,
-  isDictionaryAttribute,
   isModifiedObject,
-  isMultipleAttribute,
-  isNumericAttribute,
   isUpdatedAtObject,
   noReferenceAttributes,
-  numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
@@ -213,15 +198,10 @@ import {
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
-  fieldAttributeToEmbeddedRelation,
   instanceMetaRefsExtractor,
   isSingleStixEmbeddedRelationship,
   isSingleStixEmbeddedRelationshipInput,
   isStixEmbeddedRelationship,
-  META_STIX_ATTRIBUTES,
-  metaFieldAttributes,
-  STIX_ATTRIBUTE_TO_META_FIELD,
-  stixEmbeddedRelationToField,
 } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertExternalReferenceToStix, convertStoreToStix, isTrustedStixId } from './stix-converter';
@@ -235,7 +215,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesFromCache, getEntitiesMapFromCache } from './cache';
+import { getEntitiesFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import {
@@ -244,7 +224,18 @@ import {
   isEntityFieldAnOpenVocabulary,
   updateElasticVocabularyValue
 } from '../modules/vocabulary/vocabulary-utils';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import {
+  depsKeysRegister,
+  isBooleanAttribute,
+  isDateAttribute,
+  isDictionaryAttribute,
+  isMultipleAttribute,
+  isNumericAttribute,
+  schemaAttributesDefinition
+} from '../schema/schema-attributes';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { validateInputCreation, validateInputUpdate } from './middleware-utils';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -266,15 +257,7 @@ export const batchLoader = (loader) => {
     },
   };
 };
-export const queryAttributes = async (types) => {
-  const attributes = R.uniq(types.map((type) => schemaTypes.getAttributes(type)).flat());
-  const sortByLabel = R.sortBy(R.toLower);
-  const finalResult = R.pipe(
-    sortByLabel,
-    R.map((n) => ({ node: { id: n, key: types[0], value: n } }))
-  )(attributes);
-  return buildPagination(0, null, finalResult, finalResult.length);
-};
+
 const checkIfInferenceOperationIsValid = (user, element) => {
   const isRuleManaged = isRuleUser(user);
   const ifElementInferred = isInferredIndex(element._index);
@@ -425,11 +408,9 @@ const loadElementMetaDependencies = async (context, user, element, args = {}) =>
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
   const toResolved = await elFindByIds(context, user, toResolvedIds, { toMap: true });
-  const attributeToEmbeddedRelation = fieldAttributeToEmbeddedRelation();
-  const embeddedRelationToField = stixEmbeddedRelationToField();
   if (refsRelations.length > 0) {
     // Build flatten view inside the data for stix meta
-    const grouped = R.groupBy((a) => embeddedRelationToField[a.entity_type], refsRelations);
+    const grouped = R.groupBy((a) => schemaRelationsRefDefinition.databaseNameToInputName[a.entity_type], refsRelations);
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
@@ -437,7 +418,7 @@ const loadElementMetaDependencies = async (context, user, element, args = {}) =>
         const resolvedElement = toResolved[v.toId];
         return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
       }, values).filter((d) => isNotEmptyField(d));
-      const metaRefKey = attributeToEmbeddedRelation[key];
+      const metaRefKey = schemaRelationsRefDefinition.inputNameToDatabaseName[key];
       data[key] = isSingleStixEmbeddedRelationship(metaRefKey)
         ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
     }
@@ -573,14 +554,13 @@ const TRX_CREATION = 'creation';
 const TRX_UPDATE = 'update';
 const TRX_IDLE = 'idle';
 const depsKeys = () => ([
-  ...schemaTypes.get(DEPS_KEYS),
+  ...depsKeysRegister.get(),
   ...[
     // Relationship
     { src: 'fromId', dst: 'from' },
     { src: 'toId', dst: 'to' },
     // Other meta refs
-    ...STIX_META_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
-    ...STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.map((e) => ({ src: e })),
+    ...schemaRelationsRefDefinition.getName().map((e) => ({ src: e })),
   ],
 ]);
 
@@ -871,7 +851,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     }
   } else {
     finalVal = value;
-    const isDate = dateAttributes.includes(key);
+    const isDate = isDateAttribute(key);
     const evaluateValue = value ? R.head(value) : null;
     if (isDate) {
       if (isEmptyField(evaluateValue)) {
@@ -893,7 +873,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     finalVal = cleanStixIds(finalVal);
   }
   // endregion
-  if (dateAttributes.includes(finalKey)) {
+  if (isDateAttribute(finalKey)) {
     const finalValElement = R.head(finalVal);
     if (isEmptyField(finalValElement)) {
       finalVal = [null];
@@ -912,7 +892,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
 };
 const mergeInstanceWithUpdateInputs = (instance, inputs) => {
   const updates = Array.isArray(inputs) ? inputs : [inputs];
-  const metaKeys = [...META_STIX_ATTRIBUTES, ...metaFieldAttributes()];
+  const metaKeys = [...schemaRelationsRefDefinition.stixName, ...schemaRelationsRefDefinition.inputName];
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance);
   const remappedInputs = R.map((i) => mergeInput(i), attributes);
@@ -1169,7 +1149,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
-  const attributes = schemaTypes.getAttributes(targetType);
+  const attributes = schemaAttributesDefinition.getAttributeNames(targetType);
   const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
   for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
     const targetFieldKey = targetFields[fieldIndex];
@@ -1337,7 +1317,7 @@ const checkAttributeConsistency = (entityType, key) => {
     const [firstPart] = key.split('.');
     masterKey = firstPart;
   }
-  const entityAttributes = schemaTypes.getAttributes(entityType);
+  const entityAttributes = schemaAttributesDefinition.getAttributeNames(entityType);
   if (!R.includes(masterKey, entityAttributes)) {
     throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}`);
   }
@@ -1372,7 +1352,7 @@ const prepareAttributes = (instance, elements) => {
   const instanceType = instance.entity_type;
   return elements.map((input) => {
     // Check integer
-    if (R.includes(input.key, numericAttributes)) {
+    if (isNumericAttribute(input.key)) {
       return {
         key: input.key,
         value: R.map((value) => {
@@ -1382,7 +1362,7 @@ const prepareAttributes = (instance, elements) => {
       };
     }
     // Check boolean
-    if (R.includes(input.key, booleanAttributes)) {
+    if (isBooleanAttribute(input.key)) {
       return {
         key: input.key,
         value: R.map((value) => {
@@ -1400,7 +1380,7 @@ const prepareAttributes = (instance, elements) => {
     // Specific case for name in aliased entities
     // If name change already inside aliases, name must be kep untouched
     if (input.key === NAME_FIELD && isStixObjectAliased(instanceType)) {
-      const aliasField = resolveAliasesField(instanceType);
+      const aliasField = resolveAliasesField(instanceType).name;
       const name = normalizeName(input.value.at(0));
       if ((instance[aliasField] ?? []).includes(name)) {
         return null;
@@ -1457,7 +1437,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   // region Some magic around aliases
   // If named entity name updated or alias are updated, modify the aliases ids
   if (isStixObjectAliased(instanceType)) {
-    const aliasField = resolveAliasesField(instanceType);
+    const aliasField = resolveAliasesField(instanceType).name;
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
     if (nameInput || aliasesInput) {
@@ -1662,7 +1642,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
-  // Pre check
+  // Region - Pre-Check
   const elementsByKey = R.groupBy((e) => e.key, updates);
   const multiOperationKeys = Object.values(elementsByKey).filter((n) => n.length > 1);
   if (multiOperationKeys.length > 1) {
@@ -1670,7 +1650,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   }
   // Split attributes and meta
   // Supports inputs meta or stix meta
-  const metaKeys = [...META_STIX_ATTRIBUTES, ...metaFieldAttributes()];
+  const metaKeys = [...schemaRelationsRefDefinition.stixName, ...schemaRelationsRefDefinition.inputName];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   // Load the element to update
@@ -1683,6 +1663,11 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
     throw FunctionalError('Cant find element references for commit', { id, references: opts.references });
   }
+  // Validate input attributes
+  const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
+  await validateInputUpdate(context, user, initial.entity_type, inputs, entitySetting, initial);
+  // Endregion
+
   // Individual check
   const { bypassIndividualUpdate } = opts;
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
@@ -1696,9 +1681,8 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     return { element: initial };
   }
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
-  const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
   const keys = R.map((t) => t.key, attributes);
-  if (entitySettings.get(initial.entity_type)?.enforce_reference || (entitySettings.get('stix-core-relationship')?.enforce_reference && isStixCoreRelationship(initial.entity_type))) {
+  if (entitySetting?.enforce_reference) {
     const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
     if (!isNoReferenceKey && isEmptyField(opts.references)) {
       throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
@@ -1808,14 +1792,13 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     // endregion
     // region metas
     const streamOpts = { publishStreamEvent: false, locks: participantIds };
-    const attributeToEmbeddedRelation = fieldAttributeToEmbeddedRelation();
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
-      const key = STIX_ATTRIBUTE_TO_META_FIELD[metaKey] || metaKey;
+      const key = schemaRelationsRefDefinition.stixNameToInputName[metaKey] || metaKey;
       // ref and _refs are expecting direct identifier in the value
       // We dont care about the operation here, the only thing we can do is replace
       if (isSingleStixEmbeddedRelationshipInput(key)) {
-        const relType = attributeToEmbeddedRelation[key];
+        const relType = schemaRelationsRefDefinition.inputNameToDatabaseName[key];
         const currentValue = updatedInstance[key];
         const { value: refIds } = meta[metaIndex];
         const targetCreated = R.head(refIds);
@@ -1845,7 +1828,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
           }
         }
       } else {
-        const relType = attributeToEmbeddedRelation[key];
+        const relType = schemaRelationsRefDefinition.inputNameToDatabaseName[key];
         // Special access check for RELATION_GRANTED_TO meta
         if (relType === RELATION_GRANTED_TO && !userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
           throw ForbiddenAccess();
@@ -2341,7 +2324,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     }
   }
   // Upsert entities
-  const upsertAttributes = schemaTypes.getUpsertAttributes(type);
+  const upsertAttributes = schemaAttributesDefinition.getUpsertAttributeNames(type);
   if (isInternalObject(type) && forceUpdate) {
     const {
       upsertImpacted,
@@ -2387,49 +2370,18 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   const createdTargets = [];
   const removedTargets = [];
   const buildInstanceRelTo = (to, relType) => buildInnerRelation(element, to, relType);
-  // region cyber observable
-  // -- Upsert multiple refs specific for cyber observable
-  const obsInputFields = stixCyberObservableFieldsForType(type);
-  for (let fieldIndex = 0; fieldIndex < obsInputFields.length; fieldIndex += 1) {
-    const inputField = obsInputFields[fieldIndex];
-    if (MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS.includes(inputField)) {
-      const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
-      const existingInstances = element[CYBER_OBSERVABLE_FIELD_TO_META_RELATION[inputField]] || [];
-      const patchInputData = updatePatch[inputField] ?? [];
-      const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), patchInputData);
-      const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
-      if (instancesToCreate.length > 0) {
-        const newRelations = instancesToCreate.map((to) => R.head(buildInstanceRelTo(to, relType)));
-        rawRelations.push(...newRelations);
-        patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
-        createdTargets.push({ key: inputField, instances: instancesToCreate });
-      }
-      // Handle full synchronization for granted refs if specified
-      if (inputField === INPUT_GRANTED_REFS && updatePatch[inputField]) {
-        const instancesToRemove = existingInstances.filter((m) => !patchInputData.map((u) => u.internal_id).includes(m));
-        if (instancesToRemove.length > 0) {
-          const currentRels = await listAllRelations(context, user, relType, {
-            fromId: element.internal_id,
-            toId: instancesToRemove
-          });
-          await deleteElements(context, user, currentRels, { publishStreamEvent: false });
-          const targetsInstances = await internalFindByIds(context, user, instancesToRemove);
-          patchInputs.push({ key: inputField, value: targetsInstances, operation: UPDATE_OPERATION_REMOVE });
-          removedTargets.push({ key: inputField, instances: targetsInstances });
-        }
-      }
-    }
-  }
-  // -- Upsert single refs specific for cyber observable
-  // TODO JRI Upsert single refs specific for cyber observable
-  // endregion
   // region generic elements
   // -- Upsert multiple refs for other stix elements
-  const metaInputFields = STIX_META_RELATIONSHIPS_INPUTS;
+  let metaInputFields;
+  if (isStixCyberObservable(type)) {
+    metaInputFields = stixCyberObservableFieldsForType(type);
+  } else {
+    metaInputFields = stixNotCyberObservableFields();
+  }
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
-    if (MULTIPLE_META_RELATIONSHIPS_INPUTS.includes(inputField)) {
-      const relType = fieldToMetaRelation()[inputField];
+    if (schemaRelationsRefDefinition.isMultipleName(inputField)) {
+      const relType = schemaRelationsRefDefinition.inputNameToDatabaseName[inputField];
       const existingInstances = element[relType] || [];
       const patchInputData = updatePatch[inputField] ?? [];
       const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), patchInputData);
@@ -2661,10 +2613,10 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = input;
+  const entitySetting = await getEntitySettingFromCache(context, relationshipType);
   // Enforce reference controls
   if (isStixCoreRelationship(relationshipType)) {
-    const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
-    if (entitySettings.get('stix-core-relationship')?.enforce_reference) {
+    if (entitySetting?.enforce_reference) {
       if (isEmptyField(input.externalReferences)) {
         throw ValidationError('externalReferences', {
           message: 'You must provide at least one external reference to create a relationship',
@@ -2678,6 +2630,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
+  await validateInputCreation(context, user, relationshipType, input, entitySetting);
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
   const { from, to } = resolvedInput;
@@ -2696,7 +2649,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   }
   // It's not possible to create a single ref relationship if one already exists
   if (isSingleStixEmbeddedRelationship(relationshipType)) {
-    const key = stixEmbeddedRelationToField()[relationshipType];
+    const key = schemaRelationsRefDefinition.databaseNameToInputName[relationshipType];
     if (isNotEmptyField(resolvedInput.from[key])) {
       const errorData = { from: input.fromId, to: input.toId, relationshipType };
       throw UnsupportedError('Cant add another relation on single ref', { error: errorData });
@@ -2779,7 +2732,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
         const previous = resolvedInput.from; // Complete resolution done by the input resolver
         const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
         const instance = R.clone(previous);
-        const key = stixEmbeddedRelationToField()[relationshipType];
+        const key = schemaRelationsRefDefinition.databaseNameToInputName[relationshipType];
         if (isSingleStixEmbeddedRelationship(relationshipType)) {
           const inputs = [{ key, value: [targetElement] }];
           const message = generateUpdateMessage(inputs);
@@ -2866,8 +2819,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     R.assoc('creator_id', user.internal_id),
     R.dissoc('update'),
     R.dissoc('file'),
-    R.omit(STIX_META_RELATIONSHIPS_INPUTS),
-    R.omit(STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS),
+    R.omit(schemaRelationsRefDefinition.getName()),
   )(input);
   if (inferred) {
     // Simply add the rule
@@ -2961,22 +2913,12 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       }
     }
   };
-  // For meta stix core
-  if (isStixCoreObject(type)) {
-    const inputFields = STIX_META_RELATIONSHIPS_INPUTS;
+  // For meta stix core && meta observables
+  if (isStixCoreObject(type) || isStixCyberObservable(type)) {
+    const inputFields = schemaRelationsRefDefinition.getName();
     for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
       const inputField = inputFields[fieldIndex];
-      const relType = fieldToMetaRelation()[inputField];
-      appendMetaRelationships(inputField, relType);
-    }
-  }
-  // For meta observables
-  if (isStixCyberObservable(type)) {
-    const inputFields = stixCyberObservableFieldsForType(type);
-    for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
-      const inputField = inputFields[fieldIndex];
-      const stixField = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[inputField];
-      const relType = STIX_ATTRIBUTE_TO_CYBER_RELATIONS[stixField];
+      const relType = schemaRelationsRefDefinition.inputNameToDatabaseName[inputField];
       appendMetaRelationships(inputField, relType);
     }
   }
@@ -3009,15 +2951,19 @@ const userHaveCapability = (user, capability) => {
   return userCapabilities.includes(BYPASS) || userCapabilities.includes(capability);
 };
 const createEntityRaw = async (context, user, input, type, opts = {}) => {
-  const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
+  // Region - Pre-Check
+  const entitySetting = await getEntitySettingFromCache(context, type);
   const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
-  if (!isAllowedToByPass && entitySettings.get(type)?.enforce_reference) {
+  if (!isAllowedToByPass && entitySetting?.enforce_reference) {
     if (isEmptyField(input.externalReferences)) {
       throw ValidationError('externalReferences', {
         message: 'You must provide at least one external reference for this type of entity',
       });
     }
   }
+  await validateInputCreation(context, user, type, input, entitySetting);
+  // Endregion
+
   const { fromRule } = opts;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, type);
@@ -3105,7 +3051,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
           // In this mode we can safely consider this entity like the existing one.
           // We can upsert element except the aliases that are part of other entities
           const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
-          const key = resolveAliasesField(type);
+          const key = resolveAliasesField(type).name;
           const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
           const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
           const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
@@ -3203,7 +3149,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
     if (isStixEmbeddedRelationship(element.entity_type)) {
       const targetElement = { ...element.to, i_relation: element };
       const previous = await storeLoadByIdWithRefs(context, user, element.fromId);
-      const key = stixEmbeddedRelationToField()[element.entity_type];
+      const key = schemaRelationsRefDefinition.databaseNameToInputName[element.entity_type];
       const instance = R.clone(previous);
       let message;
       if (isSingleStixEmbeddedRelationship(element.entity_type)) {

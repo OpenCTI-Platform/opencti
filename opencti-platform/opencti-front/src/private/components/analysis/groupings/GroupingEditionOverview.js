@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,6 +16,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -78,29 +79,35 @@ const groupingMutationRelationDelete = graphql`
   }
 `;
 
-const groupingValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  published: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
-  context: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  confidence: Yup.number(),
-  x_opencti_workflow_id: Yup.object(),
-});
+const groupingValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    context: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Grouping', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: groupingEditionOverviewFocus,
-    variables: {
-      id: grouping.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+
+  const groupingValidator = groupingValidation(t);
+
+  const queries = {
+    fieldPatch: groupingMutationFieldPatch,
+    relationAdd: groupingMutationRelationAdd,
+    relationDelete: groupingMutationRelationDelete,
+    editionFocus: groupingEditionOverviewFocus,
+  };
+  const editor = useFormEditor(grouping, enableReferences, queries, groupingValidator);
+
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -116,98 +123,45 @@ const GroupingEditionOverviewComponent = (props) => {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: groupingMutationFieldPatch,
+
+    editor.fieldPatch({
       variables: {
         id: grouping.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
       },
     });
   };
+
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      groupingValidation(t)
+      groupingValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: groupingMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: grouping.id,
-              input: {
-                key: name,
-                value: finalValue,
-              },
+              input: [{ key: name, value: finalValue || '' }],
             },
           });
         })
         .catch(() => false);
     }
   };
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: groupingMutationFieldPatch,
-        variables: {
-          id: grouping.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(grouping);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: groupingMutationRelationAdd,
-          variables: {
-            id: grouping.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: groupingMutationRelationDelete,
-          variables: {
-            id: grouping.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-  const createdBy = convertCreatedBy(grouping);
-  const objectMarking = convertMarkings(grouping);
-  const status = convertStatus(t, grouping);
+
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(grouping)),
+    R.assoc('objectMarking', convertMarkings(grouping)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, grouping)),
     R.pick([
       'name',
       'context',
@@ -218,11 +172,12 @@ const GroupingEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(grouping);
+
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={groupingValidation(t)}
+      validationSchema={groupingValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -240,7 +195,7 @@ const GroupingEditionOverviewComponent = (props) => {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -248,7 +203,7 @@ const GroupingEditionOverviewComponent = (props) => {
             />
             <ConfidenceField
               name="confidence"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
@@ -260,7 +215,7 @@ const GroupingEditionOverviewComponent = (props) => {
               label={t('Context')}
               type="grouping-context-ov"
               name="context"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
@@ -276,14 +231,14 @@ const GroupingEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
             />
             {grouping.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Grouping"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
@@ -302,7 +257,7 @@ const GroupingEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -313,7 +268,7 @@ const GroupingEditionOverviewComponent = (props) => {
                   fieldname="objectMarking"
                 />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage

@@ -20,6 +20,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -72,18 +73,24 @@ const positionMutation = graphql`
   }
 `;
 
-const positionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  latitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-  longitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-  street_address: Yup.string().nullable().max(1000, t('The value is too long')),
-  postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
-});
+const positionValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    street_address: Yup.string().nullable().max(1000, t('The value is too long')),
+    postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
+  };
+
+  shape = useCustomYup('Position', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const PositionCreation = ({ paginationOptions }) => {
   const classes = useStyles();

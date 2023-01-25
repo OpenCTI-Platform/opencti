@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
+import { graphql, useFragment } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -10,16 +10,14 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { CountryEditionOverview_country$key } from './__generated__/CountryEditionOverview_country.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const countryMutationFieldPatch = graphql`
   mutation CountryEditionOverviewFieldPatchMutation(
@@ -118,14 +116,21 @@ const countryEditionOverviewFragment = graphql`
   }
 `;
 
-const countryValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
+const countryValidation = (t: (message: string) => string) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string()
+      .min(3, t('The value is too short'))
+      .max(5000, t('The value is too long'))
+      .required(t('This field is required')),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Country', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface CountryEditionOverviewProps {
   countryRef: CountryEditionOverview_country$key,
@@ -138,11 +143,13 @@ interface CountryEditionOverviewProps {
 }
 
 interface CountryEditionFormValues {
-  message: string
-  references: Option[],
-  x_opencti_workflow_id: Option
-  createdBy: Option
+  name: string
+  description: string | null
+  createdBy: Option | undefined
   objectMarking: Option[]
+  x_opencti_workflow_id: Option
+  message?: string,
+  references?: Option[]
 }
 
 const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewProps> = ({
@@ -153,25 +160,15 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
 }) => {
   const { t } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
-  const createdBy = convertCreatedBy(country);
-  const objectMarking = convertMarkings(country);
-  const status = convertStatus(t, country);
+  const countryValidator = countryValidation(t);
 
-  const [commitRelationAdd] = useMutation(countryMutationRelationAdd);
-  const [commitRelationDelete] = useMutation(countryMutationRelationDelete);
-  const [commitFieldPatch] = useMutation(countryMutationFieldPatch);
-  const [commitEditionFocus] = useMutation(countryEditionOverviewFocus);
-
-  const handleChangeFocus = (name: string) => {
-    commitEditionFocus({
-      variables: {
-        id: country.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
+  const queries = {
+    fieldPatch: countryMutationFieldPatch,
+    relationAdd: countryMutationRelationAdd,
+    relationDelete: countryMutationRelationDelete,
+    editionFocus: countryEditionOverviewFocus,
   };
+  const editor = useFormEditor(country, enableReferences, queries, countryValidator);
 
   const onSubmit: FormikConfig<CountryEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -188,7 +185,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitFieldPatch({
+    editor.fieldPatch({
       variables: {
         id: country.id,
         input: inputValues,
@@ -203,54 +200,16 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
     });
   };
 
-  const handleChangeCreatedBy = (_: string, value: Option) => {
-    if (!enableReferences) {
-      commitFieldPatch({
-        variables: {
-          id: country.id,
-          input: { key: 'createdBy', value: [value.value] },
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (_: string, values: Option[]) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = (country.objectMarking?.edges ?? []).map((n) => ({ label: n?.node.definition, value: n?.node.id }));
-      const added = R.difference(values, currentMarkingDefinitions).at(0);
-      const removed = R.difference(currentMarkingDefinitions, values).at(0);
-      if (added) {
-        commitRelationAdd({
-          variables: {
-            id: country.id,
-            input: {
-              toId: added.value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed) {
-        commitRelationDelete({
-          variables: {
-            id: country.id,
-            toId: removed.value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
   const handleSubmitField = (name: string, value: Option | string) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      countryValidation(t)
+      countryValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitFieldPatch({
+          editor.fieldPatch({
             variables: {
               id: country.id,
               input: { key: name, value: finalValue ?? '' },
@@ -261,24 +220,19 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
     }
   };
 
-  const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
-    R.pick([
-      'name',
-      'description',
-      'createdBy',
-      'objectMarking',
-      'x_opencti_workflow_id',
-    ]),
-  )(country);
+  const initialValues: CountryEditionFormValues = {
+    name: country.name,
+    description: country.description,
+    createdBy: convertCreatedBy(country),
+    objectMarking: convertMarkings(country),
+    x_opencti_workflow_id: convertStatus(t, country) as Option,
+  };
 
   return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues as never}
-        validationSchema={countryValidation(t)}
+        validationSchema={countryValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -294,7 +248,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -308,7 +262,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -318,7 +272,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Country"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
@@ -337,7 +291,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -345,7 +299,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
               helpertext={
                 <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage

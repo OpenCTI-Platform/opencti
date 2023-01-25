@@ -3,13 +3,14 @@ import convertAdministrativeAreaToStix from './administrativeArea-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import administrativeAreaResolvers from './administrativeArea-resolver';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, StoreEntityAdministrativeArea } from './administrativeArea-types';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import { REL_BUILT_IN } from '../../database/stix';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_LOCATION } from '../../schema/general';
 import type { StixLocation } from '../../types/stix-sdo';
+import type { ModuleDefinition } from '../../schema/module';
+import { registerDefinition } from '../../schema/module';
+import { entityLocationType, xOpenctiStixIds } from '../../schema/attribute-definition';
 
 const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrativeArea, StixLocation> = {
   type: {
@@ -33,13 +34,13 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
-    { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'latitude', type: 'string', multiple: false, upsert: true },
-    { name: 'longitude', type: 'string', multiple: false, upsert: true },
-    { name: 'x_opencti_location_type', type: 'string', multiple: false, upsert: false },
-    { name: 'x_opencti_stix_ids', type: 'string', multiple: true, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'latitude', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'longitude', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    entityLocationType,
+    xOpenctiStixIds,
+    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [
     {

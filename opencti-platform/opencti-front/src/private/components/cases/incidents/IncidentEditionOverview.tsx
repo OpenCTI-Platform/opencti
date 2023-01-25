@@ -24,6 +24,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 export const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewCaseFieldPatchMutation(
@@ -139,18 +140,24 @@ const incidentMutationRelationDelete = graphql`
   }
 `;
 
-const caseValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  severity: Yup.string().nullable(),
-  priority: Yup.string().nullable(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-  rating: Yup.number(),
-  confidence: Yup.number(),
-});
+const caseValidation = (t: (message: string) => string) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    severity: Yup.string().nullable(),
+    priority: Yup.string().nullable(),
+    description: Yup.string()
+      .min(3, t('The value is too short'))
+      .max(5000, t('The value is too long'))
+      .required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+    rating: Yup.number(),
+    confidence: Yup.number(),
+  };
+
+  shape = useCustomYup('Case', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface IncidentEditionOverviewProps {
   caseRef: IncidentEditionOverview_case$key;
@@ -165,9 +172,7 @@ interface IncidentEditionOverviewProps {
 }
 
 interface CaseEditionFormValues {
-  x_opencti_workflow_id:
-  | string
-  | { label: string; color: string; value: string; order: string };
+  x_opencti_workflow_id: Option
 }
 
 const CaseEditionOverviewComponent: FunctionComponent<
@@ -175,17 +180,15 @@ IncidentEditionOverviewProps
 > = ({ caseRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
   const caseData = useFragment(incidentEditionOverviewFragment, caseRef);
-  const createdBy = convertCreatedBy(caseData);
-  const objectMarking = convertMarkings(caseData);
-  const objectAssignee = convertAssignees(caseData);
-  const status = convertStatus(t, caseData);
+  const caseValidator = caseValidation(t);
+
   const queries = {
     fieldPatch: incidentMutationFieldPatch,
     relationAdd: incidentMutationRelationAdd,
     relationDelete: incidentMutationRelationDelete,
     editionFocus: incidentEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData, enableReferences, queries);
+  const editor = useFormEditor(caseData, enableReferences, queries, caseValidator);
 
   const onSubmit: FormikConfig<CaseEditionFormValues>['onSubmit'] = (
     values,
@@ -212,7 +215,7 @@ IncidentEditionOverviewProps
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      caseValidation(t)
+      caseValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -228,19 +231,19 @@ IncidentEditionOverviewProps
   const initialValues = {
     name: caseData.name,
     description: caseData.description,
-    severity: caseData.severity,
     priority: caseData.priority,
+    severity: caseData.severity,
     confidence: caseData.confidence,
-    createdBy,
-    objectMarking,
-    objectAssignee,
-    x_opencti_workflow_id: status,
+    createdBy: convertCreatedBy(caseData),
+    objectMarking: convertMarkings(caseData),
+    objectAssignee: convertAssignees(caseData),
+    x_opencti_workflow_id: convertStatus(t, caseData) as Option,
   };
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
-      validationSchema={caseValidation(t)}
+      validationSchema={caseValidator}
       onSubmit={onSubmit}
     >
       {({ setFieldValue }) => (

@@ -6,7 +6,6 @@ import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -14,6 +13,8 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const individualMutationFieldPatch = graphql`
   mutation IndividualEditionOverviewFieldPatchMutation(
@@ -77,30 +78,33 @@ const individualMutationRelationDelete = graphql`
   }
 `;
 
-const individualValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  contact_information: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
+const individualValidation = (t) => {
+  let shape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    contact_information: Yup.string().nullable(),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Individual', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const IndividualEditionOverviewComponent = (props) => {
   const { individual, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: individualEditionOverviewFocus,
-    variables: {
-      id: individual.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const individualValidator = individualValidation(t);
+
+  const queries = {
+    fieldPatch: individualMutationFieldPatch,
+    relationAdd: individualMutationRelationAdd,
+    relationDelete: individualMutationRelationDelete,
+    editionFocus: individualEditionOverviewFocus,
+  };
+  const editor = useFormEditor(individual, enableReferences, queries, individualValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -114,8 +118,7 @@ const IndividualEditionOverviewComponent = (props) => {
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
-    commitMutation({
-      mutation: individualMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: individual.id,
         input: inputValues,
@@ -123,7 +126,6 @@ const IndividualEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -137,11 +139,10 @@ const IndividualEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      individualValidation(t)
+      individualValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: individualMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: individual.id,
               input: { key: name, value: finalValue ?? '' },
@@ -152,62 +153,11 @@ const IndividualEditionOverviewComponent = (props) => {
     }
   };
 
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: individualMutationFieldPatch,
-        variables: {
-          id: individual.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(individual);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: individualMutationRelationAdd,
-          variables: {
-            id: individual.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: individualMutationRelationDelete,
-          variables: {
-            id: individual.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
   const external = individual.external === true;
-  const createdBy = convertCreatedBy(individual);
-  const objectMarking = convertMarkings(individual);
-  const status = convertStatus(t, individual);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(individual)),
+    R.assoc('objectMarking', convertMarkings(individual)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, individual)),
     R.pick([
       'name',
       'description',
@@ -221,7 +171,7 @@ const IndividualEditionOverviewComponent = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={individualValidation(t)}
+        validationSchema={individualValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -238,7 +188,7 @@ const IndividualEditionOverviewComponent = (props) => {
               disabled={external}
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -252,7 +202,7 @@ const IndividualEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -267,28 +217,22 @@ const IndividualEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="contact_information"
-                />
+                <SubscriptionFocus context={context} fieldName="contact_information" />
               }
             />
             {individual.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Individual"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -299,18 +243,15 @@ const IndividualEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage

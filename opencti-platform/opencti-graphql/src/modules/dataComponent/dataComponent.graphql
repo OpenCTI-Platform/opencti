@@ -192,7 +192,7 @@ input DataComponentAddInput {
     clientMutationId: String
     update: Boolean
     name: String! @constraint(minLength: 2)
-    description: String!
+    description: String
     aliases: [String]
     dataSource: String
 }

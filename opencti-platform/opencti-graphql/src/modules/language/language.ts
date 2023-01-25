@@ -3,9 +3,9 @@ import convertLanguageToStix from './language-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import languageResolvers from './language-resolver';
 import { ENTITY_TYPE_LANGUAGE, StixLanguage, StoreEntityLanguage } from './language-types';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import type { ModuleDefinition } from '../../schema/module';
+import { registerDefinition } from '../../schema/module';
 
 const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> = {
   type: {
@@ -29,7 +29,7 @@ const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> =
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
   ],
   relations: [], // All relations are from the other side
   representative: (stix: StixLanguage) => {

@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,6 +16,8 @@ import { buildDate, parse } from '../../../../utils/Time';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -79,32 +80,38 @@ const observedDataMutationRelationDelete = graphql`
   }
 `;
 
-const observedDataValidation = (t) => Yup.object().shape({
-  first_observed: Yup.date()
-    .required(t('This field is required'))
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_observed: Yup.date()
-    .required(t('This field is required'))
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  number_observed: Yup.number().required(t('This field is required')),
-  confidence: Yup.number(),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
+const observedDataValidation = (t) => {
+  let shape = {
+    first_observed: Yup.date()
+      .required(t('This field is required'))
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_observed: Yup.date()
+      .required(t('This field is required'))
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    number_observed: Yup.number(),
+    confidence: Yup.number(),
+    references: Yup.array().required(t('This field is required')),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  shape = useCustomYup('Observed-Data', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: observedDataEditionOverviewFocus,
-    variables: {
-      id: observedData.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const observedDataValidator = observedDataValidation(t);
+
+  const queries = {
+    fieldPatch: observedDataMutationFieldPatch,
+    relationAdd: observedDataMutationRelationAdd,
+    relationDelete: observedDataMutationRelationDelete,
+    editionFocus: observedDataEditionOverviewFocus,
+  };
+  const editor = useFormEditor(observedData, enableReferences, queries, observedDataValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -120,8 +127,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
-    commitMutation({
-      mutation: observedDataMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: observedData.id,
         input: inputValues,
@@ -129,7 +135,6 @@ const ObservedDataEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -143,11 +148,10 @@ const ObservedDataEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      observedDataValidation(t)
+      observedDataValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: observedDataMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: observedData.id,
               input: {
@@ -160,63 +164,13 @@ const ObservedDataEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: observedDataMutationFieldPatch,
-        variables: {
-          id: observedData.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
 
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(observedData);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: observedDataMutationRelationAdd,
-          variables: {
-            id: observedData.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: observedDataMutationRelationDelete,
-          variables: {
-            id: observedData.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(observedData);
-  const objectMarking = convertMarkings(observedData);
-  const status = convertStatus(t, observedData);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
+    R.assoc('createdBy', convertCreatedBy(observedData)),
+    R.assoc('objectMarking', convertMarkings(observedData)),
     R.assoc('first_observed', buildDate(observedData.first_observed)),
     R.assoc('last_observed', buildDate(observedData.last_observed)),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, observedData)),
     R.pick([
       'first_observed',
       'last_observed',
@@ -227,11 +181,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
       'x_opencti_workflow_id',
     ]),
   )(observedData);
+
   return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={observedDataValidation(t)}
+        validationSchema={observedDataValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -245,24 +200,21 @@ const ObservedDataEditionOverviewComponent = (props) => {
               <Field
                 component={DateTimePickerField}
                 name="first_observed"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
                   label: t('First observed'),
                   variant: 'standard',
                   fullWidth: true,
                   helperText: (
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="first_observed"
-                    />
+                    <SubscriptionFocus context={context} fieldName="first_observed" />
                   ),
                 }}
               />
               <Field
                 component={DateTimePickerField}
                 name="last_observed"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
                   label: t('Last observed'),
@@ -270,10 +222,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="last_observed"
-                    />
+                    <SubscriptionFocus context={context} fieldName="last_observed" />
                   ),
                 }}
               />
@@ -284,18 +233,15 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 label={t('Number observed')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
                 helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="number_observed"
-                  />
+                  <SubscriptionFocus context={context} fieldName="number_observed" />
                 }
               />
               <ConfidenceField
                 name="confidence"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 label={t('Confidence')}
                 fullWidth={true}
@@ -307,15 +253,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 <StatusField
                   name="x_opencti_workflow_id"
                   type="Observed-Data"
-                  onFocus={handleChangeFocus}
+                  onFocus={editor.changeFocus}
                   onChange={handleSubmitField}
                   setFieldValue={setFieldValue}
                   style={{ marginTop: 20 }}
                   helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="x_opencti_workflow_id"
-                    />
+                    <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                   }
                 />
               )}
@@ -326,18 +269,15 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 helpertext={
                   <SubscriptionFocus context={context} fieldName="createdBy" />
                 }
-                onChange={handleChangeCreatedBy}
+                onChange={editor.changeCreated}
               />
               <ObjectMarkingField
                 name="objectMarking"
                 style={{ marginTop: 20, width: '100%' }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldname="objectMarking"
-                  />
+                  <SubscriptionFocus context={context} fieldname="objectMarking" />
                 }
-                onChange={handleChangeObjectMarking}
+                onChange={editor.changeMarking}
               />
               {enableReferences && (
                 <CommitMessage

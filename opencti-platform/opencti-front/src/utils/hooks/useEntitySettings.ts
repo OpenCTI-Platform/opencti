@@ -1,4 +1,7 @@
 import { useFragment } from 'react-relay';
+import * as Yup from 'yup';
+import { ObjectShape } from 'yup/lib/object';
+import { AnySchema } from 'yup/lib/schema';
 import useAuth from './useAuth';
 import { entitySettingsFragment } from '../../private/components/settings/sub_types/EntitySetting';
 import { EntitySettingConnection_entitySettings$data, EntitySettingConnection_entitySettings$key } from '../../private/components/settings/sub_types/__generated__/EntitySettingConnection_entitySettings.graphql';
@@ -28,6 +31,50 @@ export const useIsHiddenEntity = (id: string): boolean => {
 
 export const useIsEnforceReference = (id: string): boolean => {
   return useEntitySettings(id).some((node) => node.enforce_reference !== null && node.enforce_reference);
+};
+
+const useAttributesConfiguration = (id: string): AttributeConfiguration[] | null => {
+  const entitySetting = useEntitySettings().edges.map((edgeNode) => edgeNode.node)
+    .map((node) => useFragment(entitySettingFragment, node) as EntitySetting_entitySetting$data)
+    .find((node) => id === node.target_type && node.attributes_configuration !== null);
+
+  if (!entitySetting || !entitySetting.attributes_configuration) {
+    return null;
+  }
+
+  return JSON.parse(entitySetting.attributes_configuration);
+};
+
+export const useCustomYup = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape, t: (message: string) => string): TNextShape => {
+  const attributesConfiguration = useAttributesConfiguration(id);
+  if (!attributesConfiguration) {
+    return existingShape;
+  }
+
+  const existingKeys = Object.keys(existingShape);
+
+  const newShape = Object.fromEntries(
+    attributesConfiguration
+      .filter((attr: AttributeConfiguration) => attr.mandatory)
+      .map((attr: AttributeConfiguration) => attr.name)
+      .map((attrName: string) => {
+        let validator;
+        if (existingKeys.includes(attrName)) {
+          validator = (existingShape[attrName] as AnySchema)
+            .transform((v) => (!v || (Array.isArray(v) && v.length === 0) ? undefined : v))
+            .required(t('This field is required'));
+        } else {
+          validator = Yup.mixed()
+            .transform((v) => (!v || (Array.isArray(v) && v.length === 0) ? undefined : v))
+            .required(t('This field is required'));
+        }
+        return [attrName, validator];
+      }),
+  );
+  return {
+    ...existingShape,
+    ...newShape,
+  };
 };
 
 export default useEntitySettings;
