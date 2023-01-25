@@ -213,7 +213,6 @@ class StixCoreRelationshipContainer extends Component {
     const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
-    console.log(to);
     const fromRestricted = from === null;
     // eslint-disable-next-line no-nested-ternary
     const linkFrom = from
