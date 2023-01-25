@@ -14,6 +14,7 @@ import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
 import Dialog from '@material-ui/core/Dialog';
+import Chip from '@material-ui/core/Chip';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../../components/i18n';
@@ -59,6 +60,14 @@ const styles = (theme) => ({
     color: theme.palette.header.text,
   },
 });
+
+const tlpColor = {
+    red: '#FF2B2B',
+    amber: '#FFC000',
+    amber_strict: '#FFC000',
+    green: '#33FF00',
+    clear: '#FFFFFF',
+  };
 
 class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
   constructor(props) {
@@ -267,7 +276,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {iep?.tlp && t(iep?.tlp)}
+                    <Chip style={{ backgroundColor: '#000', borderRadius: 0, padding: 10, color: tlpColor[iep?.tlp] || '#FF2B2B' }} size="small" label={iep?.tlp && `TLP : ${t(iep?.tlp).toUpperCase()}`} />
                   </div>
                 </Grid>
               </Grid>
