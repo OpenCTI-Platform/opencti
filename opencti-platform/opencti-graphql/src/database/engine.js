@@ -390,6 +390,10 @@ export const elIndexExists = async (indexName) => {
   const existIndex = await engine.indices.exists({ index: indexName });
   return oebp(existIndex) === true;
 };
+export const elPlatformIndices = async () => {
+  const listIndices = await engine.cat.indices({ index: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
+  return oebp(listIndices);
+};
 const elCreateIndexTemplate = async () => {
   await engine.cluster.putComponentTemplate({
     name: `${ES_INDEX_PREFIX}-core-settings`,

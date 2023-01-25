@@ -2,9 +2,8 @@ import { platformStart, platformStop } from '../../src/boot';
 import { deleteBucket } from '../../src/database/file-storage';
 import { deleteQueues } from '../../src/domain/connector';
 import { ADMIN_USER, testContext } from './testQuery';
-import { elDeleteIndexes } from '../../src/database/engine';
-import { wait, WRITE_PLATFORM_INDICES } from '../../src/database/utils';
-import { ELASTIC_CREATION_PATTERN } from '../../src/config/conf';
+import { elDeleteIndexes, elPlatformIndices } from '../../src/database/engine';
+import { wait } from '../../src/database/utils';
 import { createRedisClient } from '../../src/database/redis';
 
 const platformClean = async () => {
@@ -14,7 +13,8 @@ const platformClean = async () => {
   // Delete all rabbitmq queues
   await deleteQueues(testContext, ADMIN_USER);
   // Remove all elastic indices
-  await elDeleteIndexes(WRITE_PLATFORM_INDICES.map((id) => `${id}${ELASTIC_CREATION_PATTERN}`));
+  const indices = await elPlatformIndices();
+  await elDeleteIndexes(indices.map((i) => i.index));
   // Delete redis streams
   const testRedisClient = createRedisClient('reset');
   await testRedisClient.del('stream.opencti');
