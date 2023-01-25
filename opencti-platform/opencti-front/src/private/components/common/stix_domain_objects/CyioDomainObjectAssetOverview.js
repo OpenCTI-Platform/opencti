@@ -237,7 +237,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject?.version && t(cyioDomainObject.patch_level)}
+                {cyioDomainObject?.patch_level && t(cyioDomainObject.patch_level)}
               </div>
             </Grid>
             <Grid item={true} xs={12}>
