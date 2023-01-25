@@ -27,7 +27,13 @@ import {
   WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { ConfigurationError, DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
+import {
+  ConfigurationError,
+  DatabaseError,
+  FunctionalError,
+  EngineShardsError,
+  UnsupportedError
+} from '../config/errors';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -90,6 +96,7 @@ export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttl
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
 const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
 const ES_MAX_RESULT_WINDOW = conf.get('elasticsearch:max_result_window') || 100000;
+const ES_MAX_SHARDS_FAILURE = conf.get('elasticsearch:max_shards_failure') || 0;
 const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
@@ -208,7 +215,16 @@ const oebp = (queryResult) => {
 };
 
 export const elRawSearch = (context, user, types, query) => {
-  const elRawSearchFn = () => engine.search(query).then((r) => oebp(r));
+  const elRawSearchFn = () => engine.search(query).then((r) => {
+    const parsedSearch = oebp(r);
+    // We do not support failure shard response.
+    // Result must be always accurate to prevent data duplication and unwanted behaviors
+    // If any shard fail during query, engine throw a lock exception with shards information
+    const isShardsFail = parsedSearch._shards.failed > ES_MAX_SHARDS_FAILURE;
+    if (isShardsFail) throw EngineShardsError({ shards: parsedSearch._shards });
+    // Return result of the search if everything goes well
+    return parsedSearch;
+  });
   return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
     [SemanticAttributes.DB_NAME]: 'search_engine',
     [SemanticAttributes.DB_OPERATION]: 'read',
