@@ -23,6 +23,7 @@ import SwitchField from '../../../../../components/SwitchField';
 import SelectField from '../../../../../components/SelectField';
 import AddressField from '../../../common/form/AddressField';
 import { httpHeaderRegex, CertificateRegex } from '../../../../../utils/Network';
+import { Switch } from '@material-ui/core';
 
 const styles = (theme) => ({
   container: {
@@ -51,7 +52,8 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
-    overflow: 'hidden',
+    overflowY: 'auto',
+    overflowX: 'hidden',
   },
   dialogClosebutton: {
     float: 'left',
@@ -74,6 +76,43 @@ const styles = (theme) => ({
     fontSize: '18px',
     lineHeight: '24px',
     color: theme.palette.header.text,
+  },
+  scrollBg: {
+    background: theme.palette.header.background,
+    width: '100%',
+    color: 'white',
+    padding: '10px 5px 10px 15px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  scrollDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '78px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
+  scrollObj: {
+    color: theme.palette.header.text,
+    fontFamily: 'sans-serif',
+    padding: '0px',
+    textAlign: 'left',
+  },
+  thumb: {
+    '&.MuiSwitch-thumb': {
+      color: 'white',
+    },
+  },
+  switch_track: {
+    backgroundColor: '#D3134A !important',
+    opacity: '1 !important',
+  },
+  switch_base: {
+    color: 'white',
+    '&.Mui-checked + .MuiSwitch-track': {
+      backgroundColor: '#49B8FC !important',
+      opacity: 1,
+    },
   },
 });
 
@@ -104,547 +143,376 @@ export class DataSourceConnectionPopoverComponent extends Component {
       classes,
       dataSource,
     } = this.props;
-    const connectionInformation = dataSource.connection_information;
-    const initialValues = R.pipe(
-      R.assoc('name', connectionInformation?.name || ''),
-      R.assoc('description', connectionInformation?.description || ''),
-      R.assoc('secure', connectionInformation?.secure || ''),
-      R.assoc('host', connectionInformation?.host || ''),
-      R.assoc('port', connectionInformation?.port || ''),
-      R.assoc('query', connectionInformation?.query || ''),
-      R.assoc('ca', connectionInformation?.ca || ''),
-      R.assoc('query_initial', connectionInformation?.query_initial || ''),
-      R.assoc('query_index_field', connectionInformation?.query_index_field || ''),
-      R.assoc('passphrase', connectionInformation?.passphrase || ''),
-      R.assoc('connector_type', connectionInformation?.connector_type || ''),
-      R.assoc('listen', connectionInformation?.listen || ''),
-      R.assoc('listen_exchange', connectionInformation?.listen_exchange || ''),
-      R.assoc('headers', connectionInformation?.headers || ''),
-      R.assoc('push', connectionInformation?.push || ''),
-      R.assoc('push_exchange', connectionInformation?.push_exchange || ''),
-      R.assoc('query_sleep_interval', connectionInformation?.query_sleep_interval || ''),
-      R.assoc('api_key', connectionInformation?.api_key || ''),
-      R.assoc('username', connectionInformation?.username || ''),
-      R.pick([
-        'name',
-        'description',
-        'secure',
-        'host',
-        'ca',
-        'headers',
-        'port',
-        'query',
-        'query_initial',
-        'api_key',
-        'username',
-        'query_index_field',
-        'connector_type',
-        'passphrase',
-        'listen',
-        'listen_exchange',
-        'push',
-        'push_exchange',
-        'query_sleep_interval',
-      ]),
-    )(connectionInformation);
+    const { connection_information } = dataSource;
     return (
       <>
-        <Dialog
-          open={this.props.openConnection}
-          keepMounted={true}
-        >
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-          // onSubmit={this.onSubmit.bind(this)}
-          // onReset={this.onReset.bind(this)}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t('Connection')}
-                </DialogTitle>
-                <DialogContent classes={{ root: classes.dialogContent }}>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Name')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Name')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={TextField}
-                          name="name"
-                          fullWidth={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                        />
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={12}>
-                      <div className={classes.textBase}>
-                        <Typography variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ margin: 0 }}
-                        >
-                          {t('Description')}
-                        </Typography>
-                        <Tooltip title={t('Description')}>
-                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={MarkDownField}
-                        name="description"
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <div className={classes.textBase}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ margin: 0 }}
-                        >
-                          {t('Secure Connection')}
-                        </Typography>
-                        <Tooltip title={t('Secure Connection')} >
-                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                        <Typography style={{ marginLeft: 20 }}>No</Typography>
-                        <Field
-                          component={SwitchField}
-                          type="checkbox"
-                          name="secure"
-                          containerstyle={{ marginLeft: 10, marginRight: '-15px' }}
-                          inputProps={{ 'aria-label': 'ant design' }}
-                        />
-                        <Typography>Yes</Typography>
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Connector Type')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Connector Type')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        name="connector_type"
-                        fullWidth={true}
-                        size="small"
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Host/IP')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Host/IP')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="host"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Port')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Port')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="port"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Query')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Query')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="query"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Initial Query')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Initial Query')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="query_initial"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Query Index Field')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Query Index Field')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="query_index_field"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Query Sleep Interval')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Query Sleep Interval')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="query_sleep_interval"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <AddressField
-                        setFieldValue={setFieldValue}
-                        values={values}
-                        addressValues={values.ca}
-                        addIcon={true}
-                        title='Certificate Authority Files'
-                        name='ca'
-                        validation={CertificateRegex}
-                        helperText='Please enter a valid File. Example: /folder/example.crt'
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <AddressField
-                        setFieldValue={setFieldValue}
-                        values={values}
-                        addIcon={true}
-                        addressValues={values.headers}
-                        title='HTTP Headers'
-                        name='headers'
-                        validation={httpHeaderRegex}
-                        helperText='Please enter a valid HTTP Header. Example: header-name: header-value'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('API Key')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('API Key')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="api_key"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <Typography variant="h3"
-                        color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                        {t('Username')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Username')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="username"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography variant="h3"
-                        color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                        {t('Passphrase')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Passphrase')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name='passphrase'
-                        type='password'
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <Typography variant="h3"
-                        color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                        {t('Listen Queue')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Listen Queue')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="listen"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography variant="h3"
-                        color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                        {t('Listen Exchange')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Listen Exchange')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="listen_exchange"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography variant="h3"
-                        color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                        {t('Post Queue')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Post Queue')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="post_queue"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography variant="h3"
-                        color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                        {t('Post Exchange')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Post Exchange')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="post_queue"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                  </Grid>
-                </DialogContent>
-                <DialogActions classes={{ root: classes.dialogClosebutton }}>
-                  <Button
-                    variant="outlined"
-                    // onClick={handleReset}
-                    onClick={this.handleCancelOpenClick.bind(this)}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.buttonPopover }}
+        <Dialog open={this.props.openConnection} keepMounted={true}>
+          <DialogTitle classes={{ root: classes.dialogTitle }}>
+            {t("Connection")}
+          </DialogTitle>
+          <DialogContent classes={{ root: classes.dialogContent }}>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={12}>
+                <div style={{ marginBottom: "10px" }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: "left" }}
                   >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.buttonPopover }}
+                    {t("Name")}
+                  </Typography>
+                  <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                    <Tooltip title={t("Name")}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {connection_information.name}
+                </div>
+              </Grid>
+              <Grid item={true} xs={12}>
+                <div className={classes.textBase}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ margin: 0 }}
                   >
-                    {t('Submit')}
-                  </Button>
-                </DialogActions>
-
-                <Dialog
-                  open={this.state.close}
-                  keepMounted={true}
+                    {t("Description")}
+                  </Typography>
+                  <Tooltip title={t("Description")}>
+                    <Information
+                      style={{ marginLeft: "5px" }}
+                      fontSize="inherit"
+                      color="disabled"
+                    />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information?.description &&
+                    t(connection_information.description)}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div className={classes.textBase}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ margin: 0 }}
+                  >
+                    {t("Secure Connection")}
+                  </Typography>
+                  <Tooltip title={t("Secure Connection")}>
+                    <Information
+                      style={{ marginLeft: "5px" }}
+                      fontSize="inherit"
+                      color="disabled"
+                    />
+                  </Tooltip>
+                  <Switch
+                  disabled
+                  defaultChecked={connection_information?.secure}
+                  classes={{
+                    thumb: classes.thumb,
+                    track: classes.switch_track,
+                    switchBase: classes.switch_base,
+                    colorPrimary: classes.switch_primary,
+                  }}
+                />
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
                 >
-                  <DialogContent>
-                    <Typography className={classes.popoverDialog}>
-                      {t('Are you sure you’d like to cancel?')}
-                    </Typography>
-                    <Typography align='left'>
-                      {t('Your progress will not be saved')}
-                    </Typography>
-                  </DialogContent>
-                  <DialogActions className={classes.dialogActions}>
-                    <Button
-                      onClick={this.handleCancelCloseClick.bind(this)}
-                      classes={{ root: classes.buttonPopover }}
-                      variant='outlined'
-                      size='small'
-                    >
-                      {t('Go Back')}
-                    </Button>
-                    <Button
-                      onClick={this.handleCloseMain.bind(this)}
-                      color='secondary'
-                      classes={{ root: classes.buttonPopover }}
-                      variant='contained'
-                      size='small'
-                    >
-                      {t('Yes, Cancel')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Form>
-            )}
-          </Formik>
+                  {t("Connector Type")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Connector Type")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.connector_type}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Host/IP")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Host/IP")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.host}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Port")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Port")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.port}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Query")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Query")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.query}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Initial Query")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Initial Query")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.query_initial}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Query Index Field")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Query Index Field")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.query_index_field}                
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Query Sleep Interval")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Query Sleep Interval")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.query_sleep_interval}
+              </Grid>
+              <Grid item xs={12}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("CA")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Indicates the file(s) containing the Certificate Authority for the connection. The value must be a file path that includes the name of the file.")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {Array.isArray(connection_information.ca) && connection_information?.ca.length > 0 && connection_information.ca.map((item) => (
+                    <>{item}</>
+                ))}
+              </Grid>
+              <Grid item xs={12}>
+              <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Headers")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("Indicates the set of headers to be used.")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {Array.isArray(connection_information?.headers) && connection_information?.headers.length > 0 && connection_information.headers.map((item) => (
+                    <>{item}</>
+                ))}
+              </Grid>
+              <Grid item={true} xs={12}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("API Key")}
+                </Typography>
+                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                  <Tooltip title={t("API Key")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.api_key}
+              </Grid>
+            </Grid>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Username")}
+                </Typography>
+                <div style={{ float: "left", margin: "-1px 0 0 4px" }}>
+                  <Tooltip title={t("Username")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.username}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Passphrase")}
+                </Typography>
+                <div style={{ float: "left", margin: "-1px 0 0 4px" }}>
+                  <Tooltip title={t("Passphrase")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.passphrase}
+              </Grid>
+            </Grid>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Listen Queue")}
+                </Typography>
+                <div style={{ float: "left", margin: "-1px 0 0 4px" }}>
+                  <Tooltip title={t("Listen Queue")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.listen}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Listen Exchange")}
+                </Typography>
+                <div style={{ float: "left", margin: "-1px 0 0 4px" }}>
+                  <Tooltip title={t("Listen Exchange")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.listen_exchange}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Post Queue")}
+                </Typography>
+                <div style={{ float: "left", margin: "-1px 0 0 4px" }}>
+                  <Tooltip title={t("Post Queue")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.post_queue}
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Post Exchange")}
+                </Typography>
+                <div style={{ float: "left", margin: "-1px 0 0 4px" }}>
+                  <Tooltip title={t("Post Exchange")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {connection_information.post_queue}
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions classes={{ root: classes.dialogClosebutton }}>
+            <Button
+              variant="outlined"
+              onClick={this.handleCloseMain.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+            >
+              {t("Cancel")}
+            </Button>
+          </DialogActions>
         </Dialog>
       </>
     );
@@ -689,6 +557,7 @@ const DataSourceConnectionPopover = createFragmentContainer(
           listen_exchange
           push
           push_exchange
+          connector_type
         }
       }
     `,

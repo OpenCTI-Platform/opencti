@@ -59,7 +59,6 @@ class CyioListCardsContent extends Component {
       selectAll,
       selectedElements,
       globalCount,
-      handleDecrementedOffsetChange,
     } = this.props;
     const {
       loadedData,
