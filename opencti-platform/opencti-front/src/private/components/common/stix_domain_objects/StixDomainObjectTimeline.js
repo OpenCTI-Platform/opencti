@@ -270,6 +270,10 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   name
                   description
                 }
+                ... on AdministrativeArea {
+                  name
+                  description
+                }
                 ... on Country {
                   name
                   description
@@ -385,6 +389,10 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   description
                 }
                 ... on City {
+                  name
+                  description
+                }
+                ... on AdministrativeArea {
                   name
                   description
                 }

@@ -177,6 +177,9 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
               ... on City {
                 name
               }
+              ... on AdministrativeArea {
+                name
+              }
               ... on Country {
                 name
               }
@@ -260,6 +263,9 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                     name
                   }
                   ... on City {
+                    name
+                  }
+                  ... on AdministrativeArea {
                     name
                   }
                   ... on Country {
@@ -386,6 +392,10 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             name
                             description
                           }
+                          ... on AdministrativeArea {
+                            name
+                            description
+                          }
                           ... on Country {
                             name
                             description
@@ -487,6 +497,9 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         name
                       }
                       ... on City {
+                        name
+                      }
+                      ... on AdministrativeArea {
                         name
                       }
                       ... on Country {

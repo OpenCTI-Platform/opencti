@@ -198,6 +198,10 @@ const stixDomainObjectsListQuery = graphql`
             name
             description
           }
+          ... on AdministrativeArea {
+            name
+            description
+          }
           ... on Country {
             name
             description

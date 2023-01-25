@@ -390,6 +390,9 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
           ... on City {
             name
           }
+          ... on AdministrativeArea {
+            name
+          }
           ... on Country {
             name
           }

@@ -272,6 +272,11 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
           description
           x_opencti_aliases
         }
+        ... on AdministrativeArea {
+          name
+          description
+          x_opencti_aliases
+        }
         ... on Country {
           name
           description

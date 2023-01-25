@@ -883,6 +883,9 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                 ... on City {
                   name
                 }
+                ... on AdministrativeArea {
+                  name
+                }
                 ... on Country {
                   name
                 }
