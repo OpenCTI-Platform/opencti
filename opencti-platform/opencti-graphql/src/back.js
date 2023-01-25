@@ -8,9 +8,9 @@ import { ZipkinExporter } from '@opentelemetry/exporter-zipkin';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import { boot } from './boot';
+import { platformStart, platformStop } from './boot';
 import { ENABLED_METRICS, ENABLED_TRACING } from './config/conf';
-import { isNotEmptyField } from './database/utils';
+import { isNotEmptyField, wait } from './database/utils';
 import { meterManager, meterProvider } from './config/tracing';
 
 // -- Apply telemetry
@@ -56,4 +56,4 @@ if (ENABLED_METRICS) {
 
 // -- Start the platform
 // noinspection JSIgnoredPromiseFromCall
-boot();
+platformStart().then(() => wait(15000)).then(() => platformStop());

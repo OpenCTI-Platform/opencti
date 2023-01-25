@@ -19,8 +19,8 @@
     "start-cluster": "NODE_ENV=cluster node build/back.js",
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js",
-    "test:dev": "vitest --threads false run -c ./builder/dev/vitest.config.ts",
-    "test": "vitest --silent --no-threads run --coverage"
+    "test:dev": "vitest --no-threads run --config vitest.config.dev.ts",
+    "test": "vitest --no-threads --silent run --coverage"
   },
   "pkg": {
     "scripts": "dist/**/*.js",
@@ -143,7 +143,7 @@
     "@types/uuid": "9.0.0",
     "@typescript-eslint/eslint-plugin": "5.47.1",
     "@typescript-eslint/parser": "5.47.1",
-    "@vitest/coverage-istanbul": "0.26.2",
+    "@vitest/coverage-istanbul": "0.28.1",
     "cross-env": "7.0.3",
     "esbuild": "0.16.16",
     "esbuild-plugin-import-glob": "0.1.1",
@@ -155,10 +155,11 @@
     "eslint-plugin-jsx-a11y": "6.6.1",
     "eslint-plugin-react": "7.31.11",
     "eslint-plugin-react-hooks": "4.6.0",
+    "fast-glob": "^3.2.12",
     "graphql-tag": "2.12.6",
     "ts-loader": "9.4.2",
     "typescript": "4.9.4",
-    "vitest": "0.25.8"
+    "vitest": "0.28.1"
   },
   "resolutions": {
     "cross-fetch": "3.1.5",

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE, testContext } from '../../utils/testQuery';
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
@@ -7,17 +7,9 @@ import { elAggregationCount } from '../../../src/database/engine';
 import { convertStoreToStix, convertTypeToStixType } from '../../../src/database/stix-converter';
 import { utcDate } from '../../../src/utils/format';
 import { PORT } from '../../../src/config/conf';
-import httpServer from '../../../src/http/httpServer';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
 
 describe('Live streams tests', () => {
-  beforeAll(async () => {
-    await httpServer.start();
-  });
-  afterAll(async () => {
-    await httpServer.shutdown();
-  });
-
   const getElementsCounting = async () => {
     const data = {};
     const stixCoreAgg = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });

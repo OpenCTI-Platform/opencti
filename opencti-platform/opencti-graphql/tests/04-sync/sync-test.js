@@ -22,7 +22,6 @@ import {
 import { elAggregationCount } from '../../src/database/engine';
 import { execChildPython } from '../../src/python/pythonBridge';
 import { checkInstanceDiff } from '../utils/testStream';
-import { shutdownModules, startModules } from '../../src/modules';
 import { FROM_START, now } from '../../src/utils/format';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
@@ -140,12 +139,10 @@ describe('Database sync testing', () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
-      await startModules();
       const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, RAW_EVENTS_SIZE, '0', 'None'];
       const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      await shutdownModules();
       // Post check
       await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport);
     },
@@ -168,11 +165,9 @@ describe('Database sync testing', () => {
         now(),
         'live',
       ];
-      await startModules();
       const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      await shutdownModules();
       // Post check
       await checkPostSyncContent(SYNC_LIVE_START_REMOTE_URI, objectMap, relMap, initStixReport);
     },
@@ -184,7 +179,6 @@ describe('Database sync testing', () => {
     async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
-      await startModules();
       // Upload a file
       const file = {
         createReadStream: () => createReadStream('./tests/data/DATA-TEST-STIX2_v2.json'),
@@ -209,8 +203,6 @@ describe('Database sync testing', () => {
       await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
       // Wait 2 min sync to consume all the stream
       await wait(120000);
-      // Stop and check
-      await shutdownModules();
       // Post check
       await checkPostSyncContent(SYNC_DIRECT_START_REMOTE_URI, objectMap, relMap, initStixReport);
       // Check file availability
@@ -227,7 +219,6 @@ describe('Database sync testing', () => {
   );
 
   const backupFiles = async () => {
-    await startModules();
     const BACKUP_CONFIG = {
       opencti: {
         url: SYNC_TEST_REMOTE_URI,
@@ -259,7 +250,6 @@ describe('Database sync testing', () => {
         return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
       }
     );
-    await shutdownModules();
   };
   const restoreFile = async () => {
     const RESTORE_CONFIG = {

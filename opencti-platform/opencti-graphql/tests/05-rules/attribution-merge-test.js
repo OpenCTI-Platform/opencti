@@ -1,5 +1,4 @@
 import { expect, it, describe } from 'vitest';
-import { shutdownModules, startModules } from '../../src/modules';
 import { addThreatActor } from '../../src/domain/threatActor';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { createRelation, internalDeleteElementById, mergeEntities } from '../../src/database/middleware';
@@ -19,8 +18,6 @@ describe('Attribute use rule when merging', () => {
   it(
     'Should rule successfully handle merge',
     async () => {
-      // Start
-      await startModules();
       // ---- Create the dataset
       // 01. Create a threat actor
       const threat = await addThreatActor(testContext, SYSTEM_USER, { name: 'MY TREAT ACTOR' });
@@ -65,8 +62,6 @@ describe('Attribute use rule when merging', () => {
       await disableRule(AttributionUseRule.id);
       // Clean
       await internalDeleteElementById(testContext, SYSTEM_USER, threat.internal_id);
-      // Stop
-      await shutdownModules();
     },
     FIVE_MINUTES
   );

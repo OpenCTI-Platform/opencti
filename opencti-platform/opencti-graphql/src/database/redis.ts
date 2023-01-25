@@ -46,7 +46,7 @@ export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:nam
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => readFileSync(path));
-const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
+export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 
 export const EVENT_CURRENT_VERSION = '4';
 const MAX_RETRY_COMMAND = 10;
@@ -93,8 +93,9 @@ const clusterOptions = (): ClusterOptions => ({
   showFriendlyErrorStack: DEV_MODE,
 });
 
-const createRedisClient = (provider: string, isCluster: boolean): Cluster | Redis => {
+export const createRedisClient = (provider: string): Cluster | Redis => {
   let client: Cluster | Redis;
+  const isCluster = conf.get('redis:mode') === 'cluster';
   if (isCluster) {
     const startupNodes = conf.get('redis:hostnames');
     client = new Redis.Cluster(startupNodes, clusterOptions());
@@ -109,24 +110,23 @@ const createRedisClient = (provider: string, isCluster: boolean): Cluster | Redi
   return client;
 };
 
-// Initialization of clients
-const redisClients: {
-  base: Cluster | Redis | undefined,
-  lock: Cluster | Redis | undefined,
-  pubsub?: RedisPubSub | undefined,
-} = {
-  base: undefined,
-  lock: undefined,
-  pubsub: undefined,
-};
+// region Initialization of clients
+type RedisConnection = Cluster | Redis | undefined;
+interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub?: RedisPubSub | undefined }
+const redisClients: RedisClients = { base: undefined, lock: undefined, pubsub: undefined };
 export const initializeRedisClients = () => {
   const isCluster = conf.get('redis:mode') === 'cluster';
   logApp.info(`[REDIS] Initializing redis (${isCluster ? 'cluster' : 'Single'} mode) clients`);
-  redisClients.base = createRedisClient('Client base', isCluster);
-  redisClients.lock = createRedisClient('Client lock', isCluster);
-  const clientPublisher: Cluster | Redis = createRedisClient('Pubsub publisher', isCluster);
-  const clientSubscriber: Cluster | Redis = createRedisClient('Pubsub subscriber', isCluster);
+  redisClients.base = createRedisClient('Client base');
+  redisClients.lock = createRedisClient('Client lock');
+  const clientPublisher: Cluster | Redis = createRedisClient('Pubsub publisher');
+  const clientSubscriber: Cluster | Redis = createRedisClient('Pubsub subscriber');
   redisClients.pubsub = new RedisPubSub({ publisher: clientPublisher as any, subscriber: clientSubscriber as any });
+};
+export const shutdownRedisClients = async () => {
+  await redisClients.base?.quit().catch(() => { /* Dont care */ });
+  await redisClients.lock?.quit().catch(() => { /* Dont care */ });
+  await redisClients.pubsub?.close().catch(() => { /* Dont care */ });
 };
 // endregion
 
@@ -176,6 +176,15 @@ const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object
 const updateObjectCounterRaw = async (tx: ChainableCommander, id: string, field: string, number: number) => {
   await tx.hincrby(id, field, number);
 };
+const setInList = async (listId: string, keyId: string, expirationTime: number) => {
+  await redisTx(getClientBase(), async (tx) => {
+    // add/update the instance with its creation date in the ordered list of instances
+    const time = new Date().getTime();
+    tx.zadd(listId, time, keyId);
+    // remove the too old keys from the list of instances
+    tx.zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
+  });
+};
 const delKeyWithList = async (keyId: string, listIds: string[]) => {
   const keyPromise = getClientBase().del(keyId);
   const listsPromise = listIds.map((listId) => getClientBase().zrem(listId, keyId));
@@ -183,13 +192,7 @@ const delKeyWithList = async (keyId: string, listIds: string[]) => {
 };
 const setKeyWithList = async (keyId: string, listIds: string[], keyData: any, expirationTime: number) => {
   const keyPromise = getClientBase().set(keyId, JSON.stringify(keyData), 'EX', expirationTime);
-  const listsPromise = listIds.map((listId) => redisTx(getClientBase(), async (tx) => {
-    // add/update the instance with its creation date in the ordered list of instances
-    const time = new Date().getTime();
-    tx.zadd(listId, time, keyId);
-    // remove the too old keys from the list of instances
-    tx.zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
-  }));
+  const listsPromise = listIds.map((listId) => setInList(listId, keyId, expirationTime));
   await Promise.all([keyPromise, ...listsPromise]);
   return keyData;
 };
@@ -235,10 +238,12 @@ export const getSessions = () => {
   return keysFromList('platform_sessions');
 };
 export const extendSession = async (sessionId: string, sess: any, extension: number) => {
-  const sessionExtension = await getClientBase().multi()
+  const sessionExtensionPromise = getClientBase().multi()
     .set(sessionId, JSON.stringify(sess))
     .expire(sessionId, extension)
     .exec();
+  const refreshListPromise = setInList('platform_sessions', sessionId, extension);
+  const [sessionExtension] = await Promise.all([sessionExtensionPromise, refreshListPromise]);
   if (sessionExtension) {
     const [, expireCommand] = Array.from(sessionExtension);
     return expireCommand[1];
@@ -314,15 +319,15 @@ const checkParticipantsDeletion = async (participantIds: Array<string>) => {
     throw FunctionalError('Cant update an element based on deleted dependencies', { deletedParticipantsIds });
   }
 };
-export const lockResource = async (resources: Array<string>, automaticExtension = true) => {
+const defaultLockOpts = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count') };
+export const lockResource = async (resources: Array<string>, opts: { automaticExtension?: boolean, retryCount?: number } = defaultLockOpts) => {
   let timeout: NodeJS.Timeout | undefined;
   const locks = R.uniq(resources).map((id) => `{locks}:${id}`);
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
-  const retryCount = conf.get('app:concurrency:retry_count');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
   const maxTtl = conf.get('app:concurrency:max_ttl');
-  const redlock = new Redlock([getClientLock()], { retryCount, retryDelay, retryJitter });
+  const redlock = new Redlock([getClientLock()], { retryCount: opts.retryCount, retryDelay, retryJitter });
   // Get the lock
   const lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
   let expiration = Date.now() + maxTtl;
@@ -330,7 +335,7 @@ export const lockResource = async (resources: Array<string>, automaticExtension 
     try {
       await lock.extend(maxTtl);
       expiration = Date.now() + maxTtl;
-      if (automaticExtension) {
+      if (opts.automaticExtension) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         queue();
       }
@@ -342,7 +347,7 @@ export const lockResource = async (resources: Array<string>, automaticExtension 
     const timeToWait = expiration - Date.now() - automaticExtensionThreshold;
     timeout = setTimeout(() => extend(), timeToWait);
   };
-  if (automaticExtension) {
+  if (opts.automaticExtension) {
     queue();
   }
   // If lock succeed we need to be sure that delete occurred just before the resolution/lock
@@ -552,7 +557,6 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
     throw DatabaseError('Error in store delete event', { error: e });
   }
 };
-export const deleteStream = () => getClientBase().call('DEL', REDIS_STREAM_NAME);
 
 const mapStreamToJS = ([id, data]: any): StreamEvent => {
   const count = data.length / 2;
@@ -582,7 +586,7 @@ const processStreamResult = async (results: Array<any>, callback: any, withInter
   return lastEventId;
 };
 
-export const STREAM_BATCH_TIME = 15000;
+export const STREAM_BATCH_TIME = 5000;
 const MAX_RANGE_MESSAGES = 100;
 
 export interface StreamProcessor {
@@ -645,9 +649,8 @@ export const createStreamProcessor = (user: AuthUser, provider: string, withInte
         fromStart = 'live';
       }
       startEventId = fromStart === 'live' ? '$' : fromStart;
-      const isCluster = conf.get('redis:mode') === 'cluster';
       logApp.info(`[STREAM] Starting stream processor at ${startEventId} for ${provider}`);
-      client = await createRedisClient(provider, isCluster); // Create client for this processing loop
+      client = await createRedisClient(provider); // Create client for this processing loop
       processingLoopPromise = processingLoop();
     },
     shutdown: async () => {

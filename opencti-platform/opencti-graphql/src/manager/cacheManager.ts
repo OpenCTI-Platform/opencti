@@ -92,7 +92,7 @@ const initCacheManager = () => {
     },
     shutdown: async () => {
       if (subscribeIdentifier) {
-        subscribeIdentifier.unsubscribe();
+        try { subscribeIdentifier.unsubscribe(); } catch { /* dont care */ }
       }
       return true;
     }

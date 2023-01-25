@@ -1,23 +1,13 @@
-import { beforeAll, afterAll, vi } from 'vitest';
+import { beforeAll, afterAll } from 'vitest';
 import cacheManager from '../../src/manager/cacheManager';
-import { initializeSession } from '../../src/database/session';
-import { initializeRedisClients } from '../../src/database/redis';
-
-vi.mock('../../src/database/migration', () => ({
-  applyMigration: () => Promise.resolve(),
-  lastAvailableMigrationTime: () => new Date().getTime()
-}));
+import { initializeRedisClients, shutdownRedisClients } from '../../src/database/redis';
 
 beforeAll(async () => {
   initializeRedisClients();
-  initializeSession();
   await cacheManager.start();
 });
 
 afterAll(async () => {
-  try {
-    await cacheManager.shutdown();
-  } catch {
-    // Dont care
-  }
+  await cacheManager.shutdown();
+  await shutdownRedisClients();
 });

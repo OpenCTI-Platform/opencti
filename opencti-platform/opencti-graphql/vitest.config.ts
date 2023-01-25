@@ -1,12 +1,16 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
+import type { PluginOption } from 'vite';
+import vitestMigrationPlugin from './builder/plugin/vitestMigrationPlugin';
 
-export default defineConfig({
-  plugins: [graphql()],
+export const buildTestConfig = (include: string[]) => defineConfig({
+  plugins: [graphql() as PluginOption, vitestMigrationPlugin() as PluginOption],
   test: {
-    include: ['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    include,
     testTimeout: 1200000,
+    teardownTimeout: 20000,
+    globalSetup: ['./tests/utils/globalSetup.js'],
     setupFiles: ['./tests/utils/testSetup.js'],
     coverage: {
       provider: 'istanbul',
@@ -28,3 +32,5 @@ export default defineConfig({
     },
   },
 });
+
+export default buildTestConfig(['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);

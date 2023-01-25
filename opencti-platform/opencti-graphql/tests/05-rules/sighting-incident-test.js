@@ -5,7 +5,6 @@
 import { expect, it, describe } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
-import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences } from '../utils/rule-utils';
 import { patchAttribute } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
@@ -31,7 +30,6 @@ describe('Sighting incident rule', () => {
     'Should rule successfully activated',
     async () => {
       // ---- 01. Test live behaviors
-      await startModules();
       await activateRule(RuleSightingIncident.id);
       // Check default state
       // All sighted indicators are revoked
@@ -61,8 +59,6 @@ describe('Sighting incident rule', () => {
       // Disable the rule
       await disableRule(RuleSightingIncident.id);
       await assertInferencesSize(ENTITY_TYPE_INCIDENT, 0);
-      // Stop modules
-      await shutdownModules();
     },
     FIVE_MINUTES
   );

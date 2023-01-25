@@ -26,7 +26,7 @@ const subscriptionHandler = async () => {
   let lock;
   try {
     // Lock the manager
-    lock = await lockResource([SUBSCRIPTION_MANAGER_KEY]);
+    lock = await lockResource([SUBSCRIPTION_MANAGER_KEY], { retryCount: 0 });
     running = true;
     const context = executionContext('subscription_manager');
     // Execute the cleaning

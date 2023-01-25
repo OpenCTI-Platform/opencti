@@ -1,6 +1,5 @@
 import { expect, it, describe } from 'vitest';
 import { FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
-import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import {
   createRelation,
@@ -45,8 +44,6 @@ describe('Report refs identity rule', () => {
       // -> REPORT - ref - IDENTITY F
       // 4. Remove a ref from report
       // 5. Remove a part of relation
-
-      await startModules();
       // Delete all reports
       const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT], { connectionFormat: false });
       await elDeleteElements(testContext, SYSTEM_USER, reports, storeLoadByIdWithRefs);
@@ -181,8 +178,6 @@ describe('Report refs identity rule', () => {
       expect(afterDisableRelations.length).toBe(0);
       // Delete all creation
       await elDeleteElements(testContext, SYSTEM_USER, createdElements, storeLoadByIdWithRefs);
-      // Stop modules
-      await shutdownModules();
     },
     FIVE_MINUTES
   );

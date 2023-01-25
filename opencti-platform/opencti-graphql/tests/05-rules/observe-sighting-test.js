@@ -5,7 +5,6 @@ import { expect, it, describe } from 'vitest';
 import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
 import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSightingRule';
 import { RULE_PREFIX } from '../../src/schema/general';
-import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import { createRelation, internalDeleteElementById, patchAttribute } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
@@ -34,7 +33,6 @@ describe('Observed sighting rule', () => {
     'Should rule successfully activated',
     async () => {
       // ---- 01. Test live behaviors
-      await startModules();
       await activateRule(RuleObserveSighting.id);
       // Check default state
       await assertInferencesSize(0);
@@ -90,8 +88,6 @@ describe('Observed sighting rule', () => {
       await assertInferencesSize(0);
       // Disable the rule
       await disableRule(RuleObserveSighting.id);
-      // Stop modules
-      await shutdownModules();
     },
     FIVE_MINUTES
   );
