@@ -4,11 +4,11 @@ import { isStixCyberObservableRelationship } from './stixCyberObservableRelation
 import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isInternalRelationship } from './internalRelationship';
 
-export const isStixRelationShipExceptMeta = (type) => isStixCoreRelationship(type) || isStixSightingRelationship(type);
+export const isStixRelationShipExceptMeta = (type: string) => isStixCoreRelationship(type) || isStixSightingRelationship(type);
 
-export const isStixRelationship = (type) => isStixCoreRelationship(type)
+export const isStixRelationship = (type: string) => isStixCoreRelationship(type)
   || isStixSightingRelationship(type)
   || isStixCyberObservableRelationship(type)
   || isStixMetaRelationship(type);
 
-export const isBasicRelationship = (type) => isInternalRelationship(type) || isStixRelationship(type);
+export const isBasicRelationship = (type: string) => isInternalRelationship(type) || isStixRelationship(type);

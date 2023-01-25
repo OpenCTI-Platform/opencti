@@ -11,7 +11,7 @@ import { listThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
-import { isDictionaryAttribute, isMultipleAttribute } from '../schema/fieldDataAdapter';
+import { isDictionaryAttr, isMultipleAttr } from '../schema/schema-register';
 
 const errorConverter = (e: any) => {
   const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'))(e.data);
@@ -72,9 +72,9 @@ const initHttpRollingFeeds = (app: Express.Application) => {
             const baseKey = isComplexKey ? mapping.attribute.split('.')[0] : mapping.attribute;
             const data = element[baseKey];
             if (isNotEmptyField(data)) {
-              if (isMultipleAttribute(baseKey)) {
+              if (isMultipleAttr(baseKey)) {
                 dataElements.push(dataFormat(feed.separator, data.join(',')));
-              } else if (isDictionaryAttribute(baseKey)) {
+              } else if (isDictionaryAttr(baseKey)) {
                 if (isComplexKey) {
                   const [, innerKey] = mapping.attribute.split('.');
                   const dictInnerData = data[innerKey.toUpperCase()];

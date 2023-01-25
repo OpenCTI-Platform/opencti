@@ -12,6 +12,7 @@ import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
+import EntitySettingAttributesConfiguration from './EntitySettingAttributesConfiguration';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -49,6 +50,11 @@ export const subTypeFragment = graphql`
         }
       }
     }
+    mandatoryAttributes {
+      name
+      builtIn
+      mandatory
+    }
   }
 `;
 
@@ -65,48 +71,38 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
 
   return (
     <>
-      <Typography variant="h1" gutterBottom={true}>
-        {t(`entity_${subType.label}`)}
-      </Typography>
-      <Grid container={true} spacing={3} style={{ paddingTop: 10 }}>
-        <Grid item={true} xs={6}>
-          <div>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Configuration')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
-              {queryRef && (
-                <React.Suspense
-                  fallback={<Loader variant={LoaderVariant.inElement} />}
-                >
-                  <EntitySetting queryRef={queryRef} />
-                </React.Suspense>
-              )}
-              <div style={{ marginTop: 10 }}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {`${t('Workflow of')} ${t(`entity_${subType.label}`)}`}
-                  <SubTypeStatusPopover subTypeId={subType.id} />
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <Typography variant="h1" gutterBottom={true}>
+            {t(`entity_${subType.label}`)}
+          </Typography>
+          <Grid container={true} spacing={3} style={{ paddingTop: 10 }}>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography variant="h4" gutterBottom={true}>
+                  {t('Configuration')}
                 </Typography>
+                <Paper classes={{ root: classes.paper }} variant="outlined">
+                  <EntitySetting queryRef={queryRef} />
+                  <div style={{ marginTop: 10 }}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {`${t('Workflow of')} ${t(`entity_${subType.label}`)}`}
+                      <SubTypeStatusPopover subTypeId={subType.id} />
+                    </Typography>
+                  </div>
+                  <ItemStatusTemplate
+                    statuses={statuses}
+                    disabled={!subType.workflowEnabled}
+                  />
+                </Paper>
               </div>
-              <ItemStatusTemplate
-                statuses={statuses}
-                disabled={!subType.workflowEnabled}
-              />
-            </Paper>
-          </div>
-        </Grid>
-        {/* <Grid item={true} xs={6}> */}
-        {/*  <div style={{ height: '100%' }}> */}
-        {/*    <Typography variant="h4" gutterBottom={true}> */}
-        {/*      /!* TODO: I18n *!/ */}
-        {/*      {t('Mandatory attributes')} */}
-        {/*    </Typography> */}
-        {/*    <Paper classes={{ root: classes.paper }} variant="outlined"> */}
-        {/*      <span>Mandatory attributes</span> */}
-        {/*    </Paper> */}
-        {/*  </div> */}
-        {/* </Grid> */}
-      </Grid>
+            </Grid>
+            <EntitySettingAttributesConfiguration queryRef={queryRef} subType={subType}/>
+          </Grid>
+        </React.Suspense>
+      )}
     </>
   );
 };

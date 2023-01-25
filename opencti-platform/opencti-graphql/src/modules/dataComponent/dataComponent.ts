@@ -15,8 +15,9 @@ import { RELATION_DETECTS } from '../../schema/stixCoreRelationship';
 import { REL_EXTENDED } from '../../database/stix';
 import { ATTRIBUTE_DATA_SOURCE, RELATION_DATA_SOURCE } from './dataComponent-domain';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { ModuleRegisterDefinition, moduleRegisterDefinition } from '../../schema/module-register';
 
-const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, StixDataComponent> = {
+const DATA_COMPONENT_DEFINITION: ModuleRegisterDefinition<StoreEntityDataComponent, StixDataComponent> = {
   type: {
     id: 'dataComponents',
     name: ENTITY_TYPE_DATA_COMPONENT,
@@ -38,9 +39,9 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
-    { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
   ],
   relations: [
     {
@@ -68,4 +69,4 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
   converter: convertDataComponentToStix
 };
 
-registerDefinition(DATA_COMPONENT_DEFINITION);
+moduleRegisterDefinition(DATA_COMPONENT_DEFINITION);

@@ -39,10 +39,11 @@ export const entitySettingsQuery = graphql`
 export const entitySettingFragment = graphql`
   fragment EntitySetting_entitySetting on EntitySetting {
     id
-    enforce_reference
+    target_type
     platform_entity_files_ref
     platform_hidden_type
-    target_type
+    enforce_reference
+    attributes_configuration
   }
 `;
 
@@ -131,8 +132,7 @@ const EntitySetting = ({
                   onChange={() => handleSubmitField(
                     'platform_entity_files_ref',
                     !entitySetting.platform_entity_files_ref,
-                  )
-                  }
+                  )}
                 />
               }
               label={t('Enable this feature')}
@@ -162,8 +162,7 @@ const EntitySetting = ({
                   onChange={() => handleSubmitField(
                     'platform_hidden_type',
                     !entitySetting.platform_hidden_type,
-                  )
-                  }
+                  )}
                 />
               }
               label={t('Enable this feature')}
@@ -195,8 +194,7 @@ const EntitySetting = ({
                   onChange={() => handleSubmitField(
                     'enforce_reference',
                     !entitySetting.enforce_reference,
-                  )
-                  }
+                  )}
                 />
               }
               label={t('Enable this feature')}

@@ -20,7 +20,7 @@ export const INTERNAL_RELATIONSHIPS = [
   RELATION_HAS_REFERENCE,
 ];
 schemaTypes.register(ABSTRACT_INTERNAL_RELATIONSHIP, INTERNAL_RELATIONSHIPS);
-export const isInternalRelationship = (type) => R.includes(type, INTERNAL_RELATIONSHIPS);
+export const isInternalRelationship = (type: string) => R.includes(type, INTERNAL_RELATIONSHIPS);
 
 export const internalRelationshipsAttributes = {
   [RELATION_PARTICIPATE_TO]: [

@@ -8,7 +8,6 @@ import {
   INPUT_MARKINGS,
   INPUT_OBJECTS,
   INTERNAL_IDS_ALIASES,
-  RULE_PREFIX,
 } from './general';
 import { isDatedInternalObject } from './internalObject';
 import { isStixCoreObject } from './stixCoreObject';
@@ -177,15 +176,6 @@ export const booleanAttributes = [
   'stream_live',
 ];
 export const dictAttributes = ['hashes', 'startup_info'];
-export const numericOrBooleanAttributes = () => [...numericAttributes, ...booleanAttributes];
-
-export const isJsonAttribute = (key: string): boolean => jsonAttributes.includes(key);
-export const isDictionaryAttribute = (key: string): boolean => dictAttributes.includes(key);
-export const isBooleanAttribute = (key: string): boolean => booleanAttributes.includes(key);
-export const isNumericAttribute = (key: string): boolean => numericAttributes.includes(key);
-export const isDateAttribute = (key: string): boolean => dateAttributes.includes(key);
-export const isMultipleAttribute = (key: string): boolean => key.startsWith(RULE_PREFIX) || multipleAttributes.includes(key);
-export const isRuntimeAttribute = (key: string): boolean => runtimeAttributes.includes(key);
 
 // Extract all not fuzzy algorithm values from a hash object
 export const extractNotFuzzyHashValues = (hashes: Record<string, string>): Array<string> => {

@@ -21,6 +21,7 @@ import { DataComponentEditionOverviewFieldPatchMutation } from './__generated__/
 import { DataComponentEditionOverviewFocusMutation } from './__generated__/DataComponentEditionOverviewFocusMutation.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
+import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
 
 const dataComponentMutationFieldPatch = graphql`
   mutation DataComponentEditionOverviewFieldPatchMutation(
@@ -114,8 +115,8 @@ const DataComponentEditionOverviewFragment = graphql`
   }
 `;
 
-const dataComponentValidation = (t: (message: string) => string) => Yup.object()
-  .shape({
+const dataComponentValidation = (t: (message: string) => string) => {
+  let shape = {
     name: Yup.string()
       .required(t('This field is required')),
     description: Yup.string()
@@ -126,7 +127,12 @@ const dataComponentValidation = (t: (message: string) => string) => Yup.object()
       .required(t('This field is required')),
     x_opencti_workflow_id: Yup.object(),
     confidence: Yup.number(),
-  });
+  };
+
+  shape = useCustomYup('Data-Component', shape, t);
+
+  return Yup.object().shape(shape);
+};
 
 interface DataComponentEditionOverviewComponentProps {
   data: DataComponentEditionOverview_dataComponent$key

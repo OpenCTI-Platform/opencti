@@ -145,20 +145,13 @@ import {
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
-  booleanAttributes,
-  dateAttributes,
   dateForEndAttributes,
   dateForLimitsAttributes,
   dateForStartAttributes,
   extractNotFuzzyHashValues,
-  isDateAttribute,
-  isDictionaryAttribute,
   isModifiedObject,
-  isMultipleAttribute,
-  isNumericAttribute,
   isUpdatedAtObject,
   noReferenceAttributes,
-  numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
@@ -235,7 +228,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesFromCache, getEntitiesMapFromCache } from './cache';
+import { getEntitiesFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import {
@@ -244,7 +237,16 @@ import {
   isEntityFieldAnOpenVocabulary,
   updateElasticVocabularyValue
 } from '../modules/vocabulary/vocabulary-utils';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import {
+  isBooleanAttr,
+  isDateAttr,
+  isDictionaryAttr,
+  isMultipleAttr,
+  isNumericAttr,
+  schemaDefinition
+} from '../schema/schema-register';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { validateInput } from './middleware-utils';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -266,15 +268,7 @@ export const batchLoader = (loader) => {
     },
   };
 };
-export const queryAttributes = async (types) => {
-  const attributes = R.uniq(types.map((type) => schemaTypes.getAttributes(type)).flat());
-  const sortByLabel = R.sortBy(R.toLower);
-  const finalResult = R.pipe(
-    sortByLabel,
-    R.map((n) => ({ node: { id: n, key: types[0], value: n } }))
-  )(attributes);
-  return buildPagination(0, null, finalResult, finalResult.length);
-};
+
 const checkIfInferenceOperationIsValid = (user, element) => {
   const isRuleManaged = isRuleUser(user);
   const ifElementInferred = isInferredIndex(element._index);
@@ -802,7 +796,7 @@ const updatedInputsToData = (inputs) => {
   const inputPairs = R.map((input) => {
     const { key, value } = input;
     let val = value;
-    if (!isMultipleAttribute(key) && val) {
+    if (!isMultipleAttr(key) && val) {
       val = R.head(value);
     }
     return { [key]: val };
@@ -827,10 +821,10 @@ const partialInstanceWithInputs = (instance, inputs) => {
 };
 const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   const { key, value, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
-  const isMultiple = isMultipleAttribute(key);
+  const isMultiple = isMultipleAttr(key);
   let finalVal;
   let finalKey = key;
-  if (isDictionaryAttribute(key)) {
+  if (isDictionaryAttr(key)) {
     throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
   }
   // region rebuild input values consistency
@@ -841,7 +835,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       throw UnsupportedError('Multiple path follow is not supported', { rawInput });
     }
     const [baseKey, targetKey] = splitKey;
-    if (!isDictionaryAttribute(baseKey)) {
+    if (!isDictionaryAttr(baseKey)) {
       throw UnsupportedError('Path update only available for dictionary attributes', { rawInput });
     }
     finalKey = baseKey;
@@ -871,7 +865,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     }
   } else {
     finalVal = value;
-    const isDate = dateAttributes.includes(key);
+    const isDate = isDateAttr(key);
     const evaluateValue = value ? R.head(value) : null;
     if (isDate) {
       if (isEmptyField(evaluateValue)) {
@@ -893,7 +887,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     finalVal = cleanStixIds(finalVal);
   }
   // endregion
-  if (dateAttributes.includes(finalKey)) {
+  if (isDateAttr(finalKey)) {
     const finalValElement = R.head(finalVal);
     if (isEmptyField(finalValElement)) {
       finalVal = [null];
@@ -1169,7 +1163,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
-  const attributes = schemaTypes.getAttributes(targetType);
+  const attributes = schemaDefinition.getAttributeNames(targetType);
   const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
   for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
     const targetFieldKey = targetFields[fieldIndex];
@@ -1182,7 +1176,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     const sourceFieldValue = takenFrom[targetFieldKey];
     const fieldValues = R.flatten(sourceEntities.map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isDictionaryAttribute(targetFieldKey)) {
+    if (isDictionaryAttr(targetFieldKey)) {
       // Special case of dictionary
       const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
       const dictInputs = Object.entries(mergedDict).map(([k, v]) => ({
@@ -1190,7 +1184,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
         value: [v],
       }));
       updateAttributes.push(...dictInputs);
-    } else if (isMultipleAttribute(targetFieldKey)) {
+    } else if (isMultipleAttr(targetFieldKey)) {
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
       if (targetFieldKey === ATTRIBUTE_ALIASES || targetFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
@@ -1337,7 +1331,7 @@ const checkAttributeConsistency = (entityType, key) => {
     const [firstPart] = key.split('.');
     masterKey = firstPart;
   }
-  const entityAttributes = schemaTypes.getAttributes(entityType);
+  const entityAttributes = schemaDefinition.getAttributeNames(entityType);
   if (!R.includes(masterKey, entityAttributes)) {
     throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}`);
   }
@@ -1372,7 +1366,7 @@ const prepareAttributes = (instance, elements) => {
   const instanceType = instance.entity_type;
   return elements.map((input) => {
     // Check integer
-    if (R.includes(input.key, numericAttributes)) {
+    if (isNumericAttr(input.key)) {
       return {
         key: input.key,
         value: R.map((value) => {
@@ -1382,7 +1376,7 @@ const prepareAttributes = (instance, elements) => {
       };
     }
     // Check boolean
-    if (R.includes(input.key, booleanAttributes)) {
+    if (isBooleanAttr(input.key)) {
       return {
         key: input.key,
         value: R.map((value) => {
@@ -1421,7 +1415,7 @@ const getPreviousInstanceValue = (key, instance) => {
   if (isEmptyField(data)) {
     return undefined;
   }
-  return isMultipleAttribute(key) ? data : [data];
+  return isMultipleAttr(key) ? data : [data];
 };
 
 const updateDateRangeValidation = (instance, inputs, from, to) => {
@@ -1662,7 +1656,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
-  // Pre check
+  // Region - Pre-Check
   const elementsByKey = R.groupBy((e) => e.key, updates);
   const multiOperationKeys = Object.values(elementsByKey).filter((n) => n.length > 1);
   if (multiOperationKeys.length > 1) {
@@ -1683,6 +1677,11 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
     throw FunctionalError('Cant find element references for commit', { id, references: opts.references });
   }
+  // Validate input attributes
+  const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
+  await validateInput(context, user, initial.entity_type, inputs, entitySetting, initial);
+  // Endregion
+
   // Individual check
   const { bypassIndividualUpdate } = opts;
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
@@ -1696,9 +1695,8 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     return { element: initial };
   }
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
-  const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
   const keys = R.map((t) => t.key, attributes);
-  if (entitySettings.get(initial.entity_type)?.enforce_reference || (entitySettings.get('stix-core-relationship')?.enforce_reference && isStixCoreRelationship(initial.entity_type))) {
+  if (entitySetting?.enforce_reference) {
     const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
     if (!isNoReferenceKey && isEmptyField(opts.references)) {
       throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
@@ -1985,21 +1983,21 @@ const createRuleDataPatch = (instance) => {
     if (values.length > 0) {
       const operation = RULES_ATTRIBUTES_BEHAVIOR.getOperation(attribute);
       if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.AVG) {
-        if (!isNumericAttribute(attribute)) {
+        if (!isNumericAttr(attribute)) {
           throw UnsupportedError('Can apply avg on non numeric attribute');
         }
         patch[attribute] = computeAverage(values);
       }
       if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.SUM) {
-        if (!isNumericAttribute(attribute)) {
+        if (!isNumericAttr(attribute)) {
           throw UnsupportedError('Can apply sum on non numeric attribute');
         }
         patch[attribute] = R.sum(values);
       }
       if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.MIN) {
-        if (isNumericAttribute(attribute)) {
+        if (isNumericAttr(attribute)) {
           patch[attribute] = R.min(values);
-        } else if (isDateAttribute(attribute)) {
+        } else if (isDateAttr(attribute)) {
           const timeValues = convertRulesTimeValues(values);
           patch[attribute] = moment.min(timeValues).utc().toISOString();
         } else {
@@ -2007,9 +2005,9 @@ const createRuleDataPatch = (instance) => {
         }
       }
       if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.MAX) {
-        if (isNumericAttribute(attribute)) {
+        if (isNumericAttr(attribute)) {
           patch[attribute] = R.max(values);
-        } else if (isDateAttribute(attribute)) {
+        } else if (isDateAttr(attribute)) {
           const timeValues = convertRulesTimeValues(values);
           patch[attribute] = moment.max(timeValues).utc().toISOString();
         } else {
@@ -2177,7 +2175,7 @@ const upsertIdentifiedFields = async (context, user, element, input, fields) => 
       const fieldKey = fields[fieldIndex];
       const inputData = input[fieldKey];
       if (isNotEmptyField(inputData)) {
-        if (isDictionaryAttribute(fieldKey)) {
+        if (isDictionaryAttr(fieldKey)) {
           Object.entries(inputData).forEach(([k, v]) => {
             patch[`${fieldKey}.${k}`] = v;
           });
@@ -2341,7 +2339,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     }
   }
   // Upsert entities
-  const upsertAttributes = schemaTypes.getUpsertAttributes(type);
+  const upsertAttributes = schemaDefinition.getUpsertAttributeNames(type);
   if (isInternalObject(type) && forceUpdate) {
     const {
       upsertImpacted,
@@ -2663,8 +2661,8 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   const { fromId, toId, relationship_type: relationshipType } = input;
   // Enforce reference controls
   if (isStixCoreRelationship(relationshipType)) {
-    const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
-    if (entitySettings.get('stix-core-relationship')?.enforce_reference) {
+    const entitySetting = await getEntitySettingFromCache(context, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    if (entitySetting?.enforce_reference) {
       if (isEmptyField(input.externalReferences)) {
         throw ValidationError('externalReferences', {
           message: 'You must provide at least one external reference to create a relationship',
@@ -3009,15 +3007,19 @@ const userHaveCapability = (user, capability) => {
   return userCapabilities.includes(BYPASS) || userCapabilities.includes(capability);
 };
 const createEntityRaw = async (context, user, input, type, opts = {}) => {
-  const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
+  // Region - Pre-Check
+  const entitySetting = await getEntitySettingFromCache(context, type);
   const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
-  if (!isAllowedToByPass && entitySettings.get(type)?.enforce_reference) {
+  if (!isAllowedToByPass && entitySetting?.enforce_reference) {
     if (isEmptyField(input.externalReferences)) {
       throw ValidationError('externalReferences', {
         message: 'You must provide at least one external reference for this type of entity',
       });
     }
   }
+  await validateInput(context, user, type, input, entitySetting);
+  // Endregion
+
   const { fromRule } = opts;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, type);

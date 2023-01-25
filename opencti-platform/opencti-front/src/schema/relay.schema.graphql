@@ -611,6 +611,13 @@ type SubType {
   statuses: StatusConnection
   workflowEnabled: Boolean
   settings: EntitySetting
+  mandatoryAttributes: [SubTypeAttribute!]!
+}
+
+type SubTypeAttribute {
+  name: String!
+  builtIn: Boolean!
+  mandatory: Boolean!
 }
 
 enum StatusTemplateOrdering {
@@ -9755,8 +9762,13 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean
   platform_hidden_type: Boolean
   enforce_reference: Boolean
+  attributes_configuration: String
   created_at: DateTime!
   updated_at: DateTime!
+}
+
+type AttributeConfiguration {
+  name: String
 }
 
 enum EntitySettingsOrdering {
