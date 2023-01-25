@@ -17,6 +17,7 @@ import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.gr
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
+import useExport from '../../../utils/hooks/useExport';
 
 const LOCAL_STORAGE_KEY = 'view-reports';
 
@@ -83,6 +84,8 @@ const Reports: FunctionComponent<ReportsProps> = ({
     paginationOptions,
   );
 
+  const { selected_ids, setEdges } = useExport({ type: 'Report', selectedElements });
+
   const renderLines = (helper: ModuleHelper | undefined) => {
     let exportContext = null;
     if (objectId) {
@@ -141,6 +144,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
         width: '8%',
       },
     };
+    console.log('selected_ids', selected_ids);
     return (
       <div>
         <ListLines
@@ -203,6 +207,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 selectAll={selectAll}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
                 redirectionMode={redirectionMode}
+                setEdges={setEdges}
               />
               <ToolBar
                 selectedElements={selectedElements}

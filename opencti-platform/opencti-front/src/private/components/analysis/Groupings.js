@@ -3,15 +3,9 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, convertFilters, saveViewParameters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
-import GroupingsLines, {
-  groupingsLinesQuery,
-} from './groupings/GroupingsLines';
+import GroupingsLines, { groupingsLinesQuery } from './groupings/GroupingsLines';
 import inject18n from '../../../components/i18n';
 import GroupingCreation from './groupings/GroupingCreation';
 import ToolBar from '../data/ToolBar';

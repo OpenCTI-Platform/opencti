@@ -107,6 +107,7 @@ interface ReportsLinesProps {
   selectAll: boolean;
   onLabelClick?: HandleAddFilter,
   redirectionMode?: string,
+  setEdges: (value: any) => void,
 }
 
 const ReportsLines: FunctionComponent<
@@ -122,6 +123,7 @@ ReportsLinesProps
   setNumberOfElements,
   queryRef,
   redirectionMode,
+  setEdges,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ReportsLinesPaginationQuery,
@@ -134,6 +136,8 @@ ReportsLinesProps
       setNumberOfElements,
     },
   );
+
+  setEdges(data?.reports?.edges ?? []);
 
   return (
     <ListLinesContent
