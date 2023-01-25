@@ -84,6 +84,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
   render() {
     const {
       t,
+      fldt,
       classes,
       dataSource,
       refreshQuery,
@@ -113,7 +114,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  {iep.id}
+                  {iep?.id && t(iep.id)}
                 </div>
               </Grid>
               <Grid xs={12} item={true}>
@@ -131,7 +132,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {iep.name}
+                {iep?.name && t(iep.name)}
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography
@@ -148,7 +149,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {iep.description}
+                {iep?.description && t(iep.description)}
               </Grid>
               <Grid container item={true} spacing={3}>
                 <Grid item={true} xs={6}>
@@ -167,7 +168,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {iep.start_date}
+                    {iep?.start_date && fldt(iep?.start_date)}
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -186,7 +187,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {iep.end_date}
+                    {iep?.end_date && fldt(iep?.end_date)}
                   </div>
                 </Grid>
               </Grid>
@@ -207,7 +208,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {iep.encrypt_in_transit}
+                    {iep?.encrypt_in_transit && t(iep?.encrypt_in_transit)}
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -226,7 +227,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {iep.permitted_actions}
+                    {iep?.permitted_actions && t(iep?.permitted_actions)}
                   </div>
                 </Grid>
               </Grid>
@@ -247,7 +248,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {iep.affected_party_notifications}
+                    {iep?.affected_party_notifications && t(iep?.affected_party_notifications)}
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -266,7 +267,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {iep.tlp}
+                    {iep?.tlp && t(iep?.tlp)}
                   </div>
                 </Grid>
               </Grid>
@@ -287,7 +288,7 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {iep.unmodified_resale}
+                    {iep?.unmodified_resale && t(iep.unmodified_resale)}
                   </div>
                 </Grid>
                 <Grid item={true} xs={12}>

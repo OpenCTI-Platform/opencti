@@ -168,7 +168,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  {connection_information.name}
+                  {connection_information?.name && t(connection_information?.name)}
                 </div>
               </Grid>
               <Grid item={true} xs={12}>
@@ -237,7 +237,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.connector_type}
+                {connection_information?.connector_type && t(connection_information?.connector_type)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -254,7 +254,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.host}
+                {connection_information?.host && t(connection_information?.host)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -271,7 +271,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.port}
+                {connection_information?.port && t(connection_information.port)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -288,7 +288,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.query}
+                {connection_information?.query && t(connection_information.query)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -305,7 +305,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.query_initial}
+                {connection_information?.query_initial && t(connection_information.query_initial)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -322,7 +322,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.query_index_field}                
+                {connection_information?.query_index_field && t(connection_information?.query_index_field)}                
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -339,7 +339,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.query_sleep_interval}
+                {connection_information?.query_sleep_interval && t(connection_information.query_sleep_interval)}
               </Grid>
               <Grid item xs={12}>
                 <Typography
@@ -394,7 +394,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.api_key}
+                {connection_information?.api_key && t(connection_information.api_key)}
               </Grid>
             </Grid>
             <Grid container={true} spacing={3}>
@@ -413,7 +413,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.username}
+                {connection_information?.username && t(connection_information?.username)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -430,7 +430,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.passphrase}
+                {connection_information?.passphrase && t(connection_information?.passphrase)}
               </Grid>
             </Grid>
             <Grid container={true} spacing={3}>
@@ -449,7 +449,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.listen}
+                {connection_information?.listen && t(connection_information?.listen)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -466,7 +466,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.listen_exchange}
+                {connection_information?.listen_exchange && t(connection_information?.listen_exchange)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -483,7 +483,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.post_queue}
+                {connection_information?.post_queue && t(connection_information?.post_queue)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -500,7 +500,7 @@ export class DataSourceConnectionPopoverComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {connection_information.post_queue}
+                {connection_information?.post_queue && t(connection_information?.post_queue)}
               </Grid>
             </Grid>
           </DialogContent>
