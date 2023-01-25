@@ -47,6 +47,7 @@ import {
   LaptopAccount,
   ArchiveOutline,
   Brain,
+  TextureBox,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -135,6 +136,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Position':
     case 'Location':
       return <PlaceOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Administrative-Area':
+      return < TextureBox style={style} fontSize={fontSize} role="img" />;
     case 'Country':
       return <FlagOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Region':
