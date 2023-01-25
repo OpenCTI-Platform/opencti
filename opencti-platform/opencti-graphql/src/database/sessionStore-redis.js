@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import session from 'express-session';
 import LRU from 'lru-cache';
 import AsyncLock from 'async-lock';
@@ -19,16 +20,15 @@ const noop = () => {};
 class RedisStore extends Store {
   constructor(options = {}) {
     super(options);
+    this.ttl = options.ttl;
     this.prefix = options.prefix == null ? 'sess:' : options.prefix;
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
-    this.ttl = options.ttl || 86400; // One day in seconds.
     this.cache = new LRU({ ttl: 2500, max: 1000 }); // Force refresh the session every 2.5 sec
     this.touchCache = new LRU({ ttl: 120000, max: 1000 }); // Touch the session every 2 minutes
     this.locker = new AsyncLock();
   }
 
-  // region base commands
   get(sid, cb = noop) {
     const key = this.prefix + sid;
     const { cache } = this;
@@ -71,7 +71,7 @@ class RedisStore extends Store {
         return done(null, 'OK');
       }
       const ttlExtension = this._getTTL(sess);
-      return extendSession(key, sess, ttlExtension).then(((ret) => {
+      return extendSession(key, ttlExtension).then(((ret) => {
         if (ret !== 1) return done(null, 'EXPIRED');
         touchCache.set(`touch-${key}`);
         return done(null, 'OK');
@@ -82,19 +82,16 @@ class RedisStore extends Store {
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   destroy(sid, cb = noop) {
     return killSession(sid).then(() => cb());
   }
 
-  // eslint-disable-next-line class-methods-use-this
   all(cb = noop) {
     return getSessions().then((sessions) => {
       return cb(null, sessions);
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   clear(cb = noop) {
     return clearSessions().then(() => cb(null, true));
   }
@@ -106,12 +103,10 @@ class RedisStore extends Store {
     });
   }
 
-  // Fetch session expiration
   expiration(sid, cb = noop) {
     const key = this.prefix + sid;
     getSessionTtl(key).then((ttl) => cb(null, ttl));
   }
-  // endregion
 
   _getTTL(sess) {
     let ttl;
@@ -124,7 +119,6 @@ class RedisStore extends Store {
     return ttl;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   _getAllKeys(cb = noop) {
     return getSessionKeys().then((keys) => {
       return cb(null, keys);

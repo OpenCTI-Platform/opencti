@@ -199,14 +199,23 @@ const setKeyWithList = async (keyId: string, listIds: string[], keyData: any, ex
 const keysFromList = async (listId: string, expirationTime?: number) => {
   if (expirationTime) {
     const time = new Date().getTime();
-    await getClientBase().zremrangebyscore('platform-deletions', '-inf', time - (120 * 1000));
+    await getClientBase().zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
   }
   const instances = await getClientBase().zrange(listId, 0, -1);
   if (instances && instances.length > 0) {
-    const instancesConfig = await Promise.all(instances.map((i) => getClientBase().get(i)
-      .then((d) => (d ? { id: i, data: d } : null))));
+    // eslint-disable-next-line newline-per-chained-call
+    const fetchKey = (key: string) => getClientBase().multi().ttl(key).get(key).exec();
+    const instancesConfig = await Promise.all(instances.map((i) => fetchKey(i)
+      .then((results) => {
+        if (results === null || results.length !== 2) {
+          return null;
+        }
+        const [, ttl] = results[0];
+        const [, data] = results[1] as string[];
+        return data ? { id: i, ttl, data } : null;
+      })));
     return instancesConfig.filter(filterEmpty).map((n) => {
-      return { redis_key_id: n.id, ...JSON.parse(n.data) };
+      return { redis_key_id: n.id, redis_key_ttl: n.ttl, ...JSON.parse(n.data) };
     });
   }
   return [];
@@ -237,18 +246,11 @@ export const getSessionKeys = () => {
 export const getSessions = () => {
   return keysFromList('platform_sessions');
 };
-export const extendSession = async (sessionId: string, sess: any, extension: number) => {
-  const sessionExtensionPromise = getClientBase().multi()
-    .set(sessionId, JSON.stringify(sess))
-    .expire(sessionId, extension)
-    .exec();
+export const extendSession = async (sessionId: string, extension: number) => {
+  const sessionExtensionPromise = getClientBase().expire(sessionId, extension);
   const refreshListPromise = setInList('platform_sessions', sessionId, extension);
   const [sessionExtension] = await Promise.all([sessionExtensionPromise, refreshListPromise]);
-  if (sessionExtension) {
-    const [, expireCommand] = Array.from(sessionExtension);
-    return expireCommand[1];
-  }
-  return -1;
+  return sessionExtension;
 };
 // endregion
 

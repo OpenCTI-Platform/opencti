@@ -4,7 +4,6 @@ import * as R from 'ramda';
 import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
 import SessionStoreMemory from './sessionStore-memory';
 import RedisStore from './sessionStore-redis';
-import { utcDate } from '../utils/format';
 
 const sessionManager = nconf.get('app:session_manager');
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
@@ -48,11 +47,10 @@ export const findSessions = () => {
       const sessionsPerUser = R.groupBy((s) => s.user.id, R.filter((n) => n.user, result));
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
         const userSessions = v.map((s) => {
-          const timeBeforeExpiration = utcDate(s.cookie.expires).diff(utcDate(), 'seconds');
           return {
             id: s.redis_key_id,
             created: s.user.session_creation,
-            ttl: timeBeforeExpiration,
+            ttl: s.redis_key_ttl,
             originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
           };
         });
