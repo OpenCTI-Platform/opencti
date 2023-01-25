@@ -109,6 +109,8 @@ const MAX_SEARCH_AGGREGATION_SIZE = 10000;
 const MAX_SEARCH_SIZE = 5000;
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
+const NO_MAPPING_FOUND_ERROR = 'No mapping found';
+const NO_SUCH_INDEX_ERROR = 'no such index';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
@@ -221,7 +223,16 @@ export const elRawSearch = (context, user, types, query) => {
     // Result must be always accurate to prevent data duplication and unwanted behaviors
     // If any shard fail during query, engine throw a lock exception with shards information
     const isShardsFail = parsedSearch._shards.failed > ES_MAX_SHARDS_FAILURE;
-    if (isShardsFail) throw EngineShardsError({ shards: parsedSearch._shards });
+    if (isShardsFail) {
+      // We need to filter "No mapping found" errors that are not problematic shard problems
+      // As we do not define all mappings and let elastic create it dynamically at first creation
+      // This failure is transient until the first creation of some data
+      const failures = (parsedSearch._shards.failures ?? [])
+        .filter((f) => !f.reason?.reason.includes(NO_MAPPING_FOUND_ERROR));
+      if (failures.length > 0) {
+        throw EngineShardsError({ shards: parsedSearch._shards });
+      }
+    }
     // Return result of the search if everything goes well
     return parsedSearch;
   });
@@ -449,7 +460,13 @@ const elCreateIndexTemplate = async () => {
             created: {
               type: 'date',
             },
+            created_at: {
+              type: 'date',
+            },
             modified: {
+              type: 'date',
+            },
+            modified_at: {
               type: 'date',
             },
             first_seen: {
@@ -1565,7 +1582,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
         if (isNotEmptyField(err.meta?.body)) {
           const errorCauses = err.meta.body?.error?.root_cause ?? [];
           const invalidMappingCauses = errorCauses.map((r) => r.reason ?? '')
-            .filter((r) => R.includes('No mapping found for', r) || R.includes('no such index', r));
+            .filter((r) => R.includes(NO_MAPPING_FOUND_ERROR, r) || R.includes(NO_SUCH_INDEX_ERROR, r));
           const numberOfCauses = errorCauses.length;
           isTechnicalError = numberOfCauses === 0 || numberOfCauses > invalidMappingCauses.length;
         }
