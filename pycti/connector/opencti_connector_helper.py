@@ -18,11 +18,12 @@ from typing import Callable, Dict, List, Optional, Union
 import pika
 from pika.adapters.asyncio_connection import AsyncioConnection
 from pika.exceptions import NackError, UnroutableError
+from sseclient import SSEClient
+
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector import LOGGER
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
-from sseclient import SSEClient
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]
@@ -169,7 +170,7 @@ class ListenQueue:
             self.helper.api.work.to_processed(
                 json_data["internal"]["work_id"], message_task.result()
             )
-        except Exception as e: # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             logging.exception("Error in message processing, reporting error to API")
             self.helper.api.work.to_processed(
                 json_data["internal"]["work_id"], str(e), True
