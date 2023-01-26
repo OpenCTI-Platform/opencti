@@ -1,20 +1,23 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Slide from '@mui/material/Slide';
+import React, { FunctionComponent } from 'react';
+import Slide, { SlideProps } from '@mui/material/Slide';
 import Drawer from '@mui/material/Drawer';
+import { makeStyles } from '@mui/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectsExportsContent, {
   stixDomainObjectsExportsContentQuery,
 } from './StixDomainObjectsExportsContent';
+import {
+  StixDomainObjectsExportsContentRefetchQuery$data,
+  StixDomainObjectsExportsContentRefetchQuery$variables,
+} from './__generated__/StixDomainObjectsExportsContentRefetchQuery.graphql';
+import { Theme } from '../../../../components/Theme';
 
-const Transition = React.forwardRef((props, ref) => (
+const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 310,
@@ -23,19 +26,28 @@ const styles = (theme) => ({
     zIndex: 1200,
   },
   toolbar: theme.mixins.toolbar,
-});
+}));
 
-class StixDomainObjectsExports extends Component {
-  render() {
-    const {
-      classes,
-      exportEntityType,
-      paginationOptions,
-      open,
-      handleToggle,
-      context,
-    } = this.props;
-    return (
+interface StixDomainObjectsExportsProps {
+  exportEntityType: string,
+  paginationOptions: StixDomainObjectsExportsContentRefetchQuery$variables,
+  open: boolean,
+  handleToggle: () => void,
+  context: string,
+}
+
+const StixDomainObjectsExports: FunctionComponent<
+StixDomainObjectsExportsProps
+> = ({
+  exportEntityType,
+  paginationOptions,
+  open,
+  handleToggle,
+  context,
+}) => {
+  const classes = useStyles();
+
+  return (
       <Drawer
         variant="persistent"
         open={open}
@@ -43,13 +55,13 @@ class StixDomainObjectsExports extends Component {
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleToggle.bind(this)}
+        onClose={handleToggle}
       >
         <div className={classes.toolbar} />
         <QueryRenderer
           query={stixDomainObjectsExportsContentQuery}
           variables={{ count: 25, type: exportEntityType, context }}
-          render={({ props }) => (
+          render={({ props }: { props: StixDomainObjectsExportsContentRefetchQuery$data }) => (
             <StixDomainObjectsExportsContent
               handleToggle={handleToggle}
               data={props}
@@ -61,18 +73,7 @@ class StixDomainObjectsExports extends Component {
           )}
         />
       </Drawer>
-    );
-  }
-}
-
-StixDomainObjectsExports.propTypes = {
-  classes: PropTypes.object.isRequired,
-  open: PropTypes.bool,
-  handleToggle: PropTypes.func,
-  exportEntityType: PropTypes.string.isRequired,
-  paginationOptions: PropTypes.object,
-  handleApplyListArgs: PropTypes.func,
-  context: PropTypes.string,
+  );
 };
 
-export default compose(withStyles(styles))(StixDomainObjectsExports);
+export default StixDomainObjectsExports;
