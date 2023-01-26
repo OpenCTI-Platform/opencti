@@ -1,7 +1,13 @@
 import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { pubsub } from '../database/redis';
 import { connectors } from '../database/repository';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_RULE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_STATUS_TEMPLATE
+} from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
 import { EntityOptions, listAllEntities } from '../database/middleware-loader';
@@ -10,11 +16,12 @@ import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { OrderingMode } from '../generated/graphql';
 
 const workflowStatuses = async (context: AuthContext) => {
   const reloadStatuses = async () => {
     const templates = await listAllEntities<BasicWorkflowTemplateEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { connectionFormat: false });
-    const args:EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: 'asc', connectionFormat: false };
+    const args:EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: OrderingMode.Asc, connectionFormat: false };
     const statuses = await listAllEntities<BasicWorkflowStatusEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS], args);
     return statuses.map((status) => {
       const template = templates.find((t) => t.internal_id === status.template_id);

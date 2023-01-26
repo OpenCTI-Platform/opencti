@@ -11,15 +11,15 @@ import type {
   StoreProxyRelation
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { FilterMode } from '../generated/graphql';
+import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
 
 const MAX_SEARCH_SIZE = 5000;
 
 interface Filter {
-  key: string | string[];
+  key: any ;
   operator?: string | null;
-  filterMode?: 'and' | 'or' | null;
-  values?: Array<unknown> | null;
+  filterMode?: InputMaybe<FilterMode>;
+  values?: any;
   nested?: Array<{
     key: string;
     values?: Array<unknown> | null;
@@ -32,8 +32,8 @@ export interface ListFilter<T extends BasicStoreCommon> {
   first?: number | null;
   infinite?: boolean;
   after?: string | undefined | null;
-  orderBy?: string | Array<string> | null,
-  orderMode?: 'asc' | 'desc' | undefined | null,
+  orderBy?: any,
+  orderMode?: InputMaybe<OrderingMode>;
   filters?: Array<Filter> | null;
   filterMode?: FilterMode | undefined | null;
   callback?: (result: Array<T>) => Promise<boolean | void>

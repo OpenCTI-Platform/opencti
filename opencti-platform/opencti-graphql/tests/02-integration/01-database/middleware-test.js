@@ -67,7 +67,7 @@ import { addThreatActor } from '../../../src/domain/threatActor';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
-import { querySubTypes } from "../../../src/domain/subType";
+import { querySubTypes } from '../../../src/domain/subType';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
