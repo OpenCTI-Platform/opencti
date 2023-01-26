@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { createFragmentContainer, graphql, requestSubscription } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -12,7 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { buildDate, parse } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import SelectField from '../../../../components/SelectField';
