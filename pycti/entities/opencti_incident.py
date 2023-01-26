@@ -166,8 +166,7 @@ class Incident:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Incidents with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Incidents with filters %s.", json.dumps(filters))
         query = (
             """
             query Incidents($filters: [IncidentsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IncidentsOrdering, $orderMode: OrderingMode) {

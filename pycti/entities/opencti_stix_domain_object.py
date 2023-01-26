@@ -527,10 +527,7 @@ class StixDomainObject:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info(
-                "Listing Stix-Domain-Objects with filters %s.", json.dumps(filters)
-            )
+        LOGGER.info("Listing Stix-Domain-Objects with filters %s.", json.dumps(filters))
         query = (
             """
                 query StixDomainObjects($types: [String], $filters: [StixDomainObjectsFiltering], $search: String, $relationship_type: [String], $elementId: String, $first: Int, $after: ID, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {

@@ -243,8 +243,7 @@ class Opinion:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Opinions with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Opinions with filters %s.", json.dumps(filters))
         query = (
             """
             query Opinions($filters: [OpinionsFiltering], $search: String, $first: Int, $after: ID, $orderBy: OpinionsOrdering, $orderMode: OrderingMode) {

@@ -265,8 +265,7 @@ class ObservedData:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing ObservedDatas with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing ObservedDatas with filters %s.", json.dumps(filters))
         query = (
             """
             query ObservedDatas($filters: [ObservedDatasFiltering], $search: String, $first: Int, $after: ID, $orderBy: ObservedDatasOrdering, $orderMode: OrderingMode) {

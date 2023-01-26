@@ -49,8 +49,7 @@ class Label:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Labels with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Labels with filters %s.", json.dumps(filters))
         query = (
             """
             query Labels($filters: [LabelsFiltering], $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {

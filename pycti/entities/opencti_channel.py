@@ -161,8 +161,7 @@ class Channel:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Channels with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Channels with filters %s.", json.dumps(filters))
         query = (
             """
             query Channels($filters: [ChannelsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: ChannelsOrdering, $orderMode: OrderingMode) {

@@ -278,8 +278,7 @@ class Report:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Reports with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Reports with filters %s.", json.dumps(filters))
         query = (
             """
             query Reports($filters: [ReportsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {

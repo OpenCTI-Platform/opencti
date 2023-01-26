@@ -173,8 +173,7 @@ class Identity:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Identities with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Identities with filters %s.", json.dumps(filters))
         query = (
             """
             query Identities($types: [String], $filters: [IdentitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: IdentitiesOrdering, $orderMode: OrderingMode) {

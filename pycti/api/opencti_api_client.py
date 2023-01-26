@@ -362,6 +362,23 @@ class OpenCTIApiClient:
             return base64.b64encode(r.text).decode("utf-8")
         return r.text
 
+    def log(self, level, message):
+        """log a message with defined log level
+        :param level: must be a valid logging log level (debug, info, warning, error)
+        :type level: str
+        :param message: the message to log
+        :type message: str
+        """
+
+        if level == "debug":
+            LOGGER.debug(message)
+        elif level == "info":
+            LOGGER.info(message)
+        elif level == "warning":
+            LOGGER.warning(message)
+        elif level == "error":
+            LOGGER.error(message)
+
     def health_check(self):
         """submit an example request to the OpenCTI API.
 

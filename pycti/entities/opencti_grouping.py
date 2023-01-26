@@ -254,8 +254,7 @@ class Grouping:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Groupings with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Groupings with filters %s.", json.dumps(filters))
         query = (
             """
             query Groupings($filters: [GroupingsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: GroupingsOrdering, $orderMode: OrderingMode) {

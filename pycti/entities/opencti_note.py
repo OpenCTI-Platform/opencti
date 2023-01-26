@@ -272,8 +272,7 @@ class Note:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Notes with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Notes with filters %s.", json.dumps(filters))
         query = (
             """
             query Notes($filters: [NotesFiltering], $search: String, $first: Int, $after: ID, $orderBy: NotesOrdering, $orderMode: OrderingMode) {
