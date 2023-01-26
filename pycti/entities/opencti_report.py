@@ -2,10 +2,13 @@
 
 import datetime
 import json
+import logging
 import uuid
 
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Report:
@@ -275,9 +278,8 @@ class Report:
         if get_all:
             first = 100
 
-        self.opencti.log(
-            "info", "Listing Reports with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Reports with filters %s.", json.dumps(filters))
         query = (
             """
             query Reports($filters: [ReportsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
@@ -317,7 +319,7 @@ class Report:
             final_data = final_data + data
             while result["data"]["reports"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["reports"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Reports after " + after)
+                LOGGER.info("Listing Reports after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -350,7 +352,7 @@ class Report:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Report {" + id + "}.")
+            LOGGER.info("Reading Report {%s}.", id)
             query = (
                 """
                 query Report($id: String!) {
@@ -417,13 +419,9 @@ class Report:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Checking StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} in Report {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Checking StixObjectOrStixRelationship {%s} in Report {%s}",
+                *(stix_object_or_stix_relationship_id, id),
             )
             query = """
                 query ReportContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
@@ -439,8 +437,7 @@ class Report:
             )
             return result["data"]["reportContainsStixObjectOrStixRelationship"]
         else:
-            self.opencti.log(
-                "error",
+            LOGGER.error(
                 "[opencti_report] Missing parameters: id or stixObjectOrStixRelationshipId",
             )
 
@@ -472,7 +469,7 @@ class Report:
         update = kwargs.get("update", False)
 
         if name is not None and description is not None and published is not None:
-            self.opencti.log("info", "Creating Report {" + name + "}.")
+            LOGGER.info("Creating Report {%s}.", name)
             query = """
                 mutation ReportAdd($input: ReportAddInput) {
                     reportAdd(input: $input) {
@@ -510,9 +507,9 @@ class Report:
             )
             return self.opencti.process_multiple_fields(result["data"]["reportAdd"])
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_report] Missing parameters: name and description and published and report_class",
+            LOGGER.error(
+                "[opencti_report] "
+                "Missing parameters: name and description and published and report_class"
             )
 
     """
@@ -529,13 +526,9 @@ class Report:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Adding StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to Report {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Adding StixObjectOrStixRelationship {%s} to Report {%s}",
+                *(stix_object_or_stix_relationship_id, id),
             )
             query = """
                mutation ReportEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
@@ -558,8 +551,7 @@ class Report:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
+            LOGGER.error(
                 "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
@@ -578,13 +570,9 @@ class Report:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Removing StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to Report {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Removing StixObjectOrStixRelationship {%s} to Report {%s}",
+                *(stix_object_or_stix_relationship_id, id),
             )
             query = """
                mutation ReportEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -605,8 +593,7 @@ class Report:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
+            LOGGER.error(
                 "[opencti_report] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
@@ -677,4 +664,4 @@ class Report:
                 update=update,
             )
         else:
-            self.opencti.log("error", "[opencti_report] Missing parameters: stixObject")
+            LOGGER.error("[opencti_report] Missing parameters: stixObject")

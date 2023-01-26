@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Channel:
@@ -158,9 +161,8 @@ class Channel:
         if get_all:
             first = 100
 
-        self.opencti.log(
-            "info", "Listing Channels with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Channels with filters %s.", json.dumps(filters))
         query = (
             """
             query Channels($filters: [ChannelsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: ChannelsOrdering, $orderMode: OrderingMode) {
@@ -200,7 +202,7 @@ class Channel:
             final_data = final_data + data
             while result["data"]["channels"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["channels"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Channels after " + after)
+                LOGGER.info("Listing Channels after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -233,7 +235,7 @@ class Channel:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Channel {" + id + "}.")
+            LOGGER.info("Reading Channel {%s}.", id)
             query = (
                 """
                 query Channel($id: String!) {
@@ -258,9 +260,7 @@ class Channel:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_channel] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_channel] Missing parameters: id or filters")
             return None
 
     """
@@ -290,7 +290,7 @@ class Channel:
         update = kwargs.get("update", False)
 
         if name is not None and description is not None:
-            self.opencti.log("info", "Creating Channel {" + name + "}.")
+            LOGGER.info("Creating Channel {%s}.", name)
             query = """
                 mutation ChannelAdd($input: ChannelAddInput!) {
                     channelAdd(input: $input) {
@@ -327,9 +327,7 @@ class Channel:
             )
             return self.opencti.process_multiple_fields(result["data"]["channelAdd"])
         else:
-            self.opencti.log(
-                "error", "[opencti_channel] Missing parameters: name and description"
-            )
+            LOGGER.error("[opencti_channel] Missing parameters: name and description")
 
     """
         Import an Channel object from a STIX2 object
@@ -394,6 +392,4 @@ class Channel:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_channel] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_channel] Missing parameters: stixObject")

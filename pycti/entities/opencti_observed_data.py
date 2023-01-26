@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class ObservedData:
@@ -262,9 +265,8 @@ class ObservedData:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info", "Listing ObservedDatas with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing ObservedDatas with filters %s.", json.dumps(filters))
         query = (
             """
             query ObservedDatas($filters: [ObservedDatasFiltering], $search: String, $first: Int, $after: ID, $orderBy: ObservedDatasOrdering, $orderMode: OrderingMode) {
@@ -315,7 +317,7 @@ class ObservedData:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading ObservedData {" + id + "}.")
+            LOGGER.info("Reading ObservedData {%s}.", id)
             query = (
                 """
                 query ObservedData($id: String!) {
@@ -352,13 +354,9 @@ class ObservedData:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Checking StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} in ObservedData {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Checking StixObjectOrStixRelationship {%s} in ObservedData {%s}",
+                *(stix_object_or_stix_relationship_id, id),
             )
             query = """
                 query ObservedDataContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
@@ -374,10 +372,7 @@ class ObservedData:
             )
             return result["data"]["observedDataContainsStixObjectOrStixRelationship"]
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_observedData] Missing parameters: id or entity_id",
-            )
+            LOGGER.error("[opencti_observedData] Missing parameters: id or entity_id")
 
     """
         Create a ObservedData object
@@ -410,7 +405,7 @@ class ObservedData:
             and last_observed is not None
             and objects is not None
         ):
-            self.opencti.log("info", "Creating ObservedData.")
+            LOGGER.info("Creating ObservedData.")
             query = """
                 mutation ObservedDataAdd($input: ObservedDataAddInput) {
                     observedDataAdd(input: $input) {
@@ -449,9 +444,9 @@ class ObservedData:
                 result["data"]["observedDataAdd"]
             )
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_observedData] Missing parameters: first_observed, last_observed or objects",
+            LOGGER.error(
+                "[opencti_observedData] Missing parameters: "
+                "first_observed, last_observed or objects"
             )
 
     """
@@ -473,13 +468,9 @@ class ObservedData:
                 stixObjectOrStixRelationshipId=stix_object_or_stix_relationship_id,
             ):
                 return True
-            self.opencti.log(
-                "info",
-                "Adding StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to ObservedData {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Adding StixObjectOrStixRelationship {%s} to ObservedData {%s}",
+                *(stix_object_or_stix_relationship_id, id),
             )
             query = """
                mutation ObservedDataEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
@@ -502,9 +493,9 @@ class ObservedData:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_observedData] Missing parameters: id and stix_object_or_stix_relationship_id",
+            LOGGER.error(
+                "[opencti_observedData] Missing parameters: "
+                "id and stix_object_or_stix_relationship_id"
             )
             return False
 
@@ -522,13 +513,9 @@ class ObservedData:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Removing StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to Observed-Data {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Removing StixObjectOrStixRelationship {%s} to Observed-Data {%s}",
+                *(stix_object_or_stix_relationship_id, id),
             )
             query = """
                mutation ObservedDataEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -549,9 +536,7 @@ class ObservedData:
             )
             return True
         else:
-            self.opencti.log(
-                "error", "[opencti_observed_data] Missing parameters: id and entity_id"
-            )
+            LOGGER.error("[opencti_observed_data] Missing parameters: id and entity_id")
             return False
 
     """
@@ -644,6 +629,4 @@ class ObservedData:
 
             return observed_data_result
         else:
-            self.opencti.log(
-                "error", "[opencti_attack_pattern] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_attack_pattern] Missing parameters: stixObject")

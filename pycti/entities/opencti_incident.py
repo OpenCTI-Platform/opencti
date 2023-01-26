@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Incident:
@@ -163,9 +166,8 @@ class Incident:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info", "Listing Incidents with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Incidents with filters %s.", json.dumps(filters))
         query = (
             """
             query Incidents($filters: [IncidentsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IncidentsOrdering, $orderMode: OrderingMode) {
@@ -216,7 +218,7 @@ class Incident:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Incident {" + id + "}.")
+            LOGGER.info("Reading Incident {%s}.", id)
             query = (
                 """
                 query Incident($id: String!) {
@@ -241,9 +243,7 @@ class Incident:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_incident] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_incident] Missing parameters: id or filters")
             return None
 
     """
@@ -278,7 +278,7 @@ class Incident:
         update = kwargs.get("update", False)
 
         if name is not None and description is not None:
-            self.opencti.log("info", "Creating Incident {" + name + "}.")
+            LOGGER.info("Creating Incident {%s}.", name)
             query = """
                 mutation IncidentAdd($input: IncidentAddInput) {
                     incidentAdd(input: $input) {
@@ -320,7 +320,7 @@ class Incident:
             )
             return self.opencti.process_multiple_fields(result["data"]["incidentAdd"])
         else:
-            self.opencti.log("error", "Missing parameters: name and description")
+            LOGGER.error("Missing parameters: name and description")
 
     """
         Import a Incident object from a STIX2 object
@@ -396,6 +396,4 @@ class Incident:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_incident] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_incident] Missing parameters: stixObject")

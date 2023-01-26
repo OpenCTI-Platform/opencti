@@ -1,5 +1,8 @@
 # coding: utf-8
 import json
+import logging
+
+from pycti.entities import LOGGER
 
 
 class StixCoreObject:
@@ -390,7 +393,7 @@ class StixCoreObject:
             }
             ... on AutonomousSystem {
                 number
-                name_alt: name 
+                name_alt: name
                 rir
             }
             ... on Directory {
@@ -606,10 +609,10 @@ class StixCoreObject:
         if get_all:
             first = 100
 
-        self.opencti.log(
-            "info",
-            "Listing Stix-Core-Objects with filters " + json.dumps(filters) + ".",
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info(
+                "Listing Stix-Core-Objects with filters %s.", json.dumps(filters)
+            )
         query = (
             """
                     query StixCoreObjects($types: [String], $filters: [StixCoreObjectsFiltering], $search: String, $relationship_type: [String], $elementId: String, $first: Int, $after: ID, $orderBy: StixCoreObjectsOrdering, $orderMode: OrderingMode) {
@@ -653,7 +656,7 @@ class StixCoreObject:
             final_data = final_data + data
             while result["data"]["stixCoreObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreObjects"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Stix-Core-Objects after " + after)
+                LOGGER.info("Listing Stix-Core-Objects after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -678,10 +681,7 @@ class StixCoreObject:
 
     def list_files(self, **kwargs):
         id = kwargs.get("id", None)
-        self.opencti.log(
-            "info",
-            "Listing files of Stix-Core-Object { " + id + " }",
-        )
+        LOGGER.info("Listing files of Stix-Core-Object {%s}.", id)
         query = """
                     query StixCoreObject($id: String!) {
                         stixCoreObject(id: $id) {
@@ -736,10 +736,7 @@ class StixCoreObject:
     def reports(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            self.opencti.log(
-                "info",
-                "Getting reports of the Stix-Core-Object {" + id + "}.",
-            )
+            LOGGER.info("Getting reports of the Stix-Core-Object {%s}.", id)
             query = """
                 query StixCoreObject($id: String!) {
                     stixCoreObject(id: $id) {
@@ -863,5 +860,5 @@ class StixCoreObject:
             else:
                 return []
         else:
-            self.opencti.log("error", "Missing parameters: id")
+            LOGGER.error("Missing parameters: id")
             return None
