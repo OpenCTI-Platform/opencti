@@ -1,6 +1,6 @@
 # declares the query entry-points for this type
 extend type Query {
-  sourceIngestActivity(sourceId: ID!): [IngestActivity]  @hasPermission(resources: "DataSource:view")
+  sourceIngestActivity(sourceId: ID!, since: Timestamp): [IngestActivity]  @hasPermission(resources: "DataSource:view")
   ingestActivity(sourceId: ID, activityId: ID): IngestActivity  @hasPermission(resources: "DataSource:view")
   ingestActivities(
     first: Int

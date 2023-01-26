@@ -4,27 +4,17 @@ import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
 import Button from '@material-ui/core/Button';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
-import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
-import Loader from '../../../../../components/Loader';
-import Security, {
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../../utils/Security';
-import { toastGenericError } from '../../../../../utils/bakedToast';
+import { commitMutation } from '../../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
@@ -62,13 +52,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const DataSourceLabelsDeletionDarkLightMutation = graphql`
-  mutation DataSourceLabelsDeletionDarkLightMutation($id: ID!) {
-  deleteOscalRole(id: $id)
+const DataSourcesDeletionDarklightMutation = graphql`
+  mutation DataSourcesDeletionDarklightMutation($id: ID!) {
+  deleteDataSource(id: $id)
 }
 `;
 
-class DataSourceLabelsDeletion extends Component {
+class DataSourceDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -108,37 +98,16 @@ class DataSourceLabelsDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: DataSourceLabelsDeletionDarkLightMutation,
+      mutation: DataSourcesDeletionDarklightMutation,
       variables: {
         id: this.props.id,
       },
-      onCompleted: (data) => {
+      onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        // this.props.history.push('/activities/risk_assessment/risks');
       },
-      onError: (err) => {
-        console.error(err);
-        toastGenericError('Failed to delete label');
-      },
+      onError: () => {},
     });
-    // commitMutation({
-    //   mutation: DataSourceLabelsDeletionDarkLightMutation,
-    //   variables: {
-    //     id: this.props.id,
-    //   },
-    //   config: [
-    //     {
-    //       type: 'NODE_DELETE',
-    //       deletedIDFieldName: 'id',
-    //     },
-    //   ],
-    //   onCompleted: () => {
-    //     this.setState({ deleting: false });
-    //     this.handleClose();
-    //     this.props.history.push('/activities/risk_assessment/risks');
-    //   },
-    // });
   }
 
   render() {
@@ -176,7 +145,7 @@ class DataSourceLabelsDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Label?')}
+                {t('Are you sure you’d like to delete this data source?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
@@ -209,7 +178,7 @@ class DataSourceLabelsDeletion extends Component {
   }
 }
 
-DataSourceLabelsDeletion.propTypes = {
+DataSourceDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -221,4 +190,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(DataSourceLabelsDeletion);
+)(DataSourceDeletion);

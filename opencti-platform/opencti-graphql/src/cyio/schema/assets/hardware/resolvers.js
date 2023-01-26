@@ -7,13 +7,30 @@ import {
   insertHardwareQuery,
   selectAllHardware,
   selectHardwareQuery,
+<<<<<<< HEAD
   hardwarePredicateMap,
+=======
+  selectHardwareByIriQuery,
+  hardwarePredicateMap, 
+>>>>>>> origin/develop
   attachToHardwareQuery,
   detachFromHardwareQuery,
 } from './sparql-query.js';
+<<<<<<< HEAD
 import { getSelectSparqlQuery } from '../computing-device/sparql-query.js';
 import { selectSoftwareByIriQuery, getReducer as getSoftwareReducer } from '../software/sparql-query.js';
 import { selectNetworkByIriQuery, getReducer as getNetworkReducer } from '../network/sparql-query.js';
+=======
+import { getSelectSparqlQuery} from '../computing-device/sparql-query.js';
+import {
+  selectSoftwareByIriQuery,
+  getReducer as getSoftwareReducer
+} from '../software/sparql-query.js';
+import {
+  selectNetworkByIriQuery,
+  getReducer as getNetworkReducer
+} from '../network/sparql-query.js';
+>>>>>>> origin/develop
 import {
   deleteIpQuery,
   deleteMacQuery,
@@ -775,7 +792,51 @@ const hardwareResolvers = {
   },
   // field-level query
   HardwareAsset: {
+<<<<<<< HEAD
     installed_software: async (parent, _, { dbName, dataSources, selectMap }) => {
+=======
+    installed_hardware: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.installed_hw_iri === undefined) return [];
+      let iriArray = parent.installed_hw_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        var reducer = getReducer('HARDWARE-DEVICE');
+        for (let iri of iriArray) {
+          // check if this is an hardware object
+          if (iri === undefined || !iri.includes('Hardware')) {
+            continue;
+          }
+
+          // query for the Software based on its IRI
+          let sparqlQuery = selectHardwareByIriQuery(iri, selectMap.getNode('installed_hardware'));
+          const response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select Installed Hardware for Hardware Asset",
+            singularizeSchema
+          })
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }
+        }
+
+        return results;
+      } else {
+        return [];
+      }
+    },
+    installed_software: async (parent, _, {dbName, dataSources, selectMap}) => {
+>>>>>>> origin/develop
       if (parent.installed_sw_iri === undefined) return [];
       const iriArray = parent.installed_sw_iri;
       const results = [];

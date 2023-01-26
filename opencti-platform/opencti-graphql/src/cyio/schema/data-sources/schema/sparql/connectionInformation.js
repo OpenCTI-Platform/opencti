@@ -6,13 +6,14 @@ import {
   DARKLIGHT_NS,
   CyioError,
 } from '../../../utils.js';
-// import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 
 // Reducer Selection
 export function getReducer(type) {
   switch (type) {
     case 'CONNECTION-INFORMATION':
       return connectionInformationReducer;
+    case 'CONNECTION-HEADER':
+      return connectionHeaderReducer;
     default:
       throw new CyioError(`Unsupported reducer type ' ${type}'`);
   }
@@ -37,6 +38,7 @@ const connectionInformationReducer = (item) => {
     ...(item.name && { name: item.name }),
     ...(item.display_name && { display_name: item.display_name }),
     ...(item.description && { description: item.description }),
+    ...(item.connector_type && {connector_type: item.connector_type}),
     ...(item.secure !== undefined && { secure: item.secure }),
     ...(item.host && { host: item.host }),
     ...(item.port && { port: item.port }),
@@ -45,6 +47,8 @@ const connectionInformationReducer = (item) => {
     ...(item.query_index_field && { query_index_field: item.query_index_field }),
     ...(item.query_sleep_interval && { query_sleep_interval: item.query_sleep_interval }),
     ...(item.ca && { ca: item.ca }),
+    ...(item.http_request_method && { http_request_method: item.http_request_method }),
+    ...(item.headers && { headers: item.headers }),
     ...(item.api_key && { api_key: item.api_key }),
     ...(item.username && { username: item.username }),
     ...(item.passphrase && { passphrase: item.passphrase }),
@@ -55,9 +59,19 @@ const connectionInformationReducer = (item) => {
   };
 };
 
+
 // Query Builders
 export const insertConnectionInformationQuery = (propValues) => {
+<<<<<<< HEAD
   const id = generateId();
+=======
+  const id_material = {
+    ...(propValues.connector_type && {"connector_type": propValues.connector_type}),
+    ...(propValues.name && {"name": propValues.name}),
+  } ;
+  const id = generateId( id_material, DARKLIGHT_NS );
+  // const id = generateId( );
+>>>>>>> origin/develop
   const timestamp = new Date().toISOString();
 
   // determine the appropriate ontology class type
@@ -80,11 +94,15 @@ export const insertConnectionInformationQuery = (propValues) => {
       GRAPH ${iri} {
         ${iri} a <http://darklight.ai/ns/cyio/connection#ConnectionInformation> .
         ${iri} a <http://darklight.ai/ns/common#Object> .
-        ${iri} <http://darklight.ai/ns/common#id> "${id}".
+        ${iri} <http://darklight.ai/ns/common#id> "${id}" .
         ${iri} <http://darklight.ai/ns/common#object_type> "connection-information" . 
         ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
         ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
+<<<<<<< HEAD
         ${insertPredicates.join('. \n')}
+=======
+        ${insertPredicates.join(" . \n")}
+>>>>>>> origin/develop
       }
     }
     `;
@@ -223,6 +241,8 @@ export const detachFromConnectionInformationQuery = (id, field, itemIris) => {
   `;
 };
 
+
+
 // Predicate Maps
 export const connectionInformationPredicateMap = {
   id: {
@@ -280,6 +300,7 @@ export const connectionInformationPredicateMap = {
     },
   },
   description: {
+<<<<<<< HEAD
     predicate: '<http://darklight.ai/ns/cyio/connection#description>',
     binding(iri, value) {
       return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
@@ -296,6 +317,21 @@ export const connectionInformationPredicateMap = {
     optional(iri, value) {
       return optionalizePredicate(this.binding(iri, value));
     },
+=======
+    predicate: "<http://darklight.ai/ns/cyio/connection#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  connector_type: {
+    predicate: "<http://darklight.ai/ns/cyio/connection#connector_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "connector_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  secure: {
+    predicate: "<http://darklight.ai/ns/cyio/connection#secure>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null,  this.predicate, "secure");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+>>>>>>> origin/develop
   },
   host: {
     predicate: '<http://darklight.ai/ns/cyio/connection#host>',
@@ -343,6 +379,7 @@ export const connectionInformationPredicateMap = {
     },
   },
   query_sleep_interval: {
+<<<<<<< HEAD
     predicate: '<http://darklight.ai/ns/cyio/connection#query_sleep_interval>',
     binding(iri, value) {
       return parameterizePredicate(
@@ -355,6 +392,11 @@ export const connectionInformationPredicateMap = {
     optional(iri, value) {
       return optionalizePredicate(this.binding(iri, value));
     },
+=======
+    predicate: "<http://darklight.ai/ns/cyio/connection#query_sleep_interval>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:positiveInteger` : null,  this.predicate, "query_sleep_interval");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+>>>>>>> origin/develop
   },
   ca: {
     predicate: '<http://darklight.ai/ns/cyio/connection#ca>',
@@ -364,6 +406,16 @@ export const connectionInformationPredicateMap = {
     optional(iri, value) {
       return optionalizePredicate(this.binding(iri, value));
     },
+  },
+  headers: {
+    predicate: "<http://darklight.ai/ns/cyio/connection#headers>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "headers");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  http_request_method: {
+    predicate: "<http://darklight.ai/ns/cyio/connection#http_request_method>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "http_request_method");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   api_key: {
     predicate: '<http://darklight.ai/ns/cyio/connection#api_key>',
@@ -432,6 +484,7 @@ export const connectionInformationPredicateMap = {
 
 export const singularizeSchema = {
   singularizeVariables: {
+<<<<<<< HEAD
     '': false, // so there is an object as the root instead of an array
     id: true,
     iri: true,
@@ -456,4 +509,32 @@ export const singularizeSchema = {
     push: true,
     push_exchange: true,
   },
+=======
+    "": false, // so there is an object as the root instead of an array
+    "id": true,
+    "iri": true,
+    "object_type": true,
+    "entity_type": true,
+    "created": true,
+    "modified": true,
+    "name": true,
+    "description": true,
+    "connector_type": true,
+    "secure": true,
+    "host": true,
+    "port": true,
+    "query": true,
+    "query_initial": true,
+    "query_index_field": true,
+    "query_sleep_interval": true,
+    "http_request_method": true,
+    "api_key": true,
+    "username": true,
+    "passphrase": true,
+    "listen": true,
+    "listen_exchange": true,
+    "push": true,
+    "push_exchange": true,
+  }
+>>>>>>> origin/develop
 };

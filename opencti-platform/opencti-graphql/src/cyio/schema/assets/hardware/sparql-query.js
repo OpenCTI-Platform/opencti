@@ -1,4 +1,5 @@
 import {
+<<<<<<< HEAD
   buildSelectVariables,
   optionalizePredicate,
   parameterizePredicate,
@@ -7,6 +8,17 @@ import {
   CyioError,
 } from '../../utils.js';
 import { ipAddressReducer, macAddressReducer, portReducer } from '../computing-device/sparql-query.js';
+=======
+  buildSelectVariables, optionalizePredicate, parameterizePredicate, 
+  generateId, OASIS_SCO_NS, CyioError
+} from "../../utils.js";
+import {
+  ipAddressReducer,
+  macAddressReducer,
+  portReducer
+} from '../computing-device/sparql-query.js';
+import { objectMap } from '../../global/global-utils';
+>>>>>>> origin/develop
 
 export function getReducer(type) {
   switch (type) {
@@ -31,7 +43,7 @@ const hardwareAssetReducer = (item) => {
     if (item.asset_type !== undefined) {
       if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
       if (item.asset_type == 'compute-device') item.asset_type = 'computing-device';
-      if (item.asset_type in deviceMap) item.object_type = 'hardware';
+      if (item.asset_type in objectMap) item.object_type = 'hardware';
     }
     if (item.object_type === undefined && item.iri !== undefined) {
       if (item.iri.includes('Hardware')) item.object_type = 'hardware';
@@ -118,9 +130,14 @@ export const insertHardwareQuery = (propValues) => {
   };
   const id = generateId(id_material, OASIS_SCO_NS);
   const timestamp = new Date().toISOString();
+<<<<<<< HEAD
 
   if (!deviceMap.hasOwnProperty(propValues.asset_type))
     throw new CyioError(`Unsupported hardware type ' ${propValues.asset_type}'`);
+=======
+  
+  if (!objectMap.hasOwnProperty(propValues.asset_type)) throw new CyioError(`Unsupported hardware type ' ${propValues.asset_type}'`);
+>>>>>>> origin/develop
 
   // escape any special characters (e.g., newline)
   if (propValues.description !== undefined) {
@@ -142,6 +159,7 @@ export const insertHardwareQuery = (propValues) => {
   const insertPredicates = [];
   insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#InventoryItem> `);
   if (propValues.asset_type !== 'hardware') {
+<<<<<<< HEAD
     insertPredicates.push(`${iri} a <${deviceMap[propValues.asset_type].classIri}>`);
     if (
       deviceMap[propValues.asset_type].parent !== undefined &&
@@ -149,6 +167,12 @@ export const insertHardwareQuery = (propValues) => {
     ) {
       const { parent } = deviceMap[propValues.asset_type];
       insertPredicates.push(`${iri} a <${deviceMap[parent].classIri}>`);
+=======
+    insertPredicates.push(`${iri} a <${objectMap[propValues.asset_type].classIri}>`);
+    if (objectMap[propValues.asset_type].parent !== undefined && objectMap[propValues.asset_type].parent !== 'hardware') {
+      let parent = objectMap[propValues.asset_type].parent;
+      insertPredicates.push(`${iri} a <${objectMap[parent].classIri}>`);
+>>>>>>> origin/develop
     }
   }
   insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> `);
@@ -331,6 +355,7 @@ export const detachFromHardwareQuery = (id, field, itemIris) => {
   `;
 };
 
+<<<<<<< HEAD
 // DeviceMap that maps asset_type values to class
 const deviceMap = {
   // "account": {
@@ -475,6 +500,8 @@ const deviceMap = {
   },
 };
 
+=======
+>>>>>>> origin/develop
 // Predicate Maps
 export const hardwarePredicateMap = {
   id: {

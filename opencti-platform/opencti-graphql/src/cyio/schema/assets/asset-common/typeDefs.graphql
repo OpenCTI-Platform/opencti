@@ -72,6 +72,8 @@
     directory_server
     "DNS Server"
     dns_server
+    "Documentary Asset"
+    documentary_asset
     "Email Server"
     email_server
     "Embedded Device"
@@ -82,10 +84,10 @@
     guidance
     "Hypervisor"
     hypervisor
-    "Load Balancer"
-    load_balancer
     "Laptop"
     laptop
+    "Load Balancer"
+    load_balancer
     "Mobile Device"
     mobile_device
     "Network"
@@ -110,10 +112,10 @@
     router
     "Server"
     server
-    "Service Account"
-    service_account
     "Service"
     service
+    "Service Account"
+    service_account
     "Software"
     software
     "Standard"
@@ -138,6 +140,8 @@
     web_server
     "Web Site"
     web_site
+    "Wireless Access Point"
+    wireless_access_point
     "Workstation"
     workstation
   }

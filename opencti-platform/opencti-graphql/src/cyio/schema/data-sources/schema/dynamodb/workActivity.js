@@ -21,19 +21,39 @@ export const selectSourceActivityByIdQuery = (id, since, sortOrder = 'DESC', lim
   const partitionKeyName = conf.get('dynamodb:tables:ingest-activity:partition-key-name') || 'data_source_id';
   const sortKeyName = conf.get('dynamodb:tables:ingest-activity:sort-key-name') || 'started_at';
   const daysBack = conf.get('dynamodb:tables:ingest-activity:days-back') || '2';
+<<<<<<< HEAD
   const limit = limitValue || 5;
   const ordering = sortOrder.toUpperCase() === 'ASC';
   if (since === undefined) {
+=======
+  let limit = (limitValue ? limitValue : 5);
+  let ordering = (sortOrder.toUpperCase() === 'ASC' ? true : false);
+  if (since === undefined || since === null) {
+>>>>>>> origin/develop
     since = new Date();
     since.setDate(since.getDate() - parseInt(daysBack));
   }
 
+<<<<<<< HEAD
   const params = {
     TableName: tableName,
     KeyConditionExpression: `${partitionKeyName} = :partitionKey AND ${sortKeyName} >= :sortKey`,
     ExpressionAttributeValues: {
       ':partitionKey': { S: id },
       ':sortKey': { S: since.toISOString() },
+=======
+  // convert since to a string if its a Date object
+  if (since instanceof Date) {
+    since = since.toISOString();
+  }
+
+  const params =  {
+    TableName: tableName,
+    KeyConditionExpression: `${partitionKeyName} = :partitionKey AND ${sortKeyName} >= :sortKey`,
+    ExpressionAttributeValues: {
+      ":partitionKey": { S: id },
+      ":sortKey": {S: since},
+>>>>>>> origin/develop
     },
     ScanIndexForward: ordering,
     Limit: limit,

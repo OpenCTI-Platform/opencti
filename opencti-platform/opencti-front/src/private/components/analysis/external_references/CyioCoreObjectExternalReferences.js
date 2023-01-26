@@ -90,7 +90,7 @@ class CyioCoreObjectExternalReferences extends Component {
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          {externalReferences.length > 0 ? (
+          {(externalReferences && externalReferences.length > 0) ? (
             externalReferences.map((externalReference) => (
               <CyioCoreObjectExternalReferencesLines
                 key={externalReference.id}

@@ -243,6 +243,8 @@ class NetworkEditionContainer extends Component {
       R.assoc('network_name', network?.network_name),
       R.assoc('network_id', network?.network_id),
       R.assoc('is_scanned', network?.is_scanned),
+      R.assoc('connected_assets', network?.connected_assets),
+      R.assoc('related_risks', network?.related_risks),
       R.assoc('last_scanned', network?.last_scanned),
       R.assoc('implementation_point', network?.implementation_point),
       R.assoc('starting_address', network?.network_address_range?.starting_ip_address?.ip_address_value || ''),
@@ -267,6 +269,8 @@ class NetworkEditionContainer extends Component {
         'implementation_point',
         'starting_address',
         'ending_address',
+        'connected_assets',
+        'related_risks'
       ]),
     )(network);
     return (
@@ -277,7 +281,7 @@ class NetworkEditionContainer extends Component {
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
-          {({ submitForm, isSubmitting }) => (
+          {({ submitForm, isSubmitting, setFieldValue }) => (
             <>
               <div className={classes.header}>
                 <div>
@@ -341,6 +345,8 @@ class NetworkEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <NetworkEditionDetails
                       network={network}
+                      setFieldValue={setFieldValue}
+                      history={history}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}
@@ -495,6 +501,14 @@ const NetworkEditionFragment = createFragmentContainer(
               ip_address_value
             }
           }
+        }
+        connected_assets {
+          id
+          name
+        }
+        related_risks {
+          id
+          name
         }
         # ...NetworkEditionOverview_network
         # ...NetworkEditionDetails_network

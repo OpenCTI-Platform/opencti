@@ -59,10 +59,12 @@ type DataSource implements BasicObject & LifecycleObject {
   auto: Boolean!
   "Identifies the types of information represented in the ingested data"
   scope: [String]
-  "Identifies an artifact that represents a where to the next query should resume.  This must be a string even if its a number."
-  last_ingest_artifact: String
   "Indicates the frequency at which the Connector should attempt to ingest data from an external source"
   update_frequency: FrequencyTiming
+  "Identifies the last time the data source successfully executed"
+  last_success: DateTime
+  "Identifies an artifact that represents a where to the next query should resume.  This must be a string even if its a number."
+  last_ingest_artifact: String
   "Indicates the information necessary to make a connection to the external source."
   connection_information: ConnectionInformation
   "Identifies the Information Exchange Policy that must be applied to any data ingested."
@@ -79,8 +81,6 @@ input DataSourceInput {
   # Data Source
   "Identifies the name of the product"
   name: String!
-  "Identifies the name used to display to users"
-  display_name: String
   "Identifies a human-readable description of the data source"
   description: String
   "Identifies the type of data source"
@@ -93,8 +93,6 @@ input DataSourceInput {
   auto: Boolean!
   "Identifies the types of information represented in the ingested data"
   scope: [String]
-  "Identifies an artifact that represents a where to the next query should resume.  This must be a string even if its a number."
-  last_ingest_artifact: String
   "Indicates the frequency at which the Connector should attempt to ingest data from an external source"
   update_frequency: FrequencyTimingAddInput
   "Indicates the information necessary to make a connection to the external source."
@@ -123,21 +121,35 @@ enum DataSourceStatus {
 # Data Source Type
 """
 DataSourceType provides an indication about the type of the Data Source
-  - EXTERNAL_IMPORT indicates the Data Source ingests a stream of data
-  - EXTERNAL_IMPORT_FILE indicates the Data Source downloads a file
-  - INTERNAL_ENRICHMENT indicates the Data Source reaches to an external source
-    to obtain data about a subject that is used to enrich a store piece of knowledge
+  - EXTERNAL_IMPORT indicates the Data Source ingests information from an 
+    external entity or service and import it into Cyio.
+  - EXTERNAL_IMPORT_FILE indicates the Data Source downloads a file from an
+    external entity or service and extracts information to be ingested it 
+    into Cyio.
+  - INTERNAL_ENRICHMENT indicates the Data Source reaches to an external 
+    lookup services to retrieve information about a specific entity that increases 
+    the knowledge of that object in Cyio.  An example would be a whois lookup for an
+    IP address.
+  - INTERNAL_IMPORT_FILE indicates the Data Source ingests information from an 
+    uploaded file can be extracted and ingested into Cyio.
+  - STREAM indicates the Data Source connects to a data stream and continuously 
+    ingests the retrieved information into Cyio. When used in combination with EDR 
+    systems like Tanium, the connector is also able to answer the originating system 
+    and turn this into a two way interaction between another system and Cyio.
 """
 enum DataSourceType {
-  "Import of data via API from External Source"
+  "Import of information via API from an external source"
   EXTERNAL_IMPORT
-  "Import of data via file form External Source"
+  "Import of information via file form an external source"
   EXTERNAL_IMPORT_FILE
-  "Interal export of data for a specific entity"
+  "Internal import of information for about a specific entity from an external lookup service."
   INTERNAL_ENRICHMENT
-  # INTERNAL_IMPORT_FILE
+  "Internal import of data from an uploaded file"
+  INTERNAL_IMPORT_FILE
+  # "Internal export of data contained in Cyio into different file formats"
   # INTERNAL_EXPORT_FILE
-  # STREAM
+  "Connect to a data stream an continuously ingest the retrieved information information"
+  STREAM
 }
 
 

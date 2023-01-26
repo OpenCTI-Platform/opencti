@@ -59,7 +59,7 @@ const Remediations = (props) => {
         history={history}
         location={location}
         entityId={remediation.id}
-        riskId={riskId.id}
+        riskId={riskId}
         openCreation={openCreation}
       />
     </div>
