@@ -17,7 +17,7 @@ import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.gr
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
-import useExport from '../../../utils/hooks/useExport';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const LOCAL_STORAGE_KEY = 'view-reports';
 
@@ -51,7 +51,11 @@ const Reports: FunctionComponent<ReportsProps> = ({
     });
   }
 
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     filters: {} as Filters,
     searchTerm: '',
     sortBy: 'published',
@@ -83,8 +87,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
     reportsLinesQuery,
     paginationOptions,
   );
-
-  const { selected_ids, setEdges } = useExport({ type: 'Report', selectedElements });
 
   const renderLines = (helper: ModuleHelper | undefined) => {
     let exportContext = null;
@@ -144,85 +146,86 @@ const Reports: FunctionComponent<ReportsProps> = ({
         width: '8%',
       },
     };
-    console.log('selected_ids', selected_ids);
+
     return (
-      <div>
-        <ListLines
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          handleSort={storageHelpers.handleSort}
-          handleSearch={storageHelpers.handleSearch}
-          handleAddFilter={storageHelpers.handleAddFilter}
-          handleRemoveFilter={storageHelpers.handleRemoveFilter}
-          handleToggleExports={storageHelpers.handleToggleExports}
-          openExports={openExports}
-          handleToggleSelectAll={handleToggleSelectAll}
-          selectAll={selectAll}
-          noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Report"
-          exportContext={exportContext}
-          keyword={searchTerm}
-          redirectionMode={redirectionMode}
-          handleSwitchRedirectionMode={storageHelpers.handleSetRedirectionMode}
-          filters={filters}
-          paginationOptions={paginationOptions}
-          numberOfElements={numberOfElements}
-          iconExtension={true}
-          availableFilterKeys={[
-            'report_types',
-            'x_opencti_workflow_id',
-            'labelledBy',
-            'createdBy',
-            'creator',
-            'markedBy',
-            'confidence',
-            'published_start_date',
-            'published_end_date',
-          ]}
-        >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((idx) => (
-                      <ReportLineDummy
-                        key={idx}
+      <ExportContextProvider>
+              <div>
+                <ListLines
+                  sortBy={sortBy}
+                  orderAsc={orderAsc}
+                  dataColumns={dataColumns}
+                  handleSort={storageHelpers.handleSort}
+                  handleSearch={storageHelpers.handleSearch}
+                  handleAddFilter={storageHelpers.handleAddFilter}
+                  handleRemoveFilter={storageHelpers.handleRemoveFilter}
+                  handleToggleExports={storageHelpers.handleToggleExports}
+                  openExports={openExports}
+                  handleToggleSelectAll={handleToggleSelectAll}
+                  selectAll={selectAll}
+                  noPadding={typeof onChangeOpenExports === 'function'}
+                  exportEntityType="Report"
+                  exportContext={exportContext}
+                  keyword={searchTerm}
+                  redirectionMode={redirectionMode}
+                  handleSwitchRedirectionMode={storageHelpers.handleSetRedirectionMode}
+                  filters={filters}
+                  paginationOptions={paginationOptions}
+                  numberOfElements={numberOfElements}
+                  iconExtension={true}
+                  availableFilterKeys={[
+                    'report_types',
+                    'x_opencti_workflow_id',
+                    'labelledBy',
+                    'createdBy',
+                    'creator',
+                    'markedBy',
+                    'confidence',
+                    'published_start_date',
+                    'published_end_date',
+                  ]}
+                >
+                  {queryRef && (
+                    <React.Suspense
+                      fallback={
+                        <>
+                          {Array(20)
+                            .fill(0)
+                            .map((idx) => (
+                              <ReportLineDummy
+                                key={idx}
+                                dataColumns={dataColumns}
+                              />
+                            ))}
+                        </>
+                      }
+                    >
+                      <ReportsLines
+                        queryRef={queryRef}
+                        paginationOptions={paginationOptions}
                         dataColumns={dataColumns}
+                        onLabelClick={storageHelpers.handleAddFilter}
+                        selectedElements={selectedElements}
+                        deSelectedElements={deSelectedElements}
+                        onToggleEntity={onToggleEntity}
+                        selectAll={selectAll}
+                        setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                        redirectionMode={redirectionMode}
                       />
-                    ))}
-                </>
-              }
-            >
-              <ReportsLines
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                onLabelClick={storageHelpers.handleAddFilter}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                redirectionMode={redirectionMode}
-                setEdges={setEdges}
-              />
-              <ToolBar
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                numberOfSelectedElements={numberOfSelectedElements}
-                selectAll={selectAll}
-                search={searchTerm}
-                filters={renderFilters}
-                handleClearSelectedElements={handleClearSelectedElements}
-                type="Report"
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
-      </div>
+                      <ToolBar
+                        selectedElements={selectedElements}
+                        deSelectedElements={deSelectedElements}
+                        numberOfSelectedElements={numberOfSelectedElements}
+                        selectAll={selectAll}
+                        search={searchTerm}
+                        filters={renderFilters}
+                        handleClearSelectedElements={handleClearSelectedElements}
+                        type="Report"
+                      />
+                    </React.Suspense>
+                  )}
+                </ListLines>
+              </div>
+      </ExportContextProvider>
     );
   };
 

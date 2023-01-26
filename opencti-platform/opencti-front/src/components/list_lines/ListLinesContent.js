@@ -3,13 +3,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import {
-  AutoSizer,
-  InfiniteLoader,
-  List,
-  WindowScroller,
-} from 'react-virtualized';
+import { AutoSizer, InfiniteLoader, List, WindowScroller } from 'react-virtualized';
 import inject18n from '../i18n';
+import { ExportContext } from '../../utils/ExportContextProvider';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -220,48 +216,58 @@ class ListLinesContent extends Component {
       isLoading,
       nbOfRowsToLoad,
       classes,
+      selectedElements,
     } = this.props;
     const countWithLoading = isLoading()
       ? dataList.length + this.state.loadingRowCount
       : dataList.length;
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
-      <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({ height, isScrolling, onChildScroll, scrollTop }) => (
-          <div className={classes.windowScrollerWrapper}>
-            <InfiniteLoader
-              isRowLoaded={this._isRowLoaded}
-              loadMoreRows={this._loadMoreRows}
-              rowCount={globalCount}
-            >
-              {({ onRowsRendered, registerChild }) => (
-                <AutoSizer disableHeight>
-                  {({ width }) => (
-                    <List
-                      ref={(ref) => {
-                        this.listRef = ref;
-                        registerChild(ref);
-                      }}
-                      autoHeight={true}
-                      height={height}
-                      onRowsRendered={onRowsRendered}
-                      isScrolling={isScrolling}
-                      onScroll={onChildScroll}
-                      overscanRowCount={nbOfRowsToLoad}
-                      rowCount={rowCount}
-                      rowHeight={50}
-                      rowRenderer={this._rowRenderer.bind(this)}
-                      scrollToIndex={-1}
-                      scrollTop={scrollTop}
-                      width={width}
-                    />
-                  )}
-                </AutoSizer>
+      <ExportContext.Consumer>
+        {({ setSelectedIds }) => {
+          // selected_ids: ids of elements that are selected via checkboxes AND respect the filtering conditions
+          // updated when we click on the Export panel at last
+          setSelectedIds(dataList.map((o) => o.node.id).filter((id) => (selectedElements ? Object.keys(selectedElements) : []).includes(id)));
+          return (
+            <WindowScroller ref={this._setRef} scrollElement={window}>
+              {({ height, isScrolling, onChildScroll, scrollTop }) => (
+                <div className={classes.windowScrollerWrapper}>
+                  <InfiniteLoader
+                    isRowLoaded={this._isRowLoaded}
+                    loadMoreRows={this._loadMoreRows}
+                    rowCount={globalCount}
+                  >
+                    {({ onRowsRendered, registerChild }) => (
+                      <AutoSizer disableHeight>
+                        {({ width }) => (
+                          <List
+                            ref={(ref) => {
+                              this.listRef = ref;
+                              registerChild(ref);
+                            }}
+                            autoHeight={true}
+                            height={height}
+                            onRowsRendered={onRowsRendered}
+                            isScrolling={isScrolling}
+                            onScroll={onChildScroll}
+                            overscanRowCount={nbOfRowsToLoad}
+                            rowCount={rowCount}
+                            rowHeight={50}
+                            rowRenderer={this._rowRenderer.bind(this)}
+                            scrollToIndex={-1}
+                            scrollTop={scrollTop}
+                            width={width}
+                          />
+                        )}
+                      </AutoSizer>
+                    )}
+                  </InfiniteLoader>
+                </div>
               )}
-            </InfiniteLoader>
-          </div>
-        )}
-      </WindowScroller>
+            </WindowScroller>
+          );
+        }}
+      </ExportContext.Consumer>
     );
   }
 }
