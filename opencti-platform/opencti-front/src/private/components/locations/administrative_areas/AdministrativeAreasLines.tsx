@@ -3,10 +3,10 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AdministrativeAreaLine, AdministrativeAreaLineDummy } from './AdministrativeAreaLine';
 import { DataColumns } from '../../../../components/list_lines';
-import type { UseLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { AdministrativeAreasLinesPaginationQuery, AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { AdministrativeAreasLines_data$key } from './__generated__/AdministrativeAreasLines_data.graphql';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
@@ -14,7 +14,7 @@ interface AdministrativeAreasLinesProps {
   paginationOptions?: AdministrativeAreasLinesPaginationQuery$variables,
   dataColumns: DataColumns,
   queryRef: PreloadedQuery<AdministrativeAreasLinesPaginationQuery>,
-  setNumberOfElements: UseLocalStorage[2]['handleSetNumberOfElements'],
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
 }
 
 export const administrativeAreasLinesQuery = graphql`
