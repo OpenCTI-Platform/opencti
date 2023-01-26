@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from pycti.entities import LOGGER
+
 
 class StixCyberObservableRelationship:
     def __init__(self, opencti):
@@ -72,15 +74,9 @@ class StixCyberObservableRelationship:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info",
-            "Listing stix_observable_relationships with {type: "
-            + str(relationship_type)
-            + ", from_id: "
-            + str(from_id)
-            + ", to_id: "
-            + str(to_id)
-            + "}",
+        LOGGER.info(
+            "Listing stix_observable_relationships with {type: %s, from_id: %s, to_id: %s}",
+            *(relationship_type, from_id, to_id),
         )
         query = (
             """
@@ -156,9 +152,7 @@ class StixCyberObservableRelationship:
         stop_time_stop = kwargs.get("stopTimeStop", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log(
-                "info", "Reading stix_observable_relationship {" + id + "}."
-            )
+            LOGGER.info("Reading stix_observable_relationship {%s}.", id)
             query = (
                 """
                 query StixCyberObservableRelationship($id: String!) {
@@ -222,15 +216,9 @@ class StixCyberObservableRelationship:
         elif relationship_type == "content":
             relationship_type = "obs_content"
 
-        self.opencti.log(
-            "info",
-            "Creating stix_observable_relationship '"
-            + relationship_type
-            + "' {"
-            + from_id
-            + ", "
-            + to_id
-            + "}.",
+        LOGGER.info(
+            "Creating stix_observable_relationship '%s' {%s, %s}.",
+            *(relationship_type, from_id, to_id),
         )
         query = """
                 mutation StixCyberObservableRelationshipAdd($input: StixCyberObservableRelationshipAddInput!) {
@@ -277,10 +265,7 @@ class StixCyberObservableRelationship:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            self.opencti.log(
-                "info",
-                "Updating stix_observable_relationship {" + id + "}.",
-            )
+            LOGGER.info("Updating stix_observable_relationship {%s}.", id)
             query = (
                 """
                 mutation StixCyberObservableRelationshipEdit($id: ID!, $input: [EditInput]!) {
@@ -299,5 +284,5 @@ class StixCyberObservableRelationship:
                 result["data"]["stixCyberObservableRelationshipEdit"]["fieldPatch"]
             )
         else:
-            self.opencti.log("error", "Missing parameters: id and key and value")
+            LOGGER.error("Missing parameters: id and key and value")
             return None

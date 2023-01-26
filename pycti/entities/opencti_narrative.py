@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Narrative:
@@ -158,9 +161,8 @@ class Narrative:
         if get_all:
             first = 100
 
-        self.opencti.log(
-            "info", "Listing Narratives with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Narratives with filters %s.", json.dumps(filters))
         query = (
             """
             query Narratives($filters: [NarrativesFiltering!], $search: String, $first: Int, $after: ID, $orderBy: NarrativesOrdering, $orderMode: OrderingMode) {
@@ -200,7 +202,7 @@ class Narrative:
             final_data = final_data + data
             while result["data"]["narratives"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["narratives"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Narratives after " + after)
+                LOGGER.info("Listing Narratives after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -233,7 +235,7 @@ class Narrative:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Narrative {" + id + "}.")
+            LOGGER.info("Reading Narrative {%s}.", id)
             query = (
                 """
                 query Narrative($id: String!) {
@@ -258,9 +260,7 @@ class Narrative:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_narrative] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_narrative] Missing parameters: id or filters")
             return None
 
     """
@@ -290,7 +290,7 @@ class Narrative:
         update = kwargs.get("update", False)
 
         if name is not None and description is not None:
-            self.opencti.log("info", "Creating Narrative {" + name + "}.")
+            LOGGER.info("Creating Narrative {%s}.", name)
             query = """
                 mutation NarrativeAdd($input: NarrativeAddInput!) {
                     narrativeAdd(input: $input) {
@@ -327,9 +327,7 @@ class Narrative:
             )
             return self.opencti.process_multiple_fields(result["data"]["narrativeAdd"])
         else:
-            self.opencti.log(
-                "error", "[opencti_narrative] Missing parameters: name and description"
-            )
+            LOGGER.error("[opencti_narrative] Missing parameters: name and description")
 
     """
         Import an Narrative object from a STIX2 object
@@ -394,6 +392,4 @@ class Narrative:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_narrative] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_narrative] Missing parameters: stixObject")

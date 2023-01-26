@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities import LOGGER
+
 
 class KillChainPhase:
     def __init__(self, opencti):
@@ -51,8 +53,8 @@ class KillChainPhase:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info", "Listing Kill-Chain-Phase with filters " + json.dumps(filters) + "."
+        LOGGER.info(
+            "Listing Kill-Chain-Phase with filters " + json.dumps(filters) + "."
         )
         query = (
             """
@@ -102,7 +104,7 @@ class KillChainPhase:
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         if id is not None:
-            self.opencti.log("info", "Reading Kill-Chain-Phase {" + id + "}.")
+            LOGGER.info("Reading Kill-Chain-Phase {%s}.", id)
             query = (
                 """
                 query KillChainPhase($id: String!) {
@@ -125,9 +127,7 @@ class KillChainPhase:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_kill_chain_phase] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_kill_chain_phase] Missing parameters: id or filters")
             return None
 
     """
@@ -147,7 +147,7 @@ class KillChainPhase:
         update = kwargs.get("update", False)
 
         if kill_chain_name is not None and phase_name is not None:
-            self.opencti.log("info", "Creating Kill-Chain-Phase {" + phase_name + "}.")
+            LOGGER.info("Creating Kill-Chain-Phase {%s}.", phase_name)
             query = (
                 """
                 mutation KillChainPhaseAdd($input: KillChainPhaseAddInput) {
@@ -177,8 +177,7 @@ class KillChainPhase:
                 result["data"]["killChainPhaseAdd"]
             )
         else:
-            self.opencti.log(
-                "error",
+            LOGGER.error(
                 "[opencti_kill_chain_phase] Missing parameters: kill_chain_name and phase_name",
             )
 
@@ -194,7 +193,7 @@ class KillChainPhase:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            self.opencti.log("info", "Updating Kill chain {" + id + "}.")
+            LOGGER.info("Updating Kill chain {%s}.", id)
             query = """
                     mutation KillChainPhaseEdit($id: ID!, $input: [EditInput]!) {
                         killChainPhaseEdit(id: $id) {
@@ -217,16 +216,15 @@ class KillChainPhase:
                 result["data"]["killChainPhaseEdit"]["fieldPatch"]
             )
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_kill_chain] Missing parameters: id and key and value",
+            LOGGER.error(
+                "[opencti_kill_chain] Missing parameters: id and key and value"
             )
             return None
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            self.opencti.log("info", "Deleting Kill-Chain-Phase {" + id + "}.")
+            LOGGER.info("Deleting Kill-Chain-Phase {%s}.", id)
             query = """
                  mutation KillChainPhaseEdit($id: ID!) {
                      killChainPhaseEdit(id: $id) {
@@ -236,7 +234,5 @@ class KillChainPhase:
              """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.log(
-                "error", "[opencti_kill_chain_phase] Missing parameters: id"
-            )
+            LOGGER.error("[opencti_kill_chain_phase] Missing parameters: id")
             return None

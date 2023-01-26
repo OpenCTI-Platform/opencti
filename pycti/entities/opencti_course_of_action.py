@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class CourseOfAction:
@@ -161,10 +164,10 @@ class CourseOfAction:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info",
-            "Listing Course-Of-Actions with filters " + json.dumps(filters) + ".",
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info(
+                "Listing Course-Of-Actions with filters %s.", json.dumps(filters)
+            )
         query = (
             """
             query CoursesOfAction($filters: [CoursesOfActionFiltering], $search: String, $first: Int, $after: ID, $orderBy: CoursesOfActionOrdering, $orderMode: OrderingMode) {
@@ -215,7 +218,7 @@ class CourseOfAction:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Course-Of-Action {" + id + "}.")
+            LOGGER.info("Reading Course-Of-Action {%s}.", id)
             query = (
                 """
                 query CourseOfAction($id: String!) {
@@ -242,9 +245,7 @@ class CourseOfAction:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_course_of_action] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_course_of_action] Missing parameters: id or filters")
             return None
 
     """
@@ -274,7 +275,7 @@ class CourseOfAction:
         update = kwargs.get("update", False)
 
         if name is not None and description is not None:
-            self.opencti.log("info", "Creating Course Of Action {" + name + "}.")
+            LOGGER.info("Creating Course Of Action {%s}.", name)
             query = """
                 mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
                     courseOfActionAdd(input: $input) {
@@ -313,9 +314,8 @@ class CourseOfAction:
                 result["data"]["courseOfActionAdd"]
             )
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_course_of_action] Missing parameters: name and description",
+            LOGGER.error(
+                "[opencti_course_of_action] Missing parameters: name and description"
             )
 
     """
@@ -403,6 +403,4 @@ class CourseOfAction:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_course_of_action] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_course_of_action] Missing parameters: stixObject")

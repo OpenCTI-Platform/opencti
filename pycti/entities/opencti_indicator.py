@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Indicator:
@@ -202,9 +205,8 @@ class Indicator:
         if get_all:
             first = 100
 
-        self.opencti.log(
-            "info", "Listing Indicators with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Indicators with filters %s.", json.dumps(filters))
         query = (
             """
                 query Indicators($filters: [IndicatorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IndicatorsOrdering, $orderMode: OrderingMode) {
@@ -244,7 +246,7 @@ class Indicator:
             final_data = final_data + data
             while result["data"]["indicators"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["indicators"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Indicators after " + after)
+                LOGGER.info("Listing Indicators after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -285,7 +287,7 @@ class Indicator:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Indicator {" + id + "}.")
+            LOGGER.info("Reading Indicator {%s}.", id)
             query = (
                 """
                     query Indicator($id: String!) {
@@ -310,9 +312,7 @@ class Indicator:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_indicator] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_indicator] Missing parameters: id or filters")
             return None
 
     def create(self, **kwargs):
@@ -363,7 +363,7 @@ class Indicator:
         ):
             if x_opencti_main_observable_type == "File":
                 x_opencti_main_observable_type = "StixFile"
-            self.opencti.log("info", "Creating Indicator {" + name + "}.")
+            LOGGER.info("Creating Indicator {%s}.", name)
             query = """
                 mutation IndicatorAdd($input: IndicatorAddInput) {
                     indicatorAdd(input: $input) {
@@ -421,9 +421,9 @@ class Indicator:
             )
             return self.opencti.process_multiple_fields(result["data"]["indicatorAdd"])
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_indicator] Missing parameters: name or pattern or x_opencti_main_observable_type",
+            LOGGER.error(
+                "[opencti_indicator] Missing parameters: "
+                "name or pattern or x_opencti_main_observable_type"
             )
 
     def add_stix_cyber_observable(self, **kwargs):
@@ -443,21 +443,17 @@ class Indicator:
             if indicator is None:
                 indicator = self.read(id=id)
             if indicator is None:
-                self.opencti.log(
-                    "error",
-                    "[opencti_indicator] Cannot add Object Ref, indicator not found",
+                LOGGER.error(
+                    "[opencti_indicator] Cannot add Object Ref, indicator not found"
                 )
                 return False
             if stix_cyber_observable_id in indicator["observablesIds"]:
                 return True
             else:
-                self.opencti.log(
-                    "info",
-                    "Adding Stix-Observable {"
-                    + stix_cyber_observable_id
-                    + "} to Indicator {"
-                    + id
-                    + "}",
+                LOGGER.info(
+                    "Adding Stix-Observable {%s} to Indicator {%s}",
+                    stix_cyber_observable_id,
+                    id,
                 )
                 query = """
                     mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
@@ -479,9 +475,8 @@ class Indicator:
                 )
                 return True
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_indicator] Missing parameters: id and stix cyber_observable_id",
+            LOGGER.error(
+                "[opencti_indicator] Missing parameters: id and stix cyber_observable_id"
             )
             return False
 
@@ -611,6 +606,4 @@ class Indicator:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_attack_pattern] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_attack_pattern] Missing parameters: stixObject")

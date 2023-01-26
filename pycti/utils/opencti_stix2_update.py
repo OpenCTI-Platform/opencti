@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from pycti.api import LOGGER as API_LOGGER
 from pycti.utils.constants import StixCyberObservableTypes
 
 
@@ -300,5 +301,4 @@ class OpenCTIStix2Update:
         except Exception as e:
             print(e)
             print(data)
-            self.opencti.log("error", "Cannot process this message")
-            pass
+            API_LOGGER.error("Cannot process this message")

@@ -2,9 +2,12 @@
 
 import datetime
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Note:
@@ -210,7 +213,7 @@ class Note:
                         }
                         ... on Case {
                             name
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -269,9 +272,8 @@ class Note:
         if get_all:
             first = 100
 
-        self.opencti.log(
-            "info", "Listing Notes with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Notes with filters %s.", json.dumps(filters))
         query = (
             """
             query Notes($filters: [NotesFiltering], $search: String, $first: Int, $after: ID, $orderBy: NotesOrdering, $orderMode: OrderingMode) {
@@ -311,7 +313,7 @@ class Note:
             final_data = final_data + data
             while result["data"]["notes"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["notes"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Notes after " + after)
+                LOGGER.info("Listing Notes after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -344,7 +346,7 @@ class Note:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Note {" + id + "}.")
+            LOGGER.info("Reading Note {%s}.", id)
             query = (
                 """
                 query Note($id: String!) {
@@ -381,13 +383,9 @@ class Note:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Checking StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} in Note {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Checking StixObjectOrStixRelationship {%s} in {%s}",
+                *(stix_object_or_stix_relationship_id, Note),
             )
             query = """
                 query NoteContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
@@ -403,10 +401,7 @@ class Note:
             )
             return result["data"]["noteContainsStixObjectOrStixRelationship"]
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_note] Missing parameters: id or entity_id",
-            )
+            LOGGER.error("[opencti_note] Missing parameters: id or entity_id")
 
     """
         Create a Note object
@@ -437,7 +432,7 @@ class Note:
         update = kwargs.get("update", False)
 
         if content is not None:
-            self.opencti.log("info", "Creating Note {" + content + "}.")
+            LOGGER.info("Creating Note {%s}.", content)
             query = """
                 mutation NoteAdd($input: NoteAddInput) {
                     noteAdd(input: $input) {
@@ -476,10 +471,7 @@ class Note:
             )
             return self.opencti.process_multiple_fields(result["data"]["noteAdd"])
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_note] Missing parameters: content",
-            )
+            LOGGER.error("[opencti_note] Missing parameters: content")
 
     """
         Add a Stix-Entity object to Note object (object_refs)
@@ -500,13 +492,9 @@ class Note:
                 stixObjectOrStixRelationshipId=stix_object_or_stix_relationship_id,
             ):
                 return True
-            self.opencti.log(
-                "info",
-                "Adding StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to Note {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Adding StixObjectOrStixRelationship {%s} to Note {%s}",
+                *(stix_object_or_stix_relationship_id, id),
             )
             query = """
                mutation NoteEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
@@ -529,8 +517,7 @@ class Note:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
+            LOGGER.error(
                 "[opencti_note] Missing parameters: id and stix_object_or_stix_relationship_id",
             )
             return False
@@ -549,13 +536,9 @@ class Note:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Removing StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to Note {"
-                + id
-                + "}",
+            LOGGER.info(
+                "Removing StixObjectOrStixRelationship {%s} to {%s}",
+                *(stix_object_or_stix_relationship_id, Note),
             )
             query = """
                mutation NotetEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -576,9 +559,7 @@ class Note:
             )
             return True
         else:
-            self.opencti.log(
-                "error", "[opencti_note] Missing parameters: id and entity_id"
-            )
+            LOGGER.error("[opencti_note] Missing parameters: id and entity_id")
             return False
 
     """
@@ -648,6 +629,4 @@ class Note:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_attack_pattern] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_attack_pattern] Missing parameters: stixObject")

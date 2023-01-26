@@ -1,10 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities import LOGGER
 from pycti.utils.constants import IdentityTypes
 
 
@@ -171,9 +173,8 @@ class Identity:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info", "Listing Identities with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Identities with filters %s.", json.dumps(filters))
         query = (
             """
             query Identities($types: [String], $filters: [IdentitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: IdentitiesOrdering, $orderMode: OrderingMode) {
@@ -225,7 +226,7 @@ class Identity:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Identity {" + id + "}.")
+            LOGGER.info("Reading Identity {%s}.", id)
             query = (
                 """
                 query Identity($id: String!) {
@@ -250,9 +251,7 @@ class Identity:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_identity] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_identity] Missing parameters: id or filters")
             return None
 
     """
@@ -287,7 +286,7 @@ class Identity:
         update = kwargs.get("update", False)
 
         if type is not None and name is not None and description is not None:
-            self.opencti.log("info", "Creating Identity {" + name + "}.")
+            LOGGER.info("Creating Identity {%s}.", name)
             input_variables = {
                 "stix_id": stix_id,
                 "createdBy": created_by,
@@ -360,7 +359,7 @@ class Identity:
                 result["data"][result_data_field]
             )
         else:
-            self.opencti.log("error", "Missing parameters: type, name and description")
+            LOGGER.error("Missing parameters: type, name and description")
 
     """
         Import an Identity object from a STIX2 object
@@ -470,6 +469,4 @@ class Identity:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_identity] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_identity] Missing parameters: stixObject")

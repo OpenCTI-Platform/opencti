@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from pycti.entities import LOGGER
+
 
 class Stix:
     def __init__(self, opencti):
@@ -15,7 +17,7 @@ class Stix:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            self.opencti.log("info", "Deleting Stix element {" + id + "}.")
+            LOGGER.info("Deleting Stix element {%s}.", id)
             query = """
                  mutation StixEdit($id: ID!) {
                      stixEdit(id: $id) {
@@ -25,7 +27,7 @@ class Stix:
              """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.log("error", "[opencti_stix] Missing parameters: id")
+            LOGGER.error("[opencti_stix] Missing parameters: id")
             return None
 
     """

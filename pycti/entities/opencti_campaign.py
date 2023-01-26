@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Campaign:
@@ -160,9 +163,8 @@ class Campaign:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info", "Listing Campaigns with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Campaigns with filters %s.", json.dumps(filters))
         query = (
             """
             query Campaigns($filters: [CampaignsFiltering], $search: String, $first: Int, $after: ID, $orderBy: CampaignsOrdering, $orderMode: OrderingMode) {
@@ -213,7 +215,7 @@ class Campaign:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Campaign {" + id + "}.")
+            LOGGER.info("Reading Campaign {%s}.", id)
             query = (
                 """
                 query Campaign($id: String!) {
@@ -238,9 +240,7 @@ class Campaign:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_campaign] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_campaign] Missing parameters: id or filters")
             return None
 
     """
@@ -272,7 +272,7 @@ class Campaign:
         update = kwargs.get("update", False)
 
         if name is not None and description is not None:
-            self.opencti.log("info", "Creating Campaign {" + name + "}.")
+            LOGGER.info("Creating Campaign {%s}.", name)
             query = """
                 mutation CampaignAdd($input: CampaignAddInput) {
                     campaignAdd(input: $input) {
@@ -311,9 +311,7 @@ class Campaign:
             )
             return self.opencti.process_multiple_fields(result["data"]["campaignAdd"])
         else:
-            self.opencti.log(
-                "error", "[opencti_campaign] Missing parameters: name and description"
-            )
+            LOGGER.error("[opencti_campaign] Missing parameters: name and description")
 
     """
         Import a Campaign object from a STIX2 object
@@ -384,6 +382,4 @@ class Campaign:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_campaign] Missing parameters: stixObject"
-            )
+            LOGGER.error("[opencti_campaign] Missing parameters: stixObject")

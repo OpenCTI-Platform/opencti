@@ -1,9 +1,12 @@
 # coding: utf-8
 
 import json
+import logging
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Tool:
@@ -173,9 +176,8 @@ class Tool:
         if get_all:
             first = 100
 
-        self.opencti.log(
-            "info", "Listing Tools with filters " + json.dumps(filters) + "."
-        )
+        if LOGGER.isEnabledFor(logging.INFO):
+            LOGGER.info("Listing Tools with filters %s.", json.dumps(filters))
         query = (
             """
             query Tools($filters: [ToolsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ToolsOrdering, $orderMode: OrderingMode) {
@@ -215,7 +217,7 @@ class Tool:
             final_data = final_data + data
             while result["data"]["tools"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["tools"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Tools after " + after)
+                LOGGER.info("Listing Tools after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -248,7 +250,7 @@ class Tool:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Tool {" + id + "}.")
+            LOGGER.info("Reading Tool {%s}.", id)
             query = (
                 """
                 query Tool($id: String!) {
@@ -273,9 +275,7 @@ class Tool:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_tool] Missing parameters: id or filters"
-            )
+            LOGGER.error("[opencti_tool] Missing parameters: id or filters")
             return None
 
     """
@@ -306,7 +306,7 @@ class Tool:
         update = kwargs.get("update", False)
 
         if name is not None and description is not None:
-            self.opencti.log("info", "Creating Tool {" + name + "}.")
+            LOGGER.info("Creating Tool {%s}.", name)
             query = """
                 mutation ToolAdd($input: ToolAddInput) {
                     toolAdd(input: $input) {
@@ -344,9 +344,7 @@ class Tool:
             )
             return self.opencti.process_multiple_fields(result["data"]["toolAdd"])
         else:
-            self.opencti.log(
-                "error", "[opencti_tool] Missing parameters: name and description"
-            )
+            LOGGER.error("[opencti_tool] Missing parameters: name and description")
 
     """
         Import an Tool object from a STIX2 object
@@ -410,4 +408,4 @@ class Tool:
                 update=update,
             )
         else:
-            self.opencti.log("error", "[opencti_tool] Missing parameters: stixObject")
+            LOGGER.error("[opencti_tool] Missing parameters: stixObject")
