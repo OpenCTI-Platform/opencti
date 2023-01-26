@@ -181,8 +181,7 @@ class AttackPattern:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Attack-Patterns with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Attack-Patterns with filters %s.", json.dumps(filters))
         query = (
             """
             query AttackPatterns($filters: [AttackPatternsFiltering], $search: String, $first: Int, $after: ID, $orderBy: AttackPatternsOrdering, $orderMode: OrderingMode) {

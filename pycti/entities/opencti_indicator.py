@@ -205,8 +205,7 @@ class Indicator:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Indicators with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Indicators with filters %s.", json.dumps(filters))
         query = (
             """
                 query Indicators($filters: [IndicatorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IndicatorsOrdering, $orderMode: OrderingMode) {

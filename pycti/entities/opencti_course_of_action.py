@@ -164,10 +164,7 @@ class CourseOfAction:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info(
-                "Listing Course-Of-Actions with filters %s.", json.dumps(filters)
-            )
+        LOGGER.info("Listing Course-Of-Actions with filters %s.", json.dumps(filters))
         query = (
             """
             query CoursesOfAction($filters: [CoursesOfActionFiltering], $search: String, $first: Int, $after: ID, $orderBy: CoursesOfActionOrdering, $orderMode: OrderingMode) {

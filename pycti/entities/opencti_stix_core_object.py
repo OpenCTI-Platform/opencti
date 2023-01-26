@@ -609,10 +609,7 @@ class StixCoreObject:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info(
-                "Listing Stix-Core-Objects with filters %s.", json.dumps(filters)
-            )
+        LOGGER.info("Listing Stix-Core-Objects with filters %s.", json.dumps(filters))
         query = (
             """
                     query StixCoreObjects($types: [String], $filters: [StixCoreObjectsFiltering], $search: String, $relationship_type: [String], $elementId: String, $first: Int, $after: ID, $orderBy: StixCoreObjectsOrdering, $orderMode: OrderingMode) {

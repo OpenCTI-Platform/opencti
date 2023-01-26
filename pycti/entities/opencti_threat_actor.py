@@ -183,8 +183,7 @@ class ThreatActor:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Threat-Actors with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Threat-Actors with filters %s.", json.dumps(filters))
         query = (
             """
             query ThreatActors($filters: [ThreatActorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {

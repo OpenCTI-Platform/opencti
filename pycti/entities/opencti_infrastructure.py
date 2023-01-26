@@ -187,8 +187,7 @@ class Infrastructure:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Infrastructures with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Infrastructures with filters %s.", json.dumps(filters))
         query = (
             """
             query Infrastructures($filters: [InfrastructuresFiltering], $search: String, $first: Int, $after: ID, $orderBy: InfrastructuresOrdering, $orderMode: OrderingMode) {

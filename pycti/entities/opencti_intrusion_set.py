@@ -166,8 +166,7 @@ class IntrusionSet:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Intrusion-Sets with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Intrusion-Sets with filters %s.", json.dumps(filters))
         query = (
             """
             query IntrusionSets($filters: [IntrusionSetsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IntrusionSetsOrdering, $orderMode: OrderingMode) {

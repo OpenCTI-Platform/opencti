@@ -163,8 +163,7 @@ class Campaign:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Campaigns with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Campaigns with filters %s.", json.dumps(filters))
         query = (
             """
             query Campaigns($filters: [CampaignsFiltering], $search: String, $first: Int, $after: ID, $orderBy: CampaignsOrdering, $orderMode: OrderingMode) {

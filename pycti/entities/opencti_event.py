@@ -163,8 +163,7 @@ class Event:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Events with filters %s", json.dumps(filters))
+        LOGGER.info("Listing Events with filters %s", json.dumps(filters))
         query = (
             """
             query Events($filters: [EventsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: EventsOrdering, $orderMode: OrderingMode) {

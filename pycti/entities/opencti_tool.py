@@ -176,8 +176,7 @@ class Tool:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Tools with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Tools with filters %s.", json.dumps(filters))
         query = (
             """
             query Tools($filters: [ToolsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ToolsOrdering, $orderMode: OrderingMode) {

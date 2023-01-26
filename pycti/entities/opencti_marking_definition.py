@@ -55,10 +55,7 @@ class MarkingDefinition:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info(
-                "Listing Marking-Definitions with filters %s.", json.dumps(filters)
-            )
+        LOGGER.info("Listing Marking-Definitions with filters %s.", json.dumps(filters))
         query = (
             """
             query MarkingDefinitions($filters: [MarkingDefinitionsFiltering], $first: Int, $after: ID, $orderBy: MarkingDefinitionsOrdering, $orderMode: OrderingMode) {

@@ -159,8 +159,7 @@ class Language:
         if get_all:
             first = 100
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Languages with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Languages with filters %s.", json.dumps(filters))
         query = (
             """
             query Languages($filters: [LanguagesFiltering], $search: String, $first: Int, $after: ID, $orderBy: LanguagesOrdering, $orderMode: OrderingMode) {

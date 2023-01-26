@@ -77,10 +77,7 @@ class ExternalReference:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info(
-                "Listing External-Reference with filters %s.", json.dumps(filters)
-            )
+        LOGGER.info("Listing External-Reference with filters %s.", json.dumps(filters))
         query = (
             """
             query ExternalReferences($filters: [ExternalReferencesFiltering], $first: Int, $after: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {

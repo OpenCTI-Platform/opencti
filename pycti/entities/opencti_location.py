@@ -168,8 +168,7 @@ class Location:
         if get_all:
             first = 500
 
-        if LOGGER.isEnabledFor(logging.INFO):
-            LOGGER.info("Listing Locations with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Locations with filters %s.", json.dumps(filters))
         query = (
             """
             query Locations($types: [String], $filters: [LocationsFiltering], $search: String, $first: Int, $after: ID, $orderBy: LocationsOrdering, $orderMode: OrderingMode) {
