@@ -515,14 +515,19 @@ const riskResolvers = {
         if (editItem.operation !== undefined) continue;
 
         // if value if empty then treat as a remove
-        if (editItem.value.length === 0 || editItem.value[0].length === 0) {
+        if (editItem.value.length === 0 ) {
           editItem.operation = 'remove';
           continue;
         }
+        if (Array.isArray(editItem.value) && editItem.value[0] === null) throw new CyioError(`Field "${editItem.key}" has invalid value "null"`);
+
         if (!response[0].hasOwnProperty(editItem.key)) {
           editItem.operation = 'add';
         } else {
           editItem.operation = 'replace';
+
+        // Set operation to 'skip' if no change in value
+        if (response[0][editItem.key] === editItem.value) editItem.operation ='skip';
         }
       }
 

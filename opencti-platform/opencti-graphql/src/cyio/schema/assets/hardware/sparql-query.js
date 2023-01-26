@@ -6,7 +6,8 @@ import {
   ipAddressReducer,
   macAddressReducer,
   portReducer
-} from '../computing-device/sparql-query.js'
+} from '../computing-device/sparql-query.js';
+import { objectMap } from '../../global/global-utils';
 
 export function getReducer( type ) {
   switch( type ) {
@@ -31,7 +32,7 @@ const hardwareAssetReducer = (item) => {
     if (item.asset_type !== undefined) {
       if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
       if (item.asset_type == 'compute-device') item.asset_type = 'computing-device';
-      if (item.asset_type in deviceMap) item.object_type = 'hardware';
+      if (item.asset_type in objectMap) item.object_type = 'hardware';
     }
     if (item.object_type === undefined && item.iri !== undefined) {
       if (item.iri.includes('Hardware')) item.object_type = 'hardware';
@@ -117,7 +118,7 @@ export const insertHardwareQuery = (propValues) => {
   const id = generateId( id_material, OASIS_SCO_NS );
   const timestamp = new Date().toISOString();
   
-  if (!deviceMap.hasOwnProperty(propValues.asset_type)) throw new CyioError(`Unsupported hardware type ' ${propValues.asset_type}'`);
+  if (!objectMap.hasOwnProperty(propValues.asset_type)) throw new CyioError(`Unsupported hardware type ' ${propValues.asset_type}'`);
 
   // escape any special characters (e.g., newline)
   if (propValues.description !== undefined) {
@@ -139,10 +140,10 @@ export const insertHardwareQuery = (propValues) => {
   const insertPredicates = [];
   insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#InventoryItem> `);
   if (propValues.asset_type !== 'hardware') {
-    insertPredicates.push(`${iri} a <${deviceMap[propValues.asset_type].classIri}>`);
-    if (deviceMap[propValues.asset_type].parent !== undefined && deviceMap[propValues.asset_type].parent !== 'hardware') {
-      let parent = deviceMap[propValues.asset_type].parent;
-      insertPredicates.push(`${iri} a <${deviceMap[parent].classIri}>`);
+    insertPredicates.push(`${iri} a <${objectMap[propValues.asset_type].classIri}>`);
+    if (objectMap[propValues.asset_type].parent !== undefined && objectMap[propValues.asset_type].parent !== 'hardware') {
+      let parent = objectMap[propValues.asset_type].parent;
+      insertPredicates.push(`${iri} a <${objectMap[parent].classIri}>`);
     }
   }
   insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> `);
@@ -330,150 +331,6 @@ export const detachFromHardwareQuery = (id, field, itemIris) => {
     }
   }
   `
-}
-
-// DeviceMap that maps asset_type values to class
-const deviceMap = {
-  // "account": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Account"
-  // },
-  "appliance": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Appliance",
-    parent: "network-device",
-  },
-  // "circuit": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Circuit",
-  // },
-  // "computer-account": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ComputerAccount",
-  //   parent: "account"
-  // },
-  "computing-device": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#ComputingDevice",
-    parent: "hardware",
-  },
-  // "database": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Database",
-  // },
-  // "directory-server": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#DirectoryServer",
-  //   parent: "system",
-  // },
-  // "dns-server": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#DnsServer",
-  //   parent: "system",
-  // },
-  // "documentary-asset": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#DocumentaryAsset",
-  // },
-  // "email-server": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#EmailServer",
-  //   parent: "system",
-  // },
-  "embedded": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Embedded",
-    parent: "computing-device",
-  },
-  "firewall": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Firewall",
-    parent: "network-device",
-  },
-  // "guidance": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Guidance",
-  //   parent: "documentary-asset",
-  // },
-  "hardware": {
-    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Hardware",
-  },
-  "laptop": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Laptop",
-    parent: "computing-device",
-  },
-  "mobile-device": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#MobileDevice",
-    parent: "network-device",
-  },
-  "network-device": {
-    iriTemplate:"http://scap.nist.gov/ns/asset-identification#NetworkDevice",
-    parent: "hardware",
-  },
-  "network-switch": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#NetworkSwitch",
-    parent: "network-device",
-  },
-  "pbx": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#PBX",
-    parent: "hardware",
-  },
-  "physical-device": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#PhysicalDevice",
-    parent: "hardware",
-  },
-  // "plan": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Plan",
-  //   parent: "documentary-asset",
-  // },
-  // "policy": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Policy",
-  //   parent: "policy",
-  // },
-  // "procedure": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Procedure",
-  //   parent: "procedure"
-  // },
-  "router": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Router",
-    parent: "network-device",
-  },
-  "server": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Server",
-    parent: "computing-device",
-  },
-  // "service": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Service",
-  // },
-  // "standard": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Standard",
-  //   parent: "documentary-asset",
-  // },
-  "storage-array": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#StorageArray",
-    parent: "network-device",
-  },
-  // "system": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#System",
-  // },
-  // "user-account": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#UserAccount",
-  //   parent: "computer-account",
-  // },
-  // "validation": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Validation",
-  //   parent: "documentary-asset",
-  // },
-  "voip-device": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#VoIPDevice",
-    parent: "network-device",
-  },
-  "voip-handset": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#VoIPHandset",
-    parent: "voip-device",
-  },
-  "voip-router": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#VoIPRouter",
-    parent: "voip-device",      
-  },
-  // "web-server": {
-  //   iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#WebServer",
-  //   parent: "system",
-  // },
-  // "web-site": {
-  //   iriTemplate: "http://scap.nist.gov/ns/asset-identification#Website",
-  // },
-  "workstation": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Workstation",
-    parent: "computing-device",
-  },
 }
 
 // Predicate Maps

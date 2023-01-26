@@ -231,6 +231,7 @@ export const riskSingularizeSchema = {
     "remediation_type_values": true,
     "remediation_timestamp_values": true,
     "occurrences": true,
+    "justification": true,
   }
 };
 

@@ -59,10 +59,18 @@ type DataSource implements BasicObject & LifecycleObject {
   auto: Boolean!
   "Identifies the types of information represented in the ingested data"
   scope: [String]
-  "Indicates the frequency at which the Connector should attempt to ingest data from an externa source"
-  update_frequency: FrequencyTiming!
+  "Indicates the frequency at which the Connector should attempt to ingest data from an external source"
+  update_frequency: FrequencyTiming
+  "Identifies the last time the data source successfully executed"
+  last_success: DateTime
+  "Identifies an artifact that represents a where to the next query should resume.  This must be a string even if its a number."
+  last_ingest_artifact: String
+  "Indicates the information necessary to make a connection to the external source."
+  connection_information: ConnectionInformation
   "Identifies the Information Exchange Policy that must be applied to any data ingested."
   iep: IEPMarking
+  "Identifies the recent activities of the data source"
+  activities(since: DateTime): [IngestActivity]
   "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
   external_references: [CyioExternalReference]
   "Identifies one or more references to additional commentary on the Model."
@@ -73,8 +81,6 @@ input DataSourceInput {
   # Data Source
   "Identifies the name of the product"
   name: String!
-  "Identifies the name used to display to users"
-  display_name: String
   "Identifies a human-readable description of the data source"
   description: String
   "Identifies the type of data source"
@@ -87,82 +93,14 @@ input DataSourceInput {
   auto: Boolean!
   "Identifies the types of information represented in the ingested data"
   scope: [String]
-  "Identifies an artifact that represents a where to the next query should resume.  This must be a string even if its a number."
-  last_ingest_artifact: String
   "Indicates the frequency at which the Connector should attempt to ingest data from an external source"
-  update_frequency: FrequencyTimingAddInput!
+  update_frequency: FrequencyTimingAddInput
   "Indicates the information necessary to make a connection to the external source."
   connection_information: ConnectionInformationInput!
   "Identifies the Information Exchange Policy that must be applied to any data ingested."
-  iep: IEPMarkingInput!
+  iep: ID
 }
 
-"""
-ConnectionInformation contains the information necessary to successfully make a connection to the external source.
-"""
-type ConnectionInformation {
-  "Identifies the name of the connection"
-  name: String!
-  "Identifies the name used to display to users"
-  display_name: String
-  "Identifies a human-readable description of the connection and its purpose"
-  description: String
-  "Indicates the requirement for a secure (e.g., TLS) connection"
-  secure: Boolean!
-  "Indicates the name of the host or IP address of the connection"
-  host: String!
-  "Indications the port number to be used by the connection"
-  port: Int!
-  "Indicates the query or body to be used by the connection on subsequent queries."
-  query: String
-  "Indicates the query or body to be used by the connection on an initial retrieval or reset."
-  query_initial: String
-  "Indicates the field/header to be used as the value of the index when required to make multiple queries to pagination through larger result sets."
-  query_index_field: String
-  "Indicates the required minimum time, in seconds, between consecutive queries."
-  query_sleep_interval: Int
-  "Indicates the file(s) containing the Certificate Authority for the connection.  The value must be a file path that includes the name of the file."
-  ca: [String]
-  "Indicates the API key to be used by the connection"
-  api_key: String
-  "Indicates the username to be used to establish the connection"
-  username: String
-  "Indicates the passphrase to be used to establish the connection"
-  passphrase: String
-  "Indicates the topic on which connector is to listen for data"
-  listen: String
-  "Indicates the exchange on which connector is to listen for data"
-  listen_exchange: String
-  "Indicates the topic on which connector is to push data"
-  push: String
-  "Indicates the exchange on which connector is to push data"
-  push_exchange: String
-}
-
-input ConnectionInformationInput {
-  "Indicates the requirement for a secure (e.g., TLS) connection"
-  secure: Boolean!
-  "Indicates the name of the host or IP address of the connection"
-  host: String!
-  "Indications the port number to be used by the connection"
-  port: Int
-  "Indicates the query or body to be used by the connection on subsequent queries."
-  query: String!
-  "Indicates the query or body to be used by the connection on an initial retrieval or reset."
-  query_initial: String!
-  "Indicates the field/header to be used as the value of the index when required to make multiple queries to pagination through larger result sets."
-  query_index_field: String
-  "Indicates the required minimum time, in seconds, between consecutive queries."
-  query_sleep_interval: Int!
-  "Indicates the file(s) containing the Certificate Authority for the connection.  The value must be a file path that includes the name of the file."
-  ca: [String]
-  "Indicates the API key to be used by the connection"
-  api_key: String
-  "Indicates the username to be used to establish the connection"
-  username: String
-  "Indicates the passphrase to be used to establish the connection"
-  passphrase: String
-}
 
 # Data Source Status
 """
@@ -176,28 +114,42 @@ enum DataSourceStatus {
   ACTIVE
   "Indicates the data source is Inactive"
   INACTIVE
-  "Indicates the data source isnot applicable"
+  "Indicates the data source is not applicable"
   NOT_APPLICABLE
 }
 
 # Data Source Type
 """
 DataSourceType provides an indication about the type of the Data Source
-  - EXTERNAL_IMPORT indicates the Data Source ingests a stream of data
-  - EXTERNAL_IMPORT_FILE indicates the Data Source downloads a file
-  - INTERNAL_ENRICHMENT indicates the Data Source reaches to an external source
-    to obtain data about a subject that is used to enrich a store piece of knowledge
+  - EXTERNAL_IMPORT indicates the Data Source ingests information from an 
+    external entity or service and import it into Cyio.
+  - EXTERNAL_IMPORT_FILE indicates the Data Source downloads a file from an
+    external entity or service and extracts information to be ingested it 
+    into Cyio.
+  - INTERNAL_ENRICHMENT indicates the Data Source reaches to an external 
+    lookup services to retrieve information about a specific entity that increases 
+    the knowledge of that object in Cyio.  An example would be a whois lookup for an
+    IP address.
+  - INTERNAL_IMPORT_FILE indicates the Data Source ingests information from an 
+    uploaded file can be extracted and ingested into Cyio.
+  - STREAM indicates the Data Source connects to a data stream and continuously 
+    ingests the retrieved information into Cyio. When used in combination with EDR 
+    systems like Tanium, the connector is also able to answer the originating system 
+    and turn this into a two way interaction between another system and Cyio.
 """
 enum DataSourceType {
-  "Import of data via API from External Source"
+  "Import of information via API from an external source"
   EXTERNAL_IMPORT
-  "Import of data via file form External Source"
+  "Import of information via file form an external source"
   EXTERNAL_IMPORT_FILE
-  "Interal export of data for a specific entity"
+  "Internal import of information for about a specific entity from an external lookup service."
   INTERNAL_ENRICHMENT
-  # INTERNAL_IMPORT_FILE
+  "Internal import of data from an uploaded file"
+  INTERNAL_IMPORT_FILE
+  # "Internal export of data contained in Cyio into different file formats"
   # INTERNAL_EXPORT_FILE
-  # STREAM
+  "Connect to a data stream an continuously ingest the retrieved information information"
+  STREAM
 }
 
 
@@ -209,6 +161,8 @@ enum DataSourceOrdering {
   modified
   "Display Name"
   display_name
+  "Type"
+  data_source_type
   "Name"
   name
   "Status"
@@ -229,8 +183,6 @@ enum DataSourceFilter {
   name
   "Status"
   status
-  "Trigger"
-  trigger
 }
 
 input DataSourceFiltering {

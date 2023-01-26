@@ -15,6 +15,7 @@ import {getSettings} from "../domain/settings";
 import { applicationSession } from '../database/session';
 import StardogKB from '../datasources/stardog.js';
 import Artemis from '../datasources/artemis.js';
+import DynamoDB from '../datasources/dynamoDB.js';
 import nconf from "nconf";
 import querySelectMap from "../cyio/schema/querySelectMap";
 import {
@@ -113,7 +114,9 @@ const createApolloServer = async (app, httpServer) => {
     dataSources: () => ({
       Stardog: new StardogKB( ),
       Artemis: new Artemis( ),
+      DynamoDB: new DynamoDB( ),
     }),
+    // TODO: Remove/disable playground in server
     playground: {
       cdnUrl,
       settings: {

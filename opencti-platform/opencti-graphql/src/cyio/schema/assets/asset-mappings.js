@@ -77,15 +77,16 @@ const objectTypeMapping = {
   "location": "AssetLocation",
   "mac-addr": "MACAddress",
   "mobile-device": "MobileDeviceAsset",
-  "network-device": "NetworkDeviceAsset",
   "network": "NetworkAsset",
+  "network-device": "NetworkDeviceAsset",
   "operating-system": "OperatingSystemAsset",
+  "pbx": "HardwareAsset",
   "physical-device": "PhysicalDeviceAsset",
   "plan": "PlanAsset",
   "policy": "PolicyAsset",
   "port-range": "PortRange",
   "port": "PortInfo",
-  "printer": "NetworkAsset",
+  "printer": "HardwareAsset",
   "procedure": "ProcedureAsset",
   "responsible-party": "ResponsibleParty",
   "router": "RouterAsset",
@@ -105,6 +106,7 @@ const objectTypeMapping = {
   "web-server": "WebServerAsset",
   "website": "WebsiteAsset",
   "web-site": "WebsiteAsset",
+  "wireless-access-point": "NetworkDeviceAsset",
   "workstation": "WorkstationAsset"
 };
 

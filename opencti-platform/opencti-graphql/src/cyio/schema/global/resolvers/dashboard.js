@@ -1,8 +1,6 @@
 import { compareValues, CyioError } from '../../utils.js';
-import { UserInputError } from 'apollo-server-errors';
 import conf from '../../../../config/conf.js';
 import { 
-  getReducer,
   entitiesCountQuery,
   entitiesTimeSeriesQuery,
   entitiesDistributionQuery,
@@ -10,7 +8,6 @@ import {
 } from './dashboard-sparqlQuery.js';
 import { calculateRiskLevel } from '../../risk-assessments/riskUtils.js';
 import { getReducer as getAssessmentReducer } from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
-import { objectTypeMapping } from '../../assets/asset-mappings.js';
 
 const cyioDashboardResolvers = {
   Query: {
