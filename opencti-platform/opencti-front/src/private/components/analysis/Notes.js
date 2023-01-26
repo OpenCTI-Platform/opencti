@@ -20,6 +20,7 @@ import {
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import ToolBar from '../data/ToolBar';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 class Notes extends Component {
   constructor(props) {
@@ -340,12 +341,14 @@ class Notes extends Component {
     return (
       <UserContext.Consumer>
         {({ helper }) => (
+          <ExportContextProvider>
           <div>
             {view === 'lines' && this.renderLines(paginationOptions, helper)}
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <NoteCreation paginationOptions={paginationOptions} />
             </Security>
           </div>
+          </ExportContextProvider>
         )}
       </UserContext.Consumer>
     );

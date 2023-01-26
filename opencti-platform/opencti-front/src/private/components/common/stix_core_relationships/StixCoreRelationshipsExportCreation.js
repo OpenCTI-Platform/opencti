@@ -24,6 +24,7 @@ import {
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
+import { ExportContext } from '../../../../utils/ExportContextProvider';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -233,6 +234,10 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const isExportActive = (format) => R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = R.filter((x) => isExportActive(x), exportScopes).length > 0;
     return (
+      <ExportContext.Consumer>
+        {({ selectedIds }) => {
+          console.log('selectedIds', selectedIds);
+          return (
       <div className={classes.createButton}>
         <Tooltip
           title={
@@ -345,6 +350,9 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
           )}
         </Formik>
       </div>
+          );
+        }}
+      </ExportContext.Consumer>
     );
   }
 }

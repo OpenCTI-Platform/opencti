@@ -18,6 +18,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ToolBar from '../../data/ToolBar';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import ExportContextProvider from '../../../../utils/ExportContextProvider';
 
 class StixDomainObjectIndicators extends Component {
   constructor(props) {
@@ -410,6 +411,7 @@ class StixDomainObjectIndicators extends Component {
       filters: finalFilters,
     };
     return (
+      <ExportContextProvider>
       <div style={{ marginTop: 20, paddingRight: 250 }}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -438,6 +440,7 @@ class StixDomainObjectIndicators extends Component {
           openExports={openExports}
         />
       </div>
+      </ExportContextProvider>
     );
   }
 }

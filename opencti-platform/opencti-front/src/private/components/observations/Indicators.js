@@ -21,6 +21,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const styles = () => ({
   container: {
@@ -427,6 +428,7 @@ class Indicators extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
+      <ExportContextProvider>
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -448,6 +450,7 @@ class Indicators extends Component {
           openExports={openExports}
         />
       </div>
+      </ExportContextProvider>
     );
   }
 }

@@ -178,7 +178,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
-          console.log('Selected bullshit', selectedIds);
+          console.log('selectedIds', selectedIds);
           return (
             <div className={classes.createButton}>
               <Tooltip

@@ -18,6 +18,7 @@ import {
 import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const styles = () => ({
   container: {
@@ -365,6 +366,7 @@ class Entities extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
+      <ExportContextProvider>
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixDomainObjectsRightBar
@@ -373,6 +375,7 @@ class Entities extends Component {
           handleClear={this.handleClear.bind(this)}
         />
       </div>
+      </ExportContextProvider>
     );
   }
 }

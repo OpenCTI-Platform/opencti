@@ -16,6 +16,7 @@ import {
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import ToolBar from './ToolBar';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 class Relationships extends Component {
   constructor(props) {
@@ -350,7 +351,11 @@ class Relationships extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>{view === 'lines' ? this.renderLines(paginationOptions) : ''}</div>
+      <ExportContextProvider>
+      <div>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+      </div>
+      </ExportContextProvider>
     );
   }
 }

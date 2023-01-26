@@ -23,6 +23,7 @@ import { ContainerStixCyberObservables_container$data } from './__generated__/Co
 import useCopy from '../../../../utils/hooks/useCopy';
 import { ContainerStixCyberObservablesLinesSearchQuery$data } from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { convertFilters } from '../../../../utils/ListParameters';
 
 const useStyles = makeStyles<Theme>(() => ({
@@ -273,6 +274,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
   return (
     <UserContext.Consumer>
       {({ helper }) => (
+        <ExportContextProvider>
         <div className={classes.container}>
           <ListLines
             sortBy={sortBy}
@@ -342,6 +344,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
             openExports={openExports}
           />
         </div>
+        </ExportContextProvider>
       )}
     </UserContext.Consumer>
   );

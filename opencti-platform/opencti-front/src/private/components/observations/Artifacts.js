@@ -19,6 +19,7 @@ import ArtifactsLines, {
 } from './artifacts/ArtifactsLines';
 import ArtifactCreation from './artifacts/ArtifactCreation';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 class StixCyberObservables extends Component {
   constructor(props) {
@@ -319,6 +320,7 @@ class StixCyberObservables extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
+      <ExportContextProvider>
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -329,6 +331,7 @@ class StixCyberObservables extends Component {
           />
         </Security>
       </div>
+      </ExportContextProvider>
     );
   }
 }

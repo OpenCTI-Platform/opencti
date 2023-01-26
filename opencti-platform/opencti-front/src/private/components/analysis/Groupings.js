@@ -13,6 +13,7 @@ import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 class Groupings extends Component {
   constructor(props) {
@@ -347,12 +348,14 @@ class Groupings extends Component {
     return (
       <UserContext.Consumer>
         {({ helper }) => (
+          <ExportContextProvider>
           <div>
             {view === 'lines' && this.renderLines(paginationOptions, helper)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <GroupingCreation paginationOptions={paginationOptions} />
             </Security>
           </div>
+          </ExportContextProvider>
         )}
       </UserContext.Consumer>
     );

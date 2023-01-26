@@ -19,6 +19,7 @@ import ToolBar from './data/ToolBar';
 import SearchStixCoreObjectsLines, {
   searchStixCoreObjectsLinesQuery,
 } from './search/SearchStixCoreObjectsLines';
+import ExportContextProvider from '../../utils/ExportContextProvider';
 
 const styles = () => ({
   container: {
@@ -317,6 +318,7 @@ class Search extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
+      <ExportContextProvider>
       <div>
         <TopBar keyword={searchTerm} />
         <Typography
@@ -328,6 +330,7 @@ class Search extends Component {
         </Typography>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
       </div>
+      </ExportContextProvider>
     );
   }
 }

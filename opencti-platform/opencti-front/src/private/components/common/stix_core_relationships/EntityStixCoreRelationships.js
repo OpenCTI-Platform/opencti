@@ -27,6 +27,7 @@ import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ToolBar from '../../data/ToolBar';
 import EntityStixCoreRelationshipsEntities from './EntityStixCoreRelationshipsEntities';
+import ExportContextProvider from '../../../../utils/ExportContextProvider';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -761,6 +762,7 @@ class EntityStixCoreRelationships extends Component {
       ? ['Stix-Domain-Object']
       : stixCoreObjectTypesWithoutObservables;
     return (
+      <ExportContextProvider>
       <div className={classes.container}>
         {finalView === 'relationships'
           && this.renderRelationships(paginationOptions, backgroundTaskFilters)}
@@ -785,6 +787,7 @@ class EntityStixCoreRelationships extends Component {
           />
         </Security>
       </div>
+      </ExportContextProvider>
     );
   }
 }

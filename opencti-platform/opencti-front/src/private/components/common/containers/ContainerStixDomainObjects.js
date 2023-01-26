@@ -20,6 +20,7 @@ import { defaultValue } from '../../../../utils/Graph';
 import ToolBar from '../../data/ToolBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import ExportContextProvider from '../../../../utils/ExportContextProvider';
 
 const styles = () => ({
   container: {
@@ -254,6 +255,7 @@ class ContainerStixDomainObjectsComponent extends Component {
     return (
       <UserContext.Consumer>
         {({ helper }) => (
+          <ExportContextProvider>
           <div className={classes.container}>
             <ListLines
               sortBy={sortBy}
@@ -327,6 +329,7 @@ class ContainerStixDomainObjectsComponent extends Component {
               openExports={openExports}
             />
           </div>
+          </ExportContextProvider>
         )}
       </UserContext.Consumer>
     );

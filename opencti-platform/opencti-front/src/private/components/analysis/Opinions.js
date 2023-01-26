@@ -17,6 +17,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import ToolBar from '../data/ToolBar';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 class Opinions extends Component {
   constructor(props) {
@@ -330,12 +331,14 @@ class Opinions extends Component {
     return (
       <UserContext.Consumer>
         {({ helper }) => (
+          <ExportContextProvider>
           <div>
             {view === 'lines' && this.renderLines(paginationOptions, helper)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <OpinionCreation paginationOptions={paginationOptions} />
             </Security>
           </div>
+          </ExportContextProvider>
         )}
       </UserContext.Consumer>
     );
