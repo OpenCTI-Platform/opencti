@@ -2,7 +2,6 @@
 
 import datetime
 import json
-import logging
 import uuid
 
 from dateutil.parser import parse
