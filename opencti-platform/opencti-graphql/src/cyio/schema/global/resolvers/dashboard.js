@@ -1,8 +1,7 @@
-import { compareValues, CyioError } from '../../utils.js';
 import { UserInputError } from 'apollo-server-errors';
+import { compareValues, CyioError } from '../../utils.js';
 import conf from '../../../../config/conf.js';
-import { 
-  getReducer,
+import {
   entitiesCountQuery,
   entitiesTimeSeriesQuery,
   entitiesDistributionQuery,
@@ -10,7 +9,6 @@ import {
 } from './dashboard-sparqlQuery.js';
 import { calculateRiskLevel } from '../../risk-assessments/riskUtils.js';
 import { getReducer as getAssessmentReducer } from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
-import { objectTypeMapping } from '../../assets/asset-mappings.js';
 
 const cyioDashboardResolvers = {
   Query: {
@@ -37,7 +35,7 @@ const cyioDashboardResolvers = {
             continue;
           }
           if (!Array.isArray(args[key])) {
-            if (value instanceof Date ) value = value.toISOString();
+            if (value instanceof Date) value = value.toISOString();
             if (value.trim().length === 0) {
               delete args[key];
               continue;
@@ -47,30 +45,30 @@ const cyioDashboardResolvers = {
       }
       // END WORKAROUND
 
-      if (!('type'in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
-      if (('field' in args) && !('match') in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if (('match' in args) && !('field') in args) throw new CyioError(`"field" must specified when using "match"`);
+      if (!('type' in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
+      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
-      let query = entitiesCountQuery(args);
+      const query = entitiesCountQuery(args);
       try {
         response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery: query,
           queryId: `Select Entity count of ${args.field}`,
-          singularizeSchema
+          singularizeSchema,
         });
       } catch (e) {
-        console.error(e)
-        throw e
+        console.error(e);
+        throw e;
       }
 
       // none found
       if (response === undefined || response.length === 0) return null;
       return {
-        total: (response[0].total ? response[0].total : 0),
-        count: (response[0].count ? response[0].count : 0)
-      }
+        total: response[0].total ? response[0].total : 0,
+        count: response[0].count ? response[0].count : 0,
+      };
     },
     assetsTimeSeries: async (_, args, { dbName, dataSources, selectMap }) => {
       // TODO: WORKAROUND to remove argument fields with null or empty values
@@ -85,7 +83,7 @@ const cyioDashboardResolvers = {
             continue;
           }
           if (!Array.isArray(args[key])) {
-            if (value instanceof Date ) value = value.toISOString();
+            if (value instanceof Date) value = value.toISOString();
             if (value.trim().length === 0) {
               delete args[key];
               continue;
@@ -95,64 +93,63 @@ const cyioDashboardResolvers = {
       }
       // END WORKAROUND
 
-      if (!('type'in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
-      if (('field' in args) && !('match') in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if (('match' in args) && !('field') in args) throw new CyioError(`"field" must specified when using "match"`);
+      if (!('type' in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
+      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
-      let query = entitiesTimeSeriesQuery(args);
+      const query = entitiesTimeSeriesQuery(args);
       try {
         response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery: query,
           queryId: `Select Time Series of Entity`,
-          singularizeSchema
+          singularizeSchema,
         });
       } catch (e) {
-        console.error(e)
-        throw e
+        console.error(e);
+        throw e;
       }
 
       // none found
-      if (response === undefined || response.length === 0) return null; 
+      if (response === undefined || response.length === 0) return null;
       if (Object.entries(response[0]).length === 0) return null;
-      let bucket = {};
+      const bucket = {};
 
       // walk the array of responses
-      for (let value of response) {
-        let valueTimestamp = value.created;
-        let year = valueTimestamp.getFullYear().toString();
-        let dateValue = new Date(valueTimestamp.setUTCHours(0,0,0,0));
+      for (const value of response) {
+        const valueTimestamp = value.created;
+        const year = valueTimestamp.getFullYear().toString();
+        const dateValue = new Date(valueTimestamp.setUTCHours(0, 0, 0, 0));
         let label;
-        switch(args.interval) {
+        switch (args.interval) {
           case 'day':
-            label = `${valueTimestamp.toLocaleString('default',{month:'short'})} ${valueTimestamp.getDate()}`;
+            label = `${valueTimestamp.toLocaleString('default', { month: 'short' })} ${valueTimestamp.getDate()}`;
             break;
           case 'week':
-            let startDate = new Date(valueTimestamp.getFullYear(), 0, 1);
-            let numberOfDays = Math.floor((valueTimestamp - startDate) / (24 * 60 * 60 * 1000));
-            let weekNumber = Math.ceil((valueTimestamp.getDay() + 1 + numberOfDays) / 7);
+            const startDate = new Date(valueTimestamp.getFullYear(), 0, 1);
+            const numberOfDays = Math.floor((valueTimestamp - startDate) / (24 * 60 * 60 * 1000));
+            const weekNumber = Math.ceil((valueTimestamp.getDay() + 1 + numberOfDays) / 7);
             label = `Wk ${weekNumber} ${year}`;
             break;
           case 'month':
-            label = `${valueTimestamp.toLocaleString('default',{month:'short'})} ${year}`;
+            label = `${valueTimestamp.toLocaleString('default', { month: 'short' })} ${year}`;
             break;
           case 'year':
             label = year;
             break;
           default:
             break;
-        } 
+        }
 
         // build a dictionary based on the labels since they are unique
         if (label in bucket) {
           bucket[label].value++;
-        } else
-          bucket[label] = {date: dateValue, label: label, value: 1};
+        } else bucket[label] = { date: dateValue, label, value: 1 };
       }
 
-      let results = [];
-      for (let key in bucket) {
+      const results = [];
+      for (const key in bucket) {
         results.push(bucket[key]);
       }
 
@@ -190,7 +187,7 @@ const cyioDashboardResolvers = {
             continue;
           }
           if (!Array.isArray(args[key])) {
-            if (value instanceof Date ) value = value.toISOString();
+            if (value instanceof Date) value = value.toISOString();
             if (value.trim().length === 0) {
               delete args[key];
               continue;
@@ -200,30 +197,30 @@ const cyioDashboardResolvers = {
       }
       // END WORKAROUND
 
-      if (!('type'in args) && !('field' in args)) throw new CyioError("Must specified either type or field");
-      if (('field' in args) && !('match') in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if (('match' in args) && !('field') in args) throw new CyioError(`"field" must specified when using "match"`);
+      if (!('type' in args) && !('field' in args)) throw new CyioError('Must specified either type or field');
+      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
-      let query = entitiesCountQuery(args);
+      const query = entitiesCountQuery(args);
       try {
         response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery: query,
           queryId: `Select Entity count of ${args.field}`,
-          singularizeSchema
+          singularizeSchema,
         });
       } catch (e) {
-        console.error(e)
-        throw e
+        console.error(e);
+        throw e;
       }
 
       // none found
       if (response === undefined || response.length === 0) return null;
       return {
-        total: (response[0].total ? response[0].total : 0),
-        count: (response[0].count ? response[0].count : 0)
-      }
+        total: response[0].total ? response[0].total : 0,
+        count: response[0].count ? response[0].count : 0,
+      };
     },
     risksTimeSeries: async (_, args, { dbName, dataSources, selectMap }) => {
       // TODO: WORKAROUND to remove argument fields with null or empty values
@@ -238,7 +235,7 @@ const cyioDashboardResolvers = {
             continue;
           }
           if (!Array.isArray(args[key])) {
-            if (value instanceof Date ) value = value.toISOString();
+            if (value instanceof Date) value = value.toISOString();
             if (value.trim().length === 0) {
               delete args[key];
               continue;
@@ -248,64 +245,63 @@ const cyioDashboardResolvers = {
       }
       // END WORKAROUND
 
-      if (!('type'in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
-      if (('field' in args) && !('match') in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if (('match' in args) && !('field') in args) throw new CyioError(`"field" must specified when using "match"`);
+      if (!('type' in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
+      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
-      let query = entitiesTimeSeriesQuery(args);
+      const query = entitiesTimeSeriesQuery(args);
       try {
         response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery: query,
           queryId: `Select Time Series of Entity`,
-          singularizeSchema
+          singularizeSchema,
         });
       } catch (e) {
-        console.error(e)
-        throw e
+        console.error(e);
+        throw e;
       }
 
       // none found
-      if (response === undefined || response.length === 0 ) return null; 
+      if (response === undefined || response.length === 0) return null;
       if (Object.entries(response[0]).length === 0) return null;
-      let bucket = {};
+      const bucket = {};
 
       // walk the array of responses
-      for (let value of response) {
-        let valueTimestamp = value.created;
-        let year = valueTimestamp.getFullYear().toString();
-        let dateValue = new Date(valueTimestamp.setUTCHours(0,0,0,0));
+      for (const value of response) {
+        const valueTimestamp = value.created;
+        const year = valueTimestamp.getFullYear().toString();
+        const dateValue = new Date(valueTimestamp.setUTCHours(0, 0, 0, 0));
         let label;
-        switch(args.interval) {
+        switch (args.interval) {
           case 'day':
-            label = `${valueTimestamp.toLocaleString('default',{month:'short'})} ${valueTimestamp.getDate()}`;
+            label = `${valueTimestamp.toLocaleString('default', { month: 'short' })} ${valueTimestamp.getDate()}`;
             break;
           case 'week':
-            let startDate = new Date(valueTimestamp.getFullYear(), 0, 1);
-            let numberOfDays = Math.floor((valueTimestamp - startDate) / (24 * 60 * 60 * 1000));
-            let weekNumber = Math.ceil((valueTimestamp.getDay() + 1 + numberOfDays) / 7);
+            const startDate = new Date(valueTimestamp.getFullYear(), 0, 1);
+            const numberOfDays = Math.floor((valueTimestamp - startDate) / (24 * 60 * 60 * 1000));
+            const weekNumber = Math.ceil((valueTimestamp.getDay() + 1 + numberOfDays) / 7);
             label = `Wk ${weekNumber} ${year}`;
             break;
           case 'month':
-            label = `${valueTimestamp.toLocaleString('default',{month:'short'})} ${year}`;
+            label = `${valueTimestamp.toLocaleString('default', { month: 'short' })} ${year}`;
             break;
           case 'year':
             label = year;
             break;
           default:
             break;
-        } 
+        }
 
         // build a dictionary based on the labels since they are unique
         if (label in bucket) {
           bucket[label].value++;
-        } else
-          bucket[label] = {date: dateValue, label: label, value: 1};
+        } else bucket[label] = { date: dateValue, label, value: 1 };
       }
 
-      let results = [];
-      for (let key in bucket) {
+      const results = [];
+      for (const key in bucket) {
         results.push(bucket[key]);
       }
 
@@ -324,8 +320,8 @@ const cyioDashboardResolvers = {
             continue;
           }
           if (!Array.isArray(args[key])) {
-            if (value instanceof Date ) value = value.toISOString();
-            if (typeof(value) === "number" && value === 0) {
+            if (value instanceof Date) value = value.toISOString();
+            if (typeof value === 'number' && value === 0) {
               delete args[key];
               continue;
             }
@@ -333,40 +329,40 @@ const cyioDashboardResolvers = {
               if (value.trim().length === 0) {
                 delete args[key];
                 continue;
-              }  
+              }
             }
           }
         }
       }
       // END WORKAROUND
 
-      if (!('type'in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
-      if (('field' in args) && !('match') in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if (('match' in args) && !('field') in args) throw new CyioError(`"field" must specified when using "match"`);
+      if (!('type' in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
+      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
-      let query = entitiesDistributionQuery(args);
+      const query = entitiesDistributionQuery(args);
       try {
         response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery: query,
           queryId: `Select Distribution of Entity`,
-          singularizeSchema
+          singularizeSchema,
         });
       } catch (e) {
-        console.error(e)
-        throw e
+        console.error(e);
+        throw e;
       }
 
       // none found
-      if (response === undefined || response.length === 0 ) return null; 
+      if (response === undefined || response.length === 0) return null;
       if (Object.entries(response[0]).length === 0) return null;
 
-      for (let risk of response) {
+      for (const risk of response) {
         risk.risk_level = 'unknown';
         if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
           // calculate the risk level
-          const {riskLevel, riskScore} = calculateRiskLevel(risk);
+          const { riskLevel, riskScore } = calculateRiskLevel(risk);
           risk.risk_score = riskScore;
           risk.risk_level = riskLevel;
           if ('match' in args) risk.o = riskLevel;
@@ -374,7 +370,7 @@ const cyioDashboardResolvers = {
           // clean up
           delete risk.cvssV2Base_score;
           delete risk.cvssV2Temporal_score;
-          delete risk.cvssV3Base_score
+          delete risk.cvssV3Base_score;
           delete risk.cvssV3Temporal_score;
           delete risk.available_exploit_values;
           delete risk.exploitability_ease_values;
@@ -382,65 +378,65 @@ const cyioDashboardResolvers = {
       }
 
       // sort the values
-      let riskList, sortBy ;
-      if (args.field === 'risk_level' ) {
+      let riskList;
+      let sortBy;
+      if (args.field === 'risk_level') {
         sortBy = 'risk_score';
-        riskList = response.sort(compareValues(sortBy, 'desc' ));
+        riskList = response.sort(compareValues(sortBy, 'desc'));
         response = riskList;
       }
-      
+
       // build buckets for each of the potential match items
-      let bucket = {};
+      const bucket = {};
       if ('match' in args) {
-        for (let value of args.match) {
-          bucket[value] = {label:value, value: 0}
-        }  
+        for (const value of args.match) {
+          bucket[value] = { label: value, value: 0 };
+        }
         // for each response, increment the count in the match bucket
-        for (let value of response) {
+        for (const value of response) {
           if (value.o in bucket) {
             bucket[value.o].value++;
           } else {
-            bucket[value.o] = {label: value.o, value: 1};
+            bucket[value.o] = { label: value.o, value: 1 };
           }
         }
       }
       if (!('match' in args)) {
-        const reducer = getAssessmentReducer("RISK");
+        const reducer = getAssessmentReducer('RISK');
         let limit = 0;
         if ('limit' in args) {
           limit = args.limit;
         } else {
           limit = 5;
         }
-        for (let value of response) {
+        for (const value of response) {
           if (limit) {
             bucket[value.name] = {
               label: value.name,
-              value: (args.field === 'risk_level' ? value.risk_score : value.occurrences),
-              entity: reducer(value)
-            }
+              value: args.field === 'risk_level' ? value.risk_score : value.occurrences,
+              entity: reducer(value),
+            };
             limit--;
           }
         }
       }
 
-      //convert the buckets into result format
-      let results = []
-      for (let key in bucket) {
+      // convert the buckets into result format
+      const results = [];
+      for (const key in bucket) {
         results.push(bucket[key]);
       }
 
       return results;
-    }
+    },
   },
   CyioObject: {
     __resolveType: (item) => {
       if (item.entity_type === 'risk') return 'Risk';
       if (item.entity_type === 'component') return 'Component';
       if (item.entity_type === 'inventory-item') return 'InventoryItem';
-    }
-  }
+    },
+  },
 };
 
 export default cyioDashboardResolvers;
-

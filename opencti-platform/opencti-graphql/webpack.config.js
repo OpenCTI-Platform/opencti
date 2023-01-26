@@ -55,7 +55,7 @@ module.exports = (env, argv) => {
       children: false,
       entrypoints: false,
       modules: false,
-      logging: true
+      logging: true,
     },
     node: {
       __dirname: true,

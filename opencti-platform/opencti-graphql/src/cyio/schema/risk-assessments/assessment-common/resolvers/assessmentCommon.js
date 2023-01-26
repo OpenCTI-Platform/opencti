@@ -136,7 +136,7 @@ const assessmentCommonResolvers = {
   },
   SubjectContext: {
     target: 'target',
-    secondary_target: 'secondary-target'
+    secondary_target: 'secondary-target',
   },
 };
 

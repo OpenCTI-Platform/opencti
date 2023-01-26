@@ -1,4 +1,10 @@
-import { optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, CyioError } from '../../cyio/schema/utils.js';
+import {
+  optionalizePredicate,
+  parameterizePredicate,
+  buildSelectVariables,
+  generateId,
+  CyioError,
+} from '../../cyio/schema/utils.js';
 import { selectObjectIriByIdQuery } from '../../cyio/schema/global/global-utils.js';
 
 // Reducer Selection
@@ -7,7 +13,7 @@ export function getReducer(type) {
     case 'WORKSPACE':
       return workspaceReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`)
+      throw new Error(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -24,25 +30,25 @@ const workspaceReducer = (item) => {
   return {
     iri: item.iri,
     id: item.id,
-    ...(item.object_type && { "entity_type": item.object_type }),
-    ...(item.created_at && {created_at: item.created_at}),
-    ...(item.updated_at && {updated_at: item.updated_at}),
+    ...(item.object_type && { entity_type: item.object_type }),
+    ...(item.created_at && { created_at: item.created_at }),
+    ...(item.updated_at && { updated_at: item.updated_at }),
     ...(item.type && { type: item.type }),
-    ...(item.name && { "name": item.name }),
+    ...(item.name && { name: item.name }),
     ...(item.description && { description: item.description }),
     ...(item.owner && { owner: item.owner }),
     ...(item.tags && { tags: item.tags }),
-    ...(item.manifest && {manifest: item.manifest}),
-    ...(item.graph_data && {graph_data: item.graph_data}),
+    ...(item.manifest && { manifest: item.manifest }),
+    ...(item.graph_data && { graph_data: item.graph_data }),
     // hints
-    ...(item.edit_context && {edit_context_iri: item.edit_context}),
-    ...(item.objects && {objects_iri: item.objects}),
-  }
-}
+    ...(item.edit_context && { edit_context_iri: item.edit_context }),
+    ...(item.objects && { objects_iri: item.objects }),
+  };
+};
 
 // Query Builders
 export const insertWorkspaceQuery = (propValues) => {
-  const id = generateId( );
+  const id = generateId();
   const timestamp = new Date().toISOString();
 
   // determine the appropriate ontology class type
@@ -51,9 +57,9 @@ export const insertWorkspaceQuery = (propValues) => {
   Object.entries(propValues).forEach((propPair) => {
     if (workspacePredicateMap.hasOwnProperty(propPair[0])) {
       if (Array.isArray(propPair[1])) {
-        for (let value of propPair[1]) {
+        for (const value of propPair[1]) {
           insertPredicates.push(workspacePredicateMap[propPair[0]].binding(iri, value));
-        }  
+        }
       } else {
         insertPredicates.push(workspacePredicateMap[propPair[0]].binding(iri, propPair[1]));
       }
@@ -69,16 +75,16 @@ export const insertWorkspaceQuery = (propValues) => {
       ${iri} <http://darklight.ai/ns/common#object_type> "workspace" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates.join(". \n")}
+      ${insertPredicates.join('. \n')}
     }
   }
   `;
-  return {iri, id, query}
-}
+  return { iri, id, query };
+};
 
 export const selectWorkspaceQuery = (id, select) => {
   return selectWorkspaceByIriQuery(`http://cyio.darklight.ai/workspace--${id}`, select);
-}
+};
 
 export const selectWorkspaceByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
@@ -97,8 +103,8 @@ export const selectWorkspaceByIriQuery = (iri, select) => {
     BIND(${iri} AS ?iri)
     ?iri a <http://darklight.ai/ns/cyio/workspace#Workspace> .
     ${predicates}
-  }`
-}
+  }`;
+};
 
 export const selectAllWorkspacesQuery = (select, args, parent) => {
   let constraintClause = '';
@@ -107,15 +113,15 @@ export const selectAllWorkspacesQuery = (select, args, parent) => {
   if (!select.includes('object_type')) select.push('object_type');
   if (!select.includes('type')) select.push('type');
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.includes(filter.key)) select.push( filter.key );
+  if (args !== undefined) {
+    if (args.filters !== undefined) {
+      for (const filter of args.filters) {
+        if (!select.includes(filter.key)) select.push(filter.key);
       }
     }
-    
+
     // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
+    if (args.orderedBy !== undefined) {
       if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
@@ -143,13 +149,13 @@ export const selectAllWorkspacesQuery = (select, args, parent) => {
     ${predicates}
     ${constraintClause}
   }
-  `
-}
+  `;
+};
 
 export const deleteWorkspaceQuery = (id) => {
   const iri = `http://cyio.darklight.ai/workspace--${id}`;
   return deleteWorkspaceByIriQuery(iri);
-}
+};
 
 export const deleteWorkspaceByIriQuery = (iri) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
@@ -164,20 +170,17 @@ export const deleteWorkspaceByIriQuery = (iri) => {
       ?iri ?p ?o
     }
   }
-  `
-}
+  `;
+};
 
 export const attachToWorkspaceQuery = (id, field, itemIris) => {
   const iri = `<http://cyio.darklight.ai/workspace--${id}>`;
   if (!workspacePredicateMap.hasOwnProperty(field)) return null;
-  const predicate = workspacePredicateMap[field].predicate;
+  const { predicate } = workspacePredicateMap[field];
   let statements;
   if (Array.isArray(itemIris)) {
-    statements = itemIris
-      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
-      .join(".\n        ")
-    }
-  else {
+    statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
+  } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
@@ -187,20 +190,17 @@ export const attachToWorkspaceQuery = (id, field, itemIris) => {
       ${statements}
     }
   }
-  `
-}
+  `;
+};
 
 export const detachFromWorkspaceQuery = (id, field, itemIris) => {
   const iri = `<http://cyio.darklight.ai/workspace--${id}>`;
   if (!workspacePredicateMap.hasOwnProperty(field)) return null;
-  const predicate = workspacePredicateMap[field].predicate;
+  const { predicate } = workspacePredicateMap[field];
   let statements;
   if (Array.isArray(itemIris)) {
-    statements = itemIris
-      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
-      .join(".\n        ")
-    }
-  else {
+    statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
+  } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
@@ -210,107 +210,163 @@ export const detachFromWorkspaceQuery = (id, field, itemIris) => {
       ${statements}
     }
   }
-  `
-}
+  `;
+};
 
 // Predicate Maps
 export const workspacePredicateMap = {
   id: {
-    predicate: "<http://darklight.ai/ns/common#id>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/common#id>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   object_type: {
-    predicate: "<http://darklight.ai/ns/common#object_type>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/common#object_type>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   entity_type: {
-    predicate: "<http://darklight.ai/ns/common#object_type>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/common#object_type>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'entity_type');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   created_at: {
-    predicate: "<http://darklight.ai/ns/common#created>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created_at");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/common#created>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created_at');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   updated_at: {
-    predicate: "<http://darklight.ai/ns/common#modified>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "updated_at");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/common#modified>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'updated_at');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   type: {
-      predicate: "<http://darklight.ai/ns/cyio/workspace#type>",
-      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "type");},
-      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio/workspace#type>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'type');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   name: {
-    predicate: "<http://darklight.ai/ns/cyio/workspace#name>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio/workspace#name>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   description: {
-    predicate: "<http://darklight.ai/ns/cyio/workspace#description>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio/workspace#description>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   owner: {
-    predicate: "<http://darklight.ai/ns/cyio/workspace#owner>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "owner");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio/workspace#owner>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'owner');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   tags: {
-    predicate: "<http://darklight.ai/ns/cyio/workspace#tags>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "tags");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio/workspace#tags>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'tags');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   manifest: {
-    predicate: "<http://darklight.ai/ns/cyio/workspace#manifest>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:base64Binary`: null, this.predicate, "manifest");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio/workspace#manifest>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"^^xsd:base64Binary` : null, this.predicate, 'manifest');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   editContext: {
-    predicate: "<http://darklight.ai/ns/cyio#edit_context>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "edit_context");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio#edit_context>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'edit_context');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   objects: {
-    predicate: "<http://darklight.ai/ns/cyio/workspace#objects>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "objects");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio/workspace#objects>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'objects');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   graph_data: {
-    predicate: "<http://darklight.ai/ns/cyio/workspace#graph_data>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:base64Binary`: null, this.predicate, "graph_data");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+    predicate: '<http://darklight.ai/ns/cyio/workspace#graph_data>',
+    binding(iri, value) {
+      return parameterizePredicate(iri, value ? `"${value}"^^xsd:base64Binary` : null, this.predicate, 'graph_data');
+    },
+    optional(iri, value) {
+      return optionalizePredicate(this.binding(iri, value));
+    },
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
   //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "relationships");},
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
-}
+};
 
-export const singularizeSchema = { 
+export const singularizeSchema = {
   singularizeVariables: {
-    "": false, // so there is an object as the root instead of an array
-    "id": true,
-    "iri": true,
-    "object_type": true,
-    "entity_type": true,
-    "created": true,
-    "created_at": true,
-    "modified": true,
-    "updated_at": true,
-    "type": true,
-    "name": true,
-    "description": true,
-    "owner": true,
-    "manifest": true,
-    "graph_data": true,
-    "objects": false,
-    "edit_context": false,
-    "tags": false,
-  }
+    '': false, // so there is an object as the root instead of an array
+    id: true,
+    iri: true,
+    object_type: true,
+    entity_type: true,
+    created: true,
+    created_at: true,
+    modified: true,
+    updated_at: true,
+    type: true,
+    name: true,
+    description: true,
+    owner: true,
+    manifest: true,
+    graph_data: true,
+    objects: false,
+    edit_context: false,
+    tags: false,
+  },
 };

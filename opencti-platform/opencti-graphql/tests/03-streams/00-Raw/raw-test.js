@@ -9,12 +9,7 @@ import {
 } from '../../utils/testStream';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
 import { isMultipleAttribute } from '../../../src/schema/fieldDataAdapter';
-import {
-  EVENT_TYPE_CREATE,
-  EVENT_TYPE_DELETE,
-  EVENT_TYPE_MERGE,
-  EVENT_TYPE_UPDATE,
-} from '../../../src/database/amqp';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/amqp';
 import { fullLoadById } from '../../../src/database/middleware';
 import { rebuildInstanceWithPatch } from '../../../src/utils/patch';
 import { buildStixData } from '../../../src/database/stix';

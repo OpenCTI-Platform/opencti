@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, assoc } from 'ramda';
 import {
-  ResponsiveContainer, PieChart, Pie, Cell,
+  compose,
+  map,
+  assoc,
+  concat,
+  replace,
+} from 'ramda';
+import {
+  ResponsiveContainer, PieChart, Pie, Cell, Tooltip,
 } from 'recharts';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
-import Tooltip from 'rich-markdown-editor/dist/components/Tooltip';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { now } from '../../../../utils/Time';
 import {
   dashboardQueryRisksDistribution,
 } from '../../settings/DashboardQuery';
@@ -30,7 +35,28 @@ const COLORS = {
   remediating: '#F17B00',
   deviation_requested: '#FF4100',
   deviation_approved: '#FF0000',
-  Informational: '#FFEBBC',
+  informational: '#FFEBBC',
+};
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active) {
+    return (
+      <div
+        className='custom-tooltip'
+        style={{
+          backgroundColor: '#1F2842',
+          padding: '10px',
+          border: '1px solid #06102D',
+          fontSize: 12,
+          fontWeight: 600,
+          borderRadius: 10,
+        }}
+      >
+        <label>{`${payload[0].name} (${payload[0].value})`}</label>
+      </div>
+    );
+  }
+  return null;
 };
 
 class CyioCoreObjectWidgetDonutChart extends Component {
@@ -130,11 +156,13 @@ class CyioCoreObjectWidgetDonutChart extends Component {
       ...widget.config.variables,
       startDate: new Date(finalStartDate).toISOString(),
       endDate: new Date(finalEndDate).toISOString(),
+      limit: 5,
     };
+    const widgetName = replace('Top-N', concat('Top ', donutChartVariables.limit.toString()), widget.config.name);
     return (
       <>
         <Typography variant="h4" gutterBottom={true}>
-          {widget.config.name || t('Component')}
+          {widgetName || t('Component')}
         </Typography>
         <QueryRenderer
           query={dashboardQueryRisksDistribution}
@@ -176,7 +204,7 @@ class CyioCoreObjectWidgetDonutChart extends Component {
                         cy='45%'
                         data={props[widget.config.queryType]}
                         fill="#82ca9d"
-                        nameKey="name"
+                        nameKey="label"
                         dataKey="value"
                         innerRadius='50%'
                         outerRadius='80%'
@@ -224,7 +252,7 @@ class CyioCoreObjectWidgetDonutChart extends Component {
                         ))}
                       </Pie>
                     }
-                    <Tooltip content='Accepted Risks' />
+                    <Tooltip content={<CustomTooltip />}/>
                   </PieChart>
                 </ResponsiveContainer>
               );
@@ -268,7 +296,7 @@ class CyioCoreObjectWidgetDonutChart extends Component {
       height,
     } = this.props;
     return (
-      <div style={{ height: height || '100%', padding: '20px' }}>
+      <div style={{ height: height || '100%' }}>
         {this.renderDonutChartQuery()}
       </div>
     );

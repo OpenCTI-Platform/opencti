@@ -28,7 +28,9 @@ import {
   VoidTypeDefinition,
   VoidResolver,
 } from 'graphql-scalars';
-import {DateTimeScalar} from "./scalars";
+import { loadSchemaSync } from '@graphql-tools/load';
+import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
+import { DateTimeScalar } from './scalars';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -128,15 +130,16 @@ import assessmentAssetResolvers from '../cyio/schema/risk-assessments/assessment
 import oscalResponsibleRoleResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalResponsibleRole.js';
 import productResolvers from '../cyio/schema/global/resolvers/product.js';
 import cyioDashboardResolvers from '../cyio/schema/global/resolvers/dashboard.js';
+import cyioDataMarkingResolvers from '../cyio/schema/data-markings/resolvers/dataMarkings.js';
+import cyioDataSourceResolvers from '../cyio/schema/data-sources/resolvers/dataSource.js';
+import cyioConnectionInformationResolvers from '../cyio/schema/data-sources/resolvers/connectionInformation.js';
+import cyioWorkActivityResolvers from '../cyio/schema/data-sources/resolvers/workActivity.js';
 
 // Cyio Extensions to support merged graphQL schema
-import { loadSchemaSync } from '@graphql-tools/load';
-import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader' ;
 
-const {authDirectiveTransformer } = authDirectiveV2();
+const { authDirectiveTransformer } = authDirectiveV2();
 
 const createSchema = () => {
-
   const globalResolvers = {
     DateTime: GraphQLDateTime,
     Timestamp: DateTimeScalar,
@@ -236,45 +239,49 @@ const createSchema = () => {
     // ALL
     organizationOrIndividualResolvers,
     stixObjectOrStixRelationshipResolvers,
-      // CYIO
-      cyioGlobalTypeResolvers,
-      cyioExternalReferenceResolvers,
-      cyioLabelResolvers,
-      cyioNoteResolvers,
-      assetCommonResolvers,
-      computingDeviceResolvers,
-      hardwareResolvers,
-      networkResolvers,
-      softwareResolvers,
-      oscalCommonResolvers,
-      oscalLocationResolver,
-      oscalPartyResolvers,
-      oscalResponsiblePartyResolvers,
-      oscalRoleResolvers,
-      assessmentCommonResolvers,
-      activityResolvers,
-      actorResolvers,
-      assessmentPlatformResolvers,
-      characterizationResolvers,
-      evidenceResolvers,
-      logEntryResolvers,
-      mitigatingFactorResolvers,
-      observationResolvers,
-      originResolvers,
-      oscalTaskResolvers,
-      requiredAssetResolvers,
-      riskResolvers,
-      riskResponseResolvers,
-      subjectResolvers,
-      poamResolvers,
-      poamItemResolvers,
-      componentResolvers,
-      inventoryItemResolvers,
-      assessmentAssetResolvers,
-      oscalResponsibleRoleResolvers,
-      productResolvers,
-      cyioDashboardResolvers,
-]);
+    // CYIO
+    cyioGlobalTypeResolvers,
+    cyioExternalReferenceResolvers,
+    cyioLabelResolvers,
+    cyioNoteResolvers,
+    assetCommonResolvers,
+    computingDeviceResolvers,
+    hardwareResolvers,
+    networkResolvers,
+    softwareResolvers,
+    oscalCommonResolvers,
+    oscalLocationResolver,
+    oscalPartyResolvers,
+    oscalResponsiblePartyResolvers,
+    oscalRoleResolvers,
+    assessmentCommonResolvers,
+    activityResolvers,
+    actorResolvers,
+    assessmentPlatformResolvers,
+    characterizationResolvers,
+    evidenceResolvers,
+    logEntryResolvers,
+    mitigatingFactorResolvers,
+    observationResolvers,
+    originResolvers,
+    oscalTaskResolvers,
+    requiredAssetResolvers,
+    riskResolvers,
+    riskResponseResolvers,
+    subjectResolvers,
+    poamResolvers,
+    poamItemResolvers,
+    componentResolvers,
+    inventoryItemResolvers,
+    assessmentAssetResolvers,
+    oscalResponsibleRoleResolvers,
+    productResolvers,
+    cyioDashboardResolvers,
+    cyioConnectionInformationResolvers,
+    cyioDataMarkingResolvers,
+    cyioDataSourceResolvers,
+    cyioWorkActivityResolvers,
+  ]);
 
   // load the OpenCTI and each of the Cyio GraphQL schema files
   const typeDefs = loadSchemaSync('./**/**/*.graphql', {

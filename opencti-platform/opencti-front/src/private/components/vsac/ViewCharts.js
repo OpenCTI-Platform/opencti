@@ -369,10 +369,10 @@ class ViewCharts extends Component {
           <div
             className='custom-tooltip'
             style={{
-              color: 'black',
-              backgroundColor: '#ffff',
+              color: '#fff',
+              backgroundColor: '#06102D',
               padding: '10px',
-              border: '1px solid #cccc',
+              border: '1px solid #06102D',
               fontSize: 12,
               fontWeight: 600,
               borderRadius: 10,
@@ -549,7 +549,10 @@ class ViewCharts extends Component {
                             ))}
                           </Pie>
                         }
-                        <Tooltip content={<CustomTooltip />} />
+                        <Tooltip
+                          content={<CustomTooltip />} 
+                          
+                         />
                       </PieChart>
                     </ResponsiveContainer>
                   </Paper>
@@ -602,7 +605,15 @@ class ViewCharts extends Component {
                             tick={{ fill: 'white' }}
                             type="number"
                           />
-                          <Tooltip cursor={false} />
+                          <Tooltip 
+                            cursor={false} 
+                            contentStyle={{
+                              backgroundColor: '#06102D',
+                              fontSize: 12,
+                              border: '1px solid #06102D',
+                              borderRadius: 10,
+                            }}
+                          />
                           <Legend />
                           <Bar
                             stackId="a"
@@ -659,7 +670,15 @@ class ViewCharts extends Component {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis tick={{ fill: 'white' }} type="number" domain={[0, 'auto']} />
                           <YAxis width={210} tick={{ fill: 'white' }} type="category" dataKey="host" />
-                          <Tooltip cursor={false} />
+                          <Tooltip 
+                            cursor={false} 
+                            contentStyle={{
+                                backgroundColor: '#06102D',
+                                fontSize: 12,
+                                border: '1px solid #06102D',
+                                borderRadius: 10,
+                            }}  
+                          />
                           <Legend />
                           <Bar
                             stackId="a"
@@ -711,7 +730,15 @@ class ViewCharts extends Component {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis tick={{ fill: 'white' }} type="number" domain={[0, 'auto']} />
                           <YAxis tick={{ fill: 'white' }} type="category" dataKey="product" />
-                          <Tooltip cursor={false} />
+                          <Tooltip 
+                            cursor={false}
+                            contentStyle={{
+                                backgroundColor: '#06102D',
+                                fontSize: 12,
+                                border: '1px solid #06102D',
+                                borderRadius: 10,
+                            }}
+                           />
                           <Legend />
                           <Bar
                             stackId="a"
@@ -756,7 +783,14 @@ class ViewCharts extends Component {
                         interval={"preserveStartEnd"}
                       />
                       <YAxis dataKey="value" tick={{ fill: 'white' }} />
-                      <Tooltip />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: '#06102D',
+                          fontSize: 12,
+                          border: '1px solid #06102D',
+                          borderRadius: 10,
+                        }}
+                      />
                       <Legend
                         onClick={this.handleTrendingClick.bind(this)}
                         onMouseEnter={this.handleMouseEnter.bind(this)}

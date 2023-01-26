@@ -10,6 +10,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
+import Skeleton from '@material-ui/lab/Skeleton';
 import IconButton from '@material-ui/core/IconButton';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -28,6 +29,7 @@ import {
   getOrganizationSettings,
   updateOrganizationSettings,
 } from '../../../services/account.service';
+import { saveViewParameters } from '../../../utils/ListParameters';
 
 const customSvg = require('../../../assets/severity-scores/custom.svg').default;
 const tenableSvg =
@@ -149,13 +151,13 @@ const UserPreferencesModal = (props) => {
   const location = useLocation();
 
   const handleSubmit = () => {
-   const param = { vsa_severity_score_method: severityLevel}
-    updateOrganizationSettings(currentClient_id, param).then((results) =>{
+    const param = { vsa_severity_score_method: severityLevel }
+    updateOrganizationSettings(currentClient_id, param).then((results) => {
 
       localStorage.setItem('client_id', currentClient_id);
       props.setClientId(currentClient_id);
-      if(location.pathname === '/activities/vulnerability_assessment/scans/explore results'){
-       props.history.push('/activities/vulnerability_assessment/scans');
+      if (location.pathname === '/activities/vulnerability_assessment/scans/explore results') {
+        props.history.push('/activities/vulnerability_assessment/scans');
       } else {
         props.history.push('/dashboard');
       }
@@ -172,28 +174,32 @@ const UserPreferencesModal = (props) => {
 
   useEffect(() => {
     user.clients.forEach((item) => {
-          getOrganizationSettings(item.client_id).then((result) => {
-            // eslint-disable-next-line no-param-reassign
-            if(result){
-              if(item.client_id == currentClient_id){
-                 setSeverityLevel(result.data.vsa_severity_score_method);
-              }
-               setOrgSettings(oldArray => [...oldArray, {
-                  client_id: result.data.client_id,
-                  vsa_severity_score_method: result.data.vsa_severity_score_method,
-               }]);
-             }
-          }).catch((error) => {
-            console.log(error)
-          });
+      getOrganizationSettings(item.client_id).then((result) => {
+        // eslint-disable-next-line no-param-reassign
+        if (result) {          
+          if (item.client_id == currentClient_id) {
+            setSeverityLevel(result.data.vsa_severity_score_method);
+          }
+          setOrgSettings(oldArray => [...oldArray, {
+            client_id: result.data.client_id,
+            vsa_severity_score_method: result.data.vsa_severity_score_method,
+          }]);
+          setIsLoading(false);
+        }
+      }).catch((error) => {
+        if(error) {
+          setIsLoading(false);
+        }
+        console.log(error)
+      });
     });
 
-    setIsLoading(false);
+    
   }, []);
 
   const handleOrgChange = (event) => {
 
-    setSeverityLevel(orgSettings.find(obj => { return obj.client_id === currentClient_id}).vsa_severity_score_method);
+    setSeverityLevel(orgSettings.find(obj => { return obj.client_id === currentClient_id }).vsa_severity_score_method);
     setCurrentClient_id(event.target.value);
   }
 
@@ -207,7 +213,7 @@ const UserPreferencesModal = (props) => {
       elevation={2}
       style={{ width: '400px' }}
     >
-      {!isLoading ? (
+      { !isLoading && severityLevel ? (
         <Card>
           <CardHeader
             avatar={
@@ -228,12 +234,12 @@ const UserPreferencesModal = (props) => {
               value={currentClient_id}
               onChange={(e) => handleOrgChange(e)}
               data-cy='org selection'
-             >
-            { user &&
-              user.clients.map((item,i) => {
-               return ( <MenuItem value={item.client_id} data-cy='an org'>{item.name}</MenuItem> )
-              })
-            }
+            >
+              {user &&
+                user.clients.map((item, i) => {
+                  return (<MenuItem value={item.client_id} data-cy='an org'>{item.name}</MenuItem>)
+                })
+              }
             </Select>
           </CardContent>
           <CardContent>
@@ -245,35 +251,35 @@ const UserPreferencesModal = (props) => {
               <img src={tenableSvg} alt="Tenable" />
             )}
             {severityLevel === 'nvd' && <img src={nvdSvg} alt="NVD" />}
-           {severityLevel &&
-            <RadioGroup
-              row
-              aria-label="severityLevel"
-              name="severityLevel"
-              defaultValue="bottom"
-              value={severityLevel}
-              onChange={(e) => handleSeverityLevelChange(e)}
-            >
-              <FormControlLabel
-                value="custom"
-                control={<Radio color="primary" />}
-                label="Custom"
-                labelPlacement="Bottom"
-              />
-              <FormControlLabel
-                value="tenable"
-                control={<Radio color="primary" />}
-                label="Tenable"
-                labelPlacement="Bottom"
-              />
-              <FormControlLabel
-                value="nvd"
-                control={<Radio color="primary" />}
-                label="NVD"
-                labelPlacement="Bottom"
-              />
-            </RadioGroup>
-          }
+            {severityLevel &&
+              <RadioGroup
+                row
+                aria-label="severityLevel"
+                name="severityLevel"
+                defaultValue="bottom"
+                value={severityLevel}
+                onChange={(e) => handleSeverityLevelChange(e)}
+              >
+                <FormControlLabel
+                  value="custom"
+                  control={<Radio color="primary" />}
+                  label="Custom"
+                  labelPlacement="Bottom"
+                />
+                <FormControlLabel
+                  value="tenable"
+                  control={<Radio color="primary" />}
+                  label="Tenable"
+                  labelPlacement="Bottom"
+                />
+                <FormControlLabel
+                  value="nvd"
+                  control={<Radio color="primary" />}
+                  label="NVD"
+                  labelPlacement="Bottom"
+                />
+              </RadioGroup>
+            }
           </CardContent>
           <CardContent>
             <Typography gutterBottom variant="caption">
@@ -285,7 +291,7 @@ const UserPreferencesModal = (props) => {
               size="small"
               color="secondary"
               onClick={() => handleCancel()}
-              >
+            >
               Cancel
             </Button>
             <Button
@@ -298,9 +304,32 @@ const UserPreferencesModal = (props) => {
           </CardActions>
         </Card>
       ) : (
-        <Card>
+        <Card style={{ height: 'auto', minHeight: '475px' }}>
           <CardContent>
-            <CircularProgress />
+            <Grid container spacing={3}>
+              <Grid item xs={2}>
+                <Skeleton variant="circle" width={40} height={40} />
+              </Grid>
+              <Grid item xs={10}>
+                <Skeleton variant="rect" height={40} />
+              </Grid>
+              <Grid item xs={12}>
+                <Skeleton variant="rect" height={80}/>
+              </Grid>
+              <Grid item xs={12}>
+                <Skeleton variant="text" height={35} />
+              </Grid>
+              <Grid item xs={12}>
+                <Skeleton variant="rect" height={80} />
+              </Grid>
+              <Grid item xs={12}>
+                <Skeleton variant="text" height={35} />
+              </Grid>
+              <Grid item xs={12} style={{ display: 'flex', placeContent: 'end'}}>
+                <Skeleton variant="text" height={50} width={70} style={{margin: '0 20px'}}/>
+                <Skeleton variant="text" height={50} width={70}/>
+              </Grid>
+            </Grid>
           </CardContent>
         </Card>
       )}

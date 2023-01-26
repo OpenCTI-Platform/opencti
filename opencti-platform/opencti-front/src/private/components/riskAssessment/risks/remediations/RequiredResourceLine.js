@@ -8,6 +8,8 @@ import {
   map,
   pathOr,
   mergeAll,
+  filter,
+  propEq,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -28,6 +30,9 @@ import inject18n from '../../../../../components/i18n';
 import RequiredResourcePopover from './RequiredResourcePopover';
 import CyioCoreobjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import { fetchQuery } from '../../../../../relay/environment';
+import { itAssetFiltersAssetTypeFieldQuery } from '../../../settings/ItAssetFilters';
+import { Divider } from '@material-ui/core';
 
 const styles = (theme) => ({
   item: {
@@ -117,7 +122,26 @@ class RequiredResourceLineComponent extends Component {
       removing: false,
       expanded: false,
       value: false,
+      subjectType: '',
     };
+  }
+
+  componentDidMount() {
+    fetchQuery(itAssetFiltersAssetTypeFieldQuery, {
+      type: 'SubjectType',
+    })
+    .toPromise()
+    .then((data) => {
+      const subject_ref = pipe(
+        pathOr([], ['subjects']),
+        map((value) => ({
+          type: value.subject_type,
+        })),
+        mergeAll,
+      )(this.props.data);
+      const newFilter = filter(propEq('name', subject_ref.type))(data.__type.enumValues)[0];
+      this.setState({ subjectType: newFilter?.description });
+    })
   }
 
   handleClick() {
@@ -159,7 +183,6 @@ class RequiredResourceLineComponent extends Component {
     const requiredResourceNode = pipe(
       pathOr([], ['subjects']),
       map((value) => ({
-        resource_type: value.subject_ref.__typename,
         resource: value.subject_ref.name,
       })),
       mergeAll,
@@ -177,127 +200,118 @@ class RequiredResourceLineComponent extends Component {
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel1a-content"
             id="panel1a-header"
-            classes={{ root: classes.summary }}
           >
-            {this.state.value ? '' : (
-              <CardContent style={{ display: 'flex', alignItems: 'center' }}>
-                <GroupIcon fontSize='large' color="disabled" />
+           <CardContent style={{ display: 'flex', alignItems: 'center', padding: '16px 16px 0 0' }}>
+                <GroupIcon fontSize='large' color="disabled"/>
                 <div style={{ marginLeft: '10px' }}>
                   <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
                     {data.name && t(data.name)}
                   </Typography>
-                  <Typography align="left" variant="subtitle1">
+                  {!this.state.value && 
+                    <Typography align="left" variant="subtitle1">
                     <Markdown
                       remarkPlugins={[remarkGfm, remarkParse]}
                       rehypePlugins={[rehypeRaw]}
+                      parserOptions={{ commonmark: true }}
+                      style={{ margin : '0px' }}
+                      className="markdown"
+                    >
+                      {data.description && t(data.description)}
+                    </Markdown>
+                  </Typography>}
+                </div>
+              </CardContent>
+          </AccordionSummary>
+          <AccordionDetails classes={{ root: classes.accordionDetails }}>
+            <Grid container={true} spacing={3} >              
+              <Grid item={true} xs={6} >
+                <div>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
+                  <Typography align="left" variant="subtitle1">
+                    {data.name && t(data.name)}
+                  </Typography>
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
+                  <Typography align="left" variant="subtitle1">
+                    {data.id && t(data.id)}
+                  </Typography>
+                </div>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Resource Type')}</Typography>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {this.state.subjectType && <GroupIcon fontSize='large' color="textSecondary" />}
+                    <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
+                      {this.state.subjectType
+                        && t(this.state.subjectType)}
+                    </Typography>
+                  </div>
+                </div>
+              </Grid>              
+              <Grid item={true} xs={6}>
+                <div>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Resource')}</Typography>
+                  <Typography align="left" variant="subtitle1">
+                    {requiredResourceNode.resource && t(requiredResourceNode.resource)}
+                  </Typography>
+                </div>
+              </Grid>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 20 }}
+              >
+                {t('Description')}
+              </Typography>
+              <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <Tooltip
+                  title='Description'
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      rehypeRaw={[rehypeRaw]}
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
                       {data.description && t(data.description)}
                     </Markdown>
-                  </Typography>
+                  </div>
                 </div>
-              </CardContent>
-            )
-            }
-          </AccordionSummary>
-          <AccordionDetails classes={{ root: classes.accordionDetails }}>
-            <Grid container={true} spacing={3} >
-              <Grid item={true} xs={6}>
-                <Grid style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {data.name && t(data.name)}
-                    </Typography>
-                  </div>
-                </Grid>
-                <Grid style={{ display: 'flex', alignItems: 'center' }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Resource Type')}</Typography>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <GroupIcon fontSize='large' color="textSecondary" />
-                      <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
-                        {requiredResourceNode.resource_type
-                          && t(requiredResourceNode.resource_type)}
-                      </Typography>
-                    </div>
-                  </div>
-                </Grid>
-              </Grid>
-              <Grid item={true} xs={6}>
-                <Grid style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {data.id && t(data.id)}
-                    </Typography>
-                  </div>
-                </Grid>
-                <Grid style={{ display: 'flex', alignItems: 'center' }}>
-                  <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Resource')}</Typography>
-                    <Typography align="left" variant="subtitle1">
-                      {requiredResourceNode.resource && t(requiredResourceNode.resource)}
-                    </Typography>
-                  </div>
-                </Grid>
-              </Grid>
-
+              </div>
             </Grid>
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12}>
-                <Typography
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Description')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title='Description'
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      <Markdown
-                        remarkPlugins={[remarkGfm, remarkParse]}
-                        rehypeRaw={[rehypeRaw]}
-                        parserOptions={{ commonmark: true }}
-                        className="markdown"
-                      >
-                        {data.description && t(data.description)}
-                      </Markdown>
-                    </div>
-                  </div>
-                </div>
-              </Grid>
-              <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
-                <CyioCoreobjectExternalReferences
-                  typename={data.__typename}
-                  fieldName='links'
-                  externalReferences={data.links}
-                  cyioCoreObjectId={data.id}
-                  refreshQuery={refreshQuery}
-                />
-              </Grid>
-              <Grid style={{ margin: '30px 0 20px 0' }} xs={12} item={true}>
-                <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  typename={data.__typename}
-                  notes={data.remarks}
-                  fieldName='remarks'
-                  cyioCoreObjectOrCyioCoreRelationshipId={data.id}
-                  marginTop='0px'
-                  refreshQuery={refreshQuery}
-                // data={props}
-                // marginTop={marginTop}
-                />
-              </Grid>
+            <Grid style={{ marginTop: '30px' }} xs={12} item={true}>
+              <CyioCoreobjectExternalReferences
+                typename={data.__typename}
+                fieldName='links'
+                externalReferences={data.links}
+                cyioCoreObjectId={data.id}
+                refreshQuery={refreshQuery}
+              />
+            </Grid>
+            <Grid style={{ margin: '30px 0 20px 0' }} xs={12} item={true}>
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                typename={data.__typename}
+                notes={data.remarks}
+                fieldName='remarks'
+                cyioCoreObjectOrCyioCoreRelationshipId={data.id}
+                marginTop='0px'
+                refreshQuery={refreshQuery}
+              // data={props}
+              // marginTop={marginTop}
+              />
             </Grid>
           </AccordionDetails>
         </Accordion>
