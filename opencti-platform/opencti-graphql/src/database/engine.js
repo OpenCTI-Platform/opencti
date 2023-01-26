@@ -30,8 +30,8 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import {
   ConfigurationError,
   DatabaseError,
-  FunctionalError,
   EngineShardsError,
+  FunctionalError,
   UnsupportedError
 } from '../config/errors';
 import {
@@ -219,18 +219,22 @@ const oebp = (queryResult) => {
 export const elRawSearch = (context, user, types, query) => {
   const elRawSearchFn = () => engine.search(query).then((r) => {
     const parsedSearch = oebp(r);
-    // We do not support failure shard response.
-    // Result must be always accurate to prevent data duplication and unwanted behaviors
-    // If any shard fail during query, engine throw a lock exception with shards information
-    const isShardsFail = parsedSearch._shards.failed > ES_MAX_SHARDS_FAILURE;
-    if (isShardsFail) {
-      // We need to filter "No mapping found" errors that are not problematic shard problems
+    // If some shards fail
+    if (parsedSearch._shards.failed > 0) {
+      // We need to filter "No mapping found" errors that are not real problematic shard problems
       // As we do not define all mappings and let elastic create it dynamically at first creation
       // This failure is transient until the first creation of some data
       const failures = (parsedSearch._shards.failures ?? [])
         .filter((f) => !f.reason?.reason.includes(NO_MAPPING_FOUND_ERROR));
-      if (failures.length > 0) {
+      if (failures.length > ES_MAX_SHARDS_FAILURE) {
+        // We do not support response with shards failure.
+        // Result must be always accurate to prevent data duplication and unwanted behaviors
+        // If any shard fail during query, engine throw a lock exception with shards information
         throw EngineShardsError({ shards: parsedSearch._shards });
+      } else {
+        // At least log the situation
+        const message = `[SEARCH] Search meet ${failures.length} shards failure, please check your configuration`;
+        logApp.error(message, { shards: parsedSearch._shards });
       }
     }
     // Return result of the search if everything goes well
