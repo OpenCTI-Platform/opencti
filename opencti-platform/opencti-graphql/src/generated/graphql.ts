@@ -370,7 +370,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   x_mitre_detection?: Maybe<Scalars['String']>;
   x_mitre_id?: Maybe<Scalars['String']>;
   x_mitre_permissions_required?: Maybe<Array<Maybe<Scalars['String']>>>;
-  x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_mitre_platforms?: Maybe<Array<Scalars['String']>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
@@ -523,7 +523,7 @@ export type AttackPatternAddInput = {
   x_mitre_detection?: InputMaybe<Scalars['String']>;
   x_mitre_id?: InputMaybe<Scalars['String']>;
   x_mitre_permissions_required?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  x_mitre_platforms?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_mitre_platforms?: InputMaybe<Array<Scalars['String']>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
@@ -3924,7 +3924,7 @@ export type DataSourceStixCoreRelationshipsDistributionArgs = {
 export type DataSourceAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   clientMutationId?: InputMaybe<Scalars['String']>;
-  collection_layers?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  collection_layers?: InputMaybe<Array<Scalars['String']>>;
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
@@ -3940,7 +3940,7 @@ export type DataSourceAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
-  x_mitre_platforms?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  x_mitre_platforms?: InputMaybe<Array<Scalars['String']>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
@@ -7457,7 +7457,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   valid_from?: Maybe<Scalars['DateTime']>;
   valid_until?: Maybe<Scalars['DateTime']>;
   workflowEnabled?: Maybe<Scalars['Boolean']>;
-  x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']>>>;
+  x_mitre_platforms?: Maybe<Array<Scalars['String']>>;
   x_opencti_detection?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -25180,7 +25180,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   x_mitre_detection?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_mitre_permissions_required?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -27123,7 +27123,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   x_opencti_detection?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;

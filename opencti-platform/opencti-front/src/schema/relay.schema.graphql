@@ -2110,7 +2110,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   name: String!
   description: String
   aliases: [String]
-  x_mitre_platforms: [String]
+  x_mitre_platforms: [String!]
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
   x_mitre_id: String
@@ -2141,7 +2141,7 @@ input AttackPatternAddInput {
   revoked: Boolean
   lang: String
   confidence: Int
-  x_mitre_platforms: [String]
+  x_mitre_platforms: [String!]
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
   x_mitre_id: String
@@ -3725,7 +3725,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
-  x_mitre_platforms: [String]
+  x_mitre_platforms: [String!]
   killChainPhases: KillChainPhaseConnection
   observables(first: Int): StixCyberObservableConnection
   creator: Creator
@@ -9195,8 +9195,8 @@ input DataSourceAddInput {
   name: name_String_NotNull_minLength_2!
   description: String!
   aliases: [String]
-  x_mitre_platforms: [String]
-  collection_layers: [String]
+  x_mitre_platforms: [String!]
+  collection_layers: [String!]
   dataComponents: [String]
 }
 
