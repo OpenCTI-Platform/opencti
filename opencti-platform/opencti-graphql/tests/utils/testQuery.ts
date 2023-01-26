@@ -28,6 +28,8 @@ export const TEN_SECONDS = 10 * ONE_SECOND;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
 export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
 
+export const DATA_FILE_TEST = 'DATA-TEST-STIX2_v2.json';
+
 export const testContext = executionContext('testing');
 
 export const generateBasicAuth = () => {

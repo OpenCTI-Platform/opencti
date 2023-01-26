@@ -6,7 +6,7 @@ import path from 'path';
 import {
   ADMIN_USER,
   API_TOKEN,
-  API_URI,
+  API_URI, DATA_FILE_TEST,
   executeExternalQuery,
   FIFTEEN_MINUTES,
   PYTHON_PATH,
@@ -84,6 +84,8 @@ const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
       }
     }
   `;
+
+const UPLOADED_FILE_SIZE = 35514;
 
 describe('Database sync testing', () => {
   const checkPreSyncContent = async () => {
@@ -186,7 +188,7 @@ describe('Database sync testing', () => {
       // Upload a file
       const file = {
         createReadStream: () => createReadStream('./tests/data/DATA-TEST-STIX2_v2.json'),
-        filename: 'DATA-TEST-STIX2_v2.json',
+        filename: DATA_FILE_TEST,
         mimetype: 'application/json',
       };
       await stixCoreObjectImportPush(testContext, SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
@@ -218,8 +220,8 @@ describe('Database sync testing', () => {
       const files = reportData.report.importFiles.edges;
       expect(files.length).toEqual(1);
       const uploadedFile = R.head(files).node;
-      expect(uploadedFile.name).toEqual('DATA-TEST-STIX2_v2.json');
-      expect(uploadedFile.size).toEqual(35632);
+      expect(uploadedFile.name).toEqual(DATA_FILE_TEST);
+      expect(uploadedFile.size).toEqual(UPLOADED_FILE_SIZE);
     },
     FIFTEEN_MINUTES
   );
@@ -308,8 +310,8 @@ describe('Database sync testing', () => {
       const files = reportData.report.importFiles.edges;
       expect(files.length).toEqual(1);
       const uploadedFile = R.head(files).node;
-      expect(uploadedFile.name).toEqual('DATA-TEST-STIX2_v2.json');
-      expect(uploadedFile.size).toEqual(35632);
+      expect(uploadedFile.name).toEqual(DATA_FILE_TEST);
+      expect(uploadedFile.size).toEqual(UPLOADED_FILE_SIZE);
     },
     FIFTEEN_MINUTES
   );
