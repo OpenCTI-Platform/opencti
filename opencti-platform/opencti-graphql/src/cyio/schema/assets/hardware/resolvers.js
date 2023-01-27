@@ -787,7 +787,7 @@ const hardwareResolvers = {
       let iriArray = parent.installed_hw_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        var reducer = getReducer('HARDWARE-DEVICE');
+        let reducer = getReducer('HARDWARE-DEVICE');
         for (let iri of iriArray) {
           // check if this is an hardware object
           if (iri === undefined || !iri.includes('Hardware')) {
@@ -827,7 +827,7 @@ const hardwareResolvers = {
       let iriArray = parent.installed_sw_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        var reducer = getReducer('HARDWARE-DEVICE');
+        let reducer = getReducer('HARDWARE-DEVICE');
         for (let iri of iriArray) {
           // check if this is an hardware object
           if (iri === undefined || !iri.includes('Hardware')) {
