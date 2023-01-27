@@ -46,7 +46,7 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
 
-export const askListExport = async (context, user, format, entityType, listParams, type = 'simple', maxMarkingId = null) => {
+export const askListExport = async (context, user, format, entityType, selectedIds, listParams, type = 'simple', maxMarkingId = null) => {
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
   const toFileName = (connector) => {
@@ -54,13 +54,30 @@ export const askListExport = async (context, user, format, entityType, listParam
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const buildExportMessage = (work, fileName) => {
+    if (selectedIds && selectedIds.length > 0) {
+      return {
+        internal: {
+          work_id: work.id, // Related action for history
+          applicant_id: user.id, // User asking for the import
+        },
+        event: {
+          export_scope: 'selection', // query or selection or single
+          export_type: type, // Simple or full
+          file_name: fileName, // Export expected file name
+          max_marking: maxMarkingId, // Max marking id
+          entity_type: entityType, // Exported entity type
+          entity_id: listParams.elementId,
+          selected_ids: selectedIds, // ids that are both selected via checkboxes and respect the filtering
+        },
+      };
+    }
     return {
       internal: {
         work_id: work.id, // Related action for history
         applicant_id: user.id, // User asking for the import
       },
       event: {
-        export_scope: 'list', // Single or List
+        export_scope: 'query', // query or selection or single
         export_type: type, // Simple or full
         file_name: fileName, // Export expected file name
         max_marking: maxMarkingId, // Max marking id
@@ -100,13 +117,13 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
         applicant_id: user.id, // User asking for the import
       },
       event: {
-        export_scope: 'single', // Single or List
+        export_scope: 'single', // query or selection or single
         export_type: type, // Simple or full
         file_name: fileName, // Export expected file name
         max_marking: maxMarkingId, // Max marking id
         entity_type: entity.entity_type, // Exported entity type
         // For single entity export
-        entity_id: entity.id, // Exported element
+        entity_id: entity.id, // Location of the file export = the exported element
       },
     };
   };

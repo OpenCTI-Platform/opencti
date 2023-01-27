@@ -336,17 +336,19 @@ export const stixCyberObservableEditContext = (context, user, stixCyberObservabl
 
 // region export
 export const stixCyberObservablesExportAsk = async (context, user, args) => {
-  const { format, exportType, maxMarkingDefinition } = args;
+  const { format, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters, filterMode, types } = args;
   const argsFilters = { search, orderBy, orderMode, filters, filterMode, types };
   const filtersOpts = stixCyberObservableOptions.StixCyberObservablesFilter;
   const ordersOpts = stixCyberObservableOptions.StixCyberObservablesOrdering;
   const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  console.log('listParams', listParams);
   const works = await askListExport(
     context,
     user,
     format,
     'Stix-Cyber-Observable',
+    selectedIds,
     listParams,
     exportType,
     maxMarkingDefinition

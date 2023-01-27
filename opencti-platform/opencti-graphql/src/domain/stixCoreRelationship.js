@@ -157,7 +157,7 @@ export const stixRelations = (context, user, stixCoreObjectId, args) => {
 
 // region export
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
-  const { format, type, exportType, maxMarkingDefinition } = args;
+  const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters, filterMode } = args;
   const argsFilters = { search, orderBy, orderMode, filters, filterMode };
   const filtersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsFilter;
@@ -202,7 +202,7 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
   };
   const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
   console.log('listParams', listParams);
-  const works = await askListExport(context, user, format, type, listParams, exportType, maxMarkingDefinition);
+  const works = await askListExport(context, user, format, selectedIds, type, listParams, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
 };
 export const stixCoreRelationshipExportAsk = async (context, user, args) => {
