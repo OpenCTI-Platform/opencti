@@ -164,36 +164,6 @@ export const findDataMarkingByIri = async (iri, dbName, dataSources, selectMap) 
   }
 };
 
-// export const findDataMarkingByIri = async (iri, dbName, dataSources, selectMap) => {
-//   const reducer = getReducer('DATA-MARKING');
-//   const sparqlQuery = selectDataMarkingByIriQuery( iri, selectMap.getNode('iep'));
-//   let response;
-//   try {
-//     response = await dataSources.Stardog.queryById({
-//       dbName: 'cyio-config',
-//       sparqlQuery,
-//       queryId: "Select Information Exchange Policy",
-//       singularizeSchema
-//     });
-//   } catch (e) {
-//     console.log(e)
-//     throw e
-//   }
-//   if (response === undefined) return null;
-//   if (Array.isArray(response) && response.length > 0) {
-//     results.push(reducer(response[0]))
-//   }
-//   else {
-//     // Handle reporting Stardog Error
-//     if (typeof (response) === 'object' && 'body' in response) {
-//       throw new UserInputError(response.statusText, {
-//         error_details: (response.body.message ? response.body.message : response.body),
-//         error_code: (response.body.code ? response.body.code : 'N/A')
-//       });
-//     }
-//   }
-// }
-
 export const createDataMarking = async (input, dbName, selectMap, dataSources) => {
   // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
   for (const [key, value] of Object.entries(input)) {

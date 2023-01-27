@@ -4112,76 +4112,44 @@ export const detachFromOscalTaskQuery = (id, field, itemIris) => {
 // Predicate Maps
 export const activityPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+      predicate: "<http://darklight.ai/ns/common#id>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
@@ -4189,226 +4157,130 @@ export const activityPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   methods: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#methods>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'methods');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#methods>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "methods");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   steps: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#steps>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'steps');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#steps>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "steps");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   related_controls: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#related_controls>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'related_controls');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_controls>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_controls");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   responsible_roles: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#responsible_roles>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'responsible_roles');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#responsible_roles>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "responsible_roles");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const actorPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+      predicate: "<http://darklight.ai/ns/common#id>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   actor_type: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#actor_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'actor_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#actor_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "actor_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   actor_ref: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#actor_ref>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'actor_ref');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#actor_ref>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "actor_ref");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   role_ref: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#role>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'role_ref');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#role>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "role_ref");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const assessmentAssetPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   components: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#components>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'components');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#components>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "components");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   assessment_platforms: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_platforms>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'assessment_platforms');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_platforms>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "assessment_platforms");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const assessmentPlatformPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
@@ -4416,537 +4288,304 @@ export const assessmentPlatformPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   uses_components: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#uses_components>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'uses_components');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#uses_components>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "uses_components");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const assessmentSubjectPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_type: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   include_all: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#include_all>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value !== undefined ? `"${value}"^^xsd:boolean` : null,
-        this.predicate,
-        'include_all'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#include_all>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "include_all")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 
   include_subjects: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#include_subjects>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'include_subjects');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#include_subjects>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "include_subjects");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   exclude_subjects: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#exclude_subjects>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'exclude_subjects');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#exclude_subjects>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "exclude_subjects");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const associatedActivityPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+      predicate: "<http://darklight.ai/ns/common#id>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   activity_id: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#activity_ref>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'activity_id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#activity_ref>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "activity_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   responsible_roles: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#responsible_roles>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'responsible_roles');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#responsible_roles>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "responsible_roles");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subjects: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_subjects>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subjects');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#assessment_subjects>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subjects");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const characterizationPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   origins: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#origins>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'origins');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#origins>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "origins");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   facets: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#facets>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'facets');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#facets>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "facets");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const evidencePredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   href: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#href>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null, this.predicate, 'href');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#href>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null,  this.predicate, "href");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const facetPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   risk_state: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk_state>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'risk_state');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_state>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_state");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   source_system: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#source_system>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null, this.predicate, 'source_system');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#source_system>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null,  this.predicate, "source_system");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   facet_name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#facet_name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'facet_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#facet_name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "facet_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   facet_value: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#facet_value>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'facet_value');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#facet_value>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "facet_value");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const logEntryAuthorPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   party: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#party>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'party');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#party>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   party_name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'party_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   party_type: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#party_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'party_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#party_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   role: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#role>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'role');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#role>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "role");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const mitigatingFactorPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+      predicate: "<http://darklight.ai/ns/common#id>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
@@ -4959,96 +4598,56 @@ export const mitigatingFactorPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subjects: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subjects');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subjects");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const observationPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+      predicate: "<http://darklight.ai/ns/common#id>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   entity_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
@@ -5056,197 +4655,113 @@ export const observationPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   methods: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#methods>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'methods');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#methods>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "methods");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   observation_types: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#observation_types>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'observation_types');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#observation_types>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "observation_types");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   origins: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#origins>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'origins');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#origins>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "origins");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subjects: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subjects');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subjects");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   relevant_evidence: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#relevant_evidence>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'relevant_evidence');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#relevant_evidence>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "relevant_evidence");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   collected: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#collected>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'collected');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#collected>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "collected");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   expires: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#expires>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'expires');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#expires>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "expires");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const originPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   origin_actors: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#origin_actors>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'origin_actors');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#origin_actors>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "origin_actors");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   related_tasks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#related_tasks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'related_tasks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_tasks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_tasks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const oscalTaskPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+      predicate: "<http://darklight.ai/ns/common#id>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
@@ -5254,301 +4769,168 @@ export const oscalTaskPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   task_type: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#task_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'task_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#task_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "task_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   on_date: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#on_date>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'on_date');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#on_date>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "on_date");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   start_date: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#start_date>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'start_date');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#start_date>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "start_date");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   end_date: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#end_date>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'end_date');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#end_date>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "end_date");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   frequency_period: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#frequency_period>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:positiveInteger` : null,
-        this.predicate,
-        'frequency_period'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#frequency_period>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:positiveInteger` : null,  this.predicate, "frequency_period");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   frequency_unit: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#time_unit>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'frequency_unit');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#time_unit>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "frequency_unit");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   related_tasks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#related_tasks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'related_tasks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_tasks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_tasks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   task_dependencies: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#task_dependencies>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'task_dependencies');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#task_dependencies>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "task_dependencies");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   associated_activities: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#associated_activities>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'associated_activities');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#associated_activities>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "associated_activities");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subjects: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subjects');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subjects");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   responsible_roles: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#responsible_roles>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'responsible_roles');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#responsible_roles>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "responsible_roles");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const requiredAssetPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subjects: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subjects');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subjects");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const riskPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+      predicate: "<http://darklight.ai/ns/common#id>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
@@ -5556,151 +4938,79 @@ export const riskPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   origins: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#origins>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'origins');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#origins>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "origins");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   statement: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#statement>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'statement');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#statement>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "statement");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   risk_status: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk_status>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'risk_status');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_status>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_status");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   threat_refs: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#threat_refs>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'threat_refs');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#threat_refs>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "threat_refs");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   characterizations: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'characterizations');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "characterizations");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   mitigating_factors: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#mitigating_factors>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'mitigating_factors');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#mitigating_factors>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "mitigating_factors");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   collected: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://csrc.nist.gov/ns/oscal/assessment/common#collected>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'collected');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://csrc.nist.gov/ns/oscal/assessment/common#collected>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "collected");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   deadline: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#deadline>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'deadline');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#deadline>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "deadline");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remediations: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remediations');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediations");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   risk_log: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk_log>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'risk_log');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_log>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_log");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   related_observations: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'related_observations');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_observations");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   related_observation_ids: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'related_observation_ids');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
-  },
-  false_positive: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#false_positive>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, 'false_positive');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
-    extension_property: 'false-positive',
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_observation_ids");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   accepted: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#accepted>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, 'accepted');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#accepted>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "accepted");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'accepted',
   },
   false_positive: {
@@ -5710,13 +5020,9 @@ export const riskPredicateMap = {
     extension_property: 'false-positive',
   },
   risk_adjusted: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk_adjusted>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, 'risk_adjusted');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_adjusted>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "risk_adjusted");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'risk-adjusted',
   },
   justification: {
@@ -5725,82 +5031,42 @@ export const riskPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   priority: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#priority>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:nonNegativeInteger` : null,
-        this.predicate,
-        'priority'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#priority>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:nonNegativeInteger` : null,  this.predicate, "priority");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'priority',
   },
   vendor_dependency: {
-    predicate: '<http://fedramp.gov/ns/oscal#vendor_dependency>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, 'vendor_dependency');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://fedramp.gov/ns/oscal#vendor_dependency>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null,  this.predicate, "vendor_dependency");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   impacted_control_id: {
-    predicate: '<http://fedramp.gov/ns/oscal#impacted_control_id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'impacted_control_id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://fedramp.gov/ns/oscal#impacted_control_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "impacted_control_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   operational_requirement: {
-    predicate: '<http://fedramp.gov/ns/oscal#operational_requirement>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'operational_requirement');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://fedramp.gov/ns/oscal#operational_requirement>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "operational_requirement");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // Predicate mappings used to gather data for POAM ID
   poam_id: {
-    predicate: '^<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>/<http://fedramp.gov/ns/oscal#poam_id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'poam_id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "^<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>/<http://fedramp.gov/ns/oscal#poam_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "poam_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // Predicate mappings used to gather data for risk level scoring
   cvss2_base_score: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_base_score>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null, this.predicate, 'cvss2_base_score');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_base_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss2_base_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss2_temporal_score: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_temporal_score>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:decimal` : null,
-        this.predicate,
-        'cvss2_temporal_score'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_temporal_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss2_temporal_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // cvss2_environmental_score: {
   //   predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_environmental_score>",
@@ -5808,29 +5074,14 @@ export const riskPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   cvss3_base_score: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_base_score>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null, this.predicate, 'cvss3_base_score');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_base_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss3_base_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss3_temporal_score: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_temporal_score>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:decimal` : null,
-        this.predicate,
-        'cvss3_temporal_score'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_temporal_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss3_temporal_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // cvss3_environmental_score: {
   //   predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_environmental_score>",
@@ -5838,29 +5089,14 @@ export const riskPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   available_exploit: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploit_available>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value !== undefined ? `"${value}"^^xsd:boolean` : null,
-        this.predicate,
-        'available_exploit'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploit_available>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "available_exploit");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   exploitability_ease: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploitability>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'exploitability_ease');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploitability>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "exploitability_ease");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // Predicate mappings used to gather data for risk response
   // remediation_response_date: {
@@ -5869,123 +5105,66 @@ export const riskPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   remediation_type: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remediation_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediation_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remediation_lifecycle: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remediation_lifecycle');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediation_lifecycle");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remediation_timestamp: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:dateTime` : null,
-        this.predicate,
-        'remediation_timestamp'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "remediation_timestamp");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   observation_subject: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'observation_subject');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
-  },
-};
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_observations>/<http://csrc.nist.gov/ns/oscal/assessment/common#subjects>/<http://darklight.ai/ns/oscal/assessment/common#subject_context>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "observation_subject");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  }
+}
 export const riskLogPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
@@ -5993,150 +5172,86 @@ export const riskLogPredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   entry_type: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#entry_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'entry_type');
+      predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#entry_type>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entry_type");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
-  },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   event_start: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#event_start>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'event_start');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#event_start>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "event_start");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   event_end: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#event_end>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'event_end');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#event_end>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "event_end");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   logged_by: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#logged_by>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'logged_by');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#logged_by>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "logged_by");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   status_change: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#status_change>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'status_change');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#status_change>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "status_change");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   related_responses: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#related_responses>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'related_responses');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_responses>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_responses");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const riskResponsePredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+      predicate: "<http://darklight.ai/ns/common#id>",
+      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
-    predicate: '<http://darklight.ai/ns/common#created>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'created');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
-    predicate: '<http://darklight.ai/ns/common#modified>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null, this.predicate, 'modified');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
-    predicate: '<http://darklight.ai/ns/common#labels>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'labels');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   label_name: {
-    predicate: '<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'label_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // relationships: {
   //   predicate: "<http://darklight.ai/ns/common#relationships>",
@@ -6144,619 +5259,332 @@ export const riskResponsePredicateMap = {
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   description: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#description>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'description');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   response_type: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'response_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "response_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
     extension_property: 'type',
   },
   lifecycle: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'lifecycle');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "lifecycle");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   origins: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#origins>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'origins');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#origins>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "origins");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   required_assets: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#required_assets>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'required_assets');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#required_assets>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "required_assets");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   tasks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#tasks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'tasks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#tasks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "tasks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const subjectPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_type: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_ref: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_ref');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_ref");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_context: {
-    predicate: '<http://darklight.ai/ns/oscal/assessment/common#subject_context>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_context');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/oscal/assessment/common#subject_context>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_context");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_id: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_name: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_version: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#version>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_version');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#version>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_version");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_asset_type: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#asset_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_asset_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#asset_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "subject_asset_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_component_type: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#component_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_component_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#component_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_component_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_location_type: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#location_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_location_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#location_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_location_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   subject_party_type: {
-    predicate:
-      '<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#party_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'subject_party_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://csrc.nist.gov/ns/oscal/common#party_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_party_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const vulnerabilityFacetPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   risk_state: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk_state>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'risk_state');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_state>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_state");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   source_system: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#source_system>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null, this.predicate, 'source_system');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#source_system>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null,  this.predicate, "source_system");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   vulnerability_id: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#vulnerability_id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'vulnerability_id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#vulnerability_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "vulnerability_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss20_vector_string: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_vector_string>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'cvss20_vector_string');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_vector_string>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "cvss20_vector_string");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss20_base_score: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_base_score>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null, this.predicate, 'cvss20_base_score');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_base_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_base_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss20_temporal_score: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_temporal_score>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:decimal` : null,
-        this.predicate,
-        'cvss20_temporal_score'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_temporal_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_temporal_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss20_environmental_score: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_environmental_score>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:decimal` : null,
-        this.predicate,
-        'cvss20_environmental_score'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_environmental_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_environmental_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss30_vector_string: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_vector_string>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'cvss30_vector_string');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_vector_string>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "cvss30_vector_string");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss30_base_score: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_base_score>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null, this.predicate, 'cvss30_base_score');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_base_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_base_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss30_temporal_score: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_temporal_score>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:decimal` : null,
-        this.predicate,
-        'cvss30_temporal_score'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_temporal_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_temporal_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   cvss30_environmental_score: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_environmental_score>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value ? `"${value}"^^xsd:decimal` : null,
-        this.predicate,
-        'cvss30_environmental_score'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_environmental_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_environmental_score");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   score_rationale: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#score_rationale>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'score_rationale');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#score_rationale>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "score_rationale");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   exploitability: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#exploitability>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'exploitability');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#exploitability>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "exploitability");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   exploit_available: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#exploit_available>',
-    binding(iri, value) {
-      return parameterizePredicate(
-        iri,
-        value !== undefined ? `"${value}"^^xsd:boolean` : null,
-        this.predicate,
-        'exploit_available'
-      );
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#exploit_available>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "exploit_available");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const fedrampFacetPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   risk_state: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk_state>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'risk_state');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_state>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_state");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   source_system: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#source_system>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null, this.predicate, 'source_system');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#source_system>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null,  this.predicate, "source_system");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   likelihood: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#likelihood>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'likelihood');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#likelihood>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "likelihood");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   impact: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#impact>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'impact');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "impact");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   risk: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'risk');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   plugin_file: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#plugin_file>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'plugin_file');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#plugin_file>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "plugin_file");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   plugin_family: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#pllugin_family>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'plugin_family');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#pllugin_family>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "plugin_family");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   plugin_id: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#plugin_id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'plugin_id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#plugin_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "plugin_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   plugin_name: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#plugin_name>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'plugin_name');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#plugin_name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "plugin_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   plugin_type: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#plugin_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'plugin_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#plugin_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "plugin_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}
 export const oscalFacetPredicateMap = {
   id: {
-    predicate: '<http://darklight.ai/ns/common#id>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'id');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
-    predicate: '<http://darklight.ai/ns/common#object_type>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_type');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#links>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'links');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   remarks: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#remarks>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'remarks');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   risk_state: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk_state>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'risk_state');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk_state>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk_state");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   source_system: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/common#source_system>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null, this.predicate, 'source_system');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#source_system>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI` : null,  this.predicate, "source_system");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   likelihood: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#likelihood>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'likelihood');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#likelihood>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "likelihood");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   impact: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#impact>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'impact');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "impact");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   risk: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#risk>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'risk');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#risk>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "risk");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   severity: {
-    predicate: '<http://csrc.nist.gov/ns/oscal/assessment/common#severity>',
-    binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'severity');
-    },
-    optional(iri, value) {
-      return optionalizePredicate(this.binding(iri, value));
-    },
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#severity>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "severity");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-};
+}

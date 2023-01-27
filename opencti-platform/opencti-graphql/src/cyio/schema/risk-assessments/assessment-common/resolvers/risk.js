@@ -29,6 +29,7 @@ import {
   selectOriginByIriQuery,
   selectAllRiskLogEntries,
 } from './sparql-query.js';
+import { assertNullableType } from 'graphql';
 
 const riskResolvers = {
   Query: {
@@ -244,6 +245,7 @@ const riskResolvers = {
           error_code: response.body.code ? response.body.code : 'N/A',
         });
       } else {
+        return assertNullableType;
       }
     },
     risk: async (_, { id }, { dbName, dataSources, selectMap }) => {

@@ -6,11 +6,6 @@ import {
   deleteDataMarkingById,
   editDataMarkingById,
 } from '../domain/dataMarkings.js';
-// import {
-//   getReducer as getGlobalReducer,
-//   selectExternalReferenceByIriQuery,
-//   selectNoteByIriQuery,
-// } from '../../global/resolvers/sparql-query.js';
 
 const cyioDataMarkingResolvers = {
   Query: {

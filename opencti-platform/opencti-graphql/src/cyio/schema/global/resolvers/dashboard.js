@@ -45,8 +45,8 @@ const cyioDashboardResolvers = {
       // END WORKAROUND
 
       if (!('type' in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
-      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
+      if ('field' in args && !('match' in args)) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !('field' in args)) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
       const query = entitiesCountQuery(args);
@@ -93,8 +93,8 @@ const cyioDashboardResolvers = {
       // END WORKAROUND
 
       if (!('type' in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
-      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
+      if ('field' in args && !('match' in args)) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !('field' in args)) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
       const query = entitiesTimeSeriesQuery(args);
@@ -197,8 +197,8 @@ const cyioDashboardResolvers = {
       // END WORKAROUND
 
       if (!('type' in args) && !('field' in args)) throw new CyioError('Must specified either type or field');
-      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
+      if ('field' in args && !('match' in args)) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !('field' in args)) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
       const query = entitiesCountQuery(args);
@@ -245,8 +245,8 @@ const cyioDashboardResolvers = {
       // END WORKAROUND
 
       if (!('type' in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
-      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
+      if ('field' in args && !('match' in args)) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !('field' in args)) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
       const query = entitiesTimeSeriesQuery(args);
@@ -336,8 +336,8 @@ const cyioDashboardResolvers = {
       // END WORKAROUND
 
       if (!('type' in args) && !('field' in args)) throw new CyioError(`Must specify either "type" or "field"`);
-      if ('field' in args && !'match' in args) throw new CyioError(`"match" must be specified when using "field"`);
-      if ('match' in args && !'field' in args) throw new CyioError(`"field" must specified when using "match"`);
+      if ('field' in args && !('match' in args)) throw new CyioError(`"match" must be specified when using "field"`);
+      if ('match' in args && !('field' in args)) throw new CyioError(`"field" must specified when using "match"`);
 
       let response;
       const query = entitiesDistributionQuery(args);
