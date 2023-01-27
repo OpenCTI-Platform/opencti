@@ -13586,6 +13586,7 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
+    selectedIds: [String]
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
@@ -13605,6 +13606,7 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
+    selectedIds: [String]
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
@@ -13720,6 +13722,7 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixCyberObservablesFiltering]
     filterMode: FilterMode
+    selectedIds: [String]
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
   artifactImport(
@@ -13748,6 +13751,7 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
+    selectedIds: [String]
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
     @auth(for: [KNOWLEDGE_KNUPDATE])

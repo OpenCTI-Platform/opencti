@@ -78,6 +78,7 @@ export const StixCyberObservablesExportCreationMutation = graphql`
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
     $filters: [StixCyberObservablesFiltering]
+    $selectedIds: [String]
   ) {
     stixCyberObservablesExportAsk(
       format: $format
@@ -89,6 +90,7 @@ export const StixCyberObservablesExportCreationMutation = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      selectedIds: $selectedIds
     ) {
       edges {
         node {
@@ -136,7 +138,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, context } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
@@ -149,6 +151,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
         maxMarkingDefinition,
         context,
         ...paginationOptions,
+        selectedIds,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -204,7 +207,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   maxMarkingDefinition: 'none',
                 }}
                 validationSchema={exportValidation(t)}
-                onSubmit={this.onSubmit.bind(this)}
+                onSubmit={this.onSubmit.bind(this, selectedIds)}
                 onReset={this.handleClose.bind(this)}
               >
                 {({ submitForm, handleReset, isSubmitting }) => (

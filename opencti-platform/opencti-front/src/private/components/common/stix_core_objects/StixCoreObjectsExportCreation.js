@@ -63,6 +63,7 @@ export const StixCoreObjectsExportCreationMutation = graphql`
     $filters: [StixCoreObjectsFiltering]
     $relationship_type: [String]
     $elementId: String
+    $selectedIds: [String]
   ) {
     stixCoreObjectsExportAsk(
       type: $type
@@ -76,6 +77,7 @@ export const StixCoreObjectsExportCreationMutation = graphql`
       filters: $filters
       relationship_type: $relationship_type
       elementId: $elementId
+      selectedIds: $selectedIds
     ) {
       edges {
         node {
@@ -121,7 +123,7 @@ const StixCoreObjectsExportCreationComponent = ({
   const { t } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
@@ -134,6 +136,7 @@ const StixCoreObjectsExportCreationComponent = ({
         maxMarkingDefinition,
         context,
         ...paginationOptions,
+        selectedIds,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -185,7 +188,7 @@ const StixCoreObjectsExportCreationComponent = ({
                 maxMarkingDefinition: 'none',
               }}
               validationSchema={exportValidation(t)}
-              onSubmit={onSubmit}
+              onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })}
               onReset={() => setOpen(false)}
             >
               {({ submitForm, handleReset, isSubmitting }) => (

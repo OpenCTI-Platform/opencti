@@ -11600,6 +11600,7 @@ export type MutationStixCoreObjectsExportAskArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   type: Scalars['String'];
 };
 
@@ -11639,6 +11640,7 @@ export type MutationStixCoreRelationshipsExportAskArgs = {
   orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   type: Scalars['String'];
 };
 
@@ -11720,6 +11722,7 @@ export type MutationStixCyberObservablesExportAskArgs = {
   orderBy?: InputMaybe<StixCyberObservablesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -11757,6 +11760,7 @@ export type MutationStixDomainObjectsExportAskArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   type: Scalars['String'];
 };
 
