@@ -1,4 +1,4 @@
-import React, { Dispatch, ReactNode, useRef } from 'react';
+import React, { Dispatch, ReactNode, useState } from 'react';
 
 export interface ExportContextType {
   selectedIds: string[],
@@ -13,14 +13,10 @@ const defaultContext = {
 export const ExportContext = React.createContext<ExportContextType>(defaultContext);
 
 const ExportContextProvider = ({ children }: { children: ReactNode }) => {
-  const selectedIds = useRef<string[]>([]);
-
-  const setSelectedIds = (value: string[]) => {
-    selectedIds.current = value;
-  };
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   return (
-    <ExportContext.Provider value={{ selectedIds: selectedIds.current, setSelectedIds }}>
+    <ExportContext.Provider value={{ selectedIds, setSelectedIds }}>
       {children}
     </ExportContext.Provider>
   );

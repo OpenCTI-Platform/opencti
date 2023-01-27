@@ -1,16 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  filter,
-  flatten,
-  fromPairs,
-  includes,
-  map,
-  propOr,
-  uniq,
-  zip,
-} from 'ramda';
+import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -19,22 +9,18 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import { Add } from '@mui/icons-material';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
-import { ExportContext } from "../../../../utils/ExportContextProvider";
+import { ExportContext } from '../../../../utils/ExportContextProvider';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -172,7 +158,6 @@ class StixDomainObjectsExportCreationComponent extends Component {
       flatten(map((c) => c.connector_scope, connectorsExport)),
     );
     const exportConnsPerFormat = scopesConn(connectorsExport);
-    // eslint-disable-next-line max-len
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
     return (

@@ -224,10 +224,12 @@ class ListLinesContent extends Component {
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
       <ExportContext.Consumer>
-        {({ setSelectedIds }) => {
-          // selected_ids: ids of elements that are selected via checkboxes AND respect the filtering conditions
-          // updated when we click on the Export panel at last
-          setSelectedIds(dataList.map((o) => o.node.id).filter((id) => (selectedElements ? Object.keys(selectedElements) : []).includes(id)));
+        {({ selectedIds, setSelectedIds }) => {
+          // selectedIds: ids of elements that are selected via checkboxes AND respect the filtering conditions
+          const newSelectedIds = dataList.map((o) => o.node.id).filter((id) => (selectedElements ? Object.keys(selectedElements) : []).includes(id));
+          if (!R.equals(selectedIds, newSelectedIds)) {
+            setSelectedIds(newSelectedIds);
+          }
           return (
             <WindowScroller ref={this._setRef} scrollElement={window}>
               {({ height, isScrolling, onChildScroll, scrollTop }) => (
