@@ -73,9 +73,9 @@ class CyioDomainObjectAssetOverview extends Component {
     //   otherCyioIds,
     // );
     return (
-      <div style={{ height: '100%' }} className="break">
+      <div style={{ height: "100%" }} className="break">
         <Typography variant="h4" gutterBottom={true}>
-          {t('Basic information')}
+          {t("Basic information")}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
@@ -85,29 +85,71 @@ class CyioDomainObjectAssetOverview extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left' }}
+                  style={{ float: "left" }}
                 >
-                  {t('ID')}
+                  {t("ID")}
                 </Typography>
-                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip title={t('Uniquely identifies this object')}>
+                <div style={{ float: "left", margin: "2px 0 0 5px" }}>
+                  <Tooltip title={t("Uniquely identifies this object")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 {cyioDomainObject?.id && t(cyioDomainObject.id)}
               </div>
+            </Grid>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left" }}
                 >
-                  {t('Asset ID')}
+                  {t("Asset Type")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Identifies the identifier defined by the standard')}>
+                <div style={{ float: "left", margin: "2px 0 0 5px" }}>
+                  <Tooltip title={t("Identifies the type of the Object")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Chip
+                  avatar={
+                    cyioDomainObject?.asset_type && (
+                      <ItemIcon
+                        variant="inline"
+                        type={cyioDomainObject?.asset_type}
+                        fontSize="5px"
+                      />
+                    )
+                  }
+                  classes={{ root: classes.chip }}
+                  label={
+                    cyioDomainObject?.asset_type &&
+                    t(cyioDomainObject.asset_type)
+                  }
+                  color="primary"
+                />
+                {/* <ItemCreator creator={cyioDomainObject?.creator} /> */}
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left", marginTop: 20 }}
+                >
+                  {t("Asset ID")}
+                </Typography>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip
+                    title={t(
+                      "Identifies the identifier defined by the standard"
+                    )}
+                  >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -121,38 +163,12 @@ class CyioDomainObjectAssetOverview extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left' }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Asset Type')}
+                  {t("Asset Tag")}
                 </Typography>
-                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip
-                    title={t('Identifies the type of the Object')}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Chip
-                  avatar={cyioDomainObject?.asset_type
-                    && <ItemIcon variant='inline' type={cyioDomainObject?.asset_type} fontSize='5px' />}
-                  classes={{ root: classes.chip }}
-                  label={cyioDomainObject?.asset_type && t(cyioDomainObject.asset_type)}
-                  color="primary"
-                />
-                {/* <ItemCreator creator={cyioDomainObject?.creator} /> */}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Asset Tag')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Asset Tag')}>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Asset Tag")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -160,20 +176,18 @@ class CyioDomainObjectAssetOverview extends Component {
                 {cyioDomainObject?.asset_tag && t(cyioDomainObject.asset_tag)}
               </div>
             </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Description')}
+                  {t("Description")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Description')}>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Description")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -181,85 +195,69 @@ class CyioDomainObjectAssetOverview extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {cyioDomainObject?.description && t(cyioDomainObject.description)}
+                      {cyioDomainObject?.description &&
+                        t(cyioDomainObject.description)}
                     </div>
                   </div>
                 </div>
               </div>
             </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Version')}
+                  {t("Version")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t('Version')}
-                  >
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Version")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 {cyioDomainObject?.version && t(cyioDomainObject.version)}
               </div>
+            </Grid>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Serial Number')}
+                  {t("Patch Level")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Serial Number')}>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Patch Level")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject?.serial_number && t(cyioDomainObject.serial_number)}
-                {/* <ItemCreator creator={cyioDomainObject.creator} /> */}
+                {cyioDomainObject?.patch_level && t(cyioDomainObject.patch_level)}
               </div>
+            </Grid>
+            <Grid item={true} xs={12}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Responsible Parties')}
+                  {t("Vendor Name")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Responsible Parties')}>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Vendor Name")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject?.responsible_parties
-                  && cyioDomainObject?.responsible_parties.map((data, key) => (
-                    <Chip key={key} classes={{ root: classes.chip }}
-                      label={t(data)} color="primary" />
-                  ))}
-              </div>
-              <div>
-                <CyioCoreObjectLabelsView
-                  labels={cyioDomainObject.labels}
-                  marginTop={20}
-                  refreshQuery={refreshQuery}
-                  id={cyioDomainObject.id}
-                  typename={cyioDomainObject.__typename}
-                />
-                {/* <StixCoreObjectLabels
-                  labels={objectLabel}
-                  marginTop={20}
-                /> */}
+                {cyioDomainObject?.vendor_name &&
+                  t(cyioDomainObject.vendor_name)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -268,52 +266,96 @@ class CyioDomainObjectAssetOverview extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Vendor Name')}
+                  {t("Serial Number")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Vendor Name')}>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Serial Number")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject?.vendor_name && t(cyioDomainObject.vendor_name)}
+                {cyioDomainObject?.serial_number &&
+                  t(cyioDomainObject.serial_number)}
+                {/* <ItemCreator creator={cyioDomainObject.creator} /> */}
               </div>
+            </Grid>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Release Date')}
+                  {t("Release Date")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Release Date')}>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Release Date")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject?.release_date && fd(cyioDomainObject.release_date)}
+                {cyioDomainObject?.release_date &&
+                  fd(cyioDomainObject.release_date)}
               </div>
+            </Grid>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Operational Status')}
+                  {t("Responsible Parties")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Operation Status')}>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Responsible Parties")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject?.operational_status && t(cyioDomainObject.operational_status)}
+                {cyioDomainObject?.responsible_parties &&
+                  cyioDomainObject?.responsible_parties.map((data, key) => (
+                    <Chip
+                      key={key}
+                      classes={{ root: classes.chip }}
+                      label={t(data)}
+                      color="primary"
+                    />
+                  ))}
               </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left", marginTop: 20 }}
+                >
+                  {t("Operational Status")}
+                </Typography>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Operation Status")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {cyioDomainObject?.operational_status &&
+                  t(cyioDomainObject.operational_status)}
+              </div>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <CyioCoreObjectLabelsView
+                labels={cyioDomainObject.labels}
+                marginTop={20}
+                refreshQuery={refreshQuery}
+                id={cyioDomainObject.id}
+                typename={cyioDomainObject.__typename}
+              />
             </Grid>
           </Grid>
         </Paper>

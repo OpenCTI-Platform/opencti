@@ -28,7 +28,9 @@ import {
   VoidTypeDefinition,
   VoidResolver,
 } from 'graphql-scalars';
-import {DateTimeScalar} from "./scalars";
+import { loadSchemaSync } from '@graphql-tools/load';
+import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
+import { DateTimeScalar } from './scalars';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -132,15 +134,16 @@ import cyioDataMarkingResolvers from '../cyio/schema/data-markings/resolvers/dat
 import cyioDataSourceResolvers from '../cyio/schema/data-sources/resolvers/dataSource.js';
 import cyioConnectionInformationResolvers from '../cyio/schema/data-sources/resolvers/connectionInformation.js';
 import cyioWorkActivityResolvers from '../cyio/schema/data-sources/resolvers/workActivity.js';
+import cyioDataMarkingResolvers from '../cyio/schema/data-markings/resolvers/dataMarkings.js';
+import cyioDataSourceResolvers from '../cyio/schema/data-sources/resolvers/dataSource.js';
+import cyioConnectionInformationResolvers from '../cyio/schema/data-sources/resolvers/connectionInformation.js';
+import cyioWorkActivityResolvers from '../cyio/schema/data-sources/resolvers/workActivity.js';
 
 // Cyio Extensions to support merged graphQL schema
-import { loadSchemaSync } from '@graphql-tools/load';
-import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader' ;
 
-const {authDirectiveTransformer } = authDirectiveV2();
+const { authDirectiveTransformer } = authDirectiveV2();
 
 const createSchema = () => {
-
   const globalResolvers = {
     DateTime: GraphQLDateTime,
     Timestamp: DateTimeScalar,

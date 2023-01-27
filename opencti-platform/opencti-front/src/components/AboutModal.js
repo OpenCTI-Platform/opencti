@@ -84,7 +84,7 @@ class AboutModal extends Component {
     if (location.pathname === '/data/entities') {
       AboutLocationPath = '/static/docs/pages/data/entities/index.md.html';
     }
-    if (location.pathname === '/data/data source') {
+    if (location.pathname === '/data/data_source') {
       AboutLocationPath = '/static/docs/pages/data/data_sources/index.md.html';
     }
     if (location.pathname === '/settings') {

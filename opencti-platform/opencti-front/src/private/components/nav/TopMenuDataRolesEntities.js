@@ -69,15 +69,15 @@ class TopMenuDataRolesEntities extends Component {
         </Button>
         <Button
           component={Link}
-          to="/data/data source/responsibility"
+          to="/data/data_source"
           variant={
-            location.pathname.includes('/data/data source/responsibility')
+            location.pathname.includes('/data/data_source')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/data/data source/responsibility')
+            location.pathname.includes('/data/data_source')
               ? 'secondary'
               : 'inherit'
           }

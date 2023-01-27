@@ -210,15 +210,20 @@ class NetworkDetailsComponent extends Component {
               </Grid>             
             </Grid>
             <Grid container spacing={3}>
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={12}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
-                  {t('Connected Devices')}
+                  {t('Connected Assets')}
                 </Typography>
+                <div style={{ float: 'left', margin: '0 0 0 5px' }}>
+                  <Tooltip title={t('Connected Devices')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
                 <div className="clearfix" />
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
@@ -238,15 +243,20 @@ class NetworkDetailsComponent extends Component {
                   </div>
                 </div>
               </Grid>       
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={12}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20  }}
+                  style={{ float: 'left'  }}
                 >
                   {t('Related Risks')}
                 </Typography>
+                <div style={{ float: 'left', margin: '0 0 0 5px' }}>
+                  <Tooltip title={t('Related Risks')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
                 <div className="clearfix" />
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>

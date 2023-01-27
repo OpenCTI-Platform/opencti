@@ -114,9 +114,9 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
     // const { editContext } = cyioDomainObject;
     // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
-      <div style={{ height: '100%' }}>
+      <div style={{ height: "100%" }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Basic Information')}
+          {t("Basic Information")}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
@@ -126,51 +126,26 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left' }}
+                  style={{ float: "left" }}
                 >
-                  {t('ID')}
+                  {t("ID")}
                 </Typography>
-                <div style={{ float: 'left', margin: '1px 0 2px 5px' }}>
-                  <Tooltip title={t('Uniquely identifies this object')} >
+                <div style={{ float: "left", margin: "1px 0 2px 5px" }}>
+                  <Tooltip title={t("Uniquely identifies this object")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <Field
                   component={TextField}
-                  variant='outlined'
-                  size='small'
+                  variant="outlined"
+                  size="small"
                   disabled={true}
                   name="id"
                   fullWidth={true}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: "100%" }}
                   classes={{ root: classes.disabledFields }}
-                // onFocus={this.handleChangeFocus.bind(this)}
-                // onSubmit={this.handleSubmitField.bind(this)}
-                />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Asset ID')}
-                </Typography>
-                <div style={{ float: 'left', margin: '20px 0 0 5px' }}>
-                  <Tooltip title={t('Identifies the identifier defined by the standard')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <Field
-                  component={TextField}
-                  variant='outlined'
-                  size='small'
-                  name="asset_id"
-                  fullWidth={true}
-                  containerstyle={{ width: '100%' }}
-                // onFocus={this.handleChangeFocus.bind(this)}
-                // onSubmit={this.handleSubmitField.bind(this)}
+                  // onFocus={this.handleChangeFocus.bind(this)}
+                  // onSubmit={this.handleSubmitField.bind(this)}
                 />
               </div>
             </Grid>
@@ -180,187 +155,159 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left' }}
+                  style={{ float: "left" }}
                 >
-                  {t('Asset Type')}
+                  {t("Asset Type")}
                 </Typography>
-                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip title={t('Identifies the type of the Object')}>
+                <div style={{ float: "left", margin: "2px 0 0 5px" }}>
+                  <Tooltip title={t("Identifies the type of the Object")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <AssetType
                   component={SelectField}
-                  variant='outlined'
+                  variant="outlined"
                   name="asset_type"
                   assetType={assetType}
-                  size='small'
+                  size="small"
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%' }}
-                  helperText={t('Select Asset Type')}
+                  style={{ height: "38.09px" }}
+                  containerstyle={{ width: "100%" }}
+                  helperText={t("Select Asset Type")}
                 />
               </div>
+            </Grid>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Asset Tag')}
+                  {t("Asset ID")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Asset Tag')}>
+                <div style={{ float: "left", margin: "20px 0 0 5px" }}>
+                  <Tooltip
+                    title={t(
+                      "Identifies the identifier defined by the standard"
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  size="small"
+                  name="asset_id"
+                  fullWidth={true}
+                  containerstyle={{ width: "100%" }}
+                  // onFocus={this.handleChangeFocus.bind(this)}
+                  // onSubmit={this.handleSubmitField.bind(this)}
+                />
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left", marginTop: 20 }}
+                >
+                  {t("Asset Tag")}
+                </Typography>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Asset Tag")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  variant='outlined'
-                  size='small'
+                  variant="outlined"
+                  size="small"
                   name="asset_tag"
                   fullWidth={true}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: "100%" }}
                 />
               </div>
             </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 0 }}
-                >
-                  {t('Description')}
-                </Typography>
-                <div style={{ float: 'left', margin: '0 0 0 5px' }}>
-                  <Tooltip title={t('Description')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                {/* <div className="clearfix" />
-                      <textarea className="scrollbar-customize" rows="3" cols="24" /> */}
-                <div className="clearfix" />
-                <Field
-                  component={TextField}
-                  name="description"
-                  fullWidth={true}
-                  multiline={true}
-                  rows="3"
-                  variant='outlined'
-                  />
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: "left", marginTop: 0 }}
+              >
+                {t("Description")}
+              </Typography>
+              <div style={{ float: "left", margin: "0 0 0 5px" }}>
+                <Tooltip title={t("Description")}>
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <Field
+                component={TextField}
+                name="description"
+                fullWidth={true}
+                multiline={true}
+                rows="3"
+                variant="outlined"
+              />
             </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              {/* <div>
-                      <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ float: 'left' }}
-                      >
-                        {t('Description')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                        <Tooltip title={t('Description')} >
-                          <Information fontSize="small" color="primary" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <textarea className="scrollbar-customize" rows="3" cols="24" />
-                    </div> */}
-              <div style={{ marginTop: '6px' }}>
+
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 15 }}
+                  style={{ float: "left" }}
                 >
-                  {t('Version')}
+                  {t("Version")}
                 </Typography>
-                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Version',
-                    )}
-                  >
+                <div style={{ float: "left", margin: "0 0 0 5px" }}>
+                  <Tooltip title={t("Version")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  variant='outlined'
-                  size='small'
+                  variant="outlined"
+                  size="small"
                   name="version"
                   fullWidth={true}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: "100%" }}
                 />
+
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: "left" }}
+              >
+                {t("Patch Level")}
+              </Typography>
+              <div style={{ float: "left", margin: "0 0 0 5px" }}>
+                <Tooltip title={t("Patch Level")}>
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
               </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 16 }}
-                >
-                  {t('Serial Number')}
-                </Typography>
-                <div style={{ float: 'left', margin: '18px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Serial Number',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={TextField}
-                  variant='outlined'
-                  size='small'
-                  name="serial_number"
-                  fullWidth={true}
-                  containerstyle={{ width: '100%' }}
-                />
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 16 }}
-                >
-                  {t('Responsible Parties')}
-                </Typography>
-                <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                  <Tooltip title={t('Responsible Parties')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={SelectField}
-                  variant='outlined'
-                  name="responsible_parties"
-                  size='small'
-                  fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                />
-              </div>
-              <CyioCoreObjectLabelsView
-                labels={cyioDomainObject.labels}
-                marginTop={20}
-                refreshQuery={refreshQuery}
-                id={cyioDomainObject?.id}
-                typename={cyioDomainObject.__typename}
+              <div className="clearfix" />
+              <Field
+                component={TextField}
+                style={{ height: "38.09px" }}
+                variant="outlined"
+                name="patch_level"
+                size="small"
+                fullWidth={true}
+                containerstyle={{ width: "100%", padding: "0 0 1px 0" }}
               />
             </Grid>
             <Grid item={true} xs={6}>
@@ -369,80 +316,148 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 20 }}
                 >
-                  {t('Vendor Name')}
+                  {t("Vendor Name")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Vendor Name')}>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Vendor Name")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  variant='outlined'
+                  variant="outlined"
                   name="vendor_name"
-                  size='small'
+                  size="small"
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%' }}
+                  style={{ height: "38.09px" }}
+                  containerstyle={{ width: "100%" }}
                 />
               </div>
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 16 }}
                 >
-                  {t('Release Date')}
+                  {t("Serial Number")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Release Date')}>
+                <div style={{ float: "left", margin: "18px 0 0 5px" }}>
+                  <Tooltip title={t("Serial Number")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  size="small"
+                  name="serial_number"
+                  fullWidth={true}
+                  containerstyle={{ width: "100%" }}
+                />
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left", marginTop: 20 }}
+                >
+                  {t("Release Date")}
+                </Typography>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Release Date")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <Field
                   component={DatePickerField}
-                  variant='outlined'
+                  variant="outlined"
                   name="release_date"
-                  size='small'
+                  size="small"
                   invalidDateMessage={t(
-                    'The value must be a date (YYYY-MM-DD)',
+                    "The value must be a date (YYYY-MM-DD)"
                   )}
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%' }}
+                  style={{ height: "38.09px" }}
+                  containerstyle={{ width: "100%" }}
                 />
               </div>
+            </Grid>
+            <Grid item={true} xs={6}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: "left", marginTop: 16 }}
                 >
-                  {t('Operational Status')}
+                  {t("Responsible Parties")}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Operation Status')}>
+                <div style={{ float: "left", margin: "17px 0 0 5px" }}>
+                  <Tooltip title={t("Responsible Parties")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  variant="outlined"
+                  name="responsible_parties"
+                  size="small"
+                  fullWidth={true}
+                  style={{ height: "38.09px" }}
+                  containerstyle={{ width: "100%", padding: "0 0 1px 0" }}
+                />
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left", marginTop: 20 }}
+                >
+                  {t("Operational Status")}
+                </Typography>
+                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
+                  <Tooltip title={t("Operation Status")}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <OperationalStatusField
                   component={SelectField}
-                  variant='outlined'
+                  variant="outlined"
                   name="operational_status"
-                  size='small'
+                  size="small"
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%' }}
-                  helperText={t('Select Operational Status')}
+                  style={{ height: "38.09px" }}
+                  containerstyle={{ width: "100%" }}
+                  helperText={t("Select Operational Status")}
                 />
               </div>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <CyioCoreObjectLabelsView
+                labels={cyioDomainObject.labels}
+                marginTop={20}
+                refreshQuery={refreshQuery}
+                id={cyioDomainObject?.id}
+                typename={cyioDomainObject.__typename}
+              />
             </Grid>
           </Grid>
         </Paper>

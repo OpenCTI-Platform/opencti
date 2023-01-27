@@ -308,28 +308,28 @@ class Risks extends Component {
         isSortable: true,
       },
       risk_level: {
-        label: 'Risk',
-        width: '12%',
+        label: 'Severity',
+        width: '11%',
         isSortable: true,
       },
       risk_status: {
         label: 'Status',
-        width: '13%',
+        width: '10%',
         isSortable: true,
       },
       response_type: {
         label: 'Response',
-        width: '13%',
+        width: '10%',
         isSortable: true,
       },
       lifecycle: {
         label: 'Lifecycle',
-        width: '13%',
+        width: '18%',
         isSortable: true,
       },
       occurrences: {
         label: 'Occurrences',
-        width: '10%',
+        width: '12%',
         isSortable: true,
       },
       deadline: {

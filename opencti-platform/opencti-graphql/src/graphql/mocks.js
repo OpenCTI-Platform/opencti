@@ -1,5 +1,5 @@
 // Custom scalars
-import { 
+import {
   DateTimeMock,
   EmailAddressMock,
   IPv4Mock,
@@ -37,14 +37,14 @@ const mocks = {
     city: 'Redmond',
     administrative_area: 'WA',
     postal_code: '98052',
-    country: 'US'
+    country: 'US',
   }),
   CyioExternalReference: () => ({
     source_name: 'Alienware',
     description: 'Aurora-R4 Owners manual',
     external_id: 'aurora-r4-owner',
-    url: 'https://downloads.dell.com/manuals/all-products/esuprt_desktop/esuprt_alienware_dsk/alienware-aurora-r4_owner%27s%20manual_en-us.pdf'
+    url: 'https://downloads.dell.com/manuals/all-products/esuprt_desktop/esuprt_alienware_dsk/alienware-aurora-r4_owner%27s%20manual_en-us.pdf',
   }),
 };
 
-export default mocks ;
+export default mocks;

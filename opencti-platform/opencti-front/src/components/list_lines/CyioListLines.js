@@ -157,7 +157,7 @@ const styles = (theme) => ({
     width: '100%',
     left: '0px',
     position: 'fixed',
-    padding: '10px 53px 10px 306px',
+    padding: '10px 53px 10px 297px',
     backgroundColor: theme.palette.header.background,
 
   },
@@ -207,8 +207,9 @@ const styles = (theme) => ({
 class CyioListLines extends Component {
   constructor(props) {
     super(props);
+    this.myRef = React.createRef();
     this.state = {
-      scrollValue: 0,
+      scrollValue: true,
     };
   }
 
@@ -217,15 +218,11 @@ class CyioListLines extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener('scroll', this.handleScroll.bind(this));
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll.bind(this));
-  }
-
-  handleScroll() {
-    this.setState({ scrollValue: window.pageYOffset });
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      this.setState({ scrollValue: entry.isIntersecting });
+    });
+    observer.observe(this.myRef.current);
   }
 
   sortBy(event) {
@@ -317,7 +314,7 @@ class CyioListLines extends Component {
           className={classes.toolBar}
           elevation={1}
         >
-          <div className={classes.parameters}>
+          <div ref={this.myRef} className={classes.parameters}>
             <div className={classes.searchBar}>
               {/* {typeof handleSearch === 'function' && (
                 <div style={{ float: 'left', marginRight: 20 }}>
@@ -675,9 +672,9 @@ class CyioListLines extends Component {
             {!noHeaders ? (
               <ListItem
                 divider={true}
-                className={this.state.scrollValue > 130
-                  ? classes.listScrollItem
-                  : classes.listItem}
+                className={this.state.scrollValue
+                  ? classes.listItem
+                  : classes.listScrollItem}
               >
                 <ListItemIcon
                   style={{

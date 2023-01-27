@@ -1,7 +1,7 @@
-const join = require('path').join;
-const loadFilesSync = require("@graphql-tools/load-files").loadFilesSync;
-const mergeTypeDefs = require("@graphql-tools/merge").mergeTypeDefs;
-const print = require('graphql').print;
+const { join } = require('path');
+const { loadFilesSync } = require('@graphql-tools/load-files');
+const { mergeTypeDefs } = require('@graphql-tools/merge');
+const { print } = require('graphql');
 const fs = require('fs');
 
 const schemaFiles = loadFilesSync(join(__dirname, '**/*.graphql'));

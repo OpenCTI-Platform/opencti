@@ -7,7 +7,6 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -70,15 +69,15 @@ class TopMenuDataLabelsEntities extends Component {
         </Button>
         <Button
           component={Link}
-          to="/data/data source/labels"
+          to="/data/data_source"
           variant={
-            location.pathname.includes('/data/data source/labels')
+            location.pathname.includes('/data/data_source')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/data/data source/labels')
+            location.pathname.includes('/data/data_source')
               ? 'secondary'
               : 'inherit'
           }

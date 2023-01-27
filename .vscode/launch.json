@@ -2,11 +2,18 @@
     "configurations": [
         {
             "type": "node-terminal",
-            "name": "Run Script: start GraphQL Server",
+            "name": "Cyio",
             "request": "launch",
-            "command": "npm run start",
+            "command": "REACT_APP_GRAPHQL_HOST=https://cyio-dev.darklight.ai:9443/ yarn start",
+            "cwd": "${workspaceFolder}/opencti-platform/opencti-front"
+        },
+        {
+            "type": "node-terminal",
+            "name": "GraphQL",
+            "request": "launch",
+            "command": "yarn start",
             "cwd": "${workspaceFolder}/opencti-platform/opencti-graphql",
-            "envFile": "${workspaceFolder}/docker/.env"
+            "envFile": "${workspaceFolder}/opencti-platform/opencti-graphql/.env"
         }
     ]
 }

@@ -1,13 +1,12 @@
-import { CyioError } from "../../../utils.js";
-import {v4 as uuid4} from "uuid";
+import { v4 as uuid4 } from 'uuid';
+import { CyioError } from '../../../utils.js';
 // import { objectMap } from '../../../global/global-utils.js';
 
 const oscalCommonResolvers = {
-  Query: {
-  },
+  Query: {},
   Mutation: {
-    exportOscal: async (_, { model, id, media_type }, {clientId, kauth, token, dataSources}) => {
-      switch(model) {
+    exportOscal: async (_, { model, id, media_type }, { clientId, kauth, token, dataSources }) => {
+      switch (model) {
         case 'poam':
           if (id === undefined || id === null || id === '') id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
           break;
@@ -22,37 +21,42 @@ const oscalCommonResolvers = {
       const taskId = uuid4();
       let bearer_token = '';
       bearer_token = token;
-      if (kauth && kauth.accessToken && kauth.accessToken.token ) {
-        console.log(`kauth has accessToken: ${kauth.accessToken.token}`)
+      if (kauth && kauth.accessToken && kauth.accessToken.token) {
+        console.log(`kauth has accessToken: ${kauth.accessToken.token}`);
         // bearer_token = kauth.accessToken.token;
       }
 
       // build the tasking request payload
-      let payload = {
-        "@type": "task", 
-        "task-uid": `${taskId}`,
-        "type": "export",
-        "token": `${bearer_token}`,
-        "cyio-client": `${clientId}`,
-        "options": {
-          "export": {
-            "media-format": `${media_type}`,
-            "oscal-model": `${model}`,
-            "object-id": `${id}`
-          }
-        }
+      const payload = {
+        '@type': 'task',
+        'task-uid': `${taskId}`,
+        type: 'export',
+        token: `${bearer_token}`,
+        'cyio-client': `${clientId}`,
+        options: {
+          export: {
+            'media-format': `${media_type}`,
+            'oscal-model': `${model}`,
+            'object-id': `${id}`,
+          },
+        },
       };
 
       let response;
       response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.export', payload);
-      
+
       // return the tasking id for tracking purposes
       return response;
     },
-    generateRiskReport: async (_, { report, id, media_type, options }, {clientId, kauth, token, dataSources}) => {
-      let exportMediaType, model, description=null, purpose=null, maxItems='all';
-      let sectionList = [], appendixList = [];
-      switch(report) {
+    generateRiskReport: async (_, { report, id, media_type, options }, { clientId, kauth, token, dataSources }) => {
+      let exportMediaType;
+      let model;
+      let description = null;
+      let purpose = null;
+      let maxItems = 'all';
+      const sectionList = [];
+      const appendixList = [];
+      switch (report) {
         case 'sar':
           if (id === undefined || id === null || id === '') id = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
           exportMediaType = 'application/oscal+json';
@@ -70,13 +74,13 @@ const oscalCommonResolvers = {
       const taskId = uuid4();
       let bearer_token = '';
       bearer_token = token;
-      if (kauth && kauth.accessToken && kauth.accessToken.token ) {
-        console.log(`kauth has accessToken: ${kauth.accessToken.token}`)
+      if (kauth && kauth.accessToken && kauth.accessToken.token) {
+        console.log(`kauth has accessToken: ${kauth.accessToken.token}`);
         // bearer_token = kauth.accessToken.token;
       }
 
-      for (let option of options) {
-        switch(option.name) {
+      for (const option of options) {
+        switch (option.name) {
           case 'description':
             description = `${option.values[0]}`;
             break;
@@ -85,44 +89,44 @@ const oscalCommonResolvers = {
             break;
           case 'max_items':
             maxItems = `${option.values[0]}`;
-            break
+            break;
           case 'appendices':
-            for (let appendix of option.values) appendixList.push(`${appendix}`);
+            for (const appendix of option.values) appendixList.push(`${appendix}`);
             break;
           case 'sections':
-            for (let section of option.values) sectionList.push(`${section}`);
+            for (const section of option.values) sectionList.push(`${section}`);
             break;
         }
       }
-      
+
       // build the tasking request payload
-      let payload = {
-        "@type": "task", 
-        "task-uid": `${taskId}`,
-        "type": "report",
-        "token": `${bearer_token}`,
-        "cyio-client": `${clientId}`,
-        "options": {
-          "export": {
-            "media-format": `${exportMediaType}`,
-            "oscal-model": `${model}`,
-            "object-id": `${id}`
+      const payload = {
+        '@type': 'task',
+        'task-uid': `${taskId}`,
+        type: 'report',
+        token: `${bearer_token}`,
+        'cyio-client': `${clientId}`,
+        options: {
+          export: {
+            'media-format': `${exportMediaType}`,
+            'oscal-model': `${model}`,
+            'object-id': `${id}`,
           },
-          "report": {
-            "report-type": `${report}`,
-            "media-format": `${media_type}`,
-            "max-items": `${maxItems}`,
-            "description": `${description}`,
-            "purpose": `${purpose}`,
-            "appendices": appendixList,
-            "sections": sectionList
-          }
-        }
+          report: {
+            'report-type': `${report}`,
+            'media-format': `${media_type}`,
+            'max-items': `${maxItems}`,
+            description: `${description}`,
+            purpose: `${purpose}`,
+            appendices: appendixList,
+            sections: sectionList,
+          },
+        },
       };
-      
+
       let response;
       response = await dataSources.Artemis.publish(taskId, 'queues/cyio.tasks.report', payload);
-      
+
       // return the tasking id for tracking purposes
       return response;
     },

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import Typography from '@material-ui/core/Typography';
+import { QueryRenderer } from '../../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -11,17 +11,25 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesCreation from '../EntitiesCreation';
+import DataSourcesCards, {
+  dataSourcesCardsQuery,
+} from './DataSourcesCards';
+import DataSourcesLines, {
+  dataSourcesLinesQuery,
+} from './DataSourcesLines';
+import DataSourcesCreation from './DataSourcesCreation';
 import { isUniqFilter } from '../../../common/lists/Filters';
-import EntitiesDeletion from '../EntitiesDeletion';
+import DataSourcesDeletion from './DataSourcesDeletion';
+import { toastGenericError } from '../../../../../utils/bakedToast';
+import DataSourceEdition from './DataSourceEdition';
 
-class AssessementPlatformsDataSource extends Component {
+class DataSources extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-data',
+      'view-dataSource',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -34,6 +42,8 @@ class AssessementPlatformsDataSource extends Component {
       selectedElements: null,
       selectAll: false,
       openDataCreation: false,
+      displayEdit: false,
+      selectedDataSourceId: '',
     };
   }
 
@@ -42,9 +52,33 @@ class AssessementPlatformsDataSource extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-data',
+      'view-dataSource',
       this.state,
     );
+  }
+
+  componentWillUnmount() {
+    const {
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+    } = this.state;
+    if (this.props.history.location.pathname !== '/data/data_source'
+      && convertFilters(this.state.filters).length) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        'view-data-source',
+        {
+          view,
+          sortBy,
+          searchTerm,
+          orderAsc,
+          filters: [],
+        },
+      );
+    }
   }
 
   handleChangeView(mode) {
@@ -71,20 +105,20 @@ class AssessementPlatformsDataSource extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleAssessmentPlatformCreation() {
-    this.setState({ openDataCreation: true });
+  handleDataSourceCreation() {
+    this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/data source/assessment_platform');
+    this.props.history.push('/data/data_source');
   }
 
   handleDisplayEdit(selectedElements) {
-    const riskId = Object.entries(selectedElements)[0][1].id;
-    this.props.history.push({
-      pathname: `/activities/risk_assessment/risks/${riskId}`,
-      openEdit: true,
-    });
+    let dataSourceId = '';
+    if (selectedElements) {
+      dataSourceId = (Object.entries(selectedElements)[0][1])?.id;
+    }
+    this.setState({ displayEdit: !this.state.displayEdit, selectedDataSourceId: dataSourceId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -128,15 +162,13 @@ class AssessementPlatformsDataSource extends Component {
               ]),
             this.state.filters,
           ),
-        },
-        () => this.saveView(),
+        }, () => this.saveView(),
       );
     } else {
       this.setState(
         {
           filters: R.assoc(key, [{ id, value }], this.state.filters),
-        },
-        () => this.saveView(),
+        }, () => this.saveView(),
       );
     }
   }
@@ -161,26 +193,33 @@ class AssessementPlatformsDataSource extends Component {
       selectAll,
     } = this.state;
     const {
-      t,
+      history,
     } = this.props;
     const dataColumns = {
-      type: {
-        label: 'Type',
-      },
       name: {
         label: 'Name',
+        width: '16%',
+        isSortable: true,
       },
-      author: {
-        label: 'Author',
+      type: {
+        label: 'Type',
+        width: '14%',
+        isSortable: false,
       },
-      labels: {
-        label: 'Labels',
+      status: {
+        label: 'Status',
+        width: '16%',
+        isSortable: false,
       },
-      creation_date: {
-        label: 'Creation Date',
+      trigger: {
+        label: 'Trigger',
+        width: '20%',
+        isSortable: false,
       },
-      marking: {
-        label: 'Marking',
+      count: {
+        label: 'Count',
+        width: '12%',
+        isSortable: false,
       },
     };
     return (
@@ -194,15 +233,14 @@ class AssessementPlatformsDataSource extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleAssessmentPlatformCreation.bind(this)}
+        handleNewCreation={this.handleDataSourceCreation.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<EntitiesCreation />}
-        OperationsComponent={<EntitiesDeletion />}
+        CreateItemComponent={<DataSourcesCreation />}
+        OperationsComponent={<DataSourcesDeletion />}
         openExports={openExports}
-        filterEntityType='DataSources'
-        selectedDataEntity='assessment_platform'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -213,12 +251,29 @@ class AssessementPlatformsDataSource extends Component {
           'label_name',
         ]}
       >
-        <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
-          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
-            {t('Please choose from the Data Type dropdown above.')}
-          </Typography>
-        </div>
+        <QueryRenderer
+          query={dataSourcesCardsQuery}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
+          render={({ error, props }) => {
+            if (error) {
+              toastGenericError('Request Failed');
+            }
+            return (
+              <DataSourcesCards
+                data={props}
+                extra={props}
+                history={history}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              />
+            );
+          }}
+        />
       </CyioListCards>
     );
   }
@@ -235,38 +290,33 @@ class AssessementPlatformsDataSource extends Component {
       numberOfElements,
     } = this.state;
     const {
-      t,
+      history,
     } = this.props;
     const dataColumns = {
-      type: {
-        label: 'Type',
-        width: '17%',
-        isSortable: true,
-      },
       name: {
         label: 'Name',
         width: '16%',
+        isSortable: true,
+      },
+      type: {
+        label: 'Type',
+        width: '14%',
         isSortable: false,
       },
-      author: {
-        label: 'Author',
+      status: {
+        label: 'Status',
         width: '16%',
-        isSortable: true,
+        isSortable: false,
       },
-      labels: {
-        label: 'Labels',
-        width: '16%',
-        isSortable: true,
+      trigger: {
+        label: 'Trigger',
+        width: '20%',
+        isSortable: false,
       },
-      creation_date: {
-        label: 'Creation Date',
-        width: '15%',
-        isSortable: true,
-      },
-      marking: {
-        label: 'Marking',
-        width: '13%',
-        isSortable: true,
+      count: {
+        label: 'Count',
+        width: '12%',
+        isSortable: false,
       },
     };
     return (
@@ -281,15 +331,14 @@ class AssessementPlatformsDataSource extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleAssessmentPlatformCreation.bind(this)}
+        handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
+        handleNewCreation={this.handleDataSourceCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<EntitiesCreation />}
-        OperationsComponent={<EntitiesDeletion />}
+        CreateItemComponent={<DataSourcesCreation />}
+        OperationsComponent={<DataSourcesDeletion />}
         openExports={openExports}
         selectAll={selectAll}
-        filterEntityType='DataSources'
-        selectedDataEntity='assessment_platform'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -300,12 +349,29 @@ class AssessementPlatformsDataSource extends Component {
           'label_name',
         ]}
       >
-        <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
-          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
-            {t('Please choose from the Data Type dropdown above.')}
-          </Typography>
-        </div>
+        <QueryRenderer
+          query={dataSourcesLinesQuery}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
+          render={({ error, props }) => {
+            if (error) {
+              toastGenericError('Request Failed');
+            }
+            return (
+              <DataSourcesLines
+                data={props}
+                history={history}
+                selectAll={selectAll}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                paginationOptions={paginationOptions}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
+        />
       </CyioListLines>
     );
   }
@@ -313,6 +379,7 @@ class AssessementPlatformsDataSource extends Component {
   render() {
     const {
       view,
+      sortBy,
       orderAsc,
       searchTerm,
       filters,
@@ -321,31 +388,39 @@ class AssessementPlatformsDataSource extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      // orderedBy: sortBy,
-      orderedBy: 'name',
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
     };
-    const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && (!openDataCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' && (!openDataCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
-        {((openDataCreation || location.openNewCreation) && (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <EntitiesCreation paginationOptions={paginationOptions} history={this.props.history} />
-          // </Security>
-        ))}
+        {view === 'cards' && this.renderCards(paginationOptions)}
+        {view === 'lines' && this.renderLines(paginationOptions)}
+        {openDataCreation && (
+          <DataSourcesCreation
+            openDataCreation={openDataCreation}
+            handleDataSourceCreation={this.handleDataSourceCreation.bind(this)}
+            history={this.props.history}
+          />
+        )}
+        {this.state.selectedDataSourceId && (
+          <DataSourceEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            dataSourceId={this.state.selectedDataSourceId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }
 }
 
-AssessementPlatformsDataSource.propTypes = {
+DataSources.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(AssessementPlatformsDataSource);
+export default R.compose(inject18n, withRouter)(DataSources);

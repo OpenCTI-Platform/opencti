@@ -30,9 +30,9 @@
     "node": ">= 14.* <= 16.*"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.238.0",
+    "@aws-sdk/client-dynamodb": "^3.245.0",
     "@aws-sdk/client-s3": "^3.34.0",
-    "@aws-sdk/util-dynamodb": "^3.241.0",
+    "@aws-sdk/util-dynamodb": "^3.245.0",
     "@bmatei/apollo-prometheus-exporter": "^2.1.1",
     "@darklight/keycloak-admin-client": "file:./lib/darklight-keycloak-admin-client-v1.1.2.tgz",
     "@elastic/elasticsearch": "7.13.0",

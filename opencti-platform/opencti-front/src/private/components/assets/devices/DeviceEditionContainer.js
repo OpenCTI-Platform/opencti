@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import {symmetricDifference, isEmpty} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
@@ -120,9 +121,10 @@ class DeviceEditionContainer extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const filteredValue = {};
     const { totalInitial } = this.state;
+    const eqValues = R.compose(isEmpty, symmetricDifference)
     Object.keys(totalInitial).forEach((key, j) => {
       if (Array.isArray(values[key])) {
-        if (values[key].some((value, i) => value !== totalInitial[key][i])) {
+        if (!eqValues(values[key], totalInitial[key])) {
           filteredValue[key] = values[key];
         }
       }
@@ -147,11 +149,21 @@ class DeviceEditionContainer extends Component {
       R.dissoc('port_number'),
       R.dissoc('responsible_parties'),
       R.toPairs,
-      R.map((n) => ({
-        'key': n[0],
-        'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
-      })),
+      R.map((n) => {
+        if(['installed_hardware', 'installed_software'].includes(n[0]) && R.isEmpty(adaptFieldValue(n[1]))){
+          return {
+            'key': n[0],
+            'value': totalInitial[n[0]],
+            'operation': 'remove',
+          }
+        }
+        return {
+          'key': n[0],
+          'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
+        }
+      }),
     )(adaptedValues);
+
     commitMutation({
       mutation: deviceEditionMutation,
       variables: {
@@ -231,6 +243,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('release_date', dateFormat(device?.release_date)),
       R.assoc('installed_hardware', installedHardwares || []),
       R.assoc('installed_software', installedSoftware || []),
+      R.assoc('related_risks', device?.related_risks || []),
       R.assoc('installed_operating_system', device?.installed_operating_system?.id || ''),
       R.assoc('operational_status', device?.operational_status),
       R.assoc('installation_id', device?.installation_id || ''),
@@ -282,6 +295,7 @@ class DeviceEditionContainer extends Component {
         'connected_to_network',
         'bios_id',
         'installed_software',
+        'related_risks',
         'netbios_name',
         'baseline_configuration_name',
         'mac_address',
@@ -517,6 +531,11 @@ const DeviceEditionFragment = createFragmentContainer(
         serial_number
         release_date
         installed_software {
+          id
+          name
+          version
+        }
+        related_risks {
           id
           name
         }

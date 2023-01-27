@@ -125,7 +125,7 @@ class DeviceCreationDetailsComponent extends Component {
                   assetType="operating-system"
                   name="installed_operating_system"
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
+                  style={{ height: '38.09px', maxWidth: '300px' }}
                   containerstyle={{ width: '100%' }}
                 />
               </div>
@@ -151,7 +151,7 @@ class DeviceCreationDetailsComponent extends Component {
                   name="installed_software"
                   // disabled={true}
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
+                  style={{ height: '38.09px', maxWidth: '300px' }}
                   containerstyle={{ width: '100%' }}
                   helperText={t('Select device')}
                 />
@@ -406,7 +406,7 @@ class DeviceCreationDetailsComponent extends Component {
                   name="installed_hardware"
                   // disabled={true}
                   fullWidth={true}
-                  style={{ height: '38.09px' }}
+                  style={{ height: '38.09px', maxWidth: '300px' }}
                   containerstyle={{ width: '100%' }}
                   helperText={t('Select device')}
                 />

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, concat, replace } from 'ramda';
 import {
   BarChart,
   ResponsiveContainer,
@@ -15,7 +15,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { now } from '../../../../utils/Time';
 import {
   dashboardQueryRisksDistribution,
   dashboardQueryRisksBarDistribution,
@@ -67,7 +67,6 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
   renderSeverityRiskBarChart() {
     const {
       t,
-      md,
       widget,
       startDate,
       endDate,
@@ -82,11 +81,14 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
       endDate: new Date(finalEndDate).toISOString(),
       startDate: new Date(finalStartDate).toISOString(),
       operation: operation || 'count',
+      limit: 5,
     };
+    const widgetName = replace('Top-N', concat('Top ', verticalBarsChartVariables.limit.toString()), widget.config.name);
+
     return (
       <>
         <Typography variant="h4" gutterBottom={true}>
-          {widget.config.name || t('Component')}
+          {widgetName || t('Component')}
         </Typography>
         <QueryRenderer
           query={dashboardQueryRisksBarDistribution}
@@ -134,7 +136,6 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
                         border: '1px solid #06102D',
                         borderRadius: 10,
                       }}
-                      labelFormatter={md}
                     />
                     <Bar
                       // fill={theme.palette.primary.main}
@@ -183,7 +184,6 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
   renderRiskChart() {
     const {
       t,
-      md,
       widget,
       startDate,
       endDate,
@@ -195,11 +195,14 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
       ...widget.config.variables,
       startDate: new Date(finalStartDate).toISOString(),
       endDate: new Date(finalEndDate).toISOString(),
+      limit: 5,
     };
+    const widgetName = replace('Top-N', concat('Top ', verticalBarsChartVariables.limit.toString()), widget.config.name);
+
     return (
       <>
         <Typography variant="h4" gutterBottom={true}>
-          {widget.config.name || t('Component')}
+          {widgetName || t('Component')}
         </Typography>
         <QueryRenderer
           query={dashboardQueryRisksDistribution}
@@ -247,7 +250,6 @@ class CyioCoreObjectWidgetVerticalBars extends Component {
                         border: '1px solid #06102D',
                         borderRadius: 10,
                       }}
-                      labelFormatter={md}
                     />
                     <Bar
                       // fill={theme.palette.primary.main}

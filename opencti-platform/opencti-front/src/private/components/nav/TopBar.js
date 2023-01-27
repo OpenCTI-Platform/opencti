@@ -174,7 +174,6 @@ const TopBar = ({
     setMenuOpen({ open: false, anchorEl: null });
   };
   const handleLogout = () => {
-    localStorage.removeItem('view-dashboard');
     commitMutation({
       mutation: logoutMutation,
       variables: {},
@@ -286,25 +285,25 @@ const TopBar = ({
           {(location.pathname.includes('/activities/risk_assessment/risks/')) && <TopMenuRisk />}
           {/* Data Entities Section */}
           {(location.pathname === '/data/entities'
-            || location.pathname === '/data/data source') && <TopMenuDataEntities />}
+            || location.pathname.includes('/data/data_source')) && <TopMenuDataEntities />}
           {(location.pathname === '/data/entities/responsibility'
-            || location.pathname === '/data/data source/responsibility') && <TopMenuDataRolesEntities />}
+            || location.pathname === '/data/data_source/responsibility') && <TopMenuDataRolesEntities />}
           {(location.pathname === '/data/entities/labels'
-            || location.pathname === '/data/data source/labels') && <TopMenuDataLabelsEntities />}
+            || location.pathname === '/data/data_source/labels') && <TopMenuDataLabelsEntities />}
           {(location.pathname === '/data/entities/parties'
-            || location.pathname === '/data/data source/parties') && <TopMenuDataPartiesEntities />}
+            || location.pathname === '/data/data_source/parties') && <TopMenuDataPartiesEntities />}
           {(location.pathname === '/data/entities/tasks'
-            || location.pathname === '/data/data source/tasks') && <TopMenuDataTasksEntities />}
+            || location.pathname === '/data/data_source/tasks') && <TopMenuDataTasksEntities />}
           {(location.pathname === '/data/entities/notes'
-            || location.pathname === '/data/data source/notes') && <TopMenuDataNotesEntities />}
+            || location.pathname === '/data/data_source/notes') && <TopMenuDataNotesEntities />}
           {(location.pathname === '/data/entities/locations'
-            || location.pathname === '/data/data source/locations') && <TopMenuDataLocationsEntities />}
+            || location.pathname === '/data/data_source/locations') && <TopMenuDataLocationsEntities />}
           {(location.pathname === '/data/entities/assessment_platform'
-            || location.pathname === '/data/data source/assessment_platform') && <TopMenuDataAssessmentPlatformsEntities />}
+            || location.pathname === '/data/data_source/assessment_platform') && <TopMenuDataAssessmentPlatformsEntities />}
           {(location.pathname === '/data/entities/responsible_parties'
-            || location.pathname === '/data/data source/responsible_parties') && <TopMenuDataResponsiblePartiesEntities />}
+            || location.pathname === '/data/data_source/responsible_parties') && <TopMenuDataResponsiblePartiesEntities />}
           {(location.pathname === '/data/entities/external_references'
-            || location.pathname === '/data/data source/external_references') && <TopMenuDataExternalReferenceEntities />}
+            || location.pathname === '/data/data_source/external_references') && <TopMenuDataExternalReferenceEntities />}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && <TopMenuArsenal />}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && <TopMenuMalware />}
