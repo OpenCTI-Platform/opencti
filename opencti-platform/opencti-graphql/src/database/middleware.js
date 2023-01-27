@@ -223,10 +223,10 @@ import {
   STIX_ATTRIBUTE_TO_META_FIELD,
   stixEmbeddedRelationToField,
 } from '../schema/stixEmbeddedRelationship';
-import { buildFilters } from './repository';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertExternalReferenceToStix, convertStoreToStix, isTrustedStixId } from './stix-converter';
 import {
+  buildEntityFilters,
   internalFindByIds,
   internalLoadById,
   listAllRelations,
@@ -391,12 +391,12 @@ export const loadThroughGetTo = async (context, user, sources, relationType, tar
 // Standard listing
 export const listThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildFilters({ types: thingsTypes, ...args });
+  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args });
   return elPaginate(context, user, indices, paginateArgs);
 };
 export const listAllThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildFilters({ types: thingsTypes, ...args });
+  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args });
   return elList(context, user, indices, paginateArgs);
 };
 export const paginateAllThings = async (context, user, thingsTypes, args = {}) => {
@@ -516,7 +516,7 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
     .map((n) => R.assoc('entity', resolveLabels[n.label], n));
 };
 export const timeSeriesEntities = async (context, user, types, args) => {
-  const timeSeriesArgs = buildFilters({ types, ...args });
+  const timeSeriesArgs = buildEntityFilters({ types, ...args });
   const { startDate, endDate, interval } = args;
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
@@ -524,12 +524,12 @@ export const timeSeriesEntities = async (context, user, types, args) => {
 export const timeSeriesRelations = async (context, user, args) => {
   const { startDate, endDate, relationship_type: relationshipTypes, interval } = args;
   const types = relationshipTypes || ['stix-core-relationship'];
-  const timeSeriesArgs = buildFilters({ types, ...args });
+  const timeSeriesArgs = buildEntityFilters({ types, ...args });
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const distributionEntities = async (context, user, types, args) => {
-  const distributionArgs = buildFilters({ types, ...args });
+  const distributionArgs = buildEntityFilters({ types, ...args });
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && !field.endsWith('internal_id')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
@@ -557,7 +557,7 @@ export const distributionRelations = async (context, user, args) => {
   const distributionDateAttribute = dateAttribute || 'created_at';
   // Using elastic can only be done if the distribution is a count on types
   const opts = { ...args, dateAttribute: distributionDateAttribute };
-  const distributionArgs = buildFilters({ types, ...opts });
+  const distributionArgs = buildEntityFilters({ types, ...opts });
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;

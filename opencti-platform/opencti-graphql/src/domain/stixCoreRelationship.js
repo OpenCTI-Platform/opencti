@@ -49,11 +49,16 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { internalLoadById, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
+import {
+  buildEntityFilters,
+  internalLoadById,
+  listEntities,
+  listRelations,
+  storeLoadById
+} from '../database/middleware-loader';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { upload } from '../database/file-storage';
-import { buildFilters } from '../database/repository';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 export const findAll = async (context, user, args) => {
@@ -82,7 +87,7 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
 };
 export const stixCoreRelationshipsNumber = (context, user, args) => {
   const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP] } = args;
-  const numberArgs = buildFilters({ ...args, types: relationship_type });
+  const numberArgs = buildEntityFilters({ ...args, types: relationship_type });
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {
     count: elCount(context, user, indices, numberArgs),

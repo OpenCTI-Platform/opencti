@@ -83,6 +83,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
+import { TYPE_FILTER } from '../utils/filtering';
 
 const ELK_ENGINE = 'elk';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -1085,9 +1086,12 @@ const elQueryBodyBuilder = async (context, user, options) => {
       const valuesFiltering = [];
       const noValuesFiltering = [];
       const { key, values, nested, operator = 'eq', filterMode: localFilterMode = 'or' } = validFilters[index];
-      const validKeys = Array.isArray(key) ? key : [key];
-      // const rulesKeys = getAttributesRulesFor(key);
+      const arrayKeys = Array.isArray(key) ? key : [key];
+      // In case of entity_type filters, we also look by default in the parent_types property.
+      const validKeys = R.uniq(arrayKeys.includes(TYPE_FILTER) ? [...arrayKeys, 'parent_types'] : arrayKeys);
       // TODO IF KEY is PART OF Rule we need to add extra fields search
+      // TODO Add connections like filters to have native fromId, toId filters handling.
+      // See opencti-front\src\private\components\events\StixSightingRelationships.tsx
       if (nested) {
         if (validKeys.length > 1) {
           throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
@@ -1095,20 +1099,16 @@ const elQueryBodyBuilder = async (context, user, options) => {
         const nestedMust = [];
         for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
           const nestedElement = nested[nestIndex];
+          const parentKey = validKeys.at(0);
           const { key: nestedKey, values: nestedValues, operator: nestedOperator = 'eq' } = nestedElement;
           const nestedShould = [];
           for (let i = 0; i < nestedValues.length; i += 1) {
+            const nestedFieldKey = `${parentKey}.${nestedKey}`;
+            const nestedSearchValues = nestedValues[i].toString();
             if (nestedOperator === 'wildcard') {
-              nestedShould.push({
-                query_string: {
-                  query: `${nestedValues[i].toString()}`,
-                  fields: [`${R.head(validKeys)}.${nestedKey}`],
-                },
-              });
+              nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
             } else {
-              nestedShould.push({
-                match_phrase: { [`${R.head(validKeys)}.${nestedKey}`]: nestedValues[i].toString() },
-              });
+              nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
             }
           }
           const should = {

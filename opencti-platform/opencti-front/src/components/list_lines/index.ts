@@ -18,8 +18,7 @@ export enum OrderMode {
 }
 
 export interface PaginationOptions {
-  fromRole?: unknown,
-  toId?: unknown,
+  toId?: string,
   search?: string,
   orderBy?: string,
   orderMode?: OrderMode,

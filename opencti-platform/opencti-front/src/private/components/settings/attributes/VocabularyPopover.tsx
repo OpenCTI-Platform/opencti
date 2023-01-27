@@ -12,7 +12,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { graphql, useMutation } from 'react-relay';
-import { useNavigate } from 'react-router-dom-v5-compat';
 import VocabularyEdition from './VocabularyEdition';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -56,7 +55,6 @@ const VocabularyPopoverDeletionMutation = graphql`
 const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, paginationOptions, refetch }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
@@ -110,7 +108,6 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/settings/vocabularies/fields');
       },
     });
   };

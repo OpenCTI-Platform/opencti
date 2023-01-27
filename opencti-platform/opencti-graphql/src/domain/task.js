@@ -2,11 +2,10 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { buildFilters } from '../database/repository';
 import { convertFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { SYSTEM_USER } from '../utils/access';
 import { RULE_PREFIX } from '../schema/general';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
 import { checkActionValidity, createDefaultTask } from './task-common';
 
 export const MAX_TASK_ELEMENTS = 500;
@@ -103,7 +102,7 @@ export const executeTaskQuery = async (context, user, filters, search, start = n
 export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const { rule, enable } = input;
   const { scan } = ruleDefinition;
-  const opts = enable ? buildFilters(scan) : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
+  const opts = enable ? buildEntityFilters(scan) : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
   const queryData = await elPaginate(context, user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
   const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);

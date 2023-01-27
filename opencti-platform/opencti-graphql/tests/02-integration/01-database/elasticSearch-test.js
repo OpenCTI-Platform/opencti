@@ -38,7 +38,7 @@ import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '.
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
-import { buildFilters } from '../../../src/database/repository';
+import { buildEntityFilters } from '../../../src/database/middleware-loader';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -173,7 +173,7 @@ describe('Elasticsearch computation', () => {
       toTypes: ['Stix-Domain-Object'],
       fromId: testingReport.internal_id,
     };
-    const distributionArgs = buildFilters(opts);
+    const distributionArgs = buildEntityFilters(opts);
     const reportRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, distributionArgs);
     const aggregationMap = new Map(reportRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Indicator')).toEqual(3);
@@ -197,7 +197,7 @@ describe('Elasticsearch computation', () => {
       elementWithTargetTypes: ['Stix-Domain-Object'],
       elementId: intrusionSet.internal_id,
     };
-    const distributionArgs = buildFilters(opts);
+    const distributionArgs = buildEntityFilters(opts);
     const intrusionRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, distributionArgs);
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('City')).toEqual(1);

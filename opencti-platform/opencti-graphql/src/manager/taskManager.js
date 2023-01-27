@@ -54,8 +54,7 @@ import {
 } from '../schema/general';
 import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
-import { buildFilters } from '../database/repository';
-import { internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
+import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
@@ -106,7 +105,7 @@ const computeRuleTaskElements = async (context, user, task) => {
       orderMode: 'asc',
       orderBy: 'updated_at',
       after: task_position,
-      ...buildFilters(scan),
+      ...buildEntityFilters(scan),
     };
     const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
     // Apply the actions for each element

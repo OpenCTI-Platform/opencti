@@ -23,12 +23,7 @@ const LOCAL_STORAGE_KEY = 'view-status-templates';
 
 const StatusTemplates = () => {
   const classes = useStyles();
-
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<StatusTemplatesLinesPaginationQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<StatusTemplatesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',

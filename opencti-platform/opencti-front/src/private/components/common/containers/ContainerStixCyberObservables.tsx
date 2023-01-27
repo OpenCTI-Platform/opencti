@@ -7,11 +7,15 @@ import ContainerStixCyberObservablesLines, { containerStixCyberObservablesLinesQ
 import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
 import { defaultValue } from '../../../../utils/Graph';
-import { localStorageToPaginationOptions, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
 import { Filters } from '../../../../components/list_lines';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
-import { ContainerStixCyberObservablesLinesQuery, ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
+import {
+  ContainerStixCyberObservablesLinesQuery,
+  ContainerStixCyberObservablesLinesQuery$variables,
+  StixObjectOrStixRelationshipsFiltering,
+} from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { StixCyberObservableLine_node$data } from '../../observations/stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -19,6 +23,7 @@ import { ContainerStixCyberObservables_container$data } from './__generated__/Co
 import useCopy from '../../../../utils/hooks/useCopy';
 import { ContainerStixCyberObservablesLinesSearchQuery$data } from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import { convertFilters } from '../../../../utils/ListParameters';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -71,10 +76,14 @@ const LOCAL_STORAGE_KEY = 'view-container-stix-cyber-observables';
 const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyberObservablesComponentProps> = ({ container }) => {
   const classes = useStyles();
 
-  const { viewStorage, helpers } = usePaginationLocalStorage(
+  const {
+    viewStorage,
+    paginationOptions: rawPaginationOptions,
+    helpers,
+  } = usePaginationLocalStorage<ContainerStixCyberObservablesLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      numberOfElements: { number: 0, symbol: '', original: 0 },
+      id: container.id,
       filters: {} as Filters,
       searchTerm: '',
       sortBy: 'created_at',
@@ -110,36 +119,23 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
   >({});
   const [selectAll, setSelectAll] = useState<boolean>(false);
 
-  const exportFilters = {
+  // Format filters Front (object)
+  const toolbarFilters = {
     containedBy: [{ id: container.id, value: defaultValue(container) }],
-    entity_type:
-      types && types.length > 0 ? types.map((n) => ({ id: n, value: n })) : [],
+    entity_type: types && types.length > 0 ? types.map((n) => ({ id: n, value: n })) : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
     ...filters,
   };
-
-  const paginationOptions = localStorageToPaginationOptions<ContainerStixCyberObservablesLinesQuery$variables>(
-    {
-      ...viewStorage,
-      count: 25,
-      id: container.id,
-      types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-      filters: exportFilters,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    },
-  );
+  // Format filters query (options + filters)
+  const paginationOptions = {
+    ...rawPaginationOptions,
+    types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
+    filters: convertFilters(toolbarFilters) as StixObjectOrStixRelationshipsFiltering[],
+  };
 
   let numberOfSelectedElements = Object.keys(selectedElements).length;
   if (selectAll) {
     numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements).length;
   }
-  const backgroundTaskFilters = {
-    containedBy: [{ id: container.id, value: defaultValue(container) }],
-    entity_type:
-      types && types.length > 0
-        ? types.map((n) => ({ id: n, value: n }))
-        : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
-    ...filters,
-  };
 
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
@@ -159,15 +155,10 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
 
   const handleCopy = useCopy<ContainerStixCyberObservablesLinesSearchQuery$data>(
     {
-      filters: {
-        ...filters,
-        entity_type: types ? types.map((n) => ({ id: n, value: n })) : [],
-      },
+      filters: toolbarFilters,
       searchTerm: searchTerm ?? '',
       query: ContainerStixCyberObservablesLinesSearchQuery,
-      selectedValues: Object.values(selectedElements).map(
-        ({ observable_value }) => observable_value,
-      ),
+      selectedValues: Object.values(selectedElements).map(({ observable_value }) => observable_value),
       deselectedIds: Object.values(deSelectedElements).map((o) => o.id),
       elementId: container.id,
       getValuesForCopy,
@@ -340,7 +331,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
             numberOfSelectedElements={numberOfSelectedElements}
             selectAll={selectAll}
             search={searchTerm}
-            filters={backgroundTaskFilters}
+            filters={toolbarFilters}
             handleClearSelectedElements={handleClearSelectedElements}
             variant="large"
             container={container}

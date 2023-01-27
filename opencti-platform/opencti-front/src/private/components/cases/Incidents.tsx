@@ -44,10 +44,6 @@ const Incidents: FunctionComponent<CasesProps> = () => {
       orderAsc: true,
       openExports: false,
       filters: {} as Filters,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
     },
   );
   const key: ReadonlyArray<CasesFilter> = ['case_type'];
