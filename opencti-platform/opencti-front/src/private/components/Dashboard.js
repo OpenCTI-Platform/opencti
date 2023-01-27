@@ -54,6 +54,7 @@ import ItemMarkings from '../../components/ItemMarkings';
 import ImportFreshdeskScript from '../../utils/freshdesk';
 import TopBar from './nav/TopBar';
 import { toastGenericError } from '../../utils/bakedToast';
+import DashboardSettings from './DashboardSettings';
 
 const styles = (theme) => ({
   root: {
@@ -1012,6 +1013,13 @@ class Dashboard extends Component {
               toastGenericError('Request Failed');
             }
             if (props) {
+              if(!props.workspace) {
+                return <DashboardSettings
+                          dashboard={this.state.dashboard}
+                          handleChangeDashboard={this.handleChangeDashboard.bind(this)}
+                          isDashboard={false}
+                        />
+              }
               return (
                 <CyioDashboard
                   workspace={props.workspace}
