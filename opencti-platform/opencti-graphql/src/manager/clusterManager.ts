@@ -1,5 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { logApp } from '../config/conf';
+import { v4 as uuid } from 'uuid';
+import conf, { logApp } from '../config/conf';
 import historyManager from './historyManager';
 import ruleEngine from './ruleManager';
 import subscriptionManager from './subscriptionManager';
@@ -10,6 +11,7 @@ import retentionManager from './retentionManager';
 import { registerClusterInstance } from '../database/redis';
 
 const SCHEDULE_TIME = 30000;
+const NODE_INSTANCE_ID = conf.get('app:node_identifier') || uuid();
 
 export type ClusterConfig = {
   platform_id: string;
@@ -38,7 +40,7 @@ const initClusterManager = () => {
   return {
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Starting cluster manager');
-      const platformId = `platform:instance:${process.pid}`;
+      const platformId = `platform:instance:${NODE_INSTANCE_ID}`;
       await clusterHandler(platformId);
       // receive information from the managers every 30s
       scheduler = setIntervalAsync(async () => {
