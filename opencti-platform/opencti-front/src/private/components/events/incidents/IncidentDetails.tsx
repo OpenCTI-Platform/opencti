@@ -1,5 +1,5 @@
-import React from 'react';
-import { graphql, createFragmentContainer } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -8,9 +8,14 @@ import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemSeverity from '../../../../components/ItemSeverity';
+import { Theme } from '../../../../components/Theme';
+import {
+  IncidentDetails_incident$data,
+  IncidentDetails_incident$key,
+} from './__generated__/IncidentDetails_incident.graphql';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -36,9 +41,38 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const IncidentDetailsComponent = ({ incident }) => {
+const incidentDetailsFragment = graphql`
+    fragment IncidentDetails_incident on Incident {
+      id
+      first_seen
+      last_seen
+      objective
+      description
+      incident_type
+      severity
+      source
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+      is_inferred
+    }
+  `;
+
+interface IncidentDetailsProps {
+  incidentData: IncidentDetails_incident$key ;
+}
+const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({ incidentData }) => {
   const classes = useStyles();
   const { t, fldt } = useFormatter();
+
+  const incident: IncidentDetails_incident$data = useFragment(incidentDetailsFragment, incidentData);
+
   const entitiesDataSelection = [
     {
       attribute: 'entity_type',
@@ -153,26 +187,4 @@ const IncidentDetailsComponent = ({ incident }) => {
   );
 };
 
-export default createFragmentContainer(IncidentDetailsComponent, {
-  incident: graphql`
-    fragment IncidentDetails_incident on Incident {
-      id
-      first_seen
-      last_seen
-      objective
-      description
-      incident_type
-      severity
-      source
-      status {
-        id
-        order
-        template {
-          name
-          color
-        }
-      }
-      workflowEnabled
-    }
-  `,
-});
+export default IncidentDetails;

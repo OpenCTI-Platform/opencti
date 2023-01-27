@@ -1,42 +1,20 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, useFragment, useMutation } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
-import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { FormikConfig } from 'formik/dist/types';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
-import { buildDate, parse } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
+import {
+  IncidentEditionDetailsFieldPatchMutation,
+} from './__generated__/IncidentEditionDetailsFieldPatchMutation.graphql';
+import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEditionDetailsFocusMutation.graphql';
+import { Option } from '../../common/form/ReferenceField';
+import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -67,7 +45,18 @@ const incidentEditionDetailsFocus = graphql`
   }
 `;
 
-const incidentValidation = (t) => Yup.object().shape({
+const incidentEditionDetailsFragment = graphql`
+    fragment IncidentEditionDetails_incident on Incident {
+        id
+        first_seen
+        last_seen
+        source
+        objective
+        is_inferred
+    }
+  `;
+
+const incidentEditionDetailsValidation = (t: (v: string) => string) => Yup.object().shape({
   first_seen: Yup.date()
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -78,90 +67,98 @@ const incidentValidation = (t) => Yup.object().shape({
   source: Yup.string().nullable(),
 });
 
-class IncidentEditionDetailsComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: incidentEditionDetailsFocus,
+interface IncidentEditionDetailsProps {
+  incidentRef: IncidentEditionDetails_incident$key ;
+  context: readonly ({
+    readonly focusOn: string | null;
+    readonly name: string;
+  } | null)[] | null
+  enableReferences?: boolean
+  handleClose: () => void
+}
+
+interface IncidentEditionDetailsFormValues {
+  message?: string
+  references?: Option[]
+  first_seen?: Option
+  last_seen?: Option
+}
+const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = ({ incidentRef, context, enableReferences = false, handleClose }) => {
+  const { t } = useFormatter();
+
+  const incident = useFragment(incidentEditionDetailsFragment, incidentRef);
+  const isInferred = incident.is_inferred;
+
+  const [commitFieldPatch] = useMutation<IncidentEditionDetailsFieldPatchMutation>(incidentMutationFieldPatch);
+  const [commitEditionDetailsFocus] = useMutation<IncidentEditionDetailsFocusMutation>(incidentEditionDetailsFocus);
+
+  const handleChangeFocus = (name: string) => {
+    commitEditionDetailsFocus({
       variables: {
-        id: this.props.incident.id,
+        id: incident.id,
         input: {
           focusOn: name,
         },
       },
     });
-  }
+  };
 
-  onSubmit(values, { setSubmitting }) {
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.dissoc('references'),
-      R.assoc(
-        'first_seen',
-        values.first_seen ? parse(values.first_seen).format() : null,
-      ),
-      R.assoc(
-        'last_seen',
-        values.last_seen ? parse(values.last_seen).format() : null,
-      ),
-      R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
-    )(values);
-    commitMutation({
-      mutation: incidentMutationFieldPatch,
+  const onSubmit : FormikConfig<IncidentEditionDetailsFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
+
+    const inputValues = Object.entries({
+      ...otherValues,
+      first_seen: values.first_seen?.value,
+      last_seen: values.last_seen?.value,
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
+
+    commitFieldPatch({
       variables: {
-        id: this.props.incident.id,
+        id: incident.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references,
+        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        references: commitReferences,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
-      incidentValidation(this.props.t)
+  const handleSubmitField = (name: string, value: string | string[] | null) => {
+    if (!enableReferences) {
+      const finalValue: string = value as string;
+      incidentEditionDetailsValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: incidentMutationFieldPatch,
+          commitFieldPatch({
             variables: {
-              id: this.props.incident.id,
-              input: {
-                key: name,
-                value: value || '',
-              },
+              id: incident.id,
+              input: [{ key: name, value: [finalValue ?? ''] }],
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  render() {
-    const { t, incident, context, enableReferences } = this.props;
-    const isInferred = incident.is_inferred;
-    const initialValues = R.pipe(
-      R.assoc('first_seen', buildDate(incident.first_seen)),
-      R.assoc('last_seen', buildDate(incident.last_seen)),
-      R.pick(['source', 'first_seen', 'last_seen', 'objective']),
-    )(incident);
-    return (
+  const initialValues = {
+    first_seen: incident.first_seen,
+    last_seen: incident.last_seen,
+    source: incident.source,
+    objective: incident.objective,
+    names: ['source', 'first_seen', 'last_seen', 'objective'],
+  };
+
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={incidentValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        validationSchema={incidentEditionDetailsValidation(t)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -175,8 +172,8 @@ class IncidentEditionDetailsComponent extends Component {
               component={DateTimePickerField}
               name="first_seen"
               disabled={isInferred}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('First seen'),
                 variant: 'standard',
@@ -191,8 +188,8 @@ class IncidentEditionDetailsComponent extends Component {
               name="last_seen"
               label={t('Last seen')}
               disabled={isInferred}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('Last seen'),
                 variant: 'standard',
@@ -210,8 +207,8 @@ class IncidentEditionDetailsComponent extends Component {
               label={t('Source')}
               fullWidth={true}
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="source" />
               }
@@ -225,8 +222,8 @@ class IncidentEditionDetailsComponent extends Component {
               multiline={true}
               rows={4}
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="objective" />
               }
@@ -244,36 +241,7 @@ class IncidentEditionDetailsComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-IncidentEditionDetailsComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  incident: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const IncidentEditionDetails = createFragmentContainer(
-  IncidentEditionDetailsComponent,
-  {
-    incident: graphql`
-      fragment IncidentEditionDetails_incident on Incident {
-        id
-        first_seen
-        last_seen
-        source
-        objective
-        is_inferred
-      }
-    `,
-  },
-);
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IncidentEditionDetails);
+export default IncidentEditionDetails;

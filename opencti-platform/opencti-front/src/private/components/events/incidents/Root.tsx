@@ -1,23 +1,26 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch } from 'react-router-dom';
-import { graphql } from 'react-relay';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
+// TODO Remove this when V6
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+import React, { useMemo } from 'react';
+import { Route, Redirect, Switch, useParams } from 'react-router-dom';
+import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import IncidentPopover from './IncidentPopover';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+
+import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
+import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -34,7 +37,7 @@ const subscription = graphql`
   }
 `;
 
-const IncidentQuery = graphql`
+const incidentQuery = graphql`
   query RootIncidentQuery($id: String!) {
     incident(id: $id) {
       id
@@ -59,32 +62,20 @@ const IncidentQuery = graphql`
   }
 `;
 
-class RootIncident extends Component {
-  constructor(props) {
-    super(props);
-    const {
-      match: {
-        params: { incidentId },
-      },
-    } = props;
-    this.sub = requestSubscription({
+const RootIncidentComponent = ({ queryRef }) => {
+  const { incidentId } = useParams() as { incidentId: string };
+  const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
+    () => ({
       subscription,
       variables: { id: incidentId },
-    });
-  }
-
-  componentWillUnmount() {
-    this.sub.dispose();
-  }
-
-  render() {
-    const {
-      match: {
-        params: { incidentId },
-      },
-    } = this.props;
-    const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
-    return (
+    }),
+    [incidentId],
+  );
+  useSubscription(subConfig);
+  const data = usePreloadedQuery(incidentQuery, queryRef);
+  const { incident, connectorsForImport, connectorsForExport } = data;
+  return (
       <div>
         <TopBar />
         <Route path="/dashboard/events/incidents/:incidentId/knowledge">
@@ -103,20 +94,13 @@ class RootIncident extends Component {
             ]}
           />
         </Route>
-        <QueryRenderer
-          query={IncidentQuery}
-          variables={{ id: incidentId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.incident) {
-                return (
+        <>
+          {incident ? (
                   <Switch>
                     <Route
                       exact
                       path="/dashboard/events/incidents/:incidentId"
-                      render={(routeProps) => (
-                        <Incident {...routeProps} incident={props.incident} />
-                      )}
+                      render={() => <Incident incidentData={incident} />}
                     />
                     <Route
                       exact
@@ -129,10 +113,9 @@ class RootIncident extends Component {
                     />
                     <Route
                       path="/dashboard/events/incidents/:incidentId/knowledge"
-                      render={(routeProps) => (
+                      render={() => (
                         <IncidentKnowledge
-                          {...routeProps}
-                          incident={props.incident}
+                          incidentData={incident}
                         />
                       )}
                     />
@@ -143,13 +126,13 @@ class RootIncident extends Component {
                         <React.Fragment>
                           <StixDomainObjectHeader
                             entityType={'Incident'}
-                            stixDomainObject={props.incident}
-                            PopoverComponent={<IncidentPopover />}
+                            stixDomainObject={incident}
+                            PopoverComponent={IncidentPopover}
                             disableSharing={true}
                           />
                           <StixDomainObjectContent
                             {...routeProps}
-                            stixDomainObject={props.incident}
+                            stixDomainObject={incident}
                           />
                         </React.Fragment>
                       )}
@@ -161,13 +144,13 @@ class RootIncident extends Component {
                         <React.Fragment>
                           <StixDomainObjectHeader
                             entityType={'Incident'}
-                            stixDomainObject={props.incident}
-                            PopoverComponent={<IncidentPopover />}
+                            stixDomainObject={incident}
+                            PopoverComponent={IncidentPopover}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={
-                              props.incident
+                              incident
                             }
                           />
                         </React.Fragment>
@@ -180,15 +163,15 @@ class RootIncident extends Component {
                         <React.Fragment>
                           <StixDomainObjectHeader
                             entityType={'Incident'}
-                            stixDomainObject={props.incident}
-                            PopoverComponent={<IncidentPopover />}
+                            stixDomainObject={incident}
+                            PopoverComponent={IncidentPopover}
                           />
                           <FileManager
                             {...routeProps}
                             id={incidentId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.incident}
+                            connectorsImport={connectorsForImport}
+                            connectorsExport={connectorsForExport}
+                            entity={incident}
                           />
                         </React.Fragment>
                       )}
@@ -200,8 +183,8 @@ class RootIncident extends Component {
                         <React.Fragment>
                           <StixDomainObjectHeader
                             entityType={'Incident'}
-                            stixDomainObject={props.incident}
-                            PopoverComponent={<IncidentPopover />}
+                            stixDomainObject={incident}
+                            PopoverComponent={IncidentPopover}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}
@@ -211,21 +194,23 @@ class RootIncident extends Component {
                       )}
                     />
                   </Switch>
-                );
-              }
-              return <ErrorNotFound />;
-            }
-            return <Loader />;
-          }}
-        />
+          ) : (
+            <ErrorNotFound />
+          )}
+        </>
       </div>
-    );
-  }
-}
-
-RootIncident.propTypes = {
-  children: PropTypes.node,
-  match: PropTypes.object,
+  );
 };
 
-export default withRouter(RootIncident);
+const RootIncident = () => {
+  const { incidentId } = useParams() as { incidentId: string };
+  const queryRef = useQueryLoading < RootIncidentQuery >(incidentQuery, { id: incidentId });
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <RootIncidentComponent queryRef={queryRef} />
+    </React.Suspense>
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
+  );
+};
+export default RootIncident;

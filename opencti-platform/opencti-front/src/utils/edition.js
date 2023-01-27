@@ -55,3 +55,16 @@ export const handleChangesObjectMarking = (element, values) => {
     .at(0);
   return { added, removed };
 };
+
+export const handleChangesObjectAssignee = (element, values) => {
+  const currentAssignees = convertAssignees(element);
+  const added = values
+    .filter(
+      (v) => !currentAssignees.map((c) => c.value).includes(v.value),
+    )
+    .at(0);
+  const removed = currentAssignees
+    .filter((c) => !values.map((v) => v.value).includes(c.value))
+    .at(0);
+  return { added, removed };
+};

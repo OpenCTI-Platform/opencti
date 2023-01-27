@@ -47,11 +47,11 @@ const inlineStyles = {
 
 interface ItemSeverityProps {
   label: string;
-  severity?: string;
+  severity?: string | null;
   variant?: 'inList';
 }
 
-const computeSeverityStyle = (severity: string | undefined) => {
+const computeSeverityStyle = (severity: string | undefined | null) => {
   switch (severity) {
     case 'low':
       return inlineStyles.green;

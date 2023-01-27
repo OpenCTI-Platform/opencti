@@ -32,8 +32,8 @@ class IncidentsCards extends Component {
           ['incidents', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        CardComponent={<IncidentCard />}
-        DummyCardComponent={<IncidentCardDummy />}
+        CardComponent={IncidentCard}
+        DummyCardComponent={IncidentCardDummy}
         nbOfCardsToLoad={nbOfCardsToLoad}
         onLabelClick={onLabelClick.bind(this)}
       />
