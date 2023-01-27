@@ -133,7 +133,7 @@ const StixSightingRelationships = () => {
   // we need to remove it from the filters and use a specific api parameter instead
   let toSightingId: string | undefined;
   const newFilters = { ...filters };
-  if (newFilters?.toSightingId) {
+  if (newFilters.toSightingId) {
     toSightingId = String(newFilters.toSightingId.at(0)?.id);
     delete newFilters.toSightingId;
   }
