@@ -1,4 +1,3 @@
-import { UserInputError } from 'apollo-server-express';
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues, generateId, CyioError} from '../../../utils.js';
 import {convertToProperties} from '../../riskUtils.js'
@@ -12,7 +11,6 @@ import {
 } from '../../../global/resolvers/sparql-query.js';
 import {
   deleteResponsiblePartyByIriQuery,
-  selectResponsiblePartyByIriQuery,
   selectAllResponsibleRoles,
   responsiblePartyPredicateMap,
   getReducer as getCommonReducer,

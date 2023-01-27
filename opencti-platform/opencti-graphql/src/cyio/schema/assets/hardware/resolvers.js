@@ -9,12 +9,6 @@ import {
   selectHardwareQuery,
   selectHardwareByIriQuery,
   hardwarePredicateMap, 
-<<<<<<< HEAD
-  hardwarePredicateMap,
-=======
-  selectHardwareByIriQuery,
-  hardwarePredicateMap, 
->>>>>>> origin/develop
   attachToHardwareQuery,
   detachFromHardwareQuery,
 } from './sparql-query.js';
@@ -27,7 +21,6 @@ import {
   selectNetworkByIriQuery,
   getReducer as getNetworkReducer
 } from '../network/sparql-query.js';
->>>>>>> origin/develop
 import {
   deleteIpQuery,
   deleteMacQuery,
