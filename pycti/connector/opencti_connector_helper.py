@@ -33,10 +33,7 @@ logging.getLogger("pika").setLevel(logging.ERROR)
 
 def killProgramHook(etype, value, tb):
     traceback.print_exception(etype, value, tb)
-    os.kill(os.getpid(), signal.SIGKILL)
-
-
-sys.excepthook = killProgramHook
+    os.kill(os.getpid(), signal.SIGTERM)
 
 
 def run_loop(loop):
@@ -478,6 +475,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     """
 
     def __init__(self, config: Dict) -> None:
+        sys.excepthook = killProgramHook
+
         # Load API config
         self.opencti_url = get_config_variable(
             "OPENCTI_URL", ["opencti", "url"], config
