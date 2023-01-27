@@ -466,6 +466,22 @@ class StixDomainObject:
             ... on Case {
                 name
                 description
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                            ... on BasicRelationship {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                        }
+                    }
+                }
             }
             ... on Vulnerability {
                 name

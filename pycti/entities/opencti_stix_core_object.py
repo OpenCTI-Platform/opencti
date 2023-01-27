@@ -8,10 +8,6 @@ class StixCoreObject:
     def __init__(self, opencti, file):
         self.opencti = opencti
         self.file = file
-
-        def __init__(self, opencti):
-            self.opencti = opencti
-
         self.properties = """
             id
             standard_id
@@ -158,6 +154,22 @@ class StixCoreObject:
                 name
                 description
                 context
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                            ... on BasicRelationship {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                        }
+                    }
+                }
             }
             ... on CourseOfAction {
                 name
@@ -371,13 +383,14 @@ class StixCoreObject:
             ... on Channel {
                 name
                 description
+                aliases
+                channel_types
             }
             ... on Narrative {
                 name
                 description
-            }
-            ... on Language {
-                name
+                aliases
+                narrative_types
             }
             ... on DataComponent {
                 name
@@ -387,6 +400,30 @@ class StixCoreObject:
                 name
                 description
             }
+            ... on DataSource {
+                name
+                description
+            }
+            ... on Case {
+                name
+                description
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                            ... on BasicRelationship {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                        }
+                    }
+                }
+            }            
             ... on StixCyberObservable {
                 observable_value
             }
@@ -589,7 +626,7 @@ class StixCoreObject:
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Stix-Domain-Object objects
+        :return List of Stix-Core-Object objects
     """
 
     def list(self, **kwargs):
@@ -674,6 +711,53 @@ class StixCoreObject:
             return self.opencti.process_multiple(
                 result["data"]["stixCoreObjects"], with_pagination
             )
+
+    """
+            Read a Stix-Core-Object object
+
+            :param id: the id of the Stix-Core-Object
+            :param types: list of Stix Core Entity types
+            :param filters: the filters to apply if no id provided
+            :return Stix-Core-Object object
+        """
+
+    def read(self, **kwargs):
+        id = kwargs.get("id", None)
+        types = kwargs.get("types", None)
+        filters = kwargs.get("filters", None)
+        custom_attributes = kwargs.get("customAttributes", None)
+        if id is not None:
+            LOGGER.info("Reading Stix-Core-Object {%s}.", id)
+            query = (
+                """
+                        query StixCoreObject($id: String!) {
+                            stixCoreObject(id: $id) {
+                                """
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
+                + """
+                        }
+                    }
+                 """
+            )
+            result = self.opencti.query(query, {"id": id})
+            return self.opencti.process_multiple_fields(
+                result["data"]["stixCoreObject"]
+            )
+        elif filters is not None:
+            result = self.list(
+                types=types, filters=filters, customAttributes=custom_attributes
+            )
+            if len(result) > 0:
+                return result[0]
+            else:
+                return None
+        else:
+            LOGGER.error("[opencti_stix_core_object] Missing parameters: id or filters")
+            return None
 
     def list_files(self, **kwargs):
         id = kwargs.get("id", None)
