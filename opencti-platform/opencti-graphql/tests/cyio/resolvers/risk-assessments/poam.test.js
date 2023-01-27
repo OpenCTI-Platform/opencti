@@ -1,4 +1,5 @@
 import submitOperation from '../../config';
+
 const poamsQuery = `query poams {
     poams(first:1, offset:0){
     pageInfo {
@@ -59,14 +60,12 @@ describe('POAM Tests', () => {
     expect(typeof { value: result.data }).toBe('object');
   });
 
-
   it('Return a list of poams', async () => {
     const result = await submitOperation(poamsQuery);
     expect(typeof { value: result.data }).toBe('object');
   });
 
   it('Return a single poam', async () => {
-
     const singlePoam = `query queryPoam($id: ID!) {
       poam(id:$id){
         id
@@ -97,5 +96,4 @@ describe('POAM Tests', () => {
 
     expect(typeof { value: result.data.deletePOAM }).toBe('object');
   });
-
 });

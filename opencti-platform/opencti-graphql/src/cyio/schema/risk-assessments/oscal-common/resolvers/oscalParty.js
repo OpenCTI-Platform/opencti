@@ -1,7 +1,7 @@
+import { UserInputError } from 'apollo-server-express';
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import { compareValues, updateQuery, filterValues,CyioError } from '../../../utils.js';
-import {convertToProperties} from '../../riskUtils.js'
-import { UserInputError } from "apollo-server-express";
+import { compareValues, updateQuery, filterValues, CyioError } from '../../../utils.js';
+import { convertToProperties } from '../../riskUtils.js';
 import {
   selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
@@ -25,42 +25,41 @@ import {
   detachFromPartyQuery,
   partyPredicateMap,
   selectLocationByIriQuery,
-  insertExternalIdentifiersQuery,  
+  insertExternalIdentifiersQuery,
   selectExternalIdentifierByIriQuery,
-} from './sparql-query.js';
-import {
   getReducer as getCommonReducer,
-} from '../../oscal-common/resolvers/sparql-query.js';
-import {
-  attachToPOAMQuery,
-  detachFromPOAMQuery,
-} from '../../poam/resolvers/sparql-query.js';
-
+} from './sparql-query.js';
+import { attachToPOAMQuery, detachFromPOAMQuery } from '../../poam/resolvers/sparql-query.js';
 
 const oscalPartyResolvers = {
   Query: {
     oscalParties: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllParties(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllParties(selectMap.getNode('node'), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
           dbName,
           sparqlQuery,
-          queryId: "Select Party List",
-          singularizeSchema
+          queryId: 'Select Party List',
+          singularizeSchema,
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
 
       if (response === undefined || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
-        const reducer = getReducer("PARTY");
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        const reducer = getReducer('PARTY');
+        let filterCount;
+        let resultCount;
+        let limit;
+        let offset;
+        let limitSize;
+        let offsetSize;
+        limitSize = limit = args.first === undefined ? response.length : args.first;
+        offsetSize = offset = args.offset === undefined ? 0 : args.offset;
         filterCount = 0;
         let partyList;
         if (args.orderedBy !== undefined) {
@@ -72,11 +71,11 @@ const oscalPartyResolvers = {
         if (offset > partyList.length) return null;
 
         // for each Role in the result set
-        for (let party of partyList) {
+        for (const party of partyList) {
           // skip down past the offset
           if (offset) {
-            offset--
-            continue
+            offset--;
+            continue;
           }
 
           if (party.id === undefined || party.id == null) {
@@ -86,35 +85,36 @@ const oscalPartyResolvers = {
 
           // if props were requested
           if (selectMap.getNode('node').includes('props')) {
-            let props = convertToProperties(party, partyPredicateMap);
+            const props = convertToProperties(party, partyPredicateMap);
             if (props !== null) party.props = props;
           }
 
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(party, args.filters, args.filterMode)) {
-              continue
+              continue;
             }
             filterCount++;
           }
 
           // if haven't reached limit to be returned
           if (limit) {
-            let edge = {
+            const edge = {
               cursor: party.iri,
               node: reducer(party),
-            }
-            edges.push(edge)
+            };
+            edges.push(edge);
             limit--;
             if (limit === 0) break;
           }
         }
         // check if there is data to be returned
-        if (edges.length === 0 ) return null;
-        let hasNextPage = false, hasPreviousPage = false;
+        if (edges.length === 0) return null;
+        let hasNextPage = false;
+        let hasPreviousPage = false;
         resultCount = partyList.length;
         if (edges.length < resultCount) {
-          if (edges.length === limitSize && filterCount <= limitSize ) {
+          if (edges.length === limitSize && filterCount <= limitSize) {
             hasNextPage = true;
             if (offsetSize > 0) hasPreviousPage = true;
           }
@@ -126,62 +126,60 @@ const oscalPartyResolvers = {
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (hasNextPage ),
-            hasPreviousPage: (hasPreviousPage),
+            endCursor: edges[edges.length - 1].cursor,
+            hasNextPage,
+            hasPreviousPage,
             globalCount: resultCount,
           },
-          edges: edges,
-        }
+          edges,
+        };
+      }
+      // Handle reporting Stardog Error
+      if (typeof response === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: response.body.message ? response.body.message : response.body,
+          error_code: response.body.code ? response.body.code : 'N/A',
+        });
       } else {
-        // Handle reporting Stardog Error
-        if (typeof (response) === 'object' && 'body' in response) {
-          throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : response.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
-          });
-        } else {
-          return null;
-        }
+        return null;
       }
     },
-    oscalParty: async (_, {id}, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectPartyQuery(id, selectMap.getNode("oscalParty"));
+    oscalParty: async (_, { id }, { dbName, dataSources, selectMap }) => {
+      const sparqlQuery = selectPartyQuery(id, selectMap.getNode('oscalParty'));
       let response;
       try {
-          response = await dataSources.Stardog.queryById({
+        response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery,
-          queryId: "Select OSCAL Party",
-          singularizeSchema
-          });
+          queryId: 'Select OSCAL Party',
+          singularizeSchema,
+        });
       } catch (e) {
-          console.log(e)
-          throw e
+        console.log(e);
+        throw e;
       }
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
-        let party = response[0];
+        const party = response[0];
 
         // if props were requested
         if (selectMap.getNode('oscalParty').includes('props')) {
-          let props = convertToProperties(party, partyPredicateMap);
+          const props = convertToProperties(party, partyPredicateMap);
           if (props !== null) party.props = props;
         }
 
-        const reducer = getReducer("PARTY");
+        const reducer = getReducer('PARTY');
         return reducer(party);
-      } else {
-        // Handle reporting Stardog Error
-        if (typeof (response) === 'object' && 'body' in response) {
+      }
+      // Handle reporting Stardog Error
+      if (typeof response === 'object' && 'body' in response) {
         throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : response.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
+          error_details: response.body.message ? response.body.message : response.body,
+          error_code: response.body.code ? response.body.code : 'N/A',
         });
-        } else {
+      } else {
         return null;
-        }
       }
     },
   },
@@ -200,7 +198,11 @@ const oscalPartyResolvers = {
       // END WORKAROUND
 
       // Setup to handle embedded objects to be created
-      let addresses, phoneNumbers, memberOrgs, locations, externalIds;
+      let addresses;
+      let phoneNumbers;
+      let memberOrgs;
+      let locations;
+      let externalIds;
       if (input.telephone_numbers !== undefined) {
         phoneNumbers = input.telephone_numbers;
         delete input.telephone_numbers;
@@ -227,120 +229,121 @@ const oscalPartyResolvers = {
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
-        queryId: "Create OSCAL Party"
+        queryId: 'Create OSCAL Party',
       });
 
       // add the Party to the parent object (if supplied)
       // TODO: WORKAROUND attach the party to the default POAM until Metadata object is supported
-      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
-      const attachQuery = attachToPOAMQuery(poamId, 'parties', iri );
+      const poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      const attachQuery = attachToPOAMQuery(poamId, 'parties', iri);
       try {
         await dataSources.Stardog.create({
           dbName,
-          queryId: "Add Party to POAM",
-          sparqlQuery: attachQuery
+          queryId: 'Add Party to POAM',
+          sparqlQuery: attachQuery,
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
       // END WORKAROUND
 
       // create any address supplied and attach them to the Party
       if (addresses !== undefined && addresses !== null) {
         // create the address
-        const {addrIris, query} = insertAddressesQuery( addresses );
+        const { addrIris, query } = insertAddressesQuery(addresses);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
-          queryId: "Create address of Party"
+          queryId: 'Create address of Party',
         });
         // attach the address to the Party
         const addrAttachQuery = attachToPartyQuery(id, 'addresses', addrIris);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: addrAttachQuery,
-          queryId: "Attach address to Party"
+          queryId: 'Attach address to Party',
         });
       }
 
       // create any external identifiers supplied and attach them to the Party
       if (externalIds !== undefined && externalIds !== null) {
         // create the External Identifier
-        const {extIdIris, query} = insertExternalIdentifiersQuery( externalIds );
+        const { extIdIris, query } = insertExternalIdentifiersQuery(externalIds);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
-          queryId: "Create External Identifiers of Party"
+          queryId: 'Create External Identifiers of Party',
         });
         // attach the address to the Party
         const extIdAttachQuery = attachToPartyQuery(id, 'external_identifiers', extIdIris);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: extIdAttachQuery,
-          queryId: "Attach External Identifier to Party"
+          queryId: 'Attach External Identifier to Party',
         });
       }
 
       // create any telephone numbers supplied and attach them to the Party
       if (phoneNumbers !== undefined && phoneNumbers !== null) {
         // create the Telephone Number
-        const {phoneIris, query} = insertPhoneNumbersQuery( phoneNumbers );
+        const { phoneIris, query } = insertPhoneNumbersQuery(phoneNumbers);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
-          queryId: "Create telephone numbers of Party"
+          queryId: 'Create telephone numbers of Party',
         });
         // attach the address to the Party
         const phoneAttachQuery = attachToPartyQuery(id, 'telephone_numbers', phoneIris);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: phoneAttachQuery,
-          queryId: "Attach telephone numbers to Party"
+          queryId: 'Attach telephone numbers to Party',
         });
       }
       // create any members supplied and attach them to the Party
       if (memberOrgs !== undefined && memberOrgs !== null) {
-        const partyIris = []
-        for (let partyId of memberOrgs) partyIris.push(`<http://csrc.nist.gov/ns/oscal/common#Party-${partyId}>`);
+        const partyIris = [];
+        for (const partyId of memberOrgs) partyIris.push(`<http://csrc.nist.gov/ns/oscal/common#Party-${partyId}>`);
 
         // attach the reference of a Party to this Party
         const partyAttachQuery = attachToPartyQuery(id, 'member_of_organization', partyIris);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: partyAttachQuery,
-          queryId: "Attach reference to a Party to this Party"
+          queryId: 'Attach reference to a Party to this Party',
         });
       }
       // create any locations supplied and attach them to the Party
       if (locations !== undefined && locations !== null) {
-        const locationIris = []
-        for (let locationId of locations) locationIris.push(`<http://csrc.nist.gov/ns/oscal/common#Location-${locationId}>`);
+        const locationIris = [];
+        for (const locationId of locations)
+          locationIris.push(`<http://csrc.nist.gov/ns/oscal/common#Location-${locationId}>`);
 
         // attach the reference of a Party to this Party
         const partyAttachQuery = attachToPartyQuery(id, 'locations', locationIris);
         await dataSources.Stardog.create({
           dbName,
           sparqlQuery: partyAttachQuery,
-          queryId: "Attach reference to a Location to this Party"
+          queryId: 'Attach reference to a Location to this Party',
         });
       }
 
       // retrieve information about the newly created Party to return to the user
-      const select = selectPartyQuery(id, selectMap.getNode("createOscalParty"));
+      const select = selectPartyQuery(id, selectMap.getNode('createOscalParty'));
       let response;
       try {
         response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery: select,
-          queryId: "Select OSCAL Party",
-          singularizeSchema
+          queryId: 'Select OSCAL Party',
+          singularizeSchema,
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
-      const reducer = getReducer("PARTY");
+      const reducer = getReducer('PARTY');
       return reducer(response[0]);
     },
     deleteOscalParty: async (_, { id }, { dbName, dataSources }) => {
@@ -351,35 +354,35 @@ const oscalPartyResolvers = {
         response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery,
-          queryId: "Select OSCAL Party",
-          singularizeSchema
+          queryId: 'Select OSCAL Party',
+          singularizeSchema,
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
 
       if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
-      const reducer = getReducer("PARTY");
-      const party = (reducer(response[0]));
+      const reducer = getReducer('PARTY');
+      const party = reducer(response[0]);
 
       // detach the Party from the parent object (if supplied)
       // TODO: WORKAROUND attach the party to the default POAM until Metadata object is supported
-      const poamId = "22f2ad37-4f07-5182-bf4e-59ea197a73dc";
-      const detachQuery = detachFromPOAMQuery(poamId, 'parties', party.iri );
+      const poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      const detachQuery = detachFromPOAMQuery(poamId, 'parties', party.iri);
       try {
         await dataSources.Stardog.create({
           dbName,
-          queryId: "Detaching Party from POAM",
-          sparqlQuery: detachQuery
+          queryId: 'Detaching Party from POAM',
+          sparqlQuery: detachQuery,
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
       // END WORKAROUND
 
-      //TODO: Determine any external attachments that will need to be removed when this object is deleted
+      // TODO: Determine any external attachments that will need to be removed when this object is deleted
 
       // Delete any attached addresses
       if (party.hasOwnProperty('addresses_iri')) {
@@ -388,7 +391,7 @@ const oscalPartyResolvers = {
           await dataSources.Stardog.delete({
             dbName,
             sparqlQuery: addrQuery,
-            queryId: "Delete Address from this Party"
+            queryId: 'Delete Address from this Party',
           });
         }
       }
@@ -399,7 +402,7 @@ const oscalPartyResolvers = {
           await dataSources.Stardog.delete({
             dbName,
             sparqlQuery: extIdQuery,
-            queryId: "Delete External Identifier from this Party"
+            queryId: 'Delete External Identifier from this Party',
           });
         }
       }
@@ -410,7 +413,7 @@ const oscalPartyResolvers = {
           await dataSources.Stardog.delete({
             dbName,
             sparqlQuery: phoneQuery,
-            queryId: "Delete Telephone Number from this Party"
+            queryId: 'Delete Telephone Number from this Party',
           });
         }
       }
@@ -421,7 +424,7 @@ const oscalPartyResolvers = {
           await dataSources.Stardog.delete({
             dbName,
             sparqlQuery: partyQuery,
-            queryId: "Delete association with Party from this Party"
+            queryId: 'Delete association with Party from this Party',
           });
         }
       }
@@ -432,7 +435,7 @@ const oscalPartyResolvers = {
           await dataSources.Stardog.delete({
             dbName,
             sparqlQuery: locationQuery,
-            queryId: "Delete association with Location from this Party"
+            queryId: 'Delete association with Location from this Party',
           });
         }
       }
@@ -443,11 +446,11 @@ const oscalPartyResolvers = {
         await dataSources.Stardog.delete({
           dbName,
           sparqlQuery: query,
-          queryId: "Delete OSCAL Party"
+          queryId: 'Delete OSCAL Party',
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
       return id;
     },
@@ -456,24 +459,26 @@ const oscalPartyResolvers = {
       if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
 
       // TODO: WORKAROUND to remove immutable fields
-      input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
+      input = input.filter(
+        (element) => element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'
+      );
 
       // check that the object to be edited exists with the predicates - only get the minimum of data
-      let editSelect = ['id','created','modified','party_type'];
-      for (let editItem of input) {
+      const editSelect = ['id', 'created', 'modified', 'party_type'];
+      for (const editItem of input) {
         editSelect.push(editItem.key);
       }
-      const sparqlQuery = selectPartyQuery(id, editSelect );
-      let response = await dataSources.Stardog.queryById({
+      const sparqlQuery = selectPartyQuery(id, editSelect);
+      const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
-        queryId: "Select OSCAL Party",
-        singularizeSchema
+        queryId: 'Select OSCAL Party',
+        singularizeSchema,
       });
       if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
 
       // determine operation, if missing
-      for (let editItem of input) {
+      for (const editItem of input) {
         if (editItem.operation !== undefined) continue;
 
         // if value if empty then treat as a remove
@@ -491,19 +496,19 @@ const oscalPartyResolvers = {
       // Push an edit to update the modified time of the object
       const timestamp = new Date().toISOString();
       if (!response[0].hasOwnProperty('created')) {
-        let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+        const update = { key: 'created', value: [`${timestamp}`], operation: 'add' };
         input.push(update);
       }
-      let operation = "replace";
-      if (!response[0].hasOwnProperty('modified')) operation = "add";
-      let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
+      let operation = 'replace';
+      if (!response[0].hasOwnProperty('modified')) operation = 'add';
+      const update = { key: 'modified', value: [`${timestamp}`], operation: `${operation}` };
       input.push(update);
 
-      let reducer = getReducer("PARTY");
-      const party = (reducer(response[0]));
+      const reducer = getReducer('PARTY');
+      const party = reducer(response[0]);
 
       // determine the appropriate ontology class type
-      if (!party.hasOwnProperty('party_type')) throw new CyioError(`Unknown type of party with ID ${id}`);   
+      if (!party.hasOwnProperty('party_type')) throw new CyioError(`Unknown type of party with ID ${id}`);
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/common#Party-${id}`,
         `http://csrc.nist.gov/ns/oscal/common#Party`,
@@ -516,366 +521,350 @@ const oscalPartyResolvers = {
           response = await dataSources.Stardog.edit({
             dbName,
             sparqlQuery: query,
-            queryId: "Update OSCAL Party"
-          });  
+            queryId: 'Update OSCAL Party',
+          });
         } catch (e) {
-          console.log(e)
-          throw e
+          console.log(e);
+          throw e;
         }
 
         if (response !== undefined && 'status' in response) {
           if (response.ok === false || response.status > 299) {
             // Handle reporting Stardog Error
             throw new UserInputError(response.statusText, {
-              error_details: (response.body.message ? response.body.message : response.body),
-              error_code: (response.body.code ? response.body.code : 'N/A')
+              error_details: response.body.message ? response.body.message : response.body,
+              error_code: response.body.code ? response.body.code : 'N/A',
             });
           }
         }
       }
 
-      const select = selectPartyQuery(id, selectMap.getNode("editOscalParty"));
+      const select = selectPartyQuery(id, selectMap.getNode('editOscalParty'));
       const result = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery: select,
-        queryId: "Select OSCAL Party",
-        singularizeSchema
+        queryId: 'Select OSCAL Party',
+        singularizeSchema,
       });
       return reducer(result[0]);
     },
   },
   OscalParty: {
-    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.labels_iri === undefined) return [];
-      let iriArray = parent.labels_iri;
+      const iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("LABEL");
-        for (let iri of iriArray) {
+        const reducer = getGlobalReducer('LABEL');
+        for (const iri of iriArray) {
           if (iri === undefined || !iri.includes('Label')) continue;
-          const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode("labels"));
+          const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode('labels'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
               dbName,
               sparqlQuery,
-              queryId: "Select Label",
-              singularizeSchema
+              queryId: 'Select Label',
+              singularizeSchema,
             });
           } catch (e) {
-            console.log(e)
-            throw e
+            console.log(e);
+            throw e;
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
+            results.push(reducer(response[0]));
+          } else {
             // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
+            if (typeof response === 'object' && 'body' in response) {
               throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
+                error_details: response.body.message ? response.body.message : response.body,
+                error_code: response.body.code ? response.body.code : 'N/A',
               });
             }
-          }  
+          }
         }
         return results;
-      } else {
-        return [];
       }
+      return [];
     },
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.links_iri === undefined) return [];
-      let iriArray = parent.links_iri;
+      const iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
-        for (let iri of iriArray) {
+        const reducer = getGlobalReducer('EXTERNAL-REFERENCE');
+        for (const iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode('links'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
               dbName,
               sparqlQuery,
-              queryId: "Select External Reference",
-              singularizeSchema
+              queryId: 'Select External Reference',
+              singularizeSchema,
             });
           } catch (e) {
-            console.log(e)
-            throw e
+            console.log(e);
+            throw e;
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
+            results.push(reducer(response[0]));
+          } else {
             // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
+            if (typeof response === 'object' && 'body' in response) {
               throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
+                error_details: response.body.message ? response.body.message : response.body,
+                error_code: response.body.code ? response.body.code : 'N/A',
               });
             }
-          }  
+          }
         }
         return results;
-      } else {
-        return [];
       }
+      return [];
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.remarks_iri === undefined) return [];
-      let iriArray = parent.remarks_iri;
+      const iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("NOTE");
-        for (let iri of iriArray) {
+        const reducer = getGlobalReducer('NOTE');
+        for (const iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode('remarks'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
               dbName,
               sparqlQuery,
-              queryId: "Select Note",
-              singularizeSchema
+              queryId: 'Select Note',
+              singularizeSchema,
             });
           } catch (e) {
-            console.log(e)
-            throw e
+            console.log(e);
+            throw e;
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
+            results.push(reducer(response[0]));
+          } else {
             // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
+            if (typeof response === 'object' && 'body' in response) {
               throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
+                error_details: response.body.message ? response.body.message : response.body,
+                error_code: response.body.code ? response.body.code : 'N/A',
               });
             }
-          }  
+          }
         }
         return results;
-      } else {
-        return [];
       }
+      return [];
     },
-    addresses: async (parent, _, {dbName, dataSources, selectMap}) => {
+    addresses: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.addresses_iri === undefined) return [];
-      let iriArray = parent.addresses_iri;
+      const iriArray = parent.addresses_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("ADDRESS");
-        for (let iri of iriArray) {
+        const reducer = getGlobalReducer('ADDRESS');
+        for (const iri of iriArray) {
           if (iri === undefined || !iri.includes('Address')) continue;
-          const sparqlQuery = selectAddressByIriQuery(iri, selectMap.getNode("addresses"));
+          const sparqlQuery = selectAddressByIriQuery(iri, selectMap.getNode('addresses'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
               dbName,
               sparqlQuery,
-              queryId: "Select Address",
-              singularizeSchema
+              queryId: 'Select Address',
+              singularizeSchema,
             });
           } catch (e) {
-            console.log(e)
-            throw e
+            console.log(e);
+            throw e;
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
+            results.push(reducer(response[0]));
+          } else {
             // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
+            if (typeof response === 'object' && 'body' in response) {
               throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
+                error_details: response.body.message ? response.body.message : response.body,
+                error_code: response.body.code ? response.body.code : 'N/A',
               });
             }
-          }  
+          }
         }
         return results;
-      } else {
-        return [];
       }
+      return [];
     },
-    member_of_organizations: async (parent, _, {dbName, dataSources, selectMap}) => {
+    member_of_organizations: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.member_of_organizations_iri === undefined) return [];
-      let iriArray = parent.member_of_organizations_iri;
+      const iriArray = parent.member_of_organizations_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("PARTY");
-        for (let iri of iriArray) {
+        const reducer = getReducer('PARTY');
+        for (const iri of iriArray) {
           if (iri === undefined || !iri.includes('Party')) continue;
-          const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode("member_of_organizations"));
+          const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode('member_of_organizations'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
               dbName,
               sparqlQuery,
-              queryId: "Select Party",
-              singularizeSchema
+              queryId: 'Select Party',
+              singularizeSchema,
             });
           } catch (e) {
-            console.log(e)
-            throw e
+            console.log(e);
+            throw e;
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
+            results.push(reducer(response[0]));
+          } else {
             // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
+            if (typeof response === 'object' && 'body' in response) {
               throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
+                error_details: response.body.message ? response.body.message : response.body,
+                error_code: response.body.code ? response.body.code : 'N/A',
               });
             }
-          }  
+          }
         }
         return results;
-      } else {
-        return [];
       }
+      return [];
     },
-    locations: async (parent, _, {dbName, dataSources, selectMap}) => {
+    locations: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.locations_iri === undefined) return [];
-      let iriArray = parent.locations_iri;
+      const iriArray = parent.locations_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getCommonReducer("LOCATION");
-        for (let iri of iriArray) {
+        const reducer = getCommonReducer('LOCATION');
+        for (const iri of iriArray) {
           if (iri === undefined || !iri.includes('Location')) continue;
-          const sparqlQuery = selectLocationByIriQuery(iri, selectMap.getNode("locations"));
+          const sparqlQuery = selectLocationByIriQuery(iri, selectMap.getNode('locations'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
               dbName,
               sparqlQuery,
-              queryId: "Select Location",
-              singularizeSchema
+              queryId: 'Select Location',
+              singularizeSchema,
             });
           } catch (e) {
-            console.log(e)
-            throw e
+            console.log(e);
+            throw e;
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
+            results.push(reducer(response[0]));
+          } else {
             // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
+            if (typeof response === 'object' && 'body' in response) {
               throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
+                error_details: response.body.message ? response.body.message : response.body,
+                error_code: response.body.code ? response.body.code : 'N/A',
               });
             }
-          }  
+          }
         }
         return results;
-      } else {
-        return [];
       }
+      return [];
     },
-    telephone_numbers: async (parent, _, {dbName, dataSources, selectMap}) => {
+    telephone_numbers: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.telephone_numbers_iri === undefined) return [];
-      let iriArray = parent.telephone_numbers_iri;
+      const iriArray = parent.telephone_numbers_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("PHONE-NUMBER");
-        for (let iri of iriArray) {
+        const reducer = getGlobalReducer('PHONE-NUMBER');
+        for (const iri of iriArray) {
           if (iri === undefined || !iri.includes('TelephoneNumber')) continue;
-          const sparqlQuery = selectPhoneNumberByIriQuery(iri, selectMap.getNode("telephone_numbers"));
+          const sparqlQuery = selectPhoneNumberByIriQuery(iri, selectMap.getNode('telephone_numbers'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
               dbName,
               sparqlQuery,
-              queryId: "Select Telephone number",
-              singularizeSchema
+              queryId: 'Select Telephone number',
+              singularizeSchema,
             });
           } catch (e) {
-            console.log(e)
-            throw e
+            console.log(e);
+            throw e;
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
+            results.push(reducer(response[0]));
+          } else {
             // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
+            if (typeof response === 'object' && 'body' in response) {
               throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
+                error_details: response.body.message ? response.body.message : response.body,
+                error_code: response.body.code ? response.body.code : 'N/A',
               });
             }
-          }  
+          }
         }
         return results;
-      } else {
-        return [];
       }
+      return [];
     },
-    external_identifiers: async (parent, _, {dbName, dataSources, selectMap}) => {
+    external_identifiers: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.external_identifiers_iri === undefined) return [];
-      let iriArray = parent.external_identifiers_iri;
+      const iriArray = parent.external_identifiers_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("EXTERNAL-IDENTIFIER");
-        for (let iri of iriArray) {
+        const reducer = getReducer('EXTERNAL-IDENTIFIER');
+        for (const iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalIdentifier')) continue;
-          const sparqlQuery = selectExternalIdentifierByIriQuery(iri, selectMap.getNode("external_identifiers"));
+          const sparqlQuery = selectExternalIdentifierByIriQuery(iri, selectMap.getNode('external_identifiers'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
               dbName,
               sparqlQuery,
-              queryId: "Select External  Identifier",
-              singularizeSchema
+              queryId: 'Select External  Identifier',
+              singularizeSchema,
             });
           } catch (e) {
-            console.log(e)
-            throw e
+            console.log(e);
+            throw e;
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
+            results.push(reducer(response[0]));
+          } else {
             // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
+            if (typeof response === 'object' && 'body' in response) {
               throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
+                error_details: response.body.message ? response.body.message : response.body,
+                error_code: response.body.code ? response.body.code : 'N/A',
               });
             }
-          }  
+          }
         }
         return results;
-      } else {
-        return [];
       }
+      return [];
     },
-    email_addresses: async (parent, _, ) => {
+    email_addresses: async (parent, _) => {
       // this is necessary to work around an issue were an array a strings is returned as a single value.
       if (parent.email_addresses === undefined) return [];
       const results = [];
-      let emailAddresses = parent.email_addresses[0].split(",")
-      for (let emailAddress of emailAddresses) {
-        results.push(emailAddress)
+      const emailAddresses = parent.email_addresses[0].split(',');
+      for (const emailAddress of emailAddresses) {
+        results.push(emailAddress);
       }
       return results;
-    }
+    },
   },
-}
-  
+};
+
 export default oscalPartyResolvers;

@@ -18,7 +18,7 @@ import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { initializeSession } from '../database/session';
 import { LOGIN_ACTION } from '../config/audit';
-import { configureKeycloakMiddleware, getKeycloak, getKeycloakMiddleware } from '../service/keycloak';
+import { configureKeycloakMiddleware } from '../service/keycloak';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -250,14 +250,3 @@ const createApp = async () => {
 };
 
 export default createApp;
-
-export const applyWildcard = (app) => {
-  app.get('*', (req, res) => {
-    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
-    const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
-    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    res.header('Expires', '-1');
-    res.header('Pragma', 'no-cache');
-    return res.send(withOptionValued);
-  });
-};

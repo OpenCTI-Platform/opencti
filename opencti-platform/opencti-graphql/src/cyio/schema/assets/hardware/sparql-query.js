@@ -1,5 +1,5 @@
 import {
-  buildSelectVariables, optionalizePredicate, parameterizePredicate, 
+  buildSelectVariables, optionalizePredicate, parameterizePredicate,
   generateId, OASIS_SCO_NS, CyioError
 } from "../../utils.js";
 import {
@@ -9,8 +9,8 @@ import {
 } from '../computing-device/sparql-query.js';
 import { objectMap } from '../../global/global-utils';
 
-export function getReducer( type ) {
-  switch( type ) {
+export function getReducer(type) {
+  switch (type) {
     case 'HARDWARE-DEVICE':
       return hardwareAssetReducer;
     case 'IPV4-ADDR':
@@ -21,14 +21,14 @@ export function getReducer( type ) {
     case 'PORT-INFO':
       return portReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`)
+      throw new Error(`Unsupported reducer type ' ${type}'`);
   }
 }
 
 // Reducers
 const hardwareAssetReducer = (item) => {
   // if no object type was returned, compute the type from the asset type and/or the IRI
-  if ( item.object_type === undefined ) {
+  if (item.object_type === undefined) {
     if (item.asset_type !== undefined) {
       if (item.asset_type.includes('_')) item.asset_type = item.asset_type.replace(/_/g, '-');
       if (item.asset_type == 'compute-device') item.asset_type = 'computing-device';
@@ -38,16 +38,18 @@ const hardwareAssetReducer = (item) => {
       if (item.iri.includes('Hardware')) item.object_type = 'hardware';
     }
     if (item.object_type === undefined || item.object_type !== 'hardware') return null;
-  }  
+  }
 
   // WORKAROUND: this code is to work around an issue in the data where we sometimes get multiple operating systems
   // when there shouldn't be but just one
   if ('installed_operating_system' in item) {
-    if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
+    if (Array.isArray(item.installed_operating_system) && item.installed_operating_system.length > 0) {
       if (item.installed_operating_system.length > 1) {
-        console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
+        console.log(
+          `[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`
+        );
       }
-      item.installed_operating_system = item.installed_operating_system[0]
+      item.installed_operating_system = item.installed_operating_system[0];
     }
   }
 
@@ -55,76 +57,76 @@ const hardwareAssetReducer = (item) => {
     iri: item.iri,
     id: item.id,
     standard_id: item.id,
-    ...(item.object_type && {entity_type: item.object_type}),
-    ...(item.created && {created: item.created}),
-    ...(item.modified && {modified: item.modified}),
-    ...(item.name && {name: item.name} ),
-    ...(item.description && {description: item.description}),
-    ...(item.asset_id && {asset_id: item.asset_id}),
+    ...(item.object_type && { entity_type: item.object_type }),
+    ...(item.created && { created: item.created }),
+    ...(item.modified && { modified: item.modified }),
+    ...(item.name && { name: item.name }),
+    ...(item.description && { description: item.description }),
+    ...(item.asset_id && { asset_id: item.asset_id }),
     // ItAsset
-    ...(item.asset_type && {asset_type: item.asset_type}),
-    ...(item.asset_tag && {asset_tag: item.asset_tag}) ,
-    ...(item.serial_number && {serial_number: item.serial_number}),
-    ...(item.vendor_name && {vendor_name: item.vendor_name}),
-    ...(item.version && {version: item.version}),
-    ...(item.release_date && {release_date: item.release_date}),
-    ...(item.operational_status && {operational_status: item.operational_status}),
-    ...(item.implementation_point && {implementation_point: item.implementation_point}),
+    ...(item.asset_type && { asset_type: item.asset_type }),
+    ...(item.asset_tag && { asset_tag: item.asset_tag }),
+    ...(item.serial_number && { serial_number: item.serial_number }),
+    ...(item.vendor_name && { vendor_name: item.vendor_name }),
+    ...(item.version && { version: item.version }),
+    ...(item.release_date && { release_date: item.release_date }),
+    ...(item.operational_status && { operational_status: item.operational_status }),
+    ...(item.implementation_point && { implementation_point: item.implementation_point }),
     // Hardware
-    ...(item.function && {function: item.function}),
-    ...(item.cpe_identifier && {cpe_identifier: item.cpe_identifier}),
-    ...(item.installation_id && {installation_id: item.installation_id}),
-    ...(item.model && {model: item.model}),
-    ...(item.motherboard_id && {motherboard_id: item.motherboard_id}),
-    ...(item.baseline_configuration_name && {baseline_configuration_name: item.baseline_configuration_name}),
+    ...(item.function && { function: item.function }),
+    ...(item.cpe_identifier && { cpe_identifier: item.cpe_identifier }),
+    ...(item.installation_id && { installation_id: item.installation_id }),
+    ...(item.model && { model: item.model }),
+    ...(item.motherboard_id && { motherboard_id: item.motherboard_id }),
+    ...(item.baseline_configuration_name && { baseline_configuration_name: item.baseline_configuration_name }),
     // ComputingDevice
-    ...(item.bios_id && {bios_id: item.bios_id}),
-    ...(item.network_id && {network_id: item.network_id}),
-    ...(item.vlan_id && {vlan_id: item.vlan_id}),
-    ...(item.default_gateway && {default_gateway: item.default_gateway}),
-    ...(item.fqdn && {fqdn: item.fqdn}),
-    ...(item.hostname && {hostname: item.hostname}),
-    ...(item.netbios_name && {netbios_name: item.netbios_name}),
-    ...(item.uri && {uri: item.uri}),
-    ...(item.is_publicly_accessible !== undefined && {is_publicly_accessible: item.is_publicly_accessible}),
-    ...(item.is_scanned !== undefined && {is_scanned: item.is_scanned}),
-    ...(item.is_virtual !== undefined && {is_virtual: item.is_virtual}),
-    ...(item.last_scanned && {last_scanned: item.last_scanned}),
+    ...(item.bios_id && { bios_id: item.bios_id }),
+    ...(item.network_id && { network_id: item.network_id }),
+    ...(item.vlan_id && { vlan_id: item.vlan_id }),
+    ...(item.default_gateway && { default_gateway: item.default_gateway }),
+    ...(item.fqdn && { fqdn: item.fqdn }),
+    ...(item.hostname && { hostname: item.hostname }),
+    ...(item.netbios_name && { netbios_name: item.netbios_name }),
+    ...(item.uri && { uri: item.uri }),
+    ...(item.is_publicly_accessible !== undefined && { is_publicly_accessible: item.is_publicly_accessible }),
+    ...(item.is_scanned !== undefined && { is_scanned: item.is_scanned }),
+    ...(item.is_virtual !== undefined && { is_virtual: item.is_virtual }),
+    ...(item.last_scanned && { last_scanned: item.last_scanned }),
     // Hints
-    ...(item.iri && {parent_iri: item.iri}),
-    ...(item.locations && {locations_iri: item.locations}),
-    ...(item.external_references && {ext_ref_iri: item.external_references}),
-	  ...(item.labels && {labels_iri: item.labels}),
-    ...(item.notes && {notes_iri: item.notes}),
-    ...(item.installed_hardware && {installed_hw_iri: item.installed_hardware}),
-    ...(item.installed_operating_system && {installed_os_iri: item.installed_operating_system}),
-    ...(item.installed_software && {installed_sw_iri: item.installed_software}),
-    ...(item.ip_address && {ip_addr_iri: item.ip_address}),
-    ...(item.mac_address && {mac_addr_iri: item.mac_address}),
-    ...(item.ports && {ports_iri: item.ports}),
-    ...(item.connected_to_network && {conn_network_iri: item.connected_to_network}),
-    ...(item.related_risks && {related_risks: item.related_risks}),
-  }
-}
+    ...(item.iri && { parent_iri: item.iri }),
+    ...(item.locations && { locations_iri: item.locations }),
+    ...(item.external_references && { ext_ref_iri: item.external_references }),
+    ...(item.labels && { labels_iri: item.labels }),
+    ...(item.notes && { notes_iri: item.notes }),
+    ...(item.installed_hardware && { installed_hw_iri: item.installed_hardware }),
+    ...(item.installed_operating_system && { installed_os_iri: item.installed_operating_system }),
+    ...(item.installed_software && { installed_sw_iri: item.installed_software }),
+    ...(item.ip_address && { ip_addr_iri: item.ip_address }),
+    ...(item.mac_address && { mac_addr_iri: item.mac_address }),
+    ...(item.ports && { ports_iri: item.ports }),
+    ...(item.connected_to_network && { conn_network_iri: item.connected_to_network }),
+    ...(item.related_risks && { related_risks: item.related_risks }),
+  };
+};
 
 // Hardware resolver support functions
 export const insertHardwareQuery = (propValues) => {
   const id_material = {
-    ...(propValues.name && { "name": propValues.name}),
-    ...(propValues.cpe_identifier && {"cpe": propValues.cpe_identifier}),
-    ...(propValues.vendor_name && {"vendor": propValues.vendor_name}),
-    ...(propValues.version && {"version": propValues.version})
-  } ;
-  const id = generateId( id_material, OASIS_SCO_NS );
+    ...(propValues.name && { name: propValues.name }),
+    ...(propValues.cpe_identifier && { cpe: propValues.cpe_identifier }),
+    ...(propValues.vendor_name && { vendor: propValues.vendor_name }),
+    ...(propValues.version && { version: propValues.version }),
+  };
+  const id = generateId(id_material, OASIS_SCO_NS);
   const timestamp = new Date().toISOString();
-  
+
   if (!objectMap.hasOwnProperty(propValues.asset_type)) throw new CyioError(`Unsupported hardware type ' ${propValues.asset_type}'`);
 
   // escape any special characters (e.g., newline)
   if (propValues.description !== undefined) {
     if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
-    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
-    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+    if (propValues.description.includes('"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
   }
 
   // Fix '_' to '-' in asset_type
@@ -157,29 +159,29 @@ export const insertHardwareQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
-      ${insertPredicates.join(".\n        ")} .
+      ${insertPredicates.join('.\n        ')} .
       ${selectPredicates} .
     }
   }`;
 
-  return {iri, id, query}
-}
+  return { iri, id, query };
+};
 export const selectHardwareQuery = (id, select) => {
   return selectHardwareByIriQuery(`http://scap.nist.gov/ns/asset-identification#Hardware-${id}`, select);
-}
+};
 export const selectHardwareByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select != null) {
     if (select.includes('ipv4_address') || select.includes('ipv6_address')) select.push('ip_address');
-    select = select.filter(i => i !== 'ipv4_address')
-    select = select.filter(i => i !== 'ipv6_address')
+    select = select.filter((i) => i !== 'ipv4_address');
+    select = select.filter((i) => i !== 'ipv6_address');
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
 
   // retrieve required fields if not already on the list of fields to be selected
   if (!select.includes('id')) select.push('id');
-  if (!select.includes('object_type')) select.push('object_type')
-  
+  if (!select.includes('object_type')) select.push('object_type');
+
   // build list of selection variables and predicates
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
 
@@ -192,9 +194,9 @@ export const selectHardwareByIriQuery = (iri, select) => {
       WHERE {
         FILTER regex(str(?related_risks), "#Risk", "i")
       }
-    }`
+    }`;
   }
-  
+
   return `
   SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
@@ -211,30 +213,29 @@ export const selectHardwareByIriQuery = (iri, select) => {
       }
     }
   }
-  `
-}
+  `;
+};
 export const selectAllHardware = (select, args) => {
   if (select != null) {
-    select = select.filter(i => i !== 'ipv4_address')
-    select = select.filter(i => i !== 'ipv6_address')
-    select.push('ip_address')
+    select = select.filter((i) => i !== 'ipv4_address');
+    select = select.filter((i) => i !== 'ipv6_address');
+    select.push('ip_address');
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
 
   // retrieve required fields if not already on the list of fields to be selected
   if (!select.includes('id')) select.push('id');
-  if (!select.includes('object_type')) select.push('object_type')
-  
-  
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.includes(filter.key)) select.push( filter.key );
+  if (!select.includes('object_type')) select.push('object_type');
+
+  if (args !== undefined) {
+    if (args.filters !== undefined) {
+      for (const filter of args.filters) {
+        if (!select.includes(filter.key)) select.push(filter.key);
       }
     }
-    
+
     // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
+    if (args.orderedBy !== undefined) {
       if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
     }
   }
@@ -248,8 +249,8 @@ export const selectAllHardware = (select, args) => {
       WHERE {
         FILTER regex(str(?related_risks), "#Risk", "i")
       }
-    }`
-  }  
+    }`;
+  }
 
   // Build select clause and predicates
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
@@ -269,12 +270,12 @@ export const selectAllHardware = (select, args) => {
       }
     }
   }
-  `
-}
+  `;
+};
 export const deleteHardwareQuery = (id) => {
   const iri = `http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}`;
   return deleteHardwareByIriQuery(iri);
-}
+};
 export const deleteHardwareByIriQuery = (iri) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   return `
@@ -288,19 +289,16 @@ export const deleteHardwareByIriQuery = (iri) => {
       ?iri ?p ?o
     }
   }
-  `
-}
+  `;
+};
 export const attachToHardwareQuery = (id, field, itemIris) => {
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   if (!hardwarePredicateMap.hasOwnProperty(field)) return null;
-  const predicate = hardwarePredicateMap[field].predicate;
+  const { predicate } = hardwarePredicateMap[field];
   let statements;
   if (Array.isArray(itemIris)) {
-    statements = itemIris
-      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
-      .join(".\n        ")
-    }
-  else {
+    statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
+  } else {
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -309,19 +307,16 @@ export const attachToHardwareQuery = (id, field, itemIris) => {
       ${statements}
     }
   }
-  `
-}
+  `;
+};
 export const detachFromHardwareQuery = (id, field, itemIris) => {
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   if (!hardwarePredicateMap.hasOwnProperty(field)) return null;
-  const predicate = hardwarePredicateMap[field].predicate;
+  const { predicate } = hardwarePredicateMap[field];
   let statements;
   if (Array.isArray(itemIris)) {
-    statements = itemIris
-      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
-      .join(".\n        ")
-    }
-  else {
+    statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
+  } else {
     statements = `${iri} ${predicate} ${itemIris}`;
   }
   return `
@@ -600,5 +595,4 @@ export const hardwarePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "related_risks");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-}
-
+};

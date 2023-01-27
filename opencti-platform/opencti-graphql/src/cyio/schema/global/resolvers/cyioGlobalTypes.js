@@ -1,39 +1,44 @@
+import { UserInputError } from 'apollo-server-express';
 import { globalSingularizeSchema as singularizeSchema } from '../global-mappings.js';
 import { compareValues, filterValues, CyioError } from '../../utils.js';
-import { UserInputError } from "apollo-server-express";
-import {objectMap} from '../global-utils.js';
-import { 
+import { objectMap } from '../global-utils.js';
+import {
   getReducer,
-  selectAddressQuery, 
-  selectAllAddresses, 
+  selectAddressQuery,
+  selectAllAddresses,
   selectAllPhoneNumbers,
   selectPhoneNumberQuery,
-} from "./sparql-query.js";
+} from './sparql-query.js';
 
 const cyioGlobalTypeResolvers = {
   Query: {
     civicAddresses: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllAddresses(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllAddresses(selectMap.getNode('node'), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
           dbName,
           sparqlQuery,
-          queryId: "Select Address List",
-          singularizeSchema
+          queryId: 'Select Address List',
+          singularizeSchema,
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
-        const reducer = getReducer("ADDRESS");
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        const reducer = getReducer('ADDRESS');
+        let filterCount;
+        let resultCount;
+        let limit;
+        let offset;
+        let limitSize;
+        let offsetSize;
+        limitSize = limit = args.first === undefined ? response.length : args.first;
+        offsetSize = offset = args.offset === undefined ? 0 : args.offset;
         filterCount = 0;
         let addrList;
         if (args.orderedBy !== undefined) {
@@ -45,11 +50,11 @@ const cyioGlobalTypeResolvers = {
         if (offset > addrList.length) return null;
 
         // for each Role in the result set
-        for (let addr of addrList) {
+        for (const addr of addrList) {
           // skip down past the offset
           if (offset) {
-            offset--
-            continue
+            offset--;
+            continue;
           }
 
           if (addr.id === undefined || addr.id == null) {
@@ -60,27 +65,28 @@ const cyioGlobalTypeResolvers = {
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(addr, args.filters, args.filterMode)) {
-              continue
+              continue;
             }
             filterCount++;
           }
 
           // if haven't reached limit to be returned
           if (limit) {
-            let edge = {
+            const edge = {
               cursor: addr.iri,
               node: reducer(addr),
-            }
-            edges.push(edge)
+            };
+            edges.push(edge);
             limit--;
           }
         }
         // check if there is data to be returned
-        if (edges.length === 0 ) return null;
-        let hasNextPage = false, hasPreviousPage = false;
+        if (edges.length === 0) return null;
+        let hasNextPage = false;
+        let hasPreviousPage = false;
         resultCount = addrList.length;
         if (edges.length < resultCount) {
-          if (edges.length === limitSize && filterCount <= limitSize ) {
+          if (edges.length === limitSize && filterCount <= limitSize) {
             hasNextPage = true;
             if (offsetSize > 0) hasPreviousPage = true;
           }
@@ -92,78 +98,81 @@ const cyioGlobalTypeResolvers = {
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (hasNextPage ),
-            hasPreviousPage: (hasPreviousPage),
+            endCursor: edges[edges.length - 1].cursor,
+            hasNextPage,
+            hasPreviousPage,
             globalCount: resultCount,
           },
-          edges: edges,
-        }
+          edges,
+        };
+      }
+      // Handle reporting Stardog Error
+      if (typeof response === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: response.body.message ? response.body.message : response.body,
+          error_code: response.body.code ? response.body.code : 'N/A',
+        });
       } else {
-        // Handle reporting Stardog Error
-        if (typeof (response) === 'object' && 'body' in response) {
-          throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : response.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
-          });
-        } else {
-          return null;
-        }
+        return null;
       }
     },
-    civicAddress: async (_, {id}, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAddressQuery(id, selectMap.getNode("civicAddress"));
+    civicAddress: async (_, { id }, { dbName, dataSources, selectMap }) => {
+      const sparqlQuery = selectAddressQuery(id, selectMap.getNode('civicAddress'));
       let response;
       try {
-          response = await dataSources.Stardog.queryById({
+        response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery,
-          queryId: "Select OSCAL Civic Address",
-          singularizeSchema
-          });
+          queryId: 'Select OSCAL Civic Address',
+          singularizeSchema,
+        });
       } catch (e) {
-          console.log(e)
-          throw e
+        console.log(e);
+        throw e;
       }
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
-          const reducer = getReducer("ADDRESS");
-          return reducer(response[0]);
-      } else {
-        // Handle reporting Stardog Error
-        if (typeof (response) === 'object' && 'body' in response) {
+        const reducer = getReducer('ADDRESS');
+        return reducer(response[0]);
+      }
+      // Handle reporting Stardog Error
+      if (typeof response === 'object' && 'body' in response) {
         throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : response.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
+          error_details: response.body.message ? response.body.message : response.body,
+          error_code: response.body.code ? response.body.code : 'N/A',
         });
-        } else {
+      } else {
         return null;
-        }
       }
     },
     telephoneNumbers: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllPhoneNumbers(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllPhoneNumbers(selectMap.getNode('node'), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
           dbName,
           sparqlQuery,
-          queryId: "Select Telephone Number List",
-          singularizeSchema
+          queryId: 'Select Telephone Number List',
+          singularizeSchema,
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
-        const reducer = getReducer("PHONE-NUMBER");
-        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        const reducer = getReducer('PHONE-NUMBER');
+        let filterCount;
+        let resultCount;
+        let limit;
+        let offset;
+        let limitSize;
+        let offsetSize;
+        limitSize = limit = args.first === undefined ? response.length : args.first;
+        offsetSize = offset = args.offset === undefined ? 0 : args.offset;
         filterCount = 0;
         let phoneList;
         if (args.orderedBy !== undefined) {
@@ -175,11 +184,11 @@ const cyioGlobalTypeResolvers = {
         if (offset > phoneList.length) return null;
 
         // for each Role in the result set
-        for (let phoneNumber of phoneList) {
+        for (const phoneNumber of phoneList) {
           // skip down past the offset
           if (offset) {
-            offset--
-            continue
+            offset--;
+            continue;
           }
 
           if (phoneNumber.id === undefined || phoneNumber.id == null) {
@@ -190,27 +199,28 @@ const cyioGlobalTypeResolvers = {
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(phoneNumber, args.filters, args.filterMode)) {
-              continue
+              continue;
             }
             filterCount++;
           }
 
           // if haven't reached limit to be returned
           if (limit) {
-            let edge = {
+            const edge = {
               cursor: phoneNumber.iri,
               node: reducer(phoneNumber),
-            }
-            edges.push(edge)
+            };
+            edges.push(edge);
             limit--;
           }
         }
         // check if there is data to be returned
-        if (edges.length === 0 ) return null;
-        let hasNextPage = false, hasPreviousPage = false;
+        if (edges.length === 0) return null;
+        let hasNextPage = false;
+        let hasPreviousPage = false;
         resultCount = phoneList.length;
         if (edges.length < resultCount) {
-          if (edges.length === limitSize && filterCount <= limitSize ) {
+          if (edges.length === limitSize && filterCount <= limitSize) {
             hasNextPage = true;
             if (offsetSize > 0) hasPreviousPage = true;
           }
@@ -222,66 +232,65 @@ const cyioGlobalTypeResolvers = {
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (hasNextPage ),
-            hasPreviousPage: (hasPreviousPage),
+            endCursor: edges[edges.length - 1].cursor,
+            hasNextPage,
+            hasPreviousPage,
             globalCount: resultCount,
           },
-          edges: edges,
-        }
+          edges,
+        };
+      }
+      // Handle reporting Stardog Error
+      if (typeof response === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: response.body.message ? response.body.message : response.body,
+          error_code: response.body.code ? response.body.code : 'N/A',
+        });
       } else {
-        // Handle reporting Stardog Error
-        if (typeof (response) === 'object' && 'body' in response) {
-          throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : response.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
-          });
-        } else {
-          return null;
-        }
+        return null;
       }
     },
-    telephoneNumber: async (_, {id}, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectPhoneNumberQuery(id, selectMap.getNode("telephoneNumber"));
+    telephoneNumber: async (_, { id }, { dbName, dataSources, selectMap }) => {
+      const sparqlQuery = selectPhoneNumberQuery(id, selectMap.getNode('telephoneNumber'));
       let response;
       try {
-          response = await dataSources.Stardog.queryById({
+        response = await dataSources.Stardog.queryById({
           dbName,
           sparqlQuery,
-          queryId: "Select OSCAL Telephone Number",
-          singularizeSchema
-          });
+          queryId: 'Select OSCAL Telephone Number',
+          singularizeSchema,
+        });
       } catch (e) {
-          console.log(e)
-          throw e
+        console.log(e);
+        throw e;
       }
 
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
-          const reducer = getReducer("PHONE-NUMBER");
-          return reducer(response[0]);
-      } else {
-        // Handle reporting Stardog Error
-        if (typeof (response) === 'object' && 'body' in response) {
+        const reducer = getReducer('PHONE-NUMBER');
+        return reducer(response[0]);
+      }
+      // Handle reporting Stardog Error
+      if (typeof response === 'object' && 'body' in response) {
         throw new UserInputError(response.statusText, {
-            error_details: (response.body.message ? response.body.message : response.body),
-            error_code: (response.body.code ? response.body.code : 'N/A')
+          error_details: response.body.message ? response.body.message : response.body,
+          error_code: response.body.code ? response.body.code : 'N/A',
         });
-        } else {
+      } else {
         return null;
-        }
       }
     },
   },
   Mutation: {
-    addReference: async ( _, {input}, {dbName, dataSources, } ) => {
+    addReference: async (_, { input }, { dbName, dataSources }) => {
       // if the types are not supplied, just return false - this will be removed when the field are required
-      if (input.from_type === undefined || input.to_type === undefined) throw new CyioError(`Source and target types must be supplied`);
+      if (input.from_type === undefined || input.to_type === undefined)
+        throw new CyioError(`Source and target types must be supplied`);
 
       // Validate source (from) and target (to) are valid types
       if (!objectMap.hasOwnProperty(input.from_type)) {
         let found = false;
-        for (let [key, value] of Object.entries(objectMap)) {
+        for (const [key, value] of Object.entries(objectMap)) {
           // check for alternate key
           if (value.alternateKey != undefined && input.from_type == value.alternateKey) {
             input.from_type = key;
@@ -299,7 +308,7 @@ const cyioGlobalTypeResolvers = {
       }
       if (!objectMap.hasOwnProperty(input.to_type)) {
         let found = false;
-        for (let [key, value] of Object.entries(objectMap)) {
+        for (const [key, value] of Object.entries(objectMap)) {
           // check for alternate key
           if (value.alternateKey != undefined && input.to_type == value.alternateKey) {
             input.to_type = key;
@@ -317,16 +326,17 @@ const cyioGlobalTypeResolvers = {
       }
 
       // Validate field is defined on the source (from)
-      const predicateMap = objectMap[input.from_type].predicateMap;
-      if (!predicateMap.hasOwnProperty(input.field_name)) throw new CyioError(`Field '${input.field_name}' is not defined for the source entity.`);
-      const predicate = predicateMap[input.field_name].predicate;
+      const { predicateMap } = objectMap[input.from_type];
+      if (!predicateMap.hasOwnProperty(input.field_name))
+        throw new CyioError(`Field '${input.field_name}' is not defined for the source entity.`);
+      const { predicate } = predicateMap[input.field_name];
 
       // construct the IRIs for source (from) and target (to)
-      let from_type = input.from_type;
+      let { from_type } = input;
       while (objectMap[from_type].parent !== undefined) {
         from_type = objectMap[from_type].parent;
       }
-      let to_type = input.to_type;
+      let { to_type } = input;
       while (objectMap[to_type].parent !== undefined) {
         to_type = objectMap[to_type].parent;
       }
@@ -342,27 +352,28 @@ const cyioGlobalTypeResolvers = {
       `;
       let response;
       try {
-       response = await dataSources.Stardog.create({
+        response = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
-          queryId: "Create reference"
+          queryId: 'Create reference',
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
 
       if (response === undefined) return false;
-      return true
+      return true;
     },
-    removeReference: async ( _, {input}, {dbName, dataSources, } ) => {
+    removeReference: async (_, { input }, { dbName, dataSources }) => {
       // if the types are not supplied, just return false - this will be removed when the field are required
-      if (input.from_type === undefined || input.to_type === undefined) throw new CyioError(`Source and target types must be supplied`);
+      if (input.from_type === undefined || input.to_type === undefined)
+        throw new CyioError(`Source and target types must be supplied`);
 
       // Validate source (from) and target (to) are valid types
       if (!objectMap.hasOwnProperty(input.from_type)) {
         let found = false;
-        for (let [key, value] of Object.entries(objectMap)) {
+        for (const [key, value] of Object.entries(objectMap)) {
           // check for alternate key
           if (value.alternateKey != undefined && input.from_type == value.alternateKey) {
             input.from_type = key;
@@ -380,7 +391,7 @@ const cyioGlobalTypeResolvers = {
       }
       if (!objectMap.hasOwnProperty(input.to_type)) {
         let found = false;
-        for (let [key, value] of Object.entries(objectMap)) {
+        for (const [key, value] of Object.entries(objectMap)) {
           // check for alternate key
           if (value.alternateKey != undefined && input.to_type == value.alternateKey) {
             input.from_type = key;
@@ -398,16 +409,17 @@ const cyioGlobalTypeResolvers = {
       }
 
       // Validate field value is defined on the source (from)
-      const predicateMap = objectMap[input.from_type].predicateMap;
-      if (!predicateMap.hasOwnProperty(input.field_name)) throw new CyioError(`Field '${input.field_name}' is not defined for the source entity.`);
-      const predicate = predicateMap[input.field_name].predicate;
+      const { predicateMap } = objectMap[input.from_type];
+      if (!predicateMap.hasOwnProperty(input.field_name))
+        throw new CyioError(`Field '${input.field_name}' is not defined for the source entity.`);
+      const { predicate } = predicateMap[input.field_name];
 
       // construct the IRIs for source (from) and target (to)
-      let from_type = input.from_type;
+      let { from_type } = input;
       while (objectMap[from_type].parent !== undefined) {
         from_type = objectMap[from_type].parent;
       }
-      let to_type = input.to_type;
+      let { to_type } = input;
       while (objectMap[to_type].parent !== undefined) {
         to_type = objectMap[to_type].parent;
       }
@@ -423,23 +435,23 @@ const cyioGlobalTypeResolvers = {
       `;
       let response;
       try {
-       response = await dataSources.Stardog.delete({
+        response = await dataSources.Stardog.delete({
           dbName,
           sparqlQuery: query,
-          queryId: "Remove reference"
+          queryId: 'Remove reference',
         });
       } catch (e) {
-        console.log(e)
-        throw e
+        console.log(e);
+        throw e;
       }
 
       if (response === undefined) return false;
-      return true
+      return true;
     },
   },
   // Map enum GraphQL values to data model required values
   OperationalStatus: {
-    under_development : 'under-development',
+    under_development: 'under-development',
     under_major_modification: 'under-major-modifications',
   },
   CyioLocationType: {
