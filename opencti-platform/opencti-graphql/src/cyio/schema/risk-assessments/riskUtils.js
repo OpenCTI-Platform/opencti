@@ -1,4 +1,44 @@
 import { generateId, OSCAL_NS } from '../utils.js';
+import { selectRiskByIriQuery } from '../risk-assessments/assessment-common/resolvers/sparql-query.js' ;
+import { riskSingularizeSchema as singularizeSchema } from './risk-mappings.js';
+
+
+export const getOverallRisk = async (riskIris, dbName, dataSources) => {
+  let highestRiskScore = 0;
+  let highestRiskSeverity = 'unknown';
+
+  // make single IRI into an array
+  if (!Array.isArray(riskIris)) riskIris = [riskIris];
+
+  for (const iri of riskIris) {
+    if (iri === undefined || !iri.includes('Risk')) continue;
+    const select = ['risk_level','first_seen'];
+    const sparqlQuery = selectRiskByIriQuery(iri, select);
+    let response;
+    try {
+      response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: 'Select Risk',
+        singularizeSchema,
+      });
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+    if (response === undefined) return null;
+    let risk = response[0];
+    if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
+      // calculate the risk level
+      const { riskLevel, riskScore } = calculateRiskLevel(risk);
+      if (riskScore >= highestRiskScore) {
+        highestRiskScore = riskScore;
+        highestRiskSeverity = riskLevel;
+      }
+    }
+  }
+  return { highestRiskScore, highestRiskSeverity } ;
+};
 
 export const calculateRiskLevel = (risk) => {
   // calculate the risk level
@@ -98,4 +138,4 @@ export function convertToProperties(item, predicateMap, _customProperties) {
   }
   if (propList.length > 0) return propList;
   return null;
-}
+};

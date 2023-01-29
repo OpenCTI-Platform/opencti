@@ -105,7 +105,10 @@ const hardwareAssetReducer = (item) => {
     ...(item.mac_address && { mac_addr_iri: item.mac_address }),
     ...(item.ports && { ports_iri: item.ports }),
     ...(item.connected_to_network && { conn_network_iri: item.connected_to_network }),
-    ...(item.related_risks && { related_risks: item.related_risks }),
+    ...(item.related_risks && { related_risks_iri: item.related_risks }),
+    ...(item.risk_count !== undefined && { risk_count: item.risk_count }),
+    ...(item.risk_score !== undefined && { risk_score: item.risk_score }),
+    ...(item.top_risk_severity && { top_risk_severity: item.top_risk_severity }),
   };
 };
 
@@ -182,23 +185,24 @@ export const selectHardwareByIriQuery = (iri, select) => {
   if (!select.includes('id')) select.push('id');
   if (!select.includes('object_type')) select.push('object_type');
 
-  // build list of selection variables and predicates
-  const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
-
   // define related risks clause to restrict to only Risk since it available in other objects
-  let relatedRiskClause = '';
+  let relatedRiskClause = '', relatedRiskVariable = '';
   if (select.includes('related_risks')) {
+    select = select.filter((i) => i !== 'related_risks');  
+    relatedRiskVariable = '?related_risks';
+    let predicate = hardwarePredicateMap['related_risks'].binding('?iri');
     relatedRiskClause = `
     OPTIONAL {
-      SELECT DISTINCT ?related_risks
-      WHERE {
-        FILTER regex(str(?related_risks), "#Risk", "i")
-      }
+      ${predicate} .
+      FILTER REGEX(str(?related_risks), "#Risk", "i")
     }`;
   }
 
+  // build list of selection variables and predicates
+  const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
+
   return `
-  SELECT ?iri ${selectionClause}
+  SELECT ?iri ${selectionClause} ${relatedRiskVariable}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -241,14 +245,15 @@ export const selectAllHardware = (select, args) => {
   }
 
   // define related risks clause to restrict to only Risk since it available in other objects
-  let relatedRiskClause = '';
-  if (select.includes('related_risks')) {
+  let relatedRiskClause = '', relatedRiskVariable = '';
+  if (select.includes('top_risk_severity') || select.includes('risk_count') || select.includes('related_risks')) {
+    if (select.includes('related_risks')) select = select.filter((i) => i !== 'related_risks');    
+    let predicate = hardwarePredicateMap['related_risks'].binding('?iri');
+    relatedRiskVariable = '?related_risks';
     relatedRiskClause = `
     OPTIONAL {
-      SELECT DISTINCT ?related_risks
-      WHERE {
-        FILTER regex(str(?related_risks), "#Risk", "i")
-      }
+      ${predicate} .
+      FILTER REGEX(str(?related_risks), "#Risk", "i")
     }`;
   }
 
@@ -256,7 +261,7 @@ export const selectAllHardware = (select, args) => {
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
 
   return `
-  SELECT DISTINCT ?iri ${selectionClause} 
+  SELECT DISTINCT ?iri ${selectionClause} ${relatedRiskVariable}
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Hardware> . 
