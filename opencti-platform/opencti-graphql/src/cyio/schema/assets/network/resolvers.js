@@ -30,6 +30,8 @@ import {
   selectRiskByIriQuery,
   getReducer as getAssessmentReducer,
 } from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
+import { riskSingularizeSchema } from '../../risk-assessments/risk-mappings.js';
+import { calculateRiskLevel, getOverallRisk } from '../../risk-assessments/riskUtils.js';
 
 const networkResolvers = {
   Query: {
@@ -48,7 +50,8 @@ const networkResolvers = {
       }
       // END WORKAROUND
 
-      const sparqlQuery = selectAllNetworks(selectMap.getNode('node'), args);
+      let select = selectMap.getNode('node');
+      const sparqlQuery = selectAllNetworks(select, args);
       const reducer = getReducer('NETWORK');
       const response = await dataSources.Stardog.queryAll({
         dbName,
@@ -71,18 +74,37 @@ const networkResolvers = {
         limitSize = limit = args.first === undefined ? response.length : args.first;
         offsetSize = offset = args.offset === undefined ? 0 : args.offset;
         filterCount = 0;
-        const assetList =
-          args.orderedBy !== undefined ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
+
+        if (select.includes('risk_count') || select.includes('top_risk_severity')) {
+          for (let asset of response) {
+            // add the count of risks associated with this asset
+            asset.risk_count = (asset.related_risks ? asset.related_risks.length : 0);
+            if (asset.related_risks !== undefined && asset.risk_count > 0) {
+              let { highestRiskScore, highestRiskSeverity } = await getOverallRisk(asset.related_risks, dbName, dataSources);
+              asset.risk_score = highestRiskScore || 0;
+              asset.risk_level = highestRiskSeverity || null;
+              asset.top_risk_severity = asset.risk_level;
+            }
+          }  
+        }
+
+        let assetList;
+        let sortBy;
+        if (args.orderedBy !== undefined) {
+          if (args.orderedBy === 'top_risk_severity') {
+            sortBy = 'risk_score';
+          } else {
+            sortBy = args.orderedBy;
+          }
+          assetList = response.sort(compareValues(sortBy, args.orderMode));
+        } else {
+          assetList = response;
+        }
 
         if (offset > assetList.length) return null;
 
+        // for each asset in the result set
         for (const asset of assetList) {
-          // skip down past the offset
-          if (offset) {
-            offset--;
-            continue;
-          }
-
           if (asset.id === undefined || asset.id == null) {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'; skipping`);
             skipCount++;
@@ -92,6 +114,12 @@ const networkResolvers = {
           if (asset.network_id === undefined || asset.network_id == null) {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'network_id'; skipping`);
             skipCount++;
+            continue;
+          }
+
+          // skip down past the offset
+          if (offset) {
+            offset--;
             continue;
           }
 
@@ -789,8 +817,8 @@ const networkResolvers = {
       return [];
     },
     related_risks: async (parent, _, { dbName, dataSources, selectMap }) => {
-      if (parent.related_risks === undefined) return [];
-      const iriArray = parent.related_risks;
+      if (parent.related_risks_iri === undefined) return [];
+      const iriArray = parent.related_risks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getAssessmentReducer('RISK');
@@ -804,7 +832,7 @@ const networkResolvers = {
               dbName,
               sparqlQuery,
               queryId: 'Select Risk',
-              singularizeSchema,
+              singularizeSchema: riskSingularizeSchema,
             });
           } catch (e) {
             console.log(e);
@@ -812,6 +840,23 @@ const networkResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
+            let risk = response[0];
+
+            // Convert date field values that are represented as JavaScript Date objects
+            if (risk.first_seen !== undefined) {
+              if (risk.first_seen instanceof Date) risk.first_seen = risk.first_seen.toISOString();
+            }
+            if (risk.last_seen !== undefined) {
+              if (risk.last_seen instanceof Date) risk.last_seen = risk.last_seen.toISOString();
+            }
+
+            // calculate the risk level
+            risk.risk_level = 'unknown';
+            if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
+              const { riskLevel, riskScore } = calculateRiskLevel(risk);
+              risk.risk_score = riskScore;
+              risk.risk_level = riskLevel;
+            }
             results.push(reducer(response[0]));
           } else {
             // Handle reporting Stardog Error

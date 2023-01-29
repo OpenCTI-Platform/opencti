@@ -65,7 +65,10 @@ const networkAssetReducer = (item) => {
     ...(item.notes && { notes_iri: item.notes }),
     ...(item.network_address_range && { netaddr_range_iri: item.network_address_range }),
     ...(item.connected_assets && { connected_assets: item.connected_assets }),
-    ...(item.related_risks && { related_risks: item.related_risks }),
+    ...(item.related_risks && { related_risks_iri: item.related_risks }),
+    ...(item.risk_count !== undefined && { risk_count: item.risk_count }),
+    ...(item.risk_score !== undefined && { risk_score: item.risk_score }),
+    ...(item.top_risk_severity && { top_risk_severity: item.top_risk_severity }),
   };
 };
 const ipAddrRangeReducer = (item) => {
@@ -145,23 +148,24 @@ export const selectNetworkByIriQuery = (iri, select) => {
   if (!select.includes('id')) select.push('id');
   if (!select.includes('object_type')) select.push('object_type');
 
-  // build list of selection variables and predicates
-  const { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
-
   // define related risks clause to restrict to only Risk since it available in other objects
-  let relatedRiskClause = '';
+  let relatedRiskClause = '', relatedRiskVariable = '';
   if (select.includes('related_risks')) {
+    select = select.filter((i) => i !== 'related_risks');  
+    relatedRiskVariable = '?related_risks';
+    let predicate = networkPredicateMap['related_risks'].binding('?iri');
     relatedRiskClause = `
     OPTIONAL {
-      SELECT DISTINCT ?related_risks
-      WHERE {
-        FILTER regex(str(?related_risks), "#Risk", "i")
-      }
+      ${predicate} .
+      FILTER REGEX(str(?related_risks), "#Risk", "i")
     }`;
   }
 
+  // build list of selection variables and predicates
+  const { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
+
   return `
-  SELECT ?iri ${selectionClause}
+  SELECT ?iri ${selectionClause} ${relatedRiskVariable}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -201,14 +205,15 @@ export const selectAllNetworks = (select, args) => {
   }
 
   // define related risks clause to restrict to only Risk since it available in other objects
-  let relatedRiskClause = '';
-  if (select.includes('related_risks')) {
+  let relatedRiskClause = '', relatedRiskVariable = '';
+  if (select.includes('top_risk_severity') || select.includes('risk_count') || select.includes('related_risks')) {
+    if (select.includes('related_risks')) select = select.filter((i) => i !== 'related_risks');    
+    let predicate = networkPredicateMap['related_risks'].binding('?iri');
+    relatedRiskVariable = '?related_risks';
     relatedRiskClause = `
     OPTIONAL {
-      SELECT DISTINCT ?related_risks
-      WHERE {
-        FILTER regex(str(?related_risks), "#Risk", "i")
-      }
+      ${predicate} .
+      FILTER REGEX(str(?related_risks), "#Risk", "i")
     }`;
   }
 
@@ -216,7 +221,7 @@ export const selectAllNetworks = (select, args) => {
   const { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
 
   return `
-  SELECT DISTINCT ?iri ${selectionClause} 
+  SELECT DISTINCT ?iri ${selectionClause} ${relatedRiskVariable}
   FROM <tag:stardog:api:context:local>
   WHERE {
     ?iri a <http://scap.nist.gov/ns/asset-identification#Network> . 

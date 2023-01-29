@@ -43,6 +43,8 @@ import {
   getReducer as getAssessmentReducer,
 } from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
 import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
+import { riskSingularizeSchema } from '../../risk-assessments/risk-mappings.js';
+import { calculateRiskLevel, getOverallRisk } from '../../risk-assessments/riskUtils.js';
 
 const hardwareResolvers = {
   Query: {
@@ -61,7 +63,8 @@ const hardwareResolvers = {
       }
       // END WORKAROUND
 
-      const sparqlQuery = selectAllHardware(selectMap.getNode('node'), args);
+      let select = selectMap.getNode('node');
+      const sparqlQuery = selectAllHardware(select, args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -89,9 +92,29 @@ const hardwareResolvers = {
         limitSize = limit = args.first === undefined ? response.length : args.first;
         offsetSize = offset = args.offset === undefined ? 0 : args.offset;
         filterCount = 0;
+
+        if (select.includes('risk_count') || select.includes('top_risk_severity')) {
+          for (let hardware of response) {
+            // add the count of risks associated with this asset
+            hardware.risk_count = (hardware.related_risks ? hardware.related_risks.length : 0);
+            if (hardware.related_risks !== undefined && hardware.risk_count > 0) {
+              let { highestRiskScore, highestRiskSeverity } = await getOverallRisk(hardware.related_risks, dbName, dataSources);
+              hardware.risk_score = highestRiskScore || 0;
+              hardware.risk_level = highestRiskSeverity || null;
+              hardware.top_risk_severity = hardware.risk_level;
+            }
+          }  
+        }
+
         let hardwareList;
+        let sortBy;
         if (args.orderedBy !== undefined) {
-          hardwareList = response.sort(compareValues(args.orderedBy, args.orderMode));
+          if (args.orderedBy === 'top_risk_severity') {
+            sortBy = 'risk_score';
+          } else {
+            sortBy = args.orderedBy;
+          }
+          hardwareList = response.sort(compareValues(sortBy, args.orderMode));
         } else {
           hardwareList = response;
         }
@@ -827,10 +850,10 @@ const hardwareResolvers = {
       let iriArray = parent.installed_sw_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        let reducer = getReducer('HARDWARE-DEVICE');
+        let reducer = getSoftwareReducer('SOFTWARE');
         for (let iri of iriArray) {
-          // check if this is an hardware object
-          if (iri === undefined || !iri.includes('Hardware')) {
+          // check if this is an software object
+          if (iri === undefined || !iri.includes('Software')) {
             continue;
           }
 
@@ -839,7 +862,7 @@ const hardwareResolvers = {
           const response = await dataSources.Stardog.queryById({
             dbName,
             sparqlQuery,
-            queryId: "Select Installed Hardware for Hardware Asset",
+            queryId: "Select Installed Software for Hardware Asset",
             singularizeSchema
           })
           if (response === undefined) return [];
@@ -1214,8 +1237,8 @@ const hardwareResolvers = {
       return [];
     },
     related_risks: async (parent, _, { dbName, dataSources, selectMap }) => {
-      if (parent.related_risks === undefined) return [];
-      const iriArray = parent.related_risks;
+      if (parent.related_risks_iri === undefined) return [];
+      const iriArray = parent.related_risks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getAssessmentReducer('RISK');
@@ -1229,7 +1252,7 @@ const hardwareResolvers = {
               dbName,
               sparqlQuery,
               queryId: 'Select Risk',
-              singularizeSchema,
+              singularizeSchema: riskSingularizeSchema,
             });
           } catch (e) {
             console.log(e);
@@ -1237,6 +1260,23 @@ const hardwareResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
+            let risk = response[0];
+
+            // Convert date field values that are represented as JavaScript Date objects
+            if (risk.first_seen !== undefined) {
+              if (risk.first_seen instanceof Date) risk.first_seen = risk.first_seen.toISOString();
+            }
+            if (risk.last_seen !== undefined) {
+              if (risk.last_seen instanceof Date) risk.last_seen = risk.last_seen.toISOString();
+            }
+
+            // calculate the risk level
+            risk.risk_level = 'unknown';
+            if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
+              const { riskLevel, riskScore } = calculateRiskLevel(risk);
+              risk.risk_score = riskScore;
+              risk.risk_level = riskLevel;
+            }
             results.push(reducer(response[0]));
           } else {
             // Handle reporting Stardog Error

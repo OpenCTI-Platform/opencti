@@ -425,6 +425,7 @@ const riskReducer = (item) => {
     ...(item.statement && { statement: item.statement }),
     ...(item.risk_status && { risk_status: item.risk_status }),
     ...(item.risk_level && { risk_level: item.risk_level }),
+    ...(item.risk_score !== undefined && { risk_score: item.risk_score }),
     ...(item.origins && { origins_iri: item.origins }),
     ...(item.threats && { threats_iri: item.threats }),
     ...(item.characterizations && { characterizations_iri: item.characterizations }),
@@ -3086,23 +3087,15 @@ export const selectRiskByIriQuery = (iri, select) => {
 
   // Populate the insertSelections that compute results
   if (select.includes('risk_level')) {
-    insertSelections.push(
-      `(MAX(?cvss2_base_score) AS ?cvssV2Base_score) (MAX(?cvss2_temporal_score) as ?cvssV2Temporal_score)`
-    );
-    insertSelections.push(
-      `(MAX(?cvss3_base_score) AS ?cvssV3Base_score) (MAX(?cvss3_temporal_score) as ?cvssV3Temporal_score)`
-    );
+    insertSelections.push(`(MAX(?cvss2_base_score) AS ?cvssV2Base_score) (MAX(?cvss2_temporal_score) as ?cvssV2Temporal_score)`);
+    insertSelections.push(`(MAX(?cvss3_base_score) AS ?cvssV3Base_score) (MAX(?cvss3_temporal_score) as ?cvssV3Temporal_score)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?available_exploit;SEPARATOR=",") as ?available_exploit_values)`);
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?exploitability_ease;SEPARATOR=",") as ?exploitability_ease_values)`);
   }
   if (select.includes('response_type') || select.includes('response_lifecycle')) {
     insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_type;SEPARATOR=",") AS ?remediation_type_values)`);
-    insertSelections.push(
-      `(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`
-    );
-    insertSelections.push(
-      `(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`
-    );
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_lifecycle;SEPARATOR=",") AS ?remediation_lifecycle_values)`);
+    insertSelections.push(`(GROUP_CONCAT(DISTINCT ?remediation_timestamp;SEPARATOR=",") AS ?remediation_timestamp_values)`);
   }
   if (select.includes('first_seen') || select.includes('last_seen')) {
     insertSelections.push(`(MIN(?collected) AS ?first_seen) (MAX(?collected) as ?last_seen)`);
