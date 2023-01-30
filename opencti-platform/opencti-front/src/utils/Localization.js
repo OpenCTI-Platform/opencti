@@ -1280,8 +1280,8 @@ const i18n = {
         'Mensaje al modificar datos en la interfaz.',
       'To use this feature, your platform administrator must enable the subscription manager in the config.':
         'Para utilizar esta función, el administrador de la plataforma debe habilitar el gestor de suscripciones.',
-      'To use this feature, your platform administrator must enable the rule engine in the config.':
-        'Para utilizar esta función, el administrador de la plataforma debe habilitar el motor de reglas.',
+      'To use this feature, your platform administrator must enable the according manager in the config.':
+        'Para usar esta función, el administrador de su plataforma debe habilitar el administrador correspondiente en la configuración.',
       'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.':
         'En OpenCTI, se genera un STIX ID predictivo basado en uno o más atributos de esta entidad.',
       Layers: 'Capas',
@@ -2974,8 +2974,8 @@ const i18n = {
         "Message lors de la modification des données dans l'interface.",
       'To use this feature, your platform administrator must enable the subscription manager in the config.':
         "Pour utiliser cette fonctionnalité, l'administrateur de votre plateforme doit activer le manager de souscriptions.",
-      'To use this feature, your platform administrator must enable the rule engine in the config.':
-        "Pour utiliser cette fonctionnalité, l'administrateur de votre plateforme doit activer le moteur de règles.",
+      'To use this feature, your platform administrator must enable the according manager in the config.':
+        "Pour utiliser cette fonctionnalité, l'administrateur de votre plateforme doit activer la configuration correspondante.",
       'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.':
         'Dans OpenCTI, un ID STIX prédictif est généré basé sur un ou plusieurs attributs de cette entité.',
       Layers: 'Couches',
@@ -4626,8 +4626,8 @@ const i18n = {
         'UIからデータを更新したときのコミットメッセージ。',
       'To use this feature, your platform administrator must enable the subscription manager in the config.':
         'この機能を使用するためには、プラットフォーム管理者が設定でサブスクリプションマネージャーを有効にする必要があります。',
-      'To use this feature, your platform administrator must enable the rule engine in the config.':
-        'この機能を使用するためには、プラットフォーム管理者が設定でルールエンジンを有効にする必要があります。',
+      'To use this feature, your platform administrator must enable the according manager in the config.':
+        'この機能を使用するには、プラットフォーム管理者が構成で適切なマネージャーを有効にする必要があります。',
       'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.':
         'OpenCTIでは、1つまたは複数の属性からSTIX IDが生成されます。',
       Layers: '層',
@@ -6203,8 +6203,8 @@ const i18n = {
         '从UI更新数据时提交消息',
       'To use this feature, your platform administrator must enable the subscription manager in the config.':
         '要使用此功能，平台管理员必须在配置中启用订阅管理器。',
-      'To use this feature, your platform administrator must enable the rule engine in the config.':
-        '要使用此功能，平台管理员必须在配置中启用规则引擎。',
+      'To use this feature, your platform administrator must enable the according manager in the config.':
+        '要使用此功能，您的平台管理員必須在配置中啟用相應的管理器。',
       'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.':
         '在 OpenCTI 中，基于实体的一个或多个属性生成可预测的 STIX ID。',
       Layers: '层',

@@ -51,13 +51,11 @@ const Reports: FunctionComponent<ReportsProps> = ({
   }
 
   const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
-    numberOfElements: { number: 0, symbol: '', original: 0 },
     filters: {} as Filters,
     searchTerm: '',
     sortBy: 'published',
     orderAsc: false,
     openExports: false,
-    count: 25,
     redirectionMode: 'overview',
   }, additionnalFilters);
   const {

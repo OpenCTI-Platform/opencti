@@ -1,35 +1,40 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React, { useContext } from 'react';
 import Typography from '@mui/material/Typography';
-import inject18n from '../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import Alert from '@mui/material/Alert';
+import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import TasksList, { tasksListQuery } from './tasks/TasksList';
 import Loader from '../../../components/Loader';
+import { UserContext } from '../../../utils/hooks/useAuth';
+import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
   },
-});
+}));
 
-class Tasks extends Component {
-  render() {
-    const { classes, t } = this.props;
-    const optionsInProgress = {
-      count: 50,
-      orderBy: 'created_at',
-      orderMode: 'desc',
-      filters: [{ key: 'completed', values: ['false'] }],
-    };
-    const optionsFinished = {
-      count: 50,
-      orderBy: 'created_at',
-      orderMode: 'desc',
-      filters: [{ key: 'completed', values: ['true'] }],
-    };
-    return (
+const Tasks = () => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const { helper } = useContext(UserContext);
+  const optionsInProgress = {
+    count: 50,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+    filters: [{ key: 'completed', values: ['false'] }],
+  };
+  const optionsFinished = {
+    count: 50,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+    filters: [{ key: 'completed', values: ['true'] }],
+  };
+  if (!helper.isTasksManagerEnable()) {
+    return <Alert severity="info">{t(helper.generateDisableMessage(TASK_MANAGER))}</Alert>;
+  }
+  return (
       <div className={classes.container}>
         <Typography variant="h4" gutterBottom={true}>
           {t('In progress tasks')}
@@ -58,14 +63,7 @@ class Tasks extends Component {
           }}
         />
       </div>
-    );
-  }
-}
-
-Tasks.propTypes = {
-  connector: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-export default compose(inject18n, withStyles(styles))(Tasks);
+export default Tasks;

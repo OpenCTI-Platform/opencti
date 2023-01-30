@@ -53,9 +53,7 @@ export const insertNode = (
       ConnectionHandler.insertEdgeBefore(conn, newEdge);
     }
   } else {
-    throw new Error(
-      `Cant insert node on not found connection ${{ key, params }}`,
-    );
+    throw new Error(`Cant insert node on not found connection ${key}`);
   }
 };
 
@@ -66,12 +64,11 @@ export const deleteNodeFromId = (store, containerId, key, filters, id) => {
   const params = { ...filters };
   delete params.count;
   delete params.id;
-
   const conn = ConnectionHandler.getConnection(record, key, params);
   if (conn) {
     ConnectionHandler.deleteNode(conn, id);
   } else {
-    throw new Error(`Delete node connection not found ${{ key, params, id }}`);
+    throw new Error(`Delete node ${id} connection ${key} not found`);
   }
 };
 

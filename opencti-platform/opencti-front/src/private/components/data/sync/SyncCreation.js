@@ -10,7 +10,6 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -18,6 +17,7 @@ import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -92,16 +92,6 @@ const syncCreationValidation = (t) => Yup.object().shape({
   ssl_verify: Yup.bool(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_synchronizers',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 const SyncCreation = (props) => {
   const { t, classes } = props;
   const [open, setOpen] = useState(false);
@@ -139,15 +129,7 @@ const SyncCreation = (props) => {
         input: values,
       },
       updater: (store) => {
-        const payload = store.getRootField('synchronizerAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          props.paginationOptions,
-          newEdge,
-        );
+        insertNode(store, 'Pagination_synchronizers', props.paginationOptions, 'synchronizerAdd');
       },
       setSubmitting,
       onCompleted: () => {

@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import * as R from 'ramda';
-import { isEmptyField, removeEmptyFields } from '../utils';
+import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import {
   Filters,
   OrderMode,
@@ -8,7 +8,6 @@ import {
 } from '../../components/list_lines';
 import { BackendFilters, isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
-import { DataComponentsLinesPaginationQuery$variables } from '../../private/components/techniques/data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 
 export interface LocalStorage {
   numberOfElements?: {
@@ -17,7 +16,10 @@ export interface LocalStorage {
     original?: number;
   };
   filters?: Filters;
+  id?: string;
   searchTerm?: string;
+  category?: string;
+  toId?: string;
   sortBy?: string;
   orderAsc?: boolean;
   openExports?: boolean;
@@ -43,31 +45,34 @@ export interface UseLocalStorageHelpers {
   handleAddProperty: (field: string, value: unknown) => void;
 }
 
-export const localStorageToPaginationOptions = <U>({
+const localStorageToPaginationOptions = ({
   searchTerm,
   filters,
   sortBy,
   orderAsc,
   ...props
-}: LocalStorage & Omit<U, 'filters'>, additionnalFilters?: BackendFilters)
-  : unknown extends U ? PaginationOptions : U => {
+}: LocalStorage, additionalFilters?: BackendFilters): PaginationOptions => {
   // Remove only display options, not query linked
   const localOptions = { ...props };
+  delete localOptions.redirectionMode;
   delete localOptions.openExports;
   delete localOptions.numberOfElements;
   delete localOptions.view;
   delete localOptions.zoom;
-  let finalFilters = filters ? convertFilters(filters) : [];
-  if (additionnalFilters) {
-    finalFilters = finalFilters.concat(additionnalFilters);
+  // Rebuild some pagination options
+  const basePagination: PaginationOptions = { ...localOptions };
+  if (searchTerm) {
+    basePagination.search = searchTerm;
   }
-  return {
-    ...localOptions,
-    search: searchTerm,
-    orderMode: orderAsc ? OrderMode.asc : OrderMode.desc,
-    orderBy: sortBy,
-    filters: finalFilters,
-  } as unknown extends U ? PaginationOptions : U;
+  if (orderAsc || sortBy) {
+    basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
+    basePagination.orderBy = sortBy;
+  }
+  if (filters) {
+    const paginationFilters = convertFilters(filters).concat(additionalFilters ?? []);
+    basePagination.filters = paginationFilters as unknown as Filters;
+  }
+  return basePagination;
 };
 
 export type HandleAddFilter = (
@@ -109,12 +114,22 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
   });
 };
 
-const useLocalStorage = (
-  key: string,
-  initialValue: LocalStorage,
-): UseLocalStorage => {
-  // State to store our value
+const setStoredValueToHistory = (initialValue: LocalStorage, valueToStore: LocalStorage) => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const finalParams = searchParamsToStorage(searchParams);
+  const urlParams = buildParamsFromHistory(valueToStore);
+  if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
+    const effectiveParams = new URLSearchParams(urlParams);
+    if (Object.entries(urlParams).some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)) {
+      window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
+    } else {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }
+};
 
+const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStorage => {
+  // State to store our value
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<LocalStorage>(() => {
     if (typeof window === 'undefined') {
@@ -130,9 +145,14 @@ const useLocalStorage = (
       if (isEmptyField(value)) {
         value = initialValue;
       }
-      return Array.from(searchParams.values()).length > 0
-        ? { ...value, ...finalParams }
-        : value;
+      // Values from uri must be prioritized on initial loading
+      // Localstorage must be rewritten to ensure consistency
+      if (isNotEmptyField(finalParams)) {
+        const initialState = { ...value, ...finalParams };
+        window.localStorage.setItem(key, JSON.stringify(initialState));
+        return initialState;
+      }
+      return value;
     } catch (error) {
       // If error also return initialValue
       throw Error('Error while initializing values in local storage');
@@ -140,45 +160,24 @@ const useLocalStorage = (
   });
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
-  const setValue = (
-    value: LocalStorage | ((val: LocalStorage) => LocalStorage),
-  ) => {
+  const setValue = (value: LocalStorage | ((val: LocalStorage) => LocalStorage)) => {
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       // Save state
       setStoredValue(valueToStore);
-      // Save to local storage
+      // Save to local storage + re-align uri if needed
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
-
-        const searchParams = new URLSearchParams(window.location.search);
-        const finalParams = searchParamsToStorage(searchParams);
-        const urlParams = buildParamsFromHistory(valueToStore);
-
-        if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
-          const effectiveParams = new URLSearchParams(urlParams);
-          if (
-            Object.entries(urlParams).some(
-              ([k, v]) => initialValue[k as keyof LocalStorage] !== v,
-            )
-          ) {
-            window.history.replaceState(
-              null,
-              '',
-              `?${effectiveParams.toString()}`,
-            );
-          } else {
-            window.history.replaceState(null, '', window.location.pathname);
-          }
-        }
+        setStoredValueToHistory(initialValue, valueToStore);
       }
     } catch (error) {
       // A more advanced implementation would handle the error case
       throw Error('Error while setting values in local storage');
     }
   };
-
+  // re-align uri if needed
+  setStoredValueToHistory(initialValue, storedValue);
   return [storedValue, setValue];
 };
 
@@ -194,11 +193,8 @@ export const usePaginationLocalStorage = <U>(
   additionalFilters?: BackendFilters,
 ): PaginationLocalStorage<U> => {
   const [viewStorage, setValue] = useLocalStorage(key, initialValue);
-  const paginationOptions = localStorageToPaginationOptions<DataComponentsLinesPaginationQuery$variables>(
-    {
-      ...viewStorage,
-      count: 25,
-    },
+  const paginationOptions = localStorageToPaginationOptions(
+    { count: 25, ...viewStorage },
     additionalFilters,
   );
 

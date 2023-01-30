@@ -14,11 +14,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import SyncEdition from './SyncEdition';
+import { deleteNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   container: {
@@ -163,15 +163,7 @@ class SyncPopover extends Component {
         id: this.props.syncId,
       },
       updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('synchronizerEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_synchronizers',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        deleteNode(store, 'Pagination_synchronizers', this.props.paginationOptions, this.props.syncId);
       },
       onCompleted: () => {
         this.setState({ deleting: false });

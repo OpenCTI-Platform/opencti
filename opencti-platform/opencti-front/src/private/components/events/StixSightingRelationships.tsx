@@ -1,15 +1,16 @@
 import React from 'react';
-import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixSightingRelationshipsLines, {
   stixSightingRelationshipsLinesQuery,
 } from './stix_sighting_relationships/StixSightingRelationshipsLines';
-import { localStorageToPaginationOptions, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../components/list_lines';
 import {
+  StixSightingRelationshipsFiltering,
   StixSightingRelationshipsLinesPaginationQuery$variables,
 } from './stix_sighting_relationships/__generated__/StixSightingRelationshipsLinesPaginationQuery.graphql';
+import { convertFilters } from '../../../utils/ListParameters';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -61,14 +62,16 @@ const dataColumns = {
 const LOCAL_STORAGE_KEY = 'view-stix-sighting-relationships';
 
 const StixSightingRelationships = () => {
-  const { viewStorage, helpers: storageHelpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
-    numberOfElements: { number: 0, symbol: '' },
+  const {
+    viewStorage,
+    paginationOptions: rawPaginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<StixSightingRelationshipsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     filters: {} as Filters,
     searchTerm: '',
     sortBy: 'created',
     orderAsc: false,
     openExports: false,
-    count: 25,
   });
 
   const {
@@ -126,20 +129,21 @@ const StixSightingRelationships = () => {
     </ListLines>
   );
 
-  let toSightingId = null;
-  let processedFilters = filters as Filters;
-  if (filters?.toSightingId) {
-    toSightingId = R.head(filters.toSightingId)?.id;
-    processedFilters = R.dissoc<Filters, string>('toSightingId', processedFilters);
+  // As toSightingId must be converted to a connection nested filter in backend
+  // we need to remove it from the filters and use a specific api parameter instead
+  let toSightingId: string | undefined;
+  const newFilters = { ...filters };
+  if (newFilters.toSightingId) {
+    toSightingId = String(newFilters.toSightingId.at(0)?.id);
+    delete newFilters.toSightingId;
   }
-  const paginationOptions = localStorageToPaginationOptions<StixSightingRelationshipsLinesPaginationQuery$variables>({
-    ...viewStorage,
+  const enrichedPaginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables = {
+    ...rawPaginationOptions,
     toId: toSightingId,
-    filters: processedFilters,
-    count: viewStorage.count ?? 25,
-  });
+    filters: convertFilters(newFilters) as StixSightingRelationshipsFiltering[],
+  };
   return (
-    <div>{renderLines(paginationOptions)}</div>
+    <div>{renderLines(enrichedPaginationOptions)}</div>
   );
 };
 

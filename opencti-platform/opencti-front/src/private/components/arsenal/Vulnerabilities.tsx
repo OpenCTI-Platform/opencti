@@ -24,10 +24,6 @@ const Vulnerabilities = () => {
       orderAsc: true,
       openExports: false,
       filters: {} as Filters,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
     },
   );
 

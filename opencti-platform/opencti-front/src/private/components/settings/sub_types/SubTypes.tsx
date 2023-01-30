@@ -14,10 +14,7 @@ const LOCAL_STORAGE_KEY_SUB_TYPES = 'view-sub-types';
 const SubTypes = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_SUB_TYPES,
-    {
-      searchTerm: '',
-      numberOfElements: { number: 0, symbol: '', original: 0 },
-    },
+    { searchTerm: '' },
   );
   const dataColumns = {
     entity_type: {

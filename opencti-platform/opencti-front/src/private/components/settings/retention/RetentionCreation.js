@@ -11,7 +11,6 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import { assoc, pipe } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
@@ -22,6 +21,7 @@ import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -88,16 +88,6 @@ const RetentionCreationValidation = (t) => Yup.object().shape({
   max_retention: Yup.number().min(1, t('This field must be >= 1')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_retentionRules',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 const RetentionCreation = (props) => {
   const { t, classes } = props;
   const [open, setOpen] = useState(false);
@@ -123,15 +113,7 @@ const RetentionCreation = (props) => {
         input: { ...finalValues, filters: jsonFilters },
       },
       updater: (store) => {
-        const payload = store.getRootField('retentionRuleAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          props.paginationOptions,
-          newEdge,
-        );
+        insertNode(store, 'Pagination_retentionRules', props.paginationOptions, 'retentionRuleAdd');
       },
       setSubmitting,
       onCompleted: () => {

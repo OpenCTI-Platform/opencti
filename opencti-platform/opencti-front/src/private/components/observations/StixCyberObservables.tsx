@@ -5,7 +5,7 @@ import { React } from 'mdi-material-ui';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
 import StixCyberObservablesRightBar from './stix_cyber_observables/StixCyberObservablesRightBar';
 import Security from '../../../utils/Security';
-import { localStorageToPaginationOptions, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixCyberObservablesLines, {
   stixCyberObservablesLinesQuery,
@@ -18,7 +18,6 @@ import { Filters } from '../../../components/list_lines';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import {
   StixCyberObservablesLinesPaginationQuery$data,
-  StixCyberObservablesLinesPaginationQuery$variables,
 } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import useCopy from '../../../utils/hooks/useCopy';
@@ -37,10 +36,9 @@ const LOCAL_STORAGE_KEY = 'view-stix-cyber-observables';
 const StixCyberObservables: FunctionComponent = () => {
   const classes = useStyles();
 
-  const { viewStorage, helpers } = usePaginationLocalStorage(
+  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
-      numberOfElements: { number: 0, symbol: '', original: 0 },
       filters: {} as Filters,
       searchTerm: '',
       sortBy: 'created_at',
@@ -58,38 +56,22 @@ const StixCyberObservables: FunctionComponent = () => {
     openExports,
     types,
   } = viewStorage;
-  const {
-    handleRemoveFilter,
-    handleSearch,
-    handleSort,
-    handleToggleExports,
-    handleAddFilter,
-    handleSetNumberOfElements,
-    handleAddProperty,
-  } = helpers;
 
   const [selectedElements, setSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
   const [deSelectedElements, setDeSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
-
-  const paginationOptions = localStorageToPaginationOptions<StixCyberObservablesLinesPaginationQuery$variables>(
-    {
-      ...viewStorage,
-      count: 25,
-    },
-  );
 
   const [selectAll, setSelectAll] = useState<boolean>(false);
 
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
-      handleAddProperty('types', types.filter((x) => x !== type));
+      helpers.handleAddProperty('types', types.filter((x) => x !== type));
     } else {
-      handleAddProperty('types', types ? [...types, type] : [type]);
+      helpers.handleAddProperty('types', types ? [...types, type] : [type]);
     }
   };
 
   const handleClear = () => {
-    handleAddProperty('types', []);
+    helpers.handleAddProperty('types', []);
   };
 
   const handleToggleSelectEntity = (
@@ -227,14 +209,9 @@ const StixCyberObservables: FunctionComponent = () => {
     if (types && types.length > 0) {
       finalType = types.map((n) => ({ id: n, value: n }));
     } else {
-      finalType = [
-        { id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' },
-      ];
+      finalType = [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }];
     }
-    const finalFilters = {
-      ...viewStorage.filters,
-      entity_type: finalType,
-    };
+    const finalFilters = { ...viewStorage.filters, entity_type: finalType };
     let numberOfSelectedElements = Object.keys(selectedElements).length;
     if (selectAll) {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
@@ -248,11 +225,11 @@ const StixCyberObservables: FunctionComponent = () => {
               sortBy={sortBy}
               orderAsc={orderAsc}
               dataColumns={buildColumns(helper)}
-              handleSort={handleSort}
-              handleSearch={handleSearch}
-              handleAddFilter={handleAddFilter}
-              handleRemoveFilter={handleRemoveFilter}
-              handleToggleExports={handleToggleExports}
+              handleSort={helpers.handleSort}
+              handleSearch={helpers.handleSearch}
+              handleAddFilter={helpers.handleAddFilter}
+              handleRemoveFilter={helpers.handleRemoveFilter}
+              handleToggleExports={helpers.handleToggleExports}
               openExports={openExports}
               handleToggleSelectAll={handleToggleSelectAll}
               selectAll={selectAll}
@@ -287,12 +264,12 @@ const StixCyberObservables: FunctionComponent = () => {
                     paginationOptions={paginationOptions}
                     dataColumns={buildColumns(helper)}
                     initialLoading={props === null}
-                    onLabelClick={handleAddFilter}
+                    onLabelClick={helpers.handleAddFilter}
                     selectedElements={selectedElements}
                     deSelectedElements={deSelectedElements}
                     onToggleEntity={handleToggleSelectEntity}
                     selectAll={selectAll}
-                    setNumberOfElements={handleSetNumberOfElements}
+                    setNumberOfElements={helpers.handleSetNumberOfElements}
                   />
                 )}
               />

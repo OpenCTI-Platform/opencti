@@ -5,7 +5,7 @@ import { Filters } from '../../components/list_lines';
 import { useFormatter } from '../../components/i18n';
 
 interface UseCopyProps<T> {
-  filters: Filters;
+  filters?: Filters;
   searchTerm: string;
   deselectedIds: string[];
   selectedValues: string[];
@@ -34,11 +34,11 @@ const useCopy = <T extends OperationType['response']>(
         ? fetchQuery(query, {
           id: elementId,
           search: searchTerm,
-          filters: convertFilters(filters),
+          filters: convertFilters(filters ?? {}),
         })
         : fetchQuery(query, {
           search: searchTerm,
-          filters: convertFilters(filters),
+          filters: convertFilters(filters ?? {}),
         })
       )
         .toPromise()
