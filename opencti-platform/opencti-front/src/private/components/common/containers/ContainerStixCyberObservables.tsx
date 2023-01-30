@@ -71,11 +71,9 @@ interface ContainerStixCyberObservablesComponentProps {
   container: ContainerStixCyberObservables_container$data;
 }
 
-const LOCAL_STORAGE_KEY = 'view-container-stix-cyber-observables';
-
 const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyberObservablesComponentProps> = ({ container }) => {
   const classes = useStyles();
-
+  const LOCAL_STORAGE_KEY = `view-container-${container.id}-stix-cyber-observables`;
   const {
     viewStorage,
     paginationOptions: rawPaginationOptions,
@@ -266,7 +264,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       },
     };
   };
-
+  
   const queryRef = useQueryLoading<ContainerStixCyberObservablesLinesQuery>(
     containerStixCyberObservablesLinesQuery,
     paginationOptions,

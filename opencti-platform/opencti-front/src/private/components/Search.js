@@ -210,7 +210,6 @@ class Search extends Component {
     const {
       sortBy,
       orderAsc,
-      searchTerm,
       filters,
       numberOfElements,
       selectedElements,
@@ -218,6 +217,7 @@ class Search extends Component {
       selectAll,
       openExports,
     } = this.state;
+    const { search } = paginationOptions;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original
@@ -284,7 +284,7 @@ class Search extends Component {
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
               filters={filters}
-              search={searchTerm}
+              search={search}
               handleClearSelectedElements={this.handleClearSelectedElements.bind(
                 this,
               )}

@@ -33,6 +33,7 @@ export const containerStixCyberObservablesLinesQuery = graphql`
   ) {
     ...ContainerStixCyberObservablesLines_container
       @arguments(
+        id: $id
         types: $types
         search: $search
         count: $count
@@ -47,6 +48,7 @@ export const containerStixCyberObservablesLinesQuery = graphql`
 const ContainerStixCyberObservablesLinesFragment = graphql`
   fragment ContainerStixCyberObservablesLines_container on Query
   @argumentDefinitions(
+    id: { type: "String!" }
     types: { type: "[String]" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }

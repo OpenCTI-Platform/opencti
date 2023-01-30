@@ -1552,10 +1552,12 @@ class ToolBar extends Component {
                                   </div>
                                 }
                               />
-                              <Chip
-                                classes={{ root: classes.operator }}
-                                label={t('AND')}
-                              />
+                              {R.toPairs(filters).length > 0 && (
+                                <Chip
+                                  classes={{ root: classes.operator }}
+                                  label={t('AND')}
+                                />
+                              )}
                             </span>
                           )}
                           {R.map((currentFilter) => {
@@ -1569,7 +1571,11 @@ class ToolBar extends Component {
                                 : t(`filter_${currentFilter[0]}`),
                               20,
                             )}`;
-                            const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
+                            const localFilterMode = currentFilter[0].endsWith(
+                              'not_eq',
+                            )
+                              ? t('AND')
+                              : t('OR');
                             const values = (
                               <span>
                                 {R.map(
@@ -1584,7 +1590,9 @@ class ToolBar extends Component {
                                           ? truncate(o.value, 15)
                                           : t('No label')}{' '}
                                       {R.last(currentFilter[1]).value
-                                        !== o.value && <code>{localFilterMode}</code>}{' '}
+                                        !== o.value && (
+                                        <code>{localFilterMode}</code>
+                                      )}{' '}
                                     </span>
                                   ),
                                   currentFilter[1],
@@ -1835,7 +1843,9 @@ class ToolBar extends Component {
                   <div style={{ marginRight: 50 }}>
                     <ItemMarkings
                       variant="inList"
-                      markingDefinitionsEdges={element.objectMarking?.edges ?? []}
+                      markingDefinitionsEdges={
+                        element.objectMarking?.edges ?? []
+                      }
                     />
                   </div>
                   <ListItemSecondaryAction>
