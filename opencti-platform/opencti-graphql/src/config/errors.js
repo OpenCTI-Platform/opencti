@@ -87,9 +87,17 @@ export const FunctionalError = (reason, data) => error('FunctionalError', 'Busin
   ...data,
 });
 
+const TYPE_LOCK = 'LockError';
 export const TYPE_LOCK_ERROR = 'ExecutionError';
-export const LockTimeoutError = (data, reason) => error('LockError', 'Lock timeout', {
+export const LockTimeoutError = (data, reason) => error(TYPE_LOCK, 'Lock timeout', {
   reason: reason ?? 'Execution timeout, too many concurrent call on the same entities',
+  http_status: 500,
+  category: CATEGORY_BUSINESS,
+  ...data,
+});
+
+export const EngineShardsError = (data) => error(TYPE_LOCK, 'Engine shards failure', {
+  reason: 'Engine execution fail, some shards are not available, please check your engine status',
   http_status: 500,
   category: CATEGORY_BUSINESS,
   ...data,

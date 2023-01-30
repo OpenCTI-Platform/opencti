@@ -27,7 +27,13 @@ import {
   WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { ConfigurationError, DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
+import {
+  ConfigurationError,
+  DatabaseError,
+  EngineShardsError,
+  FunctionalError,
+  UnsupportedError
+} from '../config/errors';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -92,6 +98,7 @@ export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttl
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
 const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
 const ES_MAX_RESULT_WINDOW = conf.get('elasticsearch:max_result_window') || 100000;
+const ES_MAX_SHARDS_FAILURE = conf.get('elasticsearch:max_shards_failure') || 0;
 const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
@@ -104,6 +111,8 @@ const MAX_SEARCH_AGGREGATION_SIZE = 10000;
 const MAX_SEARCH_SIZE = 5000;
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
+const NO_MAPPING_FOUND_ERROR = 'No mapping found';
+const NO_SUCH_INDEX_ERROR = 'no such index';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
@@ -210,7 +219,29 @@ const oebp = (queryResult) => {
 };
 
 export const elRawSearch = (context, user, types, query) => {
-  const elRawSearchFn = () => engine.search(query).then((r) => oebp(r));
+  const elRawSearchFn = () => engine.search(query).then((r) => {
+    const parsedSearch = oebp(r);
+    // If some shards fail
+    if (parsedSearch._shards.failed > 0) {
+      // We need to filter "No mapping found" errors that are not real problematic shard problems
+      // As we do not define all mappings and let elastic create it dynamically at first creation
+      // This failure is transient until the first creation of some data
+      const failures = (parsedSearch._shards.failures ?? [])
+        .filter((f) => !f.reason?.reason.includes(NO_MAPPING_FOUND_ERROR));
+      if (failures.length > ES_MAX_SHARDS_FAILURE) {
+        // We do not support response with shards failure.
+        // Result must be always accurate to prevent data duplication and unwanted behaviors
+        // If any shard fail during query, engine throw a lock exception with shards information
+        throw EngineShardsError({ shards: parsedSearch._shards });
+      } else {
+        // At least log the situation
+        const message = `[SEARCH] Search meet ${failures.length} shards failure, please check your configuration`;
+        logApp.error(message, { shards: parsedSearch._shards });
+      }
+    }
+    // Return result of the search if everything goes well
+    return parsedSearch;
+  });
   return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
     [SemanticAttributes.DB_NAME]: 'search_engine',
     [SemanticAttributes.DB_OPERATION]: 'read',
@@ -435,7 +466,13 @@ const elCreateIndexTemplate = async () => {
             created: {
               type: 'date',
             },
+            created_at: {
+              type: 'date',
+            },
             modified: {
+              type: 'date',
+            },
+            modified_at: {
               type: 'date',
             },
             first_seen: {
@@ -1550,7 +1587,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
         if (isNotEmptyField(err.meta?.body)) {
           const errorCauses = err.meta.body?.error?.root_cause ?? [];
           const invalidMappingCauses = errorCauses.map((r) => r.reason ?? '')
-            .filter((r) => R.includes('No mapping found for', r) || R.includes('no such index', r));
+            .filter((r) => R.includes(NO_MAPPING_FOUND_ERROR, r) || R.includes(NO_SUCH_INDEX_ERROR, r));
           const numberOfCauses = errorCauses.length;
           isTechnicalError = numberOfCauses === 0 || numberOfCauses > invalidMappingCauses.length;
         }
