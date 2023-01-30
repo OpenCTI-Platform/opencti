@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { CityVariantOutline, TextureBox } from 'mdi-material-ui';
+import { CityVariantOutline } from 'mdi-material-ui';
 import {
   PublicOutlined,
   PlaceOutlined,
   FlagOutlined,
+  MapOutlined,
 } from '@mui/icons-material';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
@@ -75,26 +76,30 @@ const TopMenuLocation = () => {
         </Button>
       )}
       {!useIsHiddenEntity('AdministrativeArea') && (
-          <Button
-              component={Link}
-              to="/dashboard/locations/administrative_areas"
-              variant={
-                location.pathname.includes('/dashboard/locations/administrative_areas')
-                  ? 'contained'
-                  : 'text'
-              }
-              size="small"
-              color={
-                location.pathname.includes('/dashboard/locations/administrative_areas')
-                  ? 'secondary'
-                  : 'primary'
-              }
-              classes={{ root: classes.button }}
-          >
-            <TextureBox className={classes.icon} fontSize="small"/>
-            {t('Areas')}
-          </Button>
-      ) }
+        <Button
+          component={Link}
+          to="/dashboard/locations/administrative_areas"
+          variant={
+            location.pathname.includes(
+              '/dashboard/locations/administrative_areas',
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              '/dashboard/locations/administrative_areas',
+            )
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <MapOutlined className={classes.icon} fontSize="small" />
+          {t('Areas')}
+        </Button>
+      )}
       {!useIsHiddenEntity('City') && (
         <Button
           component={Link}

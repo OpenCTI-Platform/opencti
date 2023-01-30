@@ -123,6 +123,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
                 'Sector',
                 'Region',
                 'Country',
+                'Administrative-Area',
                 'City',
                 'Position',
               ]}

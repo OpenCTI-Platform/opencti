@@ -134,6 +134,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#33691e';
       }
       return '#689f38';
+    case 'Administrative-Area':
+      if (dark) {
+        return '#fbc02d';
+      }
+      return '#ffeb3b';
     case 'Position':
       if (dark) {
         return '#afb42b';

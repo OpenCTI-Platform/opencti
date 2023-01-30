@@ -379,8 +379,9 @@ export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.
   if (!isStixDomainObjectLocation(type)) {
     throw UnsupportedError(`${instance.entity_type} not compatible with location`);
   }
+  const location = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...location,
     name: instance.name,
     description: instance.description,
     latitude: instance.latitude ? parseFloat(instance.latitude) : undefined,
@@ -391,6 +392,12 @@ export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.
     city: instance.city,
     street_address: instance.street_address,
     postal_code: instance.postal_code,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...location.extensions[STIX_EXT_OCTI],
+        location_type: instance.x_opencti_location_type,
+      })
+    }
   };
 };
 const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixIncident => {

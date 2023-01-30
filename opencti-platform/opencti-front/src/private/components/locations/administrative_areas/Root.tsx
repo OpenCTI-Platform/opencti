@@ -22,47 +22,51 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const subscription = graphql`
-    subscription RootAdministrativeAreasSubscription($id: ID!) {
-        stixDomainObject(id: $id) {
-            ... on AdministrativeArea {
-                ...AdministrativeArea_administrativeArea
-                ...AdministrativeAreaEditionOverview_administrativeArea
-            }
-            ...FileImportViewer_entity
-            ...FileExportViewer_entity
-            ...FileExternalReferencesViewer_entity
-            ...WorkbenchFileViewer_entity
-        }
+  subscription RootAdministrativeAreasSubscription($id: ID!) {
+    stixDomainObject(id: $id) {
+      ... on AdministrativeArea {
+        ...AdministrativeArea_administrativeArea
+        ...AdministrativeAreaEditionOverview_administrativeArea
+      }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
     }
+  }
 `;
 
 const administrativeAreaQuery = graphql`
-    query RootAdministrativeAreaQuery($id: String!) {
-        administrativeArea(id: $id) {
-            id
-            name
-            x_opencti_aliases
-            x_opencti_graph_data
-            ...AdministrativeArea_administrativeArea
-            ...AdministrativeAreaKnowledge_administrativeArea
-            ...FileImportViewer_entity
-            ...FileExportViewer_entity
-            ...FileExternalReferencesViewer_entity
-            ...WorkbenchFileViewer_entity
-        }
-        connectorsForImport {
-            ...FileManager_connectorsImport
-        }
-        connectorsForExport {
-            ...FileManager_connectorsExport
-        }
+  query RootAdministrativeAreaQuery($id: String!) {
+    administrativeArea(id: $id) {
+      id
+      name
+      x_opencti_aliases
+      x_opencti_graph_data
+      ...AdministrativeArea_administrativeArea
+      ...AdministrativeAreaKnowledge_administrativeArea
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
+    }
+  }
 `;
 
 const RootAdministrativeAreaComponent = ({ queryRef }) => {
-  const { administrativeAreaId } = useParams() as { administrativeAreaId: string };
+  const { administrativeAreaId } = useParams() as {
+    administrativeAreaId: string;
+  };
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
+  >(
     () => ({
       subscription,
       variables: { id: administrativeAreaId },
@@ -73,132 +77,152 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
   return (
-        <div>
-            <TopBar />
-            <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
-                <StixCoreObjectKnowledgeBar
-                    stixCoreObjectLink={link}
-                    availableSections={[
-                      'organizations',
-                      'countries',
-                      'regions',
-                      'threat_actors',
-                      'intrusion_sets',
-                      'campaigns',
-                      'incidents',
-                      'malwares',
-                      'attack_patterns',
-                      'tools',
-                      'observables',
-                    ]}
+    <div>
+      <TopBar />
+      <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'organizations',
+            'countries',
+            'regions',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'attack_patterns',
+            'tools',
+            'observables',
+          ]}
+        />
+      </Route>
+      <>
+        {administrativeArea ? (
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea"
+              render={() => (
+                <AdministrativeArea
+                  administrativeAreaData={administrativeArea}
                 />
-            </Route>
-            <>
-                {administrativeArea ? (
-                    <Switch>
-                        <Route
-                            exact
-                            path="/dashboard/locations/administrative_areas/:administrativeArea"
-                            render={() => <AdministrativeArea administrativeAreaData={administrativeArea} />}
-                        />
-                        <Route
-                            exact
-                            path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
-                            render={() => (
-                                <Redirect
-                                    to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
-                                />
-                            )}
-                        />
-                        <Route
-                            path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
-                            render={() => <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />}
-                        />
-                        <Route
-                            exact
-                            path="/dashboard/locations/administrative_areas/:administrativeArea/analysis"
-                            render={(routeProps) => (
-                                <React.Fragment>
-                                    <StixDomainObjectHeader
-                                        disableSharing={true}
-                                        stixDomainObject={administrativeArea}
-                                        PopoverComponent={AdministrativeAreaPopover}
-                                    />
-                                    <StixCoreObjectOrStixCoreRelationshipContainers
-                                        {...routeProps}
-                                        stixDomainObjectOrStixCoreRelationship={administrativeArea}
-                                    />
-                                </React.Fragment>
-                            )}
-                        />
-                        <Route
-                            exact
-                            path="/dashboard/locations/administrative_areas/:administrativeArea/sightings"
-                            render={(routeProps) => (
-                                <EntityStixSightingRelationships
-                                    entityId={administrativeArea.id}
-                                    entityLink={link}
-                                    noPadding={true}
-                                    isTo={true}
-                                    {...routeProps}
-                                />
-                            )}
-                        />
-                        <Route
-                            exact
-                            path="/dashboard/locations/administrative_areas/:administrativeArea/files"
-                            render={(routeProps) => (
-                                <React.Fragment>
-                                    <StixDomainObjectHeader
-                                        disableSharing={true}
-                                        stixDomainObject={administrativeArea}
-                                        PopoverComponent={AdministrativeAreaPopover}
-                                    />
-                                    <FileManager
-                                        {...routeProps}
-                                        id={administrativeAreaId}
-                                        connectorsImport={connectorsForImport}
-                                        connectorsExport={connectorsForExport}
-                                        entity={administrativeArea}
-                                    />
-                                </React.Fragment>
-                            )}
-                        />
-                        <Route
-                            exact
-                            path="/dashboard/locations/administrative_areas/:administrativeArea/history"
-                            render={(routeProps) => (
-                                <React.Fragment>
-                                    <StixDomainObjectHeader
-                                        disableSharing={true}
-                                        stixDomainObject={administrativeArea}
-                                        PopoverComponent={AdministrativeAreaPopover}
-                                    />
-                                    <StixCoreObjectHistory
-                                        {...routeProps}
-                                        stixCoreObjectId={administrativeAreaId}
-                                    />
-                                </React.Fragment>
-                            )}
-                        />
-                    </Switch>
-                ) : (
-                    <ErrorNotFound />
-                )}
-            </>
-        </div>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
+              render={() => (
+                <Redirect
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
+                />
+              )}
+            />
+            <Route
+              path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
+              render={() => (
+                <AdministrativeAreaKnowledge
+                  administrativeAreaData={administrativeArea}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/analysis"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={administrativeArea}
+                    PopoverComponent={AdministrativeAreaPopover}
+                  />
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    {...routeProps}
+                    stixDomainObjectOrStixCoreRelationship={administrativeArea}
+                  />
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/sightings"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={administrativeArea}
+                    PopoverComponent={AdministrativeAreaPopover}
+                  />
+                  <EntityStixSightingRelationships
+                    entityId={administrativeArea.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                    {...routeProps}
+                  />
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/files"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={administrativeArea}
+                    PopoverComponent={AdministrativeAreaPopover}
+                  />
+                  <FileManager
+                    {...routeProps}
+                    id={administrativeAreaId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={administrativeArea}
+                  />
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/locations/administrative_areas/:administrativeArea/history"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    disableSharing={true}
+                    stixDomainObject={administrativeArea}
+                    PopoverComponent={AdministrativeAreaPopover}
+                  />
+                  <StixCoreObjectHistory
+                    {...routeProps}
+                    stixCoreObjectId={administrativeAreaId}
+                  />
+                </React.Fragment>
+              )}
+            />
+          </Switch>
+        ) : (
+          <ErrorNotFound />
+        )}
+      </>
+    </div>
   );
 };
 
 const RootAdministrativeArea = () => {
-  const { administrativeAreaId } = useParams() as { administrativeAreaId: string };
-  const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(administrativeAreaQuery, { id: administrativeAreaId });
+  const { administrativeAreaId } = useParams() as {
+    administrativeAreaId: string;
+  };
+  const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(
+    administrativeAreaQuery,
+    { id: administrativeAreaId },
+  );
   return queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <RootAdministrativeAreaComponent queryRef={queryRef} />
-        </React.Suspense>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <RootAdministrativeAreaComponent queryRef={queryRef} />
+    </React.Suspense>
   ) : (
-        <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

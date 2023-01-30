@@ -4,11 +4,13 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined } from '@mui/icons-material';
-import { TextureBox } from 'mdi-material-ui';
+import { MapOutlined, ArrowForwardIosOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -44,141 +46,147 @@ class TopMenuAdministrativeArea extends Component {
       classes,
     } = this.props;
     return (
-            <div>
-                <Button
-                    component={Link}
-                    to="/dashboard/locations/administrative_areas"
-                    variant="contained"
-                    size="small"
-                    color="primary"
-                    classes={{ root: classes.buttonHome }}
-                >
-                    < TextureBox className={classes.icon} fontSize="small" />
-                    {t('Areas')}
-                </Button>
-                <ArrowForwardIosOutlined
-                    color="primary"
-                    classes={{ root: classes.arrow }}
-                />
-                <Button
-                    component={Link}
-                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}`}
-                    variant={
-                        location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}`
-                          ? 'contained'
-                          : 'text'
-                    }
-                    size="small"
-                    color={
-                        location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}`
-                          ? 'secondary'
-                          : 'primary'
-                    }
-                    classes={{ root: classes.button }}
-                >
-                    {t('Overview')}
-                </Button>
-                <Button
-                    component={Link}
-                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`}
-                    variant={
-                        location.pathname.includes(
-                          `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`,
-                        )
-                          ? 'contained'
-                          : 'text'
-                    }
-                    size="small"
-                    color={
-                        location.pathname.includes(
-                          `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`,
-                        )
-                          ? 'secondary'
-                          : 'primary'
-                    }
-                    classes={{ root: classes.button }}
-                >
-                    {t('Knowledge')}
-                </Button>
-                <Button
-                    component={Link}
-                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`}
-                    variant={
-                        location.pathname
-                        === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`
-                          ? 'contained'
-                          : 'text'
-                    }
-                    size="small"
-                    color={
-                        location.pathname
-                        === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`
-                          ? 'secondary'
-                          : 'primary'
-                    }
-                    classes={{ root: classes.button }}
-                >
-                    {t('Analysis')}
-                </Button>
-                <Button
-                    component={Link}
-                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`}
-                    variant={
-                        location.pathname
-                        === `/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`
-                          ? 'contained'
-                          : 'text'
-                    }
-                    size="small"
-                    color={
-                        location.pathname
-                        === `/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`
-                          ? 'secondary'
-                          : 'primary'
-                    }
-                    classes={{ root: classes.button }}
-                >
-                    {t('Sightings')}
-                </Button>
-                <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
-                    <Button
-                        component={Link}
-                        to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/files`}
-                        variant={
-                            location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}/files`
-                              ? 'contained'
-                              : 'text'
-                        }
-                        size="small"
-                        color={
-                            location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}/files`
-                              ? 'secondary'
-                              : 'primary'
-                        }
-                        classes={{ root: classes.button }}
-                    >
-                        {t('Data')}
-                    </Button>
-                </Security>
-                <Button
-                    component={Link}
-                    to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/history`}
-                    variant={
-                        location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}/history`
-                          ? 'contained'
-                          : 'text'
-                    }
-                    size="small"
-                    color={
-                        location.pathname === `/dashboard/locations/administrative_areas/${administrativeAreaId}/history`
-                          ? 'secondary'
-                          : 'primary'
-                    }
-                    classes={{ root: classes.button }}
-                >
-                    {t('History')}
-                </Button>
-            </div>
+      <div>
+        <Button
+          component={Link}
+          to="/dashboard/locations/administrative_areas"
+          variant="contained"
+          size="small"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
+        >
+          <MapOutlined className={classes.icon} fontSize="small" />
+          {t('Areas')}
+        </Button>
+        <ArrowForwardIosOutlined
+          color="primary"
+          classes={{ root: classes.arrow }}
+        />
+        <Button
+          component={Link}
+          to={`/dashboard/locations/administrative_areas/${administrativeAreaId}`}
+          variant={
+            location.pathname
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Overview')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`,
+            )
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`}
+          variant={
+            location.pathname
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Analysis')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`}
+          variant={
+            location.pathname
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/sightings`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Sightings')}
+        </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/locations/administrative_areas/${administrativeAreaId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/locations/administrative_areas/${administrativeAreaId}/files`
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Data')}
+          </Button>
+        </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/history`
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
+      </div>
     );
   }
 }
@@ -191,4 +199,8 @@ TopMenuAdministrativeArea.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(TopMenuAdministrativeArea);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(TopMenuAdministrativeArea);

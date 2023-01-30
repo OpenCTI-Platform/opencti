@@ -65,11 +65,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const administrativeAreaMutation = graphql`
-    mutation AdministrativeAreaCreationMutation($input: AdministrativeAreaAddInput!) {
-        administrativeAreaAdd(input: $input) {
-            ...AdministrativeAreaLine_node
-        }
+  mutation AdministrativeAreaCreationMutation(
+    $input: AdministrativeAreaAddInput!
+  ) {
+    administrativeAreaAdd(input: $input) {
+      ...AdministrativeAreaLine_node
     }
+  }
 `;
 
 const administrativeAreaValidation = (t: (v: string) => string) => Yup.object().shape({
@@ -84,26 +86,30 @@ const administrativeAreaValidation = (t: (v: string) => string) => Yup.object().
 });
 
 interface AdministrativeAreaAddInput {
-  name: string,
-  description: string,
-  latitude: string,
-  longitude: string,
-  createdBy?: { value: string, label?: string }
-  objectMarking: { value: string }[]
-  externalReferences: { value: string }[]
+  name: string;
+  description: string;
+  latitude: string;
+  longitude: string;
+  createdBy?: { value: string; label?: string };
+  objectMarking: { value: string }[];
+  externalReferences: { value: string }[];
 }
 
-const AdministrativeAreaCreation = ({ paginationOptions }: { paginationOptions: AdministrativeAreasLinesPaginationQuery$variables }) => {
+const AdministrativeAreaCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: AdministrativeAreasLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
   const [commit] = useMutation(administrativeAreaMutation);
-
-  const onSubmit: FormikConfig<AdministrativeAreaAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<AdministrativeAreaAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     const finalValues: AdministrativeAreaCreationMutation$variables['input'] = {
       name: values.name,
       latitude: parseFloat(values.latitude),
@@ -118,7 +124,12 @@ const AdministrativeAreaCreation = ({ paginationOptions }: { paginationOptions: 
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_administrativeAreas', paginationOptions, 'administrativeAreaAdd');
+        insertNode(
+          store,
+          'Pagination_administrativeAreas',
+          paginationOptions,
+          'administrativeAreaAdd',
+        );
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -127,133 +138,132 @@ const AdministrativeAreaCreation = ({ paginationOptions }: { paginationOptions: 
       },
     });
   };
-
   return (
-        <div>
-            <Fab
-                onClick={handleOpen}
-                color="secondary"
-                aria-label="Add"
-                className={classes.createButton}
-            >
-                <Add />
-            </Fab>
-            <Drawer
-                open={open}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={handleClose}
-            >
-                <div className={classes.header}>
-                    <IconButton
-                        aria-label="Close"
-                        className={classes.closeButton}
-                        onClick={handleClose}
-                        size="large"
-                        color="primary"
-                    >
-                        <Close fontSize="small" color="primary" />
-                    </IconButton>
-                    <Typography variant="h6">{t('Create an Area')}</Typography>
-                </div>
-                <div className={classes.container}>
-                    <Formik<AdministrativeAreaAddInput>
-                        initialValues={{
-                          name: '',
-                          description: '',
-                          latitude: '',
-                          longitude: '',
-                          createdBy: { value: '', label: '' },
-                          objectMarking: [],
-                          externalReferences: [],
-                        }}
-                        validationSchema={administrativeAreaValidation(t)}
-                        onSubmit={onSubmit}
-                        onReset={handleClose}
-                    >
-                        {({
-                          submitForm,
-                          handleReset,
-                          isSubmitting,
-                          setFieldValue,
-                          values,
-                        }) => (
-                            <Form style={{ margin: '20px 0 20px 0' }}>
-                                <Field
-                                    component={TextField}
-                                    variant="standard"
-                                    name="name"
-                                    label={t('Name')}
-                                    fullWidth={true}
-                                    detectDuplicate={['Administrative-Area']}
-                                />
-                                <Field
-                                    component={MarkDownField}
-                                    name="description"
-                                    label={t('Description')}
-                                    fullWidth={true}
-                                    multiline={true}
-                                    rows={4}
-                                    style={{ marginTop: 20 }}
-                                />
-                                <Field
-                                    component={TextField}
-                                    variant="standard"
-                                    name="latitude"
-                                    label={t('Latitude')}
-                                    fullWidth={true}
-                                    style={{ marginTop: 20 }}
-                                />
-                                <Field
-                                    component={TextField}
-                                    variant="standard"
-                                    name="longitude"
-                                    label={t('Longitude')}
-                                    fullWidth={true}
-                                    style={{ marginTop: 20 }}
-                                />
-                                <CreatedByField
-                                    name="createdBy"
-                                    style={{ marginTop: 20, width: '100%' }}
-                                    setFieldValue={setFieldValue}
-                                />
-                                <ObjectMarkingField
-                                    name="objectMarking"
-                                    style={{ marginTop: 20, width: '100%' }}
-                                />
-                                <ExternalReferencesField
-                                    name="externalReferences"
-                                    style={{ marginTop: 20, width: '100%' }}
-                                    setFieldValue={setFieldValue}
-                                    values={values.externalReferences}
-                                />
-                                <div className={classes.buttons}>
-                                    <Button
-                                        variant="contained"
-                                        onClick={handleReset}
-                                        disabled={isSubmitting}
-                                        classes={{ root: classes.button }}
-                                    >
-                                        {t('Cancel')}
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        color="secondary"
-                                        onClick={submitForm}
-                                        disabled={isSubmitting}
-                                        classes={{ root: classes.button }}
-                                    >
-                                        {t('Create')}
-                                    </Button>
-                                </div>
-                            </Form>
-                        )}
-                    </Formik>
-                </div>
-            </Drawer>
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
+        <Add />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create an area')}</Typography>
         </div>
+        <div className={classes.container}>
+          <Formik<AdministrativeAreaAddInput>
+            initialValues={{
+              name: '',
+              description: '',
+              latitude: '',
+              longitude: '',
+              createdBy: { value: '', label: '' },
+              objectMarking: [],
+              externalReferences: [],
+            }}
+            validationSchema={administrativeAreaValidation(t)}
+            onSubmit={onSubmit}
+            onReset={handleClose}
+          >
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  label={t('Name')}
+                  fullWidth={true}
+                  detectDuplicate={['Administrative-Area']}
+                />
+                <Field
+                  component={MarkDownField}
+                  name="description"
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={4}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="latitude"
+                  label={t('Latitude')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="longitude"
+                  label={t('Longitude')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <CreatedByField
+                  name="createdBy"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                />
+                <ObjectMarkingField
+                  name="objectMarking"
+                  style={{ marginTop: 20, width: '100%' }}
+                />
+                <ExternalReferencesField
+                  name="externalReferences"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.externalReferences}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </Drawer>
+    </div>
   );
 };
 

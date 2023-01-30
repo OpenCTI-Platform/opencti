@@ -19,7 +19,7 @@ export const findAll: DomainFindAll<BasicStoreEntityAdministrativeArea> = (conte
 };
 
 export const addAdministrativeArea = async (context: AuthContext, user: AuthUser, administrativeArea: AdministrativeAreaAddInput) => {
-  const created = await createEntity(context, user, administrativeArea, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
+  const created = await createEntity(context, user, { ...administrativeArea, x_opencti_location_type: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA }, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

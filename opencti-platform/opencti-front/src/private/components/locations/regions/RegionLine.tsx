@@ -3,10 +3,7 @@ import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  PublicOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -14,6 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { RegionLine_node$key } from './__generated__/RegionLine_node.graphql';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -79,7 +77,7 @@ RegionLineComponentProps
       to={`/dashboard/locations/regions/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <PublicOutlined />
+        <ItemIcon type="Region" />
       </ListItemIcon>
       <ListItemText
         primary={

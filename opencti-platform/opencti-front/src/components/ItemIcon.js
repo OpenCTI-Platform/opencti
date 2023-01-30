@@ -29,6 +29,7 @@ import {
   SubjectOutlined,
   TipsAndUpdatesOutlined,
   BiotechOutlined,
+  MapOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -47,7 +48,6 @@ import {
   LaptopAccount,
   ArchiveOutline,
   Brain,
-  TextureBox,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -137,7 +137,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Location':
       return <PlaceOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Administrative-Area':
-      return < TextureBox style={style} fontSize={fontSize} role="img" />;
+      return <MapOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Country':
       return <FlagOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Region':
@@ -185,7 +185,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
-    case 'Domain-Name':
+    case 'Domin-Name':
     case 'Email-Addr':
     case 'Email-Message':
     case 'Email-Mime-Part-Type':
