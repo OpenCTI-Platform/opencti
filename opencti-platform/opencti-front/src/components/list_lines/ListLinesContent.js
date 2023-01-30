@@ -6,6 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import { AutoSizer, InfiniteLoader, List, WindowScroller } from 'react-virtualized';
 import inject18n from '../i18n';
 import { ExportContext } from '../../utils/ExportContextProvider';
+import { isEmptyField } from '../../utils/utils';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -217,6 +218,7 @@ class ListLinesContent extends Component {
       nbOfRowsToLoad,
       classes,
       selectedElements,
+      deSelectedElements,
     } = this.props;
     const countWithLoading = isLoading()
       ? dataList.length + this.state.loadingRowCount
@@ -226,7 +228,12 @@ class ListLinesContent extends Component {
       <ExportContext.Consumer>
         {({ selectedIds, setSelectedIds }) => {
           // selectedIds: ids of elements that are selected via checkboxes AND respect the filtering conditions
-          const newSelectedIds = dataList.map((o) => o.node.id).filter((id) => (selectedElements ? Object.keys(selectedElements) : []).includes(id));
+          let newSelectedIds = [];
+          if (!isEmptyField(deSelectedElements)) {
+            newSelectedIds = dataList.map((o) => o.node.id).filter((id) => !Object.keys(deSelectedElements).includes(id));
+          } else if (!isEmptyField(selectedElements)) {
+            newSelectedIds = dataList.map((o) => o.node.id).filter((id) => Object.keys(selectedElements).includes(id));
+          }
           if (!R.equals(selectedIds, newSelectedIds)) {
             setSelectedIds(newSelectedIds);
           }
