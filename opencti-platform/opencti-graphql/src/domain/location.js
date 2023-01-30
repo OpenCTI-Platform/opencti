@@ -28,7 +28,10 @@ export const addLocation = async (context, user, location) => {
     const supportedTypes = schemaTypes.get(ENTITY_TYPE_LOCATION).join(', ');
     throw FunctionalError(`Invalid location type ${type}, please provide one of ${supportedTypes}`);
   }
-  const locationToCreate = R.pipe(R.assoc('x_opencti_location_type', location.type), R.dissoc('type'))(location);
+  const locationToCreate = R.pipe(
+    R.assoc('x_opencti_location_type', location.type),
+    R.dissoc('type')
+  )(location);
   const created = await createEntity(context, user, locationToCreate, type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
