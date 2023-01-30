@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import * as R from 'ramda';
-import { isEmptyField, removeEmptyFields } from '../utils';
+import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import {
   Filters,
   OrderMode,
@@ -114,6 +114,20 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
   });
 };
 
+const setStoredValueToHistory = (initialValue: LocalStorage, valueToStore: LocalStorage) => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const finalParams = searchParamsToStorage(searchParams);
+  const urlParams = buildParamsFromHistory(valueToStore);
+  if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
+    const effectiveParams = new URLSearchParams(urlParams);
+    if (Object.entries(urlParams).some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)) {
+      window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
+    } else {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }
+};
+
 const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStorage => {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
@@ -131,9 +145,14 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
       if (isEmptyField(value)) {
         value = initialValue;
       }
-      return Array.from(searchParams.values()).length > 0
-        ? { ...value, ...finalParams }
-        : value;
+      // Values from uri must be prioritized on initial loading
+      // Localstorage must be rewritten to ensure consistency
+      if (isNotEmptyField(finalParams)) {
+        const initialState = { ...value, ...finalParams };
+        window.localStorage.setItem(key, JSON.stringify(initialState));
+        return initialState;
+      }
+      return value;
     } catch (error) {
       // If error also return initialValue
       throw Error('Error while initializing values in local storage');
@@ -141,44 +160,24 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
   });
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
-  const setValue = (
-    value: LocalStorage | ((val: LocalStorage) => LocalStorage),
-  ) => {
+  const setValue = (value: LocalStorage | ((val: LocalStorage) => LocalStorage)) => {
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       // Save state
       setStoredValue(valueToStore);
-      // Save to local storage
+      // Save to local storage + re-align uri if needed
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
-
-        const searchParams = new URLSearchParams(window.location.search);
-        const finalParams = searchParamsToStorage(searchParams);
-        const urlParams = buildParamsFromHistory(valueToStore);
-
-        if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
-          const effectiveParams = new URLSearchParams(urlParams);
-          if (
-            Object.entries(urlParams).some(
-              ([k, v]) => initialValue[k as keyof LocalStorage] !== v,
-            )
-          ) {
-            window.history.replaceState(
-              null,
-              '',
-              `?${effectiveParams.toString()}`,
-            );
-          } else {
-            window.history.replaceState(null, '', window.location.pathname);
-          }
-        }
+        setStoredValueToHistory(initialValue, valueToStore);
       }
     } catch (error) {
       // A more advanced implementation would handle the error case
       throw Error('Error while setting values in local storage');
     }
   };
+  // re-align uri if needed
+  setStoredValueToHistory(initialValue, storedValue);
   return [storedValue, setValue];
 };
 
