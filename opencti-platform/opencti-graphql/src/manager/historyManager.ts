@@ -20,6 +20,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
+import { OrderingMode } from '../generated/graphql';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -181,7 +182,7 @@ const initHistoryManager = () => {
         indices: [INDEX_HISTORY],
         connectionFormat: false,
         orderBy: ['timestamp'],
-        orderMode: 'desc'
+        orderMode: OrderingMode.Desc,
       });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {

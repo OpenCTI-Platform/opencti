@@ -125,6 +125,9 @@ export const stixDomainObjectMutation = graphql`
         ... on City {
           x_opencti_aliases
         }
+        ... on AdministrativeArea {
+          x_opencti_aliases
+        }
         ... on Country {
           x_opencti_aliases
         }

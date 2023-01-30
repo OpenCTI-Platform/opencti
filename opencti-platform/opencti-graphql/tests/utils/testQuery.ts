@@ -14,8 +14,8 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 711;
-export const SYNC_LIVE_EVENTS_SIZE = 511;
+export const RAW_EVENTS_SIZE = 718;
+export const SYNC_LIVE_EVENTS_SIZE = 513;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -27,6 +27,8 @@ export const ONE_MINUTE = 60 * ONE_SECOND;
 export const TEN_SECONDS = 10 * ONE_SECOND;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
 export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
+
+export const DATA_FILE_TEST = 'DATA-TEST-STIX2_v2.json';
 
 export const testContext = executionContext('testing');
 

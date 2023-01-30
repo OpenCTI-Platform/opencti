@@ -62,7 +62,7 @@ import {
   isUpdatedAtObject,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
-import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
+import { getParentTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
@@ -84,6 +84,7 @@ import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
 import { TYPE_FILTER } from '../utils/filtering';
+import { convertTypeToStixType } from './stix-converter';
 
 const ELK_ENGINE = 'elk';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -666,9 +667,9 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
     throw DatabaseError('[SEARCH] Something fail in reconstruction of the relation', concept.internal_id);
   }
   const from = elBuildRelation('from', fromConnection);
-  from.source_ref = `${convertEntityTypeToStixType(from.fromType)}--temporary`;
+  from.source_ref = `${convertTypeToStixType(from.fromType)}--temporary`;
   const to = elBuildRelation('to', toConnection);
-  to.target_ref = `${convertEntityTypeToStixType(to.toType)}--temporary`;
+  to.target_ref = `${convertTypeToStixType(to.toType)}--temporary`;
   return R.mergeAll([concept, from, to]);
 };
 export const elRebuildRelation = (concept) => {

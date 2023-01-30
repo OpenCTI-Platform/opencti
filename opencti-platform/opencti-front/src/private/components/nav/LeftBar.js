@@ -17,12 +17,24 @@ import {
   ConstructionOutlined,
   DashboardOutlined,
   LayersOutlined,
-  MapOutlined,
 } from '@mui/icons-material';
-import { Binoculars, CogOutline, Database, FlaskOutline, FolderTableOutline, Timetable } from 'mdi-material-ui';
+import {
+  Binoculars,
+  CogOutline,
+  Database,
+  FlaskOutline,
+  FolderTableOutline,
+  Timetable,
+  GlobeModel,
+} from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import useGranted, { KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE,
+  MODULES,
+  SETTINGS,
+  TAXIIAPI_SETCOLLECTIONS,
+} from '../../../utils/hooks/useGranted';
 import { MESSAGING$ } from '../../../relay/environment';
 import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 
@@ -107,11 +119,37 @@ const LeftBar = () => {
     toData = '/dashboard/data/taxii';
   }
 
-  const hideThreats = useIsHiddenEntities('Threat-Actor', 'Intrusion-Set', 'Campaign');
-  const hideEntities = useIsHiddenEntities('Sector', 'Event', 'Organization', 'System', 'Individual');
-  const hideArsenal = useIsHiddenEntities('Malware', 'Channel', 'Tool', 'Vulnerability');
-  const hideTechniques = useIsHiddenEntities('Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source');
-  const hideLocations = useIsHiddenEntities('Region', 'Country', 'City', 'Position');
+  const hideThreats = useIsHiddenEntities(
+    'Threat-Actor',
+    'Intrusion-Set',
+    'Campaign',
+  );
+  const hideEntities = useIsHiddenEntities(
+    'Sector',
+    'Event',
+    'Organization',
+    'System',
+    'Individual',
+  );
+  const hideArsenal = useIsHiddenEntities(
+    'Malware',
+    'Channel',
+    'Tool',
+    'Vulnerability',
+  );
+  const hideTechniques = useIsHiddenEntities(
+    'Attack-Pattern',
+    'Narrative',
+    'Course-Of-Action',
+    'Data-Component',
+    'Data-Source',
+  );
+  const hideLocations = useIsHiddenEntities(
+    'Region',
+    'Country',
+    'City',
+    'Position',
+  );
   return (
     <Drawer
       variant="permanent"
@@ -302,10 +340,7 @@ const LeftBar = () => {
             </StyledTooltip>
           )}
           {!hideEntities && (
-            <StyledTooltip
-              title={!navOpen && t('Entities')}
-              placement="right"
-            >
+            <StyledTooltip title={!navOpen && t('Entities')} placement="right">
               <MenuItem
                 component={Link}
                 to="/dashboard/entities"
@@ -335,7 +370,7 @@ const LeftBar = () => {
                 classes={{ root: classes.menuItem }}
               >
                 <ListItemIcon style={{ minWidth: 20 }}>
-                  <MapOutlined />
+                  <GlobeModel />
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText

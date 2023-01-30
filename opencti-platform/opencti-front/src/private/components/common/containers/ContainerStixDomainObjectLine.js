@@ -247,6 +247,9 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         ... on City {
           name
         }
+        ... on AdministrativeArea {
+          name
+        }
         ... on Country {
           name
         }

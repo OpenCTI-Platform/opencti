@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import { createEntity, batchLoadThroughGetTo } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
@@ -23,7 +22,7 @@ export const addPosition = async (context, user, position) => {
   const created = await createEntity(
     context,
     user,
-    assoc('x_opencti_location_type', ENTITY_TYPE_LOCATION_POSITION, position),
+    { ...position, x_opencti_location_type: ENTITY_TYPE_LOCATION_POSITION },
     ENTITY_TYPE_LOCATION_POSITION
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

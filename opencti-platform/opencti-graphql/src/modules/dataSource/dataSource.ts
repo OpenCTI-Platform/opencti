@@ -10,7 +10,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource> = {
   type: {
-    id: 'datasources',
+    id: 'dataSources',
     name: ENTITY_TYPE_DATA_SOURCE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true

@@ -145,7 +145,6 @@ export interface StixLocation extends StixDomainObject {
   precision: number; // optional
   region: string; // optional
   country: string; // optional
-  administrative_area: string; // optional
   city: string; // optional
   street_address: string; // optional
   postal_code: string; // optional

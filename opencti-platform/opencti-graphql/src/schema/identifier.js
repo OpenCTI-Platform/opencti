@@ -4,7 +4,6 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import jsonCanonicalize from 'canonicalize';
 import { DatabaseError, UnsupportedError } from '../config/errors';
-import { convertEntityTypeToStixType } from './schemaUtils';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
 import * as D from './stixDomainObject';
@@ -33,6 +32,7 @@ import { isStixCyberObservableRelationship } from './stixCyberObservableRelation
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
+import { convertTypeToStixType } from '../database/stix-converter';
 
 // region hashes
 const MD5 = 'MD5';
@@ -286,7 +286,7 @@ export const idGen = (type, raw, data, namespace) => {
 export const idGenFromData = (type, data) => {
   const dataCanonicalize = jsonCanonicalize(data);
   const uuid = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
-  return `${convertEntityTypeToStixType(type)}--${uuid}`;
+  return `${convertTypeToStixType(type)}--${uuid}`;
 };
 
 export const fieldsContributingToStandardId = (instance, keys) => {
@@ -419,11 +419,11 @@ const generateObjectUUID = (type, data) => {
 
 const generateObjectId = (type, data) => {
   const uuid = generateObjectUUID(type, data);
-  return `${convertEntityTypeToStixType(type)}--${uuid}`;
+  return `${convertTypeToStixType(type)}--${uuid}`;
 };
 const generateStixId = (type, data) => {
   const uuid = generateStixUUID(type, data);
-  return `${convertEntityTypeToStixType(type)}--${uuid}`;
+  return `${convertTypeToStixType(type)}--${uuid}`;
 };
 
 export const generateInternalId = () => uuidv4();

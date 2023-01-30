@@ -5,13 +5,13 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { CityVariantOutline } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { CityLine_node$key } from './__generated__/CityLine_node.graphql';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -45,8 +45,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CityLineComponentProps {
-  dataColumns: DataColumns,
-  node: CityLine_node$key,
+  dataColumns: DataColumns;
+  node: CityLine_node$key;
 }
 
 const cityFragment = graphql`
@@ -58,7 +58,10 @@ const cityFragment = graphql`
   }
 `;
 
-export const CityLine: FunctionComponent<CityLineComponentProps> = ({ dataColumns, node }) => {
+export const CityLine: FunctionComponent<CityLineComponentProps> = ({
+  dataColumns,
+  node,
+}) => {
   const classes = useStyles();
   const { fd } = useFormatter();
 
@@ -73,7 +76,7 @@ export const CityLine: FunctionComponent<CityLineComponentProps> = ({ dataColumn
       to={`/dashboard/locations/cities/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <CityVariantOutline />
+        <ItemIcon type="City" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -106,17 +109,16 @@ export const CityLine: FunctionComponent<CityLineComponentProps> = ({ dataColumn
   );
 };
 
-export const CityLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const CityLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

@@ -14,6 +14,8 @@ import RootCity from './cities/Root';
 import Positions from './Positions';
 import RootPosition from './positions/Root';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import AdministrativeAreas from './AdministrativeAreas';
+import RootAdministrativeArea from './administrative_areas/Root';
 
 const Root = () => {
   let redirect: string | null = null;
@@ -21,6 +23,8 @@ const Root = () => {
     redirect = 'regions';
   } else if (!useIsHiddenEntity('Country')) {
     redirect = 'countries';
+  } else if (!helper.isEntityTypeHidden('AdministrativeArea')) {
+    redirect = 'administrative_areas';
   } else if (!useIsHiddenEntity('City')) {
     redirect = 'cities';
   } else if (!useIsHiddenEntity('Position')) {
@@ -51,6 +55,15 @@ const Root = () => {
         path="/dashboard/locations/countries/:countryId"
         component={RootCountry}
       />
+        <BoundaryRoute
+            exact
+            path="/dashboard/locations/administrative_areas"
+            component={AdministrativeAreas}
+        />
+        <BoundaryRoute
+            path="/dashboard/locations/administrative_areas/:administrativeAreaId"
+            component={RootAdministrativeArea}
+        />
       <BoundaryRoute
         exact
         path="/dashboard/locations/cities"

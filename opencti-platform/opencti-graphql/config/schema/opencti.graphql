@@ -5136,12 +5136,6 @@ type LocationEdge {
   cursor: String!
   node: Location!
 }
-enum LocationType {
-  City
-  Country
-  Region
-  Position
-}
 interface Location {
   id: ID! # internal_id
   standard_id: String!
@@ -5255,7 +5249,7 @@ interface Location {
 input LocationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  type: LocationType!
+  type: String!
   name: String!
   description: String
   latitude: Float
@@ -5597,6 +5591,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   x_opencti_aliases: [String]
   # City
   country: Country
+  administrativeArea: AdministrativeArea
   # Technical
   creator: Creator
   toStix: String
@@ -11316,6 +11311,7 @@ union StixObjectOrStixRelationship =
   | IntrusionSet
   | Language
   | City
+  | AdministrativeArea
   | Country
   | Region
   | Position
@@ -11382,6 +11378,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | IntrusionSet
   | Language
   | City
+  | AdministrativeArea
   | Country
   | Region
   | Position

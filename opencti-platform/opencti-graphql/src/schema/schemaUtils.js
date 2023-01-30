@@ -1,15 +1,7 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import validator from 'validator';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from './stixCyberObservable';
+import { isStixCyberObservable } from './stixCyberObservable';
 import {
-  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  ENTITY_TYPE_IDENTITY_SECTOR,
-  ENTITY_TYPE_IDENTITY_SYSTEM,
-  ENTITY_TYPE_LOCATION_CITY,
-  ENTITY_TYPE_LOCATION_COUNTRY,
-  ENTITY_TYPE_LOCATION_POSITION,
-  ENTITY_TYPE_LOCATION_REGION,
   isStixDomainObject,
   isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
@@ -53,26 +45,6 @@ export const shortHash = (element) => {
   const crypt = crypto.createHash('sha256');
   const hash = crypt.update(JSON.stringify(element)).digest('hex');
   return hash.slice(0, 8);
-};
-
-export const convertEntityTypeToStixType = (type) => {
-  switch (type) {
-    case ENTITY_TYPE_IDENTITY_INDIVIDUAL:
-    case ENTITY_TYPE_IDENTITY_ORGANIZATION:
-    case ENTITY_TYPE_IDENTITY_SECTOR:
-    case ENTITY_TYPE_IDENTITY_SYSTEM:
-      return 'identity';
-    case ENTITY_TYPE_LOCATION_CITY:
-    case ENTITY_TYPE_LOCATION_COUNTRY:
-    case ENTITY_TYPE_LOCATION_REGION:
-    case ENTITY_TYPE_LOCATION_POSITION:
-      return 'location';
-    case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
-    case 'Stixfile': // Because of aggregation lowercase + pascalize
-      return 'file';
-    default:
-      return type.toLowerCase();
-  }
 };
 
 const pascalize = (str) => {

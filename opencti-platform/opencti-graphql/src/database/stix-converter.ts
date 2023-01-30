@@ -132,7 +132,7 @@ export const convertTypeToStixType = (type: string): string => {
   if (isStixDomainObjectLocation(type)) {
     return 'location';
   }
-  if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+  if (type.toLowerCase() === ENTITY_HASHED_OBSERVABLE_STIX_FILE.toLowerCase()) {
     return 'file';
   }
   if (isStixCoreRelationship(type) || isStixMetaRelationship(type)) {
@@ -375,12 +375,13 @@ const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIde
     }
   };
 };
-const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLocation => {
+export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLocation => {
   if (!isStixDomainObjectLocation(type)) {
     throw UnsupportedError(`${instance.entity_type} not compatible with location`);
   }
+  const location = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...location,
     name: instance.name,
     description: instance.description,
     latitude: instance.latitude ? parseFloat(instance.latitude) : undefined,
@@ -388,10 +389,15 @@ const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLoc
     precision: instance.precision,
     region: instance.region,
     country: instance.country,
-    administrative_area: instance.administrative_area,
     city: instance.city,
     street_address: instance.street_address,
     postal_code: instance.postal_code,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...location.extensions[STIX_EXT_OCTI],
+        location_type: instance.x_opencti_location_type,
+      })
+    }
   };
 };
 const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixIncident => {

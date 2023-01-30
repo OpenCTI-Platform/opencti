@@ -334,6 +334,10 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
+          ... on AdministrativeArea {
+            name
+            description
+          }
           ... on Country {
             name
             description
@@ -477,6 +481,10 @@ const StixDomainObjectsLines = createPaginationContainer(
                 description
               }
               ... on City {
+                name
+                description
+              }
+              ... on AdministrativeArea {
                 name
                 description
               }

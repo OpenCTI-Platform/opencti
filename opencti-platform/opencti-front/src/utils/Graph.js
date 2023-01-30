@@ -21,6 +21,7 @@ import Indicator from '../static/images/entities/indicator.svg';
 import Infrastructure from '../static/images/entities/infrastructure.svg';
 import IntrusionSet from '../static/images/entities/intrusion-set.svg';
 import City from '../static/images/entities/city.svg';
+import AdministrativeArea from '../static/images/entities/administrative-area.svg';
 import Country from '../static/images/entities/country.svg';
 import Region from '../static/images/entities/region.svg';
 import Position from '../static/images/entities/position.svg';
@@ -79,6 +80,7 @@ export const graphImages = {
   Infrastructure: genImage(Infrastructure),
   'Intrusion-Set': genImage(IntrusionSet),
   City: genImage(City),
+  AdministrativeArea: genImage(AdministrativeArea),
   Country: genImage(Country),
   Region: genImage(Region),
   Position: genImage(Position),

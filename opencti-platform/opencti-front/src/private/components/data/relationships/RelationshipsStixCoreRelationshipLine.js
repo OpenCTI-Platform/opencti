@@ -368,6 +368,9 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
             ... on City {
               name
             }
+            ... on AdministrativeArea {
+              name
+            }
             ... on Country {
               name
             }
@@ -451,6 +454,9 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                   name
                 }
                 ... on City {
+                  name
+                }
+                ... on AdministrativeArea {
                   name
                 }
                 ... on Country {
@@ -577,6 +583,10 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           name
                           description
                         }
+                        ... on AdministrativeArea {
+                          name
+                          description
+                        }
                         ... on Country {
                           name
                           description
@@ -678,6 +688,9 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                       name
                     }
                     ... on City {
+                      name
+                    }
+                    ... on AdministrativeArea {
                       name
                     }
                     ... on Country {

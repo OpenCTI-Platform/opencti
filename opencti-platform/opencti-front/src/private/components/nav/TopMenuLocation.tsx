@@ -6,6 +6,7 @@ import {
   PublicOutlined,
   PlaceOutlined,
   FlagOutlined,
+  MapOutlined,
 } from '@mui/icons-material';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
@@ -72,6 +73,31 @@ const TopMenuLocation = () => {
         >
           <FlagOutlined className={classes.icon} fontSize="small" />
           {t('Countries')}
+        </Button>
+      )}
+      {!useIsHiddenEntity('AdministrativeArea') && (
+        <Button
+          component={Link}
+          to="/dashboard/locations/administrative_areas"
+          variant={
+            location.pathname.includes(
+              '/dashboard/locations/administrative_areas',
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              '/dashboard/locations/administrative_areas',
+            )
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <MapOutlined className={classes.icon} fontSize="small" />
+          {t('Areas')}
         </Button>
       )}
       {!useIsHiddenEntity('City') && (

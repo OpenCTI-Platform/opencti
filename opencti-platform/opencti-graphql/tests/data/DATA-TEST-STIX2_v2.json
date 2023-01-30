@@ -456,6 +456,16 @@
       "x_opencti_location_type": "City"
     },
     {
+      "id": "location--861af688-581e-4571-a0d9-955c9096fb42",
+      "type": "location",
+      "spec_version": "2.1",
+      "name": "Bretagne",
+      "description": "Administrative Area",
+      "created": "2019-10-26T14:55:55.895Z",
+      "modified": "2020-02-27T08:45:38.165Z",
+      "x_opencti_location_type": "Administrative-Area"
+    },
+    {
       "id": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
       "type": "location",
       "spec_version": "2.1",
@@ -483,6 +493,18 @@
       "relationship_type": "located-at",
       "source_ref": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
       "target_ref": "location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2",
+      "created": "2020-03-01T14:07:14.316Z",
+      "modified": "2020-03-01T14:07:14.316Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "relationship--f6c3a68d-bfb5-48ea-a9b7-59db3465eac1",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "located-at",
+      "source_ref": "location--861af688-581e-4571-a0d9-955c9096fb42",
+      "target_ref": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
       "created": "2020-03-01T14:07:14.316Z",
       "modified": "2020-03-01T14:07:14.316Z",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",

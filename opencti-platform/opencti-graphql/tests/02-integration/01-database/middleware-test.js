@@ -67,7 +67,7 @@ import { addThreatActor } from '../../../src/domain/threatActor';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
-import { querySubTypes } from "../../../src/domain/subType";
+import { querySubTypes } from '../../../src/domain/subType';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -259,10 +259,10 @@ describe('Relations listing', () => {
   it('should list relations', async () => {
     const stixCoreRelationships = await listRelations(testContext, ADMIN_USER, 'stix-core-relationship');
     expect(stixCoreRelationships).not.toBeNull();
-    expect(stixCoreRelationships.edges.length).toEqual(21);
+    expect(stixCoreRelationships.edges.length).toEqual(22);
     const stixMetaRelationships = await listRelations(testContext, ADMIN_USER, 'stix-meta-relationship');
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(110);
+    expect(stixMetaRelationships.edges.length).toEqual(112);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {
@@ -618,7 +618,7 @@ describe('Entities distribution', () => {
     // const { startDate, endDate, operation, field, inferred } = options;
     const options = { field: 'entity_type', operation: 'count', limit: 20 };
     const distribution = await distributionEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
-    expect(distribution.length).toEqual(17);
+    expect(distribution.length).toEqual(18);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
     expect(aggregationMap.get('Campaign')).toEqual(1);

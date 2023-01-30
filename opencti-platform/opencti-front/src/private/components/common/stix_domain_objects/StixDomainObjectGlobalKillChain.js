@@ -345,6 +345,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                 ... on City {
                   name
                 }
+                ... on AdministrativeArea {
+                    name
+                }
                 ... on Country {
                   name
                 }

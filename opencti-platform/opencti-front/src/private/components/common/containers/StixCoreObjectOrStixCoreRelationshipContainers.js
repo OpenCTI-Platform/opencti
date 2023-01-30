@@ -30,7 +30,7 @@ const VIEW_AS_KNOWLEDGE = 'knowledge';
 
 const styles = () => ({
   container: {
-    marginTop: 20,
+    marginTop: 15,
     paddingBottom: 70,
   },
   containerGraph: {

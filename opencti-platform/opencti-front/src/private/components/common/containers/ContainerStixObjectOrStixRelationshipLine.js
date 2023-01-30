@@ -199,6 +199,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on City {
           name
         }
+        ... on AdministrativeArea {
+            name
+        }
         ... on Country {
           name
         }
@@ -292,6 +295,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on City {
               name
             }
+            ... on AdministrativeArea {
+              name
+            }
             ... on Country {
               name
             }
@@ -375,6 +381,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on City {
+              name
+            }
+            ... on AdministrativeArea {
               name
             }
             ... on Country {

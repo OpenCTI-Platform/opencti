@@ -707,6 +707,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             ... on City {
               name
             }
+            ... on AdministrativeArea {
+              name
+            }
             ... on Country {
               name
             }
@@ -811,6 +814,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   name
                 }
                 ... on City {
+                  name
+                }
+                ... on AdministrativeArea {
                   name
                 }
                 ... on Country {
@@ -959,6 +965,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           name
                           description
                         }
+                        ... on AdministrativeArea {
+                          name
+                          description
+                        }
                         ... on Country {
                           name
                           description
@@ -1088,6 +1098,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -1183,6 +1196,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on City {
+                      name
+                    }
+                    ... on AdministrativeArea {
                       name
                     }
                     ... on Country {
@@ -1328,6 +1344,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               name
                               description
                             }
+                            ... on AdministrativeArea {
+                              name
+                              description
+                            }
                             ... on Country {
                               name
                               description
@@ -1454,6 +1474,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   name
                 }
                 ... on City {
+                  name
+                }
+                ... on AdministrativeArea {
                   name
                 }
                 ... on Country {
@@ -1601,6 +1624,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           name
                           description
                         }
+                        ... on AdministrativeArea {
+                          name
+                          description
+                        }
                         ... on Country {
                           name
                           description
@@ -1732,6 +1759,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -1874,6 +1904,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on City {
+                              name
+                              description
+                            }
+                            ... on AdministrativeArea {
                               name
                               description
                             }
@@ -2002,6 +2036,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -2146,6 +2183,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                             ... on City {
                               name
                               description
+                            }
+                            ... on AdministrativeArea {
+                              name
                             }
                             ... on Country {
                               name
@@ -2279,6 +2319,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on City {
                   name
                 }
+                ... on AdministrativeArea {
+                  name
+                }
                 ... on Country {
                   name
                 }
@@ -2424,6 +2467,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           name
                           description
                         }
+                        ... on AdministrativeArea {
+                          name
+                          description
+                        }
                         ... on Country {
                           name
                           description
@@ -2553,6 +2600,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -2648,6 +2698,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on City {
+                      name
+                    }
+                    ... on AdministrativeArea {
                       name
                     }
                     ... on Country {
@@ -2789,6 +2842,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on City {
+                              name
+                              description
+                            }
+                            ... on AdministrativeArea {
                               name
                               description
                             }
@@ -2920,6 +2977,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on City {
                   name
                 }
+                ... on AdministrativeArea {
+                  name
+                }
                 ... on Country {
                   name
                 }
@@ -3065,6 +3125,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           name
                           description
                         }
+                        ... on AdministrativeArea {
+                          name
+                          description
+                        }
                         ... on Country {
                           name
                           description
@@ -3196,6 +3260,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -3338,6 +3405,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on City {
+                              name
+                              description
+                            }
+                            ... on AdministrativeArea {
                               name
                               description
                             }
@@ -3466,6 +3537,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -3608,6 +3682,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on City {
+                              name
+                              description
+                            }
+                            ... on AdministrativeArea {
                               name
                               description
                             }
@@ -3758,6 +3836,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on City {
             name
           }
+          ... on AdministrativeArea {
+            name
+          }
           ... on Country {
             name
           }
@@ -3903,6 +3984,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     name
                     description
                   }
+                  ... on AdministrativeArea {
+                    name
+                  }
                   ... on Country {
                     name
                     description
@@ -4032,6 +4116,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on City {
                 name
               }
+              ... on AdministrativeArea {
+                name
+              }
               ... on Country {
                 name
               }
@@ -4128,6 +4215,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               }
               ... on City {
                 name
+              }
+              ... on AdministrativeArea {
+                  name
               }
               ... on Country {
                 name
@@ -4230,6 +4320,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on City {
             name
           }
+          ... on AdministrativeArea {
+            name
+          }
           ... on Country {
             name
           }
@@ -4375,6 +4468,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     name
                     description
                   }
+                  ... on AdministrativeArea {
+                    name
+                    description
+                  }
                   ... on Country {
                     name
                     description
@@ -4494,6 +4591,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on City {
                 name
               }
+              ... on AdministrativeArea {
+                name
+              }
               ... on Country {
                 name
               }
@@ -4585,6 +4685,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on City {
+                name
+              }
+              ... on AdministrativeArea {
                 name
               }
               ... on Country {

@@ -29,6 +29,7 @@ import {
   SubjectOutlined,
   TipsAndUpdatesOutlined,
   BiotechOutlined,
+  MapOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -135,6 +136,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Position':
     case 'Location':
       return <PlaceOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Administrative-Area':
+      return <MapOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Country':
       return <FlagOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Region':
@@ -182,7 +185,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
-    case 'Domain-Name':
+    case 'Domin-Name':
     case 'Email-Addr':
     case 'Email-Message':
     case 'Email-Mime-Part-Type':

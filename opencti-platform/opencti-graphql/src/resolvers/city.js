@@ -1,4 +1,4 @@
-import { addCity, findAll, findById, batchCountry } from '../domain/city';
+import { addCity, batchCountry, findAll, findById } from '../domain/city';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
