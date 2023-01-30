@@ -195,7 +195,7 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
     filters: newArgsFiltersFilters
   };
   const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
-  const works = await askListExport(context, user, format, selectedIds, type, listParams, exportType, maxMarkingDefinition);
+  const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreRelationshipExportAsk = async (context, user, args) => {
