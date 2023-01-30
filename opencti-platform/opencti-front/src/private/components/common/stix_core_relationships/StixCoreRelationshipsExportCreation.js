@@ -131,7 +131,6 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
   }
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
-    console.log('selectedIds in onSubmit', selectedIds);
     const { paginationOptions, context } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
@@ -240,7 +239,6 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
-          console.log('selectedIds', selectedIds);
           return (
       <div className={classes.createButton}>
         <Tooltip

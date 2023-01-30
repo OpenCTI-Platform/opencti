@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { map } from 'ramda';
 import {
   batchListThroughGetFrom,
   batchListThroughGetTo,
@@ -261,15 +260,14 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   const filtersOpts = stixCoreObjectOptions.StixCoreObjectsFilter;
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
   const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
-  console.log('listParams', listParams);
   const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
-  return map((w) => workToExportFile(w), works);
+  return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, args) => {
   const { format, stixCoreObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
   const entity = stixCoreObjectId ? await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
   const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
-  return map((w) => workToExportFile(w), works);
+  return works.map((w) => workToExportFile(w));
 };
 
 export const stixCoreObjectsExportPush = async (context, user, type, file, listFilters) => {

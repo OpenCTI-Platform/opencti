@@ -158,7 +158,6 @@ const StixCoreObjectsExportCreationComponent = ({
   return (
     <ExportContext.Consumer>
       {({ selectedIds }) => {
-        console.log('selectedIds', selectedIds);
         return (
           <div className={classes.createButton}>
             <Tooltip

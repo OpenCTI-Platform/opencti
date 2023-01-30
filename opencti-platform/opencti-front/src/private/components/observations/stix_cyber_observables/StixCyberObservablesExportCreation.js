@@ -177,7 +177,6 @@ class StixCyberObservablesExportCreationComponent extends Component {
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
-          console.log('selectedIds', selectedIds);
           return (
             <div className={classes.createButton}>
               <Tooltip
