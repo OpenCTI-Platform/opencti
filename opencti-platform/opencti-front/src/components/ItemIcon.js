@@ -185,7 +185,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
-    case 'Domin-Name':
+    case 'Domain-Name':
     case 'Email-Addr':
     case 'Email-Message':
     case 'Email-Mime-Part-Type':

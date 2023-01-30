@@ -23,7 +23,7 @@ const Root = () => {
     redirect = 'regions';
   } else if (!useIsHiddenEntity('Country')) {
     redirect = 'countries';
-  } else if (!helper.isEntityTypeHidden('AdministrativeArea')) {
+  } else if (!useIsHiddenEntity('Administrative-Area')) {
     redirect = 'administrative_areas';
   } else if (!useIsHiddenEntity('City')) {
     redirect = 'cities';

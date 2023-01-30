@@ -146,6 +146,7 @@ const LeftBar = () => {
   );
   const hideLocations = useIsHiddenEntities(
     'Region',
+    'Administrative-Area',
     'Country',
     'City',
     'Position',

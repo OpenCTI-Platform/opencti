@@ -75,7 +75,7 @@ const TopMenuLocation = () => {
           {t('Countries')}
         </Button>
       )}
-      {!useIsHiddenEntity('AdministrativeArea') && (
+      {!useIsHiddenEntity('Administrative-Area') && (
         <Button
           component={Link}
           to="/dashboard/locations/administrative_areas"
