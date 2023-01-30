@@ -79,7 +79,10 @@ export interface ModuleRegisterDefinition<T extends StoreEntity> {
     checker: (fromType: string, toType: string) => boolean;
   }>;
   converter: ConvertFn<T>;
-  validator?: ValidatorFn;
+  validators: {
+    validatorCreation?: ValidatorFn,
+    validatorUpdate?: ValidatorFn
+  }
   depsKeys?: { src: string, types?: string[] }[]
 }
 
@@ -112,8 +115,8 @@ export const moduleRegisterDefinition = <T extends StoreEntity>(definition: Modu
     registerStixDomainAliased(definition.type.name);
   }
   // Register validator
-  if (definition.validator) {
-    registerEntityValidator(definition.type.name, definition.validator);
+  if (definition.validators) {
+    registerEntityValidator(definition.type.name, definition.validators);
   }
 
   // Register graphQL schema

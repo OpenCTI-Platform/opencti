@@ -1,11 +1,14 @@
 import type { AuthContext, AuthUser } from '../types/user';
 
-export type ValidatorFn = (context: AuthContext, user: AuthUser, instance: Record<string, unknown>, instanceId: string | undefined) => Promise<boolean>;
+export type ValidatorFn = (context: AuthContext, user: AuthUser, instance: Record<string, unknown>, initialInstance?: Record<string, unknown>) => Promise<boolean>;
 
-const entityValidators = new Map<string, ValidatorFn>();
-export const registerEntityValidator = (type: string, validatorFn: ValidatorFn) => {
-  entityValidators.set(type, validatorFn);
+const entityValidators = new Map<string, { validatorCreation?: ValidatorFn, validatorUpdate?: ValidatorFn }>();
+export const registerEntityValidator = (type: string, validators: { validatorCreation?: ValidatorFn, validatorUpdate?: ValidatorFn }) => {
+  entityValidators.set(type, validators);
 };
-export const getEntityValidator = (type: string):ValidatorFn | undefined => {
-  return entityValidators.get(type);
+export const getEntityValidatorCreation = (type: string): ValidatorFn | undefined => {
+  return entityValidators.get(type)?.validatorCreation;
+};
+export const getEntityValidatorUpdate = (type: string):ValidatorFn | undefined => {
+  return entityValidators.get(type)?.validatorUpdate;
 };

@@ -246,7 +246,7 @@ import {
   schemaDefinition
 } from '../schema/schema-register';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import { validateInput } from './middleware-utils';
+import { validateInputCreation, validateInputUpdate } from './middleware-utils';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1679,7 +1679,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-  await validateInput(context, user, initial.entity_type, inputs, entitySetting, initial);
+  await validateInputUpdate(context, user, initial.entity_type, inputs, entitySetting, initial);
   // Endregion
 
   // Individual check
@@ -2659,9 +2659,9 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = input;
+  const entitySetting = await getEntitySettingFromCache(context, relationshipType);
   // Enforce reference controls
   if (isStixCoreRelationship(relationshipType)) {
-    const entitySetting = await getEntitySettingFromCache(context, ABSTRACT_STIX_CORE_RELATIONSHIP);
     if (entitySetting?.enforce_reference) {
       if (isEmptyField(input.externalReferences)) {
         throw ValidationError('externalReferences', {
@@ -2676,6 +2676,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
+  await validateInputCreation(context, user, relationshipType, input, entitySetting);
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
   const { from, to } = resolvedInput;
@@ -3017,7 +3018,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
       });
     }
   }
-  await validateInput(context, user, type, input, entitySetting);
+  await validateInputCreation(context, user, type, input, entitySetting);
   // Endregion
 
   const { fromRule } = opts;

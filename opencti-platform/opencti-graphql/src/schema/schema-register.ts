@@ -23,7 +23,7 @@ export const schemaDefinition = {
     const allAttributes = this.getAllAttributes();
     attributes.forEach((attribute) => {
       const existingAttribute = allAttributes.find((a) => a.name === attribute.name);
-      if (existingAttribute?.type !== attribute.type) {
+      if (existingAttribute && existingAttribute.type !== attribute.type) {
         throw UnsupportedError('You can\'t have two attribute with the same name and a different type in the platform', {
           existingAttribute,
           attribute,

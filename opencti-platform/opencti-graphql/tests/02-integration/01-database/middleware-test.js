@@ -65,7 +65,7 @@ import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
 import { findAll } from '../../../src/domain/subType';
-import { validateInput } from '../../../src/database/middleware-utils';
+import { validateInputCreation, validateInputUpdate } from '../../../src/database/middleware-utils';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { querySubTypes } from '../../../src/domain/subType';
 
@@ -1076,37 +1076,37 @@ describe('middleware-utils', () => {
   it('should validate schema attribute', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }]); // Valid JSON format
     const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    await validateInput(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, null);
+    await validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, null);
   });
   it('should invalidate schema attribute', async () => {
     const attributesConfiguration = JSON.stringify([{ description: 'description', mandatory: true }]); // Invalid JSON format
     const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    await expect(validateInput(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, null)).rejects.toThrow();
+    await expect(validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, null)).rejects.toThrow();
   });
   it('should validate mandatory attributes on create', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }, { name: 'x_opencti_workflow_id', mandatory: false }]); // Valid attributes for Data Component
     const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
     const dataComponent = { name: 'entity name', confidence: 50 };
-    await validateInput(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting);
+    await validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting);
   });
   it('should validate mandatory attributes on update', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }, { name: 'x_opencti_workflow_id', mandatory: false }]); // Valid attributes for Data Component
     const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
     const dataComponent = { name: 'update name' };
     const dataComponentInitial = { name: 'initial name', confidence: 50 };
-    await validateInput(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting, dataComponentInitial);
+    await validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting, dataComponentInitial);
   });
   it('should invalidate mandatory attributes on create', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }]); // Valid attributes for Data Component
     const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
     const dataComponent = { name: 'entity name' }; // Creation
-    await expect(validateInput(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting)).rejects.toThrow();
+    await expect(validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting)).rejects.toThrow();
   });
   it('should invalidate mandatory attributes on update', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }]); // Valid attributes for Data Component
     const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    const dataComponent = { name: 'update name' };
+    const dataComponent = { confidence: '' };
     const dataComponentInitial = { name: 'initial name' };
-    await expect(validateInput(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting, dataComponentInitial)).rejects.toThrow();
+    await expect(validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting, dataComponentInitial)).rejects.toThrow();
   });
 });

@@ -1,4 +1,5 @@
 import type { JSONSchemaType } from 'ajv';
+import * as R from 'ramda';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -9,17 +10,12 @@ import { ENTITY_TYPE_DATA_COMPONENT, isStixDomainObject } from '../../schema/sti
 import { UnsupportedError, ValidationError } from '../../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
-import { getEntitiesFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { schemaDefinition } from '../../schema/schema-register';
-import type { ValidatorFn } from '../../schema/validator-register';
-
-export type AvailableSetting = keyof Omit<BasicStoreEntityEntitySetting, 'target_type'>;
-
-const isOfTypeAvailableSetting = (key: string) => ['platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'attributes_configuration'].includes(key);
 
 export const defaultEntitySetting: Record<string, () => boolean> = {
   platform_entity_files_ref: () => false,
@@ -27,13 +23,15 @@ export const defaultEntitySetting: Record<string, () => boolean> = {
   enforce_reference: () => false,
 };
 
-export const availableSettings: Record<string, Array<AvailableSetting>> = {
+export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_DATA_COMPONENT]: ['attributes_configuration'],
   [ABSTRACT_STIX_DOMAIN_OBJECT]: ['platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference'],
   [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_entity_files_ref'],
   [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['enforce_reference'],
   [STIX_SIGHTING_RELATIONSHIP]: ['platform_entity_files_ref'],
 };
+
+const typeAvailableSetting = R.uniq(Object.values(availableSettings).flat());
 
 export const getAvailableSettings = (targetType: string) => {
   let settings;
@@ -81,7 +79,7 @@ const optionsValidation = async (context: AuthContext, user: AuthUser, targetTyp
   const settings = getAvailableSettings(targetType);
   const inputSettings = Object.entries(input);
   inputSettings.forEach(([key]) => {
-    if (isOfTypeAvailableSetting(key) && !settings.includes(key as AvailableSetting)) {
+    if (typeAvailableSetting.includes(key) && !settings.includes(key)) {
       throw UnsupportedError('This setting is not available for this entity', {
         setting: key,
         entity: targetType
@@ -94,12 +92,12 @@ const customizableAttributesValidation = (entitySetting: BasicStoreEntityEntityS
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
 
   if (attributesConfiguration) {
-    const customizableAttributeNames = schemaDefinition.getAttributes(entitySetting.target_type)
+    const customizableMandatoryAttributeNames = schemaDefinition.getAttributes(entitySetting.target_type)
       .filter((attr) => attr.mandatoryType === 'customizable')
       .map((attr) => attr.name);
 
     attributesConfiguration.forEach((attr) => {
-      if (!customizableAttributeNames.includes(attr.name)) {
+      if (attr.mandatory && !customizableMandatoryAttributeNames.includes(attr.name)) {
         throw ValidationError(attr.name, {
           message: 'This attribute is not customizable for this entity',
           data: { attribute: attr.name, entityType: entitySetting.target_type }
@@ -109,22 +107,21 @@ const customizableAttributesValidation = (entitySetting: BasicStoreEntityEntityS
   }
 };
 
-export const validateEntitySetting: ValidatorFn = async (context: AuthContext, user: AuthUser, input: Record<string, unknown>, id: string | undefined) => {
-  let entitySetting;
-  if (id) { // Update
-    const entitySettings = await getEntitiesMapFromCache<BasicStoreEntityEntitySetting>(context, user, ENTITY_TYPE_ENTITY_SETTING);
-    entitySetting = entitySettings.get(id);
-  } else { // Create
-    entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
-  }
+export const validateEntitySettingCreation = async (context: AuthContext, user: AuthUser, input: Record<string, unknown>) => {
+  const entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
 
-  if (!entitySetting || !entitySetting.target_type) {
-    throw UnsupportedError('The target type is not defined for this setting', { entitySetting, entitySettingId: id });
-  } else {
-    // Validate Options
-    await optionsValidation(context, user, entitySetting.target_type, input as unknown as BasicStoreEntityEntitySetting);
-    customizableAttributesValidation(entitySetting);
-  }
+  await optionsValidation(context, user, entitySetting.target_type, input as unknown as BasicStoreEntityEntitySetting);
+  customizableAttributesValidation(entitySetting);
+
+  return true;
+};
+
+export const validateEntitySettingUpdate = async (context: AuthContext, user: AuthUser, input: Record<string, unknown>, initial: Record<string, unknown> | undefined) => {
+  const entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
+  const entitySettingInitial = (initial as unknown as BasicStoreEntityEntitySetting);
+
+  await optionsValidation(context, user, entitySettingInitial.target_type, input as unknown as BasicStoreEntityEntitySetting);
+  customizableAttributesValidation(entitySetting);
 
   return true;
 };

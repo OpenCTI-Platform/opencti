@@ -3,7 +3,7 @@ import { isJsonAttr, schemaDefinition } from '../schema/schema-register';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { isEmptyField, isNotEmptyField } from './utils';
-import { getEntityValidator } from '../schema/validator-register';
+import { getEntityValidatorCreation, getEntityValidatorUpdate } from '../schema/validator-register';
 import type { AuthContext, AuthUser } from '../types/user';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
 
@@ -53,12 +53,8 @@ const validateMandatoryAttributes = (
   instanceType: string,
   input: Record<string, unknown>,
   entitySetting: BasicStoreEntityEntitySetting,
-  initial: Record<string, unknown> | undefined
+  validation: (inputKeys: string[], mandatoryKey: string) => boolean
 ) => {
-  if (!entitySetting) {
-    return;
-  }
-
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
   if (!attributesConfiguration) {
     return;
@@ -66,47 +62,76 @@ const validateMandatoryAttributes = (
 
   const mandatoryAttributes = attributesConfiguration.filter((attr) => attr.mandatory);
   const inputKeys = Object.keys(input);
-  const initialKeys = initial !== undefined ? Object.keys(initial) : [];
-
-  const inputValidValue = (mandatoryKey: string) => inputKeys.includes(mandatoryKey) && isNotEmptyField(input[mandatoryKey]);
-  const initialValidValue = (mandatoryKey: string) => (initial !== undefined && initialKeys.includes(mandatoryKey) && isNotEmptyField(initial[mandatoryKey]));
 
   mandatoryAttributes.forEach((attr) => {
-    if (!(inputValidValue(attr.name) || initialValidValue(attr.name))) {
+    if (!(validation(inputKeys, attr.name))) {
       throw ValidationError(attr.name, { message: 'This attribute is mandatory', attribute: attr.name });
     }
   });
 };
 
-export const validateInput = async (
+const validateMandatoryAttributesOnCreation = (
+  instanceType: string,
+  input: Record<string, unknown>,
+  entitySetting: BasicStoreEntityEntitySetting
+) => {
+  // Should have all the mandatory keys and the associated values not null
+  const inputValidValue = (inputKeys: string[], mandatoryKey: string) => inputKeys.includes(mandatoryKey) && isNotEmptyField(input[mandatoryKey]);
+
+  validateMandatoryAttributes(instanceType, input, entitySetting, inputValidValue);
+};
+const validateMandatoryAttributesOnUpdate = (
+  instanceType: string,
+  input: Record<string, unknown>,
+  entitySetting: BasicStoreEntityEntitySetting
+) => {
+  // If the mandatory key is present the associated value should be not null
+  const inputValidValue = (inputKeys: string[], mandatoryKey: string) => !inputKeys.includes(mandatoryKey) || isNotEmptyField(input[mandatoryKey]);
+
+  validateMandatoryAttributes(instanceType, input, entitySetting, inputValidValue);
+};
+
+export const validateInputCreation = async (
   context: AuthContext,
   user: AuthUser,
   instanceType: string,
-  input: Record<string, unknown> | { key: string, value: string[] }[],
+  input: Record<string, unknown>,
   entitySetting: BasicStoreEntityEntitySetting,
-  initial?: Record<string, unknown>
 ) => {
-  // Convert input to record
-  let inputs: Record<string, unknown> = {};
-  if (Array.isArray(input)) {
-    input.forEach((obj) => {
-      inputs[obj.key] = obj.value;
-    });
-  } else {
-    inputs = input;
-  }
-
   // Generic validator
-  validateSchemaAttributes(instanceType, inputs);
-  validateMandatoryAttributes(instanceType, inputs, entitySetting, initial);
+  validateSchemaAttributes(instanceType, input);
+  validateMandatoryAttributesOnCreation(instanceType, input, entitySetting);
 
   // Functional validator
-  const validator = getEntityValidator(instanceType);
+  const validator = getEntityValidatorCreation(instanceType);
 
   if (validator) {
-    const validate = await validator(context, user, inputs, initial?.id as string);
+    const validate = await validator(context, user, input);
     if (!validate) {
-      throw UnsupportedError('The input is not valid', { input: inputs });
+      throw UnsupportedError('The input is not valid', { input });
+    }
+  }
+};
+
+export const validateInputUpdate = async (
+  context: AuthContext,
+  user: AuthUser,
+  instanceType: string,
+  input: Record<string, unknown>,
+  entitySetting: BasicStoreEntityEntitySetting,
+  initial: Record<string, unknown>
+) => {
+  // Generic validator
+  validateSchemaAttributes(instanceType, input);
+  validateMandatoryAttributesOnUpdate(instanceType, input, entitySetting);
+
+  // Functional validator
+  const validator = getEntityValidatorUpdate(instanceType);
+
+  if (validator) {
+    const validate = await validator(context, user, input, initial);
+    if (!validate) {
+      throw UnsupportedError('The input is not valid', { input });
     }
   }
 };

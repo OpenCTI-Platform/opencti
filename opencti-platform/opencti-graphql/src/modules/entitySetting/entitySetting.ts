@@ -6,7 +6,11 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import entitySettingResolvers from './entitySetting-resolvers';
 import entitySettingTypeDefs from './entitySetting.graphql';
 import convertEntitySettingToStix from './entitySetting-converter';
-import { attributeConfiguration, validateEntitySetting } from './entitySetting-utils';
+import {
+  attributeConfiguration,
+  validateEntitySettingCreation,
+  validateEntitySettingUpdate
+} from './entitySetting-utils';
 import { moduleRegisterDefinition, ModuleRegisterDefinition } from '../../schema/module-register';
 
 const TARGET_TYPE = 'target_type';
@@ -44,7 +48,10 @@ const ENTITY_SETTING_DEFINITION: ModuleRegisterDefinition<StoreEntityEntitySetti
     return stix.target_type;
   },
   converter: convertEntitySettingToStix,
-  validator: validateEntitySetting,
+  validators: {
+    validatorCreation: validateEntitySettingCreation,
+    validatorUpdate: validateEntitySettingUpdate
+  }
 };
 
 moduleRegisterDefinition(ENTITY_SETTING_DEFINITION);
