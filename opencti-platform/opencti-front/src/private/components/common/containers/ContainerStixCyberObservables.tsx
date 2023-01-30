@@ -264,7 +264,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       },
     };
   };
-  
+
   const queryRef = useQueryLoading<ContainerStixCyberObservablesLinesQuery>(
     containerStixCyberObservablesLinesQuery,
     paginationOptions,
