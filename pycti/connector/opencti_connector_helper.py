@@ -400,8 +400,8 @@ class ListenStream(threading.Thread):
             q = Queue(maxsize=1)
             stream_alive = StreamAlive(q)
             stream_alive.start()
-            # Computing args, from is always set
-            live_stream_args = "?from=" + start_from
+            # Computing args building
+            live_stream_url = self.url
             # In case no recover is explicitely set
             if recover_until is not False and recover_until not in [
                 "no",
@@ -411,8 +411,7 @@ class ListenStream(threading.Thread):
                 "false",
                 "False",
             ]:
-                live_stream_args = live_stream_args + "&recover=" + recover_until
-            live_stream_url = self.url + live_stream_args
+                live_stream_url = live_stream_url + "?recover=" + recover_until
             listen_delete = str(self.listen_delete).lower()
             no_dependencies = str(self.no_dependencies).lower()
             with_inferences = str(self.with_inferences).lower()
@@ -423,6 +422,7 @@ class ListenStream(threading.Thread):
             )
             messages = SSEClient(
                 live_stream_url,
+                start_from,
                 headers={
                     "authorization": "Bearer " + self.token,
                     "listen-delete": listen_delete,
