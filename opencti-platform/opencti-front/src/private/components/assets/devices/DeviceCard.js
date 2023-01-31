@@ -21,17 +21,18 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: '319px',
+    height: '355px',
     borderRadius: 9,
     border: `1.5px solid ${theme.palette.dataView.border}`,
   },
   selectedItem: {
     width: '100%',
-    height: '319px',
+    height: '355px',
     borderRadius: 9,
     border: `1.5px solid ${theme.palette.dataView.selectedBorder}`,
     background: theme.palette.dataView.selectedBackgroundColor,
@@ -204,6 +205,31 @@ class DeviceCardComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom ={true}>
+                  {t('Risks')}
+                </Typography>
+                <Typography>
+                  {node.risk_count && t(node.risk_count)}
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
+                >
+                  {t('Severity')}
+                </Typography>             
+
+                  {node.top_risk_severity && <RiskLevel
+                  risk={node?.top_risk_severity}
+                />}
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom ={true}>
                   {t('Asset ID')}
                 </Typography>
                 <Typography>
@@ -322,6 +348,8 @@ const DeviceCardFragment = createFragmentContainer(
         }
         asset_type
         fqdn
+        top_risk_severity
+        risk_count
         labels {
           __typename
           id
