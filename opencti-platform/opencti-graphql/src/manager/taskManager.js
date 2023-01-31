@@ -264,7 +264,7 @@ const executeProcessing = async (user, taskId, processingElements) => {
 };
 
 const taskHandler = async () => {
-  logApp.debug('[CYIO] Running Expiration manager');
+  logApp.debug('[CYIO] Running Task manager');
   let lock;
   try {
     // Lock the manager
