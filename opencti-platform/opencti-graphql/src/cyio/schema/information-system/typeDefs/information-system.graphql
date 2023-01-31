@@ -1,0 +1,355 @@
+# declares the query entry-points for this type
+extend type Query {
+  informationSystem(id: ID!): InformationSystem @hasPermission(resources:"Asset:view")
+  informationSystemList(
+    first: Int
+    offset: Int
+    orderedBy: InformationSystemOrdering
+    orderMode: OrderingMode
+    filters: [InformationSystemFiltering]
+    filterMode: FilterMode
+    search: String
+  ): InformationSystemConnection @hasPermission(resources: "Asset:view")
+}
+
+extend type Mutation {
+  createInformationSystem(input: InformationSystemInput): InformationSystem @hasPermission(resources: "Asset:update")
+  deleteInformationSystem(id: ID!): Boolean @hasPermission(resources: "Asset:delete")
+  editInformationSystem(id: ID!, input: [EditInput]!, commitMessage: String): InformationSystem @hasPermission(resources: "Asset:update")
+  #
+  attachToInformationSystem(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
+  detachFromInformationSystem(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
+
+  #
+  # Description Block
+  createDescriptionBlock(input: DescriptionBlockInput): DescriptionBlock @hasPermission(resources: "Asset:update")
+  deleteDescriptionBlock(id: ID!): Boolean @hasPermission(resources: "Asset:delete")
+  editDescriptionBlock(id: ID!, input: [EditInput]!, commitMessage: String): DescriptionBlock @hasPermission(resources: "Asset:update")
+}
+
+## -------- Information System Definitions
+type InformationSystem implements BasicObject & LifecycleObject & OscalObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp
+  "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+  labels: [CyioLabel]
+  # OscalObject
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [CyioNote]
+  "Identifies one or more relationships to other entities."
+  relationships(
+    first: Int
+    offset: Int
+    orderedBy: OscalRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: [OscalRelationshipsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OscalRelationshipConnection
+  # InformationSystem
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
+  "Identifies a system identifier assigned by the organization to the information system."
+  system_ids: [String]
+  "Identifies the system identifier assigned by the organization to the information system."
+  system_name: String!
+  "Identifies a short name for the system, such as an acronym, that is suitable for display in a data table or summary list."
+  short_name: String
+  "Identifies a summary description of the system"
+  description: String!
+  "Identifies a category that conveys the degree of confidence that the applicant's claimed identity is their real identity as defined by NIST SP 800-63-3."
+  identity_assurance_level: IdentityAssuranceLevel
+  "Identifies a category describing the strength of the authentication process as defined by NIST SP 800-63-3."
+  authenticator_assurance_level: AuthenticatorAssuranceLevel
+  "Identifies a category describing the assertion protocol used by the federation to communicate authentication and attribute information (if applicable) to an relying party (RP) as defined by NIST SP 800-63-3."
+  federation_assurance_level: FederationAssuranceLevel
+  "Identifies the deployment model for the information system."
+  deployment_model: [DeploymentModel]
+  "Identifies the type of the cloud service model."
+  cloud_service_model: CloudServiceModel
+  "Identifies the date the system received its authorization."
+  date_authorized: Date
+  "Identifies the overall information system sensitivity categorization, such as defined by FIPS-199."
+  security_sensitivity_level: FIPS199
+  "Identifies whether this a privacy sensitive system."
+  privacy_designation: Boolean
+  "Identifies the details about all information types that are stored, processed, or transmitted by the system, such as privacy information, and those defined in NIST SP 800-60."
+  information_types: [InformationType]
+  "Identifies the overall level of expected impact resulting from unauthorized disclosure of information, based on the sensitivity of information within the system."
+  security_objective_confidentiality: FIPS199!
+  "Identifies the overall level of expected impact resulting from unauthorized modification of information, based on the sensitivity of information within the system."
+  security_objective_integrity: FIPS199!
+  "Identifies the overall level of expected impact resulting from loss of access to information, based on the sensitivity of information within the system."
+  security_objective_availability: FIPS199!
+  "Indicates the operational status of the information system."
+  operational_status: OperationalStatus!
+  "Identifies a description of this system's authorization boundary, optionally supplemented by diagrams that illustrate the authorization boundary."
+  authorization_boundary: DescriptionBlock
+  "Identifies a description of the system's network architecture, optionally supplemented by diagrams that illustrate the network architecture."
+  network_architecture: DescriptionBlock
+  "Identifies a description of the logical flow of information within the system and across its boundaries, optionally supplemented by diagrams that illustrate these flows."
+  data_flow: DescriptionBlock
+  "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+  responsible_parties: [OscalResponsibleParty]
+}
+
+# Information System input
+input InformationSystemInput {
+  "Identifies a system identifier assigned by the organization to the information system."
+  system_ids: [String]
+  "Identifies the system identifier assigned by the organization to the information system."
+  system_name: String!
+  "Identifies a short name for the system, such as an acronym, that is suitable for display in a data table or summary list."
+  short_name: String
+  "Identifies a summary description of the system."
+  description: String!
+  "Identifies a category that conveys the degree of confidence that the applicant's claimed identity is their real identity as defined by NIST SP 800-63-3."
+  identity_assurance_level: IdentityAssuranceLevel
+  "Identifies a category describing the strength of the authentication process as defined by NIST SP 800-63-3."
+  authenticator_assurance_level: AuthenticatorAssuranceLevel
+  "Identifies a category describing the assertion protocol used by the federation to communicate authentication and attribute information (if applicable) to an relying party (RP) as defined by NIST SP 800-63-3."
+  federation_assurance_level: FederationAssuranceLevel
+  "Identifies the deployment model for the information system."
+  deployment_model: [DeploymentModel]
+  "Identifies the type of the cloud service model."
+  cloud_service_model: CloudServiceModel
+  "Identifies the date the system received its authorization."
+  date_authorized: Date
+  "Identifies the overall information system sensitivity categorization, such as defined by FIPS-199."
+  security_sensitivity_level: FIPS199
+  "Identifies whether this a privacy sensitive system."
+  privacy_designation: Boolean
+  "Identifies the details about all information types that are stored, processed, or transmitted by the system, such as privacy information, and those defined in NIST SP 800-60."
+  information_types: [InformationTypeInput]
+  "Identifies the overall level of expected impact resulting from unauthorized disclosure of information, based on the sensitivity of information within the system."
+  security_objective_confidentiality: FIPS199!
+  "Identifies the overall level of expected impact resulting from unauthorized modification of information, based on the sensitivity of information within the system."
+  security_objective_integrity: FIPS199!
+  "Identifies the overall level of expected impact resulting from loss of access to information, based on the sensitivity of information within the system."
+  security_objective_availability: FIPS199!
+  "Indicates the operational status of the information system."
+  operational_status: OperationalStatus!
+  "Identifies a description of this system's authorization boundary, optionally supplemented by diagrams that illustrate the authorization boundary."
+  authorization_boundary: DescriptionBlockInput
+  "Identifies a description of the system's network architecture, optionally supplemented by diagrams that illustrate the network architecture."
+  network_architecture: DescriptionBlockInput
+  "Identifies a description of the logical flow of information within the system and across its boundaries, optionally supplemented by diagrams that illustrate these flows."
+  data_flow: DescriptionBlockInput
+  "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+  responsible_parties: [ID!]
+}
+
+# Information System Connection
+type InformationSystemConnection {
+  pageInfo: PageInfo!
+  edges: [InformationSystemEdge]
+}
+type InformationSystemEdge {
+  cursor: String,
+  node: InformationSystem!
+}
+# slicing types
+"Defines the list of fields that can be used to order by for an Information System"
+enum InformationSystemOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Name"
+    name
+    "Label"
+    label_name
+    "Critical System"
+    critical_system
+    "Privacy Sensitive"
+    privacy_sensitive
+    "Operational Status"
+    operational_status
+    "Risk Count"
+    risk_count
+    "Top Risk Severity"
+    top_risk_severity
+}
+# Filtering types
+input InformationSystemFiltering {
+  key: InformationSystemFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+"Defines the list of fields that can be filtered upon for Information System."
+enum InformationSystemFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Name"
+    name
+    "Label"
+    label_name
+    "Top Risk Severity"
+    top_risk_severity
+}
+## --------
+
+## -------- Other Types
+type DescriptionBlock implements BasicObject{
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # OscalObject
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [CyioNote]
+  # DescriptionBlock
+  "Identifies a summary of the system's authorization boundary, network architecture, or data flow."
+  description: String!
+  "Identifies one or more graphics that provides a visual representation the system, or some aspect of it."
+  diagrams: [Diagram]
+}
+input DescriptionBlockInput {
+  "Identifies a summary of the system's authorization boundary, network architecture, or data flow."
+  description: String!
+  "Identifies one or more graphics that provides a visual representation the system, or some aspect of it."
+  diagrams: [ID]
+}
+
+type Diagram implements BasicObject & LifecycleObject & OscalObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp
+  "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+  labels: [CyioLabel]
+  # OscalObject
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [CyioNote]
+  "Identifies one or more relationships to other entities."
+  relationships(
+    first: Int
+    offset: Int
+    orderedBy: OscalRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: [OscalRelationshipsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OscalRelationshipConnection
+  # Diagram
+  "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
+  props: [Property]
+  "Identifies a summary of the diagram."
+  description: String
+  "Identifies a brief caption to annotate the diagram."
+  caption: String
+  "Identifies one or more links to a diagram"
+  diagram_link: URL
+}
+input DiagramInput {
+  "Identifies a summary of the diagram."
+  description: String!
+  "Identifies a brief caption to annotate the diagram."
+  caption: String
+  "Identifies one or more links to a diagram"
+  diagram_link: URL!
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReferenceAddInput]
+}
+## --------
+
+## -------- Field Enumerations
+enum IdentityAssuranceLevel {
+  "IAL1 - Self-Asserted"
+  IAL1
+  "IAL2 - Remote or In-Person Proofing"
+  IAL2
+  "IAL3 - In-Person Proofing"
+  IAL3
+  "Unspecified"
+  UNKNOWN
+}
+enum AuthenticatorAssuranceLevel {
+  "AAL1 - Single Factor Authentication"
+  AAL1
+  "AAL2 - Multi-Factor Authentication"
+  AAL2
+  "AAL3 - Hard Token Authentication"
+  AAL3
+  "Unspecified"
+  UNKNOWN
+}
+enum FederationAssuranceLevel {
+  "FAL1 - Signed Bearer Assertion"
+  FAL1
+  "FAL2 - Encrypted Bearer Assertion"
+  FAL2
+  "FAL3 - Possession of Crypto-Key"
+  FAL3
+  "Unspecified"
+  UNKNOWN
+}
+enum DeploymentModel {
+  "Identifies the deployment model as the public cloud deployment model as defined by the NIST Definition of Cloud Computing."
+  public_cloud
+  "Identifies the deployment model as the private cloud deployment model as defined by the NIST Definition of Cloud Computing."
+  private_cloud
+  "Identifies the deployment model as the community cloud deployment model as defined by the NIST Definition of Cloud Computing."
+  community_cloud
+  "Identifies the deployment model as a specific type of community-cloud for use only by government services."
+  government_only_cloud
+  "Identifies the deployment model as an on-premise deployment model."
+  on_premise
+  "Identifies the deployment model as any other type of cloud deployment model that is exclusive to the other choices."
+  other
+}
+enum CloudServiceModel {
+  "Identifies the cloud service model as Software as a Service (SaaS) as defined by The NIST Definition of Cloud Computing."
+  saas
+  "Identifies the cloud service model as Platform as a Service (PaaS) as defined by The NIST Definition of Cloud Computing."
+  paas
+  "Identifies the could service model as Infrastructure as a Service (IaaS) as defined by The NIST Definition of Cloud Computing."
+  iaas
+  "Identifies the cloud service model as any other type of cloud service model that is exclusive to the other choices."
+  other
+}
+enum FIPS199 {
+  "Low"
+  fips_199_low
+  "Moderate"
+  fips_199_moderate
+  "High"
+  fips_199_high
+}
+## -----------
