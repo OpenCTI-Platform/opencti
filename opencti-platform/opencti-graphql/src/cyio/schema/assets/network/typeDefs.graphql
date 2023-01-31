@@ -61,6 +61,8 @@
     connected_assets: [HardwareAsset]
     "Indicates the risks related to this entity."
     related_risks: [Risk]
+    risk_count: Int
+    top_risk_severity: RiskLevel
   }
 
   # Mutation Types
@@ -117,6 +119,10 @@
     label_name
     "Asset Type"
     asset_type
+    "Risk Count"
+    risk_count
+    "Top Risk Severity"
+    top_risk_severity
   }
 
   "Defines the list of fields that can be filtered upon for Network Assets."

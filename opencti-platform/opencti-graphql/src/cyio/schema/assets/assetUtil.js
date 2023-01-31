@@ -1,4 +1,3 @@
-
 export const addToInventoryQuery = (assetIri) => {
   if (!assetIri.startsWith('<')) assetIri = `<${assetIri}>`;
   return `
@@ -11,8 +10,8 @@ export const addToInventoryQuery = (assetIri) => {
       ?inv a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> 
     }
   }
-  `
-}
+  `;
+};
 
 export const removeFromInventoryQuery = (assetIri) => {
   if (!assetIri.startsWith('<')) assetIri = `<${assetIri}>`;
@@ -26,8 +25,8 @@ export const removeFromInventoryQuery = (assetIri) => {
       ?inv a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> .
     }
   }
-  `
-}
+  `;
+};
 
 export const deleteQuery = (id) => {
   return `
@@ -42,5 +41,5 @@ export const deleteQuery = (id) => {
       ?iri ?p ?o
     }
   }
-  `
-}
+  `;
+};

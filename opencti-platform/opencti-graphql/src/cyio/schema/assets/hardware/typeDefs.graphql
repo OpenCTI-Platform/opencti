@@ -84,6 +84,8 @@
     last_scanned: Timestamp
     "Indicates the risks related to this entity."
     related_risks: [Risk]
+    risk_count: Int
+    top_risk_severity: RiskLevel
   }
   # Mutation
   input HardwareAssetAddInput {
@@ -156,10 +158,14 @@
     ip_address_value
     "Installed Operating System"
     installed_os_name
-    "Nework ID"
+    "Network ID"
     network_id
     "Label"
     label_name
+    "Risk Count"
+    risk_count
+    "Top Risk Severity"
+    top_risk_severity
   }
   # Filtering Types
   input HardwareAssetFiltering {

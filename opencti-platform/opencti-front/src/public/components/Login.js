@@ -8,7 +8,7 @@ import {
 } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@material-ui/core/Paper';
-import { APP_BASE_PATH } from '../../relay/environment';
+import { SERVER_URL } from '../../relay/environment';
 import logo from '../../resources/images/DarkLight_CyioLogo-Vertical-blue.png';
 import LoginForm from './LoginForm';
 
@@ -118,7 +118,7 @@ const Login = ({ classes, settings }) => {
           variant="contained"
           size="small"
           component="a"
-          href={`${APP_BASE_PATH}/auth/${value.provider}`}
+          href={`${SERVER_URL}/auth/${value.provider}`}
           className={renderExternalAuthClassName(value.provider)}
         >
           {renderExternalAuthButton(value.provider)}

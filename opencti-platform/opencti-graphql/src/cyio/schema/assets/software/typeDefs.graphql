@@ -76,6 +76,8 @@
     installed_on: [HardwareAsset]
     "Indicates the risks related to this entity."
     related_risks: [Risk]
+    risk_count: Int
+    top_risk_severity: RiskLevel
 }
 
   "Defines identifying information about an instance of operating system software."
@@ -291,10 +293,14 @@
     vendor_name
     "CPE Identifier"
     cpe_identifier
-    "Sofware Identifier"
+    "Software Identifier"
     software_identifier
     "Label"
     label_name
+    "Risk Count"
+    risk_count
+    "Top Risk Severity"
+    top_risk_severity
   }
 
   # Filtering Types

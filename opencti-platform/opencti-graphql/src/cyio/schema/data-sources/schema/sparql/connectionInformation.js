@@ -12,8 +12,6 @@ export function getReducer(type) {
   switch (type) {
     case 'CONNECTION-INFORMATION':
       return connectionInformationReducer;
-    case 'CONNECTION-HEADER':
-      return connectionHeaderReducer;
     default:
       throw new CyioError(`Unsupported reducer type ' ${type}'`)
   }
@@ -67,7 +65,6 @@ export const insertConnectionInformationQuery = (propValues) => {
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, DARKLIGHT_NS );
-  // const id = generateId( );
   const timestamp = new Date().toISOString();
 
   // determine the appropriate ontology class type

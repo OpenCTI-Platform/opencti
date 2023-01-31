@@ -149,25 +149,25 @@ class RemediationEntityLineComponent extends Component {
               </div>
               {node?.tasks.length > 0
                 ? <>
-                    <div className={classes.bodyItem}>
-                      <Typography align="left">
-                        {node.created && fldt(startDate)}
-                      </Typography>
-                    </div>
-                    <div className={classes.bodyItem}>
-                      <Typography align="left">
-                        {node.modified && fldt(endDate)}
-                      </Typography>
-                    </div>
-                  </>
+                  <div className={classes.bodyItem}>
+                    <Typography align="left">
+                      {node.created && fldt(startDate)}
+                    </Typography>
+                  </div>
+                  <div className={classes.bodyItem}>
+                    <Typography align="left">
+                      {node.modified && fldt(endDate)}
+                    </Typography>
+                  </div>
+                </>
                 : <>
-                {/* <div style={{ display: 'grid', placeItems: 'center' }}>
+                  {/* <div style={{ display: 'grid', placeItems: 'center' }}>
                   -
                 </div>
                 <div style={{ display: 'grid', placeItems: 'center' }}>
                   -
                 </div> */}
-              </>}
+                </>}
             </div>
           }
         />
