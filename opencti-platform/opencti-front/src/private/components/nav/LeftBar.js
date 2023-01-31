@@ -136,9 +136,11 @@ const styles = (theme) => ({
   bottomNavigation: {
     position: 'relative',
     left: 0,
-    bottom: 0,
+    bottom: 16,
     width: '100%',
     minHeight: '30%',
+    display: 'flex',
+    alignItems: 'flex-end',
   },
   logoContainer: {
     height: 64,
