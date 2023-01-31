@@ -513,7 +513,7 @@ const LeftBar = ({
           needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}
         >
           <div className={classes.bottomNavigation}>
-            <MenuList component="nav" classes={{ root: classes.menuList }}>
+            <MenuList component="nav" classes={{ root: classes.menuList }} style={{ width: '100%' }}>
               <QueryRenderer
                 query={leftBarVersionQuery}
                 render={({ props: about }) => {
