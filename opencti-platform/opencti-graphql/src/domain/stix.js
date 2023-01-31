@@ -66,7 +66,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
           file_name: fileName, // Export expected file name
           max_marking: maxMarkingId, // Max marking id
           entity_type: entityType, // Exported entity type
-          entity_id: listParams.elementId,
+          element_id: listParams.elementId,
           selected_ids: selectedIds, // ids that are both selected via checkboxes and respect the filtering
         },
       };
@@ -82,6 +82,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
         file_name: fileName, // Export expected file name
         max_marking: maxMarkingId, // Max marking id
         entity_type: entityType, // Exported entity type
+        element_id: listParams.elementId,
         // For list entity export
         list_params: listParams,
       },

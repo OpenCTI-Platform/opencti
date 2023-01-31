@@ -68,6 +68,18 @@ class StixDomainObjectsExportsContentComponent extends Component {
     } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
 
+    let elementId = null;
+    let paginationOptionsForExport = paginationOptions;
+    if (paginationOptions?.filters && Object.values(paginationOptions.filters).map((o) => o.key).includes('objectContains')) {
+      const filtersValues = Object.values(paginationOptions.filters);
+      [elementId] = filtersValues.filter((o) => o.key === 'objectContains')[0].values;
+      const newFilters = filtersValues.filter((o) => o.key !== 'objectContains');
+      paginationOptionsForExport = {
+        ...paginationOptions,
+        filters: newFilters,
+      };
+    }
+
     return (
       <List
         subheader={
@@ -77,7 +89,8 @@ class StixDomainObjectsExportsContentComponent extends Component {
               <StixDomainObjectsExportCreation
                 data={data}
                 exportEntityType={exportEntityType}
-                paginationOptions={paginationOptions}
+                paginationOptions={paginationOptionsForExport}
+                elementId={elementId}
                 context={context}
                 onExportAsk={() => this.props.relay.refetch({
                   type: this.props.exportEntityType,

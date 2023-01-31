@@ -110,7 +110,19 @@ export const stixDomainObjectsExportAsk = async (context, user, args) => {
   const argsFilters = { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId };
   const filtersOpts = stixDomainObjectOptions.StixDomainObjectsFilter;
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
-  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  let newArgsFiltersFilters = argsFilters.filters;
+  const initialParams = {};
+  if (argsFilters.filters && argsFilters.filters.length > 0) {
+    if (argsFilters.filters.filter((n) => n.key.includes('elementId')).length > 0) {
+      initialParams.elementId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('elementId'))).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('elementId'));
+    }
+  }
+  const finalArgsFilter = {
+    ...argsFilters,
+    filters: newArgsFiltersFilters
+  };
+  const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
   const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
