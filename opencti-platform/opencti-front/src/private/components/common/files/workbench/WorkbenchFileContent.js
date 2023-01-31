@@ -1929,18 +1929,26 @@ class WorkbenchFileContentComponent extends Component {
                   ? buildDate(observable[attribute])
                   : null;
               } else if (R.includes(attribute, booleanAttributes)) {
-                initialValues[attribute] = observable[attribute] || false;
+                initialValues[attribute] = observable[attribute] ?? false;
               } else if (R.includes(attribute, multipleAttributes)) {
                 initialValues[attribute] = observable[attribute]
                   ? observable[attribute].join(',')
                   : null;
               } else if (attribute === 'hashes') {
-                initialValues.hashes_MD5 = observable[attribute].MD5;
-                initialValues['hashes_SHA-1'] = observable[attribute]['SHA-1'];
-                initialValues['hashes_SHA-256'] = observable[attribute]['SHA-256'];
-                initialValues['hashes_SHA-512'] = observable[attribute]['SGA-512'];
+                initialValues.hashes_MD5 = observable[attribute]
+                  ? observable[attribute].MD5 ?? ''
+                  : '';
+                initialValues['hashes_SHA-1'] = observable[attribute]
+                  ? observable[attribute]['SHA-1'] ?? ''
+                  : '';
+                initialValues['hashes_SHA-256'] = observable[attribute]
+                  ? observable[attribute]['SHA-256'] ?? ''
+                  : '';
+                initialValues['hashes_SHA-512'] = observable[attribute]
+                  ? observable[attribute]['SGA-512'] ?? ''
+                  : '';
               } else {
-                initialValues[attribute] = observable[attribute] || '';
+                initialValues[attribute] = observable[attribute] ?? '';
               }
             }
             return (
