@@ -4,6 +4,7 @@ import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
 import {
   ALREADY_DELETED_ERROR,
+  AlreadyDeletedError,
   DatabaseError,
   ForbiddenAccess,
   FunctionalError,
@@ -3182,7 +3183,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   let event;
   const element = await storeLoadByIdWithRefs(context, user, id);
   if (!element) {
-    throw FunctionalError('Cant find element to delete', { id });
+    throw AlreadyDeletedError({ id });
   }
   // Prevent individual deletion if linked to a user
   if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information)) {
@@ -3291,9 +3292,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     if (rebuildRuleContent.length === 0) {
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
-        logApp.info('Delete inferred element', { rule, id: instance.id });
         const deletionData = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
-        logApp.info('Delete inferred element', { id: instance.id, type: instance.entity_type });
         return deletionData.event;
       }
       // If not we need to clean the rule and keep the element for other rules.
@@ -3311,7 +3310,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     return event;
   } catch (err) {
     if (err.name === ALREADY_DELETED_ERROR) {
-      logApp.debug('Error deleting an already deleted inference', { error: err.message });
+      logApp.warn('Trying to delete an already deleted inference', { error: err.message });
     } else {
       logApp.error('Error deleting inference', { error: err });
     }

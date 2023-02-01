@@ -3,7 +3,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import { AutoSizer, InfiniteLoader, List, WindowScroller } from 'react-virtualized';
+import {
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller,
+} from 'react-virtualized';
 import inject18n from '../i18n';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { isEmptyField } from '../../utils/utils';
@@ -228,9 +233,13 @@ class ListLinesContent extends Component {
           // selectedIds: ids of elements that are selected via checkboxes AND respect the filtering conditions
           let newSelectedIds = [];
           if (!isEmptyField(deSelectedElements)) {
-            newSelectedIds = dataList.map((o) => o.node.id).filter((id) => !Object.keys(deSelectedElements).includes(id));
+            newSelectedIds = dataList
+              .map((o) => o.node.id)
+              .filter((id) => !Object.keys(deSelectedElements).includes(id));
           } else if (!isEmptyField(selectedElements)) {
-            newSelectedIds = dataList.map((o) => o.node.id).filter((id) => Object.keys(selectedElements).includes(id));
+            newSelectedIds = dataList
+              .map((o) => o.node.id)
+              .filter((id) => Object.keys(selectedElements).includes(id));
           }
           if (!R.equals(selectedIds, newSelectedIds)) {
             setSelectedIds(newSelectedIds);
@@ -242,35 +251,37 @@ class ListLinesContent extends Component {
                   <InfiniteLoader
                     isRowLoaded={this._isRowLoaded}
                     loadMoreRows={this._loadMoreRows}
-                    rowCount={globalCount}>
+                    rowCount={globalCount}
+                  >
                     {({ onRowsRendered, registerChild }) => (
-                <AutoSizer disableHeight>
-                  {({ width }) => (
-                    <List
-                      ref={(ref) => {
-                        this.listRef = ref;
-                        registerChild(ref);
-                      }}
-                      autoHeight={true}
-                      height={height}
-                      onRowsRendered={onRowsRendered}
-                      isScrolling={isScrolling}
-                      onScroll={onChildScroll}
-                      overscanRowCount={nbOfRowsToLoad}
-                      rowCount={rowCount}
-                      rowHeight={50}
-                      rowRenderer={this._rowRenderer.bind(this)}
-                      scrollToIndex={-1}
-                      scrollTop={scrollTop}
-                      width={width}
-                    />
-                  )}
-                </AutoSizer>
+                      <AutoSizer disableHeight>
+                        {({ width }) => (
+                          <List
+                            ref={(ref) => {
+                              this.listRef = ref;
+                              registerChild(ref);
+                            }}
+                            autoHeight={true}
+                            height={height}
+                            onRowsRendered={onRowsRendered}
+                            isScrolling={isScrolling}
+                            onScroll={onChildScroll}
+                            overscanRowCount={nbOfRowsToLoad}
+                            rowCount={rowCount}
+                            rowHeight={50}
+                            rowRenderer={this._rowRenderer.bind(this)}
+                            scrollToIndex={-1}
+                            scrollTop={scrollTop}
+                            width={width}
+                          />
+                        )}
+                      </AutoSizer>
+                    )}
+                  </InfiniteLoader>
+                </div>
               )}
-            </InfiniteLoader>
-          </div>
-        )}
-      </WindowScroller>);
+            </WindowScroller>
+          );
         }}
       </ExportContext.Consumer>
     );

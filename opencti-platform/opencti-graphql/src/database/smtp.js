@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
-import conf, { booleanConf } from '../config/conf';
-import { DatabaseError } from '../config/errors';
+import conf, { booleanConf, logApp } from '../config/conf';
 
 const USE_SSL = booleanConf('smtp:use_ssl', false);
 const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
@@ -27,7 +26,7 @@ export const smtpIsAlive = async () => {
   try {
     await transporter.verify();
   } catch {
-    throw DatabaseError('SMTP seems down, disable the subscription manager if you dont want it');
+    logApp.warn('[CHECK] SMTP seems down, email notification will may not work');
   }
   return true;
 };

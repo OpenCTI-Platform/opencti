@@ -13029,6 +13029,12 @@ export type NotificationContent = {
   title: Scalars['String'];
 };
 
+export type NotificationCount = {
+  __typename?: 'NotificationCount';
+  count?: Maybe<Scalars['Int']>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
 export type NotificationEdge = {
   __typename?: 'NotificationEdge';
   cursor: Scalars['String'];
@@ -20714,6 +20720,7 @@ export type Subscription = {
   label?: Maybe<Label>;
   markingDefinition?: Maybe<MarkingDefinition>;
   notification?: Maybe<Notification>;
+  notificationsNumber?: Maybe<NotificationCount>;
   settings?: Maybe<Settings>;
   statusTemplate?: Maybe<StatusTemplate>;
   stixCoreObject?: Maybe<StixCoreObject>;
@@ -24637,6 +24644,7 @@ export type ResolversTypes = ResolversObject<{
   Notification: ResolverTypeWrapper<BasicStoreEntityNotification>;
   NotificationConnection: ResolverTypeWrapper<Omit<NotificationConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['NotificationEdge']>>> }>;
   NotificationContent: ResolverTypeWrapper<NotificationContent>;
+  NotificationCount: ResolverTypeWrapper<NotificationCount>;
   NotificationEdge: ResolverTypeWrapper<Omit<NotificationEdge, 'node'> & { node: ResolversTypes['Notification'] }>;
   NotificationEvent: ResolverTypeWrapper<NotificationEvent>;
   NotificationFilter: NotificationFilter;
@@ -25267,6 +25275,7 @@ export type ResolversParentTypes = ResolversObject<{
   Notification: BasicStoreEntityNotification;
   NotificationConnection: Omit<NotificationConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['NotificationEdge']>>> };
   NotificationContent: NotificationContent;
+  NotificationCount: NotificationCount;
   NotificationEdge: Omit<NotificationEdge, 'node'> & { node: ResolversParentTypes['Notification'] };
   NotificationEvent: NotificationEvent;
   NotificationsFiltering: NotificationsFiltering;
@@ -29046,6 +29055,12 @@ export type NotificationContentResolvers<ContextType = any, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type NotificationCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationCount'] = ResolversParentTypes['NotificationCount']> = ResolversObject<{
+  count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type NotificationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationEdge'] = ResolversParentTypes['NotificationEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Notification'], ParentType, ContextType>;
@@ -30984,6 +30999,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   label?: SubscriptionResolver<Maybe<ResolversTypes['Label']>, "label", ParentType, ContextType, RequireFields<SubscriptionLabelArgs, 'id'>>;
   markingDefinition?: SubscriptionResolver<Maybe<ResolversTypes['MarkingDefinition']>, "markingDefinition", ParentType, ContextType, RequireFields<SubscriptionMarkingDefinitionArgs, 'id'>>;
   notification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "notification", ParentType, ContextType>;
+  notificationsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NotificationCount']>, "notificationsNumber", ParentType, ContextType>;
   settings?: SubscriptionResolver<Maybe<ResolversTypes['Settings']>, "settings", ParentType, ContextType, RequireFields<SubscriptionSettingsArgs, 'id'>>;
   statusTemplate?: SubscriptionResolver<Maybe<ResolversTypes['StatusTemplate']>, "statusTemplate", ParentType, ContextType, RequireFields<SubscriptionStatusTemplateArgs, 'id'>>;
   stixCoreObject?: SubscriptionResolver<Maybe<ResolversTypes['StixCoreObject']>, "stixCoreObject", ParentType, ContextType, RequireFields<SubscriptionStixCoreObjectArgs, 'id'>>;
@@ -32195,6 +32211,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Notification?: NotificationResolvers<ContextType>;
   NotificationConnection?: NotificationConnectionResolvers<ContextType>;
   NotificationContent?: NotificationContentResolvers<ContextType>;
+  NotificationCount?: NotificationCountResolvers<ContextType>;
   NotificationEdge?: NotificationEdgeResolvers<ContextType>;
   NotificationEvent?: NotificationEventResolvers<ContextType>;
   Number?: NumberResolvers<ContextType>;

@@ -50,6 +50,7 @@ export interface StixTrigger extends StixObject {
 
 // region Notifications
 export const ENTITY_TYPE_NOTIFICATION = 'Notification';
+export const NOTIFICATION_NUMBER = 'NotificationNumber';
 
 export interface NotificationContentEvent {
   operation: string

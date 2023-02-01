@@ -7725,6 +7725,7 @@ type Subscription {
   stixCyberObservableRelationship(id: ID!): StixCyberObservableRelationship
   externalReference(id: ID!): ExternalReference
   notification: Notification
+  notificationsNumber: NotificationCount
 }
 
 type WorkEditMutations {
@@ -9091,6 +9092,11 @@ input TriggerDigestAddInput {
   period: DigestPeriod!
   trigger_time: String
   outcomes: [StixRef!]!
+}
+
+type NotificationCount {
+  user_id: String
+  count: Int
 }
 
 type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDomainObject {

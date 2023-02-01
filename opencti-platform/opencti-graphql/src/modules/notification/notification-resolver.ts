@@ -4,6 +4,7 @@ import {
   addDigestTrigger,
   addLiveTrigger,
   myNotificationsFind,
+  myUnreadNotificationsCount,
   notificationDelete,
   notificationEditRead,
   notificationGet,
@@ -14,11 +15,10 @@ import {
   triggersFind,
   myTriggersFind,
   triggersGet,
-  myUnreadNotificationsCount
 } from './notification-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
-import { ENTITY_TYPE_NOTIFICATION } from './notification-types';
+import { ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
 
 const notificationResolvers: Resolvers = {
   Query: {
@@ -44,6 +44,16 @@ const notificationResolvers: Resolvers = {
     notificationMarkRead: (_, { id, read }, context) => notificationEditRead(context, context.user, id, read),
   },
   Subscription: {
+    notificationsNumber: {
+      resolve: /* istanbul ignore next */ (payload: any) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, __, context) => {
+        const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC);
+        const filtering = withFilter(() => asyncIterator, (payload) => {
+          return payload && payload.instance.user_id === context.user.id;
+        })();
+        return { [Symbol.asyncIterator]() { return filtering; } };
+      },
+    },
     notification: {
       resolve: /* istanbul ignore next */ (payload: any) => payload.instance,
       subscribe: /* istanbul ignore next */ (_, __, context) => {

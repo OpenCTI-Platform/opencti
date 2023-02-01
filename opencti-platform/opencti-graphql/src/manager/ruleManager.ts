@@ -23,7 +23,7 @@ import {
 } from '../database/utils';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
-import { TYPE_LOCK_ERROR } from '../config/errors';
+import { ALREADY_DELETED_ERROR, TYPE_LOCK_ERROR } from '../config/errors';
 import { RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship } from '../schema/stixRelationship';
@@ -271,12 +271,20 @@ export const rulesCleanHandler = async (
     const instance = instances[i];
     for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
       const rule = rules[ruleIndex];
-      const isElementCleanable = isNotEmptyField(instance[`${RULE_PREFIX}${rule.id}`]);
-      if (isElementCleanable) {
-        const processingElement: StoreObject = await storeLoadByIdWithRefs(context, RULE_MANAGER_USER, instance.internal_id);
-        // In case of "inference of inference", element can be recursively cleanup by the deletion system
-        if (processingElement) {
-          await rule.clean(processingElement, deletedDependencies);
+      try {
+        const isElementCleanable = isNotEmptyField(instance[`${RULE_PREFIX}${rule.id}`]);
+        if (isElementCleanable) {
+          const processingElement: StoreObject = await storeLoadByIdWithRefs(context, RULE_MANAGER_USER, instance.internal_id);
+          // In case of "inference of inference", element can be recursively cleanup by the deletion system
+          if (processingElement) {
+            await rule.clean(processingElement, deletedDependencies);
+          }
+        }
+      } catch (err: any) {
+        if (err.name === ALREADY_DELETED_ERROR) {
+          logApp.warn('Trying to delete an already deleted element', { error: err.message });
+        } else {
+          logApp.error('Error deleting element', { error: err });
         }
       }
     }

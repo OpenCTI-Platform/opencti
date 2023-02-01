@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
+import { logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndexes, elIndexExists, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, isStorageAlive } from './database/file-storage';
@@ -138,11 +138,8 @@ export const checkSystemDependencies = async () => {
   // Check if redis is here
   await redisIsAlive();
   logApp.info('[CHECK] Redis is alive');
-  if (booleanConf('subscription_scheduler:enabled', true)) {
-    // Check if SMTP is here
-    await smtpIsAlive();
-    logApp.info('[CHECK] SMTP is alive');
-  }
+  // Check if SMTP is here
+  await smtpIsAlive();
   // Check if Python is available
   const context = executionContext('system_dependencies');
   await checkPythonAvailability(context, SYSTEM_USER);

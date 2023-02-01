@@ -33,12 +33,20 @@ import {
   READ_RELATIONSHIPS_INDICES,
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildEntityFilters } from '../../../src/database/middleware-loader';
+
+const elWhiteUser = async () => {
+  const opts = { types: ['Marking-Definition'], connectionFormat: false };
+  const allMarkings = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, opts);
+  const ALL_TLP = allMarkings.map((a) => ({ internal_id: a.internal_id, standard_id: a.standard_id }));
+  const TLP_WHITE = await elLoadById(testContext, ADMIN_USER, 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9');
+  return buildStandardUser([{ internal_id: TLP_WHITE.internal_id, standard_id: TLP_WHITE.standard_id }], ALL_TLP);
+};
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -416,6 +424,12 @@ describe('Elasticsearch pagination', () => {
     expect(malware.parent_types).toEqual(
       expect.arrayContaining(['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'])
     );
+  });
+  it('should entity paginate everything for standard user', async () => {
+    const WHITE_USER = await elWhiteUser();
+    const data = await elPaginate(testContext, WHITE_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
+    expect(data).not.toBeNull();
+    expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with classic search', async () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });

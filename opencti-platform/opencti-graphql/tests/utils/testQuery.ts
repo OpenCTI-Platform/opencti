@@ -7,6 +7,7 @@ import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/ac
 // region static graphql modules
 import '../../src/modules/index';
 import type { AuthUser } from '../../src/types/user';
+import type { StoreMarkingDefinition } from '../../src/types/store';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -68,6 +69,27 @@ export const ADMIN_USER: AuthUser = {
   allowed_marking: [],
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
   api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
+};
+
+type markingType = { standard_id: string; internal_id: string };
+export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: markingType[]): AuthUser => {
+  return {
+    id: '88ec0c6a-12ce-5e39-b486-354fe4a7084f',
+    internal_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f',
+    individual_id: undefined,
+    organizations: [],
+    name: 'user',
+    user_email: 'user@opencti.io',
+    roles: [{ name: 'User' }],
+    groups: [],
+    capabilities: [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
+    all_marking: (allMarkings ?? []) as StoreMarkingDefinition[],
+    allowed_organizations: [],
+    inside_platform_organization: true,
+    allowed_marking: allowedMarkings as StoreMarkingDefinition[],
+    origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
+    api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
+  };
 };
 
 export const serverFromUser = (user = ADMIN_USER) => {

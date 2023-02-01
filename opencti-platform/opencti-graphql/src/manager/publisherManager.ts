@@ -14,7 +14,7 @@ import {
 } from './notificationManager';
 import type { SseEvent, StreamNotifEvent } from '../types/event';
 import { extractStixRepresentative } from '../database/stix-converter';
-import { sendMail } from '../database/smtp';
+import { sendMail, smtpIsAlive } from '../database/smtp';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/store';
@@ -148,6 +148,7 @@ const initPublisherManager = () => {
   let streamScheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let publisherListening = true;
+  let isSmtpActive = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -179,12 +180,14 @@ const initPublisherManager = () => {
   };
   return {
     start: async () => {
+      isSmtpActive = await smtpIsAlive();
       streamScheduler = setIntervalAsync(() => notificationHandler(), STREAM_SCHEDULE_TIME);
     },
     status: () => {
       return {
         id: 'PUBLISHER_MANAGER',
         enable: booleanConf('publisher_manager:enabled', false),
+        is_smtp_active: isSmtpActive,
         running: false,
       };
     },

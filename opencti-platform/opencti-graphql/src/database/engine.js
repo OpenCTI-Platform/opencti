@@ -1733,7 +1733,7 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
   const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
   const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
-  const hits = await elList(context, user, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, opts);
+  const hits = await elList(context, user, READ_RELATIONSHIPS_INDICES, opts);
   const groupResults = R.splitEvery(MAX_JS_PARAMS, hits);
   const foundRelations = [];
   for (let index = 0; index < groupResults.length; index += 1) {

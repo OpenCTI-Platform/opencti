@@ -89,7 +89,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const notificationLineNotificationMarkReadMutation = graphql`
+export const notificationLineNotificationMarkReadMutation = graphql`
   mutation NotificationLineNotificationMarkReadMutation(
     $id: ID!
     $read: Boolean!
