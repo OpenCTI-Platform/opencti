@@ -757,7 +757,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             unionSetEntities(
-              'indicator_types',
+              'incident_type',
               (data?.vocabularies?.edges ?? []).map(({ node }) => ({
                 label: t(node.name),
                 value: node.name,
