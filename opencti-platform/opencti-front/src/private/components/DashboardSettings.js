@@ -71,6 +71,12 @@ class DashboardSettings extends Component {
     this.setState({ open: false });
   }
 
+  componentDidMount() {
+    if (!this.props.isDashboard) {
+      this.setState({ open: true });
+    }
+  }
+
   render() {
     const {
       t,
@@ -81,9 +87,11 @@ class DashboardSettings extends Component {
     const { open } = this.state;
     return (
       <span>
-        <IconButton onClick={this.handleOpen.bind(this)} size="medium">
-          <SettingsIcon color='primary' fontSize='small' />
-        </IconButton>
+        {this.props.isDashboard && (
+          <IconButton onClick={this.handleOpen.bind(this)} size="medium">
+            <SettingsIcon color="primary" fontSize="small" />
+          </IconButton>
+        )}
         <Dialog
           open={open}
           PaperProps={{ elevation: 1 }}
@@ -93,9 +101,15 @@ class DashboardSettings extends Component {
           fullWidth={true}
         >
           <DialogTitle classes={{ root: classes.dialogTitle }}>
-            {t('Dashboard Settings')}
+            {this.props.isDashboard
+              ? t('Dashboard Settings')
+              : t('No Dashboard')}
             <Typography>
-              {t("Choose from your organization's custom dashboards")}
+              {this.props.isDashboard
+                ? t("Choose from your organization's custom dashboards")
+                : t(
+                  'No dashboard has been set, please choose from one of the available below.',
+                )}
             </Typography>
           </DialogTitle>
           <DialogContent>
@@ -163,7 +177,9 @@ class DashboardSettings extends Component {
             />
           </DialogContent>
           <DialogActions>
-            <Button variant='outlined' onClick={this.handleClose.bind(this)}>{t('Close')}</Button>
+            <Button variant="outlined" onClick={this.handleClose.bind(this)}>
+              {t('Close')}
+            </Button>
           </DialogActions>
         </Dialog>
       </span>

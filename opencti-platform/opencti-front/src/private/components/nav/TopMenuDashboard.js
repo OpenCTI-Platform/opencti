@@ -36,6 +36,7 @@ class TopMenuDashboard extends Component {
         <DashboardSettings
           dashboard={dashboard}
           handleChangeDashboard={handleChangeDashboard}
+          isDashboard={true}
         />
       </div>
     );
