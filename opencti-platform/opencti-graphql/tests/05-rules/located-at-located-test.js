@@ -1,5 +1,4 @@
 import { expect, it, describe } from 'vitest';
-import { shutdownModules, startModules } from '../../src/modules';
 import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
 import { createRelation, internalDeleteElementById } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
@@ -26,8 +25,6 @@ describe('Located at located rule', () => {
   it(
     'Should rule successfully activated',
     async () => {
-      await startModules();
-      await wait(2 * TEN_SECONDS); // Wait for all managers to be started
       const TLP_CLEAR_INSTANCE = await internalLoadById(testContext, SYSTEM_USER, TLP_CLEAR_ID);
       const TLP_TEST_INSTANCE = await internalLoadById(testContext, SYSTEM_USER, TLP_TEST_ID);
       // Check that no inferences exists
@@ -124,8 +121,6 @@ describe('Located at located rule', () => {
       // Check the number of inferences
       const afterDisableRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterDisableRelations.length).toBe(0);
-      // Stop modules
-      await shutdownModules();
     },
     FIVE_MINUTES
   );

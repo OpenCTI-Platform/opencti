@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
 import {
+  ALREADY_DELETED_ERROR,
   DatabaseError,
   ForbiddenAccess,
   FunctionalError,
@@ -3308,8 +3309,12 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     const ruleOpts = { fromRule, ruleOverride: true };
     const { event } = await upsertRelationRule(context, instance, input, ruleOpts);
     return event;
-  } catch (e) {
-    logApp.error('Error deleting inference', { error: e.message });
+  } catch (err) {
+    if (err.name === ALREADY_DELETED_ERROR) {
+      logApp.debug('Error deleting an already deleted inference', { error: err.message });
+    } else {
+      logApp.error('Error deleting inference', { error: err });
+    }
   }
   return undefined;
 };

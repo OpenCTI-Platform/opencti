@@ -60,9 +60,9 @@ export const entitySettingsEditField = async (context: AuthContext, user: AuthUs
 
 // -- INITIALIZATION --
 
-export const addEntitySetting = async (context: AuthContext, user: AuthUser, entitySetting: Record<string, string | boolean>) => {
+const addEntitySetting = async (context: AuthContext, user: AuthUser, entitySetting: Record<string, string | boolean>) => {
   const created = await createEntity(context, user, entitySetting, ENTITY_TYPE_ENTITY_SETTING);
-  return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].ADDED_TOPIC, created, user) as BasicStoreEntityEntitySetting;
+  await notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].ADDED_TOPIC, created, user);
 };
 
 export const initCreateEntitySettings = async (context: AuthContext) => {

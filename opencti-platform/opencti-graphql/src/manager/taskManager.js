@@ -420,7 +420,7 @@ const taskHandler = async () => {
   let lock;
   try {
     // Lock the manager
-    lock = await lockResource([TASK_MANAGER_KEY]);
+    lock = await lockResource([TASK_MANAGER_KEY], { retryCount: 0 });
     running = true;
     const context = executionContext('task_manager', SYSTEM_USER);
     const task = await findTaskToExecute(context);

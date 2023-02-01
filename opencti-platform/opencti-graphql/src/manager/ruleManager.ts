@@ -190,9 +190,9 @@ const handleRuleError = async (event: BaseEvent, error: unknown) => {
 const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   const context = executionContext('rule_cleaner', RULE_MANAGER_USER);
   const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
-  const callback = (elements: Array<BasicStoreCommon>) => {
+  const callback = async (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    return rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);
+    await rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);
   };
   await elList<BasicStoreCommon>(context, RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
 };
@@ -324,7 +324,7 @@ const initRuleManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([RULE_ENGINE_KEY]);
+      lock = await lockResource([RULE_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
       // Start the stream listening

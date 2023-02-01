@@ -87,6 +87,14 @@ export const FunctionalError = (reason, data) => error('FunctionalError', 'Busin
   ...data,
 });
 
+export const ALREADY_DELETED_ERROR = 'AlreadyDeletedError';
+export const AlreadyDeletedError = (data) => error(ALREADY_DELETED_ERROR, 'Business validation', {
+  reason: 'Already deleted elements',
+  http_status: 400,
+  category: CATEGORY_BUSINESS,
+  ...data,
+});
+
 const TYPE_LOCK = 'LockError';
 export const TYPE_LOCK_ERROR = 'ExecutionError';
 export const LockTimeoutError = (data, reason) => error(TYPE_LOCK, 'Lock timeout', {

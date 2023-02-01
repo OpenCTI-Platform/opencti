@@ -11,7 +11,7 @@ import conf, { basePath, booleanConf, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
-import { applicationSession, initializeSession } from '../database/session';
+import { applicationSession } from '../database/session';
 import { checkSystemDependencies } from '../initialization';
 import { executionContext } from '../utils/access';
 
@@ -26,8 +26,7 @@ const onHealthCheck = () => checkSystemDependencies();
 
 const createHttpServer = async () => {
   const app = express();
-  const appSessionHandler = initializeSession();
-  app.use(appSessionHandler.session);
+  app.use(applicationSession.session);
   const { schema, apolloServer } = createApolloServer();
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
@@ -51,7 +50,7 @@ const createHttpServer = async () => {
       async onConnect(connectionParams, webSocket) {
         const wsSession = await new Promise((resolve) => {
           // use same session parser as normal gql queries
-          const { session } = applicationSession();
+          const { session } = applicationSession;
           session(webSocket.upgradeReq, {}, () => {
             if (webSocket.upgradeReq.session) {
               resolve(webSocket.upgradeReq.session);

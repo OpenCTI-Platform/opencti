@@ -14,7 +14,7 @@ import {
   workspaceDeleteRelations,
 } from '../domain/workspace';
 import { findById as findUserById } from '../domain/user';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -52,7 +52,7 @@ const workspaceResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         workspaceEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

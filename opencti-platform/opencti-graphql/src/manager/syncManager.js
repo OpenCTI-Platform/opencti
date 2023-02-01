@@ -215,7 +215,7 @@ const initSyncManager = () => {
     let lock;
     try {
       logApp.debug('[OPENCTI-MODULE] Running sync manager');
-      lock = await lockResource([SYNC_MANAGER_KEY]);
+      lock = await lockResource([SYNC_MANAGER_KEY], { retryCount: 0 });
       managerRunning = true;
       await processingLoop();
     } catch (e) {

@@ -18191,6 +18191,7 @@ export type SessionDetail = {
   __typename?: 'SessionDetail';
   created?: Maybe<Scalars['DateTime']>;
   id: Scalars['ID'];
+  originalMaxAge?: Maybe<Scalars['Int']>;
   ttl?: Maybe<Scalars['Int']>;
 };
 
@@ -30182,6 +30183,7 @@ export type SectorEditMutationsResolvers<ContextType = any, ParentType extends R
 export type SessionDetailResolvers<ContextType = any, ParentType extends ResolversParentTypes['SessionDetail'] = ResolversParentTypes['SessionDetail']> = ResolversObject<{
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  originalMaxAge?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   ttl?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

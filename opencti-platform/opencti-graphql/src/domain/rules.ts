@@ -28,7 +28,6 @@ import { createEntity } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { createRuleTask, deleteTask } from './task';
 import { notify } from '../database/redis';
-import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { getEntitiesFromCache } from '../database/cache';
 
 export const RULES_DECLARATION: Array<RuleRuntime> = [
@@ -79,12 +78,11 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
   if (isEmptyField(resolvedRule)) {
     throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
   }
-  // Update the rule
+  // Update the rule via upsert
   const rule = await createEntity(context, user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
   // Notify configuration change for caching system
-  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, rule, user);
+  await notify(BUS_TOPICS[ENTITY_TYPE_RULE].EDIT_TOPIC, rule, user);
   // Refresh the activated rules
-  // activatedRules = await getActivatedRules();
   if (ENABLED_RULE_ENGINE) {
     const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
     const args = { filters: tasksFilters, connectionFormat: false };

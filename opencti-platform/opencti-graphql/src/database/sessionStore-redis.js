@@ -1,28 +1,34 @@
+/* eslint-disable class-methods-use-this */
 import session from 'express-session';
 import LRU from 'lru-cache';
 import AsyncLock from 'async-lock';
-import conf from '../config/conf';
-
-export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
+import {
+  clearSessions,
+  extendSession,
+  getSession,
+  getSessionKeys,
+  getSessions,
+  getSessionTtl,
+  killSession,
+  setSession
+} from './redis';
 
 const { Store } = session;
 
 const noop = () => {};
 
 class RedisStore extends Store {
-  constructor(client, options = {}) {
+  constructor(options = {}) {
     super(options);
-    this.client = client;
+    this.ttl = options.ttl;
     this.prefix = options.prefix == null ? 'sess:' : options.prefix;
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
-    this.ttl = options.ttl || 86400; // One day in seconds.
-    this.cache = new LRU({ ttl: 1000, max: 1000 }); // Force refresh the session every sec
+    this.cache = new LRU({ ttl: 2500, max: 1000 }); // Force refresh the session every 2.5 sec
     this.touchCache = new LRU({ ttl: 120000, max: 1000 }); // Touch the session every 2 minutes
     this.locker = new AsyncLock();
   }
 
-  // region base commands
   get(sid, cb = noop) {
     const key = this.prefix + sid;
     const { cache } = this;
@@ -31,12 +37,10 @@ class RedisStore extends Store {
       if (cachedSession) {
         return done(null, cachedSession);
       }
-      return this.client.get(key, (err, data) => {
-        if (err) return done(err);
+      return getSession(key).then((data) => {
         if (!data) return done();
-        const result = this.serializer.parse(data);
-        cache.set(`get-${key}`, result);
-        return done(null, result);
+        cache.set(`get-${key}`, data);
+        return done(null, data);
       });
     };
     this.locker.acquire(key, sessionFetcher, (error, result) => {
@@ -46,19 +50,10 @@ class RedisStore extends Store {
 
   set(sid, sess, cb = noop) {
     const key = this.prefix + sid;
-    const args = [key];
     const { cache } = this;
-    let value;
-    try {
-      value = this.serializer.stringify(sess);
-    } catch (er) {
-      return cb(er);
-    }
-    args.push(this._getTTL(sess));
-    args.push(value);
     const sessionSetter = (done) => {
-      return this.client.setex(args, (err, data) => {
-        cache.set(`get-${key}`, sess);
+      return setSession(key, sess, this._getTTL(sess)).then((data) => {
+        cache.set(`get-${key}`, data);
         return done(null, data);
       });
     };
@@ -68,19 +63,19 @@ class RedisStore extends Store {
   }
 
   touch(sid, sess, cb = noop) {
-    const key = REDIS_PREFIX + this.prefix + sid;
+    const key = this.prefix + sid;
     const { touchCache } = this;
     const sessionExtender = (done) => {
-      const cachedTouch = touchCache.get(`touch-${key}`);
+      const cachedTouch = touchCache.has(`touch-${key}`);
       if (cachedTouch) {
-        return done();
-      }
-      return this.client.expire(key, this._getTTL(sess), (err, ret) => {
-        if (err) return done(err);
-        if (ret !== 1) return done(null, 'EXPIRED');
-        this.touchCache.set(`touch-${key}`, true);
         return done(null, 'OK');
-      });
+      }
+      const ttlExtension = this._getTTL(sess);
+      return extendSession(key, ttlExtension).then(((ret) => {
+        if (ret !== 1) return done(null, 'EXPIRED');
+        touchCache.set(`touch-${key}`);
+        return done(null, 'OK');
+      }));
     };
     this.locker.acquire(key, sessionExtender, (error, result) => {
       return cb(error, result);
@@ -88,52 +83,17 @@ class RedisStore extends Store {
   }
 
   destroy(sid, cb = noop) {
-    const key = this.prefix + sid;
-    this.client.del(key, cb);
-  }
-
-  ids(cb = noop) {
-    const prefixLen = this.prefix.length;
-
-    this._getAllKeys((err, keys) => {
-      if (err) return cb(err);
-      const mappedKeys = keys.map((key) => key.substr(prefixLen));
-      return cb(null, mappedKeys);
-    });
+    return killSession(sid).then(() => cb());
   }
 
   all(cb = noop) {
-    const prefixLen = REDIS_PREFIX.length + this.prefix.length;
-
-    this._getAllKeys((err, keys) => {
-      if (err) return cb(err);
-      if (keys.length === 0) return cb(null, []);
-
-      return this.client.call('MGET', keys, (mgetErr, sessions) => {
-        if (mgetErr) return cb(mgetErr);
-
-        let result;
-        try {
-          result = sessions.reduce((accum, data, index) => {
-            if (!data) return accum;
-            const parsedData = this.serializer.parse(data);
-            parsedData.id = keys[index].substr(prefixLen);
-            accum.push(parsedData);
-            return accum;
-          }, []);
-        } catch (e) {
-          return cb(e);
-        }
-        return cb(err, result);
-      });
+    return getSessions().then((sessions) => {
+      return cb(null, sessions);
     });
   }
 
   clear(cb = noop) {
-    this._getAllKeys((err, keys) => {
-      if (err) return cb(err);
-      return this.client.del(keys, cb);
-    });
+    return clearSessions().then(() => cb(null, true));
   }
 
   length(cb = noop) {
@@ -145,9 +105,8 @@ class RedisStore extends Store {
 
   expiration(sid, cb = noop) {
     const key = this.prefix + sid;
-    this.client.ttl(key, cb);
+    getSessionTtl(key).then((ttl) => cb(null, ttl));
   }
-  // endregion
 
   _getTTL(sess) {
     let ttl;
@@ -161,28 +120,8 @@ class RedisStore extends Store {
   }
 
   _getAllKeys(cb = noop) {
-    const pattern = `${this.prefix}*`;
-    this._scanKeys({}, 0, pattern, this.scanCount, cb);
-  }
-
-  _scanKeys(keys, cursor, pattern, count, cb = noop) {
-    const args = [cursor, 'match', REDIS_PREFIX + pattern, 'count', count];
-    this.client.scan(args, (err, data) => {
-      if (err) return cb(err);
-
-      const [nextCursorId, scanKeys] = data;
-      // eslint-disable-next-line no-restricted-syntax
-      for (const key of scanKeys) {
-        // eslint-disable-next-line no-param-reassign
-        keys[key] = true;
-      }
-
-      // This can be a string or a number. We check both.
-      if (Number(nextCursorId) !== 0) {
-        return this._scanKeys(keys, nextCursorId, pattern, count, cb);
-      }
-
-      return cb(null, Object.keys(keys));
+    return getSessionKeys().then((keys) => {
+      return cb(null, keys);
     });
   }
 }

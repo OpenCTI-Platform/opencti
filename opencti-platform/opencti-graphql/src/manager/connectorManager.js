@@ -94,7 +94,7 @@ const connectorHandler = async () => {
   let lock;
   try {
     // Lock the manager
-    lock = await lockResource([CONNECTOR_MANAGER_KEY]);
+    lock = await lockResource([CONNECTOR_MANAGER_KEY], { retryCount: 0 });
     running = true;
     const context = executionContext('connector_manager');
     // Execute the cleaning

@@ -12,7 +12,7 @@ import {
   findAll,
   findById,
 } from '../domain/externalReference';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
@@ -78,7 +78,7 @@ const externalReferenceResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         externalReferenceEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

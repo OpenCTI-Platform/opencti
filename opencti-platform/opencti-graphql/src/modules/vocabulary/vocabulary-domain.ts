@@ -92,7 +92,7 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
 
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
   const created = await createEntity(context, user, vocabulary, ENTITY_TYPE_VOCABULARY);
-  return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, created, user) as BasicStoreEntityVocabulary;
+  return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, created, user);
 };
 
 export const deleteVocabulary = async (context: AuthContext, user: AuthUser, vocabularyId: string, props?: Record<string, unknown>) => {

@@ -49,6 +49,9 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}GROUP_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}GROUP_ADDED_TOPIC`,
   },
+  [O.ENTITY_TYPE_RULE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}RULE_EDIT_TOPIC`,
+  },
   [O.ENTITY_TYPE_ROLE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ROLE_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ROLE_ADDED_TOPIC`,
@@ -357,7 +360,6 @@ export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', fals
 export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
-export const ENABLED_CACHING = booleanConf('redis:use_as_cache', false);
 
 export const ELASTIC_CREATION_PATTERN = nconf.get('elasticsearch:index_creation_pattern');
 
