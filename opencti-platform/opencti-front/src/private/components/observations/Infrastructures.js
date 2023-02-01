@@ -139,7 +139,7 @@ class Infrastructures extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="Intrusion-Set"
+        exportEntityType="Infrastructure"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
