@@ -38,7 +38,8 @@ class TopMenuAssets extends Component {
     const { location } = this.props;
     if (location.pathname === '/defender HQ/assets/devices'
       || location.pathname === '/defender HQ/assets/software'
-      || location.pathname === '/defender HQ/assets/network') {
+      || location.pathname === '/defender HQ/assets/network'
+      || location.pathname === '/defender HQ/assets/information_systems') {
       return this.renderMenuAssets();
     }
     if (location.pathname.includes('/defender HQ/assets/devices/')) {
@@ -49,6 +50,9 @@ class TopMenuAssets extends Component {
     }
     if (location.pathname.includes('/defender HQ/assets/network/')) {
       return this.renderMenuNetwork();
+    }
+    if (location.pathname.includes('/defender HQ/assets/information_systems/')) {
+      return this.renderMenuInformationSystems();
     }
     return 'Default';
   }
@@ -130,6 +134,25 @@ class TopMenuAssets extends Component {
         >
           {t('Software')}
         </Button>
+        <Button
+          component={Link}
+          to="/defender HQ/assets/information_systems"
+          variant={
+            location.pathname.includes('/defender HQ/assets/information_systems')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/defender HQ/assets/information_systems'
+              ? 'secondary'
+              : 'default'
+          }
+          classes={{ root: classes.button }}
+          data-cy='asset information_systems'
+        >
+          {t('Information Systems')}
+        </Button>
       </div>
     );
   }
@@ -204,6 +227,35 @@ class TopMenuAssets extends Component {
           classes={{ root: classes.buttonHome }}
         >
           {t('Software')}
+        </Button>
+        <ChevronRightIcon
+          classes={{ root: classes.arrow }}
+        />
+        <Button
+          variant='contained'
+          size="small"
+          color='secondary'
+          classes={{ root: classes.button }}
+          data-cy='asset overview'
+        >
+          {t('Overview')}
+        </Button>
+      </div>
+    );
+  }
+
+  renderMenuInformationSystems() {
+    const { t, classes } = this.props;
+    return (
+      <div className={classes.root}>
+        <Button
+          component={Link}
+          to="/defender HQ/assets/information_systems"
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
+        >
+          {t('Information Systems')}
         </Button>
         <ChevronRightIcon
           classes={{ root: classes.arrow }}
