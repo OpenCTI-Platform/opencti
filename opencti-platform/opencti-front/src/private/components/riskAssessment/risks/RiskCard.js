@@ -222,9 +222,9 @@ class RiskCardComponent extends Component {
                     marginRight: '20px',
                   }}
                 >
-                  <RiskLevel
-                    node={node}
-                  />
+                  {node?.risk_level && <RiskLevel
+                  risk={node?.risk_level}
+                />}
                 </div>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>

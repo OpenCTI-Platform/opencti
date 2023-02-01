@@ -21,6 +21,7 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   card: {
@@ -204,6 +205,30 @@ class DeviceCardComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom ={true}>
+                  {t('Risks')}
+                </Typography>
+                <Typography>
+                  {node.risk_count && t(node.risk_count)}
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Severity')}
+                </Typography>             
+
+                  {node.top_risk_severity && <RiskLevel
+                  risk={node?.top_risk_severity}
+                />}
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom ={true}>
                   {t('Asset ID')}
                 </Typography>
                 <Typography>
@@ -252,7 +277,7 @@ class DeviceCardComponent extends Component {
                   {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
-              <Grid>
+              <Grid xs={6} item={true} className={classes.body}>
                 <div>
                   <Typography
                     variant="h3"
@@ -271,8 +296,7 @@ class DeviceCardComponent extends Component {
                   </div>
                 </div>
               </Grid>
-            </Grid>
-            <div className={classes.objectLabel}>
+              <Grid xs={6} item={true} className={classes.body}>
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -283,11 +307,8 @@ class DeviceCardComponent extends Component {
                 labels={node.labels}
                 onClick={onLabelClick.bind(this)}
               />
-              {/* <StixCoreObjectLabels
-                labels={node.labels}
-                onClick={onLabelClick.bind(this)}
-              /> */}
-            </div>
+              </Grid>
+            </Grid>           
           </CardContent>
         </CardActionArea>
       </Card>
@@ -322,6 +343,8 @@ const DeviceCardFragment = createFragmentContainer(
         }
         asset_type
         fqdn
+        top_risk_severity
+        risk_count
         labels {
           __typename
           id

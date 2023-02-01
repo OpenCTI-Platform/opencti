@@ -15,6 +15,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   item: {
@@ -98,6 +99,24 @@ class DeviceLineComponent extends Component {
               >
                 {/* KK-HWELL-011 */}
                 {node.name && node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.risk_count.width }}
+              >
+                {/* KK-HWELL-011 */}
+                {node.risk_count && node.risk_count}
+              </div>
+              <div
+               className={classes.bodyItem}
+                style={{
+                  display: 'flex',
+                  width: dataColumns.top_risk_severity.width,
+                }}
+              >
+                {node?.top_risk_severity && <RiskLevel
+                  risk={node?.top_risk_severity}
+                />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -197,6 +216,8 @@ const DeviceLineFragment = createFragmentContainer(
         }
         fqdn
         network_id
+        top_risk_severity
+        risk_count
         # objectLabel {
         #   edges {
         #     node {
@@ -273,6 +294,28 @@ class DeviceLineDummyComponent extends Component {
                   animation="wave"
                   variant="rect"
                   width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.risk_count.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.top_risk_severity.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
                   height="100%"
                 />
               </div>
