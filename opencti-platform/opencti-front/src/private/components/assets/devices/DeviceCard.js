@@ -26,13 +26,13 @@ import RiskLevel from '../../common/form/RiskLevel';
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: '355px',
+    height: '319px',
     borderRadius: 9,
     border: `1.5px solid ${theme.palette.dataView.border}`,
   },
   selectedItem: {
     width: '100%',
-    height: '355px',
+    height: '319px',
     borderRadius: 9,
     border: `1.5px solid ${theme.palette.dataView.selectedBorder}`,
     background: theme.palette.dataView.selectedBackgroundColor,
@@ -215,7 +215,6 @@ class DeviceCardComponent extends Component {
                 <Typography
                   variant="h3"
                   color="textSecondary"
-                  style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
                   {t('Severity')}
@@ -278,7 +277,7 @@ class DeviceCardComponent extends Component {
                   {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
-              <Grid>
+              <Grid xs={6} item={true} className={classes.body}>
                 <div>
                   <Typography
                     variant="h3"
@@ -297,8 +296,7 @@ class DeviceCardComponent extends Component {
                   </div>
                 </div>
               </Grid>
-            </Grid>
-            <div className={classes.objectLabel}>
+              <Grid xs={6} item={true} className={classes.body}>
               <Typography
                 variant="h3"
                 color="textSecondary"
@@ -309,11 +307,8 @@ class DeviceCardComponent extends Component {
                 labels={node.labels}
                 onClick={onLabelClick.bind(this)}
               />
-              {/* <StixCoreObjectLabels
-                labels={node.labels}
-                onClick={onLabelClick.bind(this)}
-              /> */}
-            </div>
+              </Grid>
+            </Grid>           
           </CardContent>
         </CardActionArea>
       </Card>

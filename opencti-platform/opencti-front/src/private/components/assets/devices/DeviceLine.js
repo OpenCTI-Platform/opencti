@@ -112,8 +112,6 @@ class DeviceLineComponent extends Component {
                 style={{
                   display: 'flex',
                   width: dataColumns.top_risk_severity.width,
-                  // marginRight: '20px',
-                  // paddingLeft: '24px',
                 }}
               >
                 {node?.top_risk_severity && <RiskLevel
@@ -296,6 +294,28 @@ class DeviceLineDummyComponent extends Component {
                   animation="wave"
                   variant="rect"
                   width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.risk_count.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.top_risk_severity.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
                   height="100%"
                 />
               </div>

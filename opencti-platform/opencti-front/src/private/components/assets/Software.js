@@ -31,8 +31,8 @@ class Software extends Component {
       'view-software',
     );
     this.state = {
-      sortBy: R.propOr('name', 'sortBy', params),
-      orderAsc: R.propOr(true, 'orderAsc', params),
+      sortBy: R.propOr('top_risk_severity', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
@@ -277,6 +277,16 @@ class Software extends Component {
         width: '15%',
         isSortable: true,
       },
+      risk_count: {
+        label: 'Risks',
+        width: '5%',
+        isSortable: true,
+      },
+      top_risk_severity: {
+        label: 'Severity',
+        width: '12%',
+        isSortable: true,
+      },
       asset_type: {
         label: 'Type',
         width: '8%',
@@ -299,12 +309,12 @@ class Software extends Component {
       },
       software_identifier: {
         label: 'SWID',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       label_name: {
         label: 'Labels',
-        width: '23%',
+        width: '10%',
         isSortable: true,
       },
     };

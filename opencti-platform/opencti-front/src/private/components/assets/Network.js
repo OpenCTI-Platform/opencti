@@ -31,8 +31,8 @@ class Network extends Component {
       'view-network',
     );
     this.state = {
-      sortBy: R.propOr('name', 'sortBy', params),
-      orderAsc: R.propOr(true, 'orderAsc', params),
+      sortBy: R.propOr('top_risk_severity', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
@@ -282,19 +282,29 @@ class Network extends Component {
         width: '15%',
         isSortable: true,
       },
+      risk_count: {
+        label: 'Risks',
+        width: '5%',
+        isSortable: true,
+      },
+      top_risk_severity: {
+        label: 'Severity',
+        width: '12%',
+        isSortable: true,
+      },
       asset_type: {
         label: 'Type',
-        width: '8%',
+        width: '5%',
         isSortable: true,
       },
       asset_id: {
         label: 'Asset ID',
-        width: '19%',
+        width: '17%',
         isSortable: true,
       },
       network_id: {
         label: 'Network ID',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       network_range: {
@@ -304,7 +314,7 @@ class Network extends Component {
       },
       label_name: {
         label: 'Labels',
-        width: '23%',
+        width: '13%',
         isSortable: true,
       },
     };
