@@ -1,5 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
-import type { Notification, Resolvers } from '../../generated/graphql';
+import type { Resolvers } from '../../generated/graphql';
 import {
   addDigestTrigger,
   addLiveTrigger,
@@ -16,7 +16,7 @@ import {
   triggersGet,
   myUnreadNotificationsCount
 } from './notification-domain';
-import { pubsub } from '../../database/redis';
+import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_NOTIFICATION } from './notification-types';
 
@@ -47,7 +47,7 @@ const notificationResolvers: Resolvers = {
     notification: {
       resolve: /* istanbul ignore next */ (payload: any) => payload.instance,
       subscribe: /* istanbul ignore next */ (_, __, context) => {
-        const asyncIterator = pubsub.asyncIterator<Notification>(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].ADDED_TOPIC);
+        const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].ADDED_TOPIC);
         const filtering = withFilter(() => asyncIterator, (payload) => {
           return payload && payload.instance.user_id === context.user.id;
         })();

@@ -1,11 +1,11 @@
 import { expect } from 'vitest';
+import gql from 'graphql-tag';
 import { listThings } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
 import { ENTITY_TYPE_TASK } from '../../src/schema/internalObject';
-import { setRuleActivation } from '../../src/domain/rules';
 import { internalLoadById, listEntities } from '../../src/database/middleware-loader';
-import { testContext } from './testQuery';
+import { queryAsAdmin, testContext } from './testQuery';
 import { fetchStreamInfo } from '../../src/database/redis';
 import { logApp } from '../../src/config/conf';
 
@@ -29,10 +29,18 @@ export const getInferences = (type) => {
   return listThings(testContext, SYSTEM_USER, [type], opts);
 };
 
+const RULE_MUTATION = gql`
+  mutation ruleSetActivation($enable: Boolean!, $id: ID!) {
+    ruleSetActivation(enable: $enable, id: $id) {
+      activated
+    }
+  }
+`;
+
 export const changeRule = async (ruleId, active) => {
   const start = new Date().getTime();
   // Change the status
-  await setRuleActivation(testContext, SYSTEM_USER, ruleId, active);
+  await queryAsAdmin({ query: RULE_MUTATION, variables: { id: ruleId, enable: active } });
   // Wait for rule to finish activation
   let ruleActivated = false;
   while (ruleActivated !== true) {
@@ -46,7 +54,7 @@ export const changeRule = async (ruleId, active) => {
   }
   // Wait all events to be consumed
   let stableCount = 1;
-  while (stableCount < 4) {
+  while (stableCount < 3) {
     const innerInfo = await fetchStreamInfo();
     const ruleManager = await internalLoadById(testContext, SYSTEM_USER, 'rule_engine_settings');
     await wait(2000);
@@ -57,7 +65,7 @@ export const changeRule = async (ruleId, active) => {
     }
   }
   const stop = new Date().getTime() - start;
-  logApp.info(`[TEST] Rule ${active ? ' activated' : 'disabled'} in ${stop} ms`);
+  logApp.info(`[TEST] Rule ${ruleId} ${active ? 'activated' : 'disabled'} in ${stop} ms`);
 };
 
 export const activateRule = async (ruleId) => changeRule(ruleId, true);

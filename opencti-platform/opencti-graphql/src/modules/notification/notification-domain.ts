@@ -20,7 +20,6 @@ import {
   storeLoadById,
 } from '../../database/middleware-loader';
 import {
-  BasicStoreEntityDigestTrigger,
   BasicStoreEntityLiveTrigger,
   BasicStoreEntityNotification,
   BasicStoreEntityTrigger,
@@ -35,17 +34,17 @@ import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 // Outcomes
 
 // Triggers
-export const addLiveTrigger = async (context: AuthContext, user: AuthUser, trigger: TriggerLiveAddInput) => {
+export const addLiveTrigger = async (context: AuthContext, user: AuthUser, trigger: TriggerLiveAddInput): Promise<BasicStoreEntityLiveTrigger> => {
   const defaultOpts = { trigger_type: 'live', user_ids: [user.id], group_ids: [], created: now(), updated: now() };
   const liveTrigger = { ...trigger, ...defaultOpts };
   const created = await createEntity(context, user, liveTrigger, ENTITY_TYPE_TRIGGER);
-  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user) as BasicStoreEntityLiveTrigger;
+  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
 export const addDigestTrigger = async (context: AuthContext, user: AuthUser, trigger: TriggerDigestAddInput) => {
   const defaultOpts = { trigger_type: 'digest', user_ids: [user.id], group_ids: [], created: now(), updated: now() };
   const digestTrigger = { ...trigger, ...defaultOpts };
   const created = await createEntity(context, user, digestTrigger, ENTITY_TYPE_TRIGGER);
-  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user) as BasicStoreEntityDigestTrigger;
+  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
 export const triggerGet = (context: AuthContext, user: AuthUser, triggerId: string): BasicStoreEntityTrigger => {
   return storeLoadById(context, user, triggerId, ENTITY_TYPE_TRIGGER) as unknown as BasicStoreEntityTrigger;

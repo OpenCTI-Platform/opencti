@@ -57,7 +57,7 @@ const retentionHandler = async () => {
   let lock;
   try {
     // Lock the manager
-    lock = await lockResource([RETENTION_MANAGER_KEY]);
+    lock = await lockResource([RETENTION_MANAGER_KEY], { retryCount: 0 });
     running = true;
     const context = executionContext('retention_manager');
     const retentionRules = await findRetentionRulesToExecute(context, RETENTION_MANAGER_USER, { connectionFormat: false });

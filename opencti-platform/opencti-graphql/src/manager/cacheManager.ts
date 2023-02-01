@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise as Bluebird } from 'bluebird';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
-import { pubsub } from '../database/redis';
+import { pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
 import {
   ENTITY_TYPE_CONNECTOR,
@@ -14,6 +14,7 @@ import {
 } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import type {
+  BasicStoreEntity,
   BasicStreamEntity,
   BasicTriggerEntity,
   BasicWorkflowStatusEntity,
@@ -111,7 +112,7 @@ const platformEntitySettings = async (context: AuthContext) => {
 };
 
 const initCacheManager = () => {
-  let subscribeIdentifier: number;
+  let subscribeIdentifier: { topic: string; unsubscribe: () => void; };
   return {
     start: async () => {
       const start = new Date().getTime();
@@ -143,17 +144,17 @@ const initCacheManager = () => {
       writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, filters);
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
-      subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {
+      subscribeIdentifier = await pubSubSubscription<{ instance: BasicStoreEntity }>(`${TOPIC_PREFIX}*`, (event) => {
         const { instance } = event;
         // Invalid cache if any entity has changed.
         resetCacheForEntity(instance.entity_type);
-      }, { pattern: true });
+      });
       const startingDuration = Math.round((new Date().getTime() - start) / 1000);
       logApp.info(`[OPENCTI-MODULE] Cache manager initialized in ${startingDuration} sec(s)`);
     },
     shutdown: async () => {
       if (subscribeIdentifier) {
-        pubsub.unsubscribe(subscribeIdentifier);
+        try { subscribeIdentifier.unsubscribe(); } catch { /* dont care */ }
       }
       return true;
     }

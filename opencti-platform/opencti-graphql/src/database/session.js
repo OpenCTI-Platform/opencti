@@ -1,17 +1,28 @@
 import session from 'express-session';
 import nconf from 'nconf';
 import * as R from 'ramda';
-import { createMemorySessionStore, createRedisSessionStore } from './redis';
 import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
+import SessionStoreMemory from './sessionStore-memory';
+import RedisStore from './sessionStore-redis';
 
-let appSessionHandler;
 const sessionManager = nconf.get('app:session_manager');
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
 
+const createMemorySessionStore = () => {
+  return new SessionStoreMemory({
+    checkPeriod: 3600000, // prune expired entries every 1h
+  });
+};
+const createRedisSessionStore = () => {
+  return new RedisStore({
+    ttl: conf.get('app:session_timeout'),
+  });
+};
 const createSessionMiddleware = () => {
   const isRedisSession = sessionManager === 'shared';
   const store = isRedisSession ? createRedisSessionStore() : createMemorySessionStore();
   return {
+    store,
     session: session({
       name: OPENCTI_SESSION,
       store,
@@ -26,28 +37,24 @@ const createSessionMiddleware = () => {
         sameSite: 'lax',
       },
     }),
-    store,
   };
 };
 
-export const initializeSession = () => {
-  appSessionHandler = createSessionMiddleware();
-  return appSessionHandler;
-};
-
 export const findSessions = () => {
-  const { store } = applicationSession();
+  const { store } = applicationSession;
   return new Promise((accept) => {
     store.all((err, result) => {
-      const sessionsPerUser = R.groupBy(
-        (s) => s.user.id,
-        R.filter((n) => n.user, result)
-      );
+      const sessionsPerUser = R.groupBy((s) => s.user.id, R.filter((n) => n.user, result));
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
-        return {
-          user_id: k,
-          sessions: v.map((s) => ({ id: s.id, created: s.user.session_creation })),
-        };
+        const userSessions = v.map((s) => {
+          return {
+            id: s.redis_key_id,
+            created: s.user.session_creation,
+            ttl: s.redis_key_ttl,
+            originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
+          };
+        });
+        return { user_id: k, sessions: userSessions };
       });
       accept(sessions);
     });
@@ -63,17 +70,8 @@ export const findUserSessions = async (userId) => {
   return [];
 };
 
-export const fetchSessionTtl = (id) => {
-  const { store } = applicationSession();
-  return new Promise((accept) => {
-    store.expiration(id, (err, ttl) => {
-      accept(ttl);
-    });
-  });
-};
-
 export const killSession = (id) => {
-  const { store } = applicationSession();
+  const { store } = applicationSession;
   return new Promise((accept) => {
     store.destroy(id, () => {
       accept(id);
@@ -92,7 +90,7 @@ export const killUserSessions = async (userId) => {
 };
 
 export const markSessionForRefresh = async (id) => {
-  const { store } = applicationSession();
+  const { store } = applicationSession;
   return new Promise((resolve) => {
     store.get(id, (_, currentSession) => {
       const sessionObject = { ...currentSession, session_refresh: true };
@@ -108,4 +106,4 @@ export const findSessionsForUsers = async (userIds) => {
   return sessions.filter((s) => userIds.includes(s.user_id)).map((s) => s.sessions).flat();
 };
 
-export const applicationSession = () => appSessionHandler;
+export const applicationSession = createSessionMiddleware();

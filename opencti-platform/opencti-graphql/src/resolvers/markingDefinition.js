@@ -9,7 +9,7 @@ import {
   markingDefinitionEditContext,
   markingDefinitionEditField,
 } from '../domain/markingDefinition';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { stixLoadByIdStringify } from '../database/middleware';
 
@@ -37,7 +37,7 @@ const markingDefinitionResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         markingDefinitionEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

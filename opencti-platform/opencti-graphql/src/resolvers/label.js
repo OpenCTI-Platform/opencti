@@ -9,7 +9,7 @@ import {
   labelEditContext,
   labelEditField,
 } from '../domain/label';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 
@@ -36,7 +36,7 @@ const labelResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         labelEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

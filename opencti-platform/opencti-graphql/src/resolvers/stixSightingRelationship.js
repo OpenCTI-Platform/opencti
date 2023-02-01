@@ -20,7 +20,7 @@ import {
   batchReports,
   batchCases,
 } from '../domain/stixSightingRelationship';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, timeSeriesRelations, batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
@@ -101,7 +101,7 @@ const stixSightingRelationshipResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         stixSightingRelationshipEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

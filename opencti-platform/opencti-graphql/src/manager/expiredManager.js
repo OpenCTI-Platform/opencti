@@ -22,7 +22,7 @@ const expireHandler = async () => {
   let lock;
   try {
     // Lock the manager
-    lock = await lockResource([EXPIRED_MANAGER_KEY]);
+    lock = await lockResource([EXPIRED_MANAGER_KEY], { retryCount: 0 });
     running = true;
     const context = executionContext('expiration_manager');
     // Execute the cleaning

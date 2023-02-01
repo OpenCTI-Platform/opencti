@@ -4,7 +4,6 @@ import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/d
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
-import { startModules, shutdownModules } from '../../../src/modules';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {
@@ -22,14 +21,12 @@ const importFileId = `import/global/${exportFileName}`;
 
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {
-    await startModules();
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const importOpts = [API_URI, API_TOKEN, malware.id, exportFileName];
     // local exporter create an export and also upload the file as an import
     const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
-    await shutdownModules();
   });
   it('should file listing', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
