@@ -55,9 +55,8 @@ const feedbackQuery = graphql`
   }
 `;
 
-const RootCaseComponent = ({ queryRef }) => {
+const RootCaseComponent = ({ queryRef, caseId }) => {
   const { me } = useAuth();
-  const { caseId } = useParams() as { caseId: string };
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootFeedbackSubscription>>(
     () => ({
       subscription,
@@ -152,7 +151,7 @@ const Root = () => {
   const queryRef = useQueryLoading<RootFeedbackQuery>(feedbackQuery, { id: caseId });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootCaseComponent queryRef={queryRef} />
+      <RootCaseComponent queryRef={queryRef} caseId={caseId}/>
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

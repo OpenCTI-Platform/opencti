@@ -59,11 +59,7 @@ const administrativeAreaQuery = graphql`
   }
 `;
 
-const RootAdministrativeAreaComponent = ({ queryRef }) => {
-  const { administrativeAreaId } = useParams() as {
-    administrativeAreaId: string;
-  };
-  const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
+const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
   >(
@@ -77,26 +73,6 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
   return (
-    <div>
-      <TopBar />
-      <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'organizations',
-            'countries',
-            'regions',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'observables',
-          ]}
-        />
-      </Route>
       <>
         {administrativeArea ? (
           <Switch>
@@ -205,7 +181,6 @@ const RootAdministrativeAreaComponent = ({ queryRef }) => {
           <ErrorNotFound />
         )}
       </>
-    </div>
   );
 };
 
@@ -217,12 +192,38 @@ const RootAdministrativeArea = () => {
     administrativeAreaQuery,
     { id: administrativeAreaId },
   );
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootAdministrativeAreaComponent queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
+  const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
+  return (
+    <div>
+      <TopBar />
+      <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'organizations',
+            'countries',
+            'regions',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'attack_patterns',
+            'tools',
+            'observables',
+          ]}
+        />
+      </Route>
+      {
+        queryRef ? (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <RootAdministrativeAreaComponent queryRef={queryRef} administrativeAreaId={administrativeAreaId}/>
+          </React.Suspense>
+        ) : (
+          <Loader variant={LoaderVariant.inElement} />
+        )
+      }
+    </div>
   );
 };
 
