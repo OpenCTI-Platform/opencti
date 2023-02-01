@@ -46,7 +46,6 @@ StixDomainObjectsExportsProps
   context,
 }) => {
   const classes = useStyles();
-
   return (
       <Drawer
         variant="persistent"

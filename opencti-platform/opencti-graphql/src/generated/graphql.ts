@@ -11714,6 +11714,7 @@ export type MutationStixCyberObservableRelationshipEditArgs = {
 
 export type MutationStixCyberObservablesExportAskArgs = {
   context?: InputMaybe<Scalars['String']>;
+  elementId?: InputMaybe<Scalars['String']>;
   exportType: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCyberObservablesFiltering>>>;
@@ -11721,6 +11722,7 @@ export type MutationStixCyberObservablesExportAskArgs = {
   maxMarkingDefinition?: InputMaybe<Scalars['String']>;
   orderBy?: InputMaybe<StixCyberObservablesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
   selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;

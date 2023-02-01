@@ -549,7 +549,7 @@ class EntityStixCoreRelationships extends Component {
                 disableExport ? null : this.handleToggleExports.bind(this)
               }
               openExports={openExports}
-              exportEntityType="Stix-Core-Object"
+              exportEntityType={'Stix-Core-Object'}
               iconExtension={true}
               filters={filters}
               availableFilterKeys={availableFilterKeys}
@@ -633,7 +633,7 @@ class EntityStixCoreRelationships extends Component {
     const finalView = currentView || view;
     let selectedTypes;
     if (filters.entity_type && filters.entity_type.length > 0) {
-      if (R.filter((o) => o.id === 'all', filters.entity_type).length > 0) {
+      if (filters.entity_type.filter((o) => o.id === 'all').length > 0) {
         selectedTypes = [];
       } else {
         selectedTypes = filters.entity_type.map((o) => o.id);
@@ -646,7 +646,7 @@ class EntityStixCoreRelationships extends Component {
     let selectedRelationshipTypes;
     if (filters.relationship_type && filters.relationship_type.length > 0) {
       if (
-        R.filter((o) => o.id === 'all', filters.relationship_type).length > 0
+        filters.relationship_type.filter((o) => o.id === 'all').length > 0
       ) {
         selectedRelationshipTypes = [];
       } else {

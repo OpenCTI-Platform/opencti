@@ -271,24 +271,21 @@ class StixDomainObjectIndicators extends Component {
         - Object.keys(deSelectedElements || {}).length;
     }
     let finalFilters = filters;
-    finalFilters = R.assoc(
-      'indicates',
-      [{ id: stixDomainObjectId, value: stixDomainObjectId }],
-      finalFilters,
-    );
+    finalFilters = {
+      ...finalFilters,
+      indicates: [{ id: stixDomainObjectId, value: stixDomainObjectId }],
+    };
     if (indicatorTypes.length) {
-      finalFilters = R.assoc(
-        'pattern_type',
-        R.map((n) => ({ id: n, value: n }), indicatorTypes),
-        finalFilters,
-      );
+      finalFilters = {
+        ...finalFilters,
+        pattern_type: indicatorTypes.map((n) => ({ id: n, value: n })),
+      };
     }
     if (observableTypes.length) {
-      finalFilters = R.assoc(
-        'x_opencti_main_observable_type',
-        R.map((n) => ({ id: n, value: n }), observableTypes),
-        finalFilters,
-      );
+      finalFilters = {
+        ...finalFilters,
+        x_opencti_main_observable_type: observableTypes.map((n) => ({ id: n, value: n })),
+      };
     }
     return (
       <UserContext.Consumer>
@@ -396,9 +393,8 @@ class StixDomainObjectIndicators extends Component {
         {
           key: 'x_opencti_main_observable_type',
           operator: 'match',
-          values: R.map(
+          values: observableTypes.map(
             (type) => type.toLowerCase().replace(/\*/g, ''),
-            observableTypes,
           ),
         },
         finalFilters,

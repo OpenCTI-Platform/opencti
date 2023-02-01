@@ -13722,6 +13722,8 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixCyberObservablesFiltering]
     filterMode: FilterMode
+    relationship_type: [String]
+    elementId: String
     selectedIds: [String]
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean

@@ -129,7 +129,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
   }
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
-    const { paginationOptions, context, elementId } = this.props;
+    const { paginationOptions, context } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
@@ -142,7 +142,6 @@ class StixDomainObjectsExportCreationComponent extends Component {
         maxMarkingDefinition,
         context,
         ...paginationOptions,
-        elementId,
         selectedIds,
       },
       onCompleted: () => {
@@ -311,7 +310,6 @@ StixDomainObjectsExportCreations.propTypes = {
   data: PropTypes.object,
   exportEntityType: PropTypes.string.isRequired,
   paginationOptions: PropTypes.object,
-  elementId: PropTypes.string,
   context: PropTypes.string,
   onExportAsk: PropTypes.func,
 };
