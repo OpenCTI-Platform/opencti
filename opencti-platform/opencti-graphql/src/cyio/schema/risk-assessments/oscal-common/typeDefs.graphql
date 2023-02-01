@@ -1543,3 +1543,41 @@ input PropertyAddInput {
   "Identifies a textual label that provides a sub-type or characterization of the property's name. This can be used to further distinguish or discriminate between the semantics of multiple properties of the same object with the same name and ns."
   class: String
 }
+
+##### OSCAL Link
+##
+"Defines a reference to a local or remote source"
+type Link implements ComplexDatatype & LifecycleObject {
+  # ComplexDatatype
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the type of the Object."
+  entity_type: String!
+  # Lifecycle Object
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp
+  # OSCAL Link
+  "Identifies a resolvable URL reference to a resource."
+  url: URL!
+  "Identifies the type of relationship provided by the link. This can be an indicator of the link's purpose."
+  reference_purpose: String
+  "Identifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry."
+  media_type: String
+  "Identifies a textual label to associate with the link, which may be used for presentation in a tool."
+  label_text: String
+}
+input LinkInput {
+  "Identifies a resolvable URL reference to a resource."
+  url: URL!
+  "Identifies the type of relationship provided by the link. This can be an indicator of the link's purpose."
+  reference_purpose: String
+  "Identifies a media type as defined by the Internet Assigned Numbers Authority (IANA) Media Types Registry."
+  media_type: String
+  "Identifies a textual label  to associate with the link, which may be used for presentation in a tool."
+  label_text: String
+}
+
+
+
