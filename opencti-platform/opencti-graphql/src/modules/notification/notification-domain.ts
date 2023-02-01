@@ -25,6 +25,7 @@ import {
   BasicStoreEntityTrigger,
   ENTITY_TYPE_NOTIFICATION,
   ENTITY_TYPE_TRIGGER,
+  NOTIFICATION_NUMBER,
   NotificationAddInput
 } from './notification-types';
 import { now } from '../../utils/format';
@@ -86,7 +87,7 @@ export const myNotificationsFind = (context: AuthContext, user: AuthUser, opts: 
   return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], queryArgs);
 };
 
-export const myUnreadNotificationsCount = (context: AuthContext, user: AuthUser) => {
+export const myUnreadNotificationsCount = async (context: AuthContext, user: AuthUser) => {
   const queryFilters = [{ key: 'user_id', values: [user.id] }, { key: 'is_read', values: [false] }];
   const queryArgs = { filters: queryFilters };
   return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...queryArgs, types: [ENTITY_TYPE_NOTIFICATION] });
@@ -98,11 +99,15 @@ export const notificationDelete = (context: AuthContext, user: AuthUser, notific
 
 export const notificationEditRead = async (context: AuthContext, user: AuthUser, notificationId: string, read: boolean) => {
   const { element } = await patchAttribute(context, user, notificationId, ENTITY_TYPE_NOTIFICATION, { is_read: read });
+  const unreadNotificationsCount = await myUnreadNotificationsCount(context, user);
+  await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: user.id }, user);
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].EDIT_TOPIC, element, user);
 };
 
 export const addNotification = async (context: AuthContext, user: AuthUser, notification: NotificationAddInput) => {
   const created = await createEntity(context, user, notification, ENTITY_TYPE_NOTIFICATION);
+  const unreadNotificationsCount = await myUnreadNotificationsCount(context, user);
+  await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: user.id }, user);
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].ADDED_TOPIC, created, user);
 };
 // endregion

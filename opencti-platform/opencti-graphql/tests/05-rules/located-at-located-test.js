@@ -11,6 +11,7 @@ import { activateRule, disableRule, getInferences, inferenceLookup } from '../ut
 import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
 import { wait } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
+import { logApp } from '../../src/config/conf';
 
 const RULE = RULE_PREFIX + LocatedAtLocatedRule.id;
 const FRANCE = 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d';
@@ -112,11 +113,13 @@ describe('Located at located rule', () => {
       const afterRecreationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRecreationRelations.length).toBe(7);
       // Remove the city
+      logApp.info('[TEST LOCATED_AT] REMOVING PARIS');
       await internalDeleteElementById(testContext, SYSTEM_USER, paris.internal_id);
       await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterParisDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterParisDeletionRelations.length).toBe(5);
       // Disable the rule
+      logApp.info('[TEST LOCATED_AT] DISABLING RULE');
       await disableRule(LocatedAtLocatedRule.id);
       // Check the number of inferences
       const afterDisableRelations = await getInferences(RELATION_LOCATED_AT);

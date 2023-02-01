@@ -174,9 +174,7 @@ class ListLines extends Component {
       redirectionMode,
     } = this.props;
     return (
-      <div
-        className={noPadding ? classes.containerNoPadding : classes.container}
-      >
+      <div className={noPadding ? classes.containerNoPadding : classes.container}>
         <div className={classes.parameters}>
           {typeof handleSearch === 'function' && (
             <div style={{ float: 'left', marginRight: 20 }}>
@@ -230,9 +228,9 @@ class ListLines extends Component {
                         !redirectionMode || redirectionMode === 'overview'
                           ? 'secondary'
                           : 'primary'
-                      }
-                    />
-                  </Tooltip>
+
+                    }
+                  /></Tooltip>
                 </ToggleButton>
                 <ToggleButton value="knowledge" aria-label="knowledge">
                   <Tooltip title={t('Redirecting to the Knowledge section')}>

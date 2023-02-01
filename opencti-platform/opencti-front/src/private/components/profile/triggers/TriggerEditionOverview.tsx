@@ -16,13 +16,13 @@ import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditi
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import Filters from '../../common/lists/Filters';
-import FilterCard from '../../../../components/FilterCard';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { convertTriggers } from '../../../../utils/edition';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { dayStartDate, parse } from '../../../../utils/Time';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -77,7 +77,11 @@ TriggerEditionOverviewProps
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const filters = JSON.parse(trigger.filters ?? '{}');
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
-  const handleAddFilter = (key: string, id: string, value: unknown) => {
+  const handleAddFilter = (
+    key: string,
+    id: string,
+    value: Record<string, unknown> | string,
+  ) => {
     if (filters[key] && filters[key].length > 0) {
       const updatedFilters = R.assoc(
         key,
@@ -471,10 +475,13 @@ TriggerEditionOverviewProps
                   variant="text"
                   availableFilterKeys={[
                     'entity_type',
+                    'x_opencti_workflow_id',
+                    'assigneeTo',
+                    'objectContains',
                     'markedBy',
                     'labelledBy',
-                    'objectContains',
                     'createdBy',
+                    'priority',
                     'x_opencti_score',
                     'x_opencti_detection',
                     'revoked',
@@ -498,9 +505,11 @@ TriggerEditionOverviewProps
                   availableRelationFilterTypes={undefined}
                 />
               </div>
-              <FilterCard
+              <div className="clearfix" />
+              <FilterIconButton
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
+                classNameNumber={2}
               />
             </div>
           )}

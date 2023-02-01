@@ -687,7 +687,7 @@ const buildCompleteUser = async (context, client) => {
     individual_id: individualId,
     inside_platform_organization: isUserPlatform,
     allowed_marking: marking.user,
-    all_marking: marking.all
+    all_marking: marking.all,
   };
 };
 

@@ -3,6 +3,8 @@ import conf, {
   ENABLED_CONNECTOR_MANAGER,
   ENABLED_EXPIRED_MANAGER,
   ENABLED_HISTORY_MANAGER,
+  ENABLED_NOTIFICATION_MANAGER,
+  ENABLED_PUBLISHER_MANAGER,
   ENABLED_RETENTION_MANAGER,
   ENABLED_RULE_ENGINE,
   ENABLED_SYNC_MANAGER,
@@ -23,6 +25,8 @@ import ruleEngine from './manager/ruleManager';
 import syncManager from './manager/syncManager';
 import historyManager from './manager/historyManager';
 import clusterManager from './manager/clusterManager';
+import notificationManager from './manager/notificationManager';
+import publisherManager from './manager/publisherManager';
 
 // region static graphql modules
 import './modules/index';
@@ -87,6 +91,18 @@ const startModules = async () => {
     logApp.info('[OPENCTI-MODULE] History manager not started (disabled by configuration)');
   }
   // endregion
+  // region notification
+  if (ENABLED_NOTIFICATION_MANAGER) {
+    await notificationManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Notification manager not started (disabled by configuration)');
+  }
+  if (ENABLED_PUBLISHER_MANAGER) {
+    await publisherManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Publisher manager not started (disabled by configuration)');
+  }
+  // endregion
   // region Cluster manager
   await clusterManager.start();
   // endregion
@@ -127,6 +143,14 @@ const shutdownModules = async () => {
   // region History manager
   if (ENABLED_HISTORY_MANAGER) {
     stoppingPromises.push(historyManager.shutdown());
+  }
+  // endregion
+  // region notification
+  if (ENABLED_NOTIFICATION_MANAGER) {
+    stoppingPromises.push(notificationManager.shutdown());
+  }
+  if (ENABLED_PUBLISHER_MANAGER) {
+    stoppingPromises.push(publisherManager.shutdown());
   }
   // endregion
   // region Cluster manager

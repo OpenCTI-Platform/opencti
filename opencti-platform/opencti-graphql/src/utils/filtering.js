@@ -8,7 +8,7 @@ import {
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { isUserCanAccessStixElement, SYSTEM_USER } from './access';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { getParentTypes } from '../schema/schemaUtils';
+import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../database/stix';
 import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
@@ -85,6 +85,9 @@ export const convertFiltersFrontendFormat = async (context, filters) => {
     } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
       const workingKey = key.replace('_end_date', '').replace('_lt', '');
       adaptedFilters.push({ key: workingKey, operator: 'lt', values });
+    } else if (key.endsWith('_gte')) {
+      const workingKey = key.replace('_gte', '');
+      adaptedFilters.push({ key: workingKey, operator: 'gte', values });
     } else if (key.endsWith('_lte')) {
       const workingKey = key.replace('_lte', '');
       adaptedFilters.push({ key: workingKey, operator: 'lte', values });
@@ -151,7 +154,7 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
       }
       // Entity type filtering
       if (key === TYPE_FILTER) {
-        const instanceType = stix.extensions[STIX_EXT_OCTI].type;
+        const instanceType = stix.extensions?.[STIX_EXT_OCTI]?.type ?? generateInternalType(stix);
         const instanceAllTypes = [instanceType, ...getParentTypes(instanceType)];
         const isTypeAvailable = values.some((v) => instanceAllTypes.includes(v.id));
         // If entity type is available but must not be
@@ -290,7 +293,7 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
       }
       // object Refs filtering
       if (key === OBJECT_CONTAINS_FILTER) {
-        const instanceObjects = [...(stix.object_refs ?? []), ...(stix.extensions[STIX_EXT_OCTI].object_refs_inferred ?? [])];
+        const instanceObjects = [...(stix.object_refs ?? []), ...(stix.extensions?.[STIX_EXT_OCTI]?.object_refs_inferred ?? [])];
         const ids = values.map((v) => v.id);
         const isRefFound = ids.some((r) => instanceObjects.includes(r));
         // If ref is available but must not be
@@ -303,22 +306,52 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
         }
       }
       // region specific for relationships
-      if (stix.type === STIX_TYPE_RELATION) {
-        if (key === RELATION_FROM) { // 'fromId'
+      if (key === RELATION_FROM) { // 'fromId'
+        if (stix.type === STIX_TYPE_RELATION) {
           const ids = values.map((v) => v.id);
           const idFromFound = ids.includes(stix.source_ref);
-          if (!idFromFound) {
+          // If source is available but must not be
+          if (operator === 'not_eq' && idFromFound) {
             return false;
           }
+          // If source is not available but must be
+          if (operator === 'eq' && !idFromFound) {
+            return false;
+          }
+        } else if (stix.type === STIX_TYPE_SIGHTING) {
+          const ids = values.map((v) => v.id);
+          const isFromFound = ids.includes(stix.sighting_of_ref);
+          if (!isFromFound) {
+            return false;
+          }
+        } else {
+          return false;
         }
-        if (key === RELATION_TO) { // 'toId'
+      }
+      if (key === RELATION_TO) { // 'toId'
+        if (stix.type === STIX_TYPE_RELATION) {
           const ids = values.map((v) => v.id);
           const idToFound = ids.includes(stix.target_ref);
-          if (!idToFound) {
+          // If target is available but must not be
+          if (operator === 'not_eq' && idToFound) {
             return false;
           }
+          // If target is not available but must be
+          if (operator === 'eq' && !idToFound) {
+            return false;
+          }
+        } else if (stix.type === STIX_TYPE_SIGHTING) {
+          const ids = values.map((v) => v.id);
+          const idsFromFound = ids.some((r) => stix.where_sighted_refs.includes(r));
+          if (!idsFromFound) {
+            return false;
+          }
+        } else {
+          return false;
         }
-        if (key === RELATION_FROM_TYPES) { // fromTypes
+      }
+      if (key === RELATION_FROM_TYPES) { // fromTypes
+        if (stix.type === STIX_TYPE_RELATION) {
           const sourceType = stix.extensions[STIX_EXT_OCTI].source_type;
           const sourceAllTypes = [sourceType, ...getParentTypes(sourceType)];
           const isTypeAvailable = values.some((v) => sourceAllTypes.includes(v.id));
@@ -330,39 +363,7 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
           if (operator === 'eq' && !isTypeAvailable) {
             return false;
           }
-        }
-        if (key === RELATION_TO_TYPES) { // toTypes
-          const targetType = stix.extensions[STIX_EXT_OCTI].target_type;
-          const targetAllTypes = [targetType, ...getParentTypes(targetType)];
-          const isTypeAvailable = values.some((v) => targetAllTypes.includes(v.id));
-          // If source type is available but must not be
-          if (operator === 'not_eq' && isTypeAvailable) {
-            return false;
-          }
-          // If source type is not available but must be
-          if (operator === 'eq' && !isTypeAvailable) {
-            return false;
-          }
-        }
-      }
-      // endregion
-      // region specific for sightings
-      if (stix.type === STIX_TYPE_SIGHTING) {
-        if (key === RELATION_FROM) { // 'fromId'
-          const ids = values.map((v) => v.id);
-          const isFromFound = ids.includes(stix.sighting_of_ref);
-          if (!isFromFound) {
-            return false;
-          }
-        }
-        if (key === RELATION_TO) { // 'toId'
-          const ids = values.map((v) => v.id);
-          const idsFromFound = ids.some((r) => stix.where_sighted_refs.includes(r));
-          if (!idsFromFound) {
-            return false;
-          }
-        }
-        if (key === RELATION_FROM_TYPES) { // fromTypes
+        } else if (stix.type === STIX_TYPE_SIGHTING) {
           const sourceType = stix.extensions[STIX_EXT_OCTI].sighting_of_type;
           const sourceAllTypes = [sourceType, ...getParentTypes(sourceType)];
           const isTypeAvailable = values.some((v) => sourceAllTypes.includes(v.id));
@@ -374,8 +375,24 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
           if (operator === 'eq' && !isTypeAvailable) {
             return false;
           }
+        } else {
+          return false;
         }
-        if (key === RELATION_TO_TYPES) { // toTypes
+      }
+      if (key === RELATION_TO_TYPES) { // toTypes
+        if (stix.type === STIX_TYPE_RELATION) {
+          const targetType = stix.extensions[STIX_EXT_OCTI].target_type;
+          const targetAllTypes = [targetType, ...getParentTypes(targetType)];
+          const isTypeAvailable = values.some((v) => targetAllTypes.includes(v.id));
+          // If source type is available but must not be
+          if (operator === 'not_eq' && isTypeAvailable) {
+            return false;
+          }
+          // If source type is not available but must be
+          if (operator === 'eq' && !isTypeAvailable) {
+            return false;
+          }
+        } else if (stix.type === STIX_TYPE_SIGHTING) {
           const targetTypes = stix.extensions[STIX_EXT_OCTI].where_sighted_types;
           const targetAllTypes = targetTypes.map((t) => [t, ...getParentTypes(t)]).flat();
           const isTypeAvailable = values.some((v) => targetAllTypes.includes(v.id));
@@ -387,6 +404,8 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
           if (operator === 'eq' && !isTypeAvailable) {
             return false;
           }
+        } else {
+          return false;
         }
       }
       // endregion

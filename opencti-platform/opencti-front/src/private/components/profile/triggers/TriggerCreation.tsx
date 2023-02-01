@@ -37,7 +37,6 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import SelectField from '../../../../components/SelectField';
-import FilterCard from '../../../../components/FilterCard';
 import {
   TriggerCreationLiveMutation,
   TriggerCreationLiveMutation$data,
@@ -46,6 +45,7 @@ import {
 import TriggersField from './TriggersField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { dayStartDate, parse } from '../../../../utils/Time';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -169,11 +169,20 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<Record<string, object[]>>({});
+  const [filters, setFilters] = useState<
+  Record<string, { id: string; value: string }[]>
+  >({});
   const onReset = () => handleClose && handleClose();
-  const handleAddFilter = (key: string, id: string, value: unknown) => {
+  const handleAddFilter = (
+    key: string,
+    id: string,
+    value: Record<string, unknown> | string,
+  ) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // TODO MIGRATE LATER
         R.assoc(
           key,
           isUniqFilter(key)
@@ -183,6 +192,9 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
         ),
       );
     } else {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // TODO MIGRATE LATER
       setFilters(R.assoc(key, [{ id, value }], filters));
     }
   };
@@ -361,6 +373,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
             'markedBy',
             'labelledBy',
             'createdBy',
+            'priority',
             'x_opencti_score',
             'x_opencti_detection',
             'revoked',
@@ -384,7 +397,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
           availableRelationFilterTypes={undefined}
         />
       </div>
-      <FilterCard filters={filters} handleRemoveFilter={handleRemoveFilter} />
+      <div className="clearfix" />
+      <FilterIconButton
+        filters={filters}
+        handleRemoveFilter={handleRemoveFilter}
+        classNameNumber={2}
+      />
     </React.Fragment>
   );
   const renderClassic = () => (

@@ -146,7 +146,7 @@ const getClientPubSub = (): RedisPubSub => {
   }
   return redisClients.pubsub;
 };
-export const pubSubAsyncIterator = (topic: string) => {
+export const pubSubAsyncIterator = (topic: string | string[]) => {
   return getClientPubSub().asyncIterator(topic);
 };
 export const pubSubSubscription = async <T>(topic: string, onMessage: (message: T) => void) => {

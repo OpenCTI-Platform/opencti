@@ -131,7 +131,6 @@ const Notifications: FunctionComponent = () => {
       </ListLines>
     );
   };
-
   return <div>{renderLines()}</div>;
 };
 

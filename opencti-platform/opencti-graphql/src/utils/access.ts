@@ -10,7 +10,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreSettings } from '../types/store';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import { getParentTypes } from '../schema/schemaUtils';
+import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
@@ -180,14 +180,14 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
   }
   // 2. Check organizations
   // Allow unrestricted entities
-  const entityType = instance.extensions[STIX_EXT_OCTI].type;
+  const entityType = instance.extensions?.[STIX_EXT_OCTI]?.type ?? generateInternalType(instance);
   const types = [entityType, ...getParentTypes(entityType)];
   if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
     return true;
   }
   // Check restricted elements
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-  const elementOrganizations = instance.extensions[STIX_EXT_OCTI].granted_refs ?? [];
+  const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
   const userOrganizations = user.allowed_organizations.map((o) => o.standard_id);
   // If platform organization is set
   if (settings.platform_organization) {

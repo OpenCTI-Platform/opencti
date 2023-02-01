@@ -113,7 +113,6 @@ const NotificationsLines: FunctionComponent<NotificationLinesProps> = ({
     nodePath: ['myNotifications', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
-
   return (
     <ListLinesContent
       initialLoading={!data}
@@ -121,7 +120,9 @@ const NotificationsLines: FunctionComponent<NotificationLinesProps> = ({
       loadMore={loadMore}
       hasMore={hasMore}
       dataList={data?.myNotifications?.edges ?? []}
-      globalCount={data?.myNotifications?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      globalCount={
+        data?.myNotifications?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
       LineComponent={NotificationLineComponent}
       DummyLineComponent={NotificationLineDummy}
       dataColumns={dataColumns}

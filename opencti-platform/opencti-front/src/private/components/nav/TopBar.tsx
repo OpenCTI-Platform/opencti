@@ -17,7 +17,7 @@ import Menu from '@mui/material/Menu';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import { graphql, useSubscription } from 'react-relay';
+import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -78,7 +78,6 @@ import TopMenuCaseIncident from './TopMenuCaseIncident';
 import TopMenuCaseFeedback from './TopMenuCaseFeedback';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
-import { TopBarNotificationSubscription } from './__generated__/TopBarNotificationSubscription.graphql';
 import { Theme } from '../../../components/Theme';
 import {
   EXPLORE,
@@ -87,6 +86,11 @@ import {
 } from '../../../utils/hooks/useGranted';
 import TopMenuProfile from '../profile/TopMenuProfile';
 import TopMenuNotifications from '../profile/TopMenuNotifications';
+import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
+import {
+  TopBarNotificationNumberSubscription,
+  TopBarNotificationNumberSubscription$data,
+} from './__generated__/TopBarNotificationNumberSubscription.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -140,18 +144,10 @@ const logoutMutation = graphql`
   }
 `;
 
-const notificationSubscription = graphql`
-  subscription TopBarNotificationSubscription {
-    notification {
-      name
-      notification_type
-      content {
-        title
-        events {
-          message
-        }
-      }
-      is_read
+const topBarNotificationNumberSubscription = graphql`
+  subscription TopBarNotificationNumberSubscription {
+    notificationsNumber {
+      count
     }
   }
 `;
@@ -163,6 +159,12 @@ interface TopBarProps {
   timeField?: 'technical' | 'functional';
   dashboard?: string;
 }
+
+const topBarQuery = graphql`
+  query TopBarQuery {
+    myUnreadNotificationsCount
+  }
+`;
 
 const TopBar: FunctionComponent<TopBarProps> = ({
   keyword,
@@ -176,20 +178,29 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
-  const [isNewNotif, setIsNewNotif] = useState(false);
-  const notificationListener = () => setIsNewNotif(true);
+  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
+    null,
+  );
+  const data = useLazyLoadQuery<TopBarQuery>(topBarQuery, {});
+  const handleNewNotificationsNumber = (
+    response: TopBarNotificationNumberSubscription$data | null | undefined,
+  ) => {
+    return setNotificationsNumber(response?.notificationsNumber?.count ?? null);
+  };
+  const isNewNotifification = notificationsNumber !== null
+    ? notificationsNumber > 0
+    : (data.myUnreadNotificationsCount ?? 0) > 0;
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<TopBarNotificationSubscription>
+  GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>
   >(
     () => ({
-      subscription: notificationSubscription,
+      subscription: topBarNotificationNumberSubscription,
       variables: {},
-      onNext: notificationListener,
+      onNext: handleNewNotificationsNumber,
     }),
-    [notificationSubscription],
+    [topBarNotificationNumberSubscription],
   );
   useSubscription(subConfig);
-
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
@@ -393,9 +404,9 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           {location.pathname.includes('/dashboard/locations/regions/') && (
             <TopMenuRegion />
           )}
-          {location.pathname.includes('/dashboard/locations/administrative_areas/') && (
-              <TopMenuAdministrativeArea />
-          )}
+          {location.pathname.includes(
+            '/dashboard/locations/administrative_areas/',
+          ) && <TopMenuAdministrativeArea />}
           {location.pathname.includes('/dashboard/locations/cities/') && (
             <TopMenuCity />
           )}
@@ -552,7 +563,11 @@ const TopBar: FunctionComponent<TopBarProps> = ({
                     : 'default'
                 }
               >
-                <Badge color="warning" variant="dot" invisible={!isNewNotif}>
+                <Badge
+                  color="warning"
+                  variant="dot"
+                  invisible={!isNewNotifification}
+                >
                   <NotificationsOutlined fontSize="medium" />
                 </Badge>
               </IconButton>
