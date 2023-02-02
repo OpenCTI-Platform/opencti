@@ -68,7 +68,7 @@ class InformationSystemOverviewComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Details')}
+          {t('Basic Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
@@ -184,6 +184,150 @@ class InformationSystemOverviewComponent extends Component {
               <div className="clearfix" />
               {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
             </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Status')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                <Tooltip title={t('Status')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Privacy Sensitive System')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                <Tooltip title={t('Privacy Sensitive System')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Deployment Model')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                <Tooltip title={t('Deployment Model')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Cloud Service Model')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                <Tooltip title={t('Cloud Service Model')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Identity Assurance Level')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                <Tooltip title={t('Identity Assurance Level')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Authenticator Assurance Level')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                <Tooltip title={t('Authenticator Assurance Level')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Federation Assurance Level')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                <Tooltip title={t('Federation Assurance Level')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Responsible Parties')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-5px 0 0 5px' }}>
+                <Tooltip title={t('Responsible Parties')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    {/* {cyioDomainObject?.description &&
+                      t(cyioDomainObject.description)} */}
+                  </div>
+                </div>
+              </div>
+            </Grid>
+            {/* Labels field pending below */}
           </Grid>
         </Paper>
       </div>
