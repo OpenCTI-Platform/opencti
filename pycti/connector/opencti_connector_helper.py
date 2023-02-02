@@ -36,7 +36,7 @@ def killProgramHook(etype, value, tb):
     os.kill(os.getpid(), signal.SIGTERM)
 
 
-def run_loop(loop):
+def start_loop(loop):
     asyncio.set_event_loop(loop)
     loop.run_forever()
 
@@ -128,7 +128,6 @@ class ListenQueue:
         self.user = config["connection"]["user"]
         self.password = config["connection"]["pass"]
         self.queue_name = config["listen"]
-        self.exit_event = threading.Event()
         self.connector_thread = None
         self.connector_event_loop = None
         self.queue_event_loop = asyncio.new_event_loop()
@@ -207,7 +206,7 @@ class ListenQueue:
                 LOGGER.error("Failing reporting the processing")
 
     def run(self) -> None:
-        while not self.exit_event.is_set():
+        while True:
             try:
                 # Connect the broker
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
@@ -223,24 +222,38 @@ class ListenQueue:
                 if asyncio.iscoroutinefunction(self.callback):
                     self.connector_event_loop = asyncio.new_event_loop()
                     self.connector_thread = threading.Thread(
-                        target=lambda: run_loop(self.connector_event_loop)
-                    ).start()
+                        target=lambda: start_loop(self.connector_event_loop)
+                    )
+                    self.connector_thread.start()
                 self.pika_connection = AsyncioConnection(
                     self.pika_parameters,
                     on_open_callback=self.on_connection_open,
+                    on_open_error_callback=self.on_connection_open_error,
+                    on_close_callback=self.on_connection_closed,
                     custom_ioloop=self.queue_event_loop,
                 )
                 self.pika_connection.ioloop.run_forever()
+                # If the connection fails, sleep between reconnect attempts
+                time.sleep(10)
             except (KeyboardInterrupt, SystemExit):
                 LOGGER.info("Connector stop")
                 sys.exit(0)
-            except Exception as e:  # pylint: disable=broad-except
-                LOGGER.error("%s", e)
-                time.sleep(10)
+            except Exception as err:  # pylint: disable=broad-except
+                LOGGER.error("%s", err)
 
     # noinspection PyUnusedLocal
     def on_connection_open(self, _unused_connection):
         self.pika_connection.channel(on_open_callback=self.on_channel_open)
+
+    # noinspection PyUnusedLocal
+    def on_connection_open_error(self, _unused_connection, err):
+        LOGGER.info("Unable to connect to the queue. %s", err)
+        self.pika_connection.ioloop.stop()
+
+    # noinspection PyUnusedLocal
+    def on_connection_closed(self, _unused_connection, reason):
+        LOGGER.info("The connection to the queue closed: %s", reason)
+        self.pika_connection.ioloop.stop()
 
     def on_channel_open(self, channel):
         self.channel = channel
@@ -251,13 +264,6 @@ class ListenQueue:
                 self._process_message(*args)
             ),
         )
-
-    def stop(self):
-        self.queue_event_loop.stop()
-        self.exit_event.set()
-        if self.connector_thread:
-            self.connector_event_loop.stop()
-            self.connector_thread.join()
 
 
 class PingAlive(threading.Thread):
