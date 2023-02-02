@@ -12,7 +12,8 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import CityPopover from './CityPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixCoreObjectOrStixCoreRelationshipContainers
+  from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -59,9 +60,7 @@ const cityQuery = graphql`
   }
 `;
 
-const RootCityComponent = ({ queryRef }) => {
-  const { cityId } = useParams() as { cityId: string };
-  const link = `/dashboard/locations/cities/${cityId}/knowledge`;
+const RootCityComponent = ({ queryRef, cityId }) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootCitiesSubscription>>(
     () => ({
       subscription,
@@ -72,6 +71,117 @@ const RootCityComponent = ({ queryRef }) => {
   useSubscription(subConfig);
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
+  return (
+    <>
+      {city ? (
+        <Switch>
+          <Route
+            exact
+            path="/dashboard/locations/cities/:cityId"
+            render={() => <City cityData={city} />}
+          />
+          <Route
+            exact
+            path="/dashboard/locations/cities/:cityId/knowledge"
+            render={() => (
+              <Redirect
+                to={`/dashboard/locations/cities/${cityId}/knowledge/overview`}
+              />
+            )}
+          />
+          <Route
+            path="/dashboard/locations/cities/:cityId/knowledge"
+            render={() => <CityKnowledge cityData={city} />}
+          />
+          <Route
+            exact
+            path="/dashboard/locations/cities/:cityId/analysis"
+            render={(routeProps) => (
+              <React.Fragment>
+                <StixDomainObjectHeader
+                  entityType={'City'}
+                  disableSharing={true}
+                  stixDomainObject={city}
+                  PopoverComponent={CityPopover}
+                />
+                <StixCoreObjectOrStixCoreRelationshipContainers
+                  {...routeProps}
+                  stixDomainObjectOrStixCoreRelationship={city}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/locations/cities/:cityId/sightings"
+            render={(routeProps) => (
+              <React.Fragment>
+                <StixDomainObjectHeader
+                  disableSharing={true}
+                  stixDomainObject={city}
+                  PopoverComponent={CityPopover}
+                />
+                <EntityStixSightingRelationships
+                  entityId={city.id}
+                  entityLink={link}
+                  noPadding={true}
+                  isTo={true}
+                  {...routeProps}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/locations/cities/:cityId/files"
+            render={(routeProps) => (
+              <React.Fragment>
+                <StixDomainObjectHeader
+                  entityType={'City'}
+                  disableSharing={true}
+                  stixDomainObject={city}
+                  PopoverComponent={CityPopover}
+                />
+                <FileManager
+                  {...routeProps}
+                  id={cityId}
+                  connectorsImport={connectorsForImport}
+                  connectorsExport={connectorsForExport}
+                  entity={city}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/locations/cities/:cityId/history"
+            render={(routeProps) => (
+              <React.Fragment>
+                <StixDomainObjectHeader
+                  entityType={'City'}
+                  disableSharing={true}
+                  stixDomainObject={city}
+                  PopoverComponent={CityPopover}
+                />
+                <StixCoreObjectHistory
+                  {...routeProps}
+                  stixCoreObjectId={cityId}
+                />
+              </React.Fragment>
+            )}
+          />
+        </Switch>
+      ) : (
+        <ErrorNotFound />
+      )}
+    </>
+  );
+};
+
+const RootCity = () => {
+  const { cityId } = useParams() as { cityId: string };
+  const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId });
+  const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   return (
     <div>
       <TopBar />
@@ -94,122 +204,16 @@ const RootCityComponent = ({ queryRef }) => {
           ]}
         />
       </Route>
-      <>
-        {city ? (
-          <Switch>
-            <Route
-              exact
-              path="/dashboard/locations/cities/:cityId"
-              render={() => <City cityData={city} />}
-            />
-            <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/locations/cities/${cityId}/knowledge/overview`}
-                />
-              )}
-            />
-            <Route
-              path="/dashboard/locations/cities/:cityId/knowledge"
-              render={() => <CityKnowledge cityData={city} />}
-            />
-            <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/analysis"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'City'}
-                    disableSharing={true}
-                    stixDomainObject={city}
-                    PopoverComponent={CityPopover}
-                  />
-                  <StixCoreObjectOrStixCoreRelationshipContainers
-                    {...routeProps}
-                    stixDomainObjectOrStixCoreRelationship={city}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/sightings"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    disableSharing={true}
-                    stixDomainObject={city}
-                    PopoverComponent={CityPopover}
-                  />
-                  <EntityStixSightingRelationships
-                    entityId={city.id}
-                    entityLink={link}
-                    noPadding={true}
-                    isTo={true}
-                    {...routeProps}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/files"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'City'}
-                    disableSharing={true}
-                    stixDomainObject={city}
-                    PopoverComponent={CityPopover}
-                  />
-                  <FileManager
-                    {...routeProps}
-                    id={cityId}
-                    connectorsImport={connectorsForImport}
-                    connectorsExport={connectorsForExport}
-                    entity={city}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/history"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'City'}
-                    disableSharing={true}
-                    stixDomainObject={city}
-                    PopoverComponent={CityPopover}
-                  />
-                  <StixCoreObjectHistory
-                    {...routeProps}
-                    stixCoreObjectId={cityId}
-                  />
-                </React.Fragment>
-              )}
-            />
-          </Switch>
+      {
+        queryRef ? (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <RootCityComponent queryRef={queryRef} cityId={cityId}/>
+          </React.Suspense>
         ) : (
-          <ErrorNotFound />
-        )}
-      </>
+          <Loader variant={LoaderVariant.inElement} />
+        )
+      }
     </div>
-  );
-};
-
-const RootCity = () => {
-  const { cityId } = useParams() as { cityId: string };
-  const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootCityComponent queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

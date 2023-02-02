@@ -60,9 +60,7 @@ const regionQuery = graphql`
   }
 `;
 
-const RootRegionComponent = ({ queryRef }) => {
-  const { regionId } = useParams() as { regionId: string };
-  const link = `/dashboard/locations/regions/${regionId}/knowledge`;
+const RootRegionComponent = ({ queryRef, regionId }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
@@ -76,26 +74,6 @@ const RootRegionComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForImport, connectorsForExport } = data;
   return (
-    <div>
-      <TopBar />
-      <Route path="/dashboard/locations/regions/:regionId/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'countries',
-            'cities',
-            'threats',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'observables',
-          ]}
-        />
-      </Route>
       <>
         {region ? (
           <Switch>
@@ -196,7 +174,6 @@ const RootRegionComponent = ({ queryRef }) => {
           <ErrorNotFound />
         )}
       </>
-    </div>
   );
 };
 
@@ -205,12 +182,38 @@ const RootRegion = () => {
   const queryRef = useQueryLoading<RootRegionQuery>(regionQuery, {
     id: regionId,
   });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootRegionComponent queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
+  const link = `/dashboard/locations/regions/${regionId}/knowledge`;
+  return (
+    <div>
+      <TopBar />
+      <Route path="/dashboard/locations/regions/:regionId/knowledge">
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'countries',
+            'cities',
+            'threats',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'attack_patterns',
+            'tools',
+            'observables',
+          ]}
+        />
+      </Route>
+    {
+      queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <RootRegionComponent queryRef={queryRef} regionId={regionId}/>
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.inElement} />
+      )
+    }
+    </div>
   );
 };
 

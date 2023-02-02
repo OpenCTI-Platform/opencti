@@ -55,8 +55,7 @@ const dataSourceQuery = graphql`
   }
 `;
 
-const RootDataSourceComponent = ({ queryRef }) => {
-  const { dataSourceId } = useParams() as { dataSourceId: string };
+const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootDataSourcesSubscription>
   >(
@@ -146,7 +145,7 @@ const RootDataSource = () => {
   });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootDataSourceComponent queryRef={queryRef} />
+      <RootDataSourceComponent queryRef={queryRef} dataSourceId={dataSourceId}/>
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

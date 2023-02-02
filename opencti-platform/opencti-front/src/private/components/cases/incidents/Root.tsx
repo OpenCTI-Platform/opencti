@@ -57,9 +57,8 @@ const incidentQuery = graphql`
   }
 `;
 
-const RootCaseComponent = ({ queryRef }) => {
+const RootCaseComponent = ({ queryRef, caseId }) => {
   const { me } = useAuth();
-  const { caseId } = useParams() as { caseId: string };
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootIncidentSubscription>
   >(
@@ -191,7 +190,7 @@ const Root = () => {
   });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootCaseComponent queryRef={queryRef} />
+      <RootCaseComponent queryRef={queryRef} caseId={caseId}/>
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />
