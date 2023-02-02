@@ -218,21 +218,21 @@ class IncidentEditionOverviewComponent extends Component {
 
   handleChangeObjectAssignee(name, values) {
     if (!this.props.enableReferences) {
-      const { report } = this.props;
+      const { incident } = this.props;
       const currentAssignees = R.pipe(
         R.pathOr([], ['objectAssignee', 'edges']),
         R.map((n) => ({
           label: n.node.name,
           value: n.node.id,
         })),
-      )(report);
+      )(incident);
       const added = R.difference(values, currentAssignees);
       const removed = R.difference(currentAssignees, values);
       if (added.length > 0) {
         commitMutation({
           mutation: incidentMutationRelationAdd,
           variables: {
-            id: this.props.report.id,
+            id: this.props.incident.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-assignee',
@@ -244,7 +244,7 @@ class IncidentEditionOverviewComponent extends Component {
         commitMutation({
           mutation: incidentMutationRelationDelete,
           variables: {
-            id: this.props.report.id,
+            id: this.props.incident.id,
             toId: R.head(removed).value,
             relationship_type: 'object-assignee',
           },
@@ -478,5 +478,4 @@ const IncidentEditionOverview = createFragmentContainer(
     `,
   },
 );
-
 export default inject18n(IncidentEditionOverview);
