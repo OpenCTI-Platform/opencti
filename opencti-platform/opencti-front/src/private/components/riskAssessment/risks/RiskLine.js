@@ -174,9 +174,9 @@ class RiskLineComponent extends Component {
                   paddingLeft: '24px',
                 }}
               >
-                <RiskLevel
-                  node={node}
-                />
+                {node?.risk_level && <RiskLevel
+                  risk={node?.risk_level}
+                />}
               </div>
               <div
                 className={classes.bodyItem}

@@ -17,6 +17,7 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   card: {
@@ -197,7 +198,30 @@ class SoftwareCardComponent extends Component {
               </div>
             </Grid>
             <Grid xs={12} container={true} >
-              <Grid item={true} xs={7} className={classes.body}>
+            <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom ={true}>
+                  {t('Risks')}
+                </Typography>
+                <Typography>
+                  {node.risk_count && t(node.risk_count)}
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Severity')}
+                </Typography>
+                  {node.top_risk_severity && <RiskLevel
+                  risk={node?.top_risk_severity}
+                />}
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
@@ -230,10 +254,10 @@ class SoftwareCardComponent extends Component {
                   {t('CPE ID')}
                 </Typography>
                 <Typography>
-                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
+                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 20)}
                 </Typography>
               </Grid>
-              <Grid xs={5} item={true} className={classes.body}>
+              <Grid xs={6} item={true} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
@@ -344,6 +368,8 @@ const SoftwareCardFragment = createFragmentContainer(
         patch_level
         cpe_identifier
         software_identifier
+        top_risk_severity
+        risk_count
         labels {
           __typename
           id

@@ -31,8 +31,8 @@ class Devices extends Component {
       'view-devices',
     );
     this.state = {
-      sortBy: R.propOr('name', 'sortBy', params),
-      orderAsc: R.propOr(true, 'orderAsc', params),
+      sortBy: R.propOr('top_risk_severity', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
@@ -285,9 +285,19 @@ class Devices extends Component {
         width: '15%',
         isSortable: true,
       },
+      risk_count: {
+        label: 'Risks',
+        width: '5%',
+        isSortable: true,
+      },
+      top_risk_severity: {
+        label: 'Severity',
+        width: '12%',
+        isSortable: true,
+      },
       asset_type: {
         label: 'Type',
-        width: '8%',
+        width: '5%',
         isSortable: true,
       },
       asset_id: {
@@ -307,7 +317,7 @@ class Devices extends Component {
       },
       installed_os_name: {
         label: 'OS',
-        width: '8%',
+        width: '5%',
         isSortable: true,
       },
       network_id: {
@@ -317,7 +327,7 @@ class Devices extends Component {
       },
       label_name: {
         label: 'Label',
-        width: '20%',
+        width: '10%',
         isSortable: true,
       },
     };

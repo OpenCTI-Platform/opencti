@@ -17,6 +17,7 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   card: {
@@ -195,6 +196,30 @@ class NetworkCardComponent extends Component {
               </div>
             </Grid>
             <Grid xs={12} container={true} >
+            <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom ={true}>
+                  {t('Risks')}
+                </Typography>
+                <Typography>
+                  {node.risk_count && t(node.risk_count)}
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={6} className={classes.body}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Severity')}
+                </Typography>
+
+                  {node.top_risk_severity && <RiskLevel
+                  risk={node?.top_risk_severity}
+                />}
+              </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
                   variant="h3"
@@ -256,10 +281,6 @@ class NetworkCardComponent extends Component {
                 labels={node.labels}
                 onClick={onLabelClick.bind(this)}
               />
-              {/* <StixCoreObjectLabels
-                labels={objectLabel}
-                onClick={onLabelClick.bind(this)}
-              /> */}
             </div>
           </CardContent>
         </CardActionArea>
@@ -319,6 +340,8 @@ const NetworkCardFragment = createFragmentContainer(
         asset_type
         asset_id
         network_id
+        top_risk_severity
+        risk_count
         network_address_range {
           ending_ip_address{
             ... on IpV4Address {

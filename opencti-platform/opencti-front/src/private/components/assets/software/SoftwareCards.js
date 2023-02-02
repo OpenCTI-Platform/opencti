@@ -144,8 +144,8 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "SoftwareAssetOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
+        orderedBy: { type: "SoftwareAssetOrdering", defaultValue: top_risk_severity }
+        orderMode: { type: "OrderingMode", defaultValue: desc }
         filters: { type: "[SoftwareAssetFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {

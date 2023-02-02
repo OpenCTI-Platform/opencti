@@ -42,32 +42,31 @@ const RiskTooltip = withStyles((theme) => ({
 
 class RiskLevel extends Component {
   render() {
-    const { node, t, classes } = this.props;
-    const risk = node?.risk_level;
+    const { risk, t, classes } = this.props;
     if (risk === 'very_high') {
       return Array.from({ length: 5 },
         (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Very High')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.veryHigh} /></IconButton></RiskTooltip>);
+          title={risk && t('Very High')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.veryHigh} /></IconButton></RiskTooltip>);
     }
     if (risk === 'high') {
       return Array.from({ length: 4 },
         (item, index) => <RiskTooltip
-          title={node?.risk_level && t('High')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.high} /></IconButton></RiskTooltip>);
+          title={risk && t('High')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.high} /></IconButton></RiskTooltip>);
     }
     if (risk === 'moderate') {
       return Array.from({ length: 3 },
         (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Moderate')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.moderate} /></IconButton></RiskTooltip>);
+          title={risk && t('Moderate')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.moderate} /></IconButton></RiskTooltip>);
     }
     if (risk === 'low') {
       return Array.from({ length: 2 },
         (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Low')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.low} /></IconButton></RiskTooltip>);
+          title={risk && t('Low')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.low} /></IconButton></RiskTooltip>);
     }
     if (risk === 'very_low') {
       return Array.from({ length: 1 },
         (item, index) => <RiskTooltip
-          title={node?.risk_level && t('Very Low')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.veryLow} /></IconButton></RiskTooltip>);
+          title={risk && t('Very Low')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.veryLow} /></IconButton></RiskTooltip>);
     }
     return <></>;
   }

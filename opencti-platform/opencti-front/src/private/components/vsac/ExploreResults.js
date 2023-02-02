@@ -2,9 +2,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import ReactHtmlParser from 'react-html-parser';
-import { withRouter, Redirect } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import inject18n from '../../../components/i18n';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -13,9 +12,26 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import { withStyles } from '@material-ui/core/styles';
+import moment from 'moment';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Chip from '@material-ui/core/Chip';
+import Dialog from '@material-ui/core/Dialog';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Box from '@material-ui/core/Box';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Skeleton from '@material-ui/lab/Skeleton';
+import { fetchScan } from '../../../services/scan.service';
 import {
   fetchAnalysis,
-  fetchAllAnalysis,
   getAnalysisHosts,
   getAnalysisSoftware,
   getAnalysisWeaknesses,
@@ -26,30 +42,15 @@ import {
   getAnalysisFilteredResultsVulnerability,
   createVulnerabilityAssessmentReport,
 } from '../../../services/analysis.service';
-import { fetchAllScans, fetchScan } from "../../../services/scan.service";
-import moment from 'moment';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Chip from '@material-ui/core/Chip';
 import Hosts from './components/Hosts';
 import Products from './components/Products';
 import VulnerabilityAccordionCards from './components/VulnerabilityAccordionCards';
 import WeaknessAccordionCards from './components/WeaknessAccordionCards';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Box from '@material-ui/core/Box';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import GenerateReport from "./modals/GenerateReport";
-import Dialog from "@material-ui/core/Dialog";
-import Loader from '../../../components/Loader';
+import inject18n from '../../../components/i18n';
 
+import GenerateReport from './modals/GenerateReport';
+
+import Loader from '../../../components/Loader';
 
 const styles = (theme) => ({
   selectedTableRow: {
@@ -152,13 +153,13 @@ class ExploreResults extends Component {
           });
 
         if (this.state.client) {
-          this.resetAllData()
+          this.resetAllData();
         }
       })
       .catch((error) => {
         console.log(error);
       });
-  };
+  }
 
   resetAllData() {
     getAnalysisHosts(this.state.analysis.id, this.state.client)
@@ -195,7 +196,6 @@ class ExploreResults extends Component {
   }
 
   render() {
-
     const { classes } = this.props;
     const {
       client,
@@ -228,7 +228,7 @@ class ExploreResults extends Component {
       if (params.host_ip) {
         this.setState(
           { host_ip: params.host_ip },
-          handleGetAnalysisFilteredResults(params, type)
+          handleGetAnalysisFilteredResults(params, type),
         );
 
         this.setState({ selectedRow: { ...this.state.selectedRow, host_ip: name } });
@@ -236,7 +236,7 @@ class ExploreResults extends Component {
       if (params.cpe) {
         this.setState(
           { cpe: params.cpe },
-          handleGetAnalysisFilteredResults(params, type)
+          handleGetAnalysisFilteredResults(params, type),
         );
 
         this.setState({ selectedRow: { ...this.state.selectedRow, cpe: name } });
@@ -244,7 +244,7 @@ class ExploreResults extends Component {
       if (params.cwe_id) {
         this.setState(
           { cwe_id: params.cwe_id },
-          handleGetAnalysisFilteredResults(params, type)
+          handleGetAnalysisFilteredResults(params, type),
         );
 
         this.setState({ selectedRow: { ...this.state.selectedRow, cwe_id: name } });
@@ -252,11 +252,10 @@ class ExploreResults extends Component {
       if (params.cve_id) {
         this.setState(
           { cve_id: params.cve_id },
-          handleGetAnalysisFilteredResults(params, type)
+          handleGetAnalysisFilteredResults(params, type),
         );
         this.setState({ selectedRow: { ...this.state.selectedRow, cve_id: name } });
       }
-
     };
 
     const handleGetAnalysisFilteredResults = (params, type) => {
@@ -270,10 +269,8 @@ class ExploreResults extends Component {
           this.setState({ filteredResultsData: response.data });
 
           if (params.host_ip) {
-            const currentResult = response.data.find((element) => {
-              return element.host_ip === params.host_ip;
-            });
-            this.setState({ currentResult: currentResult });
+            const currentResult = response.data.find((element) => element.host_ip === params.host_ip);
+            this.setState({ currentResult });
           }
 
           const detailParams = {
@@ -292,7 +289,6 @@ class ExploreResults extends Component {
         .catch((error) => {
           console.log(error);
         });
-
 
       getAnalysisHosts(this.state.analysis.id, this.state.client, {
         host_ip: params.host_ip || host_ip,
@@ -327,7 +323,8 @@ class ExploreResults extends Component {
           cpe: params.cpe || cpe,
           cwe_id: params.cwe_id || cwe_id,
           cve_id: params.cve_id || cve_id,
-        })
+        },
+      )
         .then((response) => {
           this.setState({ weakness: response.data });
         })
@@ -343,14 +340,14 @@ class ExploreResults extends Component {
           cpe: params.cpe || cpe,
           cwe_id: params.cwe_id || cwe_id,
           cve_id: params.cve_id || cve_id,
-        })
+        },
+      )
         .then((response) => {
           this.setState({ vulnerabilities: response.data });
         })
         .catch((error) => {
           console.log(error);
         });
-
     };
 
     const handleFilterResultsDetails = (id, client, params) => {
@@ -440,7 +437,6 @@ class ExploreResults extends Component {
     };
 
     const onGenerateReport = (id, client, params) => {
-
       createVulnerabilityAssessmentReport(id, client, params)
         .then((response) => {
           this.setState({ generateReportSuccess: true });
@@ -472,8 +468,8 @@ class ExploreResults extends Component {
       this.setState({ cpe: null });
       this.setState({ cve_id: null });
       this.setState({ cwe_id: null });
-      this.resetAllData()
-    }
+      this.resetAllData();
+    };
 
     return (
       <div>
@@ -482,9 +478,11 @@ class ExploreResults extends Component {
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={12}>
                 <Typography variant="h1" component="h2" gutterBottom>
-                  {`${analysis.scan.scan_name}: ${moment(analysis.completed_date).fromNow()}`}
+                  {`${analysis.scan.scan_name}: ${moment(
+                    analysis.completed_date,
+                  ).fromNow()}`}
                 </Typography>
-                <div style={{ display: "flex", alignItems: "center" }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Chip size="small" style={{ margin: 3 }} label="Top 4" />
                   <Chip
                     size="small"
@@ -522,7 +520,7 @@ class ExploreResults extends Component {
                   <Button
                     size="medium"
                     variant="contained"
-                    style={{ margin: 3, marginLeft: "auto" }}
+                    style={{ margin: 3, marginLeft: 'auto' }}
                     disabled={selectedRow == null}
                     onClick={handleReset}
                   >
@@ -531,13 +529,15 @@ class ExploreResults extends Component {
                   <Button
                     size="medium"
                     variant="contained"
-                    style={{ margin: 3, }}
+                    style={{ margin: 3 }}
                     onClick={handleDialogOpen}
                   >
                     Generate Report
                   </Button>
                 </div>
               </Grid>
+            </Grid>
+            <Grid container={true} spacing={3}>
               <Grid item={true} xs={4}>
                 {hosts && (
                   <Hosts
@@ -571,22 +571,22 @@ class ExploreResults extends Component {
               <Grid item={true} xs={8}>
                 <Grid container spacing={3}>
                   <Grid item={true} xs={12}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      Filtered Results
-                    </Typography>
-                    <Paper elevation={2} style={{ minHeight: 350 }}>
-                      <TableContainer style={{ maxHeight: 325 }}>
-                        <Table stickyHeader size="small">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Score</TableCell>
-                              <TableCell>Records</TableCell>
-                              <TableCell>Host IP</TableCell>
-                              <TableCell>Product</TableCell>
-                              <TableCell>Solution</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
+                <Typography variant="h4" gutterBottom={true}>
+                  Filtered Results
+                </Typography>
+                <Paper elevation={2} style={{ minHeight: 350 }}>
+                  <TableContainer style={{ maxHeight: 325 }}>
+                    <Table stickyHeader size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Score</TableCell>
+                          <TableCell>Records</TableCell>
+                          <TableCell>Host IP</TableCell>
+                          <TableCell>Product</TableCell>
+                          <TableCell>Solution</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
                             {filteredResultsData === 'loading' ? (
                               <CircularProgress
                                 style={{
@@ -594,36 +594,41 @@ class ExploreResults extends Component {
                                   left: '50%',
                                   top: '50%',
                                 }}
-                              />
+                            />
                             ) : filteredResultsData ? (
                               filteredResultsData.map((result, i) => {
-                                const rowName = 'resultsRow-' + i;
+                                const rowName = `resultsRow-${i}`;
 
                                 return (
-                                  <TableRow
-                                    key={rowName}
-                                    selected={rowName === selectedRow}
-                                    onClick={() => handleFilterResults({ host_ip: result.host_ip }, rowName)}
-                                    hover
-                                    classes={{ root: classes.selectedTableRow }}
-                                  >
-                                    <TableCell component="th" scope="row">
-                                      {result.score}
-                                    </TableCell>
-                                    <TableCell>{result.records}</TableCell>
-                                    <TableCell>{result.host_ip}</TableCell>
-                                    <TableCell>{result.software}</TableCell>
-                                    <TableCell>{result.solution}</TableCell>
-                                  </TableRow>
+                              <TableRow
+                                key={rowName}
+                                selected={rowName === selectedRow}
+                                onClick={() =>
+                                  handleFilterResults(
+                                    { host_ip: result.host_ip },
+                                    rowName,
+                                  )
+                                }
+                                hover
+                                classes={{ root: classes.selectedTableRow }}
+                              >
+                                <TableCell component="th" scope="row">
+                                  {result.score}
+                                </TableCell>
+                                <TableCell>{result.records}</TableCell>
+                                <TableCell>{result.host_ip}</TableCell>
+                                <TableCell>{result.software}</TableCell>
+                                <TableCell>{result.solution}</TableCell>
+                              </TableRow>
                                 );
                               })
                             ) : (
-                              <div>No filters selected.</div>
+                          <div>No filters selected.</div>
                             )}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                    </Paper>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
                   </Grid>
                 </Grid>
                 <Grid container spacing={3}>
@@ -640,7 +645,7 @@ class ExploreResults extends Component {
                       <Tab label="Vulnerabilities" />
                     </Tabs>
                     <TabPanel
-                      style={{ maxHeight: 700, overflow: 'auto' }}
+                      style={{ maxHeight: 700, maxWidth: 800, overflowY: 'auto', overflowX: 'hidden' }}
                       value={tabValue}
                       index={0}
                     >
@@ -703,9 +708,12 @@ class ExploreResults extends Component {
                         <Accordion
                           key={j}
                           expanded={vulnerabilitiesAccordion === 'panel-' + j}
-                          onChange={handleVulnerabilitiesAccordion('panel-' + j, {
-                            cve_id: i.cve_id,
-                          })}
+                          onChange={handleVulnerabilitiesAccordion(
+                            'panel-' + j,
+                            {
+                              cve_id: i.cve_id,
+                            },
+                          )}
                         >
                           <AccordionSummary
                             expandIcon={<ExpandMoreIcon />}
@@ -743,7 +751,9 @@ class ExploreResults extends Component {
                               <Typography variant="h4" gutterBottom={true}>
                                 Description
                               </Typography>
-                              {ReactHtmlParser(vulnerabilitiesDetails?.description)}
+                              {ReactHtmlParser(
+                                vulnerabilitiesDetails?.description,
+                              )}
                             </div>
                           </AccordionDetails>
                         </Accordion>
@@ -803,8 +813,7 @@ class ExploreResults extends Component {
           </>
         ) : (
           <Loader />
-        )
-        }
+        )}
       </div>
     );
   }

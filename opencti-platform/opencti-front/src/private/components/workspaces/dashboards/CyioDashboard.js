@@ -113,7 +113,7 @@ class DashboardComponent extends Component {
   decodeManifest() {
     const { workspace } = this.props;
     let manifest = { widgets: {}, config: {} };
-    if (workspace.manifest && workspace.manifest.length > 0) {
+    if (workspace?.manifest && workspace.manifest.length > 0) {
       manifest = JSON.parse(
         Buffer.from(workspace.manifest, 'base64').toString('ascii'),
       );
