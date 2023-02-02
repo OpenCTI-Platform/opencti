@@ -19742,6 +19742,7 @@ export enum StixDomainObjectsOrdering {
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
+  FirstSeen = 'first_seen',
   IndicatorPattern = 'indicator_pattern',
   Modified = 'modified',
   Name = 'name',

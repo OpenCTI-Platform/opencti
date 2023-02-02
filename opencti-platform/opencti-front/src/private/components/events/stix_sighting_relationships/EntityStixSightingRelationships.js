@@ -190,6 +190,7 @@ class EntityStixSightingRelationships extends Component {
         availableEntityTypes={stixCoreObjectTypes}
         displayImport={true}
         secondaryAction={true}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={entityStixSightingRelationshipsLinesQuery}

@@ -1914,6 +1914,7 @@ enum StixDomainObjectsOrdering {
   creator
   objectMarking
   _score
+  first_seen
 }
 
 enum StixDomainObjectsFilter {

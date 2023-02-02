@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Slide from '@mui/material/Slide';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -68,8 +68,8 @@ class StixDomainObjectsExportsContentComponent extends Component {
     } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
 
-    let paginationOptionsForExport = paginationOptions;
-    if (paginationOptions?.filters && Object.values(paginationOptions.filters).map((o) => o.key).includes('objectContains')) {
+    let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct elementId
+    if (paginationOptions?.filters && Object.values(paginationOptions.filters).map((o) => o.key).includes('objectContains')) { // for reports contained in entity>Analysis
       const filtersValues = Object.values(paginationOptions.filters);
       const [elementId] = filtersValues.filter((o) => o.key === 'objectContains')[0].values;
       const newFilters = filtersValues.filter((o) => o.key !== 'objectContains');
