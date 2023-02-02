@@ -6,7 +6,7 @@ const i18n = {
         'OpenCTI - Plataforma de ciberinteligencia de amenazas',
       // Errors
       Error: 'Error',
-      'Wrong name or password': 'Nombre de usuario o contraseña incorrectos',
+      'Bad login or password': 'Nombre de usuario o contraseña incorrectos',
       'An unknown error has occurred!  Please try again later.':
         'Ha ocurrido un error desconocido. Inténtalo de nuevo más tarde.',
       'You must be logged in to do this.':
@@ -1702,7 +1702,7 @@ const i18n = {
         "OpenCTI - Plateforme d'analyse de la cybermenace",
       // Errors
       Error: 'Erreur',
-      'Wrong name or password': "Nom d'utilisateur ou mot de passe incorrect",
+      'Bad login or password': "Nom d'utilisateur ou mot de passe incorrect",
       'An unknown error has occurred!  Please try again later.':
         'Une erreur est survenue ! Merci de rééssayer plus tard.',
       'You must be logged in to do this.':
@@ -3392,7 +3392,7 @@ const i18n = {
         'OpenCTI - サイバー脅威インテリジェンスプラットフォーム',
       // Errors
       Error: 'エラー',
-      'Wrong name or password': 'ユーザー名またはパスワードが間違っています。',
+      'Bad login or password': 'ユーザー名またはパスワードが間違っています。',
       'An unknown error has occurred!  Please try again later.':
         '不明なエラーが発生しました。後でもう一度お試しください。',
       'You must be logged in to do this.':
@@ -5054,7 +5054,7 @@ const i18n = {
         'OpenCTI - 网络威胁情报平台',
       // Errors
       Error: '错误',
-      'Wrong name or password': '用户名或密码错误',
+      'Bad login or password': '用户名或密码错误',
       'An unknown error has occurred!  Please try again later.':
         '发生未知错误，请稍后再试。',
       'You must be logged in to do this.': '您必须登录才能执行此操作。',

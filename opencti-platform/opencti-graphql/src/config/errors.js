@@ -9,7 +9,7 @@ const error = (type, message, data) => {
 };
 
 export const AUTH_FAILURE = 'AuthFailure';
-export const AuthenticationFailure = (reason, data) => error(AUTH_FAILURE, reason || 'Wrong name or password', {
+export const AuthenticationFailure = (reason, data) => error(AUTH_FAILURE, reason || 'Bad login or password', {
   http_status: 401,
   category: CATEGORY_TECHNICAL,
   ...data,

@@ -8,6 +8,7 @@ import * as Yup from 'yup';
 import { useCookies } from 'react-cookie';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useFormatter } from '../../components/i18n';
 
 const useStyles = makeStyles(() => ({
@@ -28,8 +29,12 @@ const loginValidation = (t: (v: string) => string) => Yup.object().shape({
 });
 
 interface LoginFormValues {
-  email: string
-  password: string
+  email: string;
+  password: string;
+}
+
+interface RelayResponseError extends Error {
+  res?: RelayResponsePayload
 }
 
 const FLASH_COOKIE = 'opencti_flash';
@@ -40,12 +45,17 @@ const LoginForm = () => {
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
   const [commitLoginMutation] = useMutation(loginMutation);
-  const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors },
+  ) => {
     commitLoginMutation({
       variables: {
         input: values,
       },
-      onError: () => {
+      onError: (error: RelayResponseError) => {
+        const errorMessage = t(error.res?.errors?.at?.(0)?.message ?? 'Unknown');
+        setErrors({ email: errorMessage });
         setSubmitting(false);
       },
       onCompleted: () => {
