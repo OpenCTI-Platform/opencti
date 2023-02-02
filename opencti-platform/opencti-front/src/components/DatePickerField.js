@@ -37,9 +37,9 @@ const DatePickerField = (props) => {
   );
   const internalOnChange = React.useCallback(
     (date) => {
-      setFieldValue(name, date);
+      setFieldValue(name, date ?? null);
       if (typeof onChange === 'function') {
-        onChange(name, date || null);
+        onChange(name, date ?? null);
       }
     },
     [setFieldValue, onChange, name],
@@ -55,7 +55,7 @@ const DatePickerField = (props) => {
     if (typeof onSubmit === 'function') {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
-  }, [setTouched, onSubmit, name]);
+  }, [setTouched, onSubmit, name, field]);
   return (
     <DatePicker
       {...fieldToDatePicker(props)}

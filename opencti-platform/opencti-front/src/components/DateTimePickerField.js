@@ -46,15 +46,15 @@ const DateTimePickerField = (props) => {
   );
   const internalOnChange = React.useCallback(
     (date) => {
-      setFieldValue(name, date);
+      setFieldValue(name, date ?? null);
       if (typeof onChange === 'function') {
-        onChange(name, date || null);
+        onChange(name, date ?? null);
       }
     },
     [setFieldValue, onChange, name],
   );
   const internalOnFocus = React.useCallback(() => {
-    if (typeof onFocus === 'function') {
+    if (typeof onFocus === 'function' && name) {
       onFocus(name);
     }
   }, [onFocus, name]);
@@ -64,7 +64,7 @@ const DateTimePickerField = (props) => {
     if (typeof onSubmit === 'function') {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
-  }, [setTouched, onSubmit, name]);
+  }, [setTouched, onSubmit, name, field]);
   if (withSeconds) {
     return (
       <DateTimePicker
