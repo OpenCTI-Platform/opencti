@@ -8,15 +8,14 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
+import InformationSystemOverview from './InformationSystemOverview';
 import InformationSystemDetails from './InformationSystemDetails';
 import InformationSystemEdition from './InformationSystemEdition';
 import InformationSystemPopover from './InformationSystemPopover';
 import InformationSystemDeletion from './InformationSystemDeletion';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioDomainObjectAssetOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetOverview';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
-import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
 
 const styles = () => ({
   container: {
@@ -74,10 +73,16 @@ class InformationSystemComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={6}>
-                <CyioDomainObjectAssetOverview refreshQuery={refreshQuery} cyioDomainObject={informationSystem} />
+                <InformationSystemOverview
+                  refreshQuery={refreshQuery}
+                  informationSystem={informationSystem}
+                />
               </Grid>
               <Grid item={true} xs={6}>
-                <InformationSystemDetails informationSystem={informationSystem} history={history}/>
+                <InformationSystemDetails
+                  informationSystem={informationSystem}
+                  history={history}
+                />
               </Grid>
             </Grid>
             <Grid
@@ -86,7 +91,7 @@ class InformationSystemComponent extends Component {
               classes={{ container: classes.gridContainer }}
               style={{ marginTop: 25 }}
             >
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={12}>
                 <CyioCoreObjectExternalReferences
                   externalReferences={informationSystem.external_references}
                   cyioCoreObjectId={informationSystem.id}
@@ -94,9 +99,6 @@ class InformationSystemComponent extends Component {
                   refreshQuery={refreshQuery}
                   typename={informationSystem.__typename}
                 />
-              </Grid>
-              <Grid item={true} xs={6}>
-                <CyioCoreObjectLatestHistory cyioCoreObjectId={informationSystem.id} />
               </Grid>
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
@@ -106,18 +108,13 @@ class InformationSystemComponent extends Component {
               notes={informationSystem.notes}
               cyioCoreObjectOrCyioCoreRelationshipId={informationSystem.id}
             />
-            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <InformationSystemEdition softwareId={informationSystem.id} />
-        </Security> */}
           </div>
         ) : (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <InformationSystemEdition
             open={this.state.openEdit}
             softwareId={informationSystem.id}
             history={history}
           />
-          // </Security>
         )}
       </>
     );
@@ -177,6 +174,7 @@ const InformationSystem = createFragmentContainer(InformationSystemComponent, {
       serial_number
       release_date
       operational_status
+      ...InformationSystemOverview_information
       ...InformationSystemDetails_information
     }
   `,

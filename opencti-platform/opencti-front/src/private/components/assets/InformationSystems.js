@@ -192,14 +192,23 @@ class InformationSystems extends Component {
       name: {
         label: 'Name',
       },
-      asset_type: {
-        label: 'Type',
+      risks: {
+        label: 'Risks',
       },
-      vendor_name: {
-        label: 'Vendor',
+      status: {
+        label: 'Status',
       },
       label_name: {
         label: 'Labels',
+      },
+      severity: {
+        label: 'Severity',
+      },
+      critical_system: {
+        label: 'Critical System',
+      },
+      privacy_sensitive: {
+        label: 'Privacy Sensitive',
       },
     };
     return (
@@ -274,37 +283,42 @@ class InformationSystems extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '15%',
+        width: '20%',
         isSortable: true,
       },
-      asset_type: {
-        label: 'Type',
+      privacy_sensitive: {
+        label: 'Privacy Sensitive',
         width: '8%',
         isSortable: true,
       },
-      vendor_name: {
-        label: 'Vendor',
-        width: '10%',
+      critical_system: {
+        label: 'Critical System',
+        width: '6%',
         isSortable: true,
       },
-      version: {
-        label: 'Version',
-        width: '10%',
+      status: {
+        label: 'Status',
+        width: '15%',
         isSortable: false,
       },
-      cpe_identifier: {
-        label: 'CPE ID',
-        width: '19%',
+      risks: {
+        label: 'Risks',
+        width: '6%',
         isSortable: true,
       },
-      software_identifier: {
-        label: 'SWID',
-        width: '15%',
+      severity: {
+        label: 'Severity',
+        width: '8%',
         isSortable: true,
       },
       label_name: {
         label: 'Labels',
         width: '23%',
+        isSortable: true,
+      },
+      date_created: {
+        label: 'Date Created',
+        width: '10%',
         isSortable: true,
       },
     };

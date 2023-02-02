@@ -201,64 +201,6 @@ class InformationSystemDetailsComponent extends Component {
                 {informationSystem.last_scanned && fldt(informationSystem.last_scanned)}
               </Grid>
             </Grid>
-            <Grid container spacing={1}>
-              <Grid item={true} xs={12}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Installed on Assets')}
-                </Typography>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {informationSystem.installed_on && informationSystem.installed_on.map((asset, key) => (
-                        <Link
-                          key={key}
-                          component="button"
-                          variant="body2"
-                          className={classes.link}
-                          onClick={() => (history.push(`/defender HQ/assets/devices/${asset.id}`))}
-                        >
-                          <LaunchIcon fontSize='small' className={classes.launchIcon}/><div className={classes.linkTitle}>{t(asset.name)}</div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Grid>       
-              <Grid item={true} xs={12}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left'  }}
-                >
-                  {t('Related Risks')}
-                </Typography>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {informationSystem.related_risks && informationSystem.related_risks.map((risk, key) => (
-                      <Link
-                        key={key}
-                        component="button"
-                        variant="body2"
-                        className={classes.link}
-                        onClick={() => (history.push(`/activities/risk_assessment/risks/${risk.id}`))}
-                      >
-                        <LaunchIcon fontSize='small' className={classes.launchIcon}/><div className={classes.linkTitle}>{t(risk.name)}</div>
-                      </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Grid>             
-            </Grid>
           </Grid>
         </Paper>
       </div>

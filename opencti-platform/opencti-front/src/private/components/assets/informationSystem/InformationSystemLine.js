@@ -95,31 +95,30 @@ class InformationSystemLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.asset_type.width }}
+                style={{ width: dataColumns.privacy_sensitive.width }}
               >
                 {node.asset_type && <ItemIcon type={node.asset_type} />}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.vendor_name.width }}
+                style={{ width: dataColumns.critical_system.width }}
               >
                 {node.vendor_name && node.vendor_name}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.version.width }}
+                style={{ width: dataColumns.status.width }}
               >
                 {node.version && node.version}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.cpe_identifier.width }}
+                style={{ width: dataColumns.risks.width }}
               >
-                {node.cpe_identifier && node.cpe_identifier}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.software_identifier.width }}
+                style={{ width: dataColumns.severity.width }}
               >
                 {node.software_identifier && node.software_identifier}
               </div>
@@ -132,11 +131,12 @@ class InformationSystemLineComponent extends Component {
                   labels={node.labels}
                   onClick={onLabelClick.bind(this)}
                 />
-                {/* <StixCoreObjectLabels
-                  variant="inList"
-                  labels={objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                /> */}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.date_created.width }}
+              >
+                {node.software_identifier && node.software_identifier}
               </div>
             </div>
           }
@@ -249,7 +249,7 @@ class InformationSystemDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.asset_type.width }}
+                style={{ width: dataColumns.privacy_sensitive.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -260,7 +260,7 @@ class InformationSystemDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.vendor_name.width }}
+                style={{ width: dataColumns.critical_system.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -271,7 +271,7 @@ class InformationSystemDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.version.width }}
+                style={{ width: dataColumns.status.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -282,7 +282,7 @@ class InformationSystemDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.cpe_identifier.width }}
+                style={{ width: dataColumns.risks.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -293,7 +293,7 @@ class InformationSystemDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.software_identifier.width }}
+                style={{ width: dataColumns.severity.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -305,6 +305,17 @@ class InformationSystemDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.label_name.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.date_created.width }}
               >
                 <Skeleton
                   animation="wave"

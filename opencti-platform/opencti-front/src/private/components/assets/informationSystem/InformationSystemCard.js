@@ -100,6 +100,7 @@ class InformationSystemCardComponent extends Component {
   render() {
     const {
       t,
+      fsd,
       node,
       classes,
       selectAll,
@@ -122,69 +123,20 @@ class InformationSystemCardComponent extends Component {
           to={`/defender HQ/assets/information_systems/${node.id}`}
           data-cy='information_systems card'
         >
-          {/* <CardHeader
-            classes={{ root: classes.header }}
-            avatar={
-              <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
-            }
-            title={node.name}
-            subheader={`${t('Updated the')} ${fsd(node.modified)}`}
-            action={
-              <IconButton
-                size="small"
-                onClick={
-                  bookmarksIds.includes(node.id)
-                    ? deleteBookMark.bind(this, node.id, 'Software')
-                    : addBookmark.bind(this, node.id, 'Software')
-                }
-                color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
-                style={{ marginTop: 10 }}
-              >
-                <StarBorderOutlined />
-              </IconButton>
-            }
-          /> */}
           <CardContent className={classes.content}>
-            {/* <div className={classes.description}>
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                parserOptions={{ commonmark: true }}
-                disallowedTypes={['link', 'linkReference']}
-                unwrapDisallowed={true}
-              >
-                {node.description}
-              </Markdown>
-            </div>
-            <div className={classes.objectLabel}>
-              <StixCoreObjectLabels
-                labels={node.objectLabel}
-                onClick={onLabelClick.bind(this)}
-              />
-            </div> */}
             <Grid item={true} className={classes.header}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Type')}
-                </Typography>
-                <div className="clearfix" />
-                {node.asset_type && <ItemIcon type={node.asset_type} />}
-              </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                    {t('Name')}
+                  {t('Name')}
                 </Typography>
                 <div className="clearfix" />
                 <Typography variant="h2">
-                    {/* {t('KK-HWELL-011')} */}
-                    {node.name && t(node.name)}
+                  {/* {t('KK-HWELL-011')} */}
+                  {node.name && t(node.name)}
                 </Typography>
               </div>
               <div>
@@ -199,35 +151,35 @@ class InformationSystemCardComponent extends Component {
             <Grid xs={12} container={true} >
               <Grid item={true} xs={7} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 gutterBottom ={true}>
-                  {t('Asset ID')}
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}>
+                  {t('Privacy Sensitive')}
                 </Typography>
                 <Typography>
-                    {/* {t('KK-HWELL-011')} */}
-                    {node.asset_id && truncate(t(node.asset_id), 25)}
+                  {/* {t('KK-HWELL-011')} */}
+                  {node.asset_id && truncate(t(node.asset_id), 25)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
-                  {t('Version')}
+                  {t('Status')}
                 </Typography>
                 <Typography>
                   {node.version && t(node.version)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
-                  {t('CPE ID')}
+                  {t('Severity')}
                 </Typography>
                 <Typography>
                   {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
@@ -235,55 +187,51 @@ class InformationSystemCardComponent extends Component {
               </Grid>
               <Grid xs={5} item={true} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 gutterBottom ={true}>
-                  {t('Vendor')}
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}>
+                  {t('Critical System')}
                 </Typography>
                 <Typography>
-                    {node.vendor_name && t(node.vendor_name)}
+                  {node.vendor_name && t(node.vendor_name)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
-                  {t('Patch Level')}
+                  {t('Risks')}
                 </Typography>
                 <Typography>
                   {node.patch_level && t(node.patch_level)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
-                  {t('SWID')}
+                  {t('Date Created')}
                 </Typography>
                 <Typography>
-                  {node.software_identifier && t(node.software_identifier)}
+                  {node.created && fsd(node.created)}
                 </Typography>
               </Grid>
             </Grid>
             <div className={classes.objectLabel}>
               <Typography
-               variant="h3"
-               color="textSecondary"
-               gutterBottom ={true}>
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}>
                 {t('Label')}
               </Typography>
               <CyioCoreObjectLabels
                 labels={node.labels}
                 onClick={onLabelClick.bind(this)}
               />
-              {/* <StixCoreObjectLabels
-                labels={objectLabel}
-                onClick={onLabelClick.bind(this)}
-              /> */}
             </div>
           </CardContent>
         </CardActionArea>
@@ -301,35 +249,6 @@ InformationSystemCardComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-// const InformationSystemCardFragment = createFragmentContainer(InformationSystemCardComponent, {
-//   node: graphql`
-//     fragment SoftwareCard_node on SoftwareA {
-//       id
-//       name
-//       description
-//       created
-//       modified
-//       objectMarking {
-//         edges {
-//           node {
-//             id
-//             definition
-//           }
-//         }
-//       }
-//       objectLabel {
-//         edges {
-//           node {
-//             id
-//             value
-//             color
-//           }
-//         }
-//       }
-//     }
-//   `,
-// });
-
 const InformationSystemCardFragment = createFragmentContainer(
   InformationSystemCardComponent,
   {
@@ -341,9 +260,9 @@ const InformationSystemCardFragment = createFragmentContainer(
         asset_id
         vendor_name
         version
+        created
         patch_level
         cpe_identifier
-        software_identifier
         labels {
           __typename
           id
@@ -351,28 +270,6 @@ const InformationSystemCardFragment = createFragmentContainer(
           color
           entity_type
           description
-        }
-        external_references {
-          __typename
-          id
-          source_name
-          description
-          entity_type
-          url
-          hashes {
-            value
-          }
-          external_id
-        }
-        notes {
-          __typename
-          id
-          # created
-          # modified
-          entity_type
-          abstract
-          content
-          authors
         }
       }
     `,
