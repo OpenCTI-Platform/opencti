@@ -72,10 +72,10 @@ class StixDomainObjectsExportsContentComponent extends Component {
     if (paginationOptions?.filters && Object.values(paginationOptions.filters).map((o) => o.key).includes('objectContains')) { // for reports contained in entity>Analysis
       const filtersValues = Object.values(paginationOptions.filters);
       const [elementId] = filtersValues.filter((o) => o.key === 'objectContains')[0].values;
-      const newFilters = filtersValues.filter((o) => o.key !== 'objectContains');
+      const filtersForExport = filtersValues.filter((o) => o.key !== 'objectContains');
       paginationOptionsForExport = {
         ...paginationOptions,
-        filters: newFilters,
+        filters: filtersForExport,
         elementId,
       };
     }

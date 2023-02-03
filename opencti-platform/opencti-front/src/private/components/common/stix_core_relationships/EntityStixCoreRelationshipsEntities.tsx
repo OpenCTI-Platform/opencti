@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -16,6 +15,9 @@ import {
   EntityStixCoreRelationshipsEntitiesPaginationQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import {
+  EntityStixCoreRelationshipsEntities_data$key,
+} from './__generated__/EntityStixCoreRelationshipsEntities_data.graphql';
 
 const nbOfRowsToLoad = 50;
 
@@ -115,7 +117,8 @@ EntityStixCoreRelationshipsEntitiesProps
   selectAll,
   setNumberOfElements,
 }) => {
-  const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment({
+  const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment<
+  EntityStixCoreRelationshipsEntitiesPaginationQuery, EntityStixCoreRelationshipsEntities_data$key>({
     queryRef,
     linesQuery: entityStixCoreRelationshipsEntitiesQuery,
     linesFragment: entityStixCoreRelationshipsEntitiesFragment,
@@ -128,12 +131,8 @@ EntityStixCoreRelationshipsEntitiesProps
       loadMore={loadMore}
       hasMore={hasMore}
       isLoading={isLoadingMore}
-      dataList={R.pathOr([], ['stixCoreObjects', 'edges'], data)}
-      globalCount={R.pathOr(
-        nbOfRowsToLoad,
-        ['stixCoreObjects', 'pageInfo', 'globalCount'],
-        data,
-      )}
+      dataList={data?.stixCoreObjects?.edges ?? []}
+      globalCount={data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={EntityStixCoreRelationshipsEntitiesLine}
       DummyLineComponent={EntityStixCoreRelationshipsEntitiesLineDummy}
       dataColumns={dataColumns}

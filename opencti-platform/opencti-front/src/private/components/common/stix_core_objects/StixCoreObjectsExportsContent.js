@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import * as R from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -57,11 +56,17 @@ const StixCoreObjectsExportsContentComponent = ({
       subscription.unsubscribe();
     };
   });
-  const stixCoreObjectsExportFiles = R.pathOr(
-    [],
-    ['stixCoreObjectsExportFiles', 'edges'],
-    data,
-  );
+  const stixCoreObjectsExportFiles = data?.stixCoreObjectsExportFiles?.edges ?? [];
+
+  let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct types filters
+  if (paginationOptions?.types && paginationOptions.types.length > 0) {
+    const filtersForExport = [...paginationOptionsForExport.filters, { key: 'entity_type', values: paginationOptions.types }];
+    paginationOptionsForExport = {
+      ...paginationOptions,
+      filters: filtersForExport,
+    };
+  }
+
   return (
     <List
       subheader={
@@ -71,7 +76,7 @@ const StixCoreObjectsExportsContentComponent = ({
             <StixCoreObjectsExportCreation
               data={data}
               exportEntityType={exportEntityType}
-              paginationOptions={paginationOptions}
+              paginationOptions={paginationOptionsForExport}
               context={context}
               onExportAsk={() => relay.refetch({
                 type: exportEntityType,
