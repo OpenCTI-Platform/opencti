@@ -242,7 +242,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             handleChangeView={this.handleChangeView.bind(this)}
             openExports={openExports}
             noPadding={typeof this.props.onChangeOpenExports === 'function'}
-            exportEntityType="Report"
+            exportEntityType="Analysis"
             exportContext={exportContext}
             keyword={searchTerm}
             handleSwitchRedirectionMode={this.handleSwitchRedirectionMode.bind(this)}
