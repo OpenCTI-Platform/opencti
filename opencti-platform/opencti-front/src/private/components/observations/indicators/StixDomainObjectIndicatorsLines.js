@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  StixDomainObjectIndicatorLine,
-  StixDomainObjectIndicatorLineDummy,
-} from './StixDomainObjectIndicatorLine';
+import { StixDomainObjectIndicatorLine, StixDomainObjectIndicatorLineDummy } from './StixDomainObjectIndicatorLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
@@ -40,12 +36,8 @@ class StixDomainObjectIndicatorsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['indicators', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['indicators', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        dataList={this.props.data?.indicators?.edges ?? []}
+        globalCount={this.props.data?.indicators?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={<StixDomainObjectIndicatorLine />}
         DummyLineComponent={<StixDomainObjectIndicatorLineDummy />}
         dataColumns={dataColumns}
@@ -123,6 +115,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_indicators") {
           edges {
             node {
+              id
               ...StixDomainObjectIndicatorLine_node
             }
           }

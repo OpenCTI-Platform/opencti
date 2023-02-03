@@ -37,14 +37,11 @@ import {
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  buildRefRelationKey,
   STIX_META_RELATIONSHIPS_INPUTS,
 } from '../schema/general';
-import {
-  isStixMetaRelationship,
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_ASSIGNEE,
-} from '../schema/stixMetaRelationship';
+import { isStixMetaRelationship, RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from '../schema/stixCyberObservableRelationship';
@@ -108,20 +105,32 @@ export const stixDomainObjectsDistributionByEntity = async (context, user, args)
 
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
-  const { format, type, exportType, maxMarkingDefinition } = args;
+  const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId } = args;
   const argsFilters = { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId };
   const filtersOpts = stixDomainObjectOptions.StixDomainObjectsFilter;
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
-  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
-  const works = await askListExport(context, user, format, type, listParams, exportType, maxMarkingDefinition);
-  return R.map((w) => workToExportFile(w), works);
+  let newArgsFiltersFilters = argsFilters.filters;
+  const initialParams = {};
+  if (argsFilters.filters && argsFilters.filters.length > 0) {
+    if (argsFilters.filters.filter((n) => n.key.includes('elementId')).length > 0) {
+      initialParams.elementId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('elementId'))).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('elementId'));
+    }
+  }
+  const finalArgsFilter = {
+    ...argsFilters,
+    filters: newArgsFiltersFilters
+  };
+  const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
+  const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
+  return works.map((w) => workToExportFile(w));
 };
 export const stixDomainObjectExportAsk = async (context, user, args) => {
   const { format, stixDomainObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
   const entity = stixDomainObjectId ? await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT) : null;
   const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
-  return R.map((w) => workToExportFile(w), works);
+  return works.map((w) => workToExportFile(w));
 };
 export const stixDomainObjectsExportPush = async (context, user, type, file, listFilters) => {
   await upload(context, user, `export/${type}`, file, { list_filters: listFilters });
@@ -190,7 +199,7 @@ export const stixDomainObjectAddRelation = async (context, user, stixDomainObjec
   if (!isStixMetaRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
-  const finalInput = R.assoc('fromId', stixDomainObjectId, input);
+  const finalInput = { ...input, fromId: stixDomainObjectId };
   return createRelation(context, user, finalInput).then((relationData) => {
     notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, relationData, user);
     return relationData;
@@ -205,9 +214,8 @@ export const stixDomainObjectAddRelations = async (context, user, stixDomainObje
   if (!isStixMetaRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
-  const finalInput = R.map(
-    (n) => ({ fromId: stixDomainObjectId, toId: n, relationship_type: input.relationship_type }),
-    input.toIds
+  const finalInput = input.toIds.map(
+    (n) => ({ fromId: stixDomainObjectId, toId: n, relationship_type: input.relationship_type })
   );
   await createRelations(context, user, finalInput);
   const entity = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);

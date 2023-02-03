@@ -1,11 +1,6 @@
 import mime from 'mime-types';
-import { assoc, invertObj, map, pipe, propOr } from 'ramda';
-import {
-  batchListThroughGetTo,
-  deleteElementById,
-  mergeEntities,
-  updateAttribute
-} from '../database/middleware';
+import { invertObj, map } from 'ramda';
+import { batchListThroughGetTo, deleteElementById, mergeEntities, updateAttribute } from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -51,7 +46,7 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
 
-export const askListExport = async (context, user, format, entityType, listParams, type = 'simple', maxMarkingId = null) => {
+export const askListExport = async (context, user, format, entityType, selectedIds, listParams, type = 'simple', maxMarkingId = null) => {
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
   const toFileName = (connector) => {
@@ -59,17 +54,35 @@ export const askListExport = async (context, user, format, entityType, listParam
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const buildExportMessage = (work, fileName) => {
+    if (selectedIds && selectedIds.length > 0) {
+      return {
+        internal: {
+          work_id: work.id, // Related action for history
+          applicant_id: user.id, // User asking for the import
+        },
+        event: {
+          export_scope: 'selection', // query or selection or single
+          export_type: type, // Simple or full
+          file_name: fileName, // Export expected file name
+          max_marking: maxMarkingId, // Max marking id
+          entity_type: entityType, // Exported entity type
+          element_id: listParams.elementId,
+          selected_ids: selectedIds, // ids that are both selected via checkboxes and respect the filtering
+        },
+      };
+    }
     return {
       internal: {
         work_id: work.id, // Related action for history
         applicant_id: user.id, // User asking for the import
       },
       event: {
-        export_scope: 'list', // Single or List
+        export_scope: 'query', // query or selection or single
         export_type: type, // Simple or full
         file_name: fileName, // Export expected file name
         max_marking: maxMarkingId, // Max marking id
         entity_type: entityType, // Exported entity type
+        element_id: listParams.elementId,
         // For list entity export
         list_params: listParams,
       },
@@ -105,13 +118,13 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
         applicant_id: user.id, // User asking for the import
       },
       event: {
-        export_scope: 'single', // Single or List
+        export_scope: 'single', // query or selection or single
         export_type: type, // Simple or full
         file_name: fileName, // Export expected file name
         max_marking: maxMarkingId, // Max marking id
         entity_type: entity.entity_type, // Exported entity type
         // For single entity export
-        entity_id: entity.id, // Exported element
+        entity_id: entity.id, // Location of the file export = the exported element
       },
     };
   };
@@ -132,25 +145,19 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
 export const exportTransformFilters = (listFilters, filterOptions, orderOptions) => {
   const filtersInversed = invertObj(filterOptions);
   const orderingInversed = invertObj(orderOptions);
-  return pipe(
-    assoc(
-      'filters',
-      map(
-        (n) => ({
-          key: n.key in filtersInversed ? filtersInversed[n.key] : n.key,
-          values: n.values,
-          operator: n.operator ? n.operator : 'eq',
-        }),
-        propOr([], 'filters', listFilters)
-      )
+  return {
+    ...listFilters,
+    orderBy: listFilters.orderBy in orderingInversed
+      ? orderingInversed[listFilters.orderBy]
+      : listFilters.orderBy,
+    filters: (listFilters.filters ?? []).map(
+      (n) => ({
+        key: n.key in filtersInversed ? filtersInversed[n.key] : n.key,
+        values: n.values,
+        operator: n.operator ?? 'eq',
+      })
     ),
-    assoc(
-      'orderBy',
-      listFilters.orderBy in orderingInversed
-        ? orderingInversed[listFilters.orderBy]
-        : listFilters.orderBy
-    )
-  )(listFilters);
+  };
 };
 
 export const batchObjectOrganizations = (context, user, stixCoreObjectIds) => {

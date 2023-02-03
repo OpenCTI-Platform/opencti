@@ -1,4 +1,4 @@
-import { assoc, dissoc, filter, map } from 'ramda';
+import { assoc, dissoc, filter } from 'ramda';
 import { createHash } from 'node:crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -36,7 +36,8 @@ import {
 } from '../schema/stixCyberObservable';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  buildRefRelationKey,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS
@@ -240,9 +241,8 @@ export const stixCyberObservableAddRelations = async (context, user, stixCyberOb
   if (!isStixMetaRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
-  const finalInput = map(
-    (n) => ({ fromId: stixCyberObservableId, toId: n, relationship_type: input.relationship_type }),
-    input.toIds
+  const finalInput = input.toIds.map(
+    (n) => ({ fromId: stixCyberObservableId, toId: n, relationship_type: input.relationship_type })
   );
   await createRelations(context, user, finalInput);
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
@@ -336,7 +336,7 @@ export const stixCyberObservableEditContext = (context, user, stixCyberObservabl
 
 // region export
 export const stixCyberObservablesExportAsk = async (context, user, args) => {
-  const { format, exportType, maxMarkingDefinition } = args;
+  const { format, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters, filterMode, types } = args;
   const argsFilters = { search, orderBy, orderMode, filters, filterMode, types };
   const filtersOpts = stixCyberObservableOptions.StixCyberObservablesFilter;
@@ -347,11 +347,12 @@ export const stixCyberObservablesExportAsk = async (context, user, args) => {
     user,
     format,
     'Stix-Cyber-Observable',
+    selectedIds,
     listParams,
     exportType,
     maxMarkingDefinition
   );
-  return map((w) => workToExportFile(w), works);
+  return works.map((w) => workToExportFile(w));
 };
 export const stixCyberObservableExportAsk = async (context, user, args) => {
   const { format, exportType, stixCyberObservableId = null, maxMarkingDefinition = null } = args;
@@ -359,7 +360,7 @@ export const stixCyberObservableExportAsk = async (context, user, args) => {
     ? await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
     : null;
   const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
-  return map((w) => workToExportFile(w.work), works);
+  return works.map((w) => workToExportFile(w.work));
 };
 export const stixCyberObservablesExportPush = async (context, user, file, listFilters) => {
   await upload(context, user, 'export/Stix-Cyber-Observable', file, { list_filters: listFilters });

@@ -18,6 +18,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ToolBar from '../../data/ToolBar';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import ExportContextProvider from '../../../../utils/ExportContextProvider';
 
 class StixDomainObjectIndicators extends Component {
   constructor(props) {
@@ -270,24 +271,21 @@ class StixDomainObjectIndicators extends Component {
         - Object.keys(deSelectedElements || {}).length;
     }
     let finalFilters = filters;
-    finalFilters = R.assoc(
-      'indicates',
-      [{ id: stixDomainObjectId, value: stixDomainObjectId }],
-      finalFilters,
-    );
+    finalFilters = {
+      ...finalFilters,
+      indicates: [{ id: stixDomainObjectId, value: stixDomainObjectId }],
+    };
     if (indicatorTypes.length) {
-      finalFilters = R.assoc(
-        'pattern_type',
-        R.map((n) => ({ id: n, value: n }), indicatorTypes),
-        finalFilters,
-      );
+      finalFilters = {
+        ...finalFilters,
+        pattern_type: indicatorTypes.map((n) => ({ id: n, value: n })),
+      };
     }
     if (observableTypes.length) {
-      finalFilters = R.assoc(
-        'x_opencti_main_observable_type',
-        R.map((n) => ({ id: n, value: n }), observableTypes),
-        finalFilters,
-      );
+      finalFilters = {
+        ...finalFilters,
+        x_opencti_main_observable_type: observableTypes.map((n) => ({ id: n, value: n })),
+      };
     }
     return (
       <UserContext.Consumer>
@@ -395,9 +393,8 @@ class StixDomainObjectIndicators extends Component {
         {
           key: 'x_opencti_main_observable_type',
           operator: 'match',
-          values: R.map(
+          values: observableTypes.map(
             (type) => type.toLowerCase().replace(/\*/g, ''),
-            observableTypes,
           ),
         },
         finalFilters,
@@ -410,6 +407,7 @@ class StixDomainObjectIndicators extends Component {
       filters: finalFilters,
     };
     return (
+      <ExportContextProvider>
       <div style={{ marginTop: 20, paddingRight: 250 }}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -438,6 +436,7 @@ class StixDomainObjectIndicators extends Component {
           openExports={openExports}
         />
       </div>
+      </ExportContextProvider>
     );
   }
 }

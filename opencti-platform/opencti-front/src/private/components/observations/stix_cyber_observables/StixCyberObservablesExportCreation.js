@@ -34,6 +34,7 @@ import {
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
+import { ExportContext } from '../../../../utils/ExportContextProvider';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -77,6 +78,9 @@ export const StixCyberObservablesExportCreationMutation = graphql`
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
     $filters: [StixCyberObservablesFiltering]
+    $relationship_type: [String]
+    $elementId: String
+    $selectedIds: [String]
   ) {
     stixCyberObservablesExportAsk(
       format: $format
@@ -88,6 +92,9 @@ export const StixCyberObservablesExportCreationMutation = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      relationship_type: $relationship_type
+      elementId: $elementId
+      selectedIds: $selectedIds
     ) {
       edges {
         node {
@@ -135,7 +142,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, context } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
@@ -148,6 +155,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
         maxMarkingDefinition,
         context,
         ...paginationOptions,
+        selectedIds,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -171,15 +179,18 @@ class StixCyberObservablesExportCreationComponent extends Component {
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
 
     return (
-      <div className={classes.createButton}>
-        <Tooltip
-          title={
-            isExportPossible
-              ? t('Generate an export')
-              : t('No export connector available to generate an export')
-          }
-          aria-label="generate-export"
-        >
+      <ExportContext.Consumer>
+        {({ selectedIds }) => {
+          return (
+            <div className={classes.createButton}>
+              <Tooltip
+                title={
+                  isExportPossible
+                    ? t('Generate an export')
+                    : t('No export connector available to generate an export')
+                }
+                aria-label="generate-export"
+              >
           <span>
             <IconButton
               onClick={this.handleOpen.bind(this)}
@@ -188,101 +199,104 @@ class StixCyberObservablesExportCreationComponent extends Component {
               disabled={!isExportPossible}
               size="large"
             >
-              <Add />
+              <Add/>
             </IconButton>
           </span>
-        </Tooltip>
-        <Formik
-          enableReinitialize={true}
-          initialValues={{
-            format: '',
-            maxMarkingDefinition: 'none',
-          }}
-          validationSchema={exportValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.handleClose.bind(this)}
-        >
-          {({ submitForm, handleReset, isSubmitting }) => (
-            <Form>
-              <Dialog
-                open={this.state.open}
-                PaperProps={{ elevation: 1 }}
-                onClose={this.handleClose.bind(this)}
-                fullWidth={true}
+              </Tooltip>
+              <Formik
+                enableReinitialize={true}
+                initialValues={{
+                  format: '',
+                  maxMarkingDefinition: 'none',
+                }}
+                validationSchema={exportValidation(t)}
+                onSubmit={this.onSubmit.bind(this, selectedIds)}
+                onReset={this.handleClose.bind(this)}
               >
-                <DialogTitle>{t('Generate an export')}</DialogTitle>
-                <QueryRenderer
-                  query={markingDefinitionsLinesSearchQuery}
-                  variables={{ first: 200 }}
-                  render={({ props }) => {
-                    if (props && props.markingDefinitions) {
-                      return (
-                        <DialogContent>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="format"
-                            label={t('Export format')}
-                            fullWidth={true}
-                            containerstyle={{ width: '100%' }}
-                          >
-                            {exportScopes.map((value, i) => (
-                              <MenuItem
-                                key={i}
-                                value={value}
-                                disabled={!isExportActive(value)}
-                              >
-                                {value}
-                              </MenuItem>
-                            ))}
-                          </Field>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="maxMarkingDefinition"
-                            label={t('Max marking definition level')}
-                            fullWidth={true}
-                            containerstyle={{
-                              marginTop: 20,
-                              width: '100%',
-                            }}
-                          >
-                            <MenuItem value="none">{t('None')}</MenuItem>
-                            {map(
-                              (markingDefinition) => (
-                                <MenuItem
-                                  key={markingDefinition.node.id}
-                                  value={markingDefinition.node.id}
+                {({ submitForm, handleReset, isSubmitting }) => (
+                  <Form>
+                    <Dialog
+                      open={this.state.open}
+                      PaperProps={{ elevation: 1 }}
+                      onClose={this.handleClose.bind(this)}
+                      fullWidth={true}
+                    >
+                      <DialogTitle>{t('Generate an export')}</DialogTitle>
+                      <QueryRenderer
+                        query={markingDefinitionsLinesSearchQuery}
+                        variables={{ first: 200 }}
+                        render={({ props }) => {
+                          if (props && props.markingDefinitions) {
+                            return (
+                              <DialogContent>
+                                <Field
+                                  component={SelectField}
+                                  variant="standard"
+                                  name="format"
+                                  label={t('Export format')}
+                                  fullWidth={true}
+                                  containerstyle={{ width: '100%' }}
                                 >
-                                  {markingDefinition.node.definition}
-                                </MenuItem>
-                              ),
-                              props.markingDefinitions.edges,
-                            )}
-                          </Field>
-                        </DialogContent>
-                      );
-                    }
-                    return <Loader variant="inElement" />;
-                  }}
-                />
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        </Formik>
-      </div>
+                                  {exportScopes.map((value, i) => (
+                                    <MenuItem
+                                      key={i}
+                                      value={value}
+                                      disabled={!isExportActive(value)}
+                                    >
+                                      {value}
+                                    </MenuItem>
+                                  ))}
+                                </Field>
+                                <Field
+                                  component={SelectField}
+                                  variant="standard"
+                                  name="maxMarkingDefinition"
+                                  label={t('Max marking definition level')}
+                                  fullWidth={true}
+                                  containerstyle={{
+                                    marginTop: 20,
+                                    width: '100%',
+                                  }}
+                                >
+                                  <MenuItem value="none">{t('None')}</MenuItem>
+                                  {map(
+                                    (markingDefinition) => (
+                                      <MenuItem
+                                        key={markingDefinition.node.id}
+                                        value={markingDefinition.node.id}
+                                      >
+                                        {markingDefinition.node.definition}
+                                      </MenuItem>
+                                    ),
+                                    props.markingDefinitions.edges,
+                                  )}
+                                </Field>
+                              </DialogContent>
+                            );
+                          }
+                          return <Loader variant="inElement"/>;
+                        }}
+                      />
+                      <DialogActions>
+                        <Button onClick={handleReset} disabled={isSubmitting}>
+                          {t('Cancel')}
+                        </Button>
+                        <Button
+                          color="secondary"
+                          onClick={submitForm}
+                          disabled={isSubmitting}
+                        >
+                          {t('Create')}
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          );
+        }}
+      </ExportContext.Consumer>
     );
   }
 }

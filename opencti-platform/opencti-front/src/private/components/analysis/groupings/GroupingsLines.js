@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { GroupingLine, GroupingLineDummy } from './GroupingLine';
 import { setNumberOfElements } from '../../../../utils/Number';
@@ -28,19 +27,17 @@ class GroupingsLines extends Component {
       selectedElements,
       deSelectedElements,
       selectAll,
+      data,
     } = this.props;
+
     return (
       <ListLinesContent
         initialLoading={initialLoading}
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['groupings', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['groupings', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        dataList={data?.groupings?.edges ?? []}
+        globalCount={data?.groupings?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={<GroupingLine />}
         DummyLineComponent={<GroupingLineDummy />}
         dataColumns={dataColumns}

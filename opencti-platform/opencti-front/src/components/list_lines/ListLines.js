@@ -186,311 +186,311 @@ class ListLines extends Component {
       className = classes.containerOpenExports;
     }
     return (
-      <div className={className}>
-        <div className={classes.parameters}>
-          {typeof handleSearch === 'function' && (
-            <div style={{ float: 'left', marginRight: 20 }}>
-              <SearchInput
-                variant={searchVariant || 'small'}
-                onSubmit={handleSearch.bind(this)}
-                keyword={keyword}
-              />
-            </div>
-          )}
-          {availableFilterKeys && availableFilterKeys.length > 0 && (
-            <Filters
-              availableFilterKeys={availableFilterKeys}
-              handleAddFilter={handleAddFilter}
-              availableEntityTypes={availableEntityTypes}
-              availableRelationshipTypes={availableRelationshipTypes}
-              availableRelationFilterTypes={availableRelationFilterTypes}
-            />
-          )}
-          {(!availableFilterKeys || availableFilterKeys.length === 0)
-            && !noHeaders
-            && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
-          <FilterIconButton
-            filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-          />
-        </div>
-        <div className={classes.views}>
-          <div style={{ float: 'right', marginTop: -20 }}>
-            {numberOfElements && (
-              <div style={{ float: 'left', padding: '16px 5px 0 0' }}>
-                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-                {t('entitie(s)')}
-              </div>
-            )}
-            {handleSwitchRedirectionMode && (
-                <ToggleButtonGroup
-                  size="small"
-                  color="secondary"
-                  exclusive={true}
-                  onChange={(_, value) => {
-                    handleSwitchRedirectionMode(value);
-                  }}
-                  style={{ margin: '7px 20px 0 10px' }}
-                >
-                  <ToggleButton
-                    value="overview" aria-label="overview"
-                  >
-                    <Tooltip title={t('Redirecting to the Overview section')}>
-                      <PreviewOutlined
-                        fontSize="small"
-                        color={(!redirectionMode || redirectionMode === 'overview') ? 'secondary' : 'primary'}
-                      />
-                    </Tooltip>
-                  </ToggleButton>
-                  <ToggleButton
-                    value="knowledge" aria-label="knowledge"
-                  >
-                    <Tooltip title={t('Redirecting to the Knowledge section')}>
-                      <GraphOutline
-                        fontSize="small"
-                        color={redirectionMode === 'knowledge' ? 'secondary' : 'primary'}
-                      />
-                    </Tooltip>
-                  </ToggleButton>
-                  <ToggleButton
-                    value="content" aria-label="content"
-                  >
-                    <Tooltip title={t('Redirecting to the Content section')}>
-                      <SourceOutlined
-                        fontSize="small"
-                        color={redirectionMode === 'content' ? 'secondary' : 'primary'}
-                      />
-                    </Tooltip>
-                  </ToggleButton>
-            </ToggleButtonGroup>
-            )}
-            {(typeof handleChangeView === 'function'
-              || typeof handleToggleExports === 'function') && (
-              <ToggleButtonGroup
-                size="small"
-                color="secondary"
-                value={currentView || 'lines'}
-                exclusive={true}
-                onChange={(_, value) => {
-                  if (value && value === 'export') {
-                    handleToggleExports();
-                  } else if (value) {
-                    handleChangeView(value);
-                  }
-                }}
-                style={{ margin: '7px 0 0 5px' }}
-              >
-                {typeof handleChangeView === 'function' && !disableCards && (
-                  <ToggleButton value="cards" aria-label="cards">
-                    <Tooltip title={t('Cards view')}>
-                      <ViewModuleOutlined fontSize="small" color="primary" />
-                    </Tooltip>
-                  </ToggleButton>
-                )}
-                {typeof handleChangeView === 'function'
-                  && enableEntitiesView && (
-                    <ToggleButton value="entities" aria-label="entities">
-                      <Tooltip title={t('Entities view')}>
-                        <LibraryBooksOutlined
-                          fontSize="small"
-                          color={
-                            currentView === 'entities' ? 'secondary' : 'primary'
-                          }
-                        />
-                      </Tooltip>
-                    </ToggleButton>
-                )}
-                {enableEntitiesView && (
-                  <ToggleButton value="relationships" aria-label="relationships">
-                    <Tooltip title={t('Relationships view')}>
-                      <RelationManyToMany
-                        fontSize="small"
-                        color={
-                          currentView === 'relationships' || !currentView
-                            ? 'secondary'
-                            : 'primary'
-                        }
-                      />
-                    </Tooltip>
-                  </ToggleButton>
-                )}
-                {!enableEntitiesView && (
-                  <ToggleButton value="lines" aria-label="lines">
-                    <Tooltip title={t('Lines view')}>
-                      <ViewListOutlined
-                        fontSize="small"
-                        color={
-                          currentView === 'lines' || !currentView
-                            ? 'secondary'
-                            : 'primary'
-                        }
-                      />
-                    </Tooltip>
-                  </ToggleButton>
-                )}
-                {typeof handleChangeView === 'function' && enableGraph && (
-                  <ToggleButton value="graph" aria-label="graph">
-                    <Tooltip title={t('Graph view')}>
-                      <VectorPolygon fontSize="small" color="primary" />
-                    </Tooltip>
-                  </ToggleButton>
-                )}
-                {typeof handleChangeView === 'function' && enableNestedView && (
-                  <ToggleButton value="nested" aria-label="nested">
-                    <Tooltip title={t('Nested view')}>
-                      <FormatListGroup fontSize="small" color="primary" />
-                    </Tooltip>
-                  </ToggleButton>
-                )}
-                {typeof handleToggleExports === 'function' && (
-                  <ToggleButton value="export" aria-label="export">
-                    <Tooltip title={t('Open export panel')}>
-                      <FileDownloadOutlined
-                        fontSize="small"
-                        color={openExports ? 'secondary' : 'primary'}
-                      />
-                    </Tooltip>
-                  </ToggleButton>
-                )}
-              </ToggleButtonGroup>
-            )}
-          </div>
-        </div>
-        <div className="clearfix" />
-        {message && (
-          <div style={{ width: '100%', marginTop: 10 }}>
-            <Alert
-              severity="info"
-              variant="outlined"
-              style={{ padding: '0px 10px 0px 10px' }}
-              classes={{ message: classes.info }}
-            >
-              {message}
-            </Alert>
-          </div>
-        )}
-        <List
-          classes={{
-            root: bottomNav
-              ? classes.linesContainerBottomNav
-              : classes.linesContainer,
-          }}
-          style={noTopMargin ? { marginTop: 0 } : null}
-        >
-          {!noHeaders ? (
-            <ListItem
-              classes={{ root: classes.item }}
-              divider={false}
-              style={{ paddingTop: 0 }}
-            >
-              <ListItemIcon
-                style={{
-                  minWidth:
-                    typeof handleToggleSelectAll === 'function' ? 38 : 56,
-                }}
-              >
-                {typeof handleToggleSelectAll === 'function' ? (
-                  <Checkbox
-                    edge="start"
-                    checked={selectAll}
-                    disableRipple={true}
-                    onChange={handleToggleSelectAll.bind(this)}
-                  />
-                ) : (
-                  <span
-                    style={{
-                      padding: '0 8px 0 8px',
-                      fontWeight: 700,
-                      fontSize: 12,
-                    }}
-                  >
-                    &nbsp;
-                  </span>
-                )}
-              </ListItemIcon>
-              {iconExtension && (
-                <ListItemIcon>
-                  <span
-                    style={{
-                      padding: '0 8px 0 8px',
-                      fontWeight: 700,
-                      fontSize: 12,
-                    }}
-                  >
-                    &nbsp;
-                  </span>
-                </ListItemIcon>
-              )}
-              <ListItemText
-                primary={
-                  <div>
-                    {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
-                      dataColumn[0],
-                      dataColumn[1].label,
-                      dataColumn[1].width,
-                      dataColumn[1].isSortable,
-                    ))}
+            <div className={className}>
+              <div className={classes.parameters}>
+                {typeof handleSearch === 'function' && (
+                  <div style={{ float: 'left', marginRight: 20 }}>
+                    <SearchInput
+                      variant={searchVariant || 'small'}
+                      onSubmit={handleSearch.bind(this)}
+                      keyword={keyword}
+                    />
                   </div>
-                }
-              />
-              {secondaryAction && (
-                <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+                )}
+                {availableFilterKeys && availableFilterKeys.length > 0 && (
+                  <Filters
+                    availableFilterKeys={availableFilterKeys}
+                    handleAddFilter={handleAddFilter}
+                    availableEntityTypes={availableEntityTypes}
+                    availableRelationshipTypes={availableRelationshipTypes}
+                    availableRelationFilterTypes={availableRelationFilterTypes}
+                  />
+                )}
+                {(!availableFilterKeys || availableFilterKeys.length === 0)
+                  && !noHeaders
+                  && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
+                <FilterIconButton
+                  filters={filters}
+                  handleRemoveFilter={handleRemoveFilter}
+                />
+              </div>
+              <div className={classes.views}>
+                <div style={{ float: 'right', marginTop: -20 }}>
+                  {numberOfElements && (
+                    <div style={{ float: 'left', padding: '16px 5px 0 0' }}>
+                      <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                      {t('entitie(s)')}
+                    </div>
+                  )}
+                  {handleSwitchRedirectionMode && (
+                    <ToggleButtonGroup
+                      size="small"
+                      color="secondary"
+                      exclusive={true}
+                      onChange={(_, value) => {
+                        handleSwitchRedirectionMode(value);
+                      }}
+                      style={{ margin: '7px 20px 0 10px' }}
+                    >
+                      <ToggleButton
+                        value="overview" aria-label="overview"
+                      >
+                        <Tooltip title={t('Redirecting to the Overview section')}>
+                          <PreviewOutlined
+                            fontSize="small"
+                            color={(!redirectionMode || redirectionMode === 'overview') ? 'secondary' : 'primary'}
+                          />
+                        </Tooltip>
+                      </ToggleButton>
+                      <ToggleButton
+                        value="knowledge" aria-label="knowledge"
+                      >
+                        <Tooltip title={t('Redirecting to the Knowledge section')}>
+                          <GraphOutline
+                            fontSize="small"
+                            color={redirectionMode === 'knowledge' ? 'secondary' : 'primary'}
+                          />
+                        </Tooltip>
+                      </ToggleButton>
+                      <ToggleButton
+                        value="content" aria-label="content"
+                      >
+                        <Tooltip title={t('Redirecting to the Content section')}>
+                          <SourceOutlined
+                            fontSize="small"
+                            color={redirectionMode === 'content' ? 'secondary' : 'primary'}
+                          />
+                        </Tooltip>
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  )}
+                  {(typeof handleChangeView === 'function'
+                    || typeof handleToggleExports === 'function') && (
+                    <ToggleButtonGroup
+                      size="small"
+                      color="secondary"
+                      value={currentView || 'lines'}
+                      exclusive={true}
+                      onChange={(_, value) => {
+                        if (value && value === 'export') {
+                          handleToggleExports();
+                        } else if (value) {
+                          handleChangeView(value);
+                        }
+                      }}
+                      style={{ margin: '7px 0 0 5px' }}
+                    >
+                      {typeof handleChangeView === 'function' && !disableCards && (
+                        <ToggleButton value="cards" aria-label="cards">
+                          <Tooltip title={t('Cards view')}>
+                            <ViewModuleOutlined fontSize="small" color="primary"/>
+                          </Tooltip>
+                        </ToggleButton>
+                      )}
+                      {typeof handleChangeView === 'function'
+                        && enableEntitiesView && (
+                          <ToggleButton value="entities" aria-label="entities">
+                            <Tooltip title={t('Entities view')}>
+                              <LibraryBooksOutlined
+                                fontSize="small"
+                                color={
+                                  currentView === 'entities' ? 'secondary' : 'primary'
+                                }
+                              />
+                            </Tooltip>
+                          </ToggleButton>
+                      )}
+                      {enableEntitiesView && (
+                        <ToggleButton value="relationships" aria-label="relationships">
+                          <Tooltip title={t('Relationships view')}>
+                            <RelationManyToMany
+                              fontSize="small"
+                              color={
+                                currentView === 'relationships' || !currentView
+                                  ? 'secondary'
+                                  : 'primary'
+                              }
+                            />
+                          </Tooltip>
+                        </ToggleButton>
+                      )}
+                      {!enableEntitiesView && (
+                        <ToggleButton value="lines" aria-label="lines">
+                          <Tooltip title={t('Lines view')}>
+                            <ViewListOutlined
+                              fontSize="small"
+                              color={
+                                currentView === 'lines' || !currentView
+                                  ? 'secondary'
+                                  : 'primary'
+                              }
+                            />
+                          </Tooltip>
+                        </ToggleButton>
+                      )}
+                      {typeof handleChangeView === 'function' && enableGraph && (
+                        <ToggleButton value="graph" aria-label="graph">
+                          <Tooltip title={t('Graph view')}>
+                            <VectorPolygon fontSize="small" color="primary"/>
+                          </Tooltip>
+                        </ToggleButton>
+                      )}
+                      {typeof handleChangeView === 'function' && enableNestedView && (
+                        <ToggleButton value="nested" aria-label="nested">
+                          <Tooltip title={t('Nested view')}>
+                            <FormatListGroup fontSize="small" color="primary"/>
+                          </Tooltip>
+                        </ToggleButton>
+                      )}
+                      {typeof handleToggleExports === 'function' && (
+                        <ToggleButton value="export" aria-label="export">
+                          <Tooltip title={t('Open export panel')}>
+                            <FileDownloadOutlined
+                              fontSize="small"
+                              color={openExports ? 'secondary' : 'primary'}
+                            />
+                          </Tooltip>
+                        </ToggleButton>
+                      )}
+                    </ToggleButtonGroup>
+                  )}
+                </div>
+              </div>
+              <div className="clearfix"/>
+              {message && (
+                <div style={{ width: '100%', marginTop: 10 }}>
+                  <Alert
+                    severity="info"
+                    variant="outlined"
+                    style={{ padding: '0px 10px 0px 10px' }}
+                    classes={{ message: classes.info }}
+                  >
+                    {message}
+                  </Alert>
+                </div>
               )}
-            </ListItem>
-          ) : (
-            ''
-          )}
-          {children}
-        </List>
-        {typeof handleToggleExports === 'function'
-          && exportEntityType !== 'Stix-Core-Object'
-          && exportEntityType !== 'Stix-Cyber-Observable'
-          && exportEntityType !== 'stix-core-relationship' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixDomainObjectsExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                exportEntityType={exportEntityType}
-                context={exportContext}
-              />
-            </Security>
-        )}
-        {typeof handleToggleExports === 'function'
-          && exportEntityType === 'stix-core-relationship' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixCoreRelationshipsExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                context={exportContext}
-              />
-            </Security>
-        )}
-        {typeof handleToggleExports === 'function'
-          && exportEntityType === 'Stix-Core-Object' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixCoreObjectsExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                exportEntityType={exportEntityType}
-                context={exportContext}
-              />
-            </Security>
-        )}
-        {typeof handleToggleExports === 'function'
-          && exportEntityType === 'Stix-Cyber-Observable' && (
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              <StixCyberObservablesExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                paginationOptions={paginationOptions}
-                context={exportContext}
-              />
-            </Security>
-        )}
-      </div>
+              <List
+                classes={{
+                  root: bottomNav
+                    ? classes.linesContainerBottomNav
+                    : classes.linesContainer,
+                }}
+                style={noTopMargin ? { marginTop: 0 } : null}
+              >
+                {!noHeaders ? (
+                  <ListItem
+                    classes={{ root: classes.item }}
+                    divider={false}
+                    style={{ paddingTop: 0 }}
+                  >
+                    <ListItemIcon
+                      style={{
+                        minWidth:
+                          typeof handleToggleSelectAll === 'function' ? 38 : 56,
+                      }}
+                    >
+                      {typeof handleToggleSelectAll === 'function' ? (
+                        <Checkbox
+                          edge="start"
+                          checked={selectAll}
+                          disableRipple={true}
+                          onChange={handleToggleSelectAll.bind(this)}
+                        />
+                      ) : (
+                        <span
+                          style={{
+                            padding: '0 8px 0 8px',
+                            fontWeight: 700,
+                            fontSize: 12,
+                          }}
+                        >
+                    &nbsp;
+                  </span>
+                      )}
+                    </ListItemIcon>
+                    {iconExtension && (
+                      <ListItemIcon>
+                  <span
+                    style={{
+                      padding: '0 8px 0 8px',
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    &nbsp;
+                  </span>
+                      </ListItemIcon>
+                    )}
+                    <ListItemText
+                      primary={
+                        <div>
+                          {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
+                            dataColumn[0],
+                            dataColumn[1].label,
+                            dataColumn[1].width,
+                            dataColumn[1].isSortable,
+                          ))}
+                        </div>
+                      }
+                    />
+                    {secondaryAction && (
+                      <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+                    )}
+                  </ListItem>
+                ) : (
+                  ''
+                )}
+                {children}
+              </List>
+              {typeof handleToggleExports === 'function'
+                && exportEntityType !== 'Stix-Core-Object'
+                && exportEntityType !== 'Stix-Cyber-Observable'
+                && exportEntityType !== 'stix-core-relationship' && (
+                  <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                    <StixDomainObjectsExports
+                      open={openExports}
+                      handleToggle={handleToggleExports.bind(this)}
+                      paginationOptions={paginationOptions}
+                      exportEntityType={exportEntityType}
+                      context={exportContext}
+                    />
+                  </Security>
+              )}
+              {typeof handleToggleExports === 'function'
+                && exportEntityType === 'stix-core-relationship' && (
+                  <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                    <StixCoreRelationshipsExports
+                      open={openExports}
+                      handleToggle={handleToggleExports.bind(this)}
+                      paginationOptions={paginationOptions}
+                      context={exportContext}
+                    />
+                  </Security>
+              )}
+              {typeof handleToggleExports === 'function'
+                && exportEntityType === 'Stix-Core-Object' && (
+                  <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                    <StixCoreObjectsExports
+                      open={openExports}
+                      handleToggle={handleToggleExports.bind(this)}
+                      paginationOptions={paginationOptions}
+                      exportEntityType={exportEntityType}
+                      context={exportContext}
+                    />
+                  </Security>
+              )}
+              {typeof handleToggleExports === 'function'
+                && exportEntityType === 'Stix-Cyber-Observable' && (
+                  <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                    <StixCyberObservablesExports
+                      open={openExports}
+                      handleToggle={handleToggleExports.bind(this)}
+                      paginationOptions={paginationOptions}
+                      context={exportContext}
+                    />
+                  </Security>
+              )}
+            </div>
     );
   }
 }

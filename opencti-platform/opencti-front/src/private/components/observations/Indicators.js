@@ -21,6 +21,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const styles = () => ({
   container: {
@@ -294,24 +295,21 @@ class Indicators extends Component {
         - Object.keys(deSelectedElements || {}).length;
     }
     let finalFilters = filters;
-    finalFilters = R.assoc(
-      'entity_type',
-      [{ id: 'Indicator', value: 'Indicator' }],
-      finalFilters,
-    );
+    finalFilters = {
+      ...finalFilters,
+      entity_type: [{ id: 'Indicator', value: 'Indicator' }],
+    };
     if (indicatorTypes.length) {
-      finalFilters = R.assoc(
-        'pattern_type',
-        R.map((n) => ({ id: n, value: n }), indicatorTypes),
-        finalFilters,
-      );
+      finalFilters = {
+        ...finalFilters,
+        pattern_type: indicatorTypes.map((n) => ({ id: n, value: n })),
+      };
     }
     if (observableTypes.length) {
-      finalFilters = R.assoc(
-        'x_opencti_main_observable_type',
-        R.map((n) => ({ id: n, value: n }), observableTypes),
-        finalFilters,
-      );
+      finalFilters = {
+        ...finalFilters,
+        x_opencti_main_observable_type: observableTypes.map((n) => ({ id: n, value: n })),
+      };
     }
     return (
       <UserContext.Consumer>
@@ -427,6 +425,7 @@ class Indicators extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
+      <ExportContextProvider>
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -448,6 +447,7 @@ class Indicators extends Component {
           openExports={openExports}
         />
       </div>
+      </ExportContextProvider>
     );
   }
 }

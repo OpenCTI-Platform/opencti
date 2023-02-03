@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { map } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   batchListThroughGetFrom,
@@ -19,10 +18,7 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS
 } from '../database/utils';
-import {
-  isStixCoreRelationship,
-  stixCoreRelationshipOptions
-} from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -157,7 +153,7 @@ export const stixRelations = (context, user, stixCoreObjectId, args) => {
 
 // region export
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
-  const { format, type, exportType, maxMarkingDefinition } = args;
+  const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters, filterMode } = args;
   const argsFilters = { search, orderBy, orderMode, filters, filterMode };
   const filtersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsFilter;
@@ -194,16 +190,19 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('toTypes'));
     }
   }
-  const finalArgsFilter = R.assoc('filters', newArgsFiltersFilters, argsFilters);
+  const finalArgsFilter = {
+    ...argsFilters,
+    filters: newArgsFiltersFilters
+  };
   const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
-  const works = await askListExport(context, user, format, type, listParams, exportType, maxMarkingDefinition);
-  return map((w) => workToExportFile(w), works);
+  const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
+  return works.map((w) => workToExportFile(w));
 };
 export const stixCoreRelationshipExportAsk = async (context, user, args) => {
   const { format, stixCoreRelationshipId = null, exportType = null, maxMarkingDefinition = null } = args;
   const entity = stixCoreRelationshipId ? await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP) : null;
   const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
-  return map((w) => workToExportFile(w), works);
+  return works.map((w) => workToExportFile(w));
 };
 export const stixCoreRelationshipsExportPush = async (context, user, type, file, listFilters) => {
   await upload(context, user, `export/${type}`, file, { list_filters: listFilters });

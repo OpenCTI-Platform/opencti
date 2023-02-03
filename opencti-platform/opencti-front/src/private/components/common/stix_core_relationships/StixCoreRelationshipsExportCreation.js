@@ -24,6 +24,7 @@ import {
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
+import { ExportContext } from '../../../../utils/ExportContextProvider';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -67,6 +68,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
     $filters: [StixCoreRelationshipsFiltering]
+    $selectedIds: [String]
   ) {
     stixCoreRelationshipsExportAsk(
       type: $type
@@ -78,6 +80,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      selectedIds: $selectedIds
     ) {
       edges {
         node {
@@ -97,18 +100,16 @@ const exportValidation = (t) => Yup.object().shape({
 
 export const scopesConn = (exportConnectors) => {
   const scopes = R.uniq(
-    R.flatten(R.map((c) => c.connector_scope, exportConnectors)),
+    R.flatten(exportConnectors.map((c) => c.connector_scope)),
   );
-  const connectors = R.map((s) => {
-    const filteredConnectors = R.filter(
+  const connectors = scopes.map((s) => {
+    const filteredConnectors = exportConnectors.filter(
       (e) => R.includes(s, e.connector_scope),
-      exportConnectors,
     );
-    return R.map(
+    return filteredConnectors.map(
       (x) => ({ data: { name: x.name, active: x.active } }),
-      filteredConnectors,
     );
-  }, scopes);
+  });
   const zipped = R.zip(scopes, connectors);
   return R.fromPairs(zipped);
 };
@@ -127,7 +128,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
+  onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, context } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
@@ -150,7 +151,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         finalFilters,
       );
     } else {
-      finalFilters = R.filter((n) => n.key !== 'elementId', finalFilters);
+      finalFilters = finalFilters.filter((n) => n.key !== 'elementId');
     }
     if (paginationOptions.fromId) {
       finalFilters = R.append(
@@ -158,7 +159,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         finalFilters,
       );
     } else {
-      finalFilters = R.filter((n) => n.key !== 'fromId', finalFilters);
+      finalFilters = finalFilters.filter((n) => n.key !== 'fromId');
     }
     if (paginationOptions.toId) {
       finalFilters = R.append(
@@ -166,7 +167,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         finalFilters,
       );
     } else {
-      finalFilters = R.filter((n) => n.key !== 'toId', finalFilters);
+      finalFilters = finalFilters.filter((n) => n.key !== 'toId');
     }
     if (paginationOptions.elementWithTargetTypes) {
       finalFilters = R.append(
@@ -177,9 +178,8 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         finalFilters,
       );
     } else {
-      finalFilters = R.filter(
+      finalFilters = finalFilters.filter(
         (n) => n.key !== 'elementWithTargetTypes',
-        finalFilters,
       );
     }
     if (paginationOptions.fromTypes) {
@@ -191,7 +191,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         finalFilters,
       );
     } else {
-      finalFilters = R.filter((n) => n.key !== 'fromTypes', finalFilters);
+      finalFilters = finalFilters.filter((n) => n.key !== 'fromTypes');
     }
     if (paginationOptions.toTypes) {
       finalFilters = R.append(
@@ -199,7 +199,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         finalFilters,
       );
     } else {
-      finalFilters = R.filter((n) => n.key !== 'toTypes', finalFilters);
+      finalFilters = finalFilters.filter((n) => n.key !== 'toTypes');
     }
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
@@ -211,6 +211,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         context,
         ...paginationOptions,
         filters: finalFilters,
+        selectedIds,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -224,15 +225,18 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
 
   render() {
     const { classes, t, data } = this.props;
-    const connectorsExport = R.propOr([], 'connectorsForExport', data);
+    const connectorsExport = data?.connectorsForExport ?? [];
     const exportScopes = R.uniq(
       R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
     );
     const exportConnsPerFormat = scopesConn(connectorsExport);
     // eslint-disable-next-line max-len
-    const isExportActive = (format) => R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
-    const isExportPossible = R.filter((x) => isExportActive(x), exportScopes).length > 0;
+    const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
+    const isExportPossible = exportScopes.filter((x) => isExportActive(x)).length > 0;
     return (
+      <ExportContext.Consumer>
+        {({ selectedIds }) => {
+          return (
       <div className={classes.createButton}>
         <Tooltip
           title={
@@ -261,7 +265,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
             maxMarkingDefinition: 'none',
           }}
           validationSchema={exportValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
+          onSubmit={this.onSubmit.bind(this, selectedIds)}
           onReset={this.handleClose.bind(this)}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
@@ -345,6 +349,9 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
           )}
         </Formik>
       </div>
+          );
+        }}
+      </ExportContext.Consumer>
     );
   }
 }

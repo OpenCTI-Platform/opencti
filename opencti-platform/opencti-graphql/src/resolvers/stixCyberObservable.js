@@ -1,5 +1,4 @@
 import { withFilter } from 'graphql-subscriptions';
-import { assoc } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCyberObservable,
@@ -115,7 +114,7 @@ const stixCyberObservableResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => {
         return stixCyberObservableDeleteRelation(context, context.user, id, toId, relationshipType);
       },
-      exportAsk: (args) => stixCyberObservableExportAsk(context, context.user, assoc('stixCyberObservableId', id, args)),
+      exportAsk: (args) => stixCyberObservableExportAsk(context, context.user, { ...args, stixCyberObservableId: id }),
       exportPush: ({ file }) => stixCyberObservableExportPush(context, context.user, id, file),
       importPush: ({ file }) => stixCoreObjectImportPush(context, context.user, id, file),
       promote: () => promoteObservableToIndicator(context, context.user, id),

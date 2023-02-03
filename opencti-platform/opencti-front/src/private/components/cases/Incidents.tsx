@@ -20,6 +20,7 @@ import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import IncidentCreation from './incidents/IncidentCreation';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -193,12 +194,14 @@ const Incidents: FunctionComponent<CasesProps> = () => {
     );
   };
   return (
+    <ExportContextProvider>
     <div className={classes.container}>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IncidentCreation paginationOptions={finalPaginationOptions} />
       </Security>
     </div>
+    </ExportContextProvider>
   );
 };
 

@@ -24,6 +24,7 @@ import useCopy from '../../../utils/hooks/useCopy';
 import { StixCyberObservablesLinesSearchQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -292,6 +293,7 @@ const StixCyberObservables: FunctionComponent = () => {
   };
 
   return (
+    <ExportContextProvider>
     <div className={classes.container}>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -314,6 +316,7 @@ const StixCyberObservables: FunctionComponent = () => {
         openExports={openExports}
       />
     </div>
+    </ExportContextProvider>
   );
 };
 

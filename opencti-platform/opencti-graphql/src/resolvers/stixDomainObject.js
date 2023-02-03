@@ -1,27 +1,26 @@
 import { withFilter } from 'graphql-subscriptions';
-import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
+  addStixDomainObject,
+  batchAssignees,
   findAll,
   findById,
-  stixDomainObjectsNumber,
-  stixDomainObjectsDistributionByEntity,
-  stixDomainObjectsTimeSeries,
-  addStixDomainObject,
   stixDomainObjectAddRelation,
   stixDomainObjectAddRelations,
   stixDomainObjectCleanContext,
   stixDomainObjectDelete,
-  stixDomainObjectsDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
   stixDomainObjectExportPush,
-  stixDomainObjectsExportPush,
+  stixDomainObjectsDelete,
+  stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
+  stixDomainObjectsExportPush,
+  stixDomainObjectsNumber,
+  stixDomainObjectsTimeSeries,
   stixDomainObjectsTimeSeriesByAuthor,
-  batchAssignees,
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
 import { pubsub } from '../database/redis';
@@ -81,7 +80,7 @@ const stixDomainObjectResolvers = {
       relationsAdd: ({ input }) => stixDomainObjectAddRelations(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(context, context.user, id, file, noTriggerImport),
-      exportAsk: (args) => stixDomainObjectExportAsk(context, context.user, R.assoc('stixDomainObjectId', id, args)),
+      exportAsk: (args) => stixDomainObjectExportAsk(context, context.user, { ...args, stixDomainObjectId: id }),
       exportPush: ({ file }) => stixDomainObjectExportPush(context, context.user, id, file),
     }),
     stixDomainObjectsDelete: (_, { id }, context) => stixDomainObjectsDelete(context, context.user, id),

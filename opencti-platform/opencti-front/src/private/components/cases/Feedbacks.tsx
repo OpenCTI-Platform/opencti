@@ -17,6 +17,7 @@ import { UserContext } from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
 import ToolBar from '../data/ToolBar';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -185,7 +186,13 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
     );
   };
 
-  return <div className={classes.container}>{renderLines()}</div>;
+  return (
+    <ExportContextProvider>
+    <div className={classes.container}>
+      {renderLines()}
+    </div>
+    </ExportContextProvider>
+  );
 };
 
 export default Feedbacks;

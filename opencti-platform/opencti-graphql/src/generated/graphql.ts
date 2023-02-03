@@ -11600,6 +11600,7 @@ export type MutationStixCoreObjectsExportAskArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   type: Scalars['String'];
 };
 
@@ -11639,6 +11640,7 @@ export type MutationStixCoreRelationshipsExportAskArgs = {
   orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   type: Scalars['String'];
 };
 
@@ -11712,6 +11714,7 @@ export type MutationStixCyberObservableRelationshipEditArgs = {
 
 export type MutationStixCyberObservablesExportAskArgs = {
   context?: InputMaybe<Scalars['String']>;
+  elementId?: InputMaybe<Scalars['String']>;
   exportType: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCyberObservablesFiltering>>>;
@@ -11719,7 +11722,9 @@ export type MutationStixCyberObservablesExportAskArgs = {
   maxMarkingDefinition?: InputMaybe<Scalars['String']>;
   orderBy?: InputMaybe<StixCyberObservablesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -11757,6 +11762,7 @@ export type MutationStixDomainObjectsExportAskArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   type: Scalars['String'];
 };
 
@@ -19736,6 +19742,7 @@ export enum StixDomainObjectsOrdering {
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
+  FirstSeen = 'first_seen',
   IndicatorPattern = 'indicator_pattern',
   Modified = 'modified',
   Name = 'name',

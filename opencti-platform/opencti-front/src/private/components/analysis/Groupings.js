@@ -3,15 +3,9 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, convertFilters, saveViewParameters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
-import GroupingsLines, {
-  groupingsLinesQuery,
-} from './groupings/GroupingsLines';
+import GroupingsLines, { groupingsLinesQuery } from './groupings/GroupingsLines';
 import inject18n from '../../../components/i18n';
 import GroupingCreation from './groupings/GroupingCreation';
 import ToolBar from '../data/ToolBar';
@@ -19,6 +13,7 @@ import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 class Groupings extends Component {
   constructor(props) {
@@ -353,12 +348,14 @@ class Groupings extends Component {
     return (
       <UserContext.Consumer>
         {({ helper }) => (
+          <ExportContextProvider>
           <div>
             {view === 'lines' && this.renderLines(paginationOptions, helper)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <GroupingCreation paginationOptions={paginationOptions} />
             </Security>
           </div>
+          </ExportContextProvider>
         )}
       </UserContext.Consumer>
     );

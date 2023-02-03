@@ -17,6 +17,7 @@ import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.gr
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const LOCAL_STORAGE_KEY = 'view-reports';
 
@@ -50,7 +51,11 @@ const Reports: FunctionComponent<ReportsProps> = ({
     });
   }
 
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
     filters: {} as Filters,
     searchTerm: '',
     sortBy: 'published',
@@ -141,6 +146,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
         width: '8%',
       },
     };
+
     return (
       <div>
         <ListLines
@@ -224,12 +230,14 @@ const Reports: FunctionComponent<ReportsProps> = ({
   return (
     <UserContext.Consumer>
       {({ helper }) => (
+        <ExportContextProvider>
         <div>
           {renderLines(helper)}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ReportCreation paginationOptions={paginationOptions} />
           </Security>
         </div>
+        </ExportContextProvider>
       )}
     </UserContext.Consumer>
   );
