@@ -306,7 +306,7 @@ const initializeDefaultValues = async (context, withMarkings = true) => {
   logApp.info('[INIT] Initialization of settings and basic elements');
   // Create default elements
   await addSettings(context, SYSTEM_USER, {
-    platform_title: 'Cyber threat intelligence platform',
+    platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
     platform_email: 'admin@opencti.io',
     platform_theme: 'dark',
     platform_language: 'auto',

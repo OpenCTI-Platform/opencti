@@ -138,6 +138,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
         iconExtension={true}
         availableFilterKeys={[
           'x_opencti_workflow_id',
+          'assigneeTo',
           'labelledBy',
           'createdBy',
           'creator',

@@ -24,9 +24,7 @@ import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../../common/files/FileManager';
 import SelectField from '../../../../components/SelectField';
-import {
-  ExternalReferenceFileImportViewer_entity$data,
-} from './__generated__/ExternalReferenceFileImportViewer_entity.graphql';
+import { ExternalReferenceFileImportViewer_entity$data } from './__generated__/ExternalReferenceFileImportViewer_entity.graphql';
 import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 
@@ -47,44 +45,43 @@ const importValidation = (t: (value: string) => string) => Yup.object().shape({
 });
 
 interface ExternalReferenceFileImportViewerBaseProps {
-  externalReference: ExternalReferenceFileImportViewer_entity$data,
-  disableImport: boolean,
-  connectors: Record<string, {
-    id: string,
-    name: string,
-    active: boolean,
-    connector_scope: string[],
-    updated_at: string,
-  }>,
-  relay: RelayRefetchProp,
+  externalReference: ExternalReferenceFileImportViewer_entity$data;
+  disableImport: boolean;
+  connectors: Record<
+  string,
+  {
+    id: string;
+    name: string;
+    active: boolean;
+    connector_scope: string[];
+    updated_at: string;
+  }
+  >;
+  relay: RelayRefetchProp;
   connectorsImport: {
-    id: string,
-    name: string,
-    active: boolean,
-    connector_scope: string[],
-    updated_at: string,
-  }[],
+    id: string;
+    name: string;
+    active: boolean;
+    connector_scope: string[];
+    updated_at: string;
+  }[];
 }
-const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReferenceFileImportViewerBaseProps> = ({
-  externalReference,
-  disableImport,
-  relay,
-  connectorsImport,
-}) => {
+const ExternalReferenceFileImportViewerBase: FunctionComponent<
+ExternalReferenceFileImportViewerBaseProps
+> = ({ externalReference, disableImport, relay, connectorsImport }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const [fileToImport, setFileToImport] = useState<FileLine_file$data | null | undefined>(null);
-
+  const [fileToImport, setFileToImport] = useState<
+  FileLine_file$data | null | undefined
+  >(null);
   const { id, importFiles } = externalReference;
-
   const importConnsPerFormat = scopesConn(connectorsImport);
-
   const handleOpenImport = (file: FileLine_file$data | null | undefined) => setFileToImport(file);
-
   const handleCloseImport = () => setFileToImport(null);
-
-  const onSubmitImport: FormikConfig<{ connector_id: string }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmitImport: FormikConfig<{ connector_id: string }>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
@@ -104,7 +101,6 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReference
       setSubmitting: undefined,
     });
   };
-
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -115,15 +111,10 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReference
     return function cleanup() {
       subscription.unsubscribe();
     };
-  });
-
+  }, []);
   const fileToImportBoolean = () => {
-    if (fileToImport) {
-      return true;
-    }
-    return false;
+    return !!fileToImport;
   };
-
   return (
     <React.Fragment>
       <div style={{ height: '100%' }} className="break">
@@ -146,25 +137,30 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReference
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {importFiles?.edges?.length ? (
             <List>
-              {importFiles?.edges?.map((file: ({
-                node: {
-                  id: string;
-                  metaData: {
-                    mimetype: string | null;
+              {importFiles?.edges?.map(
+                (
+                  file: {
+                    node: {
+                      id: string;
+                      metaData: {
+                        mimetype: string | null;
+                      } | null;
+                      ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
+                    };
                   } | null,
-                  ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
-                } } | null)) => (
-                <FileLine
-                  key={file?.node.id}
-                  dense={true}
-                  disableImport={disableImport}
-                  file={file?.node}
-                  connectors={
-                    importConnsPerFormat[file?.node.metaData?.mimetype ?? 0]
-                  }
-                  handleOpenImport={handleOpenImport}
-                />
-              ))}
+                ) => (
+                  <FileLine
+                    key={file?.node.id}
+                    dense={true}
+                    disableImport={disableImport}
+                    file={file?.node}
+                    connectors={
+                      importConnsPerFormat[file?.node.metaData?.mimetype ?? 0]
+                    }
+                    handleOpenImport={handleOpenImport}
+                  />
+                ),
+              )}
             </List>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -248,7 +244,9 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<ExternalReference
   );
 };
 
-const ExternalReferenceFileImportViewerComponent = compose(inject18n)(ExternalReferenceFileImportViewerBase);
+const ExternalReferenceFileImportViewerComponent = compose(inject18n)(
+  ExternalReferenceFileImportViewerBase,
+);
 
 const ExternalReferenceFileImportViewerRefetchQuery = graphql`
   query ExternalReferenceFileImportViewerRefetchQuery($id: String!) {

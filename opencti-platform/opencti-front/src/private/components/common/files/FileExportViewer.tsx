@@ -27,23 +27,18 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface FileExportViewerComponentProps {
-  entity: FileExportViewer_entity$data,
-  relay: RelayRefetchProp,
-  handleOpenExport: () => void,
-  isExportPossible: boolean,
+  entity: FileExportViewer_entity$data;
+  relay: RelayRefetchProp;
+  handleOpenExport: () => void;
+  isExportPossible: boolean;
 }
 
-const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProps> = ({
-  entity,
-  relay,
-  handleOpenExport,
-  isExportPossible,
-}) => {
+const FileExportViewerComponent: FunctionComponent<
+FileExportViewerComponentProps
+> = ({ entity, relay, handleOpenExport, isExportPossible }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const { id, exportFiles } = entity;
-
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -52,8 +47,7 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
     return function cleanup() {
       subscription.unsubscribe();
     };
-  });
-
+  }, []);
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
       <div style={{ height: '100%' }} className="break">

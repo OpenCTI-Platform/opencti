@@ -219,7 +219,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
     return () => {
       subscription.unsubscribe();
     };
-  });
+  }, []);
   const handleOpenEnable = (rule) => {
     setDisplayEnable(true);
     setSelectedRule(rule);

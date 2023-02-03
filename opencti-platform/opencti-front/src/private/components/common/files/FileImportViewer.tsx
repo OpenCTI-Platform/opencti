@@ -27,24 +27,19 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface FileImportViewerComponentProps {
-  entity: FileImportViewer_entity$data,
-  disableImport: boolean,
-  handleOpenImport: (file: FileLine_file$data | undefined) => void,
-  connectors: { [p: string]: { data: { name: string, active: boolean } }[] },
-  relay: RelayRefetchProp,
+  entity: FileImportViewer_entity$data;
+  disableImport: boolean;
+  handleOpenImport: (file: FileLine_file$data | undefined) => void;
+  connectors: { [p: string]: { data: { name: string; active: boolean } }[] };
+  relay: RelayRefetchProp;
 }
 
-const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProps> = ({
-  entity,
-  disableImport,
-  handleOpenImport,
-  connectors,
-  relay }) => {
+const FileImportViewerComponent: FunctionComponent<
+FileImportViewerComponentProps
+> = ({ entity, disableImport, handleOpenImport, connectors, relay }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const { id, importFiles } = entity;
-
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -53,8 +48,7 @@ const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProp
     return function cleanup() {
       subscription.unsubscribe();
     };
-  });
-
+  }, []);
   return (
     <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
       <div style={{ height: '100%' }} className="break">
@@ -85,7 +79,8 @@ const FileImportViewerComponent: FunctionComponent<FileImportViewerComponentProp
                   disableImport={disableImport}
                   file={file?.node}
                   connectors={
-                    connectors && connectors[file?.node?.metaData?.mimetype ?? 0]
+                    connectors
+                    && connectors[file?.node?.metaData?.mimetype ?? 0]
                   }
                   handleOpenImport={handleOpenImport}
                 />
