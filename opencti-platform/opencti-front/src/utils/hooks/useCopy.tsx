@@ -3,6 +3,7 @@ import { fetchQuery, MESSAGING$ } from '../../relay/environment';
 import { convertFilters } from '../ListParameters';
 import { Filters } from '../../components/list_lines';
 import { useFormatter } from '../../components/i18n';
+import { maxNumberOfObservablesToCopy } from '../../private/components/data/ToolBar';
 
 interface UseCopyProps<T> {
   filters?: Filters;
@@ -35,10 +36,12 @@ const useCopy = <T extends OperationType['response']>(
           id: elementId,
           search: searchTerm,
           filters: convertFilters(filters ?? {}),
+          count: maxNumberOfObservablesToCopy,
         })
         : fetchQuery(query, {
           search: searchTerm,
           filters: convertFilters(filters ?? {}),
+          count: maxNumberOfObservablesToCopy,
         })
       )
         .toPromise()
