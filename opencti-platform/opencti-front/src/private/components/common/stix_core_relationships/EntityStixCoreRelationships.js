@@ -519,7 +519,7 @@ class EntityStixCoreRelationships extends Component {
       'created_start_date',
       'created_end_date',
     ];
-    if (relationshipTypes.includes('targets')) {
+    if ((relationshipTypes ?? []).includes('targets')) {
       availableFilterKeys = [...availableFilterKeys, 'targets'];
     }
     return (

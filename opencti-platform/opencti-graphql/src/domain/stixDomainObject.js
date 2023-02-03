@@ -63,7 +63,10 @@ export const findAll = async (context, user, args) => {
   let filters = args.filters ?? [];
   if (isNotEmptyField(args.elementId) && isNotEmptyField(args.relationship_type)) {
     const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-    filters = [...filters, { key: relationshipFilterKeys.at(0), values: [args.elementId] }];
+    filters = [
+      ...filters,
+      { key: relationshipFilterKeys, values: [args.elementId] },
+    ];
   }
   return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
