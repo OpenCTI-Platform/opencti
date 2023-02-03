@@ -1899,6 +1899,7 @@ class OpenCTIStix2:
         fromTypes: [str] = None,
         toTypes: [str] = None,
         relationship_type: [str] = None,
+        element_id: str = None,
     ) -> Dict:
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
@@ -1986,6 +1987,53 @@ class OpenCTIStix2:
             relationship_type=relationship_type,
         )
         if entities_list is not None:
+            if element_id:  # filtering of the data to keep those in the container
+                new_entities_list = [
+                    entity
+                    for entity in entities_list
+                    if ("objectsIds" in entity) and (element_id in entity["objectsIds"])
+                ]
+                entities_list = new_entities_list
+
+            uuids = []
+            for entity in entities_list:
+                entity_bundle = self.prepare_export(
+                    self.generate_export(entity),
+                    "simple",
+                    max_marking_definition_entity,
+                )
+                if entity_bundle is not None:
+                    entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
+                    for x in entity_bundle_filtered:
+                        uuids.append(x["id"])
+                    bundle["objects"] = bundle["objects"] + entity_bundle_filtered
+        return bundle
+
+    def export_selected(
+        self,
+        entities_list: [str],
+        element_id: str = None,
+        max_marking_definition: Dict = None,
+    ) -> Dict:
+        max_marking_definition_entity = (
+            self.opencti.marking_definition.read(id=max_marking_definition)
+            if max_marking_definition is not None
+            else None
+        )
+        bundle = {
+            "type": "bundle",
+            "id": "bundle--" + str(uuid.uuid4()),
+            "objects": [],
+        }
+
+        if entities_list is not None:
+            if element_id:  # filtering of the data to keep those in the container
+                new_entities_list = [
+                    entity
+                    for entity in entities_list
+                    if element_id in entity["objectsIds"]
+                ]
+                entities_list = new_entities_list
             uuids = []
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
