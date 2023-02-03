@@ -175,7 +175,7 @@ class ObservedDatas extends Component {
             handleToggleExports={this.handleToggleExports.bind(this)}
             openExports={openExports}
             noPadding={typeof this.props.onChangeOpenExports === 'function'}
-            exportEntityType="ObservedData"
+            exportEntityType="Observed-Data"
             exportContext={exportContext}
             keyword={searchTerm}
             filters={filters}
