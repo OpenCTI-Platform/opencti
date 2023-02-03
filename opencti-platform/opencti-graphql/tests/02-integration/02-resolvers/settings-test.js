@@ -37,7 +37,7 @@ const READ_QUERY = gql`
 `;
 
 describe('Settings resolver standard behavior', () => {
-  const PLATFORM_TITLE = 'Cyber threat intelligence platform';
+  const PLATFORM_TITLE = 'OpenCTI - Cyber Threat Intelligence Platform';
   const settingsId = async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     const { settings } = queryResult.data;
