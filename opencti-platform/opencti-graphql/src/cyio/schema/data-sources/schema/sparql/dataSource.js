@@ -167,7 +167,7 @@ export const selectAllDataSourcesQuery = (select, args, parent) => {
       SELECT DISTINCT ?iri
       WHERE {
           <${parent.iri}> a <http://darklight.ai/ns/cyio/system-configuration#SystemConfiguration> ;
-          <<http://darklight.ai/ns/cyio/system-configuration#data_sources> ?iri .
+          <http://darklight.ai/ns/cyio/system-configuration#data_sources> ?iri .
       }
     }`;
   }

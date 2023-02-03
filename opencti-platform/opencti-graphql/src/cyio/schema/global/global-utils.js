@@ -72,7 +72,19 @@ import {
 import {
   connectionInformationPredicateMap, attachToConnectionInformationQuery, detachFromConnectionInformationQuery
 } from '../data-sources/schema/sparql/connectionInformation.js';
+import {
+  informationTypeCatalogPredicateMap, attachToInformationTypeCatalogQuery, detachFromInformationTypeCatalogQuery
+} from '../information-system/schema/sparql/informationTypeCatalog.js';
+import {
+  informationTypeEntryPredicateMap, attachToInformationTypeEntryQuery, detachFromInformationTypeEntryQuery
+} from '../information-system/schema/sparql/informationTypeEntry.js';
 
+
+// find id of parent
+export const findParentId = (iri) => {
+  let index = iri.lastIndexOf('--');
+  return iri.substring(index + 1);
+}
 
 // find IRI of parent
 export const findParentIriQuery = (iri, field, predicateMap) => {
@@ -363,6 +375,22 @@ export const objectMap = {
     graphQLType: "InventoryItem",
     classIri: "http://csrc.nist.gov/ns/oscal/common#InventoryItem",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#InventoryItem"
+  },
+  "information-type-catalog": {
+    predicateMap: informationTypeCatalogPredicateMap,
+    attachQuery: attachToInformationTypeCatalogQuery,
+    detachQuery: detachFromInformationTypeCatalogQuery,
+    graphQLType: "InformationTypeCatalog",
+    classIri: "http://nist.gov/ns/sp800-60#InformationTypeCatalog",
+    iriTemplate: "http://cyio.darklight.ai/information-type-catalog"
+  },
+  "information-type-entry": {
+    predicateMap: informationTypeEntryPredicateMap,
+    attachQuery: attachToInformationTypeEntryQuery,
+    detachQuery: detachFromInformationTypeEntryQuery,
+    graphQLType: "InformationTypeEntry",
+    classIri: "http://nist.gov/ns/sp800-60#InformationTypeEntry",
+    iriTemplate: "http://cyio.darklight.ai/information-type-entry"
   },
   "label": {
     predicateMap: labelPredicateMap,
