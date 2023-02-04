@@ -645,9 +645,7 @@ class EntityStixCoreRelationships extends Component {
     }
     let selectedRelationshipTypes;
     if (filters.relationship_type && filters.relationship_type.length > 0) {
-      if (
-        filters.relationship_type.filter((o) => o.id === 'all').length > 0
-      ) {
+      if (filters.relationship_type.filter((o) => o.id === 'all').length > 0) {
         selectedRelationshipTypes = [];
       } else {
         selectedRelationshipTypes = filters.relationship_type.map((o) => o.id);
@@ -763,30 +761,30 @@ class EntityStixCoreRelationships extends Component {
       : stixCoreObjectTypesWithoutObservables;
     return (
       <ExportContextProvider>
-      <div className={classes.container}>
-        {finalView === 'relationships'
-          && this.renderRelationships(paginationOptions, backgroundTaskFilters)}
-        {finalView === 'entities'
-          && this.renderEntities(paginationOptions, backgroundTaskFilters)}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreRelationshipCreationFromEntity
-            entityId={entityId}
-            isRelationReversed={isRelationReversed}
-            paddingRight={220}
-            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
-            targetStixCyberObservableTypes={targetStixCyberObservableTypes}
-            allowedRelationshipTypes={relationshipTypes}
-            paginationOptions={paginationOptions}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-            connectionKey={
-              finalView === 'entities'
-                ? 'Pagination_stixCoreObjects'
-                : undefined
-            }
-          />
-        </Security>
-      </div>
+        <div className={classes.container}>
+          {finalView === 'relationships'
+            && this.renderRelationships(paginationOptions, backgroundTaskFilters)}
+          {finalView === 'entities'
+            && this.renderEntities(paginationOptions, backgroundTaskFilters)}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreRelationshipCreationFromEntity
+              entityId={entityId}
+              isRelationReversed={isRelationReversed}
+              paddingRight={220}
+              targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+              targetStixCyberObservableTypes={targetStixCyberObservableTypes}
+              allowedRelationshipTypes={relationshipTypes}
+              paginationOptions={paginationOptions}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+              connectionKey={
+                finalView === 'entities'
+                  ? 'Pagination_stixCoreObjects'
+                  : undefined
+              }
+            />
+          </Security>
+        </div>
       </ExportContextProvider>
     );
   }

@@ -67,27 +67,38 @@ class StixDomainObjectsExportsContentComponent extends Component {
       context,
     } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
-    console.log('paginationOptions', paginationOptions);
     let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct elementId
-    if (paginationOptions?.filters && Object.values(paginationOptions.filters).map((o) => o.key).includes('objectContains')) { // for elements contained in entity>Analysis
+    if (
+      paginationOptions?.filters
+      && Object.values(paginationOptions.filters)
+        .map((o) => o.key)
+        .includes('objectContains')
+    ) {
+      // for elements contained in entity>Analysis
       const filtersValues = Object.values(paginationOptions.filters);
-      const [elementId] = filtersValues.filter((o) => o.key === 'objectContains')[0].values;
-      const filtersForExport = filtersValues.filter((o) => o.key !== 'objectContains');
+      const [elementId] = filtersValues.filter(
+        (o) => o.key === 'objectContains',
+      )[0].values;
+      const filtersForExport = filtersValues.filter(
+        (o) => o.key !== 'objectContains',
+      );
       paginationOptionsForExport = {
         ...paginationOptions,
         filters: filtersForExport,
         elementId,
       };
     }
-    if (paginationOptions?.fromId) { // for relationships contained in entity>Knowledge>Sightings
-      const filtersForExport = [...paginationOptionsForExport.filters, { key: 'fromId', values: [paginationOptions.fromId] }];
+    if (paginationOptions?.fromId) {
+      // for relationships contained in entity>Knowledge>Sightings
+      const filtersForExport = [
+        ...paginationOptionsForExport.filters,
+        { key: 'fromId', values: [paginationOptions.fromId] },
+      ];
       paginationOptionsForExport = {
         ...paginationOptions,
         filters: filtersForExport,
       };
     }
-    console.log('paginationOptionsForExport', paginationOptionsForExport);
-
     return (
       <List
         subheader={
