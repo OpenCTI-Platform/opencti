@@ -186,6 +186,7 @@ class ToolKnowledgeComponent extends Component {
                 stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 allDirections={true}
+                isRelationReversed={true}
                 {...routeProps}
               />
             )}

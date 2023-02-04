@@ -16134,6 +16134,7 @@ export type QueryStixCoreObjectsArgs = {
 
 export type QueryStixCoreObjectsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
@@ -16466,6 +16467,7 @@ export type QueryStixDomainObjectsArgs = {
 
 export type QueryStixDomainObjectsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   field: Scalars['String'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixDomainObjectsFiltering>>>;

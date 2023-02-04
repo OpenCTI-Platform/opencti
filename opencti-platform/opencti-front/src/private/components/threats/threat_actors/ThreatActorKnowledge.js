@@ -228,6 +228,7 @@ class ThreatActorKnowledgeComponent extends Component {
               defaultStartTime={threatActor.first_seen}
               defaultStopTime={threatActor.last_seen}
               allDirections={true}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

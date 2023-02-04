@@ -268,6 +268,7 @@ const RegionKnowledgeComponent = ({
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               allDirections={true}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

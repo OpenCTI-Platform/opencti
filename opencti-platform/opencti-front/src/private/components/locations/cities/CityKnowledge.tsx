@@ -269,6 +269,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               allDirections={true}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

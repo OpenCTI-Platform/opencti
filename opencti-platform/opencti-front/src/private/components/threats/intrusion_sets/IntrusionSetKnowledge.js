@@ -216,6 +216,7 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 allDirections={true}
+                isRelationReversed={true}
                 {...routeProps}
               />
             )}

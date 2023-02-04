@@ -6,9 +6,9 @@ import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
-import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemSeverity from '../../../../components/ItemSeverity';
+import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -39,6 +39,26 @@ const useStyles = makeStyles(() => ({
 const IncidentDetailsComponent = ({ incident }) => {
   const classes = useStyles();
   const { t, fldt } = useFormatter();
+  const entitiesDataSelection = [
+    {
+      attribute: 'entity_type',
+      filters: {
+        entity_type: [{ id: 'Stix-Domain-Object' }],
+        elementId: [{ id: incident.id }],
+        relationship_type: [{ id: 'related-to' }],
+      },
+    },
+  ];
+  const observablesDataSelection = [
+    {
+      attribute: 'entity_type',
+      filters: {
+        entity_type: [{ id: 'Stix-Cyber-Observable' }],
+        elementId: [{ id: incident.id }],
+        relationship_type: [{ id: 'related-to' }],
+      },
+    },
+  ];
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -112,27 +132,19 @@ const IncidentDetailsComponent = ({ incident }) => {
             <ExpandableMarkdown source={incident.objective} limit={100} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityStixCoreRelationshipsDonut
-              entityId={incident.id}
-              toTypes={['Stix-Domain-Object']}
-              relationshipType="stix-core-relationship"
-              field="entity_type"
-              height={260}
+            <StixCoreObjectsDonut
+              dataSelection={entitiesDataSelection}
+              parameters={{ title: t('Entities distribution') }}
               variant="inEntity"
-              isTo={false}
-              title={t('Entities distribution')}
+              height={300}
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityStixCoreRelationshipsDonut
-              entityId={incident.id}
-              toTypes={['Stix-Cyber-Observable']}
-              relationshipType="stix-core-relationship"
-              field="entity_type"
-              height={260}
+            <StixCoreObjectsDonut
+              dataSelection={observablesDataSelection}
+              parameters={{ title: t('Observables distribution') }}
               variant="inEntity"
-              isTo={true}
-              title={t('Observables distribution')}
+              height={300}
             />
           </Grid>
         </Grid>

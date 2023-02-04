@@ -187,6 +187,7 @@ class IncidentKnowledgeComponent extends Component {
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               allDirections={true}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

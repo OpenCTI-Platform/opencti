@@ -216,6 +216,7 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 allDirections={true}
+                isRelationReversed={true}
                 {...routeProps}
               />
             )}

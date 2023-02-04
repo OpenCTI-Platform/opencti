@@ -121,6 +121,7 @@ class InfrastructureKnowledgeComponent extends Component {
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
               allDirections={true}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

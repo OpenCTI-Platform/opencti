@@ -26,6 +26,7 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
     $objectId: String
     $relationship_type: [String]
     $toTypes: [String]
+    $elementWithTargetTypes: [String]
     $field: String!
     $startDate: DateTime
     $endDate: DateTime
@@ -42,6 +43,7 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
       objectId: $objectId
       relationship_type: $relationship_type
       toTypes: $toTypes
+      elementWithTargetTypes: $elementWithTargetTypes
       field: $field
       startDate: $startDate
       endDate: $endDate
@@ -196,30 +198,47 @@ const StixCoreObjectsDonut = ({
     const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
       ?.values || null;
     const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
+    const dataSelectionElementWithTargetTypes = R.head(finalFilters.filter((n) => n.key === 'elementWithTargetTypes'))
+      ?.values || null;
     finalFilters = finalFilters.filter(
-      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
-        n.key,
-      ),
+      (n) => ![
+        'entity_type',
+        'elementId',
+        'relationship_type',
+        'toTypes',
+        'elementWithTargetTypes',
+      ].includes(n.key),
     );
+    const variables = {
+      objectId: Array.isArray(dataSelectionObjectId)
+        ? R.head(dataSelectionObjectId)
+        : dataSelectionObjectId,
+      relationship_type: dataSelectionRelationshipType,
+      types: dataSelectionTypes,
+      field: selection.attribute,
+      operation: 'count',
+      startDate,
+      endDate,
+      dateAttribute:
+        selection.date_attribute && selection.date_attribute.length > 0
+          ? selection.date_attribute
+          : 'created_at',
+      filters: finalFilters,
+      limit: 10,
+    };
+    if (dataSelectionToTypes && dataSelectionToTypes.length > 0) {
+      variables.toTypes = dataSelectionToTypes;
+    }
+    if (
+      dataSelectionElementWithTargetTypes
+      && dataSelectionElementWithTargetTypes.length > 0
+    ) {
+      variables.elementWithTargetTypes = dataSelectionElementWithTargetTypes;
+    }
     return (
       <QueryRenderer
         query={stixCoreObjectsDonutDistributionQuery}
-        variables={{
-          objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
-          toTypes: dataSelectionToTypes,
-          types: dataSelectionTypes,
-          field: selection.attribute,
-          operation: 'count',
-          startDate,
-          endDate,
-          dateAttribute:
-            selection.date_attribute && selection.date_attribute.length > 0
-              ? selection.date_attribute
-              : 'created_at',
-          filters: finalFilters,
-          limit: 10,
-        }}
+        variables={variables}
         render={({ props }) => {
           if (
             props
@@ -274,7 +293,7 @@ const StixCoreObjectsDonut = ({
   return (
     <div style={{ height: height || '100%' }}>
       <Typography
-        variant="h4"
+        variant={variant === 'inEntity' ? 'h3' : 'h4'}
         gutterBottom={true}
         style={{
           margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
@@ -282,7 +301,7 @@ const StixCoreObjectsDonut = ({
       >
         {parameters.title || t('Distribution of entities')}
       </Typography>
-      {variant === 'inLine' ? (
+      {variant === 'inLine' || variant === 'inEntity' ? (
         renderContent()
       ) : (
         <Paper classes={{ root: classes.paper }} variant="outlined">

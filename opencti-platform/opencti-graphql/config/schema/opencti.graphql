@@ -12178,6 +12178,7 @@ type Query {
     objectId: String
     relationship_type: [String]
     toTypes: [String]
+    elementWithTargetTypes: [String]
     field: String!
     startDate: DateTime
     endDate: DateTime
@@ -12242,6 +12243,7 @@ type Query {
     objectId: String
     relationship_type: [String]
     toTypes: [String]
+    elementWithTargetTypes: [String]
     field: String!
     dateAttribute: String
     operation: StatsOperation!
