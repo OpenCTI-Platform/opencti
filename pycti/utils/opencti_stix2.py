@@ -1935,6 +1935,17 @@ class OpenCTIStix2:
                 filters = [{"key": "entity_type", "values": [entity_type]}]
             entity_type = "Stix-Cyber-Observable"
 
+        if entity_type == "Analysis":
+            if filters is not None:
+                filters.append(
+                    {"key": "entity_type", "values": ["Report", "Grouping", "Note", "Observed-Data", "Opinion"]}
+                )
+            else:
+                filters = [
+                    {"key": "entity_type", "values": ["Report", "Grouping", "Note", "Observed-Data", "Opinion"]}
+                ]
+            entity_type = "Stix-Domain-Object"
+
         # List
         lister = {
             "Stix-Core-Object": self.opencti.stix_core_object.list,
