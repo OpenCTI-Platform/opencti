@@ -13,7 +13,6 @@ OPENCTI_API_CLIENT = OpenCTIApiClient(api_url, api_token)
 
 
 def main():
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-f", "--file", required=True, help="The path of the Artifact(s) to upload."
@@ -48,7 +47,6 @@ def main():
 
 
 def upload(file_path, description, labels, related_standard_id):
-
     file_data = b""
     with open(file_path, "rb") as f:
         file_data = f.read()

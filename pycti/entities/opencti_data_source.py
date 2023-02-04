@@ -329,7 +329,6 @@ class DataSource:
         update = kwargs.get("update", False)
 
         if stix_object is not None:
-
             # Handle x-mitre-
             if (
                 stix_object["type"] == "x-mitre-data-source"

@@ -608,7 +608,6 @@ class Report:
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
         if stix_object is not None:
-
             # Search in extensions
             if "x_opencti_stix_ids" not in stix_object:
                 stix_object[

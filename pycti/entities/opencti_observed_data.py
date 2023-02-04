@@ -574,7 +574,6 @@ class ObservedData:
                     object_refs.append(item["standard_id"])
 
         if stix_object is not None:
-
             # Search in extensions
             if "x_opencti_stix_ids" not in stix_object:
                 stix_object[
