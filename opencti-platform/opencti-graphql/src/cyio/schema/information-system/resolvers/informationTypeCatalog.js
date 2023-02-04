@@ -8,12 +8,13 @@ import {
   removeInformationTypeFromCatalog,
 } from '../domain/informationTypeCatalog.js';
 import { findInformationTypeEntryByIri } from '../domain/informationTypeEntry.js';
+import { getReducer } from '../schema/sparql/informationTypeEntry.js';
   
 const cyioInformationTypeCatalogResolvers = {
   Query: {
     // Information Type Catalog
-    informationTypeCatalogs: async (_, args, { dbName, dataSources, selectMap }) => findAllInformationTypeCatalogs(args, dbName, dataSources, selectMap),
-    informationTypeCatalog: async (_, { id }, { dbName, dataSources, selectMap }) => findInformationTypeCatalogById(id, dbName, dataSources, selectMap),
+    informationTypeCatalogs: async (_, args, { dbName, dataSources, selectMap }) => findAllInformationTypeCatalogs(args, dbName, dataSources, selectMap.getNode('node')),
+    informationTypeCatalog: async (_, { id }, { dbName, dataSources, selectMap }) => findInformationTypeCatalogById(id, dbName, dataSources, selectMap.getNode('informationTypeCatalog')),
   },
   Mutation: {
     // Information Type Catalog
@@ -28,7 +29,13 @@ const cyioInformationTypeCatalogResolvers = {
   InformationTypeCatalog: {
     entries: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.entries_iri === undefined) return [];
-      return findInformationTypeEntryByIri(parent.entries_iri, dataSources);
+      let results = [];
+      for (let iri of parent.entries_iri) {
+        let response = await findInformationTypeEntryByIri(iri, dbName, dataSources, selectMap.getNode('entries'));
+        if (response === undefined || response == null) continue;
+        results.push(response);
+      }
+      return results;
     },
     labels: async (parent, _, { dbName, dataSources, selectMap }) => {
     },

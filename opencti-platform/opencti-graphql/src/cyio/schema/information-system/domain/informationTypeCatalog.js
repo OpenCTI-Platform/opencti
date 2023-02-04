@@ -21,17 +21,17 @@ import {
 } from '../schema/sparql/informationTypeEntry.js';
 
 // Information Type Catalog
-export const findInformationTypeCatalogById = async (id, dbName, dataSources, selectMap) => {
+export const findInformationTypeCatalogById = async (id, dbName, dataSources, select) => {
   // ensure the id is a valid UUID
   if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);
 
   let iri = `<http://cyio.darklight.ai/information-type-catalog--${id}>`;
-  return findInformationTypeCatalogByIri(iri, dbName, dataSources, selectMap);
+  return findInformationTypeCatalogByIri(iri, dbName, dataSources, select);
 }
 
-export const findInformationTypeCatalogByIri = async (iri, dbName, dataSources, selectMap) => {
+export const findInformationTypeCatalogByIri = async (iri, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
-  const sparqlQuery = selectInformationTypeCatalogByIriQuery(iri, selectMap.getNode("informationTypeCatalog"));
+  const sparqlQuery = selectInformationTypeCatalogByIriQuery(iri, select);
   let response;
   try {
     response = await dataSources.Stardog.queryById({
@@ -52,9 +52,9 @@ export const findInformationTypeCatalogByIri = async (iri, dbName, dataSources, 
   }
 };
 
-export const findAllInformationTypeCatalogs = async (args, dbName, dataSources, selectMap) => {
+export const findAllInformationTypeCatalogs = async (args, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
-  const sparqlQuery = selectAllInformationTypeCatalogsQuery(selectMap.getNode("node"), args);
+  const sparqlQuery = selectAllInformationTypeCatalogsQuery(select, args);
   let response;
   try {
     response = await dataSources.Stardog.queryAll({
@@ -374,7 +374,7 @@ export const editInformationTypeCatalogById = async (id, input, dbName, dataSour
   return reducer(result[0]);
 };
 
-export const addInformationTypeToCatalog = async (id, entryId, dbName, dataSources, selectMap) => {
+export const addInformationTypeToCatalog = async (id, entryId, dbName, dataSources) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   let sparqlQuery;
 
@@ -401,7 +401,7 @@ export const addInformationTypeToCatalog = async (id, entryId, dbName, dataSourc
   });
 };
 
-export const removeInformationTypeFromCatalog = async (id, entryId, dbName, dataSources, selectMap) => {
+export const removeInformationTypeFromCatalog = async (id, entryId, dbName, dataSources) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   let sparqlQuery;
 
