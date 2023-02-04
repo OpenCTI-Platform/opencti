@@ -40,8 +40,13 @@ const informationTypeCatalogReducer = (item) => {
       ...(item.entries && { entries_iri: item.entries }),
   }
 }
+
+// Utility
+export const getInformationTypeCatalogIri = (id) => {
+  return `<http://cyio.darklight.ai/information-type-catalog--${id}>`;
+}
   
-  // Query Builders
+// Query Builders
 export const insertInformationTypeCatalogQuery = (propValues) => {
   const id_material = {
     ...(propValues.system && {"system": propValues.system}),

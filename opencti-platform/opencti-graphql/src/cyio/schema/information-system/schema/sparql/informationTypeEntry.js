@@ -6,6 +6,7 @@ import {
   DARKLIGHT_NS,
   CyioError 
 } from '../../../utils.js';
+import { getInformationTypeCatalogIri } from './informationTypeCatalog.js';
   
   // Reducer Selection
 export function getReducer(type) {
@@ -133,7 +134,6 @@ export const selectAllInformationTypeEntriesQuery = (select, args, parent) => {
   if (select === undefined || select === null) select = Object.keys(informationTypeEntryPredicateMap);
   if (!select.includes('id')) select.push('id');
   if (!select.includes('object_type')) select.push('object_type');
-  if (!select.includes('type')) select.push('type');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -148,6 +148,17 @@ export const selectAllInformationTypeEntriesQuery = (select, args, parent) => {
     }
   }
 
+  let catalogIri = getInformationTypeCatalogIri(args.catalogId);
+  if (!catalogIri.startsWith('<')) catalogIri = `<${catalogIri}>`;
+  // define a constraint to limit retrieval to only those referenced by the parent
+  // constraintClause = `{
+  //   SELECT DISTINCT ?iri
+  //   WHERE {
+  //       ${catalogIri} a <http://nist.gov/ns/sp800-60#InformationTypeCatalog> ;
+  //       <http://nist.gov/ns/sp800-60#entries> ?iri .
+  //   }
+  // }`;
+  
   const { selectionClause, predicates } = buildSelectVariables(informationTypeEntryPredicateMap, select);
 
   return `
@@ -393,7 +404,7 @@ export const informationTypeEntryPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   identifier: {
-    predicate: "<http://nist.gov/ns/sp800-60#title>",
+    predicate: "<http://nist.gov/ns/sp800-60#identifier>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "identifier");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
@@ -407,24 +418,29 @@ export const informationTypeEntryPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "title");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  description: {
+    predicate: "<http://nist.gov/ns/sp800-60#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US` : null,  this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   confidentiality_impact: {
     predicate: "<http://nist.gov/ns/sp800-60#confidentiality_impact>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US` : null,  this.predicate, "confidentiality_impact");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "confidentiality_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   integrity_impact: {
     predicate: "<http://nist.gov/ns/sp800-60#integrity_impact>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US` : null,  this.predicate, "integrity_impact");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "integrity_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   availability_impact: {
     predicate: "<http://nist.gov/ns/sp800-60#availability_impact>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US` : null,  this.predicate, "availability_impact");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "availability_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   catalog: {
     predicate: "^<http://nist.gov/ns/sp800-60#entries>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US` : null,  this.predicate, "catalog");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "catalog");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 };
@@ -443,6 +459,11 @@ export const impactDefinitionPredicateMap = {
   entity_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  base_score: {
+    predicate: "<http://nist.gov/ns/sp800-60#base_score>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US`: null, this.predicate, "base_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   explanation: {

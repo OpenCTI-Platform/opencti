@@ -21,21 +21,22 @@ import {
   deleteImpactDefinitionQuery,
   deleteImpactDefinitionByIriQuery,
 } from '../schema/sparql/informationTypeEntry.js';
+import { addInformationTypeToCatalog } from '../domain/informationTypeCatalog.js';
 import { attachToInformationTypeCatalogQuery, detachFromInformationTypeCatalogQuery } from '../schema/sparql/informationTypeCatalog.js';
 
 
 // Information Type Entry
-export const findInformationTypeEntryById = async (id, dbName, dataSources, selectMap) => {
+export const findInformationTypeEntryById = async (id, dbName, dataSources, select) => {
   // ensure the id is a valid UUID
   if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);
 
   let iri = `<http://cyio.darklight.ai/information-type-entry--${id}>`;
-  return findInformationTypeEntryByIri(iri, dbName, dataSources, selectMap);
+  return findInformationTypeEntryByIri(iri, dbName, dataSources, select);
 }
 
-export const findInformationTypeEntryByIri = async (iri, dbName, dataSources, selectMap) => {
+export const findInformationTypeEntryByIri = async (iri, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
-  const sparqlQuery = selectInformationTypeEntryByIriQuery(iri, selectMap.getNode("informationTypeEntry"));
+  const sparqlQuery = selectInformationTypeEntryByIriQuery(iri, select);
   let response;
   try {
     response = await dataSources.Stardog.queryById({
@@ -49,16 +50,14 @@ export const findInformationTypeEntryByIri = async (iri, dbName, dataSources, se
     throw e
   }
 
-  if (response === undefined) return null;
-  if (Array.isArray(response) && response.length > 0) {
-    const reducer = getReducer("INFORMATION-TYPE-ENTRY");
-    return reducer(response[0]);  
-  }
+  if (response === undefined || response === null || response.length === 0) return null;
+  const reducer = getReducer("INFORMATION-TYPE-ENTRY");
+  return reducer(response[0]);  
 };
 
-export const findAllInformationTypeEntries = async (args, dbName, dataSources, selectMap ) => {
+export const findAllInformationTypeEntries = async (args, dbName, dataSources, select ) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
-  const sparqlQuery = selectAllInformationTypeEntriesQuery(selectMap.getNode("node"), args);
+  const sparqlQuery = selectAllInformationTypeEntriesQuery(select, args);
   let response;
   try {
     response = await dataSources.Stardog.queryAll({
@@ -159,39 +158,53 @@ export const createInformationTypeEntry = async (input, dbName, selectMap, dataS
       delete input[key];
     }
   }
-
-  // check that a catalog is specified
-  if (input.catalogId === undefined || input.catalogId === null) throw new CyioError(`Catalog identifier must be specified.`); 
-
   // END WORKAROUND
+
+  // Need to escape contents, remove explicit newlines, and collapse multiple what spaces.
+  input.description = input.description.replace(/\s+/g, ' ')
+                                       .replace(/\n/g, '\\n')
+                                       .replace(/\"/g, '\\"')
+                                       .replace(/\'/g, "\\'")
+                                       .replace(/[\u2019\u2019]/g, "\\'")
+                                       .replace(/[\u201C\u201D]/g, '\\"');
+
   let impactDefinitions = {
     'confidentiality': { props: {}, field: 'confidentiality_impact' },
     'integrity': { props: {}, field: 'integrity_impact' },
     'availability':{ props: {}, field: 'availability_impact' }
   };
-  // let confidentialityImpactProps = {};
   if (input.confidentiality_impact !== undefined) {
     for (let [key, value] of Object.entries(input.confidentiality_impact)) {
-      // confidentialityImpactProps[key] = value;
-      impactDefinitions.confidentiality.props[key] = value;
+      impactDefinitions.confidentiality.props[key] = value.replace(/\s+/g, ' ')
+                                                          .replace(/\n/g, '\\n')
+                                                          .replace(/\"/g, '\\"')
+                                                          .replace(/\'/g, "\\'")
+                                                          .replace(/[\u2019\u2019]/g, "\\'")
+                                                          .replace(/[\u201C\u201D]/g, '\\"');
     }
     delete input.confidentiality_impact;
   }
 
-  // let integrityImpactProps = {};
   if (input.integrity_impact !== undefined) {
     for (let [key, value] of Object.entries(input.integrity_impact)) {
-      // integrityImpactProps[key] = value;
-      impactDefinitions.integrity.props[key] = value;
+      impactDefinitions.integrity.props[key] = value.replace(/\s+/g, ' ')
+                                                    .replace(/\n/g, '\\n')
+                                                    .replace(/\"/g, '\\"')
+                                                    .replace(/\'/g, "\\'")
+                                                    .replace(/[\u2019\u2019]/g, "\\'")
+                                                    .replace(/[\u201C\u201D]/g, '\\"');
     }
     delete input.integrity_impact;
   }
 
-  // let availabilityImpactProps = {};
   if (input.availability_impact !== undefined) {
     for (let [key, value] of Object.entries(input.availability_impact)) {
-      // availabilityImpactProps[key] = value;
-      impactDefinitions.availability.props[key] = value;
+      impactDefinitions.availability.props[key] = value.replace(/\s+/g, ' ')
+                                                       .replace(/\n/g, '\\n')
+                                                       .replace(/\"/g, '\\"')
+                                                       .replace(/\'/g, "\\'")
+                                                       .replace(/[\u2019\u2019]/g, "\\'")
+                                                       .replace(/[\u201C\u201D]/g, '\\"');
     }
     delete input.availability_impact;
   }
@@ -214,7 +227,7 @@ export const createInformationTypeEntry = async (input, dbName, selectMap, dataS
   for (let [key, value] of Object.entries(impactDefinitions)) {
     // Create the Impact Definition
     if (Object.keys(value.props).length !== 0 ) {
-      let {iri, id, query} = insertImpactDefinitionQuery(value.props);
+      let {iri:impactIri, id:impactId, query} = insertImpactDefinitionQuery(value.props);
       try {
         // Create Impact Definition
         response = await dataSources.Stardog.create({
@@ -228,7 +241,7 @@ export const createInformationTypeEntry = async (input, dbName, selectMap, dataS
       }
 
       // attach the Impact Definition to the new Information Type entry
-      let attachQuery = attachToInformationTypeEntryQuery(id, value.field, iri );
+      let attachQuery = attachToInformationTypeEntryQuery(id, value.field, impactIri );
       try {
         response = await dataSources.Stardog.create({
           dbName: contextDB,
@@ -242,61 +255,32 @@ export const createInformationTypeEntry = async (input, dbName, selectMap, dataS
     }
   }
 
-  // // Create and attach the Impacts
-  // if (Object.keys(frequencyProps).length !== 0 ) {
-  //   let {iri, id, query} = insertImpactDefinitionQuery(frequencyProps);
-  //   try {
-  //     // Create Frequency Timing 
-  //     response = await dataSources.Stardog.create({
-  //       dbName: contextDB,
-  //       sparqlQuery: query,
-  //       queryId: "Create Impact Definition"
-  //       });
-  //   } catch (e) {
-  //     console.log(e)
-  //     throw e
-  //   }
-
-  //   // attach the Impact Definition to the new Information Type entry
-  //   let attachQuery = attachToInformationTypeEntryQuery(dataSourceId, 'update_frequency', iri );
-  //   try {
-  //     response = await dataSources.Stardog.create({
-  //       dbName: contextDB,
-  //       sparqlQuery: attachQuery,
-  //       queryId: "Attach Frequency Timing"
-  //       });
-  //   } catch (e) {
-  //     console.log(e)
-  //     throw e
-  //   }
-  // }
-
   // attach the new information type to the catalog
-  const attachQuery = attachToInformationTypeCatalogQuery(input.catalog_id, 'entries', iri);
-    await dataSources.Stardog.create({
-    contextDB,
-    sparqlQuery: attachQuery,
-    queryId: 'Add Information Type to an Information Type Catalog',
-  });
+  await addInformationTypeToCatalog(input.catalog_id, id, dbName, dataSources);
 
   // retrieve the newly created Information Type Entry to be returned
   const select = selectInformationTypeEntryQuery(id, selectMap.getNode("createInformationTypeEntry"));
-  const result = await dataSources.Stardog.queryById({
-    dbName: contextDB,
-    sparqlQuery: select,
-    queryId: "Select Information Type Entry object",
-    singularizeSchema: singularizeInformationTypeEntrySchema
-  });
+  try {
+    const result = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery: select,
+      queryId: "Select Information Type Entry object",
+      singularizeSchema: singularizeInformationTypeEntrySchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (result === undefined || result === null || result.length === 0) return null;
   const reducer = getReducer("INFORMATION-TYPE-ENTRY");
   return reducer(result[0]);
 };
 
-export const deleteInformationTypeEntryById = async ( id, dbName, dataSources) => {
+export const deleteInformationTypeEntryById = async ( id, catalogId, dbName, dataSources, selectMap) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
-  let select = ['iri','id','object_type','system','title','confidentiality_impact','integrity_impact','availability_impact'];
+  let select = ['iri','id','object_type','system','title','confidentiality_impact','integrity_impact','availability_impact','catalog'];
   let idArray = [];
   if (!Array.isArray(id)) {
-    if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);
     idArray = [id];
   } else {
     idArray = id;
@@ -323,23 +307,8 @@ export const deleteInformationTypeEntryById = async ( id, dbName, dataSources) =
     
     if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${itemId}`);
 
-    // Detach Information Type from it's Catalog
-    let parentQuery = findParentIriQuery(response[0].iri, 'catalog', informationTypeEntryPredicateMap);
-    let results = await dataSources.Stardog.queryById({
-      contextDB,
-      sparqlQuery: parentQuery,
-      queryId: 'Select Find Parent',
-      singularizeSchema: singularizeInformationTypeEntrySchema
-    });
-    if (results.length > 0) {
-      let catalogId = findParentId(results[0].iri);
-      let detachQuery = detachFromInformationTypeCatalogQuery(catalogId, 'entries', iri);
-      await dataSources.Stardog.create({
-        contextDB,
-        sparqlQuery: detachQuery,
-        queryId: 'Remove Information Type from the Information Type Catalog',
-      });  
-    }
+    // detach the information type from the catalog
+    await removeInformationTypeFromCatalog(catalogId, id, dbName, dataSources);
 
     // Delete any associated confidentiality impact
     if (response[0].confidentiality_impact ) {
@@ -586,17 +555,17 @@ export const editInformationTypeEntryById = async (id, input, dbName, dataSource
   return reducer(result[0]);
 };
 
-export const findImpactDefinitionById = async (id, dbName, dataSources, selectMap) => {
+export const findImpactDefinitionById = async (id, dbName, dataSources, select) => {
   if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);
 
   let iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
-  return findImpactDefinitionByIri(iri, dbName, dataSources, selectMap) ;
+  return findImpactDefinitionByIri(iri, dbName, dataSources, select) ;
 };
 
 // Impact Definition
-export const findImpactDefinitionByIri = async (iri, field, dbName, dataSources, selectMap) => {
+export const findImpactDefinitionByIri = async (iri, field, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
-  const sparqlQuery = selectImpactDefinitionByIriQuery(iri, selectMap.getNode(field));
+  const sparqlQuery = selectImpactDefinitionByIriQuery(iri, select);
   let response;
   try {
     response = await dataSources.Stardog.queryById({
