@@ -1102,7 +1102,6 @@ class StixCoreRelationship:
         update = kwargs.get("update", False)
         default_date = kwargs.get("defaultDate", False)
         if stix_relation is not None:
-
             # Search in extensions
             if "granted_refs" not in stix_relation:
                 stix_relation["granted_refs"] = self.opencti.get_attribute_in_extension(

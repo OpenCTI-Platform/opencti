@@ -345,7 +345,6 @@ class DataComponent:
         update = kwargs.get("update", False)
 
         if stix_object is not None:
-
             # Handle ref
             if (
                 stix_object["type"] == "x-mitre-data-component"

@@ -153,7 +153,6 @@ class InternalEnrichmentConnector:
         self.helper = OpenCTIConnectorHelper(config)
 
     def _process_message(self, data: Dict) -> str:
-
         # set score to 100
         entity_id = data["entity_id"]
         observable = self.helper.api.stix_cyber_observable.read(id=entity_id)

@@ -1938,11 +1938,29 @@ class OpenCTIStix2:
         if entity_type == "Analysis":
             if filters is not None:
                 filters.append(
-                    {"key": "entity_type", "values": ["Report", "Grouping", "Note", "Observed-Data", "Opinion"]}
+                    {
+                        "key": "entity_type",
+                        "values": [
+                            "Report",
+                            "Grouping",
+                            "Note",
+                            "Observed-Data",
+                            "Opinion",
+                        ],
+                    }
                 )
             else:
                 filters = [
-                    {"key": "entity_type", "values": ["Report", "Grouping", "Note", "Observed-Data", "Opinion"]}
+                    {
+                        "key": "entity_type",
+                        "values": [
+                            "Report",
+                            "Grouping",
+                            "Note",
+                            "Observed-Data",
+                            "Opinion",
+                        ],
+                    }
                 ]
             entity_type = "Stix-Domain-Object"
 
