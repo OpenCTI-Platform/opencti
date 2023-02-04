@@ -1946,6 +1946,7 @@ enum StixDomainObjectsFilter {
   published
   creator
   x_opencti_workflow_id
+  fromId
 }
 
 input StixDomainObjectsFiltering {

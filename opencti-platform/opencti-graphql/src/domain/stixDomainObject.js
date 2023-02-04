@@ -117,6 +117,10 @@ export const stixDomainObjectsExportAsk = async (context, user, args) => {
       initialParams.elementId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('elementId'))).values);
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('elementId'));
     }
+    if (argsFilters.filters.filter((n) => n.key.includes('fromId')).length > 0) {
+      initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('fromId'))).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('fromId'));
+    }
   }
   const finalArgsFilter = {
     ...argsFilters,

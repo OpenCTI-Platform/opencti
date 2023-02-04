@@ -19710,6 +19710,7 @@ export enum StixDomainObjectsFilter {
   CreatedAt = 'created_at',
   Creator = 'creator',
   EntityType = 'entity_type',
+  FromId = 'fromId',
   HasExternalReference = 'hasExternalReference',
   Indicates = 'indicates',
   IndicatorTypes = 'indicator_types',
