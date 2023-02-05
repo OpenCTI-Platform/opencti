@@ -64,9 +64,7 @@ const Filters = ({
       }?${new URLSearchParams(urlParams).toString()}`,
     );
   };
-
   const handleChangeKeyword = (event) => setKeyword(event.target.value);
-
   const filterElement = (
     <FiltersElement
       variant={variant}
@@ -83,7 +81,6 @@ const Filters = ({
       allEntityTypes={allEntityTypes}
     />
   );
-
   if (variant === FiltersVariant.dialog) {
     return (
       <DialogFilters

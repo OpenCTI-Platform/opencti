@@ -17,7 +17,7 @@ const useStyles = makeStyles(() => ({
     margin: '-3px 0 0 -5px',
   },
   container: {
-    width: 490,
+    width: 600,
     padding: 20,
   },
   autocomplete: {

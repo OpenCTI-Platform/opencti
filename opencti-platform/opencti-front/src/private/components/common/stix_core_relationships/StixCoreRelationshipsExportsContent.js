@@ -102,7 +102,17 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
               />
             ))
           ) : (
-            <div style={{ paddingLeft: 16 }}>{t('No file for the moment')}</div>
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No file for the moment')}
+              </span>
+            </div>
           )}
         </List>
         <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>

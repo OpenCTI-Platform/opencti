@@ -8,7 +8,6 @@ interface FilterDateProps {
   filterKey: string
   inputValues: Record<string, string | Date>
   setInputValues: Dispatch<Record<string, string | Date>>
-  variant: string
 }
 
 const FilterDate: FunctionComponent<FilterDateProps> = ({
@@ -16,7 +15,6 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   filterKey,
   inputValues,
   setInputValues,
-  variant,
 }) => {
   const { t, nsd } = useFormatter();
 
@@ -49,7 +47,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
         <TextField
           variant="outlined"
           size="small"
-          fullWidth={variant === 'dialog'}
+          fullWidth={true}
           onKeyDown={(event) => handleValidateDate(event)}
           {...params}
         />

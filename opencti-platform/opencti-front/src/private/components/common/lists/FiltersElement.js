@@ -36,7 +36,6 @@ const FiltersElement = ({
   allEntityTypes,
 }) => {
   const { t } = useFormatter();
-
   return (
     <div>
       <Grid container={true} spacing={2}>
@@ -67,12 +66,10 @@ const FiltersElement = ({
                   filterKey={filterKey}
                   inputValues={inputValues}
                   setInputValues={setInputValues}
-                  variant={variant}
                 />
               </Grid>
             );
           }
-
           return (
             <Grid key={filterKey} item={true} xs={6}>
               <FilterAutocomplete
@@ -91,7 +88,8 @@ const FiltersElement = ({
         })}
       </Grid>
       <div className={classes.helpertext}>
-        {t('Use')} <code>alt</code> + <code>click</code> {t('to exclude items')}.
+        {t('Use')} <code>alt</code> + <code>click</code> {t('to exclude items')}
+        .
       </div>
     </div>
   );
