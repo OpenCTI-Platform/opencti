@@ -16,7 +16,6 @@ from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import (
     IdentityTypes,
     LocationTypes,
-    ContainerTypes,
     MultipleStixCyberObservableRelationship,
     StixCyberObservableTypes,
 )
@@ -1930,13 +1929,6 @@ class OpenCTIStix2:
             entity_type = "Location"
 
         if StixCyberObservableTypes.has_value(entity_type):
-            if filters is not None:
-                filters.append({"key": "entity_type", "values": [entity_type]})
-            else:
-                filters = [{"key": "entity_type", "values": [entity_type]}]
-            entity_type = "Stix-Cyber-Observable"
-
-        if ContainerTypes.has_value(entity_type):
             if filters is not None:
                 filters.append({"key": "entity_type", "values": [entity_type]})
             else:
