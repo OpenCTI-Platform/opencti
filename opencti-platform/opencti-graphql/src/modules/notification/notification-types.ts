@@ -59,7 +59,7 @@ export interface NotificationContentEvent {
 }
 
 export interface NotificationAddInput {
-  user_id: string
+
   is_read: boolean
   name: string
   notification_type: string
@@ -75,6 +75,7 @@ export interface BasicStoreEntityNotification extends BasicStoreEntity {
   is_read: boolean
   notification_id: string
   notification_uri: string
+  user_id: string
 }
 
 export interface StoreEntityNotification extends StoreEntity {
