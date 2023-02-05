@@ -21,6 +21,7 @@ import Chart from 'react-apexcharts';
 import Slide from '@mui/material/Slide';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import { dayAgo, monthsAgo, yearsAgo } from '../../utils/Time';
 import { useFormatter } from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
@@ -40,6 +41,7 @@ import { useViewStorage } from '../../utils/ListParameters';
 import TopBar from './nav/TopBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import { areaChartOptions, polarAreaChartOptions } from '../../utils/Charts';
+import { defaultValue } from '../../utils/Graph';
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
@@ -583,6 +585,15 @@ const LastIngestedAnalysis = () => {
             <ListItemIcon>
               <ItemIcon type={stixDomainObject.entity_type} />
             </ListItemIcon>
+            <ListItemText
+              primary={
+                <Tooltip title={defaultValue(stixDomainObject)}>
+                  <div className={classes.itemText}>
+                    {defaultValue(stixDomainObject)}
+                  </div>
+                </Tooltip>
+              }
+            />
             <div className={classes.itemType}>
               <Chip
                 classes={{ root: classes.chipInList }}
@@ -591,16 +602,6 @@ const LastIngestedAnalysis = () => {
                 label={stixDomainObject.report_types?.at(0) ?? t('Unknown')}
               />
             </div>
-            <ListItemText
-              primary={
-                <div className={classes.itemText}>
-                  {stixDomainObject.name
-                    || stixDomainObject.attribute_abstract
-                    || truncate(stixDomainObject.content, 30)
-                    || stixDomainObject.opinion}
-                </div>
-              }
-            />
             <div className={classes.itemAuthor}>
               {pathOr('', ['createdBy', 'name'], stixDomainObject)}
             </div>

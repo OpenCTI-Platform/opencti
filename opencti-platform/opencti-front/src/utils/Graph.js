@@ -364,6 +364,7 @@ export const defaultValue = (n, tooltip = false) => {
       || n.definition
       || n.source_name
       || n.phase_name
+      || (n.content && truncate(n.content, 30))
       || (n.hashes
         && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256']))
       || (n.source_ref_name
@@ -394,6 +395,7 @@ export const defaultValue = (n, tooltip = false) => {
     || n.definition
     || n.source_name
     || n.phase_name
+    || (n.content && truncate(n.content, 30))
     || (n.hashes && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256']))
     || (n.source_ref_name
       && n.target_ref_name
