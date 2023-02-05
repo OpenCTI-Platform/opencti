@@ -2016,14 +2016,6 @@ class OpenCTIStix2:
             relationship_type=relationship_type,
         )
         if entities_list is not None:
-            if element_id:  # filtering of the data to keep those in the container
-                new_entities_list = [
-                    entity
-                    for entity in entities_list
-                    if ("objectsIds" in entity) and (element_id in entity["objectsIds"])
-                ]
-                entities_list = new_entities_list
-
             uuids = []
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
@@ -2054,15 +2046,7 @@ class OpenCTIStix2:
             "id": "bundle--" + str(uuid.uuid4()),
             "objects": [],
         }
-
         if entities_list is not None:
-            if element_id:  # filtering of the data to keep those in the container
-                new_entities_list = [
-                    entity
-                    for entity in entities_list
-                    if element_id in entity["objectsIds"]
-                ]
-                entities_list = new_entities_list
             uuids = []
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
