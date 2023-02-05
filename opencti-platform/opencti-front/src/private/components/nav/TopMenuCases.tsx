@@ -4,10 +4,7 @@ import Button from '@mui/material/Button';
 import {
   BiotechOutlined,
   TipsAndUpdatesOutlined,
-  TaskAltOutlined,
-  WorkOutlineOutlined,
 } from '@mui/icons-material';
-import { Brain } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
@@ -50,7 +47,7 @@ const TopMenuCases = () => {
         <BiotechOutlined className={classes.icon} fontSize="small" />
         {t('Incident response')}
       </Button>
-      <Button
+      {/*      <Button
         component={Link}
         to="/dashboard/cases/feedbacks"
         variant={
@@ -67,7 +64,7 @@ const TopMenuCases = () => {
       >
         <Brain className={classes.icon} fontSize="small" />
         {t('RFIs')}
-      </Button>
+      </Button> */}
       <Button
         component={Link}
         to="/dashboard/cases/feedbacks"
@@ -87,7 +84,7 @@ const TopMenuCases = () => {
         <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
         {t('Feedbacks')}
       </Button>
-      <Button
+      {/* <Button
         component={Link}
         to="/dashboard/cases/others"
         variant={
@@ -122,7 +119,7 @@ const TopMenuCases = () => {
       >
         <TaskAltOutlined className={classes.icon} fontSize="small" />
         {t('Tasks')}
-      </Button>
+      </Button> */}
     </div>
   );
 };
