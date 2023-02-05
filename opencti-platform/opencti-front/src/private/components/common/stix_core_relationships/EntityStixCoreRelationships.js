@@ -333,7 +333,9 @@ class EntityStixCoreRelationships extends Component {
                 'relationship_type',
                 'entity_type',
                 'markedBy',
+                'confidence',
                 'createdBy',
+                'creator',
                 'created_start_date',
                 'created_end_date',
               ]}

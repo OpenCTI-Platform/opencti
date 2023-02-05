@@ -148,11 +148,11 @@ const Incidents: FunctionComponent<CasesProps> = () => {
           'x_opencti_workflow_id',
           'assigneeTo',
           'priority',
+          'severity',
+          'markedBy',
           'labelledBy',
           'createdBy',
           'creator',
-          'markedBy',
-          'confidence',
           'created_start_date',
           'created_end_date',
         ]}
@@ -197,12 +197,12 @@ const Incidents: FunctionComponent<CasesProps> = () => {
   };
   return (
     <ExportContextProvider>
-    <div className={classes.container}>
-      {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IncidentCreation paginationOptions={finalPaginationOptions} />
-      </Security>
-    </div>
+      <div className={classes.container}>
+        {renderLines()}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IncidentCreation paginationOptions={finalPaginationOptions} />
+        </Security>
+      </div>
     </ExportContextProvider>
   );
 };
