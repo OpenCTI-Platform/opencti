@@ -1,6 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
+import {
+  compose,
+  filter,
+  flatten,
+  fromPairs,
+  includes,
+  map,
+  propOr,
+  uniq,
+  zip,
+} from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -12,11 +22,15 @@ import { Add } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
+import Fab from '@mui/material/Fab';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import {
+  commitMutation,
+  MESSAGING$,
+  QueryRenderer,
+} from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
@@ -27,19 +41,12 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
+const styles = () => ({
   createButton: {
-    float: 'left',
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: 250,
-    padding: '0 0 20px 0',
     position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
   },
   listIcon: {
     marginRight: 0,
@@ -50,7 +57,6 @@ const styles = (theme) => ({
   itemField: {
     padding: '0 15px 0 15px',
   },
-  toolbar: theme.mixins.toolbar,
 });
 
 export const StixDomainObjectsExportCreationMutation = graphql`
@@ -167,7 +173,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
       <ExportContext.Consumer>
         {({ selectedIds }) => {
           return (
-            <div className={classes.createButton}>
+            <div>
               <Tooltip
                 title={
                   isExportPossible
@@ -176,17 +182,15 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 }
                 aria-label="generate-export"
               >
-          <span>
-            <IconButton
-              onClick={this.handleOpen.bind(this)}
-              color="secondary"
-              aria-label="Add"
-              disabled={!isExportPossible}
-              size="large"
-            >
-              <Add/>
-            </IconButton>
-          </span>
+                <Fab
+                  onClick={this.handleOpen.bind(this)}
+                  color="secondary"
+                  aria-label="Add"
+                  className={classes.createButton}
+                  disabled={!isExportPossible}
+                >
+                  <Add />
+                </Fab>
               </Tooltip>
               <Formik
                 enableReinitialize={true}
@@ -259,7 +263,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                               </DialogContent>
                             );
                           }
-                          return <Loader variant="inElement"/>;
+                          return <Loader variant="inElement" />;
                         }}
                       />
                       <DialogActions>
@@ -280,8 +284,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
               </Formik>
             </div>
           );
-        }
-        }
+        }}
       </ExportContext.Consumer>
     );
   }

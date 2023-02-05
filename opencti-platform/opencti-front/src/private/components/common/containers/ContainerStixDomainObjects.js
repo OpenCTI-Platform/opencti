@@ -107,7 +107,10 @@ class ContainerStixDomainObjectsComponent extends Component {
         deSelectedElements: newDeSelectedElements,
       });
     } else if (selectAll) {
-      const newDeSelectedElements = { ...deSelectedElements, [entity.id]: entity };
+      const newDeSelectedElements = {
+        ...deSelectedElements,
+        [entity.id]: entity,
+      };
       this.setState({
         deSelectedElements: newDeSelectedElements,
       });
@@ -136,13 +139,15 @@ class ContainerStixDomainObjectsComponent extends Component {
     if (this.state.filters[key] && this.state.filters[key].length > 0) {
       this.setState(
         {
-          filters: { ...this.state.filters,
+          filters: {
+            ...this.state.filters,
             [key]: isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
                 ...this.state.filters[key],
-              ]) },
+              ]),
+          },
         },
         () => this.saveView(),
       );
@@ -256,79 +261,79 @@ class ContainerStixDomainObjectsComponent extends Component {
       <UserContext.Consumer>
         {({ helper }) => (
           <ExportContextProvider>
-          <div className={classes.container}>
-            <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={this.buildColumns(helper)}
-              handleSort={this.handleSort.bind(this)}
-              handleSearch={this.handleSearch.bind(this)}
-              handleAddFilter={this.handleAddFilter.bind(this)}
-              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-              handleToggleExports={this.handleToggleExports.bind(this)}
-              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-              selectAll={selectAll}
-              iconExtension={true}
-              exportEntityType="Stix-Domain-Object"
-              openExports={openExports}
-              exportContext={`of-container-${container.id}`}
-              filters={filters}
-              availableFilterKeys={[
-                'labelledBy',
-                'markedBy',
-                'created_at_start_date',
-                'created_at_end_date',
-                'createdBy',
-              ]}
-              keyword={searchTerm}
-              secondaryAction={true}
-              numberOfElements={numberOfElements}
-              paginationOptions={exportPaginationOptions}
-            >
-              <QueryRenderer
-                query={containerStixDomainObjectsLinesQuery}
-                variables={{
-                  id: container.id,
-                  count: 25,
-                  ...paginationOptions,
-                }}
-                render={({ props }) => (
-                  <ContainerStixDomainObjectsLines
-                    container={props ? props.container : null}
-                    paginationOptions={paginationOptions}
-                    dataColumns={this.buildColumns(helper)}
-                    initialLoading={props === null}
-                    setNumberOfElements={this.setNumberOfElements.bind(this)}
-                    onTypesChange={this.handleToggle.bind(this)}
-                    openExports={openExports}
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                    selectAll={selectAll}
-                  />
+            <div className={classes.container}>
+              <ListLines
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={this.buildColumns(helper)}
+                handleSort={this.handleSort.bind(this)}
+                handleSearch={this.handleSearch.bind(this)}
+                handleAddFilter={this.handleAddFilter.bind(this)}
+                handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+                handleToggleExports={this.handleToggleExports.bind(this)}
+                handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+                selectAll={selectAll}
+                iconExtension={true}
+                exportEntityType="Stix-Domain-Object"
+                openExports={openExports}
+                exportContext={`of-container-${container.id}`}
+                filters={filters}
+                availableFilterKeys={[
+                  'labelledBy',
+                  'markedBy',
+                  'created_at_start_date',
+                  'created_at_end_date',
+                  'createdBy',
+                ]}
+                keyword={searchTerm}
+                secondaryAction={true}
+                numberOfElements={numberOfElements}
+                paginationOptions={exportPaginationOptions}
+              >
+                <QueryRenderer
+                  query={containerStixDomainObjectsLinesQuery}
+                  variables={{
+                    id: container.id,
+                    count: 25,
+                    ...paginationOptions,
+                  }}
+                  render={({ props }) => (
+                    <ContainerStixDomainObjectsLines
+                      container={props ? props.container : null}
+                      paginationOptions={paginationOptions}
+                      dataColumns={this.buildColumns(helper)}
+                      initialLoading={props === null}
+                      setNumberOfElements={this.setNumberOfElements.bind(this)}
+                      onTypesChange={this.handleToggle.bind(this)}
+                      openExports={openExports}
+                      selectedElements={selectedElements}
+                      deSelectedElements={deSelectedElements}
+                      onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                      selectAll={selectAll}
+                    />
+                  )}
+                />
+              </ListLines>
+              <ToolBar
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                filters={backgroundTaskFilters}
+                search={searchTerm}
+                handleClearSelectedElements={this.handleClearSelectedElements.bind(
+                  this,
                 )}
+                variant="large"
+                container={container}
               />
-            </ListLines>
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              filters={backgroundTaskFilters}
-              search={searchTerm}
-              handleClearSelectedElements={this.handleClearSelectedElements.bind(
-                this,
-              )}
-              variant="large"
-              container={container}
-            />
-            <StixDomainObjectsRightBar
-              types={types}
-              handleToggle={this.handleToggle.bind(this)}
-              handleClear={this.handleClear.bind(this)}
-              openExports={openExports}
-            />
-          </div>
+              <StixDomainObjectsRightBar
+                types={types}
+                handleToggle={this.handleToggle.bind(this)}
+                handleClear={this.handleClear.bind(this)}
+                openExports={openExports}
+              />
+            </div>
           </ExportContextProvider>
         )}
       </UserContext.Consumer>
@@ -355,7 +360,7 @@ const ContainerStixDomainObjects = createFragmentContainer(
         }
         ... on Grouping {
           name
-        }        
+        }
         ... on Note {
           attribute_abstract
           content

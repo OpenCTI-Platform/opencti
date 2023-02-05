@@ -226,7 +226,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -242,7 +241,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             handleChangeView={this.handleChangeView.bind(this)}
             openExports={openExports}
             noPadding={typeof this.props.onChangeOpenExports === 'function'}
-            exportEntityType="Analysis"
+            exportEntityType="Container"
             exportContext={exportContext}
             keyword={searchTerm}
             handleSwitchRedirectionMode={this.handleSwitchRedirectionMode.bind(this)}

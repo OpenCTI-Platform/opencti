@@ -23,17 +23,6 @@ const styles = (theme) => ({
     position: 'fixed',
     zIndex: 1100,
   },
-  drawerPaperExports: {
-    minHeight: '100vh',
-    width: 250,
-    right: 310,
-    padding: '0 0 20px 0',
-
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-  },
   listIcon: {
     marginRight: 0,
   },
@@ -48,21 +37,12 @@ const styles = (theme) => ({
 
 class StixCyberObservablesRightBar extends Component {
   render() {
-    const {
-      classes,
-      t,
-      types = [],
-      handleToggle,
-      handleClear,
-      openExports,
-    } = this.props;
+    const { classes, t, types = [], handleToggle, handleClear } = this.props;
     return (
       <Drawer
         variant="permanent"
         anchor="right"
-        classes={{
-          paper: openExports ? classes.drawerPaperExports : classes.drawerPaper,
-        }}
+        classes={{ paper: classes.drawerPaper }}
       >
         <div className={classes.toolbar} />
         <QueryRenderer

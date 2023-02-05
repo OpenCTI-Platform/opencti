@@ -44,14 +44,6 @@ const useStyles = makeStyles((theme) => ({
     }),
     padding: '0 0 0 0',
   },
-  containerOpenExports: {
-    flexGrow: 1,
-    transition: theme.transitions.create('padding', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '0 310px 50px 0',
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -369,9 +361,7 @@ const SearchBulk = () => {
     ? sort(resolvedEntities)
     : resolvedEntities;
   return (
-    <div
-      className={openExports ? classes.containerOpenExports : classes.container}
-    >
+    <div className={classes.container}>
       <Typography
         variant="h1"
         gutterBottom={true}

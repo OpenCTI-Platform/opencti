@@ -42,15 +42,6 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 1100,
   },
-  createButtonExports: {
-    position: 'fixed',
-    bottom: 30,
-    right: 590,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-  },
   createButtonWithPadding: {
     position: 'fixed',
     bottom: 30,
@@ -487,7 +478,7 @@ class ContainerAddStixCoreObjects extends Component {
   }
 
   render() {
-    const { t, classes, withPadding, simple, knowledgeGraph, openExports } = this.props;
+    const { t, classes, withPadding, simple, knowledgeGraph } = this.props;
     const paginationOptions = this.getPaginationOptions();
     return (
       <div>
@@ -519,12 +510,9 @@ class ContainerAddStixCoreObjects extends Component {
             color="secondary"
             aria-label="Add"
             className={
-              // eslint-disable-next-line no-nested-ternary
-              openExports
-                ? classes.createButtonExports
-                : withPadding
-                  ? classes.createButtonWithPadding
-                  : classes.createButton
+              withPadding
+                ? classes.createButtonWithPadding
+                : classes.createButton
             }
           >
             <Add />

@@ -300,7 +300,6 @@ const StixCyberObservables: FunctionComponent = () => {
         <StixCyberObservableCreation
           paginationKey="Pagination_stixCyberObservables"
           paginationOptions={paginationOptions}
-          openExports={openExports}
           contextual={false}
           open={false}
           handleClose={undefined}
@@ -313,7 +312,6 @@ const StixCyberObservables: FunctionComponent = () => {
         types={types}
         handleToggle={handleToggle}
         handleClear={handleClear}
-        openExports={openExports}
       />
     </div>
     </ExportContextProvider>

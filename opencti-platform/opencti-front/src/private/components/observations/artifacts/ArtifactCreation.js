@@ -43,15 +43,6 @@ const styles = (theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
-  createButtonExports: {
-    position: 'fixed',
-    bottom: 30,
-    right: 310,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -172,16 +163,14 @@ class ArtifactCreation extends Component {
   }
 
   render() {
-    const { t, classes, openExports } = this.props;
+    const { t, classes } = this.props;
     return (
       <div>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={
-            openExports ? classes.createButtonExports : classes.createButton
-          }
+          className={classes.createButton}
         >
           <Add />
         </Fab>

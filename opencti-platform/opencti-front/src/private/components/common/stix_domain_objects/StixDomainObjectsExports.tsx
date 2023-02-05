@@ -20,58 +20,56 @@ Transition.displayName = 'TransitionSlide';
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
-    width: 310,
-    padding: '0 0 20px 0',
-    overflowX: 'hidden',
-    zIndex: 1200,
+    width: '50%',
+    position: 'fixed',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
   },
-  toolbar: theme.mixins.toolbar,
 }));
 
 interface StixDomainObjectsExportsProps {
-  exportEntityType: string,
-  paginationOptions: StixDomainObjectsExportsContentRefetchQuery$variables,
-  open: boolean,
-  handleToggle: () => void,
-  context: string,
+  exportEntityType: string;
+  paginationOptions: StixDomainObjectsExportsContentRefetchQuery$variables;
+  open: boolean;
+  handleToggle: () => void;
+  context: string;
 }
 
 const StixDomainObjectsExports: FunctionComponent<
 StixDomainObjectsExportsProps
-> = ({
-  exportEntityType,
-  paginationOptions,
-  open,
-  handleToggle,
-  context,
-}) => {
+> = ({ exportEntityType, paginationOptions, open, handleToggle, context }) => {
   const classes = useStyles();
   return (
-      <Drawer
-        variant="persistent"
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleToggle}
-      >
-        <div className={classes.toolbar} />
-        <QueryRenderer
-          query={stixDomainObjectsExportsContentQuery}
-          variables={{ count: 25, type: exportEntityType, context }}
-          render={({ props }: { props: StixDomainObjectsExportsContentRefetchQuery$data }) => (
-            <StixDomainObjectsExportsContent
-              handleToggle={handleToggle}
-              data={props}
-              paginationOptions={paginationOptions}
-              exportEntityType={exportEntityType}
-              isOpen={open}
-              context={context}
-            />
-          )}
-        />
-      </Drawer>
+    <Drawer
+      open={open}
+      anchor="right"
+      sx={{ zIndex: 1202 }}
+      elevation={1}
+      classes={{ paper: classes.drawerPaper }}
+      onClose={handleToggle}
+    >
+      <QueryRenderer
+        query={stixDomainObjectsExportsContentQuery}
+        variables={{ count: 25, type: exportEntityType, context }}
+        render={({
+          props,
+        }: {
+          props: StixDomainObjectsExportsContentRefetchQuery$data;
+        }) => (
+          <StixDomainObjectsExportsContent
+            handleToggle={handleToggle}
+            data={props}
+            paginationOptions={paginationOptions}
+            exportEntityType={exportEntityType}
+            isOpen={open}
+            context={context}
+          />
+        )}
+      />
+    </Drawer>
   );
 };
 

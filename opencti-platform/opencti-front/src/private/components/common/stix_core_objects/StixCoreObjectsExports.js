@@ -9,12 +9,14 @@ import StixCoreObjectsExportsContent, {
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
-    width: 310,
-    padding: '0 0 20px 0',
-    overflowX: 'hidden',
-    zIndex: 1200,
+    width: '50%',
+    position: 'fixed',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
   },
-  toolbar: theme.mixins.toolbar,
 }));
 
 const StixCoreObjectsExports = ({
@@ -23,20 +25,17 @@ const StixCoreObjectsExports = ({
   open,
   handleToggle,
   context,
-  variant,
 }) => {
   const classes = useStyles();
   return (
     <Drawer
-      variant={variant || 'persistent'}
       open={open}
       anchor="right"
-      elevation={1}
       sx={{ zIndex: 1202 }}
+      elevation={1}
       classes={{ paper: classes.drawerPaper }}
       onClose={handleToggle}
     >
-      <div className={classes.toolbar} />
       <QueryRenderer
         query={stixCoreObjectsExportsContentQuery}
         variables={{ count: 25, type: exportEntityType, context }}

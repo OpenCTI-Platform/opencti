@@ -6,9 +6,9 @@ import Slide from '@mui/material/Slide';
 import { graphql, createRefetchContainer } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
-import ListSubheader from '@mui/material/ListSubheader';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
+import Typography from '@mui/material/Typography';
 import StixCyberObservablesExportCreation from './StixCyberObservablesExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../../common/files/FileLine';
@@ -24,9 +24,15 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
-  buttonClose: {
-    float: 'right',
-    margin: '2px -16px 0 0',
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    left: 5,
+    color: 'inherit',
+  },
+  header: {
+    backgroundColor: theme.palette.background.nav,
+    padding: '20px 20px 20px 60px',
   },
   listIcon: {
     marginRight: 0,
@@ -63,47 +69,56 @@ class StixCyberObservablesExportsContentComponent extends Component {
       data,
     );
     return (
-      <List
-        subheader={
-          <ListSubheader component="div">
-            <div style={{ float: 'left' }}>{t('Exports list')}</div>
-            <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-              <StixCyberObservablesExportCreation
-                data={data}
-                paginationOptions={paginationOptions}
-                context={context}
-                onExportAsk={() => this.props.relay.refetch({
-                  count: 25,
-                })
-                }
+      <div>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleToggle.bind(this)}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Exports list')}</Typography>
+        </div>
+        <List>
+          {stixCyberObservablesExportFiles.length > 0 ? (
+            stixCyberObservablesExportFiles.map((file) => (
+              <FileLine
+                key={file.node.id}
+                file={file.node}
+                dense={true}
+                disableImport={true}
+                directDownload={true}
               />
-            </Security>
-            <IconButton
-              color="inherit"
-              classes={{ root: classes.buttonClose }}
-              onClick={handleToggle.bind(this)}
-              size="large"
-            >
-              <Close />
-            </IconButton>
-            <div className="clearfix" />
-          </ListSubheader>
-        }
-      >
-        {stixCyberObservablesExportFiles.length > 0 ? (
-          stixCyberObservablesExportFiles.map((file) => (
-            <FileLine
-              key={file.node.id}
-              file={file.node}
-              dense={true}
-              disableImport={true}
-              directDownload={true}
-            />
-          ))
-        ) : (
-          <div style={{ paddingLeft: 16 }}>{t('No file for the moment')}</div>
-        )}
-      </List>
+            ))
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No file for the moment')}
+              </span>
+            </div>
+          )}
+        </List>
+        <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+          <StixCyberObservablesExportCreation
+            data={data}
+            paginationOptions={paginationOptions}
+            context={context}
+            onExportAsk={() => this.props.relay.refetch({
+              count: 25,
+            })
+            }
+          />
+        </Security>
+      </div>
     );
   }
 }

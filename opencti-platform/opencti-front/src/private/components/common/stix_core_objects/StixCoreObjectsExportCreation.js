@@ -9,10 +9,10 @@ import { Add } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
+import Fab from '@mui/material/Fab';
 import { useFormatter } from '../../../../components/i18n';
 import {
   commitMutation,
@@ -24,19 +24,12 @@ import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   createButton: {
-    float: 'left',
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: 250,
-    padding: '0 0 20px 0',
     position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
   },
   listIcon: {
     marginRight: 0,
@@ -47,7 +40,6 @@ const useStyles = makeStyles((theme) => ({
   itemField: {
     padding: '0 15px 0 15px',
   },
-  toolbar: theme.mixins.toolbar,
 }));
 
 export const StixCoreObjectsExportCreationMutation = graphql`
@@ -159,7 +151,7 @@ const StixCoreObjectsExportCreationComponent = ({
     <ExportContext.Consumer>
       {({ selectedIds }) => {
         return (
-          <div className={classes.createButton}>
+          <div>
             <Tooltip
               title={
                 isExportPossible
@@ -168,17 +160,15 @@ const StixCoreObjectsExportCreationComponent = ({
               }
               aria-label="generate-export"
             >
-        <span>
-          <IconButton
-            onClick={() => setOpen(true)}
-            color="secondary"
-            aria-label="Add"
-            disabled={!isExportPossible}
-            size="large"
-          >
-            <Add/>
-          </IconButton>
-        </span>
+              <Fab
+                onClick={() => setOpen(true)}
+                color="secondary"
+                aria-label="Add"
+                className={classes.createButton}
+                disabled={!isExportPossible}
+              >
+                <Add />
+              </Fab>
             </Tooltip>
             <Formik
               enableReinitialize={true}
@@ -187,7 +177,8 @@ const StixCoreObjectsExportCreationComponent = ({
                 maxMarkingDefinition: 'none',
               }}
               validationSchema={exportValidation(t)}
-              onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })}
+              onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })
+              }
               onReset={() => setOpen(false)}
             >
               {({ submitForm, handleReset, isSubmitting }) => (
@@ -251,7 +242,7 @@ const StixCoreObjectsExportCreationComponent = ({
                             </DialogContent>
                           );
                         }
-                        return <Loader variant="inElement"/>;
+                        return <Loader variant="inElement" />;
                       }}
                     />
                     <DialogActions>

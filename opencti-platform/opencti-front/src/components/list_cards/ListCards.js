@@ -25,21 +25,9 @@ import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import Filters from '../../private/components/common/lists/Filters';
 import FilterIconButton from '../FilterIconButton';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
     marginLeft: -10,
-  },
-  containerOpenExports: {
-    flexGrow: 1,
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    margin: '0 300px 0 -10px',
   },
   parameters: {
     float: 'left',
@@ -100,11 +88,7 @@ class ListCards extends Component {
       availableFilterKeys,
     } = this.props;
     return (
-      <div
-        className={
-          openExports ? classes.containerOpenExports : classes.container
-        }
-      >
+      <div className={classes.container}>
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput

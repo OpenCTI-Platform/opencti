@@ -22,9 +22,9 @@ import { Add } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
+import Fab from '@mui/material/Fab';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
@@ -41,19 +41,12 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
+const styles = () => ({
   createButton: {
-    float: 'left',
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: 250,
-    padding: '0 0 20px 0',
     position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
   },
   listIcon: {
     marginRight: 0,
@@ -64,7 +57,6 @@ const styles = (theme) => ({
   itemField: {
     padding: '0 15px 0 15px',
   },
-  toolbar: theme.mixins.toolbar,
 });
 
 export const StixCyberObservablesExportCreationMutation = graphql`
@@ -174,15 +166,13 @@ class StixCyberObservablesExportCreationComponent extends Component {
       flatten(map((c) => c.connector_scope, connectorsExport)),
     );
     const exportConnsPerFormat = scopesConn(connectorsExport);
-    // eslint-disable-next-line max-len
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
-
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
           return (
-            <div className={classes.createButton}>
+            <div>
               <Tooltip
                 title={
                   isExportPossible
@@ -191,17 +181,15 @@ class StixCyberObservablesExportCreationComponent extends Component {
                 }
                 aria-label="generate-export"
               >
-          <span>
-            <IconButton
-              onClick={this.handleOpen.bind(this)}
-              color="secondary"
-              aria-label="Add"
-              disabled={!isExportPossible}
-              size="large"
-            >
-              <Add/>
-            </IconButton>
-          </span>
+                <Fab
+                  onClick={this.handleOpen.bind(this)}
+                  color="secondary"
+                  aria-label="Add"
+                  className={classes.createButton}
+                  disabled={!isExportPossible}
+                >
+                  <Add />
+                </Fab>
               </Tooltip>
               <Formik
                 enableReinitialize={true}
@@ -274,7 +262,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                               </DialogContent>
                             );
                           }
-                          return <Loader variant="inElement"/>;
+                          return <Loader variant="inElement" />;
                         }}
                       />
                       <DialogActions>

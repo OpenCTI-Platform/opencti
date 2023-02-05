@@ -1192,7 +1192,7 @@ const useSearchEntities = ({
             type: n,
           })),
           R.sortWith([R.ascend(R.prop('label'))]),
-        )(['Note', 'Observed-Data', 'Opinion', 'Report', 'Grouping']);
+        )(['Note', 'Observed-Data', 'Opinion', 'Report', 'Grouping', 'Case']);
         unionSetEntities('container_type', containersTypes);
         break;
       case 'x_opencti_negative':

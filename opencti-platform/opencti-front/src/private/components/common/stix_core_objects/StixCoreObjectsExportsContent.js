@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
-import ListSubheader from '@mui/material/ListSubheader';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import Typography from '@mui/material/Typography';
 import StixCoreObjectsExportCreation from './StixCoreObjectsExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
@@ -16,9 +16,15 @@ import { useFormatter } from '../../../../components/i18n';
 const interval$ = interval(FIVE_SECONDS);
 
 const useStyles = makeStyles((theme) => ({
-  buttonClose: {
-    float: 'right',
-    margin: '2px -16px 0 0',
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    left: 5,
+    color: 'inherit',
+  },
+  header: {
+    backgroundColor: theme.palette.background.nav,
+    padding: '20px 20px 20px 60px',
   },
   listIcon: {
     marginRight: 0,
@@ -29,7 +35,6 @@ const useStyles = makeStyles((theme) => ({
   itemField: {
     padding: '0 15px 0 15px',
   },
-  toolbar: theme.mixins.toolbar,
 }));
 
 const StixCoreObjectsExportsContentComponent = ({
@@ -57,60 +62,70 @@ const StixCoreObjectsExportsContentComponent = ({
     };
   });
   const stixCoreObjectsExportFiles = data?.stixCoreObjectsExportFiles?.edges ?? [];
-
   let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct types filters
   if (paginationOptions?.types && paginationOptions.types.length > 0) {
-    const filtersForExport = [...paginationOptionsForExport.filters, { key: 'entity_type', values: paginationOptions.types }];
+    const filtersForExport = [
+      ...paginationOptionsForExport.filters,
+      { key: 'entity_type', values: paginationOptions.types },
+    ];
     paginationOptionsForExport = {
       ...paginationOptions,
       filters: filtersForExport,
     };
   }
-
   return (
-    <List
-      subheader={
-        <ListSubheader component="div">
-          <div style={{ float: 'left' }}>{t('Exports list')}</div>
-          <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-            <StixCoreObjectsExportCreation
-              data={data}
-              exportEntityType={exportEntityType}
-              paginationOptions={paginationOptionsForExport}
-              context={context}
-              onExportAsk={() => relay.refetch({
-                type: exportEntityType,
-                count: 25,
-              })
-              }
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleToggle}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6">{t('Exports list')}</Typography>
+      </div>
+      <List>
+        {stixCoreObjectsExportFiles.length > 0 ? (
+          stixCoreObjectsExportFiles.map((file) => (
+            <FileLine
+              key={file.node.id}
+              file={file.node}
+              dense={true}
+              disableImport={true}
+              directDownload={true}
             />
-          </Security>
-          <IconButton
-            color="inherit"
-            classes={{ root: classes.buttonClose }}
-            onClick={handleToggle}
-            size="large"
-          >
-            <Close />
-          </IconButton>
-          <div className="clearfix" />
-        </ListSubheader>
-      }
-    >
-      {stixCoreObjectsExportFiles.length > 0 ? (
-        stixCoreObjectsExportFiles.map((file) => (
-          <FileLine
-            key={file.node.id}
-            file={file.node}
-            dense={true}
-            disableImport={true}
-            directDownload={true}
-          />
-        ))
-      ) : (
-        <div style={{ paddingLeft: 16 }}>{t('No file for the moment')}</div>
-      )}
-    </List>
+          ))
+        ) : (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('No file for the moment')}
+            </span>
+          </div>
+        )}
+      </List>
+      <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+        <StixCoreObjectsExportCreation
+          data={data}
+          exportEntityType={exportEntityType}
+          paginationOptions={paginationOptionsForExport}
+          context={context}
+          onExportAsk={() => relay.refetch({
+            type: exportEntityType,
+            count: 25,
+          })
+          }
+        />
+      </Security>
+    </div>
   );
 };
 

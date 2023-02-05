@@ -6,9 +6,9 @@ import Slide from '@mui/material/Slide';
 import { createRefetchContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
-import ListSubheader from '@mui/material/ListSubheader';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
+import Typography from '@mui/material/Typography';
 import StixDomainObjectsExportCreation from './StixDomainObjectsExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
@@ -24,9 +24,15 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
-  buttonClose: {
-    float: 'right',
-    margin: '2px -16px 0 0',
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    left: 5,
+    color: 'inherit',
+  },
+  header: {
+    backgroundColor: theme.palette.background.nav,
+    padding: '20px 20px 20px 60px',
   },
   listIcon: {
     marginRight: 0,
@@ -37,7 +43,6 @@ const styles = (theme) => ({
   itemField: {
     padding: '0 15px 0 15px',
   },
-  toolbar: theme.mixins.toolbar,
 });
 
 class StixDomainObjectsExportsContentComponent extends Component {
@@ -68,26 +73,6 @@ class StixDomainObjectsExportsContentComponent extends Component {
     } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
     let paginationOptionsForExport = paginationOptions; // paginationsOptions with correct elementId
-    if (
-      paginationOptions?.filters
-      && Object.values(paginationOptions.filters)
-        .map((o) => o.key)
-        .includes('objectContains')
-    ) {
-      // for elements contained in entity>Analysis
-      const filtersValues = Object.values(paginationOptions.filters);
-      const [elementId] = filtersValues.filter(
-        (o) => o.key === 'objectContains',
-      )[0].values;
-      const filtersForExport = filtersValues.filter(
-        (o) => o.key !== 'objectContains',
-      );
-      paginationOptionsForExport = {
-        ...paginationOptions,
-        filters: filtersForExport,
-        elementId,
-      };
-    }
     if (paginationOptions?.fromId) {
       // for relationships contained in entity>Knowledge>Sightings
       const filtersForExport = [
@@ -100,49 +85,58 @@ class StixDomainObjectsExportsContentComponent extends Component {
       };
     }
     return (
-      <List
-        subheader={
-          <ListSubheader component="div">
-            <div style={{ float: 'left' }}>{t('Exports list')}</div>
-            <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-              <StixDomainObjectsExportCreation
-                data={data}
-                exportEntityType={exportEntityType}
-                paginationOptions={paginationOptionsForExport}
-                context={context}
-                onExportAsk={() => this.props.relay.refetch({
-                  type: this.props.exportEntityType,
-                  count: 25,
-                })
-                }
+      <div>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleToggle.bind(this)}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Exports list')}</Typography>
+        </div>
+        <List>
+          {stixDomainObjectsExportFiles.length > 0 ? (
+            stixDomainObjectsExportFiles.map((file) => (
+              <FileLine
+                key={file.node.id}
+                file={file.node}
+                dense={true}
+                disableImport={true}
+                directDownload={true}
               />
-            </Security>
-            <IconButton
-              color="inherit"
-              classes={{ root: classes.buttonClose }}
-              onClick={handleToggle.bind(this)}
-              size="large"
-            >
-              <Close />
-            </IconButton>
-            <div className="clearfix" />
-          </ListSubheader>
-        }
-      >
-        {stixDomainObjectsExportFiles.length > 0 ? (
-          stixDomainObjectsExportFiles.map((file) => (
-            <FileLine
-              key={file.node.id}
-              file={file.node}
-              dense={true}
-              disableImport={true}
-              directDownload={true}
-            />
-          ))
-        ) : (
-          <div style={{ paddingLeft: 16 }}>{t('No file for the moment')}</div>
-        )}
-      </List>
+            ))
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No file for the moment')}
+              </span>
+            </div>
+          )}
+        </List>
+        <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+          <StixDomainObjectsExportCreation
+            data={data}
+            exportEntityType={exportEntityType}
+            paginationOptions={paginationOptionsForExport}
+            context={context}
+            onExportAsk={() => this.props.relay.refetch({
+              type: this.props.exportEntityType,
+              count: 25,
+            })
+            }
+          />
+        </Security>
+      </div>
     );
   }
 }

@@ -83,15 +83,6 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
-  createButtonExports: {
-    position: 'fixed',
-    bottom: 30,
-    right: 590,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-  },
   createButtonContextual: {
     position: 'fixed',
     bottom: 30,
@@ -267,7 +258,6 @@ const StixCyberObservableCreation = ({
   speeddial,
   paginationKey,
   paginationOptions,
-  openExports,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -674,9 +664,7 @@ const StixCyberObservableCreation = ({
           onClick={handleOpen}
           color="secondary"
           aria-label="Add"
-          className={
-            openExports ? classes.createButtonExports : classes.createButton
-          }
+          className={classes.createButton}
         >
           <Add />
         </Fab>

@@ -17,10 +17,13 @@ Transition.displayName = 'TransitionSlide';
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
-    width: 310,
-    padding: '0 0 20px 0',
-    overflowX: 'hidden',
-    zIndex: 1200,
+    width: '50%',
+    position: 'fixed',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
   },
   toolbar: theme.mixins.toolbar,
 });
@@ -30,7 +33,6 @@ class StixCyberObservablesExports extends Component {
     const { classes, paginationOptions, open, handleToggle, context } = this.props;
     return (
       <Drawer
-        variant="persistent"
         open={open}
         anchor="right"
         sx={{ zIndex: 1202 }}
@@ -38,7 +40,6 @@ class StixCyberObservablesExports extends Component {
         classes={{ paper: classes.drawerPaper }}
         onClose={handleToggle.bind(this)}
       >
-        <div className={classes.toolbar} />
         <QueryRenderer
           query={stixCyberObservablesExportsContentQuery}
           variables={{ count: 25, context }}
