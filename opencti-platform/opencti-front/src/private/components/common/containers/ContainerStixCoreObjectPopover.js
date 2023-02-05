@@ -181,7 +181,6 @@ class ContainerStixCoreObjectPopover extends Component {
           onClick={this.handleOpen.bind(this)}
           disabled={this.props.menuDisable ?? false}
           aria-haspopup="true"
-          style={{ marginTop: 3 }}
           size="large"
         >
           <MoreVert />

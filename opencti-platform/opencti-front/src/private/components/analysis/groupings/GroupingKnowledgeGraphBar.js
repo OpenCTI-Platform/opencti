@@ -64,6 +64,7 @@ import StixSightingRelationshipEdition from '../../events/stix_sighting_relation
 import SearchInput from '../../../../components/SearchInput';
 import StixCyberObservableRelationshipCreation from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
 import StixCyberObservableRelationshipEdition from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 const styles = () => ({
   bottomNav: {
@@ -107,7 +108,18 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditNested: false,
       openEditEntity: false,
       displayRemove: false,
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
+  }
+
+  componentDidMount() {
+    this.subscription = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleOpenRemove() {
@@ -337,6 +349,7 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditSighting,
       openEditEntity,
       openEditNested,
+      navOpen,
     } = this.state;
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
@@ -450,7 +463,7 @@ class GroupingKnowledgeGraphBar extends Component {
             <div
               style={{
                 float: 'left',
-                marginLeft: 185,
+                marginLeft: navOpen ? 185 : 60,
                 height: '100%',
                 display: 'flex',
               }}
@@ -909,7 +922,9 @@ class GroupingKnowledgeGraphBar extends Component {
                     startTime={
                       lastLinkFirstSeen || dateFormat(grouping.published)
                     }
-                    stopTime={lastLinkLastSeen || dateFormat(grouping.published)}
+                    stopTime={
+                      lastLinkLastSeen || dateFormat(grouping.published)
+                    }
                     confidence={grouping.confidence}
                     handleClose={this.handleCloseCreateRelationship.bind(this)}
                     handleResult={onAddRelation}
@@ -945,7 +960,9 @@ class GroupingKnowledgeGraphBar extends Component {
                     startTime={
                       lastLinkFirstSeen || dateFormat(grouping.published)
                     }
-                    stopTime={lastLinkLastSeen || dateFormat(grouping.published)}
+                    stopTime={
+                      lastLinkLastSeen || dateFormat(grouping.published)
+                    }
                     confidence={grouping.confidence}
                     handleClose={this.handleCloseCreateNested.bind(this)}
                     handleResult={onAddRelation}
@@ -978,7 +995,9 @@ class GroupingKnowledgeGraphBar extends Component {
                     firstSeen={
                       lastLinkFirstSeen || dateFormat(grouping.published)
                     }
-                    lastSeen={lastLinkLastSeen || dateFormat(grouping.published)}
+                    lastSeen={
+                      lastLinkLastSeen || dateFormat(grouping.published)
+                    }
                     confidence={grouping.confidence}
                     handleClose={this.handleCloseCreateSighting.bind(this)}
                     handleResult={onAddRelation}
@@ -1041,7 +1060,12 @@ class GroupingKnowledgeGraphBar extends Component {
               </div>
             )}
             <div className="clearfix" />
-            <div style={{ height: '100%', padding: '30px 10px 0px 190px' }}>
+            <div
+              style={{
+                height: '100%',
+                padding: navOpen ? '30px 10px 0px 190px' : '30px 10px 0px 65px',
+              }}
+            >
               <div
                 style={{
                   position: 'absolute',

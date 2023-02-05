@@ -33,6 +33,8 @@ import StixCoreObjectsExports from './common/stix_core_objects/StixCoreObjectsEx
 import useGranted, {
   KNOWLEDGE_KNGETEXPORT,
 } from '../../utils/hooks/useGranted';
+import { hexToRGB, itemColor } from '../../utils/Colors';
+import ItemMarkings from '../../components/ItemMarkings';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -87,6 +89,14 @@ const useStyles = makeStyles((theme) => ({
     textTransform: 'uppercase',
     borderRadius: '0',
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
 }));
 
 const inlineStylesHeaders = {
@@ -98,29 +108,35 @@ const inlineStylesHeaders = {
   },
   type: {
     float: 'left',
-    width: '15%',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
   value: {
     float: 'left',
-    width: '25%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  labels: {
-    float: 'left',
-    width: '20%',
+    width: '22%',
     fontSize: 12,
     fontWeight: '700',
   },
   author: {
     float: 'left',
-    width: '10%',
+    width: '12%',
     fontSize: 12,
     fontWeight: '700',
   },
   creator: {
+    float: 'left',
+    width: '12%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  labels: {
+    float: 'left',
+    width: '16%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  created_at: {
     float: 'left',
     width: '10%',
     fontSize: 12,
@@ -128,11 +144,11 @@ const inlineStylesHeaders = {
   },
   reports: {
     float: 'left',
-    width: '10%',
+    width: '8%',
     fontSize: 12,
     fontWeight: '700',
   },
-  updated_at: {
+  markings: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
@@ -142,7 +158,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   type: {
     float: 'left',
-    width: '15%',
+    width: '10%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -150,15 +166,7 @@ const inlineStyles = {
   },
   value: {
     float: 'left',
-    width: '25%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  labels: {
-    float: 'left',
-    width: '20%',
+    width: '22%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -166,13 +174,29 @@ const inlineStyles = {
   },
   author: {
     float: 'left',
-    width: '10%',
+    width: '12%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   creator: {
+    float: 'left',
+    width: '12%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  labels: {
+    float: 'left',
+    width: '16%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  created_at: {
     float: 'left',
     width: '10%',
     height: 20,
@@ -182,13 +206,13 @@ const inlineStyles = {
   },
   reports: {
     float: 'left',
-    width: '10%',
+    width: '8%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  updated_at: {
+  markings: {
     float: 'left',
     height: 20,
     whiteSpace: 'nowrap',
@@ -398,7 +422,7 @@ const SearchBulk = () => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={3} style={{ marginTop: -20 }}>
+        <Grid item={true} xs={2} style={{ marginTop: -20 }}>
           <TextField
             onChange={handleChangeTextField}
             value={textFieldValue}
@@ -408,7 +432,7 @@ const SearchBulk = () => {
             placeholder={t('One keyword by line or separated by commas')}
           />
         </Grid>
-        <Grid item={true} xs={9} style={{ marginTop: -20 }}>
+        <Grid item={true} xs={10} style={{ marginTop: -20 }}>
           <Box style={{ width: '100%', marginTop: 2 }}>
             <LinearProgress
               variant={loading ? 'indeterminate' : 'determinate'}
@@ -437,11 +461,12 @@ const SearchBulk = () => {
                   <div>
                     {SortHeader('type', 'Type', true)}
                     {SortHeader('value', 'Value', true)}
-                    {SortHeader('labels', 'Labels', true)}
                     {SortHeader('author', 'Author', true)}
                     {SortHeader('creator', 'Creator', true)}
+                    {SortHeader('labels', 'Labels', true)}
+                    {SortHeader('created_at', 'Creation date', true)}
                     {SortHeader('reports', 'Reports', true)}
-                    {SortHeader('updated_at', 'Modified', true)}
+                    {SortHeader('markings', 'Markings', true)}
                   </div>
                 }
               />
@@ -473,14 +498,20 @@ const SearchBulk = () => {
                         >
                           {entity.in_platform ? (
                             <Chip
-                              classes={{ root: classes.chip }}
-                              variant="outlined"
-                              color="primary"
+                              classes={{ root: classes.chipInList }}
+                              style={{
+                                backgroundColor: hexToRGB(
+                                  itemColor(entity.type),
+                                  0.08,
+                                ),
+                                color: itemColor(entity.type),
+                                border: `1px solid ${itemColor(entity.type)}`,
+                              }}
                               label={t(`entity_${entity.type}`)}
                             />
                           ) : (
                             <Chip
-                              classes={{ root: classes.chip }}
+                              classes={{ root: classes.chipInList }}
                               variant="outlined"
                               color="error"
                               label={t('Unknown')}
@@ -492,17 +523,6 @@ const SearchBulk = () => {
                           style={inlineStyles.value}
                         >
                           {entity.value}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.labels}
-                        >
-                          {entity.in_platform && (
-                            <StixCoreObjectLabels
-                              variant="inList"
-                              labels={entity.labels}
-                            />
-                          )}
                         </div>
                         <div
                           className={classes.bodyItem}
@@ -518,6 +538,23 @@ const SearchBulk = () => {
                         </div>
                         <div
                           className={classes.bodyItem}
+                          style={inlineStyles.labels}
+                        >
+                          {entity.in_platform && (
+                            <StixCoreObjectLabels
+                              variant="inList"
+                              labels={entity.labels}
+                            />
+                          )}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.created_at}
+                        >
+                          {entity.in_platform && nsd(entity.created_at)}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
                           style={inlineStyles.reports}
                         >
                           {entity.in_platform && (
@@ -529,9 +566,17 @@ const SearchBulk = () => {
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={inlineStyles.updated_at}
+                          style={inlineStyles.markings}
                         >
-                          {entity.in_platform && nsd(entity.updated_at)}
+                          {entity.in_platform && (
+                            <ItemMarkings
+                              variant="inList"
+                              markingDefinitionsEdges={
+                                entity.markings.edges ?? []
+                              }
+                              limit={1}
+                            />
+                          )}
                         </div>
                       </div>
                     }

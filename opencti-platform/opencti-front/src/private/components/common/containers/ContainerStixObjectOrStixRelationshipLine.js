@@ -8,11 +8,16 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import Chip from '@mui/material/Chip';
+import * as R from 'ramda';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { defaultValue } from '../../../../utils/Graph';
+import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -39,10 +44,22 @@ const useStyles = makeStyles((theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
 }));
 
-const ContainerStixObjectOrStixRelationshipLineComponent = (props) => {
-  const { node, dataColumns, containerId, paginationOptions } = props;
+const ContainerStixObjectOrStixRelationshipLineComponent = ({
+  node,
+  dataColumns,
+  containerId,
+  paginationOptions,
+}) => {
   const classes = useStyles();
   const { t, fd } = useFormatter();
   const restrictedWithFrom = node.from === null;
@@ -54,6 +71,13 @@ const ContainerStixObjectOrStixRelationshipLineComponent = (props) => {
       }/knowledge/relations/${node.id}`
       : null
     : `${resolveLink(node.entity_type)}/${node.id}`;
+  const entityType = !restrictedWithFrom ? node.entity_type : 'unknown';
+  // eslint-disable-next-line no-nested-ternary
+  const entityTypeLabel = node.relationship_type
+    ? !restrictedWithFrom
+      ? t(`relationship_${node.entity_type}`)
+      : t('Restricted')
+    : t(`entity_${node.entity_type}`);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -73,29 +97,42 @@ const ContainerStixObjectOrStixRelationshipLineComponent = (props) => {
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              {/* eslint-disable-next-line no-nested-ternary */}
-              {node.relationship_type
-                ? !restrictedWithFrom
-                  ? t(`relationship_${node.entity_type}`)
-                  : t('Restricted')
-                : t(`entity_${node.entity_type}`)}
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  backgroundColor: hexToRGB(itemColor(entityType), 0.08),
+                  color: itemColor(entityType),
+                  border: `1px solid ${itemColor(entityType)}`,
+                }}
+                label={entityTypeLabel}
+              />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
-              {/* eslint-disable-next-line no-nested-ternary */}
-              {node.relationship_type
-                ? !restrictedWithFrom
-                  ? `${node.from.name || node.from.observable_value} - ${
-                    node.to.name || node.to.observable_value
-                  }`
-                  : t('Restricted')
-                : node.name
-                  || node.observable_value
-                  || node.attribute_abstract
-                  || node.content
-                  || node.opinion}
+              {defaultValue(node)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {R.pathOr('', ['createdBy', 'name'], node)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              {R.pathOr('', ['creator', 'name'], node)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <StixCoreObjectLabels
+                variant="inList"
+                labels={node.objectLabel}
+              />
             </div>
             <div
               className={classes.bodyItem}
@@ -109,7 +146,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = (props) => {
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.objectMarking.edges}
+                markingDefinitionsEdges={node.objectMarking.edges ?? []}
                 limit={1}
               />
             </div>
@@ -156,6 +193,19 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               }
             }
           }
+          objectLabel {
+            edges {
+              node {
+                id
+                value
+                color
+              }
+            }
+          }
+          creator {
+            id
+            name
+          }
         }
         ... on AttackPattern {
           name
@@ -200,7 +250,7 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
           name
         }
         ... on AdministrativeArea {
-            name
+          name
         }
         ... on Country {
           name
@@ -253,6 +303,30 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         }
         ... on StixCoreRelationship {
           relationship_type
+          objectMarking {
+            edges {
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+          }
+          objectLabel {
+            edges {
+              node {
+                id
+                value
+                color
+              }
+            }
+          }
+          creator {
+            id
+            name
+          }
           from {
             ... on BasicObject {
               id
@@ -434,8 +508,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
     `,
 });
 
-export const ContainerStixObjectOrStixRelationshipLineDummy = (props) => {
-  const { dataColumns } = props;
+export const ContainerStixObjectOrStixRelationshipLineDummy = ({
+  dataColumns,
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -459,6 +534,39 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = (props) => {
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
                 animation="wave"

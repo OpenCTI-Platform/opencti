@@ -1,55 +1,59 @@
 import React, { FunctionComponent } from 'react';
-import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  ContainerStixObjectOrStixRelationshipLine,
-  ContainerStixObjectOrStixRelationshipLineDummy,
-} from './ContainerStixObjectOrStixRelationshipLine';
+import { createPaginationContainer, graphql } from 'react-relay';
+import List from '@mui/material/List';
+import { ContainerStixObjectOrStixRelationshipLine } from './ContainerStixObjectOrStixRelationshipLine';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  ContainerStixObjectsOrStixRelationshipsLines_container$data,
-} from './__generated__/ContainerStixObjectsOrStixRelationshipsLines_container.graphql';
-import {
-  ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
-} from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
-
-const nbOfRowsToLoad = 8;
+import { ContainerStixObjectsOrStixRelationshipsLines_container$data } from './__generated__/ContainerStixObjectsOrStixRelationshipsLines_container.graphql';
+import { ContainerStixObjectsOrStixRelationshipsLinesQuery$variables } from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
+import { useFormatter } from '../../../../components/i18n';
 
 interface ContainerStixObjectsOrStixRelationshipsLinesProps {
-  initialLoading: boolean,
-  dataColumns: DataColumns,
-  relay: RelayPaginationProp,
-  container: ContainerStixObjectsOrStixRelationshipsLines_container$data | null,
-  paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
+  dataColumns: DataColumns;
+  container: ContainerStixObjectsOrStixRelationshipsLines_container$data;
+  paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables;
 }
 
-const ContainerStixObjectsOrStixRelationshipsLines: FunctionComponent<ContainerStixObjectsOrStixRelationshipsLinesProps> = ({
-  initialLoading,
-  dataColumns,
-  relay,
-  container,
-  paginationOptions }) => {
+const ContainerStixObjectsOrStixRelationshipsLines: FunctionComponent<
+ContainerStixObjectsOrStixRelationshipsLinesProps
+> = ({ dataColumns, container, paginationOptions }) => {
+  const { t } = useFormatter();
   return (
-    <div>
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore}
-        hasMore={relay.hasMore}
-        isLoading={relay.isLoading}
-        dataList={container?.objects?.edges ?? []}
-        paginationOptions={paginationOptions}
-        globalCount={container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-        LineComponent={
-          <ContainerStixObjectOrStixRelationshipLine
-            containerId={container?.id ?? null}
-          />
-        }
-        DummyLineComponent={
-          <ContainerStixObjectOrStixRelationshipLineDummy />
-        }
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-      />
+    <div style={{ height: '100%' }}>
+      {(container.objects?.edges ?? []).length > 0 ? (
+        <List>
+          {(container.objects?.edges ?? []).map((objectEdge) => {
+            const object = objectEdge?.node;
+            return (
+              <ContainerStixObjectOrStixRelationshipLine
+                containerId={container?.id ?? null}
+                node={object}
+                dataColumns={dataColumns}
+                paginationOptions={paginationOptions}
+              />
+            );
+          })}
+        </List>
+      ) : (
+        <div
+          style={{
+            display: 'table',
+            height: '100%',
+            width: '100%',
+            paddingTop: 15,
+            paddingBottom: 15,
+          }}
+        >
+          <span
+            style={{
+              display: 'table-cell',
+              verticalAlign: 'middle',
+              textAlign: 'center',
+            }}
+          >
+            {t('No entities of this type has been found.')}
+          </span>
+        </div>
+      )}
     </div>
   );
 };
@@ -57,14 +61,19 @@ const ContainerStixObjectsOrStixRelationshipsLines: FunctionComponent<ContainerS
 export const ContainerStixObjectsOrStixRelationshipsLinesQuery = graphql`
   query ContainerStixObjectsOrStixRelationshipsLinesQuery(
     $id: String!
+    $types: [String]
     $count: Int!
     $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
   ) {
     container(id: $id) {
       id
-      objects(first: $count, orderBy: $orderBy, orderMode: $orderMode)
-        @connection(key: "Pagination_objects") {
+      objects(
+        types: $types
+        first: $count
+        orderBy: $orderBy
+        orderMode: $orderMode
+      ) @connection(key: "Pagination_objects") {
         edges {
           node {
             ... on BasicObject {
@@ -74,7 +83,7 @@ export const ContainerStixObjectsOrStixRelationshipsLinesQuery = graphql`
         }
       }
       ...ContainerStixObjectsOrStixRelationshipsLines_container
-        @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode)
+        @arguments(types: $types, count: $count, orderBy: $orderBy, orderMode: $orderMode)
     }
   }
 `;
@@ -85,6 +94,7 @@ export default createPaginationContainer(
     container: graphql`
       fragment ContainerStixObjectsOrStixRelationshipsLines_container on Container
       @argumentDefinitions(
+        types: { type: "[String]" }
         count: { type: "Int", defaultValue: 25 }
         orderBy: {
           type: "StixObjectOrStixRelationshipsOrdering"
@@ -93,7 +103,7 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         id
-        objects(first: $count, orderBy: $orderBy, orderMode: $orderMode)
+        objects(types: $types, first: $count, orderBy: $orderBy, orderMode: $orderMode)
           @connection(key: "Pagination_objects") {
           edges {
             types
@@ -126,6 +136,7 @@ export default createPaginationContainer(
     },
     getVariables(props, { count }, fragmentVariables) {
       return {
+        types: fragmentVariables.types,
         id: fragmentVariables.id,
         count,
         orderBy: fragmentVariables.orderBy,

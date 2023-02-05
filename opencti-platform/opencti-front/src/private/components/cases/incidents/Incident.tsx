@@ -13,6 +13,7 @@ import IncidentEdition from './IncidentEdition';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -119,6 +120,19 @@ const IncidentComponent: FunctionComponent<IncidentProps> = ({ data }) => {
           <StixDomainObjectOverview
             stixDomainObject={caseData}
             displayAssignees={true}
+          />
+        </Grid>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={caseData}
           />
         </Grid>
       </Grid>

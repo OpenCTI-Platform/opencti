@@ -53,7 +53,10 @@ class OpinionComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={12}>
-            <ContainerStixObjectsOrStixRelationships container={opinion} />
+            <ContainerStixObjectsOrStixRelationships
+              container={opinion}
+              isSupportParticipation={true}
+            />
           </Grid>
         </Grid>
         <Grid
@@ -66,7 +69,10 @@ class OpinionComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory stixCoreObjectId={opinion.id} />
+            <StixCoreObjectLatestHistory
+              stixCoreObjectId={opinion.id}
+              isSupportParticipation={true}
+            />
           </Grid>
         </Grid>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

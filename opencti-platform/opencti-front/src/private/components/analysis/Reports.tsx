@@ -144,7 +144,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
         width: '8%',
       },
     };
-
     return (
       <div>
         <ListLines

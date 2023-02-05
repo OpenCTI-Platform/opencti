@@ -883,7 +883,12 @@ class InvestigationGraphBar extends Component {
             )}
           </div>
           <div className="clearfix" />
-          <div style={{ height: '100%', padding: '30px 10px 0px 190px' }}>
+          <div
+            style={{
+              height: '100%',
+              padding: navOpen ? '30px 10px 0px 190px' : '30px 10px 0px 65px',
+            }}
+          >
             <div
               style={{
                 position: 'absolute',
