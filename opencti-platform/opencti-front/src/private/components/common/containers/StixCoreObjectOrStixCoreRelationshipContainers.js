@@ -177,19 +177,29 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
   buildColumns(helper) {
     const isRuntimeSort = helper.isRuntimeFieldEnable();
     return {
+      entity_type: {
+        label: 'Type',
+        width: '8%',
+        isSortable: true,
+      },
       name: {
         label: 'Title',
-        width: '30%',
+        width: '25%',
         isSortable: true,
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
-        isSortable: isRuntimeSort,
+        width: '12%',
+        isSortable: isRuntimeSort ?? false,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
+        isSortable: isRuntimeSort ?? false,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       created: {
@@ -199,11 +209,12 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       },
       x_opencti_workflow_id: {
         label: 'Status',
-        width: '10%',
+        width: '8%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
+        width: '8%',
         isSortable: isRuntimeSort,
       },
     };

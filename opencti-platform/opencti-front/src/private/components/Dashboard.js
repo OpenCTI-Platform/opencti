@@ -20,6 +20,8 @@ import {
 import Chart from 'react-apexcharts';
 import Slide from '@mui/material/Slide';
 import { graphql, useLazyLoadQuery } from 'react-relay';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import { dayAgo, monthsAgo, yearsAgo } from '../../utils/Time';
 import { useFormatter } from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
@@ -39,6 +41,7 @@ import { useViewStorage } from '../../utils/ListParameters';
 import TopBar from './nav/TopBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import { areaChartOptions, polarAreaChartOptions } from '../../utils/Charts';
+import { defaultValue } from '../../utils/Graph';
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
@@ -116,9 +119,19 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 15,
   },
   itemAuthor: {
-    width: 200,
-    minWidth: 200,
-    maxWidth: 200,
+    width: 160,
+    minWidth: 160,
+    maxWidth: 160,
+    paddingRight: 24,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textAlign: 'left',
+  },
+  itemCreator: {
+    width: 160,
+    minWidth: 160,
+    maxWidth: 160,
     paddingRight: 24,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -126,9 +139,9 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'left',
   },
   itemType: {
-    width: 100,
-    minWidth: 100,
-    maxWidth: 100,
+    width: 150,
+    minWidth: 150,
+    maxWidth: 150,
     paddingRight: 24,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -144,6 +157,12 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     textAlign: 'left',
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
   },
 }));
 // endregion
@@ -503,6 +522,11 @@ const LastIngestedAnalysis = () => {
             created_at
             ... on Report {
               name
+              report_types
+            }
+            creator {
+              id
+              name
             }
             createdBy {
               ... on Identity {
@@ -561,21 +585,28 @@ const LastIngestedAnalysis = () => {
             <ListItemIcon>
               <ItemIcon type={stixDomainObject.entity_type} />
             </ListItemIcon>
-            <div className={classes.itemType}>
-              {t(`entity_${stixDomainObject.entity_type}`)}
-            </div>
             <ListItemText
               primary={
-                <div className={classes.itemText}>
-                  {stixDomainObject.name
-                    || stixDomainObject.attribute_abstract
-                    || truncate(stixDomainObject.content, 30)
-                    || stixDomainObject.opinion}
-                </div>
+                <Tooltip title={defaultValue(stixDomainObject)}>
+                  <div className={classes.itemText}>
+                    {defaultValue(stixDomainObject)}
+                  </div>
+                </Tooltip>
               }
             />
+            <div className={classes.itemType}>
+              <Chip
+                classes={{ root: classes.chipInList }}
+                color="primary"
+                variant="outlined"
+                label={stixDomainObject.report_types?.at(0) ?? t('Unknown')}
+              />
+            </div>
             <div className={classes.itemAuthor}>
               {pathOr('', ['createdBy', 'name'], stixDomainObject)}
+            </div>
+            <div className={classes.itemCreator}>
+              {pathOr('', ['creator', 'name'], stixDomainObject)}
             </div>
             <div className={classes.itemDate}>
               {fsd(stixDomainObject.created_at)}

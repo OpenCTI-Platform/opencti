@@ -11,6 +11,8 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -44,13 +46,29 @@ const styles = (theme) => ({
     marginRight: 0,
     color: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+  },
 });
 
 const inlineStyles = {
+  itemType: {
+    width: 150,
+    minWidth: 150,
+    maxWidth: 150,
+    paddingRight: 24,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textAlign: 'left',
+  },
   itemAuthor: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
+    width: 100,
+    minWidth: 100,
+    maxWidth: 100,
     marginRight: 24,
     marginLeft: 24,
     whiteSpace: 'nowrap',
@@ -58,9 +76,9 @@ const inlineStyles = {
     textOverflow: 'ellipsis',
   },
   itemDate: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
+    width: 100,
+    minWidth: 100,
+    maxWidth: 100,
     marginRight: 24,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -88,6 +106,7 @@ const stixCoreObjectOrStixCoreRelationshipLastReportsQuery = graphql`
           name
           description
           published
+          report_types
           createdBy {
             ... on Identity {
               id
@@ -167,11 +186,23 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                             </ListItemIcon>
                             <ListItemText
                               primary={
-                                <div className={classes.itemText}>
-                                  {report.name}
-                                </div>
+                                <Tooltip title={report.name}>
+                                  <div className={classes.itemText}>
+                                    {report.name}
+                                  </div>
+                                </Tooltip>
                               }
                             />
+                            <div className={classes.itemType}>
+                              <Chip
+                                classes={{ root: classes.chipInList }}
+                                color="primary"
+                                variant="outlined"
+                                label={
+                                  report.report_types?.at(0) ?? t('Unknown')
+                                }
+                              />
+                            </div>
                             <div style={inlineStyles.itemAuthor}>
                               {R.pathOr('', ['createdBy', 'name'], report)}
                             </div>

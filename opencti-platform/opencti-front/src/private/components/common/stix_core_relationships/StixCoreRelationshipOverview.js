@@ -240,7 +240,7 @@ class StixCoreRelationshipContainer extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Relationship')}
             </Typography>
@@ -254,7 +254,7 @@ class StixCoreRelationshipContainer extends Component {
                   className={classes.item}
                   style={{
                     border: `2px solid ${itemColor(
-                      !fromRestricted ? from.entity_type : 'Unknown',
+                      !fromRestricted ? from.entity_type : 'Restricted',
                     )}`,
                     top: 20,
                     left: 20,
@@ -264,15 +264,15 @@ class StixCoreRelationshipContainer extends Component {
                     className={classes.itemHeader}
                     style={{
                       borderBottom: `1px solid ${itemColor(
-                        !fromRestricted ? from.entity_type : 'Unknown',
+                        !fromRestricted ? from.entity_type : 'Restricted',
                       )}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={!fromRestricted ? from.entity_type : 'Unknown'}
+                        type={!fromRestricted ? from.entity_type : 'Restricted'}
                         color={itemColor(
-                          !fromRestricted ? from.entity_type : 'Unknown',
+                          !fromRestricted ? from.entity_type : 'Restricted',
                         )}
                         size="small"
                       />
@@ -426,7 +426,7 @@ class StixCoreRelationshipContainer extends Component {
               </div>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
@@ -505,7 +505,7 @@ class StixCoreRelationshipContainer extends Component {
         </Grid>
         <div>
           {stixCoreRelationship.x_opencti_inferences !== null ? (
-            <div style={{ marginTop: 50 }}>
+              <div style={{ margin: '50px 0 0 0' }}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Inference explanation')} (
                 {stixCoreRelationship.x_opencti_inferences.length})
@@ -537,7 +537,7 @@ class StixCoreRelationshipContainer extends Component {
               )}
             </div>
           ) : (
-            <div style={{ margin: '50px 0 0px 0' }}>
+            <div style={{ margin: '50px 0 0 0' }}>
               <Grid
                 container={true}
                 spacing={3}
@@ -4217,7 +4217,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on AdministrativeArea {
-                  name
+                name
               }
               ... on Country {
                 name

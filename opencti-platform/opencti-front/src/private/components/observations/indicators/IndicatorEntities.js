@@ -39,32 +39,43 @@ class IndicatorEntities extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { entityId } = this.props;
+    const { indicatorId } = this.props;
     const { sortBy, orderAsc } = this.state;
+    const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       entity_type: {
         label: 'Entity type',
-        width: '15%',
+        width: '12%',
         isSortable: false,
       },
       name: {
         label: 'Name',
-        width: '30%',
+        width: '25%',
+        isSortable: false,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '12%',
+        isSortable: false,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
         isSortable: false,
       },
       start_time: {
         label: 'First obs.',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       stop_time: {
         label: 'Last obs.',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       confidence: {
@@ -92,8 +103,9 @@ class IndicatorEntities extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              entityId={entityId}
+              entityId={indicatorId}
               displayRelation={true}
+              entityLink={link}
             />
           )}
         />
@@ -129,6 +141,7 @@ class IndicatorEntities extends Component {
               'Threat-Actor',
               'Intrusion-Set',
               'Campaign',
+              'Incident',
               'Malware',
               'Tool',
               'Vulnerability',

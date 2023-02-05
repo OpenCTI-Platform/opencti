@@ -2518,6 +2518,7 @@ export type Container = {
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
+  creator?: Maybe<Creator>;
   entity_type: Scalars['String'];
   externalReferences?: Maybe<ExternalReferenceConnection>;
   groupings?: Maybe<GroupingConnection>;
@@ -26312,6 +26313,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ContainerExternalReferencesArgs>>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ContainerGroupingsArgs>>;

@@ -13,12 +13,14 @@ import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   item: {
@@ -43,6 +45,13 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: 0,
   },
 });
 
@@ -84,15 +93,38 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 className={classes.bodyItem}
                 style={{ width: dataColumns.relationship_type.width }}
               >
-                {t(`relationship_${node.relationship_type}`)}
+                <Chip
+                  variant="outlined"
+                  classes={{ root: classes.chipInList }}
+                  style={{ width: 120 }}
+                  color="primary"
+                  label={t(`relationship_${node.relationship_type}`)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {element.relationship_type
-                  ? t(`relationship_${element.entity_type}`)
-                  : t(`entity_${element.entity_type}`)}
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  style={{
+                    width: 140,
+                    backgroundColor: hexToRGB(
+                      itemColor(element.entity_type),
+                      0.08,
+                    ),
+                    color: itemColor(element.entity_type),
+                    border: `1px solid ${itemColor(element.entity_type)}`,
+                  }}
+                  label={
+                    <>
+                      <ItemIcon variant="inline" type={element.entity_type} />
+                      {element.relationship_type
+                        ? t(`relationship_${element.entity_type}`)
+                        : t(`entity_${element.entity_type}`)}
+                    </>
+                  }
+                />
               </div>
               <div
                 className={classes.bodyItem}

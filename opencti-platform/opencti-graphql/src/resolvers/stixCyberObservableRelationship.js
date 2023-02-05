@@ -17,11 +17,13 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader } from '../database/middleware';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 import { elBatchIds } from '../database/engine';
+import { batchUsers } from '../domain/user';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
+const creatorsLoader = batchLoader(batchUsers);
 
 const stixCyberObservableRelationshipResolvers = {
   Query: {
@@ -34,6 +36,7 @@ const stixCyberObservableRelationshipResolvers = {
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
     opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
+    creator: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),
   },
   Mutation: {
