@@ -46,7 +46,7 @@ const expireHandler = async () => {
     await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.info('[OPENCTI-MODULE] Expiration manager already started by another API');
+      logApp.debug('[OPENCTI-MODULE] Expiration manager already started by another API');
     } else {
       logApp.error('[OPENCTI-MODULE] Expiration manager failed to start', { error: e });
     }

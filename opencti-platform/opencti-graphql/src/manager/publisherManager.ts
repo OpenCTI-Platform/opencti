@@ -159,7 +159,7 @@ const initPublisherManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([PUBLISHER_ENGINE_KEY]);
+      lock = await lockResource([PUBLISHER_ENGINE_KEY], { retryCount: 0 });
       logApp.info('[OPENCTI-MODULE] Running publisher manager');
       const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Publisher manager', publisherStreamHandler, opts);
@@ -169,7 +169,7 @@ const initPublisherManager = () => {
       }
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
-        logApp.info('[OPENCTI-MODULE] Publisher manager already started by another API');
+        logApp.debug('[OPENCTI-MODULE] Publisher manager already started by another API');
       } else {
         logApp.error('[OPENCTI-MODULE] Publisher manager failed to start', { error: e });
       }

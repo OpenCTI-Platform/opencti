@@ -19,6 +19,7 @@ import { pushToSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
+const SCHEDULE_TIME = 10000;
 const WAIT_TIME_ACTION = 2000;
 
 const syncManagerInstance = (syncId) => {
@@ -220,7 +221,7 @@ const initSyncManager = () => {
       await processingLoop();
     } catch (e) {
       if (e.name === TYPE_LOCK_ERROR) {
-        logApp.info('[OPENCTI-MODULE] Sync manager already in progress by another API');
+        logApp.debug('[OPENCTI-MODULE] Sync manager already in progress by another API');
       } else {
         logApp.error('[OPENCTI-MODULE] Sync manager failed to start', { error: e });
       }
@@ -232,10 +233,9 @@ const initSyncManager = () => {
   };
   return {
     start: async () => {
-      // processingLoopPromise = processingLoop();
       scheduler = setIntervalAsync(async () => {
         await syncManagerHandler();
-      }, WAIT_TIME_ACTION);
+      }, SCHEDULE_TIME);
     },
     status: () => {
       return {

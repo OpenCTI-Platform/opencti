@@ -344,7 +344,7 @@ const initRuleManager = () => {
       }
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
-        logApp.info('[OPENCTI-MODULE] Rule engine already started by another API');
+        logApp.debug('[OPENCTI-MODULE] Rule engine already started by another API');
       } else {
         logApp.error('[OPENCTI-MODULE] Rule engine failed to start', { error: e });
       }

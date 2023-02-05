@@ -368,7 +368,7 @@ const initNotificationManager = () => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([NOTIFICATION_ENGINE_KEY]);
+      lock = await lockResource([NOTIFICATION_ENGINE_KEY], { retryCount: 0 });
       logApp.info('[OPENCTI-MODULE] Running notification manager');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationStreamHandler);
       await streamProcessor.start('live');
@@ -377,7 +377,7 @@ const initNotificationManager = () => {
       }
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
-        logApp.info('[OPENCTI-MODULE] Notification manager already started by another API');
+        logApp.debug('[OPENCTI-MODULE] Notification manager already started by another API');
       } else {
         logApp.error('[OPENCTI-MODULE] Notification manager failed to start', { error: e });
       }
@@ -388,8 +388,14 @@ const initNotificationManager = () => {
   };
   return {
     start: async () => {
-      streamScheduler = setIntervalAsync(() => notificationHandler(), STREAM_SCHEDULE_TIME);
-      cronScheduler = setIntervalAsync(() => notificationDigestHandler(), CRON_SCHEDULE_TIME);
+      streamScheduler = setIntervalAsync(async () => {
+        if (notificationListening) {
+          await notificationHandler();
+        }
+      }, STREAM_SCHEDULE_TIME);
+      cronScheduler = setIntervalAsync(async () => {
+        await notificationDigestHandler();
+      }, CRON_SCHEDULE_TIME);
     },
     status: () => {
       return {

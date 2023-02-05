@@ -318,27 +318,26 @@ export const lockResource = async (resources: Array<string>, opts: { automaticEx
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
   const maxTtl = conf.get('app:concurrency:max_ttl');
+  const autoExtension = opts.automaticExtension ? opts.automaticExtension : true;
   const redlock = new Redlock([getClientLock()], { retryCount: opts.retryCount, retryDelay, retryJitter });
   // Get the lock
-  const lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
+  let lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
   let expiration = Date.now() + maxTtl;
   const extend = async () => {
     try {
-      await lock.extend(maxTtl);
+      lock = await lock.extend(maxTtl);
       expiration = Date.now() + maxTtl;
-      if (opts.automaticExtension) {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        queue();
-      }
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      queue();
     } catch (e) {
-      logApp.debug('[REDIS] Failed to extend resource', { locks });
+      logApp.warn('[REDIS] Failed to extend resource', { locks });
     }
   };
   const queue = () => {
-    const timeToWait = expiration - Date.now() - automaticExtensionThreshold;
+    const timeToWait = expiration - Date.now() - (2 * automaticExtensionThreshold);
     timeout = setTimeout(() => extend(), timeToWait);
   };
-  if (opts.automaticExtension) {
+  if (autoExtension) {
     queue();
   }
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock

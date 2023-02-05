@@ -108,7 +108,7 @@ const connectorHandler = async () => {
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.info('[OPENCTI-MODULE] Connector manager already started by another API');
+      logApp.debug('[OPENCTI-MODULE] Connector manager already started by another API');
     } else {
       logApp.error('[OPENCTI-MODULE] Connector manager failed to start', { error: e });
     }
