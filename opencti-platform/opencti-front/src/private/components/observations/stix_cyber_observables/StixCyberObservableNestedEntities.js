@@ -71,20 +71,26 @@ const inlineStylesHeaders = {
   },
   relationship_type: {
     float: 'left',
-    width: '15%',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
     cursor: 'pointer',
   },
   entity_type: {
     float: 'left',
-    width: '20%',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
   name: {
     float: 'left',
-    width: '35%',
+    width: '22%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  creator: {
+    float: 'left',
+    width: '12%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -203,9 +209,10 @@ class StixCyberObservableNestedEntities extends Component {
               <ListItemText
                 primary={
                   <div>
-                    {this.SortHeader('relationship_type', 'Relationship', true)}
+                    {this.SortHeader('relationship_type', 'Attribute', true)}
                     {this.SortHeader('entity_type', 'Entity type', false)}
                     {this.SortHeader('name', 'Name', false)}
+                    {this.SortHeader('creator', 'Creator', false)}
                     {this.SortHeader('start_time', 'First obs.', true)}
                     {this.SortHeader('stop_time', 'Last obs.', true)}
                   </div>

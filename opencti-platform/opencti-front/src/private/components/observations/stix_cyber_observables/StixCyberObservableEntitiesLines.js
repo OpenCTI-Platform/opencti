@@ -12,6 +12,7 @@ import withStyles from '@mui/styles/withStyles';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
+import Chip from '@mui/material/Chip';
 import ItemIcon from '../../../../components/ItemIcon';
 import { defaultValue } from '../../../../utils/Graph';
 import inject18n from '../../../../components/i18n';
@@ -21,6 +22,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemConfidence from '../../../../components/ItemConfidence';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -56,6 +58,13 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: 0,
   },
 });
 
@@ -117,9 +126,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                 key={node.id}
               >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon
-                    type={!restricted ? targetEntity.entity_type : 'restricted'}
-                  />
+                  <ItemIcon type={node.entity_type} />
                 </ListItemIcon>
                 <ListItemText
                   primary={
@@ -127,29 +134,94 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                       {displayRelation && (
                         <div
                           className={classes.bodyItem}
-                          style={{ width: '15%' }}
+                          style={{ width: '10%' }}
                         >
-                          {t(`relationship_${node.relationship_type}`)}
+                          <Chip
+                            variant="outlined"
+                            classes={{ root: classes.chipInList }}
+                            style={{ width: 120 }}
+                            color="primary"
+                            label={t(`relationship_${node.relationship_type}`)}
+                          />
                         </div>
                       )}
                       <div
                         className={classes.bodyItem}
-                        style={{ width: '20%' }}
+                        style={{ width: '10%' }}
                       >
-                        {!restricted
-                          ? t(
-                            `entity_${
-                              targetEntity.entity_type === 'stix_relation'
-                                || targetEntity.entity_type === 'stix-relation'
-                                ? targetEntity.parent_types[0]
-                                : targetEntity.entity_type
-                            }`,
-                          )
-                          : t('Restricted')}
+                        <Chip
+                          classes={{ root: classes.chipInList }}
+                          style={{
+                            width: 140,
+                            backgroundColor: hexToRGB(
+                              itemColor(
+                                // eslint-disable-next-line no-nested-ternary
+                                !restricted
+                                  ? targetEntity.entity_type
+                                      === 'stix_relation'
+                                    || targetEntity.entity_type === 'stix-relation'
+                                    ? targetEntity.parent_types[0]
+                                    : targetEntity.entity_type
+                                  : 'Restricted',
+                              ),
+                              0.08,
+                            ),
+                            color: itemColor(
+                              // eslint-disable-next-line no-nested-ternary
+                              !restricted
+                                ? targetEntity.entity_type
+                                    === 'stix_relation'
+                                  || targetEntity.entity_type === 'stix-relation'
+                                  ? targetEntity.parent_types[0]
+                                  : targetEntity.entity_type
+                                : 'Restricted',
+                            ),
+                            border: `1px solid ${itemColor(
+                              // eslint-disable-next-line no-nested-ternary
+                              !restricted
+                                ? targetEntity.entity_type
+                                    === 'stix_relation'
+                                  || targetEntity.entity_type === 'stix-relation'
+                                  ? targetEntity.parent_types[0]
+                                  : targetEntity.entity_type
+                                : 'Restricted',
+                            )}`,
+                          }}
+                          label={
+                            <>
+                              <ItemIcon
+                                variant="inline"
+                                type={
+                                  // eslint-disable-next-line no-nested-ternary
+                                  !restricted
+                                    ? targetEntity.entity_type
+                                        === 'stix_relation'
+                                      || targetEntity.entity_type
+                                        === 'stix-relation'
+                                      ? targetEntity.parent_types[0]
+                                      : targetEntity.entity_type
+                                    : 'Restricted'
+                                }
+                              />
+                              {!restricted
+                                ? t(
+                                  `entity_${
+                                    targetEntity.entity_type
+                                        === 'stix_relation'
+                                      || targetEntity.entity_type
+                                        === 'stix-relation'
+                                      ? targetEntity.parent_types[0]
+                                      : targetEntity.entity_type
+                                  }`,
+                                )
+                                : t('Restricted')}
+                            </>
+                          }
+                        />
                       </div>
                       <div
                         className={classes.bodyItem}
-                        style={{ width: '20%' }}
+                        style={{ width: '22%' }}
                       >
                         {/* eslint-disable-next-line no-nested-ternary */}
                         {!restricted
@@ -163,19 +235,31 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                       </div>
                       <div
                         className={classes.bodyItem}
-                        style={{ width: '15%' }}
+                        style={{ width: '12%' }}
+                      >
+                        {R.pathOr('', ['createdBy', 'name'], node)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={{ width: '12%' }}
+                      >
+                        {R.pathOr('', ['creator', 'name'], node)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={{ width: '10%' }}
                       >
                         {fsd(node.start_time)}
                       </div>
                       <div
                         className={classes.bodyItem}
-                        style={{ width: '15%' }}
+                        style={{ width: '10%' }}
                       >
                         {fsd(node.stop_time)}
                       </div>
                       <div
                         className={classes.bodyItem}
-                        style={{ width: '15%' }}
+                        style={{ width: '12%' }}
                       >
                         <ItemConfidence
                           confidence={node.confidence}
@@ -302,12 +386,33 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
           edges {
             node {
               id
+              entity_type
               relationship_type
               confidence
               start_time
               stop_time
               description
               is_inferred
+              createdBy {
+                ... on Identity {
+                  name
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
+                  }
+                }
+              }
+              creator {
+                id
+                name
+              }
               x_opencti_inferences {
                 rule {
                   id
@@ -397,6 +502,30 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                 ... on Incident {
                   name
                   description
+                }
+                ... on Event {
+                  name
+                  description
+                }
+                ... on Channel {
+                  name
+                  description
+                }
+                ... on Narrative {
+                  name
+                  description
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
+                  name
                 }
                 ... on StixCyberObservable {
                   observable_value
@@ -490,6 +619,30 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                       description
                     }
+                    ... on Event {
+                      name
+                      description
+                    }
+                    ... on Channel {
+                      name
+                      description
+                    }
+                    ... on Narrative {
+                      name
+                      description
+                    }
+                    ... on Language {
+                      name
+                    }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
+                    ... on Case {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -581,6 +734,30 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                     ... on Incident {
                       name
                       description
+                    }
+                    ... on Event {
+                      name
+                      description
+                    }
+                    ... on Channel {
+                      name
+                      description
+                    }
+                    ... on Narrative {
+                      name
+                      description
+                    }
+                    ... on Language {
+                      name
+                    }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
+                    ... on Case {
+                      name
                     }
                     ... on StixCyberObservable {
                       observable_value
@@ -675,6 +852,30 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                 ... on Incident {
                   name
                   description
+                }
+                ... on Event {
+                  name
+                  description
+                }
+                ... on Channel {
+                  name
+                  description
+                }
+                ... on Narrative {
+                  name
+                  description
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
+                  name
                 }
                 ... on StixCyberObservable {
                   observable_value

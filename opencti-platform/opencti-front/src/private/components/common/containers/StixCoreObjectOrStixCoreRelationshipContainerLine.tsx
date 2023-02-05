@@ -7,6 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -17,6 +18,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { StixCoreObjectOrStixCoreRelationshipContainerLine_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -47,6 +49,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey?.[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
 }));
 
 interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
@@ -65,8 +75,7 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
 StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
 > = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
-
+  const { t, fd } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -89,6 +98,20 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
           <div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  backgroundColor: hexToRGB(itemColor(node.entity_type), 0.08),
+                  color: itemColor(node.entity_type),
+                  border: `1px solid ${itemColor(node.entity_type)}`,
+                }}
+                label={t(`entity_${node.entity_type}`)}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
               {defaultValue(node)}
@@ -98,6 +121,12 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
               style={{ width: dataColumns.createdBy.width }}
             >
               {node.createdBy?.name ?? ''}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              {node.creator?.name ?? ''}
             </div>
             <div
               className={classes.bodyItem}
@@ -161,6 +190,10 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
               color
             }
           }
+          creator {
+            id
+            name
+          }
           ... on Note {
             attribute_abstract
             content
@@ -179,6 +212,10 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             published
           }
           ... on Grouping {
+            name
+            created
+          }
+          ... on Case {
             name
             created
           }
@@ -404,6 +441,17 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
           <div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -416,6 +464,17 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
             >
               <Skeleton
                 animation="wave"

@@ -39,6 +39,7 @@ const styles = (theme) => ({
   icon: {
     margin: '10px 20px 0 0',
     fontSize: 40,
+    color: '#242d30',
   },
   area: {
     width: '100%',
@@ -188,21 +189,39 @@ class IncidentCardDummyComponent extends Component {
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={<Avatar className={classes.avatarDisabled}>D</Avatar>}
+            avatar={
+              <Skeleton
+                animation="wave"
+                variant="circular"
+                width={30}
+                height={30}
+              />
+            }
             title={
-              <div
-                className={classes.placeholderHeader}
-                style={{ width: '85%' }}
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                style={{ marginBottom: 10 }}
               />
             }
             titleTypographyProps={{ color: 'inherit' }}
             subheader={
-              <div
-                className={classes.placeholderHeaderDark}
-                style={{ width: '70%' }}
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                style={{ marginBottom: 10 }}
               />
             }
-            action={<Fire className={classes.icon} />}
+            action={
+              <Skeleton
+                animation="wave"
+                variant="circular"
+                width={30}
+                height={30}
+              />
+            }
           />
           <CardContent classes={{ root: classes.contentDummy }}>
             <Skeleton

@@ -10,13 +10,15 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import * as R from 'ramda';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
-import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   item: {
@@ -43,6 +45,13 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: 0,
+  },
 });
 
 class IndicatorEntityLineComponent extends Component {
@@ -55,17 +64,10 @@ class IndicatorEntityLineComponent extends Component {
       node,
       paginationOptions,
       displayRelation,
-      entityId,
+      entityLink,
     } = this.props;
     const restricted = node.to === null;
-    // eslint-disable-next-line no-nested-ternary
-    const link = !restricted
-      ? node.to.parent_types.includes('stix_relation')
-        ? `/dashboard/signatures/indicators/${entityId}/knowledge/relations/${node.id}`
-        : `${resolveLink(node.to.entity_type)}/${
-          node.to.id
-        }/knowledge/relations/${node.id}`
-      : null;
+    const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -76,7 +78,7 @@ class IndicatorEntityLineComponent extends Component {
         disabled={restricted}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={!restricted ? node.to.entity_type : 'restricted'} />
+          <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -86,23 +88,81 @@ class IndicatorEntityLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
                 >
-                  {t(`relationship_${node.relationship_type}`)}
+                  <Chip
+                    variant="outlined"
+                    classes={{ root: classes.chipInList }}
+                    style={{ width: 120 }}
+                    color="primary"
+                    label={t(`relationship_${node.relationship_type}`)}
+                  />
                 </div>
               )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {!restricted
-                  ? t(
-                    `entity_${
-                      node.to.entity_type === 'stix_relation'
-                        || node.to.entity_type === 'stix-relation'
-                        ? node.to.parent_types[0]
-                        : node.to.entity_type
-                    }`,
-                  )
-                  : t('Restricted')}
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  style={{
+                    width: 140,
+                    backgroundColor: hexToRGB(
+                      itemColor(
+                        // eslint-disable-next-line no-nested-ternary
+                        !restricted
+                          ? node.to.entity_type === 'stix_relation'
+                            || node.to.entity_type === 'stix-relation'
+                            ? node.to.parent_types[0]
+                            : node.to.entity_type
+                          : 'Restricted',
+                      ),
+                      0.08,
+                    ),
+                    color: itemColor(
+                      // eslint-disable-next-line no-nested-ternary
+                      !restricted
+                        ? node.to.entity_type === 'stix_relation'
+                          || node.to.entity_type === 'stix-relation'
+                          ? node.to.parent_types[0]
+                          : node.to.entity_type
+                        : 'Restricted',
+                    ),
+                    border: `1px solid ${itemColor(
+                      // eslint-disable-next-line no-nested-ternary
+                      !restricted
+                        ? node.to.entity_type === 'stix_relation'
+                          || node.to.entity_type === 'stix-relation'
+                          ? node.to.parent_types[0]
+                          : node.to.entity_type
+                        : 'Restricted',
+                    )}`,
+                  }}
+                  label={
+                    <>
+                      <ItemIcon
+                        variant="inline"
+                        type={
+                          // eslint-disable-next-line no-nested-ternary
+                          !restricted
+                            ? node.to.entity_type === 'stix_relation'
+                              || node.to.entity_type === 'stix-relation'
+                              ? node.to.parent_types[0]
+                              : node.to.entity_type
+                            : 'Restricted'
+                        }
+                      />
+                      {!restricted
+                        ? t(
+                          `entity_${
+                            node.to.entity_type === 'stix_relation'
+                              || node.to.entity_type === 'stix-relation'
+                              ? node.to.parent_types[0]
+                              : node.to.entity_type
+                          }`,
+                        )
+                        : t('Restricted')}
+                    </>
+                  }
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -117,6 +177,18 @@ class IndicatorEntityLineComponent extends Component {
                     }`
                     : node.to.name || node.to.observable_value
                   : t('Restricted')}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {R.pathOr('', ['createdBy', 'name'], node)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                {R.pathOr('', ['creator', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -170,11 +242,43 @@ const IndicatorEntityLineFragment = createFragmentContainer(
     node: graphql`
       fragment IndicatorEntityLine_node on StixCoreRelationship {
         id
+        entity_type
         relationship_type
         confidence
         start_time
         stop_time
         description
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
+        creator {
+          id
+          name
+        }
         to {
           ... on BasicObject {
             id

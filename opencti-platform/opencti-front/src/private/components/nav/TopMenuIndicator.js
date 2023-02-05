@@ -8,7 +8,10 @@ import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -101,6 +104,28 @@ class TopMenuIndicator extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/observations/indicators/${indicatorId}/analysis`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/observations/indicators/${indicatorId}/analysis`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/observations/indicators/${indicatorId}/analysis`,
+            )
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}

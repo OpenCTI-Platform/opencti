@@ -2567,6 +2567,7 @@ interface Container {
     viaTypes: [String]
   ): ContainerConnection
   # Technical
+  creator: Creator
   workflowEnabled: Boolean
   status: Status
 }

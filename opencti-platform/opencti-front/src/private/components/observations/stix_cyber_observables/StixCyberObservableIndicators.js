@@ -27,6 +27,7 @@ import StixCyberObservableIndicatorPopover from './StixCyberObservableIndicatorP
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { commitMutation } from '../../../../relay/environment';
+import ItemPatternType from '../../../../components/ItemPatternType';
 
 const styles = (theme) => ({
   itemHead: {
@@ -63,7 +64,7 @@ const styles = (theme) => ({
 });
 
 const inlineStyles = {
-  entity_type: {
+  pattern_type: {
     float: 'left',
     width: '20%',
     height: 20,
@@ -212,9 +213,12 @@ class StixCyberObservableIndicatorsComponent extends Component {
                   <div>
                     <div
                       className={classes.bodyItem}
-                      style={inlineStyles.entity_type}
+                      style={inlineStyles.pattern_type}
                     >
-                      {t(`entity_${indicatorEdge.node.entity_type}`)}
+                      <ItemPatternType
+                        label={indicatorEdge.node.pattern_type}
+                        variant="inList"
+                      />
                     </div>
                     <div
                       className={classes.bodyItem}
@@ -302,6 +306,7 @@ const StixCyberObservableIndicators = createFragmentContainer(
               name
               created_at
               updated_at
+              pattern_type
             }
           }
         }

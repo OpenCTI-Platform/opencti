@@ -18,6 +18,7 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import IndicatorPopover from './IndicatorPopover';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -99,6 +100,25 @@ class RootIndicator extends Component {
                           {...routeProps}
                           indicator={props.indicator}
                         />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/indicators/:indicatorId/analysis"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.indicator}
+                            PopoverComponent={<IndicatorPopover />}
+                            noAliases={true}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixDomainObjectOrStixCoreRelationship={
+                              props.indicator
+                            }
+                          />
+                        </React.Fragment>
                       )}
                     />
                     <Route

@@ -8,11 +8,14 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import * as R from 'ramda';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCyberObservableRelationPopover from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   item: {
@@ -46,6 +49,13 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: 0,
   },
 });
 
@@ -83,23 +93,48 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                       <div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: '15%' }}
+                          style={{ width: '10%' }}
                         >
-                          {t(
-                            `relationship_${stixCyberObservableRelationship.relationship_type}`,
-                          )}
+                          <Chip
+                            variant="outlined"
+                            classes={{ root: classes.chipInList }}
+                            style={{ width: 120 }}
+                            color="primary"
+                            label={t(
+                              `relationship_${stixCyberObservableRelationship.relationship_type}`,
+                            )}
+                          />
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: '20%' }}
+                          style={{ width: '10%' }}
                         >
-                          {t(`entity_${stixCoreObject.entity_type}`)}
+                          <Chip
+                            classes={{ root: classes.chipInList }}
+                            style={{
+                              backgroundColor: hexToRGB(
+                                itemColor(stixCoreObject.entity_type),
+                                0.08,
+                              ),
+                              color: itemColor(stixCoreObject.entity_type),
+                              border: `1px solid ${itemColor(
+                                stixCoreObject.entity_type,
+                              )}`,
+                            }}
+                            label={t(`entity_${stixCoreObject.entity_type}`)}
+                          />
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: '35%' }}
+                          style={{ width: '22%' }}
                         >
                           {defaultValue(stixCoreObject)}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={{ width: '12%' }}
+                        >
+                          {R.pathOr('', ['creator', 'name'], stixCoreObject)}
                         </div>
                         <div
                           className={classes.bodyItem}
@@ -186,6 +221,10 @@ const StixCyberObservableNestedEntitiesLines = createFragmentContainer(
               relationship_type
               start_time
               stop_time
+              creator {
+                id
+                name
+              }
               from {
                 ... on BasicObject {
                   id
@@ -269,6 +308,30 @@ const StixCyberObservableNestedEntitiesLines = createFragmentContainer(
                 ... on Incident {
                   name
                   description
+                }
+                ... on Event {
+                  name
+                  description
+                }
+                ... on Channel {
+                  name
+                  description
+                }
+                ... on Narrative {
+                  name
+                  description
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
+                  name
                 }
                 ... on StixCyberObservable {
                   observable_value
@@ -357,6 +420,30 @@ const StixCyberObservableNestedEntitiesLines = createFragmentContainer(
                 ... on Incident {
                   name
                   description
+                }
+                ... on Event {
+                  name
+                  description
+                }
+                ... on Channel {
+                  name
+                  description
+                }
+                ... on Narrative {
+                  name
+                  description
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
+                  name
                 }
                 ... on StixCyberObservable {
                   observable_value
