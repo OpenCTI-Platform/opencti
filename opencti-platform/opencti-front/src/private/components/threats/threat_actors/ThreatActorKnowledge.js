@@ -172,6 +172,36 @@ class ThreatActorKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/channels"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={threatActor.id}
+              relationshipTypes={['uses']}
+              stixCoreObjectTypes={['Channel']}
+              entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/narratives"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={threatActor.id}
+              relationshipTypes={['uses']}
+              stixCoreObjectTypes={['Narrative']}
+              entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixCoreRelationships

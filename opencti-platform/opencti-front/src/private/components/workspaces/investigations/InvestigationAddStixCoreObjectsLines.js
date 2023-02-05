@@ -444,6 +444,10 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 name
                 description
               }
+              ... on AdministrativeArea {
+                name
+                description
+              }
               ... on Country {
                 name
                 description

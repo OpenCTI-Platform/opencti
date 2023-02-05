@@ -308,6 +308,10 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on AdministrativeArea {
+            name
+            description
+          }
           ... on Country {
             name
             description
@@ -378,6 +382,10 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             description
           }
           ... on City {
+            name
+            description
+          }
+          ... on AdministrativeArea {
             name
             description
           }

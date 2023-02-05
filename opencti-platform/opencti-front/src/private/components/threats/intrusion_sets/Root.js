@@ -98,6 +98,8 @@ class RootIntrusionSet extends Component {
               'malwares',
               'attack_patterns',
               'tools',
+              'channels',
+              'narratives',
               'vulnerabilities',
               'observables',
               'infrastructures',

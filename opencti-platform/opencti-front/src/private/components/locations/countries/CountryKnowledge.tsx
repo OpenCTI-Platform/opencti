@@ -150,6 +150,20 @@ const CountryKnowledgeComponent = ({
         />
         <Route
           exact
+          path="/dashboard/locations/countries/:countryId/knowledge/areas"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={['located-at']}
+              stixCoreObjectTypes={['Administrative-Area']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/locations/countries/:countryId/knowledge/cities"
           render={(routeProps) => (
             <EntityStixCoreRelationships

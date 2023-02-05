@@ -259,6 +259,9 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -341,6 +344,9 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                       name
                     }
                     ... on City {
+                      name
+                    }
+                    ... on AdministrativeArea {
                       name
                     }
                     ... on Country {

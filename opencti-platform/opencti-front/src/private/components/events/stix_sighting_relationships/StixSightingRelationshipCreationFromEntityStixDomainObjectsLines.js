@@ -263,6 +263,10 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = createP
                   name
                   description
                 }
+                ... on AdministrativeArea {
+                  name
+                  description
+                }
                 ... on Country {
                   name
                   description

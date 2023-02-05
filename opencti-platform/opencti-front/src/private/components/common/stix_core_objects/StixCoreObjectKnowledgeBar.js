@@ -22,6 +22,8 @@ import {
   TerminalOutlined,
   SurroundSoundOutlined,
   PublicOutlined,
+  MapOutlined,
+  SpeakerNotesOutlined,
 } from '@mui/icons-material';
 import {
   Gauge,
@@ -139,6 +141,20 @@ class StixCoreObjectKnowledgeBar extends Component {
                     <FlagOutlined />
                   </ListItemIcon>
                   <ListItemText primary={t('Countries')} />
+                </MenuItem>
+              )}
+              {includes('areas', availableSections) && (
+                <MenuItem
+                  component={Link}
+                  to={`${stixCoreObjectLink}/areas`}
+                  selected={location.pathname === `${stixCoreObjectLink}/areas`}
+                  dense={false}
+                  classes={{ root: classes.item }}
+                >
+                  <ListItemIcon style={{ minWidth: 35 }}>
+                    <MapOutlined />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Areas')} />
                 </MenuItem>
               )}
               {includes('cities', availableSections) && (
@@ -270,6 +286,20 @@ class StixCoreObjectKnowledgeBar extends Component {
                     <FlagOutlined />
                   </ListItemIcon>
                   <ListItemText primary={t('Countries')} />
+                </MenuItem>
+              )}
+              {includes('areas', availableSections) && (
+                <MenuItem
+                  component={Link}
+                  to={`${stixCoreObjectLink}/areas`}
+                  selected={location.pathname === `${stixCoreObjectLink}/areas`}
+                  dense={false}
+                  classes={{ root: classes.item }}
+                >
+                  <ListItemIcon style={{ minWidth: 35 }}>
+                    <MapOutlined />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Areas')} />
                 </MenuItem>
               )}
               {includes('cities', availableSections) && (
@@ -471,10 +501,10 @@ class StixCoreObjectKnowledgeBar extends Component {
           )}
         {isInAvailableSection([
           'variants',
-          'attack_patterns',
           'malwares',
           'tools',
           'vulnerabilities',
+          'channels',
         ]) && (
           <MenuList
             style={{ paddingBottom: 0 }}
@@ -501,20 +531,20 @@ class StixCoreObjectKnowledgeBar extends Component {
                 <ListItemText primary={t('Variants')} />
               </MenuItem>
             )}
-            {includes('attack_patterns', availableSections) && (
+            {includes('malwares', availableSections) && (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/attack_patterns`}
+                to={`${stixCoreObjectLink}/malwares`}
                 selected={
-                  location.pathname === `${stixCoreObjectLink}/attack_patterns`
+                  location.pathname === `${stixCoreObjectLink}/malwares`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <LockPattern />
+                  <Biohazard />
                 </ListItemIcon>
-                <ListItemText primary={t('Attack patterns')} />
+                <ListItemText primary={t('Malwares')} />
               </MenuItem>
             )}
             {includes('channels', availableSections) && (
@@ -531,22 +561,6 @@ class StixCoreObjectKnowledgeBar extends Component {
                   <SurroundSoundOutlined />
                 </ListItemIcon>
                 <ListItemText primary={t('Channels')} />
-              </MenuItem>
-            )}
-            {includes('malwares', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/malwares`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/malwares`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <Biohazard />
-                </ListItemIcon>
-                <ListItemText primary={t('Malwares')} />
               </MenuItem>
             )}
             {includes('tools', availableSections) && (
@@ -577,6 +591,50 @@ class StixCoreObjectKnowledgeBar extends Component {
                   <BugReportOutlined />
                 </ListItemIcon>
                 <ListItemText primary={t('Vulnerabilities')} />
+              </MenuItem>
+            )}
+          </MenuList>
+        )}
+        {isInAvailableSection(['attack_patterns', 'narratives']) && (
+          <MenuList
+            style={{ paddingBottom: 0 }}
+            component="nav"
+            subheader={
+              <ListSubheader style={{ height: 35 }}>
+                {t('Techniques')}
+              </ListSubheader>
+            }
+          >
+            {includes('attack_patterns', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/attack_patterns`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/attack_patterns`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <LockPattern />
+                </ListItemIcon>
+                <ListItemText primary={t('Attack patterns')} />
+              </MenuItem>
+            )}
+            {includes('narratives', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/narratives`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/narratives`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <SpeakerNotesOutlined />
+                </ListItemIcon>
+                <ListItemText primary={t('Narratives')} />
               </MenuItem>
             )}
           </MenuList>

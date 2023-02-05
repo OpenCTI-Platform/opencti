@@ -235,6 +235,9 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
         ... on City {
           name
         }
+        ... on AdministrativeArea {
+          name
+        }
         ... on Country {
           name
         }
@@ -303,6 +306,9 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
           name
         }
         ... on City {
+          name
+        }
+        ... on AdministrativeArea {
           name
         }
         ... on Country {

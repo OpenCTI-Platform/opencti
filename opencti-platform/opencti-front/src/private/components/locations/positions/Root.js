@@ -89,6 +89,9 @@ class RootPosition extends Component {
             stixCoreObjectLink={link}
             availableSections={[
               'organizations',
+              'regions',
+              'countries',
+              'areas',
               'threats',
               'threat_actors',
               'intrusion_sets',
@@ -113,10 +116,7 @@ class RootPosition extends Component {
                       exact
                       path="/dashboard/locations/positions/:positionId"
                       render={(routeProps) => (
-                        <Position
-                          {...routeProps}
-                          position={props.position}
-                        />
+                        <Position {...routeProps} position={props.position} />
                       )}
                     />
                     <Route

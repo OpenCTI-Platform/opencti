@@ -346,6 +346,10 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on AdministrativeArea {
+            name
+            description
+          }
           ... on Country {
             name
             description
@@ -415,6 +419,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on City {
                 name
               }
+              ... on AdministrativeArea {
+                name
+              }
               ... on Country {
                 name
               }
@@ -475,6 +482,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
                 name
               }
               ... on City {
+                name
+              }
+              ... on AdministrativeArea {
                 name
               }
               ... on Country {

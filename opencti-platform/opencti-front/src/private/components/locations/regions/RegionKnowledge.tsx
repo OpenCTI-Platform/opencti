@@ -162,12 +162,40 @@ const RegionKnowledgeComponent = ({
         />
         <Route
           exact
+          path="/dashboard/locations/regions/:regionId/knowledge/areas"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={region.id}
+              relationshipTypes={['located-at']}
+              stixCoreObjectTypes={['Administrative-Area']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/locations/regions/:regionId/knowledge/cities"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={region.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['City']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/locations/regions/:regionId/knowledge/organizations"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={region.id}
+              relationshipTypes={['located-at']}
+              stixCoreObjectTypes={['Organization']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}

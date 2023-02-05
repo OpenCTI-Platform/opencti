@@ -759,6 +759,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                       description
                     }
+                    ... on AdministrativeArea {
+                      name
+                      description
+                    }
                     ... on Country {
                       name
                       description
@@ -820,6 +824,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               name
             }
             ... on City {
+              name
+            }
+            ... on AdministrativeArea {
               name
             }
             ... on Country {
@@ -900,6 +907,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on City {
                   name
                 }
+                ... on AdministrativeArea {
+                  name
+                }
                 ... on Country {
                   name
                 }
@@ -980,6 +990,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -1052,6 +1065,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on City {
+                      name
+                    }
+                    ... on AdministrativeArea {
                       name
                     }
                     ... on Country {
@@ -1132,6 +1148,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on City {
                   name
                 }
+                ... on AdministrativeArea {
+                  name
+                }
                 ... on Country {
                   name
                 }
@@ -1214,6 +1233,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -1291,6 +1313,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on City {
+                      name
+                    }
+                    ... on AdministrativeArea {
                       name
                     }
                     ... on Country {
@@ -1381,6 +1406,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on City {
                   name
                 }
+                ... on AdministrativeArea {
+                  name
+                }
                 ... on Country {
                   name
                 }
@@ -1506,6 +1534,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           name
                           description
                         }
+                        ... on AdministrativeArea {
+                          name
+                          description
+                        }
                         ... on Country {
                           name
                           description
@@ -1609,6 +1641,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -1683,6 +1718,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on City {
+                      name
+                    }
+                    ... on AdministrativeArea {
                       name
                     }
                     ... on Country {
@@ -1804,6 +1842,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on City {
+                              name
+                              description
+                            }
+                            ... on AdministrativeArea {
                               name
                               description
                             }
@@ -1909,6 +1951,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on City {
                   name
                 }
+                ... on AdministrativeArea {
+                  name
+                }
                 ... on Country {
                   name
                 }
@@ -2034,6 +2079,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           name
                           description
                         }
+                        ... on AdministrativeArea {
+                          name
+                          description
+                        }
                         ... on Country {
                           name
                           description
@@ -2139,6 +2188,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -2261,6 +2313,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on City {
+                              name
+                              description
+                            }
+                            ... on AdministrativeArea {
                               name
                               description
                             }
@@ -2363,6 +2419,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on City {
                       name
                     }
+                    ... on AdministrativeArea {
+                      name
+                    }
                     ... on Country {
                       name
                     }
@@ -2485,6 +2544,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on City {
+                              name
+                              description
+                            }
+                            ... on AdministrativeArea {
                               name
                               description
                             }
@@ -2687,6 +2750,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     name
                     description
                   }
+                  ... on AdministrativeArea {
+                    name
+                    description
+                  }
                   ... on Country {
                     name
                     description
@@ -2748,6 +2815,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
             name
           }
           ... on City {
+            name
+          }
+          ... on AdministrativeArea {
             name
           }
           ... on Country {
@@ -2829,6 +2899,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on City {
                 name
               }
+              ... on AdministrativeArea {
+                name
+              }
               ... on Country {
                 name
               }
@@ -2900,6 +2973,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on City {
+                name
+              }
+              ... on AdministrativeArea {
                 name
               }
               ... on Country {
@@ -2979,6 +3055,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
           ... on City {
             name
           }
+          ... on AdministrativeArea {
+            name
+          }
           ... on Country {
             name
           }
@@ -3053,6 +3132,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on City {
                 name
               }
+              ... on AdministrativeArea {
+                name
+              }
               ... on Country {
                 name
               }
@@ -3123,6 +3205,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on City {
+                name
+              }
+              ... on AdministrativeArea {
                 name
               }
               ... on Country {

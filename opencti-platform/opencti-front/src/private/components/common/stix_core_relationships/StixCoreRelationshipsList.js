@@ -231,6 +231,9 @@ const stixCoreRelationshipsListQuery = graphql`
               ... on City {
                 name
               }
+              ... on AdministrativeArea {
+                name
+              }
               ... on Country {
                 name
               }
@@ -314,6 +317,9 @@ const stixCoreRelationshipsListQuery = graphql`
                     name
                   }
                   ... on City {
+                    name
+                  }
+                  ... on AdministrativeArea {
                     name
                   }
                   ... on Country {
@@ -440,6 +446,10 @@ const stixCoreRelationshipsListQuery = graphql`
                             name
                             description
                           }
+                          ... on AdministrativeArea {
+                            name
+                            description
+                          }
                           ... on Country {
                             name
                             description
@@ -541,6 +551,9 @@ const stixCoreRelationshipsListQuery = graphql`
                         name
                       }
                       ... on City {
+                        name
+                      }
+                      ... on AdministrativeArea {
                         name
                       }
                       ... on Country {

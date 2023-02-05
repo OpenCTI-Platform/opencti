@@ -12,8 +12,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import CountryPopover from './CountryPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers
-  from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -195,6 +194,7 @@ const RootCountry = () => {
           stixCoreObjectLink={link}
           availableSections={[
             'regions',
+            'areas',
             'cities',
             'organizations',
             'threats',
@@ -209,15 +209,13 @@ const RootCountry = () => {
           ]}
         />
       </Route>
-      {
-        queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <RootCountryComponent queryRef={queryRef} countryId={countryId} />
-          </React.Suspense>
-        ) : (
-          <Loader variant={LoaderVariant.inElement} />
-        )
-      }
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <RootCountryComponent queryRef={queryRef} countryId={countryId} />
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.inElement} />
+      )}
     </div>
   );
 };

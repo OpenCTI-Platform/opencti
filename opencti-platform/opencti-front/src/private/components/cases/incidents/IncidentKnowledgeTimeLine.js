@@ -256,6 +256,11 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
             }
             ... on City {
               name
+              description
+            }
+            ... on AdministrativeArea {
+              name
+              description
             }
             ... on Country {
               name
@@ -413,6 +418,11 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
                 }
                 ... on City {
                   name
+                  description
+                }
+                ... on AdministrativeArea {
+                  name
+                  description
                 }
                 ... on Country {
                   name
@@ -562,6 +572,11 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
                 }
                 ... on City {
                   name
+                  description
+                }
+                ... on AdministrativeArea {
+                  name
+                  description
                 }
                 ... on Country {
                   name

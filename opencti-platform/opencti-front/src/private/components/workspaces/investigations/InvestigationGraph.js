@@ -139,6 +139,9 @@ const investigationGraphStixCoreObjectQuery = graphql`
       ... on City {
         name
       }
+      ... on AdministrativeArea {
+        name
+      }
       ... on Country {
         name
       }
@@ -405,8 +408,13 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on Position {
               name
+              description
             }
             ... on City {
+              name
+              description
+            }
+            ... on AdministrativeArea {
               name
               description
             }
@@ -635,6 +643,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
               name
             }
             ... on City {
+              name
+            }
+            ... on AdministrativeArea {
               name
             }
             ... on Country {
@@ -2097,6 +2108,9 @@ const InvestigationGraph = createFragmentContainer(
                 name
               }
               ... on City {
+                name
+              }
+              ... on AdministrativeArea {
                 name
               }
               ... on Country {

@@ -34,6 +34,8 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/threats/intrusion_sets';
     case 'City':
       return '/dashboard/locations/cities';
+    case 'Administrative-Area':
+      return '/dashboard/locations/administrative_areas';
     case 'Country':
       return '/dashboard/locations/countries';
     case 'Region':

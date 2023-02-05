@@ -95,6 +95,8 @@ class RootIncident extends Component {
               'victimology',
               'attack_patterns',
               'malwares',
+              'channels',
+              'narratives',
               'tools',
               'vulnerabilities',
               'observables',

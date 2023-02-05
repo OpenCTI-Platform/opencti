@@ -98,6 +98,8 @@ class RootThreatActor extends Component {
               'incidents',
               'malwares',
               'attack_patterns',
+              'channels',
+              'narratives',
               'tools',
               'vulnerabilities',
               'observables',

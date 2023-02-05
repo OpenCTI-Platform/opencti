@@ -146,6 +146,7 @@ import {
 } from '../schema/stixMetaObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -226,6 +227,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
   // region CAMPAIGN
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_CHANNEL}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_EVENT}`]: [
@@ -402,6 +409,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_CHANNEL}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_NARRATIVE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED }
+  ],
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_CAMPAIGN}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED }
   ],
@@ -559,6 +572,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
   // region INTRUSION_SET
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_CHANNEL}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
@@ -741,6 +760,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
   // region THREAT_ACTOR
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_CHANNEL}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_CAMPAIGN}`]: [

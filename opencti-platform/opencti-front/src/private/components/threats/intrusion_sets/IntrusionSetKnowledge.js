@@ -174,6 +174,38 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/channels"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={intrusionSet.id}
+                relationshipTypes={['uses']}
+                stixCoreObjectTypes={['Channel']}
+                entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/narratives"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={intrusionSet.id}
+                relationshipTypes={['uses']}
+                stixCoreObjectTypes={['Narrative']}
+                entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/vulnerabilities"
             render={(routeProps) => (
               <EntityStixCoreRelationships

@@ -145,6 +145,38 @@ class IncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/events/incidents/:incidentId/knowledge/narratives"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={incident.id}
+              relationshipTypes={['uses']}
+              stixCoreObjectTypes={['Narrative']}
+              entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/events/incidents/:incidentId/knowledge/channels"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={incident.id}
+              relationshipTypes={['uses']}
+              stixCoreObjectTypes={['Channel']}
+              entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/events/incidents/:incidentId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixCoreRelationships

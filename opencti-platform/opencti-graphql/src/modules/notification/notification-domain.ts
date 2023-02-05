@@ -93,8 +93,11 @@ export const myUnreadNotificationsCount = async (context: AuthContext, user: Aut
   return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...queryArgs, types: [ENTITY_TYPE_NOTIFICATION] });
 };
 
-export const notificationDelete = (context: AuthContext, user: AuthUser, notificationId: string) => {
-  return deleteElementById(context, user, notificationId, ENTITY_TYPE_NOTIFICATION);
+export const notificationDelete = async (context: AuthContext, user: AuthUser, notificationId: string) => {
+  const result = await deleteElementById(context, user, notificationId, ENTITY_TYPE_NOTIFICATION);
+  const unreadNotificationsCount = await myUnreadNotificationsCount(context, user);
+  await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: user.id }, user);
+  return result;
 };
 
 export const notificationEditRead = async (context: AuthContext, user: AuthUser, notificationId: string, read: boolean) => {

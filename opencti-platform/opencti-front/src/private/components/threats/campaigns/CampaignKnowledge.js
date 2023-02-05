@@ -174,6 +174,38 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/channels"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={campaign.id}
+                relationshipTypes={['uses']}
+                stixCoreObjectTypes={['Channel']}
+                entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/narratives"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={campaign.id}
+                relationshipTypes={['uses']}
+                stixCoreObjectTypes={['Narrative']}
+                entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/threats/campaigns/:campaignId/knowledge/vulnerabilities"
             render={(routeProps) => (
               <EntityStixCoreRelationships

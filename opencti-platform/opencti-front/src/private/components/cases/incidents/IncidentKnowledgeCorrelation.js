@@ -107,6 +107,9 @@ const incidentKnowledgeCorrelationStixCoreObjectQuery = graphql`
       ... on City {
         name
       }
+      ... on AdministrativeArea {
+        name
+      }
       ... on Country {
         name
       }
@@ -1174,6 +1177,9 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
                 name
               }
               ... on City {
+                name
+              }
+              ... on AdministrativeArea {
                 name
               }
               ... on Country {

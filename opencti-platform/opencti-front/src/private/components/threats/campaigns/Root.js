@@ -96,6 +96,8 @@ class RootCampaign extends Component {
               'incidents',
               'malwares',
               'tools',
+              'channels',
+              'narratives',
               'attack_patterns',
               'vulnerabilities',
               'observables',
@@ -116,10 +118,7 @@ class RootCampaign extends Component {
                       exact
                       path="/dashboard/threats/campaigns/:campaignId"
                       render={(routeProps) => (
-                        <Campaign
-                          {...routeProps}
-                          campaign={props.campaign}
-                        />
+                        <Campaign {...routeProps} campaign={props.campaign} />
                       )}
                     />
                     <Route

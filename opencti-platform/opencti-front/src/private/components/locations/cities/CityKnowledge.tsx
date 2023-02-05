@@ -149,12 +149,40 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
         />
         <Route
           exact
+          path="/dashboard/locations/cities/:cityId/knowledge/areas"
+          render={(routeProps: any) => (
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={['located-at']}
+              stixCoreObjectTypes={['Administrative-Area']}
+              entityLink={link}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/locations/cities/:cityId/knowledge/countries"
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Country']}
+              entityLink={link}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/locations/cities/:cityId/knowledge/regions"
+          render={(routeProps: any) => (
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={['located-at']}
+              stixCoreObjectTypes={['Region']}
               entityLink={link}
               isRelationReversed={false}
               {...routeProps}

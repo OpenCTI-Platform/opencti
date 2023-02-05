@@ -151,6 +151,20 @@ const AdministrativeAreaKnowledge = ({
         />
         <Route
           exact
+          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/regions"
+          render={(routeProps: any) => (
+            <EntityStixCoreRelationships
+              entityId={administrativeArea.id}
+              relationshipTypes={['located-at']}
+              stixCoreObjectTypes={['Region']}
+              entityLink={link}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/countries"
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
@@ -159,6 +173,20 @@ const AdministrativeAreaKnowledge = ({
               stixCoreObjectTypes={['Country']}
               entityLink={link}
               isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/cities"
+          render={(routeProps: any) => (
+            <EntityStixCoreRelationships
+              entityId={administrativeArea.id}
+              relationshipTypes={['located-at']}
+              stixCoreObjectTypes={['City']}
+              entityLink={link}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

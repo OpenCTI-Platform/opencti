@@ -230,6 +230,10 @@ const stixSightingRelationshipCreationFromRelationQuery = graphql`
         ... on City {
           name
         }
+        ... on AdministrativeArea {
+          name
+          description
+        }
         ... on Country {
           name
         }
@@ -298,6 +302,9 @@ const stixSightingRelationshipCreationFromRelationQuery = graphql`
           name
         }
         ... on City {
+          name
+        }
+        ... on AdministrativeArea {
           name
         }
         ... on Country {
