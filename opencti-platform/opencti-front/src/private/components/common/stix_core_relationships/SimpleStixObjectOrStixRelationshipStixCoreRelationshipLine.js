@@ -21,6 +21,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   item: {
@@ -130,11 +131,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {element.name
-                  || element.attribute_abstract
-                  || element.content
-                  || element.observable_value
-                  || t('Relationship')}
+                {defaultValue(element)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -301,6 +298,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               description
             }
             ... on City {
+              name
+              description
+            }
+            ... on AdministrativeArea {
               name
               description
             }

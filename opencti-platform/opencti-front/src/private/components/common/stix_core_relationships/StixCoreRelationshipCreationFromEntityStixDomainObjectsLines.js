@@ -302,6 +302,10 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                   name
                   description
                 }
+                ... on AdministrativeArea {
+                  name
+                  description
+                }
                 ... on Country {
                   name
                   description
@@ -452,6 +456,10 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                           description
                         }
                         ... on City {
+                          name
+                          description
+                        }
+                        ... on AdministrativeArea {
                           name
                           description
                         }

@@ -19,6 +19,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import TriggerPopover from './TriggerPopover';
+import { dayStartDate } from '../../../../utils/Time';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -110,7 +111,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t, nt } = useFormatter();
   const data = useFragment(triggerLineFragment, node);
   const filters = JSON.parse(data.filters ?? '{}');
   const outcomesOptions: Record<string, string> = {
@@ -124,6 +125,13 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
     delete: t('Deletion'),
     none: t('Unknown'),
   };
+  const currentTime = data.trigger_time?.split('-') ?? [
+    dayStartDate().toISOString(),
+  ];
+  const day = currentTime.length > 1 ? currentTime[0] : '1';
+  const time = currentTime.length > 1
+    ? new Date(`2000-01-01T${currentTime[1]}`)
+    : new Date(`2000-01-01T${currentTime[0]}`);
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon>
@@ -215,13 +223,24 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     </span>
                   }
                 />
+                {currentTime.length > 1 && (
+                  <Chip
+                    classes={{ root: classes.chipInList3 }}
+                    label={
+                      <span>
+                        <strong>{t('Day: ')}</strong>
+                        {day}
+                      </span>
+                    }
+                  />
+                )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
                   <Chip
                     classes={{ root: classes.chipInList3 }}
                     label={
                       <span>
                         <strong>{t('Time: ')}</strong>
-                        {data.trigger_time}
+                        {nt(time)}
                       </span>
                     }
                   />

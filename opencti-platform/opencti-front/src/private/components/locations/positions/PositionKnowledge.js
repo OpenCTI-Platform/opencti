@@ -119,6 +119,62 @@ class PositionKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/locations/positions/:positionId/knowledge/regions"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={position.id}
+                relationshipTypes={['located-at']}
+                stixCoreObjectTypes={['Region']}
+                entityLink={link}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/locations/positions/:positionId/knowledge/countries"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={position.id}
+                relationshipTypes={['located-at']}
+                stixCoreObjectTypes={['Country']}
+                entityLink={link}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/locations/positions/:positionId/knowledge/areas"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={position.id}
+                relationshipTypes={['located-at']}
+                stixCoreObjectTypes={['Administrative-Area']}
+                entityLink={link}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/locations/positions/:positionId/knowledge/cities"
+            render={(routeProps) => (
+              <EntityStixCoreRelationships
+                entityId={position.id}
+                relationshipTypes={['located-at']}
+                stixCoreObjectTypes={['City']}
+                entityLink={link}
+                isRelationReversed={false}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/locations/positions/:positionId/knowledge/organizations"
             render={(routeProps) => (
               <EntityStixCoreRelationships

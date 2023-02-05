@@ -201,8 +201,8 @@ export const rulesListRuleActivationMutation = graphql`
 `;
 
 export const rulesListQuery = graphql`
-  query RulesListQuery($startDate: DateTime!) {
-    ...RulesList_rules
+  query RulesListQuery($startDate: DateTime!, $endDate: DateTime) {
+    ...RulesList_rules @arguments(startDate: $startDate, endDate: $endDate)
   }
 `;
 
@@ -376,10 +376,8 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                   </div>
                   <div style={{ marginTop: 20 }}>
                     <ItemBoolean
-                      status={ruleManagerInfo.activated}
-                      label={
-                        ruleManagerInfo.activated ? t('Enabled') : t('Disabled')
-                      }
+                      status={isEngineEnabled}
+                      label={isEngineEnabled ? t('Enabled') : t('Disabled')}
                     />
                   </div>
                   <div className={classes.icon}>
@@ -719,7 +717,11 @@ export default createRefetchContainer(
   RulesListComponent,
   {
     data: graphql`
-      fragment RulesList_rules on Query {
+      fragment RulesList_rules on Query
+      @argumentDefinitions(
+        startDate: { type: "DateTime!" }
+        endDate: { type: "DateTime" }
+      ) {
         settings {
           platform_modules {
             id
@@ -749,11 +751,19 @@ export default createRefetchContainer(
           date
           value
         }
-        stixDomainObjectsNumber(types: ["Stix-Object"], onlyInferred: true) {
+        stixDomainObjectsNumber(
+          types: ["Stix-Object"]
+          onlyInferred: true
+          endDate: $endDate
+        ) {
           total
           count
         }
-        stixCoreRelationshipsNumber(relationship_type: ["stix-relationship"], onlyInferred: true) {
+        stixCoreRelationshipsNumber(
+          relationship_type: ["stix-relationship"]
+          onlyInferred: true
+          endDate: $endDate
+        ) {
           total
           count
         }

@@ -7,7 +7,7 @@ import { QueryRenderer } from '../../../relay/environment';
 import RulesList, { rulesListQuery } from './RulesList';
 import SearchInput from '../../../components/SearchInput';
 import { UserContext } from '../../../utils/hooks/useAuth';
-import { yearsAgo } from '../../../utils/Time';
+import { dayAgo, yearsAgo } from '../../../utils/Time';
 import { RULE_ENGINE } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 
@@ -28,39 +28,48 @@ const useStyles = makeStyles(() => ({
 const Rules = () => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const { viewStorage, helpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, { searchTerm: '' });
+  const { viewStorage, helpers } = usePaginationLocalStorage(
+    LOCAL_STORAGE_KEY,
+    { searchTerm: '' },
+  );
   return (
-      <UserContext.Consumer>
-        {({ helper }) => {
-          if (!helper.isRuleEngineEnable()) {
-            return <Alert severity="info">{t(helper.generateDisableMessage(RULE_ENGINE))}</Alert>;
-          }
+    <UserContext.Consumer>
+      {({ helper }) => {
+        if (!helper.isRuleEngineEnable()) {
           return (
-            <div className={classes.container}>
-              <div className={classes.parameters}>
-                <div style={{ float: 'left', marginRight: 20 }}>
-                  <SearchInput
-                    variant="small"
-                    onSubmit={helpers.handleSearch}
-                    keyword={viewStorage.searchTerm}
-                  />
-                </div>
-              </div>
-              <div className="clearfix" />
-              <QueryRenderer
-                query={rulesListQuery}
-                variables={{ startDate: yearsAgo(1) }}
-                render={({ props }) => {
-                  if (props) {
-                    return <RulesList data={props} keyword={viewStorage.searchTerm} />;
-                  }
-                  return <div />;
-                }}
-              />
-            </div>
+            <Alert severity="info">
+              {t(helper.generateDisableMessage(RULE_ENGINE))}
+            </Alert>
           );
-        }}
-      </UserContext.Consumer>
+        }
+        return (
+          <div className={classes.container}>
+            <div className={classes.parameters}>
+              <div style={{ float: 'left', marginRight: 20 }}>
+                <SearchInput
+                  variant="small"
+                  onSubmit={helpers.handleSearch}
+                  keyword={viewStorage.searchTerm}
+                />
+              </div>
+            </div>
+            <div className="clearfix" />
+            <QueryRenderer
+              query={rulesListQuery}
+              variables={{ startDate: yearsAgo(1), endDate: dayAgo() }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <RulesList data={props} keyword={viewStorage.searchTerm} />
+                  );
+                }
+                return <div />;
+              }}
+            />
+          </div>
+        );
+      }}
+    </UserContext.Consumer>
   );
 };
 

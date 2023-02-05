@@ -92,6 +92,7 @@ class RootPosition extends Component {
               'regions',
               'countries',
               'areas',
+              'cities',
               'threats',
               'threat_actors',
               'intrusion_sets',

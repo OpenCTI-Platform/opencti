@@ -193,14 +193,14 @@ const StixCyberObservables: FunctionComponent = () => {
         isSortable: false,
       },
       created_at: {
-        label: 'Creation date',
-        width: '15%',
+        label: 'Creation',
+        width: '10%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
-        width: '8%',
+        width: '10%',
       },
     };
   };

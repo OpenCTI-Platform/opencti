@@ -260,6 +260,16 @@ export const useFormatter = () => {
     }
     return intl.formatDate(date, { year: 'numeric' });
   };
+  const numericTime = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      second: 'numeric',
+      minute: 'numeric',
+      hour: 'numeric',
+    });
+  };
   return {
     t: translate,
     n: formatNumber,
@@ -274,6 +284,7 @@ export const useFormatter = () => {
     md: monthDate,
     mtd: monthTextDate,
     yd: yearDate,
+    nt: numericTime,
   };
 };
 
