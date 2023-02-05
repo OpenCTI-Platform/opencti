@@ -672,6 +672,24 @@ const useSearchEntities = ({
             unionSetEntities('priority', priorityEntities);
           });
         break;
+      case 'severity':
+        fetchQuery(attributesSearchQuery, {
+          attributeName: 'severity',
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const severityEntities = (data?.runtimeAttributes?.edges ?? []).map(
+              (n) => ({
+                label: n.node.value,
+                value: n.node.value,
+                type: 'Vocabulary',
+              }),
+            );
+            unionSetEntities('severity', severityEntities);
+          });
+        break;
       case 'pattern_type':
         // eslint-disable-next-line no-case-declarations
         const patternTypesEntities = [

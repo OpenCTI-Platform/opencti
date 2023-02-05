@@ -233,16 +233,25 @@ const StreamCollectionEditionContainer = (props) => {
                   variant="text"
                   availableFilterKeys={[
                     'entity_type',
+                    'x_opencti_workflow_id',
+                    'assigneeTo',
+                    'objectContains',
                     'markedBy',
                     'labelledBy',
+                    'creator',
                     'createdBy',
+                    'priority',
+                    'severity',
                     'x_opencti_score',
                     'x_opencti_detection',
-                    'x_opencti_workflow_id',
                     'revoked',
                     'confidence',
                     'indicator_types',
                     'pattern_type',
+                    'fromId',
+                    'toId',
+                    'fromTypes',
+                    'toTypes',
                   ]}
                   handleAddFilter={handleAddFilter}
                   noDirectFilters={true}
