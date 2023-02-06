@@ -13,12 +13,20 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import AddIcon from '@material-ui/icons/Add';
 import IconButton from '@material-ui/core/IconButton';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import EditIcon from '@material-ui/icons/Edit';
 import Link from '@material-ui/core/Link';
 import LaunchIcon from '@material-ui/icons/Launch';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import inject18n from '../../../../components/i18n';
 import Switch from '@material-ui/core/Switch';
-import { Button, Divider } from '@material-ui/core';
+import { Button, Divider, Menu, MenuItem } from '@material-ui/core';
+import AuthorizationBoundaryPopover from './AuthorizationBoundaryPopover';
+import NetworkArchitecturePopover from './NetworkArchitecturePopover';
+import DataFlowPopover from './DataFlowPopover';
+import AuthorizationBoundaryEditionPopover from './AuthorizationBoundaryEditionPopover';
+import NetworkArchitectureEditionPopover from './NetworkArchitectureEditionPopover';
+import DataFlowEditionPopover from './DataFlowEditionPopover';
 
 const styles = (theme) => ({
   paper: {
@@ -65,6 +73,107 @@ const styles = (theme) => ({
 });
 
 class InformationSystemDetailsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      anchorEl: null,
+      openView: false,
+      openEdit: false,
+      modal: '',
+      mode: null,
+    };
+  }
+
+  handleClick(event, id) {
+    this.setState({
+      anchorEl: event.currentTarget,
+      modal: id,
+    });
+  };
+  handleOpenView() {
+    this.setState({
+      anchorEl: null,
+      openView: true,
+      mode: 'view'
+    });
+  };
+
+  handleCloseView() {
+    this.setState({
+      openView: false,
+      modal: '',
+      mode: null
+    });
+  }
+
+  handleOpenEdit() {
+    this.setState({
+      anchorEl: null,
+      openEdit: true,
+      mode: 'edit'
+    });
+  };
+
+  handleCloseEdit() {
+    this.setState({
+      openEdit: false,
+      modal: '',
+      mode: null
+    });
+  }
+
+  renderButtons(id, title) {
+    return (
+      <>
+        <Button
+          aria-controls={
+            Boolean(this.state.anchorEl) ? "basic-menu" : undefined
+          }
+          variant="contained"
+          color="primary"
+          endIcon={<KeyboardArrowDownIcon />}
+          style={{ marginRight: 5 }}
+          onClick={(event) => this.handleClick(event, id)}
+          id={id}
+          aria-describedby='basic-menu'
+        >
+        {title}
+        </Button>
+        <Menu
+          id="basic-menu"
+          anchorEl={this.state.anchorEl}
+          open={Boolean(this.state.anchorEl)}
+          onClose={() => {
+            this.setState({
+              anchorEl: null,
+            });
+          }}
+          MenuListProps={{
+            "aria-labelledby": id,
+          }}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+          style={{ padding: '20px 10px', marginTop: '50px' }}
+        >
+          <MenuItem onClick={this.handleOpenView.bind(this)} style={{paddingLeft: '30px',paddingRight: '70px'}}>
+            <VisibilityIcon style={{ marginRight: "20px" }}/>
+            View
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenEdit.bind(this)} style={{paddingLeft: '30px',paddingRight: '70px'}}>
+            <EditIcon style={{ marginRight: "20px" }}/>
+            Edit
+          </MenuItem>
+        </Menu>
+      </>
+    );
+  }
+
   render() {
     const {
        t, classes, informationSystem,fldt, history
@@ -277,18 +386,20 @@ class InformationSystemDetailsComponent extends Component {
               </div>
             </Grid>
             <Grid item={true} xs={12}>
-              <Button variant="contained" color="primary" endIcon={<KeyboardArrowDownIcon />} style={{ marginRight: 5 }}>
-                Authorization Boundary
-              </Button>
-              <Button variant="contained" color="primary" endIcon={<KeyboardArrowDownIcon />} style={{ marginRight: 5 }}>
-                Network Architecture
-              </Button>
-              <Button variant="contained" color="primary" endIcon={<KeyboardArrowDownIcon />} style={{ marginRight: 5 }}>
-                Data Flow
-              </Button>
+              {this.renderButtons("authorizationBoundary", "Authorization Boundary")}
+              {this.renderButtons("networkArchitecture", "Network Architecture")}
+              {this.renderButtons("dataFlow", "Data Flow")}
             </Grid>      
           </Grid>
         </Paper>
+        {/* View Modal */}
+        {this.state.mode === 'view' && this.state.modal === "authorizationBoundary" && <AuthorizationBoundaryPopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)}/>}
+        {this.state.mode === 'view' && this.state.modal === "networkArchitecture" && <NetworkArchitecturePopover  openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)}/>}
+        {this.state.mode === 'view' && this.state.modal === "dataFlow" && <DataFlowPopover  openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)}/>}
+        {/* Edit Modals */}
+        {this.state.mode === 'edit' && this.state.modal === "authorizationBoundary" && <AuthorizationBoundaryEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)}/>}
+        {this.state.mode === 'edit' && this.state.modal === "networkArchitecture" && <NetworkArchitectureEditionPopover  openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)}/>}
+        {this.state.mode === 'edit' && this.state.modal === "dataFlow" && <DataFlowEditionPopover  openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)}/>}      
       </div>
     );
   }
