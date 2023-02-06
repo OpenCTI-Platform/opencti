@@ -248,7 +248,7 @@ const stixDomainObjectCreationMutation = graphql`
 
 const stixDomainObjectValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number().required(t('This field is required')),
+  confidence: Yup.number(),
   description: Yup.string().nullable(),
   type: Yup.string().required(t('This field is required')),
 });

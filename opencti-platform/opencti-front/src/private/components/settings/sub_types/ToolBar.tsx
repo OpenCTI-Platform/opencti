@@ -129,7 +129,7 @@ const ToolBar: FunctionComponent<{
     const subscription = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
     });
-    return subscription.unsubscribe;
+    return subscription.unsubscribe();
   });
 
   const [display, setDisplay] = useState<boolean>(false);

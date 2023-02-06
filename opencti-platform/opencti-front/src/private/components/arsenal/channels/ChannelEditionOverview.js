@@ -271,16 +271,6 @@ class ChannelEditionOverviewComponent extends Component {
                       onSubmit={this.handleSubmitField.bind(this)}
                       onChange={(name, value) => setFieldValue(name, value)}
                     />
-                    <ConfidenceField
-                      name="confidence"
-                      onFocus={this.handleChangeFocus.bind(this)}
-                      onChange={this.handleSubmitField.bind(this)}
-                      label={t('Confidence')}
-                      fullWidth={true}
-                      containerStyle={fieldSpacingContainerStyle}
-                      editContext={context}
-                      variant="edit"
-                    />
                     <Field
                       component={MarkDownField}
                       name="description"
@@ -297,6 +287,16 @@ class ChannelEditionOverviewComponent extends Component {
                           fieldName="description"
                         />
                       }
+                    />
+                    <ConfidenceField
+                      name="confidence"
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onChange={this.handleSubmitField.bind(this)}
+                      label={t('Confidence')}
+                      fullWidth={true}
+                      containerStyle={fieldSpacingContainerStyle}
+                      editContext={context}
+                      variant="edit"
                     />
                     {channel.workflowEnabled && (
                       <StatusField

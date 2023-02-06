@@ -7752,6 +7752,7 @@ type Subscription {
   externalReference(id: ID!): ExternalReference
   notification: Notification
   notificationsNumber: NotificationCount
+  entitySetting(id: ID!): EntitySetting
 }
 
 type WorkEditMutations {

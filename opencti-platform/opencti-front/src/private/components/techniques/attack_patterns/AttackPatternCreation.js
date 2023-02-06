@@ -20,6 +20,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -122,6 +123,7 @@ class AttackPatternCreation extends Component {
       assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('objectLabel', pluck('value', values.objectLabel)),
+      assoc('externalReferences', pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
       mutation: attackPatternMutation,
@@ -196,6 +198,7 @@ class AttackPatternCreation extends Component {
                 objectMarking: [],
                 killChainPhases: [],
                 objectLabel: [],
+                externalReferences: [],
               }}
               validationSchema={attackPatternValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -252,6 +255,12 @@ class AttackPatternCreation extends Component {
                   <ObjectMarkingField
                     name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
                   />
                   <div className={classes.buttons}>
                     <Button

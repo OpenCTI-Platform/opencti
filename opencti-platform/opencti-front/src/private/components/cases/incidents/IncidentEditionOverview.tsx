@@ -23,6 +23,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 export const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewCaseFieldPatchMutation(
@@ -59,11 +60,12 @@ const incidentEditionOverviewFragment = graphql`
     id
     name
     case_type
-    priority
     severity
+    priority
     revoked
     description
     rating
+    confidence
     creator {
       id
       name
@@ -139,14 +141,15 @@ const incidentMutationRelationDelete = graphql`
 
 const caseValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  priority: Yup.string().nullable(),
   severity: Yup.string().nullable(),
+  priority: Yup.string().nullable(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
   rating: Yup.number(),
+  confidence: Yup.number(),
 });
 
 interface IncidentEditionOverviewProps {
@@ -225,8 +228,9 @@ IncidentEditionOverviewProps
   const initialValues = {
     name: caseData.name,
     description: caseData.description,
-    priority: caseData.priority,
     severity: caseData.severity,
+    priority: caseData.priority,
+    confidence: caseData.confidence,
     createdBy,
     objectMarking,
     objectAssignee,
@@ -254,6 +258,17 @@ IncidentEditionOverviewProps
             }
           />
           <OpenVocabField
+            label={t('Case severity')}
+            type="case_severity_ov"
+            name="severity"
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            variant="edit"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            editContext={context}
+          />
+          <OpenVocabField
             label={t('Case priority')}
             type="case_priority_ov"
             name="priority"
@@ -264,16 +279,15 @@ IncidentEditionOverviewProps
             multiple={false}
             editContext={context}
           />
-          <OpenVocabField
-            label={t('Case severity')}
-            type="case_severity_ov"
-            name="severity"
-            onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
-            variant="edit"
+          <ConfidenceField
+            name="confidence"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            label={t('Confidence')}
+            fullWidth={true}
             containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
             editContext={context}
+            variant="edit"
           />
           <Field
             component={MarkDownField}

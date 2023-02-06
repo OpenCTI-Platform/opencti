@@ -20,6 +20,7 @@ import { worksForSource } from '../domain/work';
 import { filesListing, loadFile } from '../database/file-storage';
 import { askElementEnrichmentForConnector, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { connectorsForEnrichment } from '../database/repository';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 
 const externalReferenceResolvers = {
   Query: {
@@ -78,7 +79,7 @@ const externalReferenceResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, context) => {
         externalReferenceEditContext(context, context.user, id);
         const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),
+          () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== context.user.id && payload.instance.id === id;

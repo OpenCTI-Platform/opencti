@@ -1,5 +1,9 @@
+import { withFilter } from 'graphql-subscriptions';
 import { entitySettingsEditField, findAll, findById, findByType } from './entitySetting-domain';
 import type { Resolvers } from '../../generated/graphql';
+import { pubSubAsyncIterator } from '../../database/redis';
+import { BUS_TOPICS } from '../../config/conf';
+import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 
 const entitySettingResolvers: Resolvers = {
   Query: {
@@ -12,6 +16,20 @@ const entitySettingResolvers: Resolvers = {
       return entitySettingsEditField(context, context.user, ids, input);
     },
   },
+  Subscription: {
+    entitySetting: {
+      resolve: /* istanbul ignore next */ (payload: any) => {
+        return payload.instance;
+      },
+      subscribe: /* istanbul ignore next */ (_, { id }, __) => {
+        const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC);
+        const filtering = withFilter(() => asyncIterator, (payload) => {
+          return payload.instance.id === id;
+        })();
+        return { [Symbol.asyncIterator]() { return filtering; } };
+      },
+    },
+  }
 };
 
 export default entitySettingResolvers;

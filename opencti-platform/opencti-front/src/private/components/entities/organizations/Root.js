@@ -201,9 +201,6 @@ class RootOrganization extends Component {
                             disableSharing={true}
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'Organization',
-                            )}
                           />
                           <EntityStixSightingRelationships
                             entityId={props.organization.id}

@@ -381,18 +381,6 @@ class ToolEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
-            <OpenVocabField
-              type="tool_types_ov"
-              name="tool_types"
-              label={t('Tool types')}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
             {tool.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
@@ -428,6 +416,18 @@ class ToolEditionOverviewComponent extends Component {
                 />
               }
               onChange={this.handleChangeObjectMarking.bind(this)}
+            />
+            <OpenVocabField
+              type="tool_types_ov"
+              name="tool_types"
+              label={t('Tool types')}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              variant="edit"
+              multiple={true}
+              editContext={context}
             />
             {enableReferences && (
               <CommitMessage

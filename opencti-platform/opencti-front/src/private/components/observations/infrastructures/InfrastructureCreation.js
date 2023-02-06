@@ -26,6 +26,9 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { parse } from '../../../../utils/Time';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -84,6 +87,12 @@ const infrastructureValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  first_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  last_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -113,11 +122,14 @@ class InfrastructureCreation extends Component {
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const adaptedValues = R.evolve(
       {
-        confidence: () => parseInt(values.confidence, 10),
+        confidence: parseInt(values.confidence, 10),
         createdBy: R.path(['value']),
         objectMarking: R.pluck('value'),
         objectLabel: R.pluck('value'),
         externalReferences: R.pluck('value'),
+        first_seen: values.first_seen ? parse(values.first_seen).format() : null,
+        last_seen: values.first_seen ? parse(values.last_seen).format() : null,
+        killChainPhases: R.pluck('value'),
       },
       values,
     );
@@ -199,6 +211,9 @@ class InfrastructureCreation extends Component {
                 objectMarking: [],
                 objectLabel: [],
                 externalReferences: [],
+                first_seen: null,
+                last_seen: null,
+                killChainPhases: [],
               }}
               validationSchema={infrastructureValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -233,6 +248,30 @@ class InfrastructureCreation extends Component {
                     label={t('Confidence')}
                     fullWidth={true}
                     containerStyle={{ width: '100%', marginTop: 20 }}
+                  />
+                  <Field
+                    component={DateTimePickerField}
+                    name="first_seen"
+                    TextFieldProps={{
+                      label: t('First seen'),
+                      variant: 'standard',
+                      fullWidth: true,
+                      style: { marginTop: 20 },
+                    }}
+                  />
+                  <Field
+                    component={DateTimePickerField}
+                    name="last_seen"
+                    TextFieldProps={{
+                      label: t('Last seen'),
+                      variant: 'standard',
+                      fullWidth: true,
+                      style: { marginTop: 20 },
+                    }}
+                  />
+                  <KillChainPhasesField
+                    name="killChainPhases"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <Field
                     component={MarkDownField}

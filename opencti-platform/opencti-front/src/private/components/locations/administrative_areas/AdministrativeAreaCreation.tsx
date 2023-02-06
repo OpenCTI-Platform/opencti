@@ -20,6 +20,7 @@ import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -86,13 +87,14 @@ const administrativeAreaValidation = (t: (v: string) => string) => Yup.object().
 });
 
 interface AdministrativeAreaAddInput {
-  name: string;
-  description: string;
-  latitude: string;
-  longitude: string;
-  createdBy?: { value: string; label?: string };
-  objectMarking: { value: string }[];
-  externalReferences: { value: string }[];
+  name: string
+  description: string
+  latitude: string
+  longitude: string
+  createdBy?: { value: string; label?: string }
+  objectMarking: { value: string }[]
+  objectLabel: { value: string }[]
+  externalReferences: { value: string }[]
 }
 
 const AdministrativeAreaCreation = ({
@@ -116,6 +118,7 @@ const AdministrativeAreaCreation = ({
       longitude: parseFloat(values.longitude),
       description: values.description,
       objectMarking: values.objectMarking.map(({ value }) => value),
+      objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
     };
@@ -177,6 +180,7 @@ const AdministrativeAreaCreation = ({
               longitude: '',
               createdBy: { value: '', label: '' },
               objectMarking: [],
+              objectLabel: [],
               externalReferences: [],
             }}
             validationSchema={administrativeAreaValidation(t)}
@@ -228,6 +232,12 @@ const AdministrativeAreaCreation = ({
                   name="createdBy"
                   style={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
                 />
                 <ObjectMarkingField
                   name="objectMarking"

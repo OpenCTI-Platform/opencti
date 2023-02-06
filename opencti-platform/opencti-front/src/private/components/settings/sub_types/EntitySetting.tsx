@@ -1,16 +1,18 @@
-import { graphql, useMutation } from 'react-relay';
+import { graphql, useMutation, useSubscription } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import React from 'react';
+import React, { useMemo } from 'react';
 import Switch from '@mui/material/Switch';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import Grid from '@mui/material/Grid';
 import { Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
 import { EntitySetting_entitySetting$key } from './__generated__/EntitySetting_entitySetting.graphql';
+import { EntitySettingSubscription } from './__generated__/EntitySettingSubscription.graphql';
 
 export const entitySettingsFragment = graphql`
   fragment EntitySettingConnection_entitySettings on EntitySettingConnection {
@@ -48,6 +50,14 @@ export const entitySettingQuery = graphql`
   }
 `;
 
+export const entitySettingSubscription = graphql`
+  subscription EntitySettingSubscription($id: ID!) {
+    entitySetting(id: $id) {
+      ...EntitySetting_entitySetting
+    }
+  }
+`;
+
 export const entitySettingsPatch = graphql`
   mutation EntitySettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
@@ -72,6 +82,13 @@ const EntitySetting = ({
     queryRef,
     nodePath: 'entitySettingByType',
   });
+
+  const config = useMemo<GraphQLSubscriptionConfig<EntitySettingSubscription>>(() => ({
+    subscription: entitySettingSubscription,
+    variables: { id: entitySetting.id },
+  }), [entitySetting]);
+
+  useSubscription(config);
 
   const [commit] = useMutation(entitySettingsPatch);
 

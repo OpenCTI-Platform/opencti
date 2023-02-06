@@ -19,6 +19,8 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
 import { CountriesLinesPaginationQuery$variables } from './__generated__/CountriesLinesPaginationQuery.graphql';
 import { insertNode } from '../../../../utils/store';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -91,10 +93,12 @@ const countryValidation = (t: (message: string) => string) => Yup.object()
   });
 
 interface CountryAddInput {
-  name: string,
-  description: string,
-  createdBy?: { value: string, label?: string },
-  objectMarking: { value: string }[],
+  name: string
+  description: string
+  createdBy?: { value: string, label?: string }
+  objectMarking: { value: string }[]
+  objectLabel: { value: string }[]
+  externalReferences: { value: string }[]
 }
 
 const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLinesPaginationQuery$variables }) => {
@@ -117,6 +121,8 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
     const finalValues = R.pipe(
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commit({
       variables: {
@@ -170,6 +176,8 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
               description: '',
               createdBy: { value: '', label: '' },
               objectMarking: [],
+              objectLabel: [],
+              externalReferences: [],
             }}
             validationSchema={countryValidation(t)}
             onSubmit={onSubmit}
@@ -180,6 +188,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
               handleReset,
               isSubmitting,
               setFieldValue,
+              values,
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
@@ -207,12 +216,24 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
                   }}
                   setFieldValue={setFieldValue}
                 />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
+                />
                 <ObjectMarkingField
                   name="objectMarking"
                   style={{
                     marginTop: 20,
                     width: '100%',
                   }}
+                />
+                <ExternalReferencesField
+                  name="externalReferences"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.externalReferences}
                 />
                 <div className={classes.buttons}>
                   <Button
