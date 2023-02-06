@@ -16,6 +16,9 @@ import {
   ArrowBack,
   AddCircleOutline,
 } from '@material-ui/icons';
+import Popover from '@material-ui/core/Popover';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
@@ -75,7 +78,17 @@ class CyioDomainObjectAssetHeader extends Component {
       openAlias: false,
       openAliases: false,
       openAliasesCreate: false,
+      openInfoPopover: false,
     };
+  }
+
+  handleInfoNewCreation() {
+    this.setState({ openInfoPopover: !this.state.openInfoPopover });
+  }
+
+  handleInfoSystemListItem(type) {
+    this.props.handleOpenNewCreation(type);
+    this.handleInfoNewCreation();
   }
 
   render() {
@@ -126,18 +139,61 @@ class CyioDomainObjectAssetHeader extends Component {
               disabled: disablePopover,
             })}
           </div>
-          <Tooltip title={t('Create New')}>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
-              startIcon={<AddCircleOutline />}
-              disabled={disabled || !handleOpenNewCreation || false}
-              color='primary'
-            >
-              {t('New')}
-            </Button>
-          </Tooltip>
+          {goBack === '/defender HQ/assets/information_systems' ? (
+            <>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<AddCircleOutline />}
+                onClick={this.handleInfoNewCreation.bind(this)}
+                color='primary'
+                disabled={disabled || false}
+              >
+                {t('New')}
+              </Button>
+              <Popover
+                id='simple-popover'
+                open={this.state.openInfoPopover}
+                onClose={this.handleInfoNewCreation.bind(this)}
+                anchorOrigin={{
+                  vertical: 125,
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  horizontal: 150,
+                }}
+              >
+                <List>
+                  <ListItem
+                    button={true}
+                    onClick={this.handleInfoSystemListItem.bind(this, 'graph')}
+                  >
+                    Graph
+                  </ListItem>
+                  <ListItem
+                    button={true}
+                    onClick={this.handleInfoSystemListItem.bind(this, 'form')}
+                  >
+                    Form
+                  </ListItem>
+                </List>
+              </Popover>
+            </>
+          ) : (
+            <Tooltip title={t('Create New')}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
+                startIcon={<AddCircleOutline />}
+                disabled={disabled || !handleOpenNewCreation || false}
+                color='primary'
+              >
+                {t('New')}
+              </Button>
+            </Tooltip>
+          )
+          }
           {/* </Security> */}
         </div>
       </div>

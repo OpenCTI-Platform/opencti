@@ -57,19 +57,11 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
-  link: {
-    textAlign: 'left',
-    fontSize: '1rem',
+  textBase: {
     display: 'flex',
-    minWidth: '50px',
-    width: '100%',
+    alignItems: 'center',
+    marginBottom: 5,
   },
-  launchIcon: {
-    marginRight: '5%',
-  },
-  linkTitle: {
-    color: '#fff',
-  }
 });
 
 class InformationSystemDetailsComponent extends Component {
@@ -176,7 +168,7 @@ class InformationSystemDetailsComponent extends Component {
 
   render() {
     const {
-       t, classes, informationSystem,fldt, history
+      t, classes, informationSystem, fldt, history
     } = this.props;
     return (
       <div style={{ height: "100%" }}>
@@ -186,22 +178,22 @@ class InformationSystemDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Information Type(s)")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Information Type(s)")}
+                </Typography>
                 <Tooltip title={t("Information Type(s)")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
+                <IconButton size="small">
+                  <AddIcon />
+                </IconButton>
               </div>
-              <IconButton size="small" style={{ margin: "-5px 0 0 5px" }}>
-                <AddIcon />
-              </IconButton>
               <div className="clearfix" />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
@@ -212,34 +204,34 @@ class InformationSystemDetailsComponent extends Component {
               </div>
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Security Sensitivity Level")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Security Sensitivity Level")}
+                </Typography>
                 <Tooltip title={t("Security Sensitivity Level")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
               <div className="clearfix" />
               {/* Content here */}
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Security Impact Level")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Security Impact Level")}
+                </Typography>
                 <Tooltip title={t("Security Impact Level")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
               <div className="clearfix" />
@@ -247,39 +239,39 @@ class InformationSystemDetailsComponent extends Component {
             </Grid>
             <Grid item={true} xs={12}>
               <Divider />
-            </Grid> 
+            </Grid>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("System Implementation")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("System Implementation")}
+                </Typography>
                 <Tooltip title={t("System Implementation")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
-            </Grid>           
+            </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Inventory Items")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Inventory Items")}
+                </Typography>
                 <Tooltip title={t("Inventory Items")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
+                <IconButton size="small">
+                  <AddIcon />
+                </IconButton>
               </div>
-              <IconButton size="small" style={{ margin: "-5px 0 0 5px" }}>
-                <AddIcon />
-              </IconButton>
               <div className="clearfix" />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
@@ -290,22 +282,22 @@ class InformationSystemDetailsComponent extends Component {
               </div>
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Components")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Components")}
+                </Typography>
                 <Tooltip title={t("Components")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
+                <IconButton size="small">
+                  <AddIcon />
+                </IconButton>
               </div>
-              <IconButton size="small" style={{ margin: "-5px 0 0 5px" }}>
-                <AddIcon />
-              </IconButton>
               <div className="clearfix" />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
@@ -316,22 +308,22 @@ class InformationSystemDetailsComponent extends Component {
               </div>
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Users")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Users")}
+                </Typography>
                 <Tooltip title={t("Users")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
+                <IconButton size="small">
+                  <AddIcon />
+                </IconButton>
               </div>
-              <IconButton size="small" style={{ margin: "-5px 0 0 5px" }}>
-                <AddIcon />
-              </IconButton>
               <div className="clearfix" />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
@@ -342,22 +334,22 @@ class InformationSystemDetailsComponent extends Component {
               </div>
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("Leveraged Authorization")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("Leveraged Authorization")}
+                </Typography>
                 <Tooltip title={t("Leveraged Authorization")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
+                <IconButton size="small">
+                  <AddIcon />
+                </IconButton>
               </div>
-              <IconButton size="small" style={{ margin: "-5px 0 0 5px" }}>
-                <AddIcon />
-              </IconButton>
               <div className="clearfix" />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
@@ -369,19 +361,19 @@ class InformationSystemDetailsComponent extends Component {
             </Grid>
             <Grid item={true} xs={12}>
               <Divider />
-            </Grid> 
+            </Grid>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: "left" }}
-              >
-                {t("System Documentation")}
-              </Typography>
-              <div style={{ float: "left", margin: "-5px 0 0 5px" }}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t("System Documentation")}
+                </Typography>
                 <Tooltip title={t("System Documentation")}>
-                  <Information fontSize="inherit" color="disabled" />
+                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
             </Grid>

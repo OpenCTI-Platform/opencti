@@ -17,7 +17,8 @@ import InformationSystemCards, {
 import InformationSystemLines, {
   informationSystemLinesQuery,
 } from './informationSystem/InformationSystemLines';
-import SoftwareCreation from './informationSystem/InformationSystemCreation';
+import InformationSystemFormCreation from './informationSystem/InformationSystemFormCreation';
+import InformationSystemGraphCreation from './informationSystem/InformationSystemGraphCreation';
 import InformationSystemDeletion from './informationSystem/InformationSystemDeletion';
 import { isUniqFilter } from '../common/lists/Filters';
 import { toastGenericError } from '../../../utils/bakedToast';
@@ -40,7 +41,7 @@ class InformationSystems extends Component {
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
       selectAll: false,
-      openInfoSystemCreation: false,
+      InfoSystemCreation: '',
     };
   }
 
@@ -58,13 +59,13 @@ class InformationSystems extends Component {
     const {
       sortBy,
       orderAsc,
-      openInfoSystemCreation,
+      InfoSystemCreation,
     } = this.state;
     const paginationOptions = {
       sortBy,
       orderAsc,
       filters: [],
-      openInfoSystemCreation,
+      InfoSystemCreation,
     };
     if (this.props.history.location.pathname !== '/defender HQ/assets/information_systems'
       && convertFilters(this.state.filters).length) {
@@ -101,8 +102,8 @@ class InformationSystems extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleSoftwareCreation() {
-    this.setState({ openInfoSystemCreation: true });
+  handleInformationSystemCreation(type) {
+    this.setState({ InfoSystemCreation: type });
   }
 
   handleRefresh() {
@@ -224,7 +225,7 @@ class InformationSystems extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
-        handleNewCreation={this.handleSoftwareCreation.bind(this)}
+        handleNewCreation={this.handleInformationSystemCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
@@ -335,7 +336,7 @@ class InformationSystems extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
         handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
-        handleNewCreation={this.handleSoftwareCreation.bind(this)}
+        handleNewCreation={this.handleInformationSystemCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
@@ -388,7 +389,7 @@ class InformationSystems extends Component {
       orderAsc,
       searchTerm,
       filters,
-      openInfoSystemCreation,
+      InfoSystemCreation,
     } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
@@ -401,13 +402,16 @@ class InformationSystems extends Component {
     const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && (!openInfoSystemCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' && (!openInfoSystemCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
-        {(openInfoSystemCreation || location.openNewCreation) && (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SoftwareCreation paginationOptions={paginationOptions} history={this.props.history} />
-          // </Security>
-        )}
+        {view === 'cards' && this.renderCards(paginationOptions)}
+        {view === 'lines' && this.renderLines(paginationOptions)}
+        <InformationSystemFormCreation
+          InfoSystemCreation={InfoSystemCreation}
+          handleInformationSystemCreation={this.handleInformationSystemCreation.bind(this)}
+        />
+        <InformationSystemGraphCreation
+          InfoSystemCreation={InfoSystemCreation}
+          handleInformationSystemCreation={this.handleInformationSystemCreation.bind(this)}
+        />
       </div>
     );
   }
