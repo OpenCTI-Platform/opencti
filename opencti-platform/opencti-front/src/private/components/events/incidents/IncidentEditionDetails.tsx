@@ -150,7 +150,6 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
     last_seen: incident.last_seen,
     source: incident.source,
     objective: incident.objective,
-    names: ['source', 'first_seen', 'last_seen', 'objective'],
   };
 
   return (

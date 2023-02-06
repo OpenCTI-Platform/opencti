@@ -324,17 +324,6 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
     status: incident.status,
     workflowEnabled: incident.workflowEnabled,
     is_inferred: isInferred,
-    names: [
-      'name',
-      'confidence',
-      'severity',
-      'description',
-      'createdBy',
-      'incident_type',
-      'objectMarking',
-      'objectAssignee',
-      'x_opencti_workflow_id',
-    ],
   };
 
   return (
