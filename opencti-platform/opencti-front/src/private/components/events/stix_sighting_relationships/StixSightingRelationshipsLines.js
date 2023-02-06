@@ -26,7 +26,9 @@ class StixSightingRelationshipsLines extends Component {
       onToggleEntity,
       selectedElements,
       deSelectedElements,
-      selectAll } = this.props;
+      selectAll,
+      data,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -34,8 +36,8 @@ class StixSightingRelationshipsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={this.props.data?.stixSightingRelationships?.edges ?? []}
-        globalCount={this.props.data?.stixSightingRelationships?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+        dataList={data?.stixSightingRelationships?.edges ?? []}
+        globalCount={data?.stixSightingRelationships?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={<StixSightingRelationshipLine />}
         DummyLineComponent={<StixSightingRelationshipLineDummy />}
         dataColumns={dataColumns}

@@ -3,21 +3,17 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, convertFilters, saveViewParameters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
-import ObservedDatasLines, {
-  observedDatasLinesQuery,
-} from './observed_data/ObservedDatasLines';
+import ObservedDatasLines, { observedDatasLinesQuery } from './observed_data/ObservedDatasLines';
 import inject18n from '../../../components/i18n';
 import ObservedDataCreation from './observed_data/ObservedDataCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
+import ToolBar from '../data/ToolBar';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 class ObservedDatas extends Component {
   constructor(props) {
@@ -35,6 +31,9 @@ class ObservedDatas extends Component {
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      selectedElements: null,
+      deSelectedElements: null,
+      selectAll: false,
     };
   }
 
@@ -62,6 +61,81 @@ class ObservedDatas extends Component {
       if (typeof this.props.onChangeOpenExports === 'function') {
         this.props.onChangeOpenExports(this.state.openExports);
       }
+    });
+  }
+
+  handleToggleSelectEntity(entity, event, forceRemove = []) {
+    event.stopPropagation();
+    event.preventDefault();
+    const { selectedElements, deSelectedElements, selectAll } = this.state;
+    if (Array.isArray(entity)) {
+      const currentIds = R.values(selectedElements).map((n) => n.id);
+      const givenIds = entity.map((n) => n.id);
+      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
+      let newSelectedElements = {
+        ...selectedElements,
+        ...R.indexBy(
+          R.prop('id'),
+          entity.filter((n) => addedIds.includes(n.id)),
+        ),
+      };
+      if (forceRemove.length > 0) {
+        newSelectedElements = R.omit(
+          forceRemove.map((n) => n.id),
+          newSelectedElements,
+        );
+      }
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+        deSelectedElements: null,
+      });
+    } else if (entity.id in (selectedElements || {})) {
+      const newSelectedElements = R.omit([entity.id], selectedElements);
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    } else if (selectAll && entity.id in (deSelectedElements || {})) {
+      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else if (selectAll) {
+      const newDeSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        deSelectedElements || {},
+      );
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else {
+      const newSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        selectedElements || {},
+      );
+      this.setState({
+        selectAll: false,
+        selectedElements: newSelectedElements,
+      });
+    }
+  }
+
+  handleToggleSelectAll() {
+    this.setState({
+      selectAll: !this.state.selectAll,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
+  }
+
+  handleClearSelectedElements() {
+    this.setState({
+      selectAll: false,
+      selectedElements: null,
+      deSelectedElements: null,
     });
   }
 
@@ -153,6 +227,9 @@ class ObservedDatas extends Component {
       filters,
       openExports,
       numberOfElements,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
     } = this.state;
     const { objectId, authorId } = this.props;
     let exportContext = null;
@@ -161,9 +238,20 @@ class ObservedDatas extends Component {
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
+    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+    if (selectAll) {
+      numberOfSelectedElements = numberOfElements.original
+        - Object.keys(deSelectedElements || {}).length;
+    }
+    let toolBarFilters = filters;
+    toolBarFilters = {
+      ...toolBarFilters,
+      entity_type: [{ id: 'Grouping', value: 'Grouping' }],
+    };
     return (
       <UserContext.Consumer>
         {({ helper }) => (
+          <div>
           <ListLines
             sortBy={sortBy}
             orderAsc={orderAsc}
@@ -174,6 +262,8 @@ class ObservedDatas extends Component {
             handleRemoveFilter={this.handleRemoveFilter.bind(this)}
             handleToggleExports={this.handleToggleExports.bind(this)}
             openExports={openExports}
+            handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+            selectAll={selectAll}
             noPadding={typeof this.props.onChangeOpenExports === 'function'}
             exportEntityType="Observed-Data"
             exportContext={exportContext}
@@ -200,11 +290,26 @@ class ObservedDatas extends Component {
                   dataColumns={this.buildColumns(helper)}
                   initialLoading={props === null}
                   onLabelClick={this.handleAddFilter.bind(this)}
+                  selectedElements={selectedElements}
+                  deSelectedElements={deSelectedElements}
+                  onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                  selectAll={selectAll}
                   setNumberOfElements={this.setNumberOfElements.bind(this)}
                 />
               )}
             />
           </ListLines>
+          <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          search={searchTerm}
+          filters={toolBarFilters}
+          handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
+          type="Observed-Data"
+          />
+          </div>
         )}
       </UserContext.Consumer>
     );
@@ -238,12 +343,14 @@ class ObservedDatas extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
+      <ExportContextProvider>
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ObservedDataCreation paginationOptions={paginationOptions} />
         </Security>
       </div>
+      </ExportContextProvider>
     );
   }
 }

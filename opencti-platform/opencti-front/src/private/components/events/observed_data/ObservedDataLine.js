@@ -9,6 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import Checkbox from '@mui/material/Checkbox';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -47,7 +48,20 @@ const styles = (theme) => ({
 
 class ObservedDataLineComponent extends Component {
   render() {
-    const { nsdt, classes, node, dataColumns, onLabelClick, n } = this.props;
+    const {
+      nsdt,
+      classes,
+      node,
+      dataColumns,
+      onLabelClick,
+      n,
+      onToggleEntity,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+      onToggleShiftEntity,
+      index,
+    } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -56,6 +70,23 @@ class ObservedDataLineComponent extends Component {
         component={Link}
         to={`/dashboard/events/observed_data/${node.id}`}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={(event) => (event.shiftKey
+            ? onToggleShiftEntity(index, node, event)
+            : onToggleEntity(node, event))
+          }
+        >
+          <Checkbox
+            edge="start"
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
+            disableRipple={true}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type="Observed-Data" />
         </ListItemIcon>
@@ -129,6 +160,10 @@ ObservedDataLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   onLabelClick: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 const ObservedDataLineFragment = createFragmentContainer(
@@ -185,6 +220,12 @@ class ObservedDataLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Skeleton
             animation="wave"
