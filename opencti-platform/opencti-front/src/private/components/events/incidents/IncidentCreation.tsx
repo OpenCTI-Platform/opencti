@@ -30,6 +30,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Theme } from '../../../../components/Theme';
 import { IncidentsLinesPaginationQuery$variables } from './__generated__/IncidentsLinesPaginationQuery.graphql';
 import { IncidentCreationMutation$variables } from './__generated__/IncidentCreationMutation.graphql';
+import type { IncidentAddInput } from './__generated__/IncidentCreationMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -73,21 +74,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: '10px 20px 20px 20px',
   },
 }));
-
-interface IncidentAddInput { // try to use ./__generated__/IncidentCreationMutation.graphql.ts
-  name: string
-  description: string
-  externalReferences: { value: string }[]
-  confidence?: number
-  severity?: string
-  source?: string
-  incident_type?: string
-  objectMarking?: ReadonlyArray<string>
-  createdBy?: { value: string, label?: string }
-  objectAssignee?: ReadonlyArray<string>
-  objectLabel?: ReadonlyArray<string>
-
-}
 
 const IncidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
