@@ -271,6 +271,7 @@ class ObservedDatas extends Component {
             filters={filters}
             paginationOptions={paginationOptions}
             numberOfElements={numberOfElements}
+            iconExtension={true}
             availableFilterKeys={[
               'labelledBy',
               'createdBy',

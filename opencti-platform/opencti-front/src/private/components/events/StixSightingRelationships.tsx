@@ -124,6 +124,7 @@ const StixSightingRelationships = () => {
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           secondaryAction={true}
+          iconExtension={true}
           availableFilterKeys={[
             'labelledBy',
             'markedBy',
