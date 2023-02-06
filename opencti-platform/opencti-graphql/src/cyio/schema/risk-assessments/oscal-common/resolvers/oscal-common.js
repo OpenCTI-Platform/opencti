@@ -132,6 +132,11 @@ const oscalCommonResolvers = {
     },
   },
   // Map enum GraphQL values to data model required values
+  FIPS199: {
+    fips_199_low: 'fips-199-low',
+    fips_199_moderate: 'fips-199-moderate',
+    fips_199_high: 'fips-199-high',
+  },
   OscalLocationType: {
     data_center: 'data-center',
   },

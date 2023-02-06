@@ -1,0 +1,164 @@
+# declares the query entry-points for this type
+extend type Query {
+  # ---- Information Type Entry
+  informationTypeEntry(id: ID!): InformationTypeEntry @hasPermission(resources:"Asset:view")
+  informationTypeEntries(
+    catalogId: ID!,
+    first: Int
+    offset: Int
+    orderedBy: InformationTypeEntryOrdering
+    orderMode: OrderingMode
+    filters: [InformationTypeEntryFiltering]
+    filterMode: FilterMode
+    search: String
+  ): InformationTypeEntryConnection @hasPermission(resources: "Asset:view")
+}
+
+extend type Mutation {
+  # ---- Information Type Entry
+  createInformationTypeEntry(input: InformationTypeEntryInput): InformationTypeEntry @hasPermission(resources: "Asset:update")
+  deleteInformationTypeEntry(id: ID!, catalogId: ID!): ID @hasPermission(resources: "Asset:delete")
+  deleteInformationTypeEntries(ids: [ID!]!, catalogId: ID!): [ID] @hasPermission(resources: "Asset:delete")
+  editInformationTypeEntry(id: ID!, input: [EditInput]!, commitMessage:String): InformationTypeEntry @hasPermission(resources: "Asset:update")
+}
+
+
+## -------- Information Type Entry
+"""
+Defines details about a Information Types as defined by NIST 800-60
+"""
+type InformationTypeEntry implements BasicObject & LifecycleObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp
+  "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+  labels: [CyioLabel]
+  # Information Type Entry
+  "Identifies a unique identifier, qualified by the given identification system used, for an information type."
+  identifier: String!
+  "Identifies the information type identification system used."
+  system: URL!
+  "Identifies a categorization of an information type."
+  category: String
+  "Identifies a human readable name for the information type that should be shown to the user.  This is typically composed of the identifier and the title."
+  display_name: String
+  "Identifies a human readable name for the information type. This title should be meaningful within the context of the system."
+  title: String!
+  "Identifies a detailed description of the information type."
+  description: String!
+  "Identifies a reference to details about the confidentiality impact of an information type."
+  confidentiality_impact: ImpactDefinition!
+  "Identifies a reference to details about the integrity impact of an information type."
+  integrity_impact: ImpactDefinition!
+  "Identifies a reference to details about the availability impact of an information type."
+  availability_impact: ImpactDefinition!
+}
+input InformationTypeEntryInput {
+  "Identifies the unique identifier for the catalog into which to create the information type."
+  catalog_id: ID!
+  "Identifies a unique identifier, qualified by the given identification system used, for an information type."
+  identifier: String!
+  "Identifies the information type identification system used."
+  system: URL!
+  "Identifies a categorization of an information type."
+  category: String
+  "Identifies a human readable name for the information type. This title should be meaningful within the context of the system."
+  title: String!
+  "Identifies a detailed description of the information type."
+  description: String!
+  "Identifies a reference to details about the confidentiality impact of an information type."
+  confidentiality_impact: ImpactDefinitionInput!
+  "Identifies a reference to details about the integrity impact of an information type."
+  integrity_impact: ImpactDefinitionInput!
+  "Identifies a reference to details about the availability impact of an information type."
+  availability_impact: ImpactDefinitionInput!
+}
+# Information Type Entry Connection
+type InformationTypeEntryConnection {
+  pageInfo: PageInfo!
+  edges: [InformationTypeEntryEdge]
+}
+type InformationTypeEntryEdge {
+  cursor: String,
+  node: InformationTypeEntry!
+}
+
+# Slicing types
+"Defines the list of fields that can be used to order by for an Information Type Entry."
+enum InformationTypeEntryOrdering {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Name"
+  name
+  "Label"
+  label_name
+  "Naming System"
+  system
+  "Category"
+  category
+}
+# Filtering types
+input InformationTypeEntryFiltering {
+  key: InformationTypeEntryFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+"Defines the list of fields that can be filtered upon for Information Type Entry."
+enum InformationTypeEntryFilter {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Name"
+  name
+  "Label"
+  label_name
+  "Naming System"
+  system
+  "Category"
+  category
+}
+## --------
+
+
+## -------- Impact Definition
+"""
+Defines details about the impact of an Information Type.
+"""
+type ImpactDefinition implements ComplexDatatype {
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the type of the Object."
+  entity_type: String!
+  # Impact
+  "Identifies the prescribed base (Confidentiality, Integrity, or Availability) security impact level."
+  base_score: FIPS199!
+  "Identifies a detailed description of the impact."
+  explanation: String
+  "Identifies a detailed description as to why an impact is recommended to be scored in a certain way."
+  recommendation: String
+}
+input ImpactDefinitionInput {
+  "Identifies the prescribed base (Confidentiality, Integrity, or Availability) security impact level."
+  base_score: FIPS199!
+  "Identifies a detailed description of the impact."
+  explanation: String
+  "Identifies a detailed description as to why an impact is recommended to be scored in a certain way."
+  recommendation: String
+}
+## --------
+

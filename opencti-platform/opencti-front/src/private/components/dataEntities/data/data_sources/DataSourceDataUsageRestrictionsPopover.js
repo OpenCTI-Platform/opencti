@@ -14,6 +14,7 @@ import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
 import Dialog from '@material-ui/core/Dialog';
+import Chip from '@material-ui/core/Chip';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../../components/i18n';
@@ -38,7 +39,8 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
-    overflow: 'hidden',
+    overflowY: 'auto',
+    overflowX: 'hidden',
   },
   dialogClosebutton: {
     float: 'left',
@@ -58,6 +60,14 @@ const styles = (theme) => ({
     color: theme.palette.header.text,
   },
 });
+
+const tlpColor = {
+    red: '#FF2B2B',
+    amber: '#FFC000',
+    amber_strict: '#FFC000',
+    green: '#33FF00',
+    clear: '#FFFFFF',
+  };
 
 class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
   constructor(props) {
@@ -83,398 +93,244 @@ class DataSourceDataUsageRestrictionsPopoverComponent extends Component {
   render() {
     const {
       t,
+      fldt,
       classes,
       dataSource,
       refreshQuery,
     } = this.props;
-    const DataUsageRestrict = dataSource.iep;
-    const initialValues = R.pipe(
-      R.assoc('id', DataUsageRestrict?.id || ''),
-      R.assoc('name', DataUsageRestrict?.name || ''),
-      R.assoc('start_date', DataUsageRestrict?.start_date || ''),
-      R.assoc('end_date', DataUsageRestrict?.end_date || ''),
-      R.assoc('tlp', DataUsageRestrict?.tlp || ''),
-      R.assoc('description', DataUsageRestrict?.description || ''),
-      R.assoc('permitted_actions', DataUsageRestrict?.permitted_actions || ''),
-      R.assoc('affected_party_notifications', DataUsageRestrict?.affected_party_notifications || ''),
-      R.pick([
-        'id',
-        'tlp',
-        'name',
-        'end_date',
-        'start_date',
-        'description',
-        'permitted_actions',
-        'unmodified_resale',
-        'encrypt_in_transit',
-        'affected_party_notifications',
-      ]),
-    )(DataUsageRestrict);
+    const { iep } = dataSource;
     return (
       <>
-        <Dialog
-          open={this.props.openDataUsageRestrictions}
-          keepMounted={true}
-        >
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t('Information Exchange Policy')}
-                </DialogTitle>
-                <DialogContent classes={{ root: classes.dialogContent }}>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('ID')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Name')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={TextField}
-                          name="id"
-                          fullWidth={true}
-                          disabled={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                        />
-                      </div>
-                    </Grid>
-                    <Grid xs={12} item={true}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Name')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Description')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="name"
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={12}>
-                      <Typography variant="h3"
-                        color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                        {t('Description')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip title={t('Source')}>
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={MarkDownField}
-                        name="description"
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid container item={true} spacing={3}>
-                      <Grid item={true} xs={6}>
-                        <div style={{ marginBottom: '12px' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Start Date')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                            <Tooltip title={t('Start')} >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={DatePickerField}
-                            name="start_date"
-                            fullWidth={true}
-                            size="small"
-                            containerstyle={{ width: '100%' }}
-                            variant='outlined'
-                            invalidDateMessage={t(
-                              'The value must be a date (YYYY-MM-DD)',
-                            )}
-                            style={{ height: '38.09px' }}
-                          />
-                        </div>
-                      </Grid>
-                      <Grid item={true} xs={6}>
-                        <div style={{ marginBottom: '12px' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('End Date')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                            <Tooltip title={t('End')} >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <Field
-                            component={DatePickerField}
-                            name="end_date"
-                            fullWidth={true}
-                            size="small"
-                            containerstyle={{ width: '100%' }}
-                            variant='outlined'
-                            invalidDateMessage={t(
-                              'The value must be a date (YYYY-MM-DD)',
-                            )}
-                            style={{ height: '38.09px' }}
-                          />
-                        </div>
-                      </Grid>
-                    </Grid>
-                    <Grid container item={true} spacing={3}>
-                      <Grid item={true} xs={6}>
-                        <div style={{ marginBottom: '12px' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Encrypt In Transit')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                            <Tooltip title={t('Resource Type')} >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <TaskType
-                            name='encrypt_in_transit'
-                            taskType='EncryptInTransit'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '100%' }}
-                            variant='outlined'
-                          />
-                        </div>
-                      </Grid>
-                      <Grid item={true} xs={6}>
-                        <div style={{ marginBottom: '12px' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Permitted Actions')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                            <Tooltip title={t('Resource Type')} >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <TaskType
-                            name='permitted_actions'
-                            taskType='PermittedActions'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '100%' }}
-                            variant='outlined'
-                          />
-                        </div>
-                      </Grid>
-                    </Grid>
-                    <Grid container item={true} spacing={3}>
-                      <Grid item={true} xs={6}>
-                        <div style={{ marginBottom: '12px' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Affected Party Notifications')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                            <Tooltip title={t('Resource Type')} >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <TaskType
-                            name='affected_party_notifications'
-                            taskType='AffectedPartyNotifications'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '100%' }}
-                            variant='outlined'
-                          />
-                        </div>
-                      </Grid>
-                      <Grid item={true} xs={6}>
-                        <div style={{ marginBottom: '12px' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('TLP')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                            <Tooltip title={t('Resource Type')} >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <TaskType
-                            name='tlp'
-                            taskType='TLPLevel'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '100%' }}
-                            variant='outlined'
-                          />
-                        </div>
-                      </Grid>
-                    </Grid>
-                    <Grid container item={true} spacing={3}>
-                      <Grid item={true} xs={6}>
-                        <div style={{ marginBottom: '12px' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Unmodified Resale')}
-                          </Typography>
-                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                            <Tooltip title={t('Resource Type')} >
-                              <Information fontSize="inherit" color="disabled" />
-                            </Tooltip>
-                          </div>
-                          <div className="clearfix" />
-                          <TaskType
-                            name='unmodified_resale'
-                            taskType='UnmodifiedResale'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '100%' }}
-                            variant='outlined'
-                          />
-                        </div>
-                      </Grid>
-                      <Grid item={true} xs={12}>
-                        <CyioCoreObjectExternalReferences
-                          typename={DataUsageRestrict.__typename}
-                          externalReferences={DataUsageRestrict?.external_references}
-                          fieldName='external_references'
-                          cyioCoreObjectId={DataUsageRestrict?.id}
-                          refreshQuery={refreshQuery}
-                        />
-                      </Grid>
-                      <Grid item={true} xs={12}>
-                        <CyioCoreObjectOrCyioCoreRelationshipNotes
-                          typename={DataUsageRestrict.__typename}
-                          notes={DataUsageRestrict.notes}
-                          refreshQuery={refreshQuery}
-                          fieldName='notes'
-                          marginTop='20px'
-                          cyioCoreObjectOrCyioCoreRelationshipId={DataUsageRestrict?.id}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Grid>
-                </DialogContent>
-                <DialogActions classes={{ root: classes.dialogClosebutton }}>
-                  <Button
-                    variant="outlined"
-                    onClick={this.handleCancelOpenClick.bind(this)}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.buttonPopover }}
+        <Dialog open={this.props.openDataUsageRestrictions} keepMounted={true}>
+          <DialogTitle classes={{ root: classes.dialogTitle }}>
+            {t("Information Exchange Policy")}
+          </DialogTitle>
+          <DialogContent classes={{ root: classes.dialogContent }}>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={12}>
+                <div style={{ marginBottom: "10px" }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: "left" }}
                   >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    // onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.buttonPopover }}
-                  >
-                    {t('Submit')}
-                  </Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </Dialog>
-        <Dialog
-          open={this.state.close}
-          keepMounted={true}
-        >
-          <DialogContent>
-            <Typography className={classes.popoverDialog}>
-              {t('Are you sure you’d like to cancel?')}
-            </Typography>
-            <Typography align='left'>
-              {t('Your progress will not be saved')}
-            </Typography>
+                    {t("ID")}
+                  </Typography>
+                  <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                    <Tooltip title={t("Name")}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {iep?.id && t(iep.id)}
+                </div>
+              </Grid>
+              <Grid xs={12} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Name")}
+                </Typography>
+                <div style={{ float: "left", margin: "-1px 0 0 4px" }}>
+                  <Tooltip title={t("Description")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {iep?.name && t(iep.name)}
+              </Grid>
+              <Grid item={true} xs={12}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: "left" }}
+                >
+                  {t("Description")}
+                </Typography>
+                <div style={{ float: "left", margin: "-1px 0 0 4px" }}>
+                  <Tooltip title={t("Source")}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {iep?.description && t(iep.description)}
+              </Grid>
+              <Grid container item={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: "left" }}
+                    >
+                      {t("Start Date")}
+                    </Typography>
+                    <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                      <Tooltip title={t("Start")}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    {iep?.start_date && fldt(iep?.start_date)}
+                  </div>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: "left" }}
+                    >
+                      {t("End Date")}
+                    </Typography>
+                    <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                      <Tooltip title={t("End")}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    {iep?.end_date && fldt(iep?.end_date)}
+                  </div>
+                </Grid>
+              </Grid>
+              <Grid container item={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: "left" }}
+                    >
+                      {t("Encrypt In Transit")}
+                    </Typography>
+                    <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                      <Tooltip title={t("Resource Type")}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    {iep?.encrypt_in_transit && t(iep?.encrypt_in_transit)}
+                  </div>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: "left" }}
+                    >
+                      {t("Permitted Actions")}
+                    </Typography>
+                    <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                      <Tooltip title={t("Resource Type")}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    {iep?.permitted_actions && t(iep?.permitted_actions)}
+                  </div>
+                </Grid>
+              </Grid>
+              <Grid container item={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: "left" }}
+                    >
+                      {t("Affected Party Notifications")}
+                    </Typography>
+                    <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                      <Tooltip title={t("Resource Type")}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    {iep?.affected_party_notifications && t(iep?.affected_party_notifications)}
+                  </div>
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: "left" }}
+                    >
+                      {t("TLP")}
+                    </Typography>
+                    <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                      <Tooltip title={t("Resource Type")}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    <Chip style={{ backgroundColor: '#000', borderRadius: 0, padding: 10, color: tlpColor[iep?.tlp] || '#FF2B2B' }} size="small" label={iep?.tlp && `TLP : ${t(iep?.tlp).toUpperCase()}`} />
+                  </div>
+                </Grid>
+              </Grid>
+              <Grid container item={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: "left" }}
+                    >
+                      {t("Unmodified Resale")}
+                    </Typography>
+                    <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                      <Tooltip title={t("Resource Type")}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    {iep?.unmodified_resale && t(iep.unmodified_resale)}
+                  </div>
+                </Grid>
+                <Grid item={true} xs={12}>
+                  <CyioCoreObjectExternalReferences
+                    typename={iep.__typename}
+                    externalReferences={iep?.external_references}
+                    fieldName="external_references"
+                    cyioCoreObjectId={iep?.id}
+                    refreshQuery={refreshQuery}
+                  />
+                </Grid>
+                <Grid item={true} xs={12}>
+                  <CyioCoreObjectOrCyioCoreRelationshipNotes
+                    typename={iep.__typename}
+                    notes={iep.notes}
+                    refreshQuery={refreshQuery}
+                    fieldName="notes"
+                    marginTop="20px"
+                    cyioCoreObjectOrCyioCoreRelationshipId={
+                      iep?.id
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
           </DialogContent>
-          <DialogActions className={classes.dialogActions}>
+          <DialogActions classes={{ root: classes.dialogClosebutton }}>
             <Button
-              onClick={this.handleCancelCloseClick.bind(this)}
-              classes={{ root: classes.buttonPopover }}
-              variant='outlined'
-              size='small'
-            >
-              {t('Go Back')}
-            </Button>
-            <Button
+              variant="outlined"
               onClick={this.handleCloseMain.bind(this)}
-              color='secondary'
               classes={{ root: classes.buttonPopover }}
-              variant='contained'
-              size='small'
             >
-              {t('Yes, Cancel')}
+              {t("Cancel")}
             </Button>
           </DialogActions>
         </Dialog>

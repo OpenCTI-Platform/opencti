@@ -66,7 +66,7 @@ export const findDataSourceById = async (id, dbName, dataSources, selectMap) => 
 
 export const findAllDataSources = async (args, dbName, dataSources, selectMap) => {
   const sparqlQuery = selectAllDataSourcesQuery(selectMap.getNode("node"), args);
-  let configDB = conf.get('app:config:db_name') || 'cyio-config';
+  let configDB = conf.get('app:database:config') || 'cyio-config';
   let response;
   try {
     response = await dataSources.Stardog.queryAll({
@@ -506,19 +506,19 @@ export const editDataSourceById = async (dataSourceId, input, dbName, dataSource
 
               // detach the private FrequencyTiming object
               let query = detachFromDataSourceQuery(dataSourceId, 'update_frequency', frequency);
-              // await dataSources.Stardog.delete({
-              //   dbName: 'cyio-config',
-              //   sparqlQuery: query,
-              //   queryId: "Detach FrequencyTiming from Data Source"
-              // });
+              await dataSources.Stardog.delete({
+                dbName: 'cyio-config',
+                sparqlQuery: query,
+                queryId: "Detach FrequencyTiming from Data Source"
+              });
 
               // Delete the Frequency object since its private to the Data Source
               query = deleteFrequencyTimingQuery(frequency);
-              // await dataSources.Stardog.delete({
-              //   dbName: 'cyio-config',
-              //   sparqlQuery: query,
-              //   queryId: "Delete Frequency Timing"
-              // });  
+              await dataSources.Stardog.delete({
+                dbName: 'cyio-config',
+                sparqlQuery: query,
+                queryId: "Delete Frequency Timing"
+              });  
             }
           }
           if (editItem.operation !== 'delete') {
