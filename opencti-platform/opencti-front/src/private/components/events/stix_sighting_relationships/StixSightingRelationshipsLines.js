@@ -125,6 +125,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_stixSightingRelationships") {
           edges {
             node {
+              id
               ...StixSightingRelationshipLine_node
             }
           }
