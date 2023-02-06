@@ -64,7 +64,6 @@ const incidentQuery = graphql`
 
 const RootIncidentComponent = ({ queryRef }) => {
   const { incidentId } = useParams() as { incidentId: string };
-  const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
     () => ({
       subscription,
@@ -77,23 +76,6 @@ const RootIncidentComponent = ({ queryRef }) => {
   const { incident, connectorsForImport, connectorsForExport } = data;
   return (
       <div>
-        <TopBar />
-        <Route path="/dashboard/events/incidents/:incidentId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'attribution',
-              'victimology',
-              'attack_patterns',
-              'malwares',
-              'channels',
-              'narratives',
-              'tools',
-              'vulnerabilities',
-              'observables',
-            ]}
-          />
-        </Route>
         <>
           {incident ? (
                   <Switch>
@@ -205,12 +187,34 @@ const RootIncidentComponent = ({ queryRef }) => {
 const RootIncident = () => {
   const { incidentId } = useParams() as { incidentId: string };
   const queryRef = useQueryLoading < RootIncidentQuery >(incidentQuery, { id: incidentId });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootIncidentComponent queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
+  const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
+  return (
+    <div>
+        <TopBar />
+          <Route path="/dashboard/events/incidents/:incidentId/knowledge">
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'attribution',
+                'victimology',
+                'attack_patterns',
+                'malwares',
+                'channels',
+                'narratives',
+                'tools',
+                'vulnerabilities',
+                'observables',
+              ]}
+            />
+          </Route>
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <RootIncidentComponent queryRef={queryRef} />
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.inElement} />
+      )}
+    </div>
   );
 };
 export default RootIncident;
