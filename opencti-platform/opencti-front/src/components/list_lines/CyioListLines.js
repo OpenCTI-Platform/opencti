@@ -26,6 +26,7 @@ import {
 import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
+import Popover from '@material-ui/core/Popover';
 import Checkbox from '@material-ui/core/Checkbox';
 import Alert from '@material-ui/lab/Alert';
 import responsiblePartiesIcon from '../../resources/images/entities/responsible_parties.svg';
@@ -108,18 +109,14 @@ const styles = (theme) => ({
     minWidth: '220px',
   },
   views: {
-    // float: 'right',
-    width: '295px',
-    minWidth: '285px',
-    marginTop: '5px',
-    padding: '14px 10px 12px 18px',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 10px 12px 18px',
   },
   selectedViews: {
-    width: '430px',
-    minWidth: '415px',
-    float: 'right',
-    marginTop: '5px',
-    padding: '14px 10px 12px 18px',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 10px 12px 18px',
   },
   iconButton: {
     float: 'left',
@@ -210,6 +207,7 @@ class CyioListLines extends Component {
     this.myRef = React.createRef();
     this.state = {
       scrollValue: true,
+      openInfoPopover: false,
     };
   }
 
@@ -231,6 +229,15 @@ class CyioListLines extends Component {
 
   reverse() {
     this.props.handleSort(this.props.sortBy, !this.props.orderAsc);
+  }
+
+  handleInfoNewCreation() {
+    this.setState({ openInfoPopover: !this.state.openInfoPopover });
+  }
+
+  handleInfoSystemListItem(type) {
+    this.props.handleNewCreation(type);
+    this.handleInfoNewCreation();
   }
 
   renderHeaderElement(field, label, width, isSortable) {
@@ -296,6 +303,7 @@ class CyioListLines extends Component {
       noHeaders,
       iconExtension,
       selectedDataEntity,
+      location,
       OperationsComponent,
       message,
       handleClearSelectedElements,
@@ -566,57 +574,99 @@ class CyioListLines extends Component {
             </div>
           </div>
           <div className={totalElementsSelected > 0 ? classes.selectedViews : classes.views}>
-            <div style={{ float: 'right' }}>
-              {totalElementsSelected > 0 && (
-                <Chip
-                  className={classes.iconButton}
-                  label={
-                    <>
-                      <strong>{totalElementsSelected}</strong> Selected
-                    </>
-                  }
-                  onDelete={handleClearSelectedElements} />
-              )}
-              {typeof handleChangeView === 'function' && (
-                // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <>
-                  <Tooltip title={t('Edit')}>
+            {totalElementsSelected > 0 && (
+              <Chip
+                className={classes.iconButton}
+                label={
+                  <>
+                    <strong>{totalElementsSelected}</strong> Selected
+                  </>
+                }
+                onDelete={handleClearSelectedElements} />
+            )}
+            {typeof handleChangeView === 'function' && (
+              // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <>
+                <Tooltip title={t('Edit')}>
+                  <Button
+                    variant="contained"
+                    onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
+                    className={classes.iconButton}
+                    disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                      || disabled}
+                    color="primary"
+                    size="large"
+                  >
+                    <Edit fontSize="inherit" />
+                  </Button>
+                </Tooltip>
+                {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+                  <Tooltip title={t('Merge')}>
                     <Button
                       variant="contained"
-                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
+                      // onClick={handleDisplayEdit &&
+                      // handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
-                        || disabled}
+                      // disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                      //   || disabled}
+                      disabled={true}
                       color="primary"
                       size="large"
                     >
-                      <Edit fontSize="inherit" />
+                      <Share fontSize="inherit" />
                     </Button>
                   </Tooltip>
-                  {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
-                    <Tooltip title={t('Merge')}>
+                )}
+                <div style={{ display: 'inline-block' }}>
+                  {OperationsComponent && React.cloneElement(OperationsComponent, {
+                    id: Object.entries(selectedElements || {}).length !== 0
+                      && Object.entries(selectedElements),
+                    isAllselected: selectAll,
+                  })}
+                </div>
+                {location.pathname === '/defender HQ/assets/information_systems' ? (
+                  <div>
+                    <Tooltip title={t('Create New')}>
                       <Button
                         variant="contained"
-                        // onClick={handleDisplayEdit &&
-                        // handleDisplayEdit.bind(this, selectedElements)}
-                        className={classes.iconButton}
-                        // disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
-                        //   || disabled}
-                        disabled={true}
-                        color="primary"
-                        size="large"
+                        size="small"
+                        startIcon={<AddCircleOutline />}
+                        onClick={this.handleInfoNewCreation.bind(this)}
+                        color='primary'
+                        disabled={disabled || false}
                       >
-                        <Share fontSize="inherit" />
+                        {t('New')}
                       </Button>
                     </Tooltip>
-                  )}
-                  <div style={{ display: 'inline-block' }}>
-                    {OperationsComponent && React.cloneElement(OperationsComponent, {
-                      id: Object.entries(selectedElements || {}).length !== 0
-                        && Object.entries(selectedElements),
-                      isAllselected: selectAll,
-                    })}
+                    <Popover
+                      id='simple-popover'
+                      open={this.state.openInfoPopover}
+                      onClose={this.handleInfoNewCreation.bind(this)}
+                      anchorOrigin={{
+                        vertical: 125,
+                        horizontal: 'right',
+                      }}
+                      transformOrigin={{
+                        horizontal: 150,
+                      }}
+                    >
+                      <List>
+                        <ListItem
+                          button={true}
+                          onClick={this.handleInfoSystemListItem.bind(this, 'graph')}
+                        >
+                          Graph
+                        </ListItem>
+                        <ListItem
+                          button={true}
+                          onClick={this.handleInfoSystemListItem.bind(this, 'form')}
+                        >
+                          Form
+                        </ListItem>
+                      </List>
+                    </Popover>
                   </div>
+                ) : (
                   <Tooltip title={t('Create New')}>
                     <Button
                       variant="contained"
@@ -625,27 +675,25 @@ class CyioListLines extends Component {
                       onClick={handleNewCreation && handleNewCreation.bind(this)}
                       color='primary'
                       disabled={disabled || false}
-                      style={{ marginTop: '-22px' }}
                     >
                       {t('New')}
                     </Button>
                   </Tooltip>
-                </>
-                // </Security>
-              )}
-              {typeof handleChangeView === 'function' && !disableCards && (
-                <Tooltip title={t('Cards view')}>
-                  <IconButton
-                    color="primary"
-                    onClick={handleChangeView.bind(this, 'cards')}
-                    style={{ marginTop: '-23px' }}
-                    data-cy='cards view'
-                  >
-                    <AppsOutlined />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </div>
+                )}
+              </>
+              // </Security>
+            )}
+            {typeof handleChangeView === 'function' && !disableCards && (
+              <Tooltip title={t('Cards view')}>
+                <IconButton
+                  color="primary"
+                  onClick={handleChangeView.bind(this, 'cards')}
+                  data-cy='cards view'
+                >
+                  <AppsOutlined />
+                </IconButton>
+              </Tooltip>
+            )}
           </div>
         </div>
         <div className={className}>
@@ -743,6 +791,7 @@ class CyioListLines extends Component {
 
 CyioListLines.propTypes = {
   classes: PropTypes.object,
+  location: PropTypes.object,
   t: PropTypes.func,
   selectedElements: PropTypes.object,
   disablePopover: PropTypes.bool,
