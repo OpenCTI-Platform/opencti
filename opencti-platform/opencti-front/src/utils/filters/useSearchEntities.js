@@ -953,6 +953,11 @@ const useSearchEntities = ({
                     type: n.node.label,
                   })),
                   ...result,
+                  {
+                    label: t('relationship_stix-sighting-relationship'),
+                    value: 'stix-sighting-relationship',
+                    type: 'stix-sighting-relationship',
+                  },
                 ];
               }
               entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], result);

@@ -22,7 +22,7 @@ import RootData from './components/data/Root';
 import RootWorkspaces from './components/workspaces/Root';
 import Message from '../components/Message';
 import { BoundaryRoute, NoMatch } from './components/Error';
-import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
+import StixObjectOrStixRelationship from './components/StixObjectOrStixRelationship';
 import SearchBulk from './components/SearchBulk';
 import TopBar from './components/nav/TopBar';
 import RootCases from './components/cases/Root';
@@ -60,7 +60,7 @@ const Index = () => {
           <BoundaryRoute exact path="/dashboard" component={Dashboard} />
           <BoundaryRoute exact path="/dashboard/search" component={Search} />
           <BoundaryRoute exact path="/dashboard/search/:keyword" component={Search} />
-          <BoundaryRoute exact path="/dashboard/id/:id" component={StixCoreObjectOrStixCoreRelationship} />
+          <BoundaryRoute exact path="/dashboard/id/:id" component={StixObjectOrStixRelationship} />
           <BoundaryRoute exact path="/dashboard/search_bulk" component={SearchBulk} />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/cases" component={RootCases} />

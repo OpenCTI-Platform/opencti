@@ -1517,20 +1517,20 @@ export const extractStixRepresentative = (stix: S.StixObject): string => {
     return convertFn(stix);
   }
   // endregion
+  // region Sighting
+  if (isStixSightingRelationship(entityType)) {
+    const sighting = stix as SRO.StixSighting;
+    const fromValue = sighting.extensions[STIX_EXT_OCTI].sighting_of_value;
+    const targetValues = sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
+    return `${fromValue} sighted in/at ${targetValues.join(', ')}`;
+  }
+  // endregion
   // region Relationship
   if (isStixRelationship(entityType)) {
     const relation = stix as SRO.StixRelation;
     const fromValue = relation.extensions[STIX_EXT_OCTI].source_value;
     const targetValue = relation.extensions[STIX_EXT_OCTI].target_value;
     return `${fromValue} ${relation.relationship_type} ${targetValue}`;
-  }
-  // endregion
-  // region Sighting
-  if (isStixSightingRelationship(entityType)) {
-    const sighting = stix as SRO.StixSighting;
-    const fromValue = sighting.extensions[STIX_EXT_OCTI].sighting_of_value;
-    const targetValues = sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
-    return `${fromValue} sighted in ${targetValues.join(', ')}`;
   }
   // endregion
   // region Entities

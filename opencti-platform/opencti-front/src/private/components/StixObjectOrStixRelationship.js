@@ -17,8 +17,8 @@ const styles = () => ({
   },
 });
 
-export const stixCoreObjectOrStixCoreRelationshipStixObjectOrStixRelationshipQuery = graphql`
-  query StixCoreObjectOrStixCoreRelationshipStixObjectOrStixRelationshipQuery(
+export const stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery = graphql`
+  query StixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery(
     $id: String!
   ) {
     stixObjectOrStixRelationship(id: $id) {
@@ -59,11 +59,43 @@ export const stixCoreObjectOrStixCoreRelationshipStixObjectOrStixRelationshipQue
           }
         }
       }
+      ... on StixSightingRelationship {
+        id
+        parent_types
+        entity_type
+        relationship_type
+        from {
+          ... on StixCoreObject {
+            id
+            parent_types
+            entity_type
+          }
+          ... on StixCoreRelationship {
+            id
+            parent_types
+            entity_type
+            relationship_type
+          }
+        }
+        to {
+          ... on StixCoreObject {
+            id
+            parent_types
+            entity_type
+          }
+          ... on StixCoreRelationship {
+            id
+            parent_types
+            entity_type
+            relationship_type
+          }
+        }
+      }
     }
   }
 `;
 
-class StixCoreObjectOrStixCoreRelationship extends Component {
+class StixObjectOrStixRelationship extends Component {
   render() {
     const {
       classes,
@@ -74,16 +106,23 @@ class StixCoreObjectOrStixCoreRelationship extends Component {
     return (
       <div className={classes.container}>
         <QueryRenderer
-          query={
-            stixCoreObjectOrStixCoreRelationshipStixObjectOrStixRelationshipQuery
-          }
+          query={stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery}
           variables={{ id }}
           render={({ props }) => {
             if (props) {
               if (props.stixObjectOrStixRelationship) {
                 let redirectLink;
                 const { stixObjectOrStixRelationship } = props;
-                if (stixObjectOrStixRelationship.relationship_type) {
+                if (
+                  stixObjectOrStixRelationship.relationship_type
+                  === 'stix-sighting-relationship'
+                ) {
+                  redirectLink = `${resolveLink(
+                    stixObjectOrStixRelationship.to.entity_type,
+                  )}/${
+                    stixObjectOrStixRelationship.to.id
+                  }/knowledge/sightings/${stixObjectOrStixRelationship.id}`;
+                } else if (stixObjectOrStixRelationship.relationship_type) {
                   if (stixObjectOrStixRelationship.from.relationship_type) {
                     redirectLink = `${resolveLink(
                       stixObjectOrStixRelationship.to.entity_type,
@@ -114,7 +153,7 @@ class StixCoreObjectOrStixCoreRelationship extends Component {
   }
 }
 
-StixCoreObjectOrStixCoreRelationship.propTypes = {
+StixObjectOrStixRelationship.propTypes = {
   match: PropTypes.object,
   history: PropTypes.object,
 };
@@ -123,4 +162,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(StixCoreObjectOrStixCoreRelationship);
+)(StixObjectOrStixRelationship);
