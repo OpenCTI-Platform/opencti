@@ -1,20 +1,25 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chart from 'react-apexcharts';
+import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import { useFormatter } from '../../../../components/i18n';
+import { areaChartOptions } from '../../../../utils/Charts';
+import { Theme } from '../../../../components/Theme';
+import {
+  StatsOperation,
+} from './__generated__/StixCoreObjectIncidentsAreaChartTimeSeriesQuery.graphql';
+import {
+  StixCoreObjectIncidentsVerticalBarsTimeSeriesQuery$data,
+} from './__generated__/StixCoreObjectIncidentsVerticalBarsTimeSeriesQuery.graphql';
 
-const styles = () => ({
+const useStyles = makeStyles<Theme>(() => ({
   paper: {
     minHeight: 280,
     height: '100%',
@@ -27,74 +32,84 @@ const styles = () => ({
     height: 20,
     marginLeft: 10,
   },
-});
+}));
 
-const stixCoreObjectIncidentsAreaChartTimeSeriesQuery = graphql`
-  query StixCoreObjectIncidentsAreaChartTimeSeriesQuery(
-    $objectId: String
-    $field: String!
-    $operation: StatsOperation!
-    $startDate: DateTime!
-    $endDate: DateTime!
-    $interval: String!
-  ) {
-    incidentsTimeSeries(
-      objectId: $objectId
-      field: $field
-      operation: $operation
-      startDate: $startDate
-      endDate: $endDate
-      interval: $interval
+const StixCoreObjectIncidentsVerticalBarsTimeSeriesQuery = graphql`
+    query StixCoreObjectIncidentsVerticalBarsTimeSeriesQuery(
+        $objectId: String
+        $field: String!
+        $operation: StatsOperation!
+        $startDate: DateTime!
+        $endDate: DateTime!
+        $interval: String!
     ) {
-      date
-      value
+        incidentsTimeSeries(
+            objectId: $objectId
+            field: $field
+            operation: $operation
+            startDate: $startDate
+            endDate: $endDate
+            interval: $interval
+        ) {
+            date
+            value
+        }
     }
-  }
 `;
+interface IncidentsVerticalBarsProps {
+  stixCoreObjectId: string,
+  dateAttribute: string,
+  variant?: string,
+  height: string,
+  title: string,
+  incidentType: string,
+  startDate: string,
+  endDate: string,
 
-class StixCoreObjectIncidentsAreaChart extends Component {
-  renderContent() {
-    const {
-      t,
-      fsd,
-      incidentType,
-      startDate,
-      endDate,
-      dateAttribute,
-      stixCoreObjectId,
-      theme,
-    } = this.props;
+}
+
+const IncidentsVerticalBars: FunctionComponent<IncidentsVerticalBarsProps> = ({ stixCoreObjectId, dateAttribute, variant, height,
+  title,
+  startDate,
+  endDate,
+  incidentType }) => {
+  const classes = useStyles();
+  const theme = useTheme();
+  const { t, fsd } = useFormatter();
+
+  const renderContent = () => {
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
+    const statsOperation: StatsOperation = 'count';
     const incidentsTimeSeriesVariables = {
       authorId: null,
       objectId: stixCoreObjectId,
       incidentType: incidentType || null,
       field: dateAttribute,
-      operation: 'count',
+      operation: statsOperation,
       startDate: finalStartDate,
       endDate: finalEndDate,
       interval,
     };
     return (
       <QueryRenderer
-        query={stixCoreObjectIncidentsAreaChartTimeSeriesQuery}
+        query={StixCoreObjectIncidentsVerticalBarsTimeSeriesQuery}
         variables={incidentsTimeSeriesVariables}
-        render={({ props }) => {
+        render={({ props }: { props: StixCoreObjectIncidentsVerticalBarsTimeSeriesQuery$data }) => {
           if (props && props.incidentsTimeSeries) {
             const chartData = props.incidentsTimeSeries.map((entry) => ({
-              x: new Date(entry.date),
-              y: entry.value,
+              x: new Date(entry?.date),
+              y: entry?.value,
             }));
             return (
               <Chart
                 options={areaChartOptions(
                   theme,
-                  true,
                   fsd,
                   simpleNumberFormat,
-                  undefined,
+                  false,
+                  true,
                 )}
                 series={[
                   {
@@ -139,44 +154,28 @@ class StixCoreObjectIncidentsAreaChart extends Component {
         }}
       />
     );
-  }
+  };
 
-  render() {
-    const { t, classes, title, variant, height } = this.props;
-    return (
-      <div style={{ height: height || '100%' }}>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          style={{
-            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          }}
-        >
-          {title || t('Incidents history')}
-        </Typography>
-        {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            {this.renderContent()}
-          </Paper>
-        ) : (
-          this.renderContent()
-        )}
-      </div>
-    );
-  }
-}
-
-StixCoreObjectIncidentsAreaChart.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  stixCoreObjectId: PropTypes.string,
-  dateAttribute: PropTypes.string,
-  t: PropTypes.func,
-  md: PropTypes.func,
+  return (
+    <div style={{ height: height || '100%' }}>
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+        }}
+      >
+        {title || t('Incidents history')}
+      </Typography>
+      {variant !== 'inLine' ? (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          {renderContent()}
+        </Paper>
+      ) : (
+        renderContent()
+      )}
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixCoreObjectIncidentsAreaChart);
+export default IncidentsVerticalBars;

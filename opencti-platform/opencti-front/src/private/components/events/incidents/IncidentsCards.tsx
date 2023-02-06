@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import { IncidentCard, IncidentCardDummy } from './IncidentCard';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { IncidentsCards_data$key } from './__generated__/IncidentsCards_data.graphql';
 import { IncidentsCardsPaginationQuery } from './__generated__/IncidentsCardsPaginationQuery.graphql';
@@ -39,7 +39,7 @@ const IncidentsCardsFragment = graphql`
         orderBy: { type: "IncidentsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[IncidentsFiltering]" }
-    ) {
+    ) @refetchable(queryName: "IncidentsCardsRefetchQuery") {
         incidents(
             search: $search
             first: $count
@@ -68,7 +68,7 @@ const IncidentsCardsFragment = graphql`
 interface IncidentsCardsProps {
   queryRef: PreloadedQuery<IncidentsCardsPaginationQuery>,
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
-  onLabelClick: () => void
+  onLabelClick: HandleAddFilter
 }
 
 const IncidentsCards: FunctionComponent<IncidentsCardsProps> = ({ setNumberOfElements, queryRef, onLabelClick }) => {

@@ -171,6 +171,8 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({ incidentData
               parameters={{ title: t('Entities distribution') }}
               variant="inEntity"
               height={300}
+              startDate={incident.first_seen}
+              endDate={incident.last_seen}
             />
           </Grid>
           <Grid item={true} xs={6}>
@@ -179,6 +181,8 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({ incidentData
               parameters={{ title: t('Observables distribution') }}
               variant="inEntity"
               height={300}
+              startDate={incident.first_seen}
+              endDate={incident.last_seen}
             />
           </Grid>
         </Grid>

@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IncidentLine, IncidentLineDummy } from './IncidentLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import {
   IncidentsLinesPaginationQuery,
@@ -43,7 +43,7 @@ const incidentsLinesFragment = graphql`
       orderBy: { type: "IncidentsOrdering", defaultValue: name }
       orderMode: { type: "OrderingMode", defaultValue: asc }
       filters: { type: "[IncidentsFiltering]" }
-  ) {
+  ) @refetchable(queryName: "IncidentsLinesRefetchQuery") {
       incidents(
           search: $search
           first: $count
@@ -74,7 +74,7 @@ interface IncidentsLinesProps {
   dataColumns: DataColumns,
   queryRef: PreloadedQuery<IncidentsLinesPaginationQuery>,
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
-  onLabelClick: () => void
+  onLabelClick: HandleAddFilter
 }
 const IncidentsLines: FunctionComponent<IncidentsLinesProps> = ({ setNumberOfElements, dataColumns, queryRef, paginationOptions, onLabelClick }) => {
   const {
