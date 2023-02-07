@@ -1,24 +1,20 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck : TODO: need to migrate Charts.js file to .ts
-import React, { FunctionComponent } from 'react';
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
 import { graphql } from 'react-relay';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chart from 'react-apexcharts';
-import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
 import { QueryRenderer } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
+import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { Theme } from '../../../../components/Theme';
-import {
-  StatsOperation, StixCoreObjectIncidentsAreaChartTimeSeriesQuery$data,
-} from './__generated__/StixCoreObjectIncidentsAreaChartTimeSeriesQuery.graphql';
 
-const useStyles = makeStyles<Theme>(() => ({
+const styles = () => ({
   paper: {
     minHeight: 280,
     height: '100%',
@@ -31,62 +27,52 @@ const useStyles = makeStyles<Theme>(() => ({
     height: 20,
     marginLeft: 10,
   },
-}));
+});
 
 const stixCoreObjectIncidentsAreaChartTimeSeriesQuery = graphql`
-    query StixCoreObjectIncidentsAreaChartTimeSeriesQuery(
-        $objectId: String
-        $field: String!
-        $operation: StatsOperation!
-        $startDate: DateTime!
-        $endDate: DateTime!
-        $interval: String!
+  query StixCoreObjectIncidentsAreaChartTimeSeriesQuery(
+    $objectId: String
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $interval: String!
+  ) {
+    incidentsTimeSeries(
+      objectId: $objectId
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      interval: $interval
     ) {
-        incidentsTimeSeries(
-            objectId: $objectId
-            field: $field
-            operation: $operation
-            startDate: $startDate
-            endDate: $endDate
-            interval: $interval
-        ) {
-            date
-            value
-        }
+      date
+      value
     }
+  }
 `;
-interface StixCoreObjectIncidentsAreaChartProps {
-  stixCoreObjectId: string,
-  dateAttribute: string,
-  variant?: string,
-  height: string,
-  title: string,
-  incidentType: string,
-  startDate: string,
-  endDate: string,
 
-}
-
-const StixCoreObjectIncidentsAreaChart: FunctionComponent<StixCoreObjectIncidentsAreaChartProps> = ({ stixCoreObjectId, dateAttribute, variant, height,
-  title,
-  startDate,
-  endDate,
-  incidentType }) => {
-  const classes = useStyles();
-  const theme = useTheme();
-  const { t, fsd } = useFormatter();
-
-  const renderContent = () => {
+class StixCoreObjectIncidentsAreaChart extends Component {
+  renderContent() {
+    const {
+      t,
+      fsd,
+      incidentType,
+      startDate,
+      endDate,
+      dateAttribute,
+      stixCoreObjectId,
+      theme,
+    } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const statsOperation: StatsOperation = 'count';
     const incidentsTimeSeriesVariables = {
       authorId: null,
       objectId: stixCoreObjectId,
       incidentType: incidentType || null,
       field: dateAttribute,
-      operation: statsOperation,
+      operation: 'count',
       startDate: finalStartDate,
       endDate: finalEndDate,
       interval,
@@ -95,11 +81,11 @@ const StixCoreObjectIncidentsAreaChart: FunctionComponent<StixCoreObjectIncident
       <QueryRenderer
         query={stixCoreObjectIncidentsAreaChartTimeSeriesQuery}
         variables={incidentsTimeSeriesVariables}
-        render={({ props }: { props: StixCoreObjectIncidentsAreaChartTimeSeriesQuery$data }) => {
+        render={({ props }) => {
           if (props && props.incidentsTimeSeries) {
             const chartData = props.incidentsTimeSeries.map((entry) => ({
-              x: new Date(entry?.date),
-              y: entry?.value,
+              x: new Date(entry.date),
+              y: entry.value,
             }));
             return (
               <Chart
@@ -153,28 +139,44 @@ const StixCoreObjectIncidentsAreaChart: FunctionComponent<StixCoreObjectIncident
         }}
       />
     );
-  };
+  }
 
-  return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-        }}
-      >
-        {title || t('Incidents history')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
-  );
+  render() {
+    const { t, classes, title, variant, height } = this.props;
+    return (
+      <div style={{ height: height || '100%' }}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
+          {title || t('Incidents history')}
+        </Typography>
+        {variant !== 'inLine' ? (
+          <Paper classes={{ root: classes.paper }} variant="outlined">
+            {this.renderContent()}
+          </Paper>
+        ) : (
+          this.renderContent()
+        )}
+      </div>
+    );
+  }
+}
+
+StixCoreObjectIncidentsAreaChart.propTypes = {
+  classes: PropTypes.object,
+  theme: PropTypes.object,
+  stixCoreObjectId: PropTypes.string,
+  dateAttribute: PropTypes.string,
+  t: PropTypes.func,
+  md: PropTypes.func,
 };
 
-export default StixCoreObjectIncidentsAreaChart;
+export default compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(StixCoreObjectIncidentsAreaChart);
