@@ -370,7 +370,7 @@ type Log {
   event_type: String!
   timestamp: DateTime!
   user_id: String!
-  user: User
+  user: Creator
   context_data: ContextData
 }
 
@@ -435,7 +435,7 @@ type Workspace {
   type: String
   name: String!
   description: String
-  owner: User
+  owner: Creator
   tags: [String]
   manifest: String
   created_at: DateTime
@@ -670,7 +670,7 @@ type Synchronizer {
   uri: String!
   token: String!
   stream_id: String!
-  user: User
+  user: Creator
   running: Boolean!
   current_state: String
   listen_deletion: Boolean!
@@ -746,7 +746,7 @@ type WorkTracking {
 type Work {
   id: ID!
   name: String
-  user: User
+  user: Creator
   connector: Connector
   timestamp: DateTime!
   status: State!
@@ -1163,12 +1163,6 @@ type AssigneeEdge {
   node: Assignee!
 }
 
-type Creator {
-  id: ID!
-  name: String!
-  entity_type: String!
-}
-
 type Assignee {
   id: ID!
   name: String!
@@ -1179,6 +1173,12 @@ type Assignee {
 type OtpElement {
   secret: String!
   uri: String!
+}
+
+type Creator {
+  id: ID!
+  name: String!
+  entity_type: String!
 }
 
 type User implements BasicObject & InternalObject {
@@ -1242,7 +1242,7 @@ type SessionDetail {
 }
 
 type UserSession {
-  user: User
+  user: Creator
   sessions: [SessionDetail]
 }
 

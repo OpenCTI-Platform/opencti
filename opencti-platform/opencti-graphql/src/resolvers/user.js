@@ -9,7 +9,7 @@ import {
   batchOrganizations,
   batchRoleCapabilities,
   batchRoles,
-  batchUsers,
+  batchCreators,
   bookmarks,
   deleteBookmark,
   findAll,
@@ -55,7 +55,7 @@ const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);
 const rolesLoader = batchLoader(batchRoles);
 const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
-const usersLoader = batchLoader(batchUsers);
+const creatorLoader = batchLoader(batchCreators);
 
 const userResolvers = {
   Query: {
@@ -82,7 +82,7 @@ const userResolvers = {
     objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
   },
   UserSession: {
-    user: (session, _, context) => usersLoader.load(session.user_id, context, context.user),
+    user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),

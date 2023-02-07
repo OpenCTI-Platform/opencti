@@ -1,9 +1,9 @@
 import { stixDelete, stixObjectMerge } from '../domain/stix';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
-import { batchUsers } from '../domain/user';
+import { batchCreators } from '../domain/user';
 
-const creatorsLoader = batchLoader(batchUsers);
+const creatorsLoader = batchLoader(batchCreators);
 
 const stixResolvers = {
   Query: {

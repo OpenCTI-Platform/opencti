@@ -29,12 +29,12 @@ import {
   updateProcessedTime,
   updateReceivedTime, worksForConnector,
 } from '../domain/work';
-import { batchUsers } from '../domain/user';
+import { batchCreators } from '../domain/user';
 import { now } from '../utils/format';
 import { connectors, connectorsForImport, connectorsForWorker } from '../database/repository';
 import { batchLoader } from '../database/middleware';
 
-const usersLoader = batchLoader(batchUsers);
+const creatorLoader = batchLoader(batchCreators);
 
 const connectorResolvers = {
   Query: {
@@ -53,11 +53,11 @@ const connectorResolvers = {
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
-    user: (work, _, context) => usersLoader.load(work.user_id, context, context.user),
+    user: (work, _, context) => creatorLoader.load(work.user_id, context, context.user),
     tracking: (work) => computeWorkStatus(work),
   },
   Synchronizer: {
-    user: (sync, _, context) => usersLoader.load(sync.user_id, context, context.user),
+    user: (sync, _, context) => creatorLoader.load(sync.user_id, context, context.user),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),
