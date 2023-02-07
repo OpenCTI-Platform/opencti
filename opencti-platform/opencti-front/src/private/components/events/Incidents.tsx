@@ -20,15 +20,15 @@ import {
 } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../components/list_lines';
-import { LOCAL_STORAGE_KEY_CASE } from '../cases/Incidents';
 import { IncidentLineDummy } from './incidents/IncidentLine';
 import { IncidentCardDummy } from './incidents/IncidentCard';
 import { IncidentsCardsPaginationQuery } from './incidents/__generated__/IncidentsCardsPaginationQuery.graphql';
 
+export const LOCAL_STORAGE_KEY = 'view-incidents';
 const Incidents: FunctionComponent = () => {
   const { helper } = useContext(UserContext);
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE,
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'name',
@@ -63,7 +63,7 @@ const Incidents: FunctionComponent = () => {
     numberOfElements,
   } = viewStorage;
 
-  const [view, saveView] = useViewStorage('view-incidents');
+  const [view, saveView] = useViewStorage(LOCAL_STORAGE_KEY);
   if (view.view === undefined) {
     saveView({ view: 'lines' });
   }
