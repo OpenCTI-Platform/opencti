@@ -11,7 +11,6 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     testTimeout: 1200000,
     teardownTimeout: 20000,
     globalSetup: ['./tests/utils/globalSetup.js'],
-    setupFiles: ['./tests/utils/testSetup.js'],
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'json', 'html'],

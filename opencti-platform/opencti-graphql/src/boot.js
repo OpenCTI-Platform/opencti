@@ -15,7 +15,7 @@ import conf, {
 } from './config/conf';
 import platformInit, { checkSystemDependencies } from './initialization';
 import cacheManager from './manager/cacheManager';
-import { initializeRedisClients, shutdownRedisClients } from './database/redis';
+import { shutdownRedisClients } from './database/redis';
 import httpServer from './http/httpServer';
 import expiredManager from './manager/expiredManager';
 import connectorManager from './manager/connectorManager';
@@ -163,8 +163,6 @@ const shutdownModules = async () => {
 export const platformStart = async () => {
   logApp.info('[OPENCTI] Starting platform');
   try {
-    // Initialize the redis clients
-    initializeRedisClients();
     // Check all dependencies access
     await checkSystemDependencies();
     // Init the cache manager
