@@ -24,7 +24,7 @@ import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   dialogMain: {
-    overflow: 'hidden',
+    overflowY: 'scroll',
   },
   dialogClosebutton: {
     float: 'left',
@@ -41,10 +41,15 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
-    overflow: 'scroll',
+    overflow: 'hidden',
   },
   buttonPopover: {
     textTransform: 'capitalize',
+  },
+  popoverDialog: {
+    fontSize: '18px',
+    lineHeight: '24px',
+    color: theme.palette.header.text,
   },
   textBase: {
     display: 'flex',
@@ -53,8 +58,8 @@ const styles = (theme) => ({
   },
 });
 
-const informationSystemGraphCreationMutation = graphql`
-  mutation InformationSystemGraphCreationMutation($input: OscalRoleAddInput) {
+const informationTypeCreationMutation = graphql`
+  mutation InformationTypeCreationMutation($input: OscalRoleAddInput) {
     createOscalRole (input: $input) {
       id
     }
@@ -64,7 +69,7 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-class InformationSystemGraphCreation extends Component {
+class InformationTypeCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -79,7 +84,7 @@ class InformationSystemGraphCreation extends Component {
       R.dissoc('modified'),
     )(values);
     commitMutation({
-      mutation: informationSystemGraphCreationMutation,
+      mutation: informationTypeCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -97,20 +102,21 @@ class InformationSystemGraphCreation extends Component {
   }
 
   onReset() {
-    this.props.handleInformationSystemCreation('');
+    this.props.handleInformationType('');
   }
 
   render() {
     const {
       t,
       classes,
-      InfoSystemCreation,
+      openInformationType,
     } = this.props;
     return (
       <>
         <Dialog
-          open={InfoSystemCreation === 'graph'}
+          open={openInformationType}
           keepMounted={true}
+          maxWidth='md'
           className={classes.dialogMain}
         >
           <Formik
@@ -133,7 +139,7 @@ class InformationSystemGraphCreation extends Component {
               isSubmitting,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Information System')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Graph')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
@@ -161,30 +167,6 @@ class InformationSystemGraphCreation extends Component {
                         variant='outlined'
                       />
                     </Grid>
-                    <Grid item={true} xs={12}>
-                      <div className={classes.textBase}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ margin: 0 }}
-                        >
-                          {t('Short Name')}
-                        </Typography>
-                        <Tooltip title={t('Short Name')} >
-                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="short_name"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
                     <Grid xs={12} item={true}>
                       <div className={classes.textBase}>
                         <Typography
@@ -205,12 +187,12 @@ class InformationSystemGraphCreation extends Component {
                         name='description'
                         fullWidth={true}
                         multiline={true}
-                        rows='3'
+                        rows='2'
                         variant='outlined'
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={4}>
                       <div className={classes.textBase}>
                         <Typography
                           variant="h3"
@@ -218,9 +200,9 @@ class InformationSystemGraphCreation extends Component {
                           gutterBottom={true}
                           style={{ margin: 0 }}
                         >
-                          {t('Deployment Model')}
+                          {t('Categorization System')}
                         </Typography>
-                        <Tooltip title={t('Deployment Model')} >
+                        <Tooltip title={t('Categorization System')} >
                           <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -228,13 +210,13 @@ class InformationSystemGraphCreation extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="installed_software"
+                        name="categorization_system"
                         fullWidth={true}
                         style={{ height: '38.09px', maxWidth: '300px' }}
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={4}>
                       <div className={classes.textBase}>
                         <Typography
                           variant="h3"
@@ -242,9 +224,9 @@ class InformationSystemGraphCreation extends Component {
                           gutterBottom={true}
                           style={{ margin: 0 }}
                         >
-                          {t('Cloud Service Model')}
+                          {t('Category')}
                         </Typography>
-                        <Tooltip title={t('Cloud Service Model')} >
+                        <Tooltip title={t('Category')} >
                           <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -252,13 +234,13 @@ class InformationSystemGraphCreation extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="installed_software"
+                        name="category"
                         fullWidth={true}
                         style={{ height: '38.09px', maxWidth: '300px' }}
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={4}>
                       <div className={classes.textBase}>
                         <Typography
                           variant="h3"
@@ -266,9 +248,9 @@ class InformationSystemGraphCreation extends Component {
                           gutterBottom={true}
                           style={{ margin: 0 }}
                         >
-                          {t('Identity Assurance Level')}
+                          {t('Information Type')}
                         </Typography>
-                        <Tooltip title={t('Identity Assurance Level')} >
+                        <Tooltip title={t('Information Type')} >
                           <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -276,13 +258,33 @@ class InformationSystemGraphCreation extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="installed_software"
+                        name="information_type"
                         fullWidth={true}
                         style={{ height: '38.09px', maxWidth: '300px' }}
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid item={true} xs={6}>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <div
+                        className={classes.textBase}
+                      >
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Confidentiality Impact')}
+                        </Typography>
+                        <Tooltip title={t('Confidentiality Impact')} >
+                          <Information style={{ marginLeft: '5px' }}
+                            fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={2}>
                       <div className={classes.textBase}>
                         <Typography
                           variant="h3"
@@ -290,9 +292,9 @@ class InformationSystemGraphCreation extends Component {
                           gutterBottom={true}
                           style={{ margin: 0 }}
                         >
-                          {t('Authenticator Assurance Level')}
+                          {t('Base')}
                         </Typography>
-                        <Tooltip title={t('Authenticator Assurance Level')} >
+                        <Tooltip title={t('Base')} >
                           <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -300,13 +302,13 @@ class InformationSystemGraphCreation extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="installed_software"
+                        name="information_type"
                         fullWidth={true}
                         style={{ height: '38.09px', maxWidth: '300px' }}
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={2}>
                       <div className={classes.textBase}>
                         <Typography
                           variant="h3"
@@ -314,9 +316,9 @@ class InformationSystemGraphCreation extends Component {
                           gutterBottom={true}
                           style={{ margin: 0 }}
                         >
-                          {t('Federation Assurance Level')}
+                          {t('Selected')}
                         </Typography>
-                        <Tooltip title={t('Federation Assurance Level')} >
+                        <Tooltip title={t('Selected')} >
                           <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -324,9 +326,220 @@ class InformationSystemGraphCreation extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="installed_software"
+                        name="selected"
                         fullWidth={true}
                         style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid xs={8} item={true}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Justification')}
+                        </Typography>
+                        <Tooltip title={t('Justification')}>
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={MarkDownField}
+                        name='justification'
+                        fullWidth={true}
+                        multiline={true}
+                        rows='2'
+                        variant='outlined'
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <div
+                        className={classes.textBase}
+                      >
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Integrity Impact')}
+                        </Typography>
+                        <Tooltip title={t('Integrity Impact')} >
+                          <Information style={{ marginLeft: '5px' }}
+                            fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={2}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Base')}
+                        </Typography>
+                        <Tooltip title={t('Base')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="information_type"
+                        fullWidth={true}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={2}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Selected')}
+                        </Typography>
+                        <Tooltip title={t('Selected')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="selected"
+                        fullWidth={true}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid xs={8} item={true}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Justification')}
+                        </Typography>
+                        <Tooltip title={t('Justification')}>
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={MarkDownField}
+                        name='justification'
+                        fullWidth={true}
+                        multiline={true}
+                        rows='2'
+                        variant='outlined'
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <div
+                        className={classes.textBase}
+                      >
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Availability Impact')}
+                        </Typography>
+                        <Tooltip title={t('Availability Impact')} >
+                          <Information style={{ marginLeft: '5px' }}
+                            fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={2}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Base')}
+                        </Typography>
+                        <Tooltip title={t('Base')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="information_type"
+                        fullWidth={true}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={2}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Selected')}
+                        </Typography>
+                        <Tooltip title={t('Selected')} >
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="selected"
+                        fullWidth={true}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid xs={8} item={true}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Justification')}
+                        </Typography>
+                        <Tooltip title={t('Justification')}>
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={MarkDownField}
+                        name='justification'
+                        fullWidth={true}
+                        multiline={true}
+                        rows='2'
+                        variant='outlined'
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
@@ -359,9 +572,9 @@ class InformationSystemGraphCreation extends Component {
   }
 }
 
-InformationSystemGraphCreation.propTypes = {
-  InfoSystemCreation: PropTypes.string,
-  handleInformationSystemCreation: PropTypes.func,
+InformationTypeCreation.propTypes = {
+  openInformationType: PropTypes.bool,
+  handleInformationType: PropTypes.func,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -370,4 +583,4 @@ InformationSystemGraphCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(InformationSystemGraphCreation);
+)(InformationTypeCreation);

@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -14,16 +12,19 @@ import Grid from '@material-ui/core/Grid';
 import AddIcon from '@material-ui/icons/Add';
 import IconButton from '@material-ui/core/IconButton';
 import VisibilityIcon from '@material-ui/icons/Visibility';
-import EditIcon from '@material-ui/icons/Edit';
-import Link from '@material-ui/core/Link';
-import LaunchIcon from '@material-ui/icons/Launch';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import {
+  Button,
+  Divider,
+  Menu,
+  MenuItem,
+} from '@material-ui/core';
+import EditIcon from '@material-ui/icons/Edit';
 import inject18n from '../../../../components/i18n';
-import Switch from '@material-ui/core/Switch';
-import { Button, Divider, Menu, MenuItem } from '@material-ui/core';
 import AuthorizationBoundaryPopover from './AuthorizationBoundaryPopover';
 import NetworkArchitecturePopover from './NetworkArchitecturePopover';
 import DataFlowPopover from './DataFlowPopover';
+import InformationTypeCreation from './InformationTypeCreation';
 import AuthorizationBoundaryEditionPopover from './AuthorizationBoundaryEditionPopover';
 import NetworkArchitectureEditionPopover from './NetworkArchitectureEditionPopover';
 import DataFlowEditionPopover from './DataFlowEditionPopover';
@@ -73,6 +74,7 @@ class InformationSystemDetailsComponent extends Component {
       openEdit: false,
       modal: '',
       mode: null,
+      openInfoType: false,
     };
   }
 
@@ -81,20 +83,21 @@ class InformationSystemDetailsComponent extends Component {
       anchorEl: event.currentTarget,
       modal: id,
     });
-  };
+  }
+
   handleOpenView() {
     this.setState({
       anchorEl: null,
       openView: true,
-      mode: 'view'
+      mode: 'view',
     });
-  };
+  }
 
   handleCloseView() {
     this.setState({
       openView: false,
       modal: '',
-      mode: null
+      mode: null,
     });
   }
 
@@ -102,16 +105,20 @@ class InformationSystemDetailsComponent extends Component {
     this.setState({
       anchorEl: null,
       openEdit: true,
-      mode: 'edit'
+      mode: 'edit',
     });
-  };
+  }
 
   handleCloseEdit() {
     this.setState({
       openEdit: false,
       modal: '',
-      mode: null
+      mode: null,
     });
+  }
+
+  handleInformationType() {
+    this.setState({ openInfoType: !this.state.openInfoType });
   }
 
   renderButtons(id, title) {
@@ -119,20 +126,20 @@ class InformationSystemDetailsComponent extends Component {
       <>
         <Button
           aria-controls={
-            Boolean(this.state.anchorEl) ? "basic-menu" : undefined
+            this.state.anchorEl ? 'basic-menu' : undefined
           }
-          variant="contained"
-          color="primary"
+          variant='contained'
+          color='primary'
           endIcon={<KeyboardArrowDownIcon />}
           style={{ marginRight: 5 }}
           onClick={(event) => this.handleClick(event, id)}
           id={id}
           aria-describedby='basic-menu'
         >
-        {title}
+          {title}
         </Button>
         <Menu
-          id="basic-menu"
+          id='basic-menu'
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={() => {
@@ -141,7 +148,7 @@ class InformationSystemDetailsComponent extends Component {
             });
           }}
           MenuListProps={{
-            "aria-labelledby": id,
+            'aria-labelledby': id,
           }}
           anchorOrigin={{
             vertical: 'bottom',
@@ -153,12 +160,12 @@ class InformationSystemDetailsComponent extends Component {
           }}
           style={{ padding: '20px 10px', marginTop: '50px' }}
         >
-          <MenuItem onClick={this.handleOpenView.bind(this)} style={{paddingLeft: '30px',paddingRight: '70px'}}>
-            <VisibilityIcon style={{ marginRight: "20px" }}/>
+          <MenuItem onClick={this.handleOpenView.bind(this)} style={{ paddingLeft: '30px', paddingRight: '70px' }}>
+            <VisibilityIcon style={{ marginRight: '20px' }} />
             View
           </MenuItem>
-          <MenuItem onClick={this.handleOpenEdit.bind(this)} style={{paddingLeft: '30px',paddingRight: '70px'}}>
-            <EditIcon style={{ marginRight: "20px" }}/>
+          <MenuItem onClick={this.handleOpenEdit.bind(this)} style={{ paddingLeft: '30px', paddingRight: '70px' }}>
+            <EditIcon style={{ marginRight: '20px' }} />
             Edit
           </MenuItem>
         </Menu>
@@ -168,33 +175,33 @@ class InformationSystemDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, informationSystem, fldt, history
+      t, classes, informationSystem, fldt, history,
     } = this.props;
     return (
-      <div style={{ height: "100%" }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t("Details")}
+      <div style={{ height: '100%' }}>
+        <Typography variant='h4' gutterBottom={true}>
+          {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("Information Type(s)")}
+                  {t('Information Type(s)')}
                 </Typography>
-                <Tooltip title={t("Information Type(s)")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('Information Type(s)')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
-                <IconButton size="small">
+                <IconButton size='small' onClick={this.handleInformationType.bind(this)}>
                   <AddIcon />
                 </IconButton>
               </div>
-              <div className="clearfix" />
+              <div className='clearfix' />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
@@ -206,35 +213,35 @@ class InformationSystemDetailsComponent extends Component {
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("Security Sensitivity Level")}
+                  {t('Security Sensitivity Level')}
                 </Typography>
-                <Tooltip title={t("Security Sensitivity Level")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('Security Sensitivity Level')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
               </div>
-              <div className="clearfix" />
+              <div className='clearfix' />
               {/* Content here */}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("Security Impact Level")}
+                  {t('Security Impact Level')}
                 </Typography>
-                <Tooltip title={t("Security Impact Level")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('Security Impact Level')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
               </div>
-              <div className="clearfix" />
+              <div className='clearfix' />
               {/* Content here */}
             </Grid>
             <Grid item={true} xs={12}>
@@ -243,36 +250,36 @@ class InformationSystemDetailsComponent extends Component {
             <Grid item={true} xs={12}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("System Implementation")}
+                  {t('System Implementation')}
                 </Typography>
-                <Tooltip title={t("System Implementation")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('System Implementation')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
               </div>
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("Inventory Items")}
+                  {t('Inventory Items')}
                 </Typography>
-                <Tooltip title={t("Inventory Items")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('Inventory Items')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
-                <IconButton size="small">
+                <IconButton size='small'>
                   <AddIcon />
                 </IconButton>
               </div>
-              <div className="clearfix" />
+              <div className='clearfix' />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
@@ -284,21 +291,21 @@ class InformationSystemDetailsComponent extends Component {
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("Components")}
+                  {t('Components')}
                 </Typography>
-                <Tooltip title={t("Components")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('Components')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
-                <IconButton size="small">
+                <IconButton size='small'>
                   <AddIcon />
                 </IconButton>
               </div>
-              <div className="clearfix" />
+              <div className='clearfix' />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
@@ -310,21 +317,21 @@ class InformationSystemDetailsComponent extends Component {
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("Users")}
+                  {t('Users')}
                 </Typography>
-                <Tooltip title={t("Users")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('Users')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
-                <IconButton size="small">
+                <IconButton size='small'>
                   <AddIcon />
                 </IconButton>
               </div>
-              <div className="clearfix" />
+              <div className='clearfix' />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
@@ -336,21 +343,21 @@ class InformationSystemDetailsComponent extends Component {
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("Leveraged Authorization")}
+                  {t('Leveraged Authorization')}
                 </Typography>
-                <Tooltip title={t("Leveraged Authorization")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('Leveraged Authorization')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
-                <IconButton size="small">
+                <IconButton size='small'>
                   <AddIcon />
                 </IconButton>
               </div>
-              <div className="clearfix" />
+              <div className='clearfix' />
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
@@ -365,33 +372,37 @@ class InformationSystemDetailsComponent extends Component {
             <Grid item={true} xs={12}>
               <div className={classes.textBase}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("System Documentation")}
+                  {t('System Documentation')}
                 </Typography>
-                <Tooltip title={t("System Documentation")}>
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                <Tooltip title={t('System Documentation')}>
+                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                 </Tooltip>
               </div>
             </Grid>
             <Grid item={true} xs={12}>
-              {this.renderButtons("authorizationBoundary", "Authorization Boundary")}
-              {this.renderButtons("networkArchitecture", "Network Architecture")}
-              {this.renderButtons("dataFlow", "Data Flow")}
-            </Grid>      
+              {this.renderButtons('authorizationBoundary', 'Authorization Boundary')}
+              {this.renderButtons('networkArchitecture', 'Network Architecture')}
+              {this.renderButtons('dataFlow', 'Data Flow')}
+            </Grid>
           </Grid>
         </Paper>
+        <InformationTypeCreation
+          openInformationType={this.state.openInfoType}
+          handleInformationType={this.handleInformationType.bind(this)}
+        />
         {/* View Modal */}
-        {this.state.mode === 'view' && this.state.modal === "authorizationBoundary" && <AuthorizationBoundaryPopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)}/>}
-        {this.state.mode === 'view' && this.state.modal === "networkArchitecture" && <NetworkArchitecturePopover  openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)}/>}
-        {this.state.mode === 'view' && this.state.modal === "dataFlow" && <DataFlowPopover  openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)}/>}
+        {this.state.mode === 'view' && this.state.modal === 'authorizationBoundary' && <AuthorizationBoundaryPopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)} />}
+        {this.state.mode === 'view' && this.state.modal === 'networkArchitecture' && <NetworkArchitecturePopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)} />}
+        {this.state.mode === 'view' && this.state.modal === 'dataFlow' && <DataFlowPopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)} />}
         {/* Edit Modals */}
-        {this.state.mode === 'edit' && this.state.modal === "authorizationBoundary" && <AuthorizationBoundaryEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)}/>}
-        {this.state.mode === 'edit' && this.state.modal === "networkArchitecture" && <NetworkArchitectureEditionPopover  openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)}/>}
-        {this.state.mode === 'edit' && this.state.modal === "dataFlow" && <DataFlowEditionPopover  openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)}/>}      
+        {this.state.mode === 'edit' && this.state.modal === 'authorizationBoundary' && <AuthorizationBoundaryEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
+        {this.state.mode === 'edit' && this.state.modal === 'networkArchitecture' && <NetworkArchitectureEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
+        {this.state.mode === 'edit' && this.state.modal === 'dataFlow' && <DataFlowEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
       </div>
     );
   }

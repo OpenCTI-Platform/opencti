@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -20,20 +19,6 @@ import { Switch } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    backgroundColor: theme.palette.background.paper,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   menuItem: {
     padding: '15px 0',
     width: '152px',
@@ -86,31 +71,9 @@ const styles = (theme) => ({
     overflow: 'hidden',
     overflowY: 'scroll',
   },
-  scrollObj: {
-    color: theme.palette.header.text,
-    fontFamily: 'sans-serif',
-    padding: '0px',
-    textAlign: 'left',
-  },
-  thumb: {
-    '&.MuiSwitch-thumb': {
-      color: 'white',
-    },
-  },
-  switch_track: {
-    backgroundColor: '#D3134A !important',
-    opacity: '1 !important',
-  },
-  switch_base: {
-    color: 'white',
-    '&.Mui-checked + .MuiSwitch-track': {
-      backgroundColor: '#49B8FC !important',
-      opacity: 1,
-    },
-  },
 });
 
-export class DataFlowPopover extends Component {
+class DataFlowPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -140,29 +103,29 @@ export class DataFlowPopover extends Component {
         <>
         <Dialog open={this.props.openView} keepMounted={true}>
           <DialogTitle classes={{ root: classes.dialogTitle }}>
-            {t("Data Flow")}
+            {t('Data Flow')}
           </DialogTitle>
           <DialogContent classes={{ root: classes.dialogContent }}>
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={12}>
                 <div className={classes.textBase}>
                   <Typography
-                    variant="h3"
-                    color="textSecondary"
+                    variant='h3'
+                    color='textSecondary'
                     gutterBottom={true}
                     style={{ margin: 0 }}
                   >
-                    {t("Description")}
+                    {t('Description')}
                   </Typography>
-                  <Tooltip title={t("Description")}>
+                  <Tooltip title={t('Description')}>
                     <Information
-                      style={{ marginLeft: "5px" }}
-                      fontSize="inherit"
-                      color="disabled"
+                      style={{ marginLeft: '5px' }}
+                      fontSize='inherit'
+                      color='disabled'
                     />
                   </Tooltip>
                 </div>
-                <div className="clearfix" />
+                <div className='clearfix' />
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
@@ -174,22 +137,22 @@ export class DataFlowPopover extends Component {
               <Grid item={true} xs={12}>
                 <div className={classes.textBase}>
                   <Typography
-                    variant="h3"
-                    color="textSecondary"
+                    variant='h3'
+                    color='textSecondary'
                     gutterBottom={true}
                     style={{ margin: 0 }}
                   >
-                    {t("Diagram(s)")}
+                    {t('Diagram(s)')}
                   </Typography>
-                  <Tooltip title={t("Diagram(s)")}>
+                  <Tooltip title={t('Diagram(s)')}>
                     <Information
-                      style={{ marginLeft: "5px" }}
-                      fontSize="inherit"
-                      color="disabled"
+                      style={{ marginLeft: '5px' }}
+                      fontSize='inherit'
+                      color='disabled'
                     />
                   </Tooltip>
                 </div>
-                <div className="clearfix" />
+                <div className='clearfix' />
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
@@ -202,11 +165,11 @@ export class DataFlowPopover extends Component {
           </DialogContent>
           <DialogActions classes={{ root: classes.dialogClosebutton }}>
             <Button
-              variant="outlined"
+              variant='outlined'
               onClick={this.props.handleCloseView}
               classes={{ root: classes.buttonPopover }}
             >
-              {t("Cancel")}
+              {t('Cancel')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -224,6 +187,5 @@ DataFlowPopover.propTypes = {
   openConnection: PropTypes.bool,
   handleCloseConnection: PropTypes.func,
 };
-
 
 export default compose(inject18n, withStyles(styles))(DataFlowPopover);
