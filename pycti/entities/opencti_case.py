@@ -280,7 +280,7 @@ class Case:
         )
         query = (
             """
-            query Cases($filters: [CasesFiltering], $search: String, $first: Int, $after: ID, $orderBy: CasesOrdering, $orderMode: OrderingMode) {
+            query Cases($filters: [CasesFiltering!], $search: String, $first: Int, $after: ID, $orderBy: CasesOrdering, $orderMode: OrderingMode) {
                 cases(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
