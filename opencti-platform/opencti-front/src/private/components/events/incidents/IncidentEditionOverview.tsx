@@ -50,6 +50,7 @@ const incidentMutationFieldPatch = graphql`
         references: $references
       ) {
         ...IncidentEditionOverview_incident
+        ...Incident_incident
       }
     }
   }
