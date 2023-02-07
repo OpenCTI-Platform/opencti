@@ -3292,22 +3292,21 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     if (rebuildRuleContent.length === 0) {
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
-        const deletionData = await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
-        return deletionData.event;
+        await internalDeleteElementById(context, RULE_MANAGER_USER, instance.id, opts);
+        return true;
       }
       // If not we need to clean the rule and keep the element for other rules.
       logApp.info('Cleanup inferred element', { rule, id: instance.id });
       const input = { [completeRuleName]: null };
       const upsertOpts = { fromRule, ruleOverride: true };
-      const { event } = await upsertRelationRule(context, instance, input, upsertOpts);
-      return event;
+      await upsertRelationRule(context, instance, input, upsertOpts);
+    } else {
+      logApp.info('Upsert inferred element', { rule, id: instance.id });
+      // Rule still have other explanation, update the rule
+      const input = { [completeRuleName]: rebuildRuleContent };
+      const ruleOpts = { fromRule, ruleOverride: true };
+      await upsertRelationRule(context, instance, input, ruleOpts);
     }
-    logApp.info('Upsert inferred element', { rule, id: instance.id });
-    // Rule still have other explanation, update the rule
-    const input = { [completeRuleName]: rebuildRuleContent };
-    const ruleOpts = { fromRule, ruleOverride: true };
-    const { event } = await upsertRelationRule(context, instance, input, ruleOpts);
-    return event;
   } catch (err) {
     if (err.name === ALREADY_DELETED_ERROR) {
       logApp.warn('Trying to delete an already deleted inference', { error: err.message });
@@ -3315,7 +3314,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
       logApp.error('Error deleting inference', { error: err });
     }
   }
-  return undefined;
+  return false;
 };
 export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   /* istanbul ignore if */

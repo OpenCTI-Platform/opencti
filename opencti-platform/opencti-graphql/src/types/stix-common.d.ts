@@ -114,7 +114,7 @@ interface StixCyberObject extends StixObject {
 
 // Extension
 interface StixContainerExtension extends StixOpenctiExtension {
-  object_refs_inferred: Array<StixId>; // optional
+  object_refs_inferred?: Array<StixId>; // optional
 }
 
 // Language
