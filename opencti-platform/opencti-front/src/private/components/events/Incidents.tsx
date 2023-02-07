@@ -64,8 +64,10 @@ const Incidents: FunctionComponent = () => {
   } = viewStorage;
 
   const [view, saveView] = useViewStorage('view-incidents');
-  const handleChangeView = (event: React.SyntheticEvent) => saveView({ view: event.currentTarget });
-
+  if (view.view === undefined) {
+    saveView({ view: 'lines' });
+  }
+  const handleChangeView = (event: React.SyntheticEvent) => saveView({ view: event });
   const renderCards = () => {
     const queryRef = useQueryLoading<IncidentsCardsPaginationQuery>(
       incidentsCardsQuery,
@@ -102,11 +104,11 @@ const Incidents: FunctionComponent = () => {
           <React.Suspense
             fallback={
               <>
-                {Array(20)
-                  .fill(0)
-                  .map(() => (
-                    <IncidentCardDummy />
-                  ))}
+               {Array(20)
+                 .fill(0)
+                 .map((idx) => (
+                    <IncidentCardDummy key={idx} />
+                 ))}
               </>
             }
           >
@@ -167,7 +169,7 @@ const Incidents: FunctionComponent = () => {
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: isRuntimeSort,
+        isSortable: isRuntimeSort ?? false,
       },
     };
     return (
@@ -200,12 +202,12 @@ const Incidents: FunctionComponent = () => {
           >
             {queryRef && (
               <React.Suspense fallback={
-                <>{Array(20).fill(0).map((idx) => (<IncidentLineDummy key={idx} dataColumns={dataColumns} />))}</>
+                <>{Array(20).fill(0).map((idx) => (<IncidentLineDummy key={idx} dataColumns={buildColumns} />))}</>
               }>
                 <IncidentsLines
                   queryRef={queryRef}
                   paginationOptions={paginationOptions}
-                  dataColumns={dataColumns}
+                  dataColumns={buildColumns}
                   onLabelClick={helpers.handleAddFilter}
                   setNumberOfElements={helpers.handleSetNumberOfElements}
                 />
@@ -217,8 +219,8 @@ const Incidents: FunctionComponent = () => {
 
   return (
       <div>
-        {view === 'cards' ? renderCards() : ''}
-        {view === 'lines' ? renderLines() : ''}
+        {view.view === 'cards' ? renderCards() : ''}
+        {view.view === 'lines' ? renderLines() : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IncidentCreation paginationOptions={paginationOptions} />
         </Security>

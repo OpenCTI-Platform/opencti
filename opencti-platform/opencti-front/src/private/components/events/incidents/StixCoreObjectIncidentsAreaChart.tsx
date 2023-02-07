@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck : TODO: need to migrate Charts.js file to .ts
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -15,7 +17,6 @@ import { Theme } from '../../../../components/Theme';
 import {
   StatsOperation, StixCoreObjectIncidentsAreaChartTimeSeriesQuery$data,
 } from './__generated__/StixCoreObjectIncidentsAreaChartTimeSeriesQuery.graphql';
-
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {

@@ -1,20 +1,20 @@
-import React, { FunctionComponent } from 'react';
-import { graphql } from 'react-relay';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck : TODO: need to migrate Charts.js file to .ts
+import React, {FunctionComponent} from 'react';
+import {graphql} from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chart from 'react-apexcharts';
 import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
-import { QueryRenderer } from '../../../../relay/environment';
-import { monthsAgo, now } from '../../../../utils/Time';
-import { simpleNumberFormat } from '../../../../utils/Number';
-import { useFormatter } from '../../../../components/i18n';
-import { areaChartOptions } from '../../../../utils/Charts';
-import { Theme } from '../../../../components/Theme';
-import {
-  StatsOperation,
-} from './__generated__/StixCoreObjectIncidentsAreaChartTimeSeriesQuery.graphql';
+import {useTheme} from '@mui/styles';
+import {QueryRenderer} from '../../../../relay/environment';
+import {monthsAgo, now} from '../../../../utils/Time';
+import {verticalBarsChartOptions} from '../../../../utils/Charts';
+import {simpleNumberFormat} from '../../../../utils/Number';
+import {useFormatter} from '../../../../components/i18n';
+import {Theme} from '../../../../components/Theme';
+import {StatsOperation,} from './__generated__/StixCoreObjectIncidentsAreaChartTimeSeriesQuery.graphql';
 import {
   StixCoreObjectIncidentsVerticalBarsTimeSeriesQuery$data,
 } from './__generated__/StixCoreObjectIncidentsVerticalBarsTimeSeriesQuery.graphql';
@@ -68,7 +68,7 @@ interface IncidentsVerticalBarsProps {
 
 }
 
-const IncidentsVerticalBars: FunctionComponent<IncidentsVerticalBarsProps> = ({ stixCoreObjectId, dateAttribute, variant, height,
+const IncidentsVerticalBars: FunctionComponent<IncidentsVerticalBarsProps> = ({ stixCoreObjectId, variant, height,
   title,
   startDate,
   endDate,
@@ -81,13 +81,12 @@ const IncidentsVerticalBars: FunctionComponent<IncidentsVerticalBarsProps> = ({ 
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const statsOperation: StatsOperation = 'count';
     const incidentsTimeSeriesVariables = {
       authorId: null,
       objectId: stixCoreObjectId,
       incidentType: incidentType || null,
-      field: dateAttribute,
-      operation: statsOperation,
+      field: 'created_at',
+      operation: 'count' as StatsOperation,
       startDate: finalStartDate,
       endDate: finalEndDate,
       interval,
@@ -104,7 +103,7 @@ const IncidentsVerticalBars: FunctionComponent<IncidentsVerticalBarsProps> = ({ 
             }));
             return (
               <Chart
-                options={areaChartOptions(
+                options={verticalBarsChartOptions(
                   theme,
                   fsd,
                   simpleNumberFormat,
@@ -117,7 +116,7 @@ const IncidentsVerticalBars: FunctionComponent<IncidentsVerticalBarsProps> = ({ 
                     data: chartData,
                   },
                 ]}
-                type="area"
+                type="bar"
                 width="100%"
                 height="100%"
               />

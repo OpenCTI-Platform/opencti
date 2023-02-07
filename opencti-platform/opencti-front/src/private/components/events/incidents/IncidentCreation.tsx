@@ -12,9 +12,7 @@ import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -29,8 +27,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Theme } from '../../../../components/Theme';
 import { IncidentsLinesPaginationQuery$variables } from './__generated__/IncidentsLinesPaginationQuery.graphql';
-import { IncidentCreationMutation$variables } from './__generated__/IncidentCreationMutation.graphql';
-import type { IncidentAddInput } from './__generated__/IncidentCreationMutation.graphql';
+import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -95,31 +92,41 @@ const IncidentValidation = (t: (v: string) => string) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
+interface IncidentAddInput {
+  name: string
+  description: string
+  confidence: number
+  incident_type: string
+  severity: string
+  source: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  objectAssignee: Option[]
+  externalReferences: Option[]
+}
+
 const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
   const [commit] = useMutation(IncidentMutation);
   const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    // const cleanedValues = isEmptyField(values.severity) ? delete values.severity : values;
     const cleanedValues = isEmptyField(values.severity)
       ? R.dissoc('severity', values)
       : values;
-    const adaptedValues: IncidentCreationMutation$variables['input'] = R.evolve(
-      {
-        confidence: () => parseInt(String(values.confidence), 10),
-        createdBy: R.path(['value']),
-        objectMarking: R.pluck('value'),
-        objectAssignee: R.pluck('value'),
-        objectLabel: R.pluck('value'),
-        objectOrganization: R.pluck('value'),
-        externalReferences: R.pluck('value'),
-      },
-      cleanedValues,
-    );
+    const finalValues = {
+      ...cleanedValues,
+      confidence: parseInt(String(cleanedValues.confidence), 10),
+      createdBy: cleanedValues.createdBy?.value,
+      objectMarking: cleanedValues.objectMarking.map((v) => v.value),
+      objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
+      objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
+      externalReferences: cleanedValues.externalReferences.map(({ value }) => value),
+    };
     commit({
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
       updater: (store) => insertNode(
         store,

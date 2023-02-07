@@ -118,7 +118,12 @@ class ListCardsContent extends Component {
     if (initialLoading || !this._isCellLoaded({ index })) {
       return (
         <div className={className} key={key} style={finalStyle}>
-          {React.cloneElement(DummyCardComponent)}
+          {/* TODO remove this when all components are pure function without compose() */}
+          {!React.isValidElement(DummyCardComponent) ? (
+            <DummyCardComponent />
+          ) : (
+            React.cloneElement(DummyCardComponent)
+          )}
         </div>
       );
     }
@@ -133,11 +138,20 @@ class ListCardsContent extends Component {
     const { node } = edge;
     return (
       <div className={className} key={key} style={finalStyle}>
-        {React.cloneElement(CardComponent, {
-          node,
-          bookmarksIds,
-          onLabelClick,
-        })}
+        {/* TODO remove this when all components are pure function without compose() */}
+        {!React.isValidElement(CardComponent) ? (
+          <CardComponent
+            node={node}
+            bookmarksIds={bookmarksIds}
+            onLabelClick={onLabelClick}
+          />
+        ) : (
+          React.cloneElement(CardComponent, {
+            node,
+            bookmarksIds,
+            onLabelClick,
+          })
+        )}
       </div>
     );
   }
@@ -225,8 +239,8 @@ ListCardsContent.propTypes = {
   dataList: PropTypes.array,
   bookmarkList: PropTypes.array,
   globalCount: PropTypes.number,
-  CardComponent: PropTypes.object,
-  DummyCardComponent: PropTypes.object,
+  CardComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+  DummyCardComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
   nbOfCardsToLoad: PropTypes.number,
   width: PropTypes.number,
   rowHeight: PropTypes.number,
