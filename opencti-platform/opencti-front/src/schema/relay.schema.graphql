@@ -1933,6 +1933,8 @@ enum StixDomainObjectsFilter {
   x_opencti_workflow_id
   fromId
   case_type
+  severity
+  priority
 }
 
 input StixDomainObjectsFiltering {
