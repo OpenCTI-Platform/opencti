@@ -10,7 +10,7 @@ import {
   REDIS_STREAM_NAME,
   StreamProcessor
 } from '../database/redis';
-import conf, { booleanConf, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
 import {
   EVENT_TYPE_CREATE,
@@ -47,6 +47,7 @@ import type {
 } from '../types/event';
 import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
+import { isModuleActivated } from '../domain/settings';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -64,8 +65,9 @@ for (let index = 0; index < ruleBehaviors.length; index += 1) {
 // endregion
 
 export const getManagerInfo = async (context: AuthContext, user: AuthUser): Promise<RuleManager> => {
+  const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
   const ruleStatus = await internalLoadById(context, user, RULE_ENGINE_ID) as unknown as BasicManagerEntity;
-  return { activated: ENABLED_RULE_ENGINE, ...ruleStatus };
+  return { activated: isRuleEngineActivated, ...ruleStatus };
 };
 
 export const buildInternalEvent = (type: 'update' | 'create' | 'delete', stix: StixCoreObject): StreamDataEvent => {
@@ -380,6 +382,7 @@ const initRuleManager = () => {
 const ruleEngine = initRuleManager();
 
 export const cleanRuleManager = async (context: AuthContext, user: AuthUser, eventId: string) => {
+  const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
   // Clear the elastic status
   const patch = { lastEventId: eventId, errors: [] };
   const { element } = await patchAttribute(context, user, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, patch);
@@ -387,7 +390,7 @@ export const cleanRuleManager = async (context: AuthContext, user: AuthUser, eve
   await ruleEngine.shutdown();
   await ruleEngine.start();
   // Return the updated element
-  return { activated: ENABLED_RULE_ENGINE, ...element };
+  return { activated: isRuleEngineActivated, ...element };
 };
 
 export default ruleEngine;
