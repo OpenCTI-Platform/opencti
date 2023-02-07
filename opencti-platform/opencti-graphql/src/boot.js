@@ -165,10 +165,10 @@ export const platformStart = async () => {
   try {
     // Initialize the redis clients
     initializeRedisClients();
-    // Init the cache manager
-    await cacheManager.start();
     // Check all dependencies access
     await checkSystemDependencies();
+    // Init the cache manager
+    await cacheManager.start();
     // Init the platform default
     await platformInit();
     // Init the modules
