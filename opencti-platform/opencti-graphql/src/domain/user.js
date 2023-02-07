@@ -138,7 +138,7 @@ export const batchGroups = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
 
-export const batchUsers = async (context, user, userIds) => {
+export const batchCreators = async (context, user, userIds) => {
   const internalUserIds = Object.keys(INTERNAL_USERS);
   const userToFinds = R.uniq(userIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
   const users = await elFindByIds(context, user, userToFinds, { toMap: true });
