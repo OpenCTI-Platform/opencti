@@ -1879,6 +1879,27 @@ enum StixDomainObjectsOrdering {
   objectMarking
   _score
   first_seen
+  last_seen
+  attribute_count
+  x_opencti_negative
+  confidence
+  first_observed
+  last_observed
+  number_observed
+  incident_type
+  severity
+  priority
+  rating
+  context
+  attribute_abstract
+  opinion
+  pattern_type
+  report_types
+  note_types
+  channel_types
+  x_opencti_base_severity
+  event_types
+  x_opencti_organization_type
 }
 
 enum StixDomainObjectsFilter {
@@ -1911,6 +1932,9 @@ enum StixDomainObjectsFilter {
   creator
   x_opencti_workflow_id
   fromId
+  case_type
+  severity
+  priority
 }
 
 input StixDomainObjectsFiltering {
@@ -8664,6 +8688,7 @@ enum EventsOrdering {
   objectMarking
   objectLabel
   x_opencti_workflow_id
+  start_time
 }
 
 enum EventsFilter {

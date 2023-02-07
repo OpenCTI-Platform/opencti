@@ -122,6 +122,7 @@ enum EventsOrdering {
     objectMarking
     objectLabel
     x_opencti_workflow_id
+    start_time
 }
 
 # Filtering
