@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import type { AddOperation, Operation, ReplaceOperation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
 import { createInferredRelation, deleteInferredRuleElement, stixLoadById, } from '../database/middleware';
@@ -18,15 +17,12 @@ import {
   generateUpdateMessage,
   READ_DATA_INDICES,
   UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE
+  UPDATE_OPERATION_REMOVE
 } from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';
 import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
-
-const INFERRED_OBJECT_REF_PATH = `/extensions/${STIX_EXT_OCTI}/object_refs_inferred`;
 
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
@@ -185,54 +181,14 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
       const report = data as StixReport;
-      const operations: Array<Operation> = event.context.patch;
       const previousPatch = event.context.reverse_patch;
       const previousData = jsonpatch.applyPatch<StixReport>(R.clone(report), previousPatch).newDocument;
-      const refOperations = operations.filter((o) => o.path.startsWith('/object_refs')
-          || o.path.startsWith(INFERRED_OBJECT_REF_PATH));
-      const addedRefs: Array<StixId> = [];
-      const removedRefs: Array<StixId> = [];
-      // Replace operations behavior
-      const replaceOperations = refOperations.filter((o) => o.op === UPDATE_OPERATION_REPLACE) as Array<ReplaceOperation<string>>;
-      for (let replaceIndex = 0; replaceIndex < replaceOperations.length; replaceIndex += 1) {
-        const replaceOperation = replaceOperations[replaceIndex];
-        addedRefs.push(replaceOperation.value as StixId);
-        // For replace we need to look into the previous data, the deleted element
-        const opPath = replaceOperation.path.substring(replaceOperation.path.indexOf('/object_refs'));
-        const removeObjectIndex = R.last(opPath.split('/'));
-        if (removeObjectIndex) {
-          const replaceObjectRefIndex = parseInt(removeObjectIndex, 10);
-          const isExtension = replaceOperation.path.startsWith(INFERRED_OBJECT_REF_PATH);
-          const baseData = isExtension ? previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? [] : previousData.object_refs;
-          const removeRefId = baseData[replaceObjectRefIndex];
-          removedRefs.push(removeRefId);
-        }
-      }
-      // Add operations behavior
-      const addOperations = refOperations.filter((o) => o.op === UPDATE_OPERATION_ADD) as Array<AddOperation<string>>;
-      for (let addIndex = 0; addIndex < addOperations.length; addIndex += 1) {
-        const addOperation = addOperations[addIndex];
-        const addedValues = Array.isArray(addOperation.value) ? addOperation.value : [addOperation.value];
-        addedRefs.push(...addedValues);
-      }
-      // Remove operations behavior
-      const removeOperations = refOperations.filter((o) => o.op === UPDATE_OPERATION_REMOVE);
-      for (let removeIndex = 0; removeIndex < removeOperations.length; removeIndex += 1) {
-        const removeOperation = removeOperations[removeIndex];
-        // For remove op we need to look into the previous data, the deleted element
-        const isExtension = removeOperation.path.startsWith(INFERRED_OBJECT_REF_PATH);
-        const baseData = isExtension ? previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? [] : previousData.object_refs;
-        const opPath = removeOperation.path.substring(removeOperation.path.indexOf('/object_refs'));
-        const [,, index] = opPath.split('/');
-        if (index) {
-          const replaceObjectRefIndex = parseInt(index, 10);
-          const removeRefId = baseData[replaceObjectRefIndex];
-          removedRefs.push(removeRefId);
-        } else {
-          const removeRefIds = baseData ?? [];
-          removedRefs.push(...removeRefIds);
-        }
-      }
+      const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...previousData.object_refs];
+      const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...report.object_refs];
+      // AddedRefs are ids not includes in previous data
+      const addedRefs: Array<StixId> = newRefIds.filter((newId) => !previousRefIds.includes(newId));
+      // RemovedRefs are ids not includes in current data
+      const removedRefs: Array<StixId> = previousRefIds.filter((newId) => !newRefIds.includes(newId));
       // Apply operations
       // For added identities
       const leftAddedRefs = addedRefs.filter(leftTypeRefFilter);
