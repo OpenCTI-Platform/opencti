@@ -102,7 +102,7 @@ class ReportKnowledgeGraphBar extends Component {
       openEditRelation: false,
       openEditSighting: false,
       openEditNested: false,
-      openEditEntity: false,
+      openEditDomainObject: false,
       openEditObservable: false,
       displayRemove: false,
       deleteObject: false,
@@ -224,7 +224,7 @@ class ReportKnowledgeGraphBar extends Component {
       && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
       && !this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
     ) {
-      this.setState({ openEditEntity: true });
+      this.setState({ openEditDomainObject: true });
     } else if (
       this.props.numberOfSelectedNodes === 1
       && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
@@ -265,8 +265,8 @@ class ReportKnowledgeGraphBar extends Component {
     }
   }
 
-  handleCloseEntityEdition() {
-    this.setState({ openEditEntity: false });
+  handleCloseDomainObjectEdition() {
+    this.setState({ openEditDomainObject: false });
     this.props.handleCloseEntityEdition(
       this.props.selectedNodes[0]?.id ?? null,
     );
@@ -274,7 +274,7 @@ class ReportKnowledgeGraphBar extends Component {
 
   handleCloseObservableEdition() {
     this.setState({ openEditObservable: false });
-    this.props.handleCloseObservableEdition(
+    this.props.handleCloseEntityEdition(
       this.props.selectedNodes[0]?.id ?? null,
     );
   }
@@ -363,7 +363,7 @@ class ReportKnowledgeGraphBar extends Component {
       nestedReversed,
       openEditRelation,
       openEditSighting,
-      openEditEntity,
+      openEditDomainObject,
       openEditObservable,
       openEditNested,
       deleteObject,
@@ -851,8 +851,8 @@ class ReportKnowledgeGraphBar extends Component {
                     containerId={report.id}
                     containerStixCoreObjects={report.objects.edges}
                     knowledgeGraph={true}
-                    defaultCreatedBy={report?.createdBy ?? null}
-                    defaultMarkingDefinitions={(report?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={report.createdBy ?? null}
+                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                     targetStixCoreObjectTypes={[
@@ -891,9 +891,9 @@ class ReportKnowledgeGraphBar extends Component {
                   </span>
                 </Tooltip>
                 <StixDomainObjectEdition
-                  open={openEditEntity}
+                  open={openEditDomainObject}
                   stixDomainObjectId={selectedNodes[0]?.id ?? null}
-                  handleClose={this.handleCloseEntityEdition.bind(this)}
+                  handleClose={this.handleCloseDomainObjectEdition.bind(this)}
                   noStoreUpdate={true}
                 />
                 <StixCyberObservableEdition
@@ -957,8 +957,8 @@ class ReportKnowledgeGraphBar extends Component {
                     handleReverseRelation={this.handleReverseRelation.bind(
                       this,
                     )}
-                    defaultCreatedBy={report?.createdBy ?? null}
-                    defaultMarkingDefinitions={(report?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={report.createdBy ?? null}
+                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />
@@ -990,7 +990,7 @@ class ReportKnowledgeGraphBar extends Component {
                     handleClose={this.handleCloseCreateNested.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseNested.bind(this)}
-                    defaultMarkingDefinitions={(report?.objectMarking?.edges ?? []).map(
+                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />
@@ -1024,8 +1024,8 @@ class ReportKnowledgeGraphBar extends Component {
                     handleReverseSighting={this.handleReverseSighting.bind(
                       this,
                     )}
-                    defaultCreatedBy={report?.createdBy ?? null}
-                    defaultMarkingDefinitions={(report?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={report.createdBy ?? null}
+                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />

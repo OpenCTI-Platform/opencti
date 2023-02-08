@@ -98,7 +98,7 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditRelation: false,
       openEditSighting: false,
       openEditNested: false,
-      openEditEntity: false,
+      openEditDomainObject: false,
       openEditObservable: false,
       displayRemove: false,
       navOpen: localStorage.getItem('navOpen') === 'true',
@@ -215,7 +215,7 @@ class GroupingKnowledgeGraphBar extends Component {
       && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
       && !this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
     ) {
-      this.setState({ openEditEntity: true });
+      this.setState({ openEditDomainObject: true });
     } else if (
       this.props.numberOfSelectedNodes === 1
       && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
@@ -256,8 +256,8 @@ class GroupingKnowledgeGraphBar extends Component {
     }
   }
 
-  handleCloseEntityEdition() {
-    this.setState({ openEditEntity: false });
+  handleCloseDomainObjectEdition() {
+    this.setState({ openEditDomainObject: false });
     this.props.handleCloseEntityEdition(
       this.props.selectedNodes[0]?.id ?? null,
     );
@@ -265,7 +265,7 @@ class GroupingKnowledgeGraphBar extends Component {
 
   handleCloseObservableEdition() {
     this.setState({ openEditObservable: false });
-    this.props.handleCloseObservableEdition(
+    this.props.handleCloseEntityEdition(
       this.props.selectedNodes[0]?.id ?? null,
     );
   }
@@ -354,7 +354,7 @@ class GroupingKnowledgeGraphBar extends Component {
       nestedReversed,
       openEditRelation,
       openEditSighting,
-      openEditEntity,
+      openEditDomainObject,
       openEditObservable,
       openEditNested,
       navOpen,
@@ -834,8 +834,8 @@ class GroupingKnowledgeGraphBar extends Component {
                     containerId={grouping.id}
                     containerStixCoreObjects={grouping.objects.edges}
                     knowledgeGraph={true}
-                    defaultCreatedBy={grouping?.createdBy ?? null}
-                    defaultMarkingDefinitions={(grouping?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={grouping.createdBy ?? null}
+                    defaultMarkingDefinitions={(grouping.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                     targetStixCoreObjectTypes={[
@@ -874,9 +874,9 @@ class GroupingKnowledgeGraphBar extends Component {
                   </span>
                 </Tooltip>
                 <StixDomainObjectEdition
-                  open={openEditEntity}
+                  open={openEditDomainObject}
                   stixDomainObjectId={selectedNodes[0]?.id ?? null}
-                  handleClose={this.handleCloseEntityEdition.bind(this)}
+                  handleClose={this.handleCloseDomainObjectEdition.bind(this)}
                   noStoreUpdate={true}
                 />
                 <StixCyberObservableEdition
@@ -942,8 +942,8 @@ class GroupingKnowledgeGraphBar extends Component {
                     handleReverseRelation={this.handleReverseRelation.bind(
                       this,
                     )}
-                    defaultCreatedBy={grouping?.createdBy ?? null}
-                    defaultMarkingDefinitions={(grouping?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={grouping.createdBy ?? null}
+                    defaultMarkingDefinitions={(grouping.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />
@@ -977,7 +977,7 @@ class GroupingKnowledgeGraphBar extends Component {
                     handleClose={this.handleCloseCreateNested.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseNested.bind(this)}
-                    defaultMarkingDefinitions={(grouping?.objectMarking?.edges ?? []).map(
+                    defaultMarkingDefinitions={(grouping.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />
@@ -1013,8 +1013,8 @@ class GroupingKnowledgeGraphBar extends Component {
                     handleReverseSighting={this.handleReverseSighting.bind(
                       this,
                     )}
-                    defaultCreatedBy={grouping?.createdBy ?? null}
-                    defaultMarkingDefinitions={(grouping?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={grouping.createdBy ?? null}
+                    defaultMarkingDefinitions={(grouping.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />

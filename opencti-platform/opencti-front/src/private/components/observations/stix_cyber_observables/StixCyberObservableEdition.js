@@ -29,6 +29,17 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
+  drawerPaperInGraph: {
+    minHeight: '100vh',
+    width: '30%',
+    position: 'fixed',
+    overflow: 'auto',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
+  },
 });
 
 export const stixCyberObservableEditionQuery = graphql`
@@ -112,7 +123,7 @@ class StixCyberObservableEdition extends Component {
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
+        classes={{ paper: classes.drawerPaperInGraph }}
         onClose={handleClose.bind(this)}
       >
         {stixCyberObservableId ? (
@@ -125,7 +136,7 @@ class StixCyberObservableEdition extends Component {
                   <StixCyberObservableEditionContainer
                     variant={variant}
                     stixCyberObservable={props.stixCyberObservable}
-                    handleClose={this.handleClose.bind(this)}
+                    handleClose={handleClose.bind(this)}
                   />
                 );
               }

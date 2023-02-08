@@ -83,7 +83,7 @@ class InvestigationGraphBar extends Component {
       openSelectByType: false,
       anchorElSelectByType: null,
       openEditRelation: false,
-      openEditEntity: false,
+      openEditDomainObject: false,
       openEditObservable: false,
       openExpandElements: false,
       displayRemove: false,
@@ -179,7 +179,7 @@ class InvestigationGraphBar extends Component {
       && !this.props.selectedNodes[0].relationship_type
       && !this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
     ) {
-      this.setState({ openEditEntity: true });
+      this.setState({ openEditDomainObject: true });
     } else if (
       this.props.numberOfSelectedNodes === 1
       && !this.props.selectedNodes[0].relationship_type
@@ -194,8 +194,8 @@ class InvestigationGraphBar extends Component {
     }
   }
 
-  handleCloseEntityEdition() {
-    this.setState({ openEditEntity: false });
+  handleCloseDomainObjectEdition() {
+    this.setState({ openEditDomainObject: false });
     this.props.handleCloseEntityEdition(
       this.props.selectedNodes[0]?.id ?? null,
     );
@@ -203,7 +203,7 @@ class InvestigationGraphBar extends Component {
 
   handleCloseObservableEdition() {
     this.setState({ openEditObservable: false });
-    this.props.handleCloseObservableEdition(
+    this.props.handleCloseEntityEdition(
       this.props.selectedNodes[0]?.id ?? null,
     );
   }
@@ -273,7 +273,7 @@ class InvestigationGraphBar extends Component {
       openSelectByType,
       anchorElSelectByType,
       openEditRelation,
-      openEditEntity,
+      openEditDomainObject,
       openEditObservable,
       relationReversed,
       openCreatedRelation,
@@ -743,8 +743,8 @@ class InvestigationGraphBar extends Component {
                 <InvestigationAddStixCoreObjects
                   workspaceId={workspace.id}
                   workspaceStixCoreObjects={workspace.objects.edges}
-                  defaultCreatedBy={workspace?.createdBy ?? null}
-                  defaultMarkingDefinitions={(workspace?.objectMarking?.edges ?? []).map(
+                  defaultCreatedBy={workspace.createdBy ?? null}
+                  defaultMarkingDefinitions={(workspace.objectMarking?.edges ?? []).map(
                     (n) => n.node,
                   )}
                   targetStixCoreObjectTypes={[
@@ -783,9 +783,9 @@ class InvestigationGraphBar extends Component {
                   </span>
                 </Tooltip>
                 <StixDomainObjectEdition
-                  open={openEditEntity}
+                  open={openEditDomainObject}
                   stixDomainObjectId={selectedNodes[0]?.id ?? null}
-                  handleClose={this.handleCloseEntityEdition.bind(this)}
+                  handleClose={this.handleCloseDomainObjectEdition.bind(this)}
                   noStoreUpdate={true}
                 />
                 <StixCyberObservableEdition

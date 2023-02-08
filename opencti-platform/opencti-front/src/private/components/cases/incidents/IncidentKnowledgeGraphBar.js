@@ -19,7 +19,7 @@ import {
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
-import { AutoFix, FamilyTree, SelectAll, SelectGroup, Video3d, } from 'mdi-material-ui';
+import { AutoFix, FamilyTree, SelectAll, SelectGroup, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -35,7 +35,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
-import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis, } from 'recharts';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -60,7 +60,7 @@ import StixCyberObservableRelationshipCreation
 import StixCyberObservableRelationshipEdition
   from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
 import { MESSAGING$ } from '../../../../relay/environment';
-import StixCyberObservableEdition from "../../observations/stix_cyber_observables/StixCyberObservableEdition";
+import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 
 const styles = () => ({
   bottomNav: {
@@ -102,7 +102,7 @@ class IncidentKnowledgeGraphBar extends Component {
       openEditRelation: false,
       openEditSighting: false,
       openEditNested: false,
-      openEditEntity: false,
+      openEditDomainObject: false,
       openEditObservable: false,
       displayRemove: false,
       deleteObject: false,
@@ -224,7 +224,7 @@ class IncidentKnowledgeGraphBar extends Component {
       && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
       && !this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
     ) {
-      this.setState({ openEditEntity: true });
+      this.setState({ openEditDomainObject: true });
     } else if (
       this.props.numberOfSelectedNodes === 1
       && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
@@ -265,8 +265,8 @@ class IncidentKnowledgeGraphBar extends Component {
     }
   }
 
-  handleCloseEntityEdition() {
-    this.setState({ openEditEntity: false });
+  handleCloseDomainObjectEdition() {
+    this.setState({ openEditDomainObject: false });
     this.props.handleCloseEntityEdition(
       this.props.selectedNodes[0]?.id ?? null,
     );
@@ -274,7 +274,7 @@ class IncidentKnowledgeGraphBar extends Component {
 
   handleCloseObservableEdition() {
     this.setState({ openEditObservable: false });
-    this.props.handleCloseObservableEdition(
+    this.props.handleCloseEntityEdition(
       this.props.selectedNodes[0]?.id ?? null,
     );
   }
@@ -363,7 +363,7 @@ class IncidentKnowledgeGraphBar extends Component {
       nestedReversed,
       openEditRelation,
       openEditSighting,
-      openEditEntity,
+      openEditDomainObject,
       openEditObservable,
       openEditNested,
       deleteObject,
@@ -851,8 +851,8 @@ class IncidentKnowledgeGraphBar extends Component {
                     containerId={caseData.id}
                     containerStixCoreObjects={caseData.objects.edges}
                     knowledgeGraph={true}
-                    defaultCreatedBy={caseData?.createdBy ?? null}
-                    defaultMarkingDefinitions={(caseData?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={caseData.createdBy ?? null}
+                    defaultMarkingDefinitions={(caseData.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                     targetStixCoreObjectTypes={[
@@ -891,9 +891,9 @@ class IncidentKnowledgeGraphBar extends Component {
                   </span>
                 </Tooltip>
                 <StixDomainObjectEdition
-                  open={openEditEntity}
+                  open={openEditDomainObject}
                   stixDomainObjectId={selectedNodes[0]?.id ?? null}
-                  handleClose={this.handleCloseEntityEdition.bind(this)}
+                  handleClose={this.handleCloseDomainObjectEdition.bind(this)}
                   noStoreUpdate={true}
                 />
                 <StixCyberObservableEdition
@@ -959,8 +959,8 @@ class IncidentKnowledgeGraphBar extends Component {
                     handleReverseRelation={this.handleReverseRelation.bind(
                       this,
                     )}
-                    defaultCreatedBy={caseData?.createdBy ?? null}
-                    defaultMarkingDefinitions={(caseData?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={caseData.createdBy ?? null}
+                    defaultMarkingDefinitions={(caseData.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />
@@ -994,7 +994,7 @@ class IncidentKnowledgeGraphBar extends Component {
                     handleClose={this.handleCloseCreateNested.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseNested.bind(this)}
-                    defaultMarkingDefinitions={(caseData?.objectMarking?.edges ?? []).map(
+                    defaultMarkingDefinitions={(caseData.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />
@@ -1030,8 +1030,8 @@ class IncidentKnowledgeGraphBar extends Component {
                     handleReverseSighting={this.handleReverseSighting.bind(
                       this,
                     )}
-                    defaultCreatedBy={caseData?.createdBy ?? null}
-                    defaultMarkingDefinitions={(caseData?.objectMarking?.edges ?? []).map(
+                    defaultCreatedBy={caseData.createdBy ?? null}
+                    defaultMarkingDefinitions={(caseData.objectMarking?.edges ?? []).map(
                       (n) => n.node,
                     )}
                   />
