@@ -753,9 +753,10 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     if (provider === AUTH_BEARER) {
       const currentToken = extractTokenFromBearer(req.headers.authorization);
       if (currentToken !== token) {
+        logAudit.info(userWithOrigin(req, auth), 'LOGIN_BEARER_CHANGE', { provider });
         // Session doesn't match, kill the current session and try to re auth
         await logout(context, auth, req, res);
-        return authenticateUserFromRequest(context, req, res);
+        return await authenticateUserFromRequest(context, req, res);
       }
     }
     // For basic auth, validate that user and password match the session
@@ -766,9 +767,10 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       const passwordCompare = isNotEmptyField(password) && isNotEmptyField(sessionPassword);
       const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
       if (!sameUsername || !samePassword) {
+        logAudit.info(userWithOrigin(req, auth), 'LOGIN_BASIC_CHANGE', { provider });
         // Session doesn't match, kill the current session and try to re auth
         await logout(context, auth, req, res);
-        return authenticateUserFromRequest(context, req, res);
+        return await authenticateUserFromRequest(context, req, res);
       }
     }
     // Other providers doesn't need specific validation, session management is enough
@@ -778,16 +780,18 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     const isImpersonateChange = auth.impersonate && isNotSameUser;
     const isNowImpersonate = isNotSameUser && !auth.impersonate && isBypassUser(auth) && applicantId;
     if (isImpersonateChange || isNowImpersonate) {
+      logAudit.info(userWithOrigin(req, auth), 'LOGIN_IMPERSONATE_CHANGE', { provider });
       // Impersonate doesn't match, kill the current session and try to re auth
       await logout(context, auth, req, res);
-      return authenticateUserFromRequest(context, req, res);
+      return await authenticateUserFromRequest(context, req, res);
     }
     // If session is marked for refresh, reload the user data in the session
     // If session is old by a past application version, make a refresh
     if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
+      logAudit.info(userWithOrigin(req, auth), 'SESSION_REFRESH', { provider });
       const { session_provider } = req.session;
       const { provider: userProvider, token: userToken } = session_provider;
-      return internalAuthenticateUser(context, req, auth, userProvider, userToken);
+      return await internalAuthenticateUser(context, req, auth, userProvider, userToken);
     }
     // If everything ok, return the authenticated user.
     return auth;
@@ -807,7 +811,6 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       if (user) {
         return await authenticateUser(context, req, user, loginProvider, tokenUUID);
       }
-      return user;
     } catch (err) {
       logApp.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
     }
