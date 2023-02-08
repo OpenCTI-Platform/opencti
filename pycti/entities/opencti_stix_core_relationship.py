@@ -353,6 +353,13 @@ class StixCoreRelationship:
                 "start_time": start_time,
                 "stop_time": stop_time,
             }
+        elif start_time is not None:
+            data = {
+                "relationship_type": relationship_type,
+                "source_ref": source_ref,
+                "target_ref": target_ref,
+                "start_time": start_time,
+            }
         else:
             data = {
                 "relationship_type": relationship_type,
