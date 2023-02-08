@@ -223,7 +223,7 @@ const inlineStyles = {
 
 const SearchBulk = () => {
   const { t, nsd, n } = useFormatter();
-  const isGratedToExports = useGranted([KNOWLEDGE_KNGETEXPORT]);
+  const isGrantedToExports = useGranted([KNOWLEDGE_KNGETEXPORT]);
   const classes = useStyles();
   const [textFieldValue, setTextFieldValue] = useState('');
   const [resolvedEntities, setResolvedEntities] = useState([]);
@@ -408,7 +408,7 @@ const SearchBulk = () => {
         </Tooltip>
       </ToggleButton>
       <div className="clearfix" />
-      {isGratedToExports && (
+      {isGrantedToExports && (
         <StixCoreObjectsExports
           open={openExports}
           handleToggle={() => setOpenExports(!openExports)}

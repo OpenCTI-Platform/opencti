@@ -52,7 +52,7 @@ class Search extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-stix-domain-objects',
+      'view-search',
       this.state,
     );
   }

@@ -4,6 +4,7 @@ import * as R from 'ramda';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -15,6 +16,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
+import Alert from '@mui/material/Alert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -144,7 +146,14 @@ class ContainerStixCoreObjectPopover extends Component {
   }
 
   submitDelete() {
-    const { containerId, toId, paginationKey, paginationOptions, selectedElements, setSelectedElements } = this.props;
+    const {
+      containerId,
+      toId,
+      paginationKey,
+      paginationOptions,
+      selectedElements,
+      setSelectedElements,
+    } = this.props;
     this.setState({ deleting: true });
     commitMutation({
       mutation: containerStixCoreObjectPopoverDeleteMutation,
@@ -174,7 +183,7 @@ class ContainerStixCoreObjectPopover extends Component {
   }
 
   render() {
-    const { classes, t } = this.props;
+    const { classes, t, theme } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -185,14 +194,19 @@ class ContainerStixCoreObjectPopover extends Component {
         >
           <MoreVert />
         </IconButton>
-        <Menu anchorEl={this.state.anchorEl}
+        <Menu
+          anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <MenuItem onClick={this.handleOpenRemove.bind(this)}>
             {t('Remove')}
           </MenuItem>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            <MenuItem
+              onClick={this.handleOpenDelete.bind(this)}
+              style={{ color: theme.palette.warning.main }}
+            >
               {t('Delete')}
             </MenuItem>
           </Security>
@@ -235,6 +249,11 @@ class ContainerStixCoreObjectPopover extends Component {
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this entity?')}
+              <Alert severity="warning" style={{ marginTop: 20 }}>
+                {t(
+                  'You are about to completely delete the entity from the platform (not only from the container), be sure of what you are doing.',
+                )}
+              </Alert>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -272,5 +291,6 @@ ContainerStixCoreObjectPopover.propTypes = {
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(ContainerStixCoreObjectPopover);

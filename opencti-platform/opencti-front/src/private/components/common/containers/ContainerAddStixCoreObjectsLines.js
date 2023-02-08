@@ -341,12 +341,14 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                             </Markdown>
                           }
                         />
-                        <ItemMarkings
-                          markingDefinitionsEdges={
-                            stixCoreObject.objectMarking.edges
-                          }
-                          limit={1}
-                        />
+                        <div style={{ marginLeft: 10 }}>
+                          <ItemMarkings
+                            markingDefinitionsEdges={
+                              stixCoreObject.objectMarking.edges
+                            }
+                            limit={1}
+                          />
+                        </div>
                       </ListItem>
                     );
                   })}

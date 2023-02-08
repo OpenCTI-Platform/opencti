@@ -414,12 +414,12 @@ class ContainerAddStixCoreObjects extends Component {
     const { targetStixCoreObjectTypes } = this.props;
     const { search } = this.state;
     let orderMode = 'desc';
-    let orderBy = 'created_at';
+    let orderBy = '_score';
     if (
       targetStixCoreObjectTypes
       && ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
     ) {
-      orderBy = 'created_at';
+      orderBy = '_score';
     }
     if (search.length > 0) {
       orderBy = null;
