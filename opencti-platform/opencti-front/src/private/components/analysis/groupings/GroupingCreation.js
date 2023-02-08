@@ -98,7 +98,7 @@ const groupingValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
-const GroupingCreation = ({ paginationOptions }) => {
+const GroupingCreation = ({ paginationOptions, incrementNumberOfElements }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -124,6 +124,7 @@ const GroupingCreation = ({ paginationOptions }) => {
         'Pagination_groupings',
         paginationOptions,
         'groupingAdd',
+        incrementNumberOfElements,
       ),
       onError: (error) => {
         handleErrorInForm(error, setErrors);

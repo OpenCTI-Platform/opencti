@@ -176,6 +176,14 @@ class Groupings extends Component {
     this.setState({ numberOfElements });
   }
 
+  incrementNumberOfElements(increment) {
+    this.setState({ numberOfElements: {
+      ...this.state.numberOfElements,
+      number: parseInt(this.state.numberOfElements.number, 10) + parseInt(increment, 10),
+    },
+    });
+  }
+
   renderLines(paginationOptions, helper) {
     const {
       sortBy,
@@ -352,7 +360,8 @@ class Groupings extends Component {
           <div>
             {view === 'lines' && this.renderLines(paginationOptions, helper)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <GroupingCreation paginationOptions={paginationOptions} />
+              <GroupingCreation paginationOptions={paginationOptions}
+                                incrementNumberOfElements={this.incrementNumberOfElements.bind(this)}/>
             </Security>
           </div>
           </ExportContextProvider>

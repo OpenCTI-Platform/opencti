@@ -1,6 +1,7 @@
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import { filter } from 'ramda';
+import { numberFormat } from './Number';
 
 export const isNodeInConnection = (payload, conn) => {
   const records = conn.getLinkedRecords('edges');
@@ -9,15 +10,11 @@ export const isNodeInConnection = (payload, conn) => {
   return R.includes(payloadId, recordsIds);
 };
 
-export const insertNode = (
+const retrieveConnection = (
   store,
   key,
   filters,
-  rootField,
   objectId,
-  linkedRecord,
-  input,
-  relKey,
 ) => {
   // Build record ids
   let record;
@@ -36,21 +33,51 @@ export const insertNode = (
   } else {
     conn = ConnectionHandler.getConnection(record, key, params);
   }
+  return conn;
+};
+
+export const insertNodeFromConn = (
+  conn,
+  store,
+  rootField,
+  linkedRecord,
+  input,
+  relKey,
+) => {
+  // Build the payload to add
+  let payload;
+  if (linkedRecord && input && relKey) {
+    const result = store
+      .getRootField(rootField)
+      .getLinkedRecord(linkedRecord, { input });
+    payload = result.getLinkedRecord(relKey);
+  } else {
+    payload = store.getRootField(rootField);
+  }
+  // If payload id not already in the list, add the node
+  if (!isNodeInConnection(payload, conn)) {
+    const newEdge = payload.setLinkedRecord(payload, 'node');
+    ConnectionHandler.insertEdgeBefore(conn, newEdge);
+  }
+};
+
+export const insertNode = (
+  store,
+  key,
+  filters,
+  rootField,
+  incrementNumberOfElements,
+  objectId,
+  linkedRecord,
+  input,
+  relKey,
+) => {
+  const conn = retrieveConnection(store, key, filters, objectId);
+
   if (conn) {
-    // Build the payload to add
-    let payload;
-    if (linkedRecord && input && relKey) {
-      const result = store
-        .getRootField(rootField)
-        .getLinkedRecord(linkedRecord, { input });
-      payload = result.getLinkedRecord(relKey);
-    } else {
-      payload = store.getRootField(rootField);
-    }
-    // If payload id not already in the list, add the node
-    if (!isNodeInConnection(payload, conn)) {
-      const newEdge = payload.setLinkedRecord(payload, 'node');
-      ConnectionHandler.insertEdgeBefore(conn, newEdge);
+    insertNodeFromConn(conn, store, rootField, linkedRecord, input, relKey);
+    if (incrementNumberOfElements) {
+      incrementNumberOfElements(1);
     }
   } else {
     throw new Error(`Cant insert node on not found connection ${key}`);
