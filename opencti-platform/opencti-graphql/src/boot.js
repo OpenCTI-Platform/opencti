@@ -186,7 +186,6 @@ export const platformStop = async () => {
   // Shutdown the redis clients
   await shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);
-  process.exit(0);
 };
 
 ['SIGTERM', 'SIGINT', 'message'].forEach((signal) => {
@@ -197,6 +196,7 @@ export const platformStop = async () => {
         logApp.info(`[OPENCTI] ${signal} signal received, stopping OpenCTI`);
         try {
           await platformStop();
+          process.exit(0);
         } catch (e) {
           logApp.error('[OPENCTI] OpenCTI platform stop error', { error: e });
           process.exit(1);
