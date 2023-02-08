@@ -199,7 +199,7 @@ export const IncidentLine : FunctionComponent<IncidentLineComponentProps> = ({ d
   );
 };
 
-export const IncidentLineDummy = ({ dataColumns }: { dataColumns: DataColumns; }) => {
+export const IncidentLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
       <ListItem classes={{ root: classes.item }} divider={true}>

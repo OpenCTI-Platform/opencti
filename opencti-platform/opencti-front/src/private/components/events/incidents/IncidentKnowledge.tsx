@@ -53,7 +53,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/relations/:relationId"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <StixCoreRelationship
               entityId={incident.id}
               paddingRight={true}
@@ -64,7 +64,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/sightings/:sightingId"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <StixSightingRelationship
               entityId={incident.id}
               paddingRight={true}
@@ -75,7 +75,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/overview"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={incident.id}
               stixDomainObjectType="Incident"
@@ -87,7 +87,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/related"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['related-to']}
@@ -102,7 +102,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/attribution"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['attributed-to']}
@@ -122,7 +122,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/victimology"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <StixDomainObjectVictimology
               stixDomainObjectId={incident.id}
               entityLink={link}
@@ -135,7 +135,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/attack_patterns"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={incident.id}
               entityLink={link}
@@ -148,7 +148,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/malwares"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
@@ -196,7 +196,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/tools"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
@@ -212,7 +212,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/vulnerabilities"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['targets']}
@@ -228,7 +228,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/observables"
-          render={(routeProps: any) => (
+          render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['related-to']}
