@@ -1,4 +1,4 @@
-import type { RuleRuntime, RuleDefinition } from '../types/rules';
+import type { RuleDefinition, RuleRuntime } from '../types/rules';
 import type { BasicRuleEntity, BasicTaskEntity } from '../types/store';
 import { ENTITY_TYPE_RULE, ENTITY_TYPE_TASK } from '../schema/internalObject';
 import AttributedToAttributedRule from '../rules/attributed-to-attributed/AttributedToAttributedRule';
@@ -20,7 +20,7 @@ import SightingIndicatorRule from '../rules/sighting-indicator/SightingIndicator
 import ReportRefIdentityPartOfRule from '../rules/report-refs-identity-part-of/ReportRefIdentityPartOfRule';
 import ReportRefsIndicatorBasedOnRule from '../rules/report-refs-indicator-based-on/ReportRefIndicatorBasedOnRule';
 import ReportRefsLocationLocatedAtRule from '../rules/report-refs-location-located-at/ReportRefLocationLocatedAtRule';
-import { BUS_TOPICS, DEV_MODE, ENABLED_RULE_ENGINE } from '../config/conf';
+import { BUS_TOPICS, DEV_MODE } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
@@ -29,6 +29,7 @@ import { listEntities } from '../database/middleware-loader';
 import { createRuleTask, deleteTask } from './task';
 import { notify } from '../database/redis';
 import { getEntitiesFromCache } from '../database/cache';
+import { isModuleActivated } from './settings';
 
 export const RULES_DECLARATION: Array<RuleRuntime> = [
   AttributedToAttributedRule,
@@ -83,7 +84,8 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ENTITY_TYPE_RULE].EDIT_TOPIC, rule, user);
   // Refresh the activated rules
-  if (ENABLED_RULE_ENGINE) {
+  const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
+  if (isRuleEngineActivated) {
     const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
     const args = { filters: tasksFilters, connectionFormat: false };
     const tasks = await listEntities<BasicTaskEntity>(context, user, [ENTITY_TYPE_TASK], args);
