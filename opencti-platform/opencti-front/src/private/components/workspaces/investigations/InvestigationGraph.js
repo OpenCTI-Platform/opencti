@@ -89,6 +89,9 @@ const investigationGraphStixCoreObjectQuery = graphql`
       ... on CourseOfAction {
         name
       }
+      ... on Channel {
+          name
+      }
       ... on Note {
         attribute_abstract
         content
@@ -174,6 +177,18 @@ const investigationGraphStixCoreObjectQuery = graphql`
       }
       ... on StixFile {
         observableName: name
+      }
+      ... on Event {
+          name
+      }
+      ... on Case {
+          name
+      }
+      ... on Narrative {
+          name
+      }
+      ... on DataComponent {
+          name
       }
     }
   }

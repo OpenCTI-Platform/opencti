@@ -112,82 +112,120 @@ const groupingKnowledgeGraphStixCoreObjectQuery = graphql`
         }
       }
       ... on StixDomainObject {
-        created
+          created
       }
       ... on AttackPattern {
-        name
-        x_mitre_id
+          name
+          x_mitre_id
       }
       ... on Campaign {
-        name
-        first_seen
-        last_seen
+          name
+          first_seen
+          last_seen
       }
       ... on CourseOfAction {
-        name
+          name
+      }
+      ... on Channel {
+          name
+      }
+      ... on Note {
+          attribute_abstract
+          content
+      }
+      ... on ObservedData {
+          name
+          first_observed
+          last_observed
+      }
+      ... on Opinion {
+          opinion
+      }
+      ... on Report {
+          name
+          published
+      }
+      ... on Grouping {
+          name
+          description
       }
       ... on Individual {
-        name
+          name
       }
       ... on Organization {
-        name
+          name
       }
       ... on Sector {
-        name
+          name
+      }
+      ... on System {
+          name
       }
       ... on Indicator {
-        name
-        valid_from
+          name
+          valid_from
       }
       ... on Infrastructure {
-        name
+          name
       }
       ... on IntrusionSet {
-        name
-        first_seen
-        last_seen
+          name
+          first_seen
+          last_seen
       }
       ... on Position {
-        name
+          name
       }
       ... on City {
-        name
+          name
       }
       ... on AdministrativeArea {
-        name
+          name
       }
       ... on Country {
-        name
+          name
       }
       ... on Region {
-        name
+          name
       }
       ... on Malware {
-        name
-        first_seen
-        last_seen
+          name
+          first_seen
+          last_seen
       }
       ... on ThreatActor {
-        name
-        first_seen
-        last_seen
+          name
+          first_seen
+          last_seen
       }
       ... on Tool {
-        name
+          name
       }
       ... on Vulnerability {
-        name
+          name
       }
       ... on Incident {
-        name
-        first_seen
-        last_seen
+          name
+          first_seen
+          last_seen
       }
       ... on StixCyberObservable {
-        observable_value
+          observable_value
       }
       ... on StixFile {
-        observableName: name
+          observableName: name
+      }
+      ... on Event {
+          name
+      }
+      ... on Case {
+          name
+      }
+      ... on Narrative {
+          name
+      }
+      ... on DataComponent {
+          name
       }
     }
   }
