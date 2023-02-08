@@ -1,11 +1,13 @@
 import fetch from 'node-fetch';
 import { executionContext } from '../src/utils/access';
-import { ADMIN_USER, API_TOKEN, API_URI } from '../tests/utils/testQuery';
 import { checkPythonAvailability, execChildPython } from '../src/python/pythonBridge';
-import { logApp } from '../src/config/conf';
+import conf, { logApp } from '../src/config/conf';
 import httpServer from '../src/http/httpServer';
 import cacheManager from '../src/manager/cacheManager';
 
+const ADMIN_USER = { id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' };
+const API_URI = `http://localhost:${conf.get('app:port')}`;
+const API_TOKEN = conf.get('app:admin:token');
 const PYTHON_PATH = './src/python/testing';
 const sample1 = [API_URI, API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
 const sample2 = [API_URI, API_TOKEN, './tests/data/poisonivy.json'];
