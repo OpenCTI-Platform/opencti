@@ -4130,6 +4130,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/tough-cookie@npm:4.0.2":
+  version: 4.0.2
+  resolution: "@types/tough-cookie@npm:4.0.2"
+  checksum: e055556ffdaa39ad85ede0af192c93f93f986f4bd9e9426efdc2948e3e2632db3a4a584d4937dbf6d7620527419bc99e6182d3daf2b08685e710f2eda5291905
+  languageName: node
+  linkType: hard
+
 "@types/uuid@npm:9.0.0":
   version: 9.0.0
   resolution: "@types/uuid@npm:9.0.0"
@@ -4997,6 +5004,18 @@ __metadata:
   version: 4.6.3
   resolution: "axe-core@npm:4.6.3"
   checksum: d0c46be92b9707c48b88a53cd5f471b155a2bfc8bf6beffb514ecd14e30b4863e340b5fc4f496d82a3c562048088c1f3ff5b93b9b3b026cb9c3bfacfd535da10
+  languageName: node
+  linkType: hard
+
+"axios-cookiejar-support@npm:4.0.6":
+  version: 4.0.6
+  resolution: "axios-cookiejar-support@npm:4.0.6"
+  dependencies:
+    http-cookie-agent: ^5.0.2
+  peerDependencies:
+    axios: ">=0.20.0"
+    tough-cookie: ">=4.0.0"
+  checksum: 0b9cc97f5f9027a9f0dc61e24782aef999a09bc7776dcaebe0b05e1ea6e8bcc370974c4e98ef616d1dd423cd19f847c902c14a66494dafeea2bab77f522aa19c
   languageName: node
   linkType: hard
 
@@ -7950,6 +7969,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"http-cookie-agent@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "http-cookie-agent@npm:5.0.2"
+  dependencies:
+    agent-base: ^6.0.2
+  peerDependencies:
+    deasync: ^0.1.26
+    tough-cookie: ^4.0.0
+    undici: ^5.11.0
+  peerDependenciesMeta:
+    deasync:
+      optional: true
+    undici:
+      optional: true
+  checksum: e7b2f5740933ad163d9c7c020f55d7663651fa5d51d6652dad84b22b25813be6ce457cd93e0fa1c7aa5f49932d10d9924944db1c6c3059c19341486018df2c48
+  languageName: node
+  linkType: hard
+
 "http-errors@npm:2.0.0, http-errors@npm:^2.0.0":
   version: 2.0.0
   resolution: "http-errors@npm:2.0.0"
@@ -9915,6 +9952,7 @@ __metadata:
     "@types/express": 4.17.17
     "@types/nconf": 0.10.3
     "@types/ramda": 0.28.22
+    "@types/tough-cookie": 4.0.2
     "@types/uuid": 9.0.0
     "@typescript-eslint/eslint-plugin": 5.50.0
     "@typescript-eslint/parser": 5.50.0
@@ -9926,6 +9964,7 @@ __metadata:
     apollo-server-express: 3.11.1
     async-lock: 1.4.0
     axios: 1.3.2
+    axios-cookiejar-support: 4.0.6
     bcryptjs: 2.4.3
     bluebird: 3.7.2
     body-parser: 1.20.1
@@ -9999,6 +10038,7 @@ __metadata:
     showdown: 2.1.0
     source-map-support: 0.5.21
     subscriptions-transport-ws: 0.11.0
+    tough-cookie: 4.1.2
     ts-loader: 9.4.2
     typescript: 4.9.5
     uuid: 9.0.0
@@ -10588,7 +10628,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"punycode@npm:^2.1.0":
+"psl@npm:^1.1.33":
+  version: 1.9.0
+  resolution: "psl@npm:1.9.0"
+  checksum: 20c4277f640c93d393130673f392618e9a8044c6c7bf61c53917a0fddb4952790f5f362c6c730a9c32b124813e173733f9895add8d26f566ed0ea0654b2e711d
+  languageName: node
+  linkType: hard
+
+"punycode@npm:^2.1.0, punycode@npm:^2.1.1":
   version: 2.3.0
   resolution: "punycode@npm:2.3.0"
   checksum: 39f760e09a2a3bbfe8f5287cf733ecdad69d6af2fe6f97ca95f24b8921858b91e9ea3c9eeec6e08cede96181b3bb33f95c6ffd8c77e63986508aa2e8159fa200
@@ -11775,6 +11822,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tough-cookie@npm:4.1.2":
+  version: 4.1.2
+  resolution: "tough-cookie@npm:4.1.2"
+  dependencies:
+    psl: ^1.1.33
+    punycode: ^2.1.1
+    universalify: ^0.2.0
+    url-parse: ^1.5.3
+  checksum: a7359e9a3e875121a84d6ba40cc184dec5784af84f67f3a56d1d2ae39b87c0e004e6ba7c7331f9622a7d2c88609032473488b28fe9f59a1fec115674589de39a
+  languageName: node
+  linkType: hard
+
 "tr46@npm:~0.0.3":
   version: 0.0.3
   resolution: "tr46@npm:0.0.3"
@@ -12086,6 +12145,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"universalify@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "universalify@npm:0.2.0"
+  checksum: e86134cb12919d177c2353196a4cc09981524ee87abf621f7bc8d249dbbbebaec5e7d1314b96061497981350df786e4c5128dbf442eba104d6e765bc260678b5
+  languageName: node
+  linkType: hard
+
 "unixify@npm:1.0.0, unixify@npm:^1.0.0":
   version: 1.0.0
   resolution: "unixify@npm:1.0.0"
@@ -12143,7 +12209,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"url-parse@npm:~1.5.10":
+"url-parse@npm:^1.5.3, url-parse@npm:~1.5.10":
   version: 1.5.10
   resolution: "url-parse@npm:1.5.10"
   dependencies:

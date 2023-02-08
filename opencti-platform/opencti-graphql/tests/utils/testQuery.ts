@@ -1,5 +1,9 @@
 import { ApolloServer } from 'apollo-server-express';
 import axios, { AxiosInstance } from 'axios';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { wrapper } from 'axios-cookiejar-support';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { CookieJar } from 'tough-cookie';
 import createSchema from '../../src/graphql/schema';
 import conf, { PORT } from '../../src/config/conf';
 import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/access';
@@ -39,18 +43,20 @@ export const generateBasicAuth = () => {
 };
 
 export const createHttpClient = () => {
-  return axios.create({
+  const jar = new CookieJar();
+  return wrapper(axios.create({
     withCredentials: true,
+    jar,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
       authorization: generateBasicAuth(),
     },
-  });
+  }));
 };
 
 export const executeExternalQuery = async (client: AxiosInstance, uri: string, query: unknown, variables = {}) => {
-  const response = await client.post(uri, { query, variables });
+  const response = await client.post(uri, { query, variables }, { withCredentials: true });
   const { data } = response.data;
   return data;
 };

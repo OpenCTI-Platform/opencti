@@ -1,8 +1,8 @@
 import { expect, it, describe } from 'vitest';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import { createReadStream } from 'fs';
-import path from 'path';
+import { createReadStream } from 'node:fs';
+import path from 'node:path';
 import {
   ADMIN_USER,
   API_TOKEN,
