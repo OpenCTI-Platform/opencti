@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import type { AddOperation, Operation, ReplaceOperation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
 import { createInferredRelation, deleteInferredRuleElement, stixLoadById, } from '../database/middleware';
@@ -10,23 +9,20 @@ import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules'
 import type { StixId, StixObject } from '../types/stix-common';
 import type { StixReport } from '../types/stix-sdo';
 import type { StixRelation } from '../types/stix-sro';
-import type { BasicStoreRelation, StoreObject } from '../types/store';
+import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import type { RelationCreation, UpdateEvent } from '../types/event';
 import {
-  EVENT_TYPE_DELETE,
+  generateUpdateMessage,
   READ_DATA_INDICES,
   UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE
+  UPDATE_OPERATION_REMOVE
 } from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';
-import { RULE_PREFIX } from '../schema/general';
-
-const INFERRED_OBJECT_REF_PATH = `/extensions/${STIX_EXT_OCTI}/object_refs_inferred`;
+import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
@@ -49,7 +45,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       return;
     }
     const opts = { publishStreamEvent: false };
-    const createdTargets: Array<StixId> = [];
+    const createdTargets: Array<BasicStoreObject> = [];
     const { id: reportId, object_refs_inferred } = report.extensions[STIX_EXT_OCTI];
     const reportObjectRefIds = [...(report.object_refs ?? []), ...(object_refs_inferred ?? [])];
     // region handle creation
@@ -63,7 +59,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
         const inferredRelation = await createInferredRelation(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
         if (inferredRelation.isCreation) {
-          createdTargets.push(partOfStandardId);
+          createdTargets.push(inferredRelation.element[INPUT_DOMAIN_TO]);
         }
       }
       // -----------------------------------------------------------------------------------------------------------
@@ -72,28 +68,43 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const inputForIdentity = { fromId: reportId, toId: partOfTargetId, relationship_type: RELATION_OBJECT };
         const inferredTarget = await createInferredRelation(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
         if (inferredTarget.isCreation) {
-          createdTargets.push(partOfTargetStandardId);
+          createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO]);
         }
       }
     }
     // endregion
     // region handle deletion
-    const deletedTargetRefs: Array<StixId> = [];
+    const deletedTargetRefs: Array<StoreObject> = [];
     for (let indexDeletion = 0; indexDeletion < deletedTargets.length; indexDeletion += 1) {
       const inferenceToDelete = deletedTargets[indexDeletion];
-      const event = await deleteInferredRuleElement(id, inferenceToDelete, [], opts);
-      if (event?.type === EVENT_TYPE_DELETE) {
+      const isDeletion = await deleteInferredRuleElement(id, inferenceToDelete, [], opts);
+      if (isDeletion) {
         // if delete really occurs (not simple upsert removing an explanation)
         const deletedTarget = await internalLoadById(context, RULE_MANAGER_USER, inferenceToDelete.toId) as unknown as StoreObject;
-        deletedTargetRefs.push(deletedTarget.standard_id);
+        deletedTargetRefs.push(deletedTarget);
       }
     }
     // endregion
     if (createdTargets.length > 0 || deletedTargetRefs.length > 0) {
       const updatedReport = R.clone(report);
-      const refsWithoutDeletion = (object_refs_inferred ?? []).filter((o) => !deletedTargetRefs.includes(o));
-      updatedReport.extensions[STIX_EXT_OCTI].object_refs_inferred = [...refsWithoutDeletion, ...createdTargets];
-      const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, '');
+      const deletedTargetIds = deletedTargetRefs.map((d) => d.standard_id);
+      const refsWithoutDeletion = (object_refs_inferred ?? []).filter((o) => !deletedTargetIds.includes(o));
+      const createdTargetIds = createdTargets.map((c) => c.standard_id);
+      const objectRefsInferred = [...refsWithoutDeletion, ...createdTargetIds];
+      if (objectRefsInferred.length > 0) {
+        updatedReport.extensions[STIX_EXT_OCTI].object_refs_inferred = objectRefsInferred;
+      } else {
+        delete updatedReport.extensions[STIX_EXT_OCTI].object_refs_inferred;
+      }
+      const inputs = [];
+      if (createdTargets.length > 0) {
+        inputs.push({ key: INPUT_OBJECTS, value: createdTargets, operation: UPDATE_OPERATION_ADD });
+      }
+      if (deletedTargetRefs.length > 0) {
+        inputs.push({ key: INPUT_OBJECTS, value: deletedTargetRefs, operation: UPDATE_OPERATION_REMOVE });
+      }
+      const message = generateUpdateMessage(inputs);
+      const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
       await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }
   };
@@ -125,7 +136,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       const removedRefIdentities = await internalFindByIds(context, RULE_MANAGER_USER, removedRefs) as Array<StoreObject>;
       const removedIds = removedRefIdentities.map((i) => i.internal_id);
       const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: removedIds, operator: 'wildcard' }];
-      const args = { filters, indices: READ_DATA_INDICES };
+      const args = { fromId: report.extensions[STIX_EXT_OCTI].id, filters, indices: READ_DATA_INDICES };
       const targets = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, args);
       deletedTargets.push(...targets);
     }
@@ -170,54 +181,14 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
       const report = data as StixReport;
-      const operations: Array<Operation> = event.context.patch;
       const previousPatch = event.context.reverse_patch;
       const previousData = jsonpatch.applyPatch<StixReport>(R.clone(report), previousPatch).newDocument;
-      const refOperations = operations.filter((o) => o.path.startsWith('/object_refs')
-          || o.path.startsWith(INFERRED_OBJECT_REF_PATH));
-      const addedRefs: Array<StixId> = [];
-      const removedRefs: Array<StixId> = [];
-      // Replace operations behavior
-      const replaceOperations = refOperations.filter((o) => o.op === UPDATE_OPERATION_REPLACE) as Array<ReplaceOperation<string>>;
-      for (let replaceIndex = 0; replaceIndex < replaceOperations.length; replaceIndex += 1) {
-        const replaceOperation = replaceOperations[replaceIndex];
-        addedRefs.push(replaceOperation.value as StixId);
-        // For replace we need to look into the previous data, the deleted element
-        const opPath = replaceOperation.path.substring(replaceOperation.path.indexOf('/object_refs'));
-        const removeObjectIndex = R.last(opPath.split('/'));
-        if (removeObjectIndex) {
-          const replaceObjectRefIndex = parseInt(removeObjectIndex, 10);
-          const isExtension = replaceOperation.path.startsWith(INFERRED_OBJECT_REF_PATH);
-          const baseData = isExtension ? previousData.extensions[STIX_EXT_OCTI].object_refs_inferred : previousData.object_refs;
-          const removeRefId = baseData[replaceObjectRefIndex];
-          removedRefs.push(removeRefId);
-        }
-      }
-      // Add operations behavior
-      const addOperations = refOperations.filter((o) => o.op === UPDATE_OPERATION_ADD) as Array<AddOperation<string>>;
-      for (let addIndex = 0; addIndex < addOperations.length; addIndex += 1) {
-        const addOperation = addOperations[addIndex];
-        const addedValues = Array.isArray(addOperation.value) ? addOperation.value : [addOperation.value];
-        addedRefs.push(...addedValues);
-      }
-      // Remove operations behavior
-      const removeOperations = refOperations.filter((o) => o.op === UPDATE_OPERATION_REMOVE);
-      for (let removeIndex = 0; removeIndex < removeOperations.length; removeIndex += 1) {
-        const removeOperation = removeOperations[removeIndex];
-        // For remove op we need to look into the previous data, the deleted element
-        const isExtension = removeOperation.path.startsWith(INFERRED_OBJECT_REF_PATH);
-        const baseData = isExtension ? previousData.extensions[STIX_EXT_OCTI].object_refs_inferred : previousData.object_refs;
-        const opPath = removeOperation.path.substring(removeOperation.path.indexOf('/object_refs'));
-        const [,, index] = opPath.split('/');
-        if (index) {
-          const replaceObjectRefIndex = parseInt(index, 10);
-          const removeRefId = baseData[replaceObjectRefIndex];
-          removedRefs.push(removeRefId);
-        } else {
-          const removeRefIds = baseData ?? [];
-          removedRefs.push(...removeRefIds);
-        }
-      }
+      const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...previousData.object_refs];
+      const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...report.object_refs];
+      // AddedRefs are ids not includes in previous data
+      const addedRefs: Array<StixId> = newRefIds.filter((newId) => !previousRefIds.includes(newId));
+      // RemovedRefs are ids not includes in current data
+      const removedRefs: Array<StixId> = previousRefIds.filter((newId) => !newRefIds.includes(newId));
       // Apply operations
       // For added identities
       const leftAddedRefs = addedRefs.filter(leftTypeRefFilter);

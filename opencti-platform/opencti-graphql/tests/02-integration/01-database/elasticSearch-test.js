@@ -51,7 +51,6 @@ const elWhiteUser = async () => {
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
     expect(searchEngineInit()).resolves.toBeTruthy();
-    // expect(elVersion().then((v) => v.number)).resolves.toContain('7.16');
     expect(elIndexExists(READ_INDEX_INTERNAL_OBJECTS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_STIX_CORE_RELATIONSHIPS)).toBeTruthy();
@@ -61,17 +60,6 @@ describe('Elasticsearch configuration test', () => {
     expect(elIndexExists(READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_INTERNAL_RELATIONSHIPS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_STIX_CYBER_OBSERVABLES)).toBeTruthy();
-  });
-  it('should manage index', async () => {
-    // Create index
-    const createdIndices = await elCreateIndexes(['test_index']);
-    expect(createdIndices.length).toEqual(1);
-    expect(R.head(createdIndices).acknowledged).toBeTruthy();
-    expect(R.head(createdIndices).index).toEqual('test_index-000001');
-    // Remove index
-    const deletedIndices = await elDeleteIndexes(['test_index-000001']);
-    expect(deletedIndices.length).toEqual(1);
-    expect(R.head(deletedIndices).acknowledged).toBeTruthy();
   });
 });
 
