@@ -633,7 +633,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     api_token: user.api_token,
     internal_id: user.internal_id,
     user_email: user.user_email,
-    otp_activated: user.otp_activated,
+    otp_activated: user.otp_activated || provider === AUTH_BEARER,
     otp_validated: user.otp_validated || (!user.otp_activated && !settings.otp_mandatory) || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
     otp_secret: user.otp_secret,
     otp_mandatory: settings.otp_mandatory,
