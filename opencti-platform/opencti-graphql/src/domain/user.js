@@ -744,8 +744,13 @@ export const authenticateUser = async (context, req, user, provider, token = '')
 };
 
 export const authenticateUserFromRequest = async (context, req, res) => {
-  logAudit.info(userWithOrigin(req, {}), 'AUTHENTICATE_USER_FROM_REQUEST', { id: req.sessionID });
   const auth = req.session?.user;
+  logAudit.info(userWithOrigin(req, {}), 'AUTHENTICATE_USER_FROM_REQUEST', {
+    id: req.sessionID,
+    auth: isNotEmptyField(auth),
+    body: req.body,
+    authorization: req.headers.authorization
+  });
   // If user already have a session
   if (auth) {
     // User already identified, we need to enforce the session validity
