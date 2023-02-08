@@ -143,6 +143,7 @@ class IndicatorEntities extends Component {
               'Campaign',
               'Incident',
               'Malware',
+              'Infrastructure',
               'Tool',
               'Vulnerability',
               'Attack-Pattern',
