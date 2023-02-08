@@ -32,7 +32,7 @@ import { BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notific
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { resolveUserById } from '../domain/user';
 
-const workflowStatuses = async (context: AuthContext) => {
+const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
     const templates = await listAllEntities<BasicWorkflowTemplateEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { connectionFormat: false });
     const args:EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: OrderingMode.Asc, connectionFormat: false };
@@ -42,9 +42,9 @@ const workflowStatuses = async (context: AuthContext) => {
       return { ...status, name: template?.name ?? 'Error with template association' };
     });
   };
-  return { values: await reloadStatuses(), fn: reloadStatuses };
+  return { values: null, fn: reloadStatuses };
 };
-const platformResolvedFilters = async (context: AuthContext) => {
+const platformResolvedFilters = (context: AuthContext) => {
   const reloadFilters = async () => {
     const filteringIds = [];
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
@@ -58,99 +58,85 @@ const platformResolvedFilters = async (context: AuthContext) => {
     }
     return [];
   };
-  return { values: await reloadFilters(), fn: reloadFilters };
+  return { values: null, fn: reloadFilters };
 };
-const platformConnectors = async (context: AuthContext) => {
-  const reloadConnectors = async () => {
+const platformConnectors = (context: AuthContext) => {
+  const reloadConnectors = () => {
     return findConnectors(context, SYSTEM_USER);
   };
-  return { values: await reloadConnectors(), fn: reloadConnectors };
+  return { values: null, fn: reloadConnectors };
 };
-const platformOrganizations = async (context: AuthContext) => {
-  const reloadOrganizations = async () => {
+const platformOrganizations = (context: AuthContext) => {
+  const reloadOrganizations = () => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { connectionFormat: false });
   };
-  return { values: await reloadOrganizations(), fn: reloadOrganizations };
+  return { values: null, fn: reloadOrganizations };
 };
-const platformRules = async (context: AuthContext) => {
-  const reloadRules = async () => {
+const platformRules = (context: AuthContext) => {
+  const reloadRules = () => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_RULE], { connectionFormat: false });
   };
-  return { values: await reloadRules(), fn: reloadRules };
+  return { values: null, fn: reloadRules };
 };
-const platformMarkings = async (context: AuthContext) => {
-  const reloadMarkings = async () => {
+const platformMarkings = (context: AuthContext) => {
+  const reloadMarkings = () => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_MARKING_DEFINITION], { connectionFormat: false });
   };
-  return { values: await reloadMarkings(), fn: reloadMarkings };
+  return { values: null, fn: reloadMarkings };
 };
-const platformTriggers = async (context: AuthContext) => {
-  const reloadTriggers = async () => {
+const platformTriggers = (context: AuthContext) => {
+  const reloadTriggers = () => {
     return listAllEntities<BasicStoreEntityTrigger>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
   };
-  return { values: await reloadTriggers(), fn: reloadTriggers };
+  return { values: null, fn: reloadTriggers };
 };
-const platformUsers = async (context: AuthContext) => {
+const platformUsers = (context: AuthContext) => {
   const reloadUsers = async () => {
     const users = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
     const allUserIds = users.map((user) => user.internal_id);
     return Bluebird.map(allUserIds, (userId: string) => resolveUserById(context, userId), { concurrency: ES_MAX_CONCURRENCY });
   };
-  return { values: await reloadUsers(), fn: reloadUsers };
+  return { values: null, fn: reloadUsers };
 };
-const platformSettings = async (context: AuthContext) => {
-  const reloadSettings = async () => {
+const platformSettings = (context: AuthContext) => {
+  const reloadSettings = () => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS], { connectionFormat: false });
   };
-  return { values: await reloadSettings(), fn: reloadSettings };
+  return { values: null, fn: reloadSettings };
 };
-const platformEntitySettings = async (context: AuthContext) => {
-  const reloadEntitySettings = async () => {
+const platformEntitySettings = (context: AuthContext) => {
+  const reloadEntitySettings = () => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING], { connectionFormat: false });
   };
-  return { values: await reloadEntitySettings(), fn: reloadEntitySettings };
+  return { values: null, fn: reloadEntitySettings };
 };
 
 const initCacheManager = () => {
   let subscribeIdentifier: { topic: string; unsubscribe: () => void; };
+  const initCacheContent = () => {
+    const context = executionContext('cache_manager');
+    writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
+    writeCacheForEntity(ENTITY_TYPE_ENTITY_SETTING, platformEntitySettings(context));
+    writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, platformMarkings(context));
+    writeCacheForEntity(ENTITY_TYPE_USER, platformUsers(context));
+    writeCacheForEntity(ENTITY_TYPE_STATUS, workflowStatuses(context));
+    writeCacheForEntity(ENTITY_TYPE_CONNECTOR, platformConnectors(context));
+    writeCacheForEntity(ENTITY_TYPE_TRIGGER, platformTriggers(context));
+    writeCacheForEntity(ENTITY_TYPE_RULE, platformRules(context));
+    writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, platformOrganizations(context));
+    writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
+  };
   return {
+    init: () => initCacheContent(), // Use for testing
     start: async () => {
-      const start = new Date().getTime();
-      logApp.info('[OPENCTI-MODULE] Initializing cache manager');
-      const context = executionContext('cache_manager');
-      // Load initial data used for cache
-      // First load the platform settings
-      const [settings, entitySettings] = await Promise.all([platformSettings(context), platformEntitySettings(context)]);
-      writeCacheForEntity(ENTITY_TYPE_SETTINGS, settings);
-      writeCacheForEntity(ENTITY_TYPE_ENTITY_SETTING, entitySettings);
-      // Then load the other parts
-      const [users, markings, statuses, connectors, rules, organizations, triggers, filters] = await Promise.all([
-        platformUsers(context),
-        platformMarkings(context),
-        workflowStatuses(context),
-        platformConnectors(context),
-        platformRules(context),
-        platformOrganizations(context),
-        platformTriggers(context),
-        platformResolvedFilters(context),
-      ]);
-      writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, markings);
-      writeCacheForEntity(ENTITY_TYPE_USER, users);
-      writeCacheForEntity(ENTITY_TYPE_STATUS, statuses);
-      writeCacheForEntity(ENTITY_TYPE_CONNECTOR, connectors);
-      writeCacheForEntity(ENTITY_TYPE_TRIGGER, triggers);
-      writeCacheForEntity(ENTITY_TYPE_RULE, rules);
-      writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, organizations);
-      writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, filters);
+      initCacheContent();
       // Listen pub/sub configuration events
-      // noinspection ES6MissingAwait
       subscribeIdentifier = await pubSubSubscription<{ instance: BasicStoreEntity }>(`${TOPIC_PREFIX}*`, (event) => {
         const { instance } = event;
         // Invalid cache if any entity has changed.
         resetCacheForEntity(instance.entity_type);
       });
-      const startingDuration = Math.round((new Date().getTime() - start) / 1000);
-      logApp.info(`[OPENCTI-MODULE] Cache manager initialized in ${startingDuration} sec(s)`);
+      logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized');
     },
     shutdown: async () => {
       if (subscribeIdentifier) {

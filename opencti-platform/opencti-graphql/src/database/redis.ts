@@ -108,17 +108,15 @@ export const createRedisClient = (provider: string): Cluster | Redis => {
 };
 
 // region Initialization of clients
-type RedisConnection = Cluster | Redis | undefined;
-interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub?: RedisPubSub | undefined }
-const redisClients: RedisClients = { base: undefined, lock: undefined, pubsub: undefined };
-export const initializeRedisClients = () => {
-  const isCluster = conf.get('redis:mode') === 'cluster';
-  logApp.info(`[REDIS] Initializing redis (${isCluster ? 'cluster' : 'Single'} mode) clients`);
-  redisClients.base = createRedisClient('Client base');
-  redisClients.lock = createRedisClient('Client lock');
-  const clientPublisher: Cluster | Redis = createRedisClient('Pubsub publisher');
-  const clientSubscriber: Cluster | Redis = createRedisClient('Pubsub subscriber');
-  redisClients.pubsub = new RedisPubSub({ publisher: clientPublisher as any, subscriber: clientSubscriber as any });
+type RedisConnection = Cluster | Redis ;
+interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
+const redisClients: RedisClients = {
+  base: createRedisClient('base'),
+  lock: createRedisClient('lock'),
+  pubsub: new RedisPubSub({
+    publisher: createRedisClient('publisher'),
+    subscriber: createRedisClient('subscriber')
+  })
 };
 export const shutdownRedisClients = async () => {
   await redisClients.base?.quit().catch(() => { /* Dont care */ });
@@ -128,24 +126,9 @@ export const shutdownRedisClients = async () => {
 // endregion
 
 // region pubsub
-const getClientBase = (): Cluster | Redis => {
-  if (!redisClients.base) {
-    throw DatabaseError('[REDIS] Clients not initialized');
-  }
-  return redisClients.base;
-};
-const getClientLock = (): Cluster | Redis => {
-  if (!redisClients.lock) {
-    throw DatabaseError('[REDIS] Clients not initialized');
-  }
-  return redisClients.lock;
-};
-const getClientPubSub = (): RedisPubSub => {
-  if (!redisClients.pubsub) {
-    throw DatabaseError('[REDIS] Clients not initialized');
-  }
-  return redisClients.pubsub;
-};
+const getClientBase = (): Cluster | Redis => redisClients.base;
+const getClientLock = (): Cluster | Redis => redisClients.lock;
+const getClientPubSub = (): RedisPubSub => redisClients.pubsub;
 export const pubSubAsyncIterator = (topic: string | string[]) => {
   return getClientPubSub().asyncIterator(topic);
 };
@@ -254,6 +237,8 @@ export const extendSession = async (sessionId: string, extension: number) => {
 export const redisIsAlive = async () => {
   try {
     await getClientBase().get('test-key');
+    const isCluster = conf.get('redis:mode') === 'cluster';
+    logApp.info(`[REDIS] Clients initialized in ${isCluster ? 'cluster' : 'Single'} mode`);
     return true;
   } catch {
     throw DatabaseError('Redis seems down');

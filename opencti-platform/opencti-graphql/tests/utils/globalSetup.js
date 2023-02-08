@@ -7,7 +7,6 @@ import { wait } from '../../src/database/utils';
 import { createRedisClient } from '../../src/database/redis';
 
 const platformClean = async () => {
-  console.log('[VITEST] Cleaning platform');
   // Delete the bucket
   await deleteBucket();
   // Delete all rabbitmq queues
@@ -25,13 +24,11 @@ export async function setup() {
   // Platform cleanup before executing tests
   await platformClean();
   // Start the platform
-  console.log('[VITEST] Starting platform');
   await platformStart();
   await wait(15000); // Wait 15 secs for complete platform start
 }
 
 export async function teardown() {
-  console.log('[VITEST] Stopping platform');
   // Stop the platform
   await platformStop();
 }
