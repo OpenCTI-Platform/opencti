@@ -71,7 +71,8 @@ export const findAll = async (context, user, args) => {
 export const findById = async (context, user, stixDomainObjectId) => storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
 
 export const batchStixDomainObjects = async (context, user, objectsIds) => {
-  const objects = await elFindByIds(context, user, objectsIds, { toMap: true });
+  const objectsToFinds = R.uniq(objectsIds.filter((u) => isNotEmptyField(u)));
+  const objects = await elFindByIds(context, user, objectsToFinds, { toMap: true });
   return objectsIds.map((id) => objects[id]);
 };
 
