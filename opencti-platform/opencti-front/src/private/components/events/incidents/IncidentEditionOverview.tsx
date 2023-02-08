@@ -325,6 +325,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
     status: incident.status,
     workflowEnabled: incident.workflowEnabled,
     is_inferred: isInferred,
+    confidence: incident.confidence,
   };
 
   return (
@@ -337,7 +338,6 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
       {({
         submitForm,
         isSubmitting,
-        validateForm,
         setFieldValue,
         values,
       }) => (
@@ -457,7 +457,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}
-              validateForm={validateForm}
+              open={false}
               setFieldValue={setFieldValue}
               values={values}
               id={incident.id}
