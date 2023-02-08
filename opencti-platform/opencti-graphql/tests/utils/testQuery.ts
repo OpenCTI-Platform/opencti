@@ -1,5 +1,5 @@
 import { ApolloServer } from 'apollo-server-express';
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf, { PORT } from '../../src/config/conf';
 import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/access';
@@ -38,17 +38,19 @@ export const generateBasicAuth = () => {
   return `Basic ${buff.toString('base64')}`;
 };
 
-export const executeExternalQuery = async (uri: string, query: unknown, variables = {}) => {
-  const response = await axios({
-    url: uri,
-    method: 'POST',
+export const createHttpClient = () => {
+  return axios.create({
+    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
       authorization: generateBasicAuth(),
     },
-    data: { query, variables },
   });
+};
+
+export const executeExternalQuery = async (client: AxiosInstance, uri: string, query: unknown, variables = {}) => {
+  const response = await client.post(uri, { query, variables });
   const { data } = response.data;
   return data;
 };

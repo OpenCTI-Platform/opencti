@@ -6,7 +6,9 @@ import path from 'path';
 import {
   ADMIN_USER,
   API_TOKEN,
-  API_URI, DATA_FILE_TEST,
+  API_URI,
+  createHttpClient,
+  DATA_FILE_TEST,
   executeExternalQuery,
   FIFTEEN_MINUTES,
   PYTHON_PATH,
@@ -112,18 +114,19 @@ describe('Database sync testing', () => {
     });
   };
   const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
-    const data = await executeExternalQuery(remoteUri, STAT_QUERY);
+    const client = createHttpClient();
+    const data = await executeExternalQuery(client, remoteUri, STAT_QUERY);
     const { objects, relationships } = data.about.debugStats;
     const syncObjectMap = new Map(objects.map((i) => [i.label, i.value]));
     const syncRelMap = new Map(relationships.map((i) => [i.label, i.value]));
     checkMapConsistency(objectMap, syncObjectMap);
     checkMapConsistency(relMap, syncRelMap);
-    const reportData = await executeExternalQuery(remoteUri, REPORT_QUERY, {
+    const reportData = await executeExternalQuery(client, remoteUri, REPORT_QUERY, {
       id: 'report--f2b63e80-b523-4747-a069-35c002c690db',
     });
     const stixReport = JSON.parse(reportData.report.toStix);
     const idLoader = async (context, user, id) => {
-      const dataId = await executeExternalQuery(remoteUri, STANDARD_LOADER_QUERY, { id });
+      const dataId = await executeExternalQuery(client, remoteUri, STANDARD_LOADER_QUERY, { id });
       return dataId.stixObjectOrStixRelationship;
     };
     const diffElements = await checkInstanceDiff(initStixReport, stixReport, idLoader);
@@ -177,6 +180,7 @@ describe('Database sync testing', () => {
   it(
     'Should direct sync succeed',
     async () => {
+      const client = createHttpClient();
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Upload a file
@@ -197,16 +201,16 @@ describe('Database sync testing', () => {
           token: API_TOKEN,
         },
       };
-      const synchronizer = await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_CREATION_QUERY, SYNC_CREATE);
+      const synchronizer = await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, SYNC_CREATION_QUERY, SYNC_CREATE);
       // Start the sync
       const syncId = synchronizer.synchronizerAdd.id;
-      await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
+      await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
       // Wait 2 min sync to consume all the stream
       await wait(120000);
       // Post check
       await checkPostSyncContent(SYNC_DIRECT_START_REMOTE_URI, objectMap, relMap, initStixReport);
       // Check file availability
-      const reportData = await executeExternalQuery(SYNC_DIRECT_START_REMOTE_URI, REPORT_QUERY, {
+      const reportData = await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, REPORT_QUERY, {
         id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
       });
       const files = reportData.report.importFiles.edges;
@@ -285,6 +289,7 @@ describe('Database sync testing', () => {
   it(
     'Should backup/restore sync succeed',
     async () => {
+      const client = createHttpClient();
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Create the backup
@@ -294,7 +299,7 @@ describe('Database sync testing', () => {
       // Post check
       await checkPostSyncContent(SYNC_RESTORE_START_REMOTE_URI, objectMap, relMap, initStixReport);
       // Check file availability
-      const reportData = await executeExternalQuery(SYNC_RESTORE_START_REMOTE_URI, REPORT_QUERY, {
+      const reportData = await executeExternalQuery(client, SYNC_RESTORE_START_REMOTE_URI, REPORT_QUERY, {
         id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
       });
       const files = reportData.report.importFiles.edges;
