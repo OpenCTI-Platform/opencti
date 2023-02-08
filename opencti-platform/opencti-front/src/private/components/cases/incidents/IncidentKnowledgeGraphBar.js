@@ -6,26 +6,20 @@ import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import {
-  AspectRatio,
-  FilterListOutlined,
   AccountBalanceOutlined,
-  DeleteOutlined,
-  LinkOutlined,
+  AspectRatio,
   CenterFocusStrongOutlined,
-  EditOutlined,
-  InfoOutlined,
-  ScatterPlotOutlined,
   DateRangeOutlined,
-  VisibilityOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FilterListOutlined,
+  InfoOutlined,
+  LinkOutlined,
   ReadMoreOutlined,
+  ScatterPlotOutlined,
+  VisibilityOutlined,
 } from '@mui/icons-material';
-import {
-  Video3d,
-  SelectAll,
-  SelectGroup,
-  FamilyTree,
-  AutoFix,
-} from 'mdi-material-ui';
+import { AutoFix, FamilyTree, SelectAll, SelectGroup, Video3d, } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -41,13 +35,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
-import {
-  ResponsiveContainer,
-  Scatter,
-  ScatterChart,
-  YAxis,
-  ZAxis,
-} from 'recharts';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis, } from 'recharts';
 import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -63,12 +51,16 @@ import StixCoreRelationshipEdition from '../../common/stix_core_relationships/St
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
-import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
+import StixSightingRelationshipCreation
+  from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
-import StixCyberObservableRelationshipCreation from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
-import StixCyberObservableRelationshipEdition from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
+import StixCyberObservableRelationshipCreation
+  from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
+import StixCyberObservableRelationshipEdition
+  from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
 import { MESSAGING$ } from '../../../../relay/environment';
+import StixCyberObservableEdition from "../../observations/stix_cyber_observables/StixCyberObservableEdition";
 
 const styles = () => ({
   bottomNav: {
@@ -111,6 +103,7 @@ class IncidentKnowledgeGraphBar extends Component {
       openEditSighting: false,
       openEditNested: false,
       openEditEntity: false,
+      openEditObservable: false,
       displayRemove: false,
       deleteObject: false,
       navOpen: localStorage.getItem('navOpen') === 'true',
@@ -229,8 +222,15 @@ class IncidentKnowledgeGraphBar extends Component {
     if (
       this.props.numberOfSelectedNodes === 1
       && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
+      && !this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
     ) {
       this.setState({ openEditEntity: true });
+    } else if (
+      this.props.numberOfSelectedNodes === 1
+      && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
+      && this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
+    ) {
+      this.setState({ openEditObservable: true });
     } else if (
       (this.props.numberOfSelectedLinks === 1
         && this.props.selectedLinks[0].parent_types.includes(
@@ -268,28 +268,35 @@ class IncidentKnowledgeGraphBar extends Component {
   handleCloseEntityEdition() {
     this.setState({ openEditEntity: false });
     this.props.handleCloseEntityEdition(
-      R.propOr(null, 'id', this.props.selectedNodes[0]),
+      this.props.selectedNodes[0]?.id ?? null,
+    );
+  }
+
+  handleCloseObservableEdition() {
+    this.setState({ openEditObservable: false });
+    this.props.handleCloseObservableEdition(
+      this.props.selectedNodes[0]?.id ?? null,
     );
   }
 
   handleCloseRelationEdition() {
     this.setState({ openEditRelation: false });
     this.props.handleCloseRelationEdition(
-      R.propOr(null, 'id', this.props.selectedLinks[0]),
+      this.props.selectedLinks[0]?.id ?? null,
     );
   }
 
   handleCloseSightingEdition() {
     this.setState({ openEditSighting: false });
     this.props.handleCloseRelationEdition(
-      R.propOr(null, 'id', this.props.selectedLinks[0]),
+      this.props.selectedLinks[0]?.id ?? null,
     );
   }
 
   handleCloseNestedEdition() {
     this.setState({ openEditNested: false });
     this.props.handleCloseRelationEdition(
-      R.propOr(null, 'id', this.props.selectedLinks[0]),
+      this.props.selectedLinks[0]?.id ?? null,
     );
   }
 
@@ -357,6 +364,7 @@ class IncidentKnowledgeGraphBar extends Component {
       openEditRelation,
       openEditSighting,
       openEditEntity,
+      openEditObservable,
       openEditNested,
       deleteObject,
       navOpen,
@@ -364,9 +372,9 @@ class IncidentKnowledgeGraphBar extends Component {
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
     let viewLink = null;
-    const isInferred = R.filter((n) => n.inferred || n.isNestedInferred, selectedNodes).length
+    const isInferred = selectedNodes.filter((n) => n.inferred || n.isNestedInferred).length
         > 0
-      || R.filter((n) => n.inferred || n.isNestedInferred, selectedLinks).length
+      || selectedLinks.filter((n) => n.inferred || n.isNestedInferred).length
         > 0;
     if (viewEnabled) {
       if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
@@ -404,8 +412,7 @@ class IncidentKnowledgeGraphBar extends Component {
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
-        && selectedNodes.length === 1
-        && !selectedNodes[0].isObservable)
+        && selectedNodes.length === 1)
       || (!isInferred
         && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
@@ -844,10 +851,9 @@ class IncidentKnowledgeGraphBar extends Component {
                     containerId={caseData.id}
                     containerStixCoreObjects={caseData.objects.edges}
                     knowledgeGraph={true}
-                    defaultCreatedBy={R.propOr(null, 'createdBy', caseData)}
-                    defaultMarkingDefinitions={R.map(
+                    defaultCreatedBy={caseData?.createdBy ?? null}
+                    defaultMarkingDefinitions={(caseData?.objectMarking?.edges ?? []).map(
                       (n) => n.node,
-                      R.pathOr([], ['objectMarking', 'edges'], caseData),
                     )}
                     targetStixCoreObjectTypes={[
                       'Stix-Domain-Object',
@@ -886,15 +892,20 @@ class IncidentKnowledgeGraphBar extends Component {
                 </Tooltip>
                 <StixDomainObjectEdition
                   open={openEditEntity}
-                  stixDomainObjectId={R.propOr(null, 'id', selectedNodes[0])}
+                  stixDomainObjectId={selectedNodes[0]?.id ?? null}
                   handleClose={this.handleCloseEntityEdition.bind(this)}
                   noStoreUpdate={true}
+                />
+                <StixCyberObservableEdition
+                  open={openEditObservable}
+                  stixCyberObservableId={selectedNodes[0]?.id ?? null}
+                  handleClose={this.handleCloseObservableEdition.bind(this)}
                 />
                 <StixCoreRelationshipEdition
                   open={openEditRelation}
                   stixCoreRelationshipId={
-                    R.propOr(null, 'id', selectedNodes[0])
-                    || R.propOr(null, 'id', selectedLinks[0])
+                    (selectedNodes[0]?.id ?? null)
+                    || (selectedLinks[0]?.id ?? null)
                   }
                   handleClose={this.handleCloseRelationEdition.bind(this)}
                   noStoreUpdate={true}
@@ -902,8 +913,8 @@ class IncidentKnowledgeGraphBar extends Component {
                 <StixSightingRelationshipEdition
                   open={openEditSighting}
                   stixSightingRelationshipId={
-                    R.propOr(null, 'id', selectedNodes[0])
-                    || R.propOr(null, 'id', selectedLinks[0])
+                    (selectedNodes[0]?.id ?? null)
+                    || (selectedLinks[0]?.id ?? null)
                   }
                   handleClose={this.handleCloseSightingEdition.bind(this)}
                   noStoreUpdate={true}
@@ -911,8 +922,8 @@ class IncidentKnowledgeGraphBar extends Component {
                 <StixCyberObservableRelationshipEdition
                   open={openEditNested}
                   stixCyberObservableRelationshipId={
-                    R.propOr(null, 'id', selectedNodes[0])
-                    || R.propOr(null, 'id', selectedLinks[0])
+                    (selectedNodes[0]?.id ?? null)
+                    || (selectedLinks[0]?.id ?? null)
                   }
                   handleClose={this.handleCloseNestedEdition.bind(this)}
                   noStoreUpdate={true}
@@ -948,10 +959,9 @@ class IncidentKnowledgeGraphBar extends Component {
                     handleReverseRelation={this.handleReverseRelation.bind(
                       this,
                     )}
-                    defaultCreatedBy={R.propOr(null, 'createdBy', caseData)}
-                    defaultMarkingDefinitions={R.map(
+                    defaultCreatedBy={caseData?.createdBy ?? null}
+                    defaultMarkingDefinitions={(caseData?.objectMarking?.edges ?? []).map(
                       (n) => n.node,
-                      R.pathOr([], ['objectMarking', 'edges'], caseData),
                     )}
                   />
                 )}
@@ -984,9 +994,8 @@ class IncidentKnowledgeGraphBar extends Component {
                     handleClose={this.handleCloseCreateNested.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseNested.bind(this)}
-                    defaultMarkingDefinitions={R.map(
+                    defaultMarkingDefinitions={(caseData?.objectMarking?.edges ?? []).map(
                       (n) => n.node,
-                      R.pathOr([], ['objectMarking', 'edges'], caseData),
                     )}
                   />
                 )}
@@ -1021,10 +1030,9 @@ class IncidentKnowledgeGraphBar extends Component {
                     handleReverseSighting={this.handleReverseSighting.bind(
                       this,
                     )}
-                    defaultCreatedBy={R.propOr(null, 'createdBy', caseData)}
-                    defaultMarkingDefinitions={R.map(
+                    defaultCreatedBy={caseData?.createdBy ?? null}
+                    defaultMarkingDefinitions={(caseData?.objectMarking?.edges ?? []).map(
                       (n) => n.node,
-                      R.pathOr([], ['objectMarking', 'edges'], caseData),
                     )}
                   />
                 )}
