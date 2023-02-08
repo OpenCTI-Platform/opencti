@@ -88,54 +88,117 @@ const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
 
 const UPLOADED_FILE_SIZE = 35514;
 
-describe('Database sync testing', () => {
-  const checkPreSyncContent = async () => {
-    const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
-    const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
-    expect(objectMap.get('Indicator')).toEqual(28);
-    expect(objectMap.get('Malware')).toEqual(27);
-    expect(objectMap.get('Label')).toEqual(13);
-    expect(objectMap.get('Vocabulary')).toEqual(263);
-    // Relations
-    const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' });
-    const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
-    expect(relMap.get('Object')).toEqual(191);
-    expect(relMap.get('Indicates')).toEqual(59);
-    expect(relMap.get('Uses')).toEqual(28);
-    // Report content
-    const initReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
-    const initStixReport = convertStoreToStix(initReport);
-    return { objectMap, relMap, initStixReport };
+const checkPreSyncContent = async () => {
+  const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
+  const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
+  expect(objectMap.get('Indicator')).toEqual(28);
+  expect(objectMap.get('Malware')).toEqual(27);
+  expect(objectMap.get('Label')).toEqual(13);
+  expect(objectMap.get('Vocabulary')).toEqual(263);
+  // Relations
+  const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' });
+  const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
+  expect(relMap.get('Object')).toEqual(191);
+  expect(relMap.get('Indicates')).toEqual(59);
+  expect(relMap.get('Uses')).toEqual(28);
+  // Report content
+  const initReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
+  const initStixReport = convertStoreToStix(initReport);
+  return { objectMap, relMap, initStixReport };
+};
+const checkMapConsistency = (before, after) => {
+  after.forEach((value, key) => {
+    const compareValue = before.get(key);
+    expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
+  });
+};
+const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
+  const client = createHttpClient();
+  const data = await executeExternalQuery(client, remoteUri, STAT_QUERY);
+  const { objects, relationships } = data.about.debugStats;
+  const syncObjectMap = new Map(objects.map((i) => [i.label, i.value]));
+  const syncRelMap = new Map(relationships.map((i) => [i.label, i.value]));
+  checkMapConsistency(objectMap, syncObjectMap);
+  checkMapConsistency(relMap, syncRelMap);
+  const reportData = await executeExternalQuery(client, remoteUri, REPORT_QUERY, {
+    id: 'report--f2b63e80-b523-4747-a069-35c002c690db',
+  });
+  const stixReport = JSON.parse(reportData.report.toStix);
+  const idLoader = async (context, user, id) => {
+    const dataId = await executeExternalQuery(client, remoteUri, STANDARD_LOADER_QUERY, { id });
+    return dataId.stixObjectOrStixRelationship;
   };
-  const checkMapConsistency = (before, after) => {
-    after.forEach((value, key) => {
-      const compareValue = before.get(key);
-      expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
-    });
+  const diffElements = await checkInstanceDiff(initStixReport, stixReport, idLoader);
+  if (diffElements.length > 0) {
+    logAudit.info(JSON.stringify(diffElements));
+  }
+  expect(diffElements.length).toBe(0);
+};
+const backupFiles = async () => {
+  const BACKUP_CONFIG = {
+    opencti: {
+      url: SYNC_TEST_REMOTE_URI,
+      token: API_TOKEN,
+    },
+    connector: {
+      id: uuidv4(),
+      type: 'STREAM',
+      live_stream_id: 'live',
+      name: 'BackupFiles',
+      scope: 'backup',
+      confidence_level: 15,
+      log_level: 'info',
+    },
+    backup: {
+      protocol: 'local',
+      path: path.resolve('tests'),
+    },
   };
-  const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
-    const client = createHttpClient();
-    const data = await executeExternalQuery(client, remoteUri, STAT_QUERY);
-    const { objects, relationships } = data.about.debugStats;
-    const syncObjectMap = new Map(objects.map((i) => [i.label, i.value]));
-    const syncRelMap = new Map(relationships.map((i) => [i.label, i.value]));
-    checkMapConsistency(objectMap, syncObjectMap);
-    checkMapConsistency(relMap, syncRelMap);
-    const reportData = await executeExternalQuery(client, remoteUri, REPORT_QUERY, {
-      id: 'report--f2b63e80-b523-4747-a069-35c002c690db',
-    });
-    const stixReport = JSON.parse(reportData.report.toStix);
-    const idLoader = async (context, user, id) => {
-      const dataId = await executeExternalQuery(client, remoteUri, STANDARD_LOADER_QUERY, { id });
-      return dataId.stixObjectOrStixRelationship;
-    };
-    const diffElements = await checkInstanceDiff(initStixReport, stixReport, idLoader);
-    if (diffElements.length > 0) {
-      logAudit.info(JSON.stringify(diffElements));
+  const backupConf = JSON.stringify(BACKUP_CONFIG);
+  await execChildPython(
+    testContext,
+    ADMIN_USER,
+    path.resolve('../../opencti-connectors/stream/backup-files/src'),
+    'backup-files.py',
+    [backupConf],
+    (last, messages) => {
+      const eventsMessage = messages.filter((m) => m.includes('processed event'));
+      return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
     }
-    expect(diffElements.length).toBe(0);
+  );
+};
+const restoreFile = async () => {
+  const RESTORE_CONFIG = {
+    opencti: {
+      url: SYNC_RESTORE_START_REMOTE_URI,
+      token: API_TOKEN,
+    },
+    connector: {
+      id: uuidv4(),
+      type: 'EXTERNAL_IMPORT',
+      name: 'RestoreFiles',
+      scope: 'restore',
+      confidence_level: 15,
+      log_level: 'info',
+    },
+    backup: {
+      protocol: 'local',
+      direct_creation: true,
+      path: path.resolve('tests'),
+    },
   };
+  const restoreConf = JSON.stringify(RESTORE_CONFIG);
+  await execChildPython(
+    testContext,
+    ADMIN_USER,
+    path.resolve('../../opencti-connectors/external-import/restore-files/src'),
+    'restore-files.py',
+    [restoreConf],
+    (message) => message.includes('restore run completed')
+  );
+};
 
+describe('Database sync raw', () => {
   it(
     'Should python raw sync succeed',
     async () => {
@@ -151,7 +214,9 @@ describe('Database sync testing', () => {
     },
     FIFTEEN_MINUTES
   );
+});
 
+describe('Database sync live', () => {
   it(
     'Should python live sync succeed',
     async () => {
@@ -176,7 +241,9 @@ describe('Database sync testing', () => {
     },
     FIFTEEN_MINUTES
   );
+});
 
+describe('Database sync direct', () => {
   it(
     'Should direct sync succeed',
     async () => {
@@ -221,71 +288,9 @@ describe('Database sync testing', () => {
     },
     FIFTEEN_MINUTES
   );
+});
 
-  const backupFiles = async () => {
-    const BACKUP_CONFIG = {
-      opencti: {
-        url: SYNC_TEST_REMOTE_URI,
-        token: API_TOKEN,
-      },
-      connector: {
-        id: uuidv4(),
-        type: 'STREAM',
-        live_stream_id: 'live',
-        name: 'BackupFiles',
-        scope: 'backup',
-        confidence_level: 15,
-        log_level: 'info',
-      },
-      backup: {
-        protocol: 'local',
-        path: path.resolve('tests'),
-      },
-    };
-    const backupConf = JSON.stringify(BACKUP_CONFIG);
-    await execChildPython(
-      testContext,
-      ADMIN_USER,
-      path.resolve('../../opencti-connectors/stream/backup-files/src'),
-      'backup-files.py',
-      [backupConf],
-      (last, messages) => {
-        const eventsMessage = messages.filter((m) => m.includes('processed event'));
-        return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
-      }
-    );
-  };
-  const restoreFile = async () => {
-    const RESTORE_CONFIG = {
-      opencti: {
-        url: SYNC_RESTORE_START_REMOTE_URI,
-        token: API_TOKEN,
-      },
-      connector: {
-        id: uuidv4(),
-        type: 'EXTERNAL_IMPORT',
-        name: 'RestoreFiles',
-        scope: 'restore',
-        confidence_level: 15,
-        log_level: 'info',
-      },
-      backup: {
-        protocol: 'local',
-        direct_creation: true,
-        path: path.resolve('tests'),
-      },
-    };
-    const restoreConf = JSON.stringify(RESTORE_CONFIG);
-    await execChildPython(
-      testContext,
-      ADMIN_USER,
-      path.resolve('../../opencti-connectors/external-import/restore-files/src'),
-      'restore-files.py',
-      [restoreConf],
-      (message) => message.includes('restore run completed')
-    );
-  };
-
+describe('Database sync backup/restore', () => {
   it(
     'Should backup/restore sync succeed',
     async () => {
