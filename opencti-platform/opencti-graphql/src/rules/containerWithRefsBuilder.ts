@@ -183,8 +183,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       const report = data as StixReport;
       const previousPatch = event.context.reverse_patch;
       const previousData = jsonpatch.applyPatch<StixReport>(R.clone(report), previousPatch).newDocument;
-      const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...previousData.object_refs];
-      const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...report.object_refs];
+      const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(previousData.object_refs ?? [])];
+      const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(report.object_refs ?? [])];
       // AddedRefs are ids not includes in previous data
       const addedRefs: Array<StixId> = newRefIds.filter((newId) => !previousRefIds.includes(newId));
       // RemovedRefs are ids not includes in current data
