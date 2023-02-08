@@ -112,20 +112,24 @@ const platformEntitySettings = (context: AuthContext) => {
 };
 
 const initCacheManager = () => {
-  const context = executionContext('cache_manager');
   let subscribeIdentifier: { topic: string; unsubscribe: () => void; };
-  writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
-  writeCacheForEntity(ENTITY_TYPE_ENTITY_SETTING, platformEntitySettings(context));
-  writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, platformMarkings(context));
-  writeCacheForEntity(ENTITY_TYPE_USER, platformUsers(context));
-  writeCacheForEntity(ENTITY_TYPE_STATUS, workflowStatuses(context));
-  writeCacheForEntity(ENTITY_TYPE_CONNECTOR, platformConnectors(context));
-  writeCacheForEntity(ENTITY_TYPE_TRIGGER, platformTriggers(context));
-  writeCacheForEntity(ENTITY_TYPE_RULE, platformRules(context));
-  writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, platformOrganizations(context));
-  writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
+  const initCacheContent = () => {
+    const context = executionContext('cache_manager');
+    writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
+    writeCacheForEntity(ENTITY_TYPE_ENTITY_SETTING, platformEntitySettings(context));
+    writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, platformMarkings(context));
+    writeCacheForEntity(ENTITY_TYPE_USER, platformUsers(context));
+    writeCacheForEntity(ENTITY_TYPE_STATUS, workflowStatuses(context));
+    writeCacheForEntity(ENTITY_TYPE_CONNECTOR, platformConnectors(context));
+    writeCacheForEntity(ENTITY_TYPE_TRIGGER, platformTriggers(context));
+    writeCacheForEntity(ENTITY_TYPE_RULE, platformRules(context));
+    writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, platformOrganizations(context));
+    writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
+  };
   return {
+    init: () => initCacheContent(), // Use for testing
     start: async () => {
+      initCacheContent();
       // Listen pub/sub configuration events
       subscribeIdentifier = await pubSubSubscription<{ instance: BasicStoreEntity }>(`${TOPIC_PREFIX}*`, (event) => {
         const { instance } = event;

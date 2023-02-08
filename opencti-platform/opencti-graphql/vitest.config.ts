@@ -10,6 +10,7 @@ const buildTestConfig = (include: string[]) => defineConfig({
     include,
     testTimeout: 300000,
     teardownTimeout: 20000,
+    setupFiles: ['./tests/utils/testSetup.js'],
   },
 });
 
