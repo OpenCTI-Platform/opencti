@@ -1,8 +1,10 @@
 import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
-import { findById } from '../domain/user';
-import { RETENTION_MANAGER_USER, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { batchCreators } from '../domain/user';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { batchLoader } from '../database/middleware';
+
+const creatorLoader = batchLoader(batchCreators);
 
 const logResolvers = {
   Query: {
@@ -11,14 +13,7 @@ const logResolvers = {
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
-    user: async (log, _, context) => {
-      const userId = log.applicant_id || log.user_id;
-      if (userId === SYSTEM_USER.id) return SYSTEM_USER;
-      if (userId === RULE_MANAGER_USER.id) return RULE_MANAGER_USER;
-      if (userId === RETENTION_MANAGER_USER.id) return RETENTION_MANAGER_USER;
-      const findUser = await findById(context, context.user, userId);
-      return findUser || SYSTEM_USER;
-    },
+    user: (log, _, context) => creatorLoader.load(log.applicant_id || log.user_id, context, context.user),
   },
   // Backward compatibility
   ContextData: {

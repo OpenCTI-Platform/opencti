@@ -29,7 +29,7 @@ import { buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
-import { batchUsers } from '../domain/user';
+import { batchCreators } from '../domain/user';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -39,7 +39,7 @@ const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
 const casesLoader = batchLoader(batchCases);
-const creatorsLoader = batchLoader(batchUsers);
+const creatorsLoader = batchLoader(batchCreators);
 const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 const loadByIdLoader = batchLoader(elBatchIds);
 

@@ -133,8 +133,7 @@ class SessionsListComponent extends Component {
       R.compose(R.toLower, R.path(['user', 'name'])),
     );
     const filterByKeyword = (n) => keyword === ''
-      || n.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || n.user.user_email.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      || n.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     const sessions = R.pipe(
       R.propOr([], 'sessions'),
       R.filter(filterByKeyword),
@@ -275,7 +274,6 @@ const SessionsList = createRefetchContainer(
           user {
             id
             name
-            user_email
           }
           sessions {
             id

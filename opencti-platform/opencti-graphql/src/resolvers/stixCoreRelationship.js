@@ -33,7 +33,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { filesListing } from '../database/file-storage';
-import { batchUsers } from '../domain/user';
+import { batchCreators } from '../domain/user';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 
@@ -48,7 +48,7 @@ const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
 const casesLoader = batchLoader(batchCases);
 const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
-const creatorsLoader = batchLoader(batchUsers);
+const creatorsLoader = batchLoader(batchCreators);
 
 const stixCoreRelationshipResolvers = {
   Query: {

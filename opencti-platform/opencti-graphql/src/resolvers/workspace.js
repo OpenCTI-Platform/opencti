@@ -13,12 +13,14 @@ import {
   workspaceDeleteRelation,
   workspaceDeleteRelations,
 } from '../domain/workspace';
-import { findById as findUserById } from '../domain/user';
+import { batchCreators } from '../domain/user';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 import withCancel from '../graphql/subscriptionWrapper';
-import { SYSTEM_USER } from '../utils/access';
+import { batchLoader } from '../database/middleware';
+
+const creatorLoader = batchLoader(batchCreators);
 
 const workspaceResolvers = {
   Query: {
@@ -26,10 +28,7 @@ const workspaceResolvers = {
     workspaces: (_, args, context) => findAll(context, context.user, args),
   },
   Workspace: {
-    owner: async (workspace, context) => {
-      const findUser = await findUserById(context, context.user, workspace.owner);
-      return findUser || SYSTEM_USER;
-    },
+    owner: (workspace, _, context) => creatorLoader.load(workspace.owner, context, context.user),
     objects: (workspace, args, context) => objects(context, context.user, workspace.id, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
   },

@@ -17,13 +17,13 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader } from '../database/middleware';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 import { elBatchIds } from '../database/engine';
-import { batchUsers } from '../domain/user';
+import { batchCreators } from '../domain/user';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
-const creatorsLoader = batchLoader(batchUsers);
+const creatorsLoader = batchLoader(batchCreators);
 
 const stixCyberObservableRelationshipResolvers = {
   Query: {
