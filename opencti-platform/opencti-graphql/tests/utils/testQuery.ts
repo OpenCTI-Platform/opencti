@@ -1,9 +1,7 @@
 import { ApolloServer } from 'apollo-server-express';
-import axios, { AxiosInstance } from 'axios';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { wrapper } from 'axios-cookiejar-support';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { CookieJar } from 'tough-cookie';
+import axios, { AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf, { PORT } from '../../src/config/conf';
 import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/access';
