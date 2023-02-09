@@ -1,34 +1,26 @@
 import React, { FunctionComponent, useContext } from 'react';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import IncidentsCards, {
-  incidentsCardsQuery,
-} from './incidents/IncidentsCards';
-import IncidentsLines, {
-  incidentsLinesQuery,
-} from './incidents/IncidentsLines';
+import IncidentsCards, { incidentsCardsAndLinesPaginationQuery } from './incidents/IncidentsCards';
+import IncidentsLines from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import {
-  IncidentsLinesPaginationQuery,
-  IncidentsLinesPaginationQuery$variables,
-} from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../components/list_lines';
 import { IncidentLineDummy } from './incidents/IncidentLine';
 import { IncidentCardDummy } from './incidents/IncidentCard';
 import {
-  IncidentsCardsPaginationQuery,
-  IncidentsCardsPaginationQuery$variables
-} from './incidents/__generated__/IncidentsCardsPaginationQuery.graphql';
+  IncidentsCardsAndLinesPaginationQuery,
+  IncidentsCardsAndLinesPaginationQuery$variables,
+} from './incidents/__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 
 export const LOCAL_STORAGE_KEY = 'view-incidents';
 const Incidents: FunctionComponent = () => {
   const { helper } = useContext(UserContext);
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsCardsPaginationQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsCardsAndLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
@@ -67,13 +59,8 @@ const Incidents: FunctionComponent = () => {
     view,
   } = viewStorage;
 
-  const queryRefLines = useQueryLoading<IncidentsLinesPaginationQuery>(
-    incidentsLinesQuery,
-    paginationOptions,
-  );
-
-  const queryRefCards = useQueryLoading<IncidentsCardsPaginationQuery>(
-    incidentsCardsQuery,
+  const queryRef = useQueryLoading<IncidentsCardsAndLinesPaginationQuery>(
+    incidentsCardsAndLinesPaginationQuery,
     paginationOptions,
   );
   // eslint-disable-next-line class-methods-use-this
@@ -148,7 +135,7 @@ const Incidents: FunctionComponent = () => {
           'confidence',
         ]}
       >
-        {queryRefCards && (
+        {queryRef && (
           <React.Suspense
             fallback={
               <>
@@ -161,7 +148,7 @@ const Incidents: FunctionComponent = () => {
             }
           >
             <IncidentsCards
-              queryRef={queryRefCards}
+              queryRef={queryRef}
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
             />
@@ -201,12 +188,12 @@ const Incidents: FunctionComponent = () => {
               'confidence',
             ]}
           >
-            {queryRefLines && (
+            {queryRef && (
               <React.Suspense fallback={
                 <>{Array(20).fill(0).map((idx) => (<IncidentLineDummy key={idx} dataColumns={buildColumns} />))}</>
               }>
                 <IncidentsLines
-                  queryRef={queryRefLines}
+                  queryRef={queryRef}
                   paginationOptions={paginationOptions}
                   dataColumns={buildColumns}
                   onLabelClick={helpers.handleAddFilter}

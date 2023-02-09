@@ -4,13 +4,13 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import { IncidentCard, IncidentCardDummy } from './IncidentCard';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { IncidentsCards_data$key } from './__generated__/IncidentsCards_data.graphql';
-import { IncidentsCardsPaginationQuery } from './__generated__/IncidentsCardsPaginationQuery.graphql';
+import { IncidentsCardsAndLines_data$key } from './__generated__/IncidentsCardsAndLines_data.graphql';
+import { IncidentsCardsAndLinesPaginationQuery } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 
 const nbOfCardsToLoad = 50;
 
-export const incidentsCardsQuery = graphql`
-    query IncidentsCardsPaginationQuery(
+export const incidentsCardsAndLinesPaginationQuery = graphql`
+    query IncidentsCardsAndLinesPaginationQuery(
         $search: String
         $count: Int!
         $cursor: ID
@@ -18,7 +18,7 @@ export const incidentsCardsQuery = graphql`
         $orderMode: OrderingMode
         $filters: [IncidentsFiltering]
     ) {
-        ...IncidentsCards_data
+        ...IncidentsCardsAndLines_data
         @arguments(
             search: $search
             count: $count
@@ -30,8 +30,8 @@ export const incidentsCardsQuery = graphql`
     }
 `;
 
-const IncidentsCardsFragment = graphql`
-    fragment IncidentsCards_data on Query
+export const IncidentsCardsAndLinesFragment = graphql`
+    fragment IncidentsCardsAndLines_data on Query
     @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
@@ -54,6 +54,7 @@ const IncidentsCardsFragment = graphql`
                     name
                     description
                     ...IncidentCard_node
+                    ...IncidentLine_node
                 }
             }
             pageInfo {
@@ -66,7 +67,7 @@ const IncidentsCardsFragment = graphql`
 `;
 
 interface IncidentsCardsProps {
-  queryRef: PreloadedQuery<IncidentsCardsPaginationQuery>,
+  queryRef: PreloadedQuery<IncidentsCardsAndLinesPaginationQuery>,
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
   onLabelClick: HandleAddFilter
 }
@@ -78,11 +79,11 @@ const IncidentsCards: FunctionComponent<IncidentsCardsProps> = ({ setNumberOfEle
     loadMore,
     isLoadingMore,
   } = usePreloadedPaginationFragment<
-  IncidentsCardsPaginationQuery,
-  IncidentsCards_data$key
+  IncidentsCardsAndLinesPaginationQuery,
+  IncidentsCardsAndLines_data$key
   >({
-    linesQuery: incidentsCardsQuery,
-    linesFragment: IncidentsCardsFragment,
+    linesQuery: incidentsCardsAndLinesPaginationQuery,
+    linesFragment: IncidentsCardsAndLinesFragment,
     queryRef,
     setNumberOfElements,
   });
