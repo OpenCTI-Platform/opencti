@@ -1406,6 +1406,16 @@ class OpenCTIStix2:
             del entity["dataSource"]
             del entity["dataSourceId"]
 
+        # Dates
+        if "first_seen" in entity and entity["first_seen"].startswith("1970"):
+            del entity["first_seen"]
+        if "start_time" in entity and entity["start_time"].startswith("1970"):
+            del entity["start_time"]
+        if "last_seen" in entity and entity["last_seen"].startswith("5138"):
+            del entity["last_seen"]
+        if "stop_time" in entity and entity["stop_time"].startswith("5138"):
+            del entity["stop_time"]
+
         entity_copy = entity.copy()
         if no_custom_attributes:
             if "external_references" in entity:
