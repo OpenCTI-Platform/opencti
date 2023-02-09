@@ -246,7 +246,7 @@ class ObservedDatas extends Component {
     let toolBarFilters = filters;
     toolBarFilters = {
       ...toolBarFilters,
-      entity_type: [{ id: 'Grouping', value: 'Grouping' }],
+      entity_type: [{ id: 'Observed-Data', value: 'Observed-Data' }],
     };
     return (
       <UserContext.Consumer>
