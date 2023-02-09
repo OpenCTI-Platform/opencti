@@ -175,7 +175,7 @@ class InformationSystemDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, informationSystem, fldt, history,
+      t, classes, informationSystem,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -400,9 +400,9 @@ class InformationSystemDetailsComponent extends Component {
         {this.state.mode === 'view' && this.state.modal === 'networkArchitecture' && <NetworkArchitecturePopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)} />}
         {this.state.mode === 'view' && this.state.modal === 'dataFlow' && <DataFlowPopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)} />}
         {/* Edit Modals */}
-        {this.state.mode === 'edit' && this.state.modal === 'authorizationBoundary' && <AuthorizationBoundaryEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
-        {this.state.mode === 'edit' && this.state.modal === 'networkArchitecture' && <NetworkArchitectureEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
-        {this.state.mode === 'edit' && this.state.modal === 'dataFlow' && <DataFlowEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
+        {this.state.mode === 'edit' && this.state.modal === 'authorizationBoundary' && <AuthorizationBoundaryEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} informationSystem={informationSystem}/>}
+        {this.state.mode === 'edit' && this.state.modal === 'networkArchitecture' && <NetworkArchitectureEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} informationSystem={informationSystem}/>}
+        {this.state.mode === 'edit' && this.state.modal === 'dataFlow' && <DataFlowEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} informationSystem={informationSystem}/>}
       </div>
     );
   }

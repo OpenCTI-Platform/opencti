@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { withStyles } from '@material-ui/core/styles/index';
-import { Formik, Form, Field } from 'formik';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import { withStyles } from '@material-ui/core/styles/index';
 import Typography from '@material-ui/core/Typography';
 import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -15,7 +13,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import { Switch } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -33,6 +30,8 @@ const styles = (theme) => ({
     marginBottom: '24px',
     overflowY: 'auto',
     overflowX: 'hidden',
+    minWidth: '580px',
+    minHeight: '550px',
   },
   dialogClosebutton: {
     float: 'left',
@@ -73,7 +72,7 @@ const styles = (theme) => ({
   },
 });
 
-class DataFlowPopover extends Component {
+class DataFlowComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -178,7 +177,7 @@ class DataFlowPopover extends Component {
   }
 }
 
-DataFlowPopover.propTypes = {
+DataFlowComponent.propTypes = {
   t: PropTypes.func,
   fldt: PropTypes.func,
   classes: PropTypes.object,
@@ -187,5 +186,32 @@ DataFlowPopover.propTypes = {
   openConnection: PropTypes.bool,
   handleCloseConnection: PropTypes.func,
 };
+
+const DataFlowPopover = createFragmentContainer(DataFlowComponent, {
+  informationSystem: graphql`
+    fragment DataFlowPopover_information on SoftwareAsset {
+      id
+      software_identifier
+      license_key
+      cpe_identifier
+      patch_level
+      installation_id
+      implementation_point
+      last_scanned
+      is_scanned
+      installed_on {
+        id
+        entity_type
+        vendor_name
+        name
+        version
+      }
+      related_risks {
+        id
+        name
+      }
+    }
+  `,
+});
 
 export default compose(inject18n, withStyles(styles))(DataFlowPopover);

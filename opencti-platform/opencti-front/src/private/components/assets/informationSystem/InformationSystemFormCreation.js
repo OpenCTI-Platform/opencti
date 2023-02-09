@@ -22,7 +22,7 @@ import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../utils/bakedToast';
 
-const styles = (theme) => ({
+const styles = () => ({
   dialogMain: {
     overflow: 'hidden',
   },
