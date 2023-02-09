@@ -245,7 +245,6 @@ class ObservedDataEditionOverviewComponent extends Component {
         {({
           submitForm,
           isSubmitting,
-          validateForm,
           setFieldValue,
           values,
         }) => (
@@ -352,9 +351,9 @@ class ObservedDataEditionOverviewComponent extends Component {
                 <CommitMessage
                   submitForm={submitForm}
                   disabled={isSubmitting}
-                  validateForm={validateForm}
                   setFieldValue={setFieldValue}
-                  values={values}
+                  open={false}
+                  values={values.references}
                 />
               )}
             </Form>

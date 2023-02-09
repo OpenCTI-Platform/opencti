@@ -34,6 +34,19 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+export type ExternalReferencesValues = {
+  label?: string;
+  value: string;
+  entity?: {
+    created: string;
+    description: string | null;
+    external_id: string | null;
+    id: string;
+    source_name: string;
+    url: string | null;
+  };
+}[];
+
 interface ExternalReferencesFieldProps {
   name: string;
   style?: { marginTop: number; width: string };
@@ -54,25 +67,14 @@ interface ExternalReferencesFieldProps {
     }[],
     shouldValidate?: boolean
   ) => void;
-  values: {
-    label?: string;
-    value: string;
-    entity?: {
-      created: string;
-      description: string | null;
-      external_id: string | null;
-      id: string;
-      source_name: string;
-      url: string | null;
-    };
-  }[];
+  values: ExternalReferencesValues;
   helpertext?: string;
   noStoreUpdate?: boolean;
   id?: string;
   dryrun?: boolean;
 }
 
-const ExternalReferencesField: FunctionComponent<
+export const ExternalReferencesField: FunctionComponent<
 ExternalReferencesFieldProps
 > = ({
   name,
@@ -260,5 +262,3 @@ ExternalReferencesFieldProps
     </div>
   );
 };
-
-export default ExternalReferencesField;

@@ -272,7 +272,6 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
       {({
         submitForm,
         isSubmitting,
-        validateForm,
         setFieldValue,
         values,
       }) => (
@@ -369,9 +368,9 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}
-              validateForm={validateForm}
               setFieldValue={setFieldValue}
-              values={values}
+              open={false}
+              values={values.references}
               id={city.id}
             />
           )}

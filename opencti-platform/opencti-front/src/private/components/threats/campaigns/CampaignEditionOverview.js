@@ -237,7 +237,6 @@ class CampaignEditionOverviewComponent extends Component {
         {({
           submitForm,
           isSubmitting,
-          validateForm,
           setFieldValue,
           values,
         }) => (
@@ -318,9 +317,8 @@ class CampaignEditionOverviewComponent extends Component {
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                validateForm={validateForm}
-                setFieldValue={setFieldValue}
-                values={values}
+                setFieldValue={setFieldValue}open={false}
+                values={values.references}
                 id={campaign.id}
               />
             )}

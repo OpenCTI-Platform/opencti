@@ -391,7 +391,6 @@ const StixCoreRelationshipEditionContainer = ({
           {({
             submitForm,
             isSubmitting,
-            validateForm,
             setFieldValue,
             values,
           }) => (

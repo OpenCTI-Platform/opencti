@@ -7,11 +7,12 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
-import ExternalReferencesField from './ExternalReferencesField';
+import type { ExternalReferencesValues } from './ExternalReferencesField';
+import { ExternalReferencesField } from './ExternalReferencesField';
 
 interface CommitMessageProps {
   id: string
-  submitForm: () => void
+  submitForm: () => Promise<void>
   disabled: boolean
   setFieldValue: (field: string, value: ExternalReferencesValues, shouldValidate?: boolean | undefined) => void
   values: ExternalReferencesValues | undefined

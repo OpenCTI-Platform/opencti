@@ -296,7 +296,6 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
         {({
           submitForm,
           isSubmitting,
-          validateForm,
           setFieldValue,
           values,
         }) => (
@@ -374,9 +373,9 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                validateForm={validateForm}
                 setFieldValue={setFieldValue}
-                values={values}
+                open={false}
+                values={values.references}
                 id={dataComponent.id}
               />
             )}

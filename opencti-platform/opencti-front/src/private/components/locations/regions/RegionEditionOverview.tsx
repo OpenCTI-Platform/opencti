@@ -287,7 +287,6 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
       {({
         submitForm,
         isSubmitting,
-        validateForm,
         setFieldValue,
         values,
       }) => (
@@ -355,9 +354,9 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}
-              validateForm={validateForm}
               setFieldValue={setFieldValue}
-              values={values}
+              open={false}
+              values={values.references}
               id={region.id}
             />
           )}

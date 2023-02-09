@@ -263,7 +263,6 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
             {({
               submitForm,
               isSubmitting,
-              validateForm,
               setFieldValue,
               values,
             }) => (
@@ -360,9 +359,9 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                         <CommitMessage
                             submitForm={submitForm}
                             disabled={isSubmitting}
-                            validateForm={validateForm}
                             setFieldValue={setFieldValue}
-                            values={values}
+                            open={false}
+                            values={values.references}
                             id={administrativeArea.id}
                         />
                     )}

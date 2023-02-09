@@ -338,7 +338,6 @@ const StixDomainObjectEditionContainer = (props) => {
           {({
             submitForm,
             isSubmitting,
-            validateForm,
             setFieldValue,
             values,
           }) => (
@@ -445,9 +444,9 @@ const StixDomainObjectEditionContainer = (props) => {
                 <CommitMessage
                   submitForm={submitForm}
                   disabled={isSubmitting}
-                  validateForm={validateForm}
                   setFieldValue={setFieldValue}
-                  values={values}
+                  open={false}
+                  values={values.references}
                   id={stixDomainObject.id}
                   noStoreUpdate={noStoreUpdate}
                 />

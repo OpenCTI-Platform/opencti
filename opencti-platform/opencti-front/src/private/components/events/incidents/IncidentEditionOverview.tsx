@@ -188,7 +188,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
   const createdBy = convertCreatedBy(incident);
   const objectMarking = convertMarkings(incident);
   const objectAssignee = convertAssignees(incident);
-  const status = convertStatus(t, incident);
+  const status = convertStatus(t, incident) as Option;
   const isInferred = incident.is_inferred;
 
   const [commitRelationAdd] = useMutation<IncidentEditionOverviewRelationAddMutation>(incidentMutationRelationAdd);
@@ -330,7 +330,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
   return (
     <Formik
       enableReinitialize={true}
-      initialValues={initialValues as never}
+      initialValues={initialValues}
       validationSchema={IncidentValidation(t)}
       onSubmit={onSubmit}
     >
@@ -459,7 +459,6 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
               open={false}
               values={values.references}
               setFieldValue={setFieldValue}
-              values={values}
               id={incident.id}
             />
           )}

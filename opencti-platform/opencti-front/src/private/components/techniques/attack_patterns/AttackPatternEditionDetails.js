@@ -163,7 +163,6 @@ class AttackPatternEditionDetailsComponent extends Component {
         {({
           submitForm,
           isSubmitting,
-          validateForm,
           setFieldValue,
           values,
         }) => (
@@ -224,9 +223,9 @@ class AttackPatternEditionDetailsComponent extends Component {
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                validateForm={validateForm}
                 setFieldValue={setFieldValue}
-                values={values}
+                open={false}
+                values={values.references}
                 id={attackPattern.id}
               />
             )}
