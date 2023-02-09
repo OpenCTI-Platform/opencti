@@ -528,6 +528,12 @@ type FeedConnection {
 }
 
 ############## Stream
+type RemoteStreamCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+}
 type StreamCollection {
   id: ID!
   name: String
@@ -692,6 +698,12 @@ input SynchronizerAddInput {
   current_state: DateTime
   listen_deletion: Boolean!
   no_dependencies: Boolean!
+  ssl_verify: Boolean
+}
+
+input SynchronizerFetchInput {
+  uri: String!
+  token: String
   ssl_verify: Boolean
 }
 
@@ -12079,6 +12091,7 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): SynchronizerConnection @auth(for: [SETTINGS])
+  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [CONNECTORAPI])
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES

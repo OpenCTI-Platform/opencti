@@ -536,6 +536,13 @@ type FeedConnection {
   edges: [FeedEdge]
 }
 
+type RemoteStreamCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+}
+
 type StreamCollection {
   id: ID!
   name: String
@@ -724,6 +731,12 @@ scalar name_String_NotNull_minLength_2
 scalar uri_String_NotNull_minLength_2
 
 scalar stream_id_String_NotNull_minLength_2
+
+input SynchronizerFetchInput {
+  uri: String!
+  token: String
+  ssl_verify: Boolean
+}
 
 enum WorksOrdering {
   status
@@ -7582,6 +7595,7 @@ type Query {
   ruleManagerInfo: RuleManager
   synchronizer(id: String!): Synchronizer
   synchronizers(first: Int, after: ID, orderBy: SynchronizersOrdering, orderMode: OrderingMode, search: String): SynchronizerConnection
+  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection]
   markingDefinition(id: String!): MarkingDefinition
   markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, filters: [MarkingDefinitionsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): MarkingDefinitionConnection
   label(id: String!): Label

@@ -131,9 +131,7 @@ export const commitMutation = ({
         error.res.errors,
       );
       if (!isEmpty(authRequired)) {
-        MESSAGING$.notifyError(
-          'Unauthorized action, please refresh your browser',
-        );
+        MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
       } else if (onError) {
         const messages = buildErrorMessages(error);
         onError(error, messages);

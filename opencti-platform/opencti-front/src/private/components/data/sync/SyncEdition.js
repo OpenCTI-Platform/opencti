@@ -10,8 +10,12 @@ import * as Yup from 'yup';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, environment, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, environment, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import { syncCheckMutation, syncStreamCollectionQuery } from './SyncCreation';
@@ -53,6 +57,14 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
+  alert: {
+    width: '100%',
+    marginTop: 20,
+  },
+  message: {
+    width: '100%',
+    overflow: 'hidden',
+  },
 });
 
 const syncMutationFieldPatch = graphql`
@@ -67,7 +79,7 @@ const syncMutationFieldPatch = graphql`
 
 const syncEditionUserQuery = graphql`
   query SyncEditionUserQuery {
-    users {
+    creators {
       edges {
         node {
           id
@@ -99,7 +111,7 @@ const SyncEditionContainer = (props) => {
 
   const [streams, setStreams] = useState([]);
 
-  const { users } = usePreloadedQuery(syncEditionUserQuery, queryRef);
+  const { creators } = usePreloadedQuery(syncEditionUserQuery, queryRef);
 
   const initialValues = R.pipe(
     R.assoc('current_state', buildDate(synchronizer.current_state)),
@@ -142,26 +154,19 @@ const SyncEditionContainer = (props) => {
       .catch(() => false);
   };
 
-  const handleGetStreams = async (uri) => {
-    const res = await fetch(`${uri}/graphql`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: syncStreamCollectionQuery }),
+  const handleGetStreams = ({ uri, token, ssl_verify }) => {
+    const args = { uri, token, ssl_verify: ssl_verify ?? false };
+    fetchQuery(syncStreamCollectionQuery, args).toPromise().then((result) => {
+      const resultStreams = [...result.synchronizerFetch.map((s) => ({ value: s.id, label: s.name }))];
+      setStreams(resultStreams);
+    }).catch(() => {
+      setStreams([]);
     });
-    if (!res.ok) {
-      MESSAGING$.notifyError('Error getting the streams from distant OpenCTI');
-      return;
-    }
-    const result = await res.json();
-    setStreams([
-      { value: 'live', label: 'live' },
-      ...result.data.streamCollections.edges.map(({ node }) => ({ value: node.id, label: node.name })),
-    ]);
   };
 
   useEffect(() => {
-    if (initialValues.uri) {
-      handleGetStreams(initialValues.uri);
+    if (initialValues) {
+      handleGetStreams(initialValues);
     }
   }, []);
 
@@ -173,8 +178,7 @@ const SyncEditionContainer = (props) => {
           className={classes.closeButton}
           onClick={handleClose}
           size="large"
-          color="primary"
-        >
+          color="primary">
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6">{t('Update a synchronizer')}</Typography>
@@ -195,34 +199,42 @@ const SyncEditionContainer = (props) => {
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="uri"
-                label={t('Remote OpenCTI URL')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="token"
-                label={t('Remote OpenCTI token')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
-              />
+              <Alert icon={false} classes={{ root: classes.alert, message: classes.message }}
+                     severity="warning"
+                     variant="outlined"
+                     style={{ position: 'relative' }}>
+                <AlertTitle>
+                  {t('Remote OpenCTI configuration')}
+                </AlertTitle>
+                <Tooltip title={t('You need to configure a valid remote OpenCTI. Token is optional to consume public streams')}>
+                  <InformationOutline fontSize="small" color="primary" style={{ position: 'absolute', top: 10, right: 18 }}/>
+                </Tooltip>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="uri"
+                  label={t('Remote OpenCTI URL')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  disabled={true}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="token"
+                  label={t('Remote OpenCTI token')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  disabled={true}
+                />
+              </Alert>
               <Field
                 component={SelectField}
                 variant="standard"
                 name="stream_id"
                 label={t('Remote OpenCTI stream ID')}
-                containerstyle={{ width: '100%' }}
-                style={{ marginTop: 20 }}
-                onOpen={() => (values.uri ? handleGetStreams(values.uri) : {})}
-                onSubmit={handleSubmitField}
-              >
+                containerstyle={{ marginTop: 20, width: '100%' }}
+                disabled={true}>
                 {streams.map(({ value, label }) => (
                   <MenuItem key={value} value={value}>{label}</MenuItem>
                 ))}
@@ -231,12 +243,10 @@ const SyncEditionContainer = (props) => {
                 component={SelectField}
                 variant="standard"
                 name="user_id"
-                label={t('User applied for this synchronizer')}
-                containerstyle={{ width: '100%' }}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
-              >
-                {users.edges.map(({ node }) => (
+                label={t('User responsible for data creation')}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+                onSubmit={handleSubmitField}>
+                {creators.edges.map(({ node }) => (
                   <MenuItem key={node.id} value={node.id}>{node.name}</MenuItem>
                 ))}
               </Field>

@@ -131,14 +131,8 @@ const TriggerPopover = ({
         onClose={handleCloseEdit}
       >
         {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <TriggerEditionContainer
-              queryRef={queryRef}
-              handleClose={handleClose}
-              paginationOptions={paginationOptions}
-            />
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <TriggerEditionContainer queryRef={queryRef} handleClose={handleClose} paginationOptions={paginationOptions}/>
           </React.Suspense>
         )}
       </Drawer>

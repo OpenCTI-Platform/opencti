@@ -1,4 +1,6 @@
 import EventSource from 'eventsource';
+import axios from 'axios';
+import https from 'node:https';
 import {
   createEntity,
   deleteElementById,
@@ -9,7 +11,7 @@ import {
 import { completeConnector, connectors, connectorsFor } from '../database/repository';
 import { registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
@@ -166,6 +168,34 @@ export const testSync = async (context, user, sync) => {
       reject(UnsupportedError('Cant connect to remote opencti, check your configuration'));
     }
   });
+};
+export const fetchRemoteStreams = async (context, user, { uri, token, ssl_verify }) => {
+  try {
+    const query = `
+    query SyncCreationStreamCollectionQuery {
+      streamCollections(first: 1000) {
+        edges {
+          node {
+            id
+            name
+            description
+            filters
+          }
+        }
+      }
+    }
+  `;
+    const httpClient = axios.create({
+      responseType: 'json',
+      headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
+      httpsAgent: new https.Agent({ rejectUnauthorized: ssl_verify ?? false })
+    });
+    const remoteUri = `${uri.endsWith('/') ? uri.slice(0, -1) : uri}/graphql`;
+    const { data } = await httpClient.post(remoteUri, { query }, { withCredentials: true });
+    return data.data.streamCollections.edges.map((e) => e.node);
+  } catch {
+    throw ValidationError('uri', { message: 'Error getting the streams from remote OpenCTI' });
+  }
 };
 export const registerSync = async (context, user, syncData) => {
   const data = { ...syncData, running: false };
