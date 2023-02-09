@@ -59,7 +59,7 @@ const cityQuery = graphql`
   }
 `;
 
-const RootCityComponent = ({ queryRef, cityId }) => {
+const RootCityComponent = ({ queryRef, cityId, link }) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootCitiesSubscription>>(
     () => ({
       subscription,
@@ -206,7 +206,7 @@ const RootCity = () => {
       </Route>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <RootCityComponent queryRef={queryRef} cityId={cityId} />
+          <RootCityComponent queryRef={queryRef} cityId={cityId} link={link} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />

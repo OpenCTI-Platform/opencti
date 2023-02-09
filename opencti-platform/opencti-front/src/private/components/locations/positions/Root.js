@@ -167,7 +167,7 @@ class RootPosition extends Component {
                             disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
+                            enableReferences={props.settings?.platform_enable_reference?.includes(
                               'Position',
                             )}
                           />
