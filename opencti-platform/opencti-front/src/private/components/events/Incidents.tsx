@@ -1,6 +1,4 @@
 import React, { FunctionComponent, useContext } from 'react';
-import { useViewStorage,
-} from '../../../utils/ListParameters';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import IncidentsCards, {
@@ -22,12 +20,15 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import { Filters } from '../../../components/list_lines';
 import { IncidentLineDummy } from './incidents/IncidentLine';
 import { IncidentCardDummy } from './incidents/IncidentCard';
-import { IncidentsCardsPaginationQuery } from './incidents/__generated__/IncidentsCardsPaginationQuery.graphql';
+import {
+  IncidentsCardsPaginationQuery,
+  IncidentsCardsPaginationQuery$variables
+} from './incidents/__generated__/IncidentsCardsPaginationQuery.graphql';
 
 export const LOCAL_STORAGE_KEY = 'view-incidents';
 const Incidents: FunctionComponent = () => {
   const { helper } = useContext(UserContext);
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesPaginationQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
@@ -35,6 +36,7 @@ const Incidents: FunctionComponent = () => {
       orderAsc: true,
       openExports: false,
       filters: {} as Filters,
+      view: 'lines',
     },
   );
   const dataColumns = {
@@ -54,6 +56,7 @@ const Incidents: FunctionComponent = () => {
       isSortable: true,
     },
   };
+
   const {
     sortBy,
     orderAsc,
@@ -61,18 +64,63 @@ const Incidents: FunctionComponent = () => {
     filters,
     openExports,
     numberOfElements,
+    view,
   } = viewStorage;
 
-  const [view, saveView] = useViewStorage(LOCAL_STORAGE_KEY);
-  if (view.view === undefined) {
-    saveView({ view: 'lines' });
-  }
-  const handleChangeView = (event: React.SyntheticEvent) => saveView({ view: event });
+  const queryRefLines = useQueryLoading<IncidentsLinesPaginationQuery>(
+    incidentsLinesQuery,
+    paginationOptions,
+  );
+
+  const queryRefCards = useQueryLoading<IncidentsCardsPaginationQuery>(
+    incidentsCardsQuery,
+    paginationOptions,
+  );
+  // eslint-disable-next-line class-methods-use-this
+  const isRuntimeSort = helper?.isRuntimeFieldEnable();
+
+  const buildColumns = {
+    name: {
+      label: 'Name',
+      width: '25%',
+      isSortable: true,
+    },
+    incident_type: {
+      label: 'Incident type',
+      width: '10%',
+      isSortable: true,
+    },
+    severity: {
+      label: 'Severity',
+      width: '10%',
+      isSortable: true,
+    },
+    objectLabel: {
+      label: 'Labels',
+      width: '17%',
+      isSortable: false,
+    },
+    created: {
+      label: 'Creation date',
+      width: '10%',
+      isSortable: true,
+    },
+    modified: {
+      label: 'Modification date',
+      width: '10%',
+      isSortable: true,
+    },
+    x_opencti_workflow_id: {
+      label: 'Status',
+      width: '10%',
+      isSortable: true,
+    },
+    objectMarking: {
+      label: 'Marking',
+      isSortable: isRuntimeSort ?? false,
+    },
+  };
   const renderCards = () => {
-    const queryRef = useQueryLoading<IncidentsCardsPaginationQuery>(
-      incidentsCardsQuery,
-      paginationOptions,
-    );
     return (
       <ListCards
         sortBy={sortBy}
@@ -80,7 +128,7 @@ const Incidents: FunctionComponent = () => {
         dataColumns={dataColumns}
         handleSort={helpers.handleSort}
         handleSearch={helpers.handleSearch}
-        handleChangeView={handleChangeView}
+        handleChangeView={helpers.handleChangeView}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleToggleExports={helpers.handleToggleExports}
@@ -100,7 +148,7 @@ const Incidents: FunctionComponent = () => {
           'confidence',
         ]}
       >
-        {queryRef && (
+        {queryRefCards && (
           <React.Suspense
             fallback={
               <>
@@ -113,7 +161,7 @@ const Incidents: FunctionComponent = () => {
             }
           >
             <IncidentsCards
-              queryRef={queryRef}
+              queryRef={queryRefCards}
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
             />
@@ -125,53 +173,6 @@ const Incidents: FunctionComponent = () => {
   };
 
   const renderLines = () => {
-    const queryRef = useQueryLoading<IncidentsLinesPaginationQuery>(
-      incidentsLinesQuery,
-      paginationOptions,
-    );
-    // eslint-disable-next-line class-methods-use-this
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
-    const buildColumns = {
-      name: {
-        label: 'Name',
-        width: '25%',
-        isSortable: true,
-      },
-      incident_type: {
-        label: 'Incident type',
-        width: '10%',
-        isSortable: true,
-      },
-      severity: {
-        label: 'Severity',
-        width: '10%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '17%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Creation date',
-        width: '10%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '10%',
-        isSortable: true,
-      },
-      x_opencti_workflow_id: {
-        label: 'Status',
-        width: '10%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: isRuntimeSort ?? false,
-      },
-    };
     return (
           <ListLines
             sortBy={sortBy}
@@ -179,7 +180,7 @@ const Incidents: FunctionComponent = () => {
             dataColumns={buildColumns}
             handleSort={helpers.handleSort}
             handleSearch={helpers.handleSearch}
-            handleChangeView={handleChangeView}
+            handleChangeView={helpers.handleChangeView}
             handleAddFilter={helpers.handleAddFilter}
             handleRemoveFilter={helpers.handleRemoveFilter}
             handleToggleExports={helpers.handleToggleExports}
@@ -200,12 +201,12 @@ const Incidents: FunctionComponent = () => {
               'confidence',
             ]}
           >
-            {queryRef && (
+            {queryRefLines && (
               <React.Suspense fallback={
                 <>{Array(20).fill(0).map((idx) => (<IncidentLineDummy key={idx} dataColumns={buildColumns} />))}</>
               }>
                 <IncidentsLines
-                  queryRef={queryRef}
+                  queryRef={queryRefLines}
                   paginationOptions={paginationOptions}
                   dataColumns={buildColumns}
                   onLabelClick={helpers.handleAddFilter}
@@ -219,8 +220,8 @@ const Incidents: FunctionComponent = () => {
 
   return (
       <div>
-        {view.view === 'cards' ? renderCards() : ''}
-        {view.view === 'lines' ? renderLines() : ''}
+        {view === 'cards' ? renderCards() : ''}
+        {view === 'lines' ? renderLines() : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IncidentCreation paginationOptions={paginationOptions} />
         </Security>

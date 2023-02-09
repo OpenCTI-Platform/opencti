@@ -34,12 +34,7 @@ class ListLinesContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const diff = !R.equals(this.props.dataList, prevProps.dataList);
-    const diffBookmark = R.symmetricDifferenceWith(
-      (x, y) => x.node.id === y.node.id,
-      this.props.bookmarkList || [],
-      prevProps.bookmarkList || [],
-    );
+    const diff = !R.equals(this.props.dataList, prevProps.dataList) || !R.equals(this.props.bookmarkList, prevProps.bookmarkList);
     let selection = false;
     if (
       Object.keys(this.props.selectedElements || {}).length
@@ -56,7 +51,7 @@ class ListLinesContent extends Component {
     if (this.props.selectAll !== prevProps.selectAll) {
       selection = true;
     }
-    if (diff || diffBookmark.length > 0 || selection) {
+    if (diff || selection) {
       this.listRef.forceUpdateGrid();
     }
   }

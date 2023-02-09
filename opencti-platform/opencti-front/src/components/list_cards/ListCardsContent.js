@@ -39,17 +39,7 @@ class ListCardsContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const diff = R.symmetricDifferenceWith(
-      (x, y) => x.node.id === y.node.id,
-      this.props.dataList,
-      prevProps.dataList,
-    );
-    const diffBookmark = R.symmetricDifferenceWith(
-      (x, y) => x.node.id === y.node.id,
-      this.props.bookmarkList || [],
-      prevProps.bookmarkList || [],
-    );
-    if (diff.length > 0 || diffBookmark.length > 0) {
+    if (!R.equals(prevProps.dataList, this.props.dataList) || !R.equals(prevProps.bookmarkList, this.props.bookmarkList)) {
       this.gridRef.forceUpdate();
     }
   }
