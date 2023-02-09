@@ -1,5 +1,4 @@
-import { FunctionComponent, useState } from 'react';
-import * as R from 'ramda';
+import { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { React } from 'mdi-material-ui';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
@@ -13,7 +12,6 @@ import StixCyberObservablesLines, {
 } from './stix_cyber_observables/StixCyberObservablesLines';
 import ToolBar from '../data/ToolBar';
 import { Theme } from '../../../components/Theme';
-import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import { Filters } from '../../../components/list_lines';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import {
@@ -21,10 +19,16 @@ import {
 } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import useCopy from '../../../utils/hooks/useCopy';
-import { StixCyberObservablesLinesSearchQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
+import {
+  StixCyberObservablesLinesSearchQuery$data,
+} from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import {
+  StixCyberObservableLine_node$data,
+} from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -58,10 +62,15 @@ const StixCyberObservables: FunctionComponent = () => {
     types,
   } = viewStorage;
 
-  const [selectedElements, setSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
-  const [deSelectedElements, setDeSelectedElements] = useState<Record<string, StixCyberObservableLine_node$data>>({});
-
-  const [selectAll, setSelectAll] = useState<boolean>(false);
+  const {
+    onToggleEntity,
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+    selectedElements,
+    deSelectedElements,
+    handleToggleSelectAll,
+    selectAll,
+  } = useEntityToggle<StixCyberObservableLine_node$data>(LOCAL_STORAGE_KEY);
 
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
@@ -73,70 +82,6 @@ const StixCyberObservables: FunctionComponent = () => {
 
   const handleClear = () => {
     helpers.handleAddProperty('types', []);
-  };
-
-  const handleToggleSelectEntity = (
-    entity:
-    | StixCyberObservableLine_node$data
-    | StixCyberObservableLine_node$data[],
-    event: React.SyntheticEvent,
-    forceRemove: StixCyberObservableLine_node$data[],
-  ) => {
-    event.stopPropagation();
-    event.preventDefault();
-    if (Array.isArray(entity)) {
-      const currentIds = R.values(selectedElements).map((n) => n.id);
-      const givenIds = entity.map((n) => n.id);
-      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
-      let newSelectedElements = {
-        ...selectedElements,
-        ...R.indexBy(
-          R.prop('id'),
-          entity.filter((n) => addedIds.includes(n.id)),
-        ),
-      };
-      if (forceRemove.length > 0) {
-        newSelectedElements = R.omit(
-          forceRemove.map((n) => n.id),
-          newSelectedElements,
-        );
-      }
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-      setDeSelectedElements({});
-    } else if (entity.id in (selectedElements || {})) {
-      const newSelectedElements = R.omit([entity.id], selectedElements);
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-    } else if (selectAll && entity.id in (deSelectedElements || {})) {
-      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
-      setDeSelectedElements(newDeSelectedElements);
-    } else if (selectAll) {
-      const newDeSelectedElements = {
-        ...deSelectedElements,
-        [entity.id]: entity,
-      };
-      setDeSelectedElements(newDeSelectedElements);
-    } else {
-      const newSelectedElements = {
-        ...selectedElements,
-        [entity.id]: entity,
-      };
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-    }
-  };
-
-  const handleToggleSelectAll = () => {
-    setSelectAll(!selectAll);
-    setSelectedElements({});
-    setDeSelectedElements({});
-  };
-
-  const handleClearSelectedElements = () => {
-    setSelectAll(false);
-    setSelectedElements({});
-    setDeSelectedElements({});
   };
 
   const getValuesForCopy = (
@@ -213,11 +158,6 @@ const StixCyberObservables: FunctionComponent = () => {
       finalType = [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }];
     }
     const finalFilters = { ...viewStorage.filters, entity_type: finalType };
-    let numberOfSelectedElements = Object.keys(selectedElements).length;
-    if (selectAll) {
-      numberOfSelectedElements = (numberOfElements?.original ?? 0)
-        - Object.keys(deSelectedElements).length;
-    }
     return (
       <UserContext.Consumer>
         {({ helper }) => (
@@ -268,7 +208,7 @@ const StixCyberObservables: FunctionComponent = () => {
                     onLabelClick={helpers.handleAddFilter}
                     selectedElements={selectedElements}
                     deSelectedElements={deSelectedElements}
-                    onToggleEntity={handleToggleSelectEntity}
+                    onToggleEntity={onToggleEntity}
                     selectAll={selectAll}
                     setNumberOfElements={helpers.handleSetNumberOfElements}
                   />
