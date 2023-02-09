@@ -60,7 +60,7 @@ const regionQuery = graphql`
   }
 `;
 
-const RootRegionComponent = ({ queryRef, regionId }) => {
+const RootRegionComponent = ({ queryRef, regionId, link }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
@@ -209,7 +209,7 @@ const RootRegion = () => {
       </Route>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <RootRegionComponent queryRef={queryRef} regionId={regionId} />
+          <RootRegionComponent queryRef={queryRef} regionId={regionId} link={link} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />

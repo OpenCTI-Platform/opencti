@@ -62,6 +62,7 @@ const administrativeAreaQuery = graphql`
 const RootAdministrativeAreaComponent = ({
   queryRef,
   administrativeAreaId,
+  link,
 }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
@@ -221,6 +222,7 @@ const RootAdministrativeArea = () => {
           <RootAdministrativeAreaComponent
             queryRef={queryRef}
             administrativeAreaId={administrativeAreaId}
+            link={link}
           />
         </React.Suspense>
       ) : (
