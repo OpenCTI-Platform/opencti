@@ -513,9 +513,8 @@ const StixDomainObjectHeader = (props) => {
                         open={openCommitCreate}
                         submitForm={submitForm}
                         disabled={isSubmitting}
-                        validateForm={validateForm}
                         setFieldValue={setFieldValue}
-                        values={values}
+                        values={values.references}
                         id={stixDomainObject.id}
                       />
                     )}

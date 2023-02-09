@@ -67,7 +67,7 @@ import SwitchField from '../../../../../components/SwitchField';
 import CreatedByField from '../../form/CreatedByField';
 import ObjectLabelField from '../../form/ObjectLabelField';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
-import ExternalReferencesField from '../../form/ExternalReferencesField';
+import { ExternalReferencesField } from '../../form/ExternalReferencesField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import {
   convertFromStixType,

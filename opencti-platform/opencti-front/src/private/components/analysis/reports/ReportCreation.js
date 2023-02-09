@@ -20,7 +20,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';

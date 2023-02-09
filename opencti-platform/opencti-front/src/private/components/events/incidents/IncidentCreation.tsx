@@ -19,7 +19,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

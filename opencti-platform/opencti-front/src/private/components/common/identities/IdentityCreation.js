@@ -25,7 +25,7 @@ import SelectField from '../../../../components/SelectField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import ExternalReferencesField from '../form/ExternalReferencesField';
+import { ExternalReferencesField } from '../form/ExternalReferencesField';
 
 const styles = (theme) => ({
   drawerPaper: {

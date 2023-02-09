@@ -27,7 +27,7 @@ import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
-import ExternalReferencesField from '../form/ExternalReferencesField';
+import { ExternalReferencesField } from '../form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 

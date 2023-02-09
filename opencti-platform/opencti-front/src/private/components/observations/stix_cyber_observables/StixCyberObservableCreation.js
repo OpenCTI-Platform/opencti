@@ -47,7 +47,7 @@ import {
 } from './StixCyberObservablesLines';
 import { parse } from '../../../../utils/Time';
 import MarkDownField from '../../../../components/MarkDownField';
-import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import {
   booleanAttributes,

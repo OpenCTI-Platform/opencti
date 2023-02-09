@@ -514,9 +514,8 @@ const StixCoreRelationshipEditionContainer = ({
                 <CommitMessage
                   submitForm={submitForm}
                   disabled={isSubmitting}
-                  validateForm={validateForm}
                   setFieldValue={setFieldValue}
-                  values={values}
+                  values={values.references}
                   id={stixCoreRelationship.id}
                   noStoreUpdate={noStoreUpdate}
                 />

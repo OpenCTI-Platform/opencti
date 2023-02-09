@@ -21,7 +21,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
