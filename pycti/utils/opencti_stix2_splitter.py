@@ -16,7 +16,8 @@ class OpenCTIStix2Splitter:
             return existing_item["nb_deps"]
         # Recursive enlist for every refs
         item = raw_data[item_id]
-        for key, value in item.items():
+        for key in list(item.keys()):
+            value = item[key]
             if key.endswith("_refs"):
                 to_keep = []
                 for element_ref in item[key]:
