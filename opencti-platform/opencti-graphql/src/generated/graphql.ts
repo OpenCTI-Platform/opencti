@@ -19921,8 +19921,6 @@ export type StixDomainObjectsFiltering = {
 
 export enum StixDomainObjectsOrdering {
   Score = '_score',
-  AttributeCount = 'attribute_count',
-  Confidence = 'confidence',
   AttributeAbstract = 'attribute_abstract',
   AttributeCount = 'attribute_count',
   ChannelTypes = 'channel_types',
