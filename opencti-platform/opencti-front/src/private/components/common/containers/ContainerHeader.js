@@ -164,6 +164,20 @@ export const containerHeaderObjectsQuery = graphql`
             ... on CourseOfAction {
               name
             }
+            ... on Note {
+                attribute_abstract
+                content
+            }
+            ... on Opinion {
+                opinion
+            }
+            ... on Report {
+                name
+                published
+            }
+            ... on Grouping {
+                name
+            }
             ... on Individual {
               name
             }
@@ -255,6 +269,27 @@ export const containerHeaderObjectsQuery = graphql`
             }
             ... on StixFile {
               observableName: name
+            }
+            ... on Label {
+                value
+                color
+            }
+            ... on MarkingDefinition {
+                definition
+                x_opencti_color
+            }
+            ... on KillChainPhase {
+                kill_chain_name
+                phase_name
+            }
+            ... on ExternalReference {
+                url
+                source_name
+            }
+            ... on BasicRelationship {
+                id
+                entity_type
+                parent_types
             }
             ... on BasicRelationship {
               id

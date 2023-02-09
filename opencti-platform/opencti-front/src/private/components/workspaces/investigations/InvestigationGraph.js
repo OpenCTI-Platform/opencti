@@ -190,6 +190,12 @@ const investigationGraphStixCoreObjectQuery = graphql`
       ... on DataComponent {
           name
       }
+      ... on DataSource {
+          name
+      }
+      ... on Language {
+          name
+      }
     }
   }
 `;
@@ -2154,6 +2160,32 @@ const InvestigationGraph = createFragmentContainer(
                 name
                 first_seen
                 last_seen
+              }
+              ... on Event {
+                  name
+                  description
+                  start_time
+                  stop_time
+              }
+              ... on Channel {
+                  name
+                  description
+              }
+              ... on Narrative {
+                  name
+                  description
+              }
+              ... on Language {
+                  name
+              }
+              ... on DataComponent {
+                  name
+              }
+              ... on DataSource {
+                  name
+              }
+              ... on Case {
+                  name
               }
               ... on StixCyberObservable {
                 observable_value
