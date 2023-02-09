@@ -351,9 +351,19 @@ const dashboardStixCyberObservablesNumberQuery = graphql`
   }
 `;
 
+// const dashboardCustomDashboardQuery = graphql`
+// query DashboardCustomDashboardQuery($id: String!) {
+//   workspace(id: $id) {
+//     id
+//     name
+//     ...CyioDashboard_workspace
+//   }
+// }
+// `;
+
 const dashboardCustomDashboardQuery = graphql`
-query DashboardCustomDashboardQuery($id: String!) {
-  workspace(id: $id) {
+query DashboardCustomDashboardQuery {
+  workspace(id: "15794f5d-b071-4ddc-9567-d786149fa74f") {
     id
     name
     ...CyioDashboard_workspace
