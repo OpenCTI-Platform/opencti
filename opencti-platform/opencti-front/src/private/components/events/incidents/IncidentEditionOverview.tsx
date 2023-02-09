@@ -17,7 +17,9 @@ import {
   convertAssignees,
   convertCreatedBy,
   convertMarkings,
-  convertStatus, handleChangesObjectAssignee, handleChangesObjectMarking,
+  convertStatus,
+  handleChangesObjectAssignee,
+  handleChangesObjectMarking,
 } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -322,9 +324,6 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
     objectMarking,
     objectAssignee,
     x_opencti_workflow_id: status,
-    status: incident.status,
-    workflowEnabled: incident.workflowEnabled,
-    is_inferred: isInferred,
     confidence: incident.confidence,
   };
 
@@ -458,6 +457,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
               submitForm={submitForm}
               disabled={isSubmitting}
               open={false}
+              values={values.references}
               setFieldValue={setFieldValue}
               values={values}
               id={incident.id}

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
@@ -163,7 +163,6 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
         {({
           submitForm,
           isSubmitting,
-          validateForm,
           setFieldValue,
           values,
         }) => (
@@ -232,10 +231,10 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                validateForm={validateForm}
                 setFieldValue={setFieldValue}
-                values={values}
+                values={values.references}
                 id={incident.id}
+                open={false}
               />
             )}
           </Form>

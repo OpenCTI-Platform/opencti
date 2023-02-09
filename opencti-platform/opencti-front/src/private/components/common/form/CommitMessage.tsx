@@ -13,30 +13,31 @@ interface CommitMessageProps {
   id: string
   submitForm: () => void
   disabled: boolean
-  validateForm: () => void
-  setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void
-  values: { value: string }[]
-  noStoreUpdate: boolean
+  setFieldValue: (field: string, value: ExternalReferencesValues, shouldValidate?: boolean | undefined) => void
+  values: ExternalReferencesValues | undefined
+  noStoreUpdate?: boolean
+  open: boolean
+  handleClose?: () => void
 }
 
-const CommitMessage: FunctionComponent<CommitMessageProps> = (
+const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   id,
   submitForm,
   disabled,
-  validateForm,
   setFieldValue,
   values,
+  open,
   noStoreUpdate,
-) => {
+  handleClose,
+}) => {
   const { t } = useFormatter();
-  const [open, setOpen] = useState<boolean>(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleSubmit = () => submitForm();
+  const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
+  const handleOpen = () => setControlOpen(true);
+  const handleControlClose = () => setControlOpen(false);
 
   return (
     <div>
-      {typeof handleClose !== 'function' && (
+      { !handleClose && (
         <Button
           variant="contained"
           color="primary"
@@ -46,42 +47,44 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = (
           {t('Update')}
         </Button>
       )}
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={typeof handleClose !== 'function' ? open : true}
-        onClose={handleClose}
-        fullWidth={true}
-      >
-        <DialogTitle>{t('Reference modification')}</DialogTitle>
-        <DialogContent>
-          <ExternalReferencesField
-            name="references"
-            style={{ marginTop: 20, width: '100%' }}
-            setFieldValue={setFieldValue}
-            values={values.value}
-            id={id}
-            noStoreUpdate={noStoreUpdate}
-          />
-          <Field
-            component={MarkDownField}
-            name="message"
-            label={t('Message')}
-            fullWidth={true}
-            multiline={true}
-            rows="2"
-            style={{ marginTop: 20 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            color="primary"
-            onClick={handleSubmit}
-            disabled={disabled}
-          >
-            {t('Validate')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      { values && (
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={handleClose ? open : controlOpen}
+          onClose={handleClose ?? handleControlClose }
+          fullWidth={true}
+        >
+          <DialogTitle>{t('Reference modification')}</DialogTitle>
+          <DialogContent>
+            <ExternalReferencesField
+              name="references"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              values={values}
+              id={id}
+              noStoreUpdate={noStoreUpdate}
+            />
+            <Field
+              component={MarkDownField}
+              name="message"
+              label={t('Message')}
+              fullWidth={true}
+              multiline={true}
+              rows="2"
+              style={{ marginTop: 20 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color="primary"
+              onClick={submitForm}
+              disabled={disabled}
+            >
+              {t('Validate')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </div>
   );
 };
