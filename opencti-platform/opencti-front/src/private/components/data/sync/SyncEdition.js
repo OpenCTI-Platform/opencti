@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { createFragmentContainer, graphql, loadQuery, usePreloadedQuery } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
@@ -15,13 +15,14 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, environment, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import { syncCheckMutation, syncStreamCollectionQuery } from './SyncCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
 import SelectField from '../../../../components/SelectField';
+import CreatorField from '../../common/form/CreatorField';
 
 const styles = (theme) => ({
   header: {
@@ -77,19 +78,6 @@ const syncMutationFieldPatch = graphql`
   }
 `;
 
-const syncEditionUserQuery = graphql`
-  query SyncEditionUserQuery {
-    creators {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
 const syncValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().required(t('This field is required')),
@@ -101,25 +89,22 @@ const syncValidation = (t) => Yup.object().shape({
   listen_deletion: Yup.bool(),
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
-  user_id: Yup.string(),
+  user_id: Yup.object().nullable(),
 });
-
-const queryRef = loadQuery(environment, syncEditionUserQuery);
 
 const SyncEditionContainer = (props) => {
   const { t, classes, handleClose, synchronizer } = props;
-
   const [streams, setStreams] = useState([]);
-
-  const { creators } = usePreloadedQuery(syncEditionUserQuery, queryRef);
-
+  const relatedUser = synchronizer.user ? { label: synchronizer.user.name, value: synchronizer.user.id } : '';
   const initialValues = R.pipe(
     R.assoc('current_state', buildDate(synchronizer.current_state)),
+    R.assoc('user_id', relatedUser),
     R.pick([
       'name',
       'uri',
       'token',
       'stream_id',
+      'user_id',
       'listen_deletion',
       'no_dependencies',
       'current_state',
@@ -140,6 +125,7 @@ const SyncEditionContainer = (props) => {
     });
   };
   const handleSubmitField = (name, value) => {
+    const parsedValue = name === 'user_id' ? value.value : value;
     syncValidation(props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -147,7 +133,7 @@ const SyncEditionContainer = (props) => {
           mutation: syncMutationFieldPatch,
           variables: {
             id: props.synchronizer.id,
-            input: { key: name, value: value || '' },
+            input: { key: name, value: parsedValue || '' },
           },
         });
       })
@@ -184,11 +170,9 @@ const SyncEditionContainer = (props) => {
         <Typography variant="h6">{t('Update a synchronizer')}</Typography>
       </div>
       <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={{ ...initialValues, user_id: synchronizer.user?.id }}
-          validationSchema={syncValidation(t)}
-        >
+        <Formik enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={syncValidation(t)}>
           {({ values }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -239,17 +223,12 @@ const SyncEditionContainer = (props) => {
                   <MenuItem key={value} value={value}>{label}</MenuItem>
                 ))}
               </Field>
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="user_id"
-                label={t('User responsible for data creation')}
-                containerstyle={{ marginTop: 20, width: '100%' }}
-                onSubmit={handleSubmitField}>
-                {creators.edges.map(({ node }) => (
-                  <MenuItem key={node.id} value={node.id}>{node.name}</MenuItem>
-                ))}
-              </Field>
+              <CreatorField
+                  name={'user_id'}
+                  label={'User responsible for data creation (empty = system)'}
+                  containerStyle={{ marginTop: 20, width: '100%' }}
+                  onChange={handleSubmitField}
+              />
               <Field
                 component={DateTimePickerField}
                 name="current_state"
@@ -323,6 +302,7 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       ssl_verify
       user {
         id
+        name
       }
     }
   `,

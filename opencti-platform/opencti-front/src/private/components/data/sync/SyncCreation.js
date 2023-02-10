@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
@@ -22,10 +22,8 @@ import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
 import SelectField from '../../../../components/SelectField';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import ItemIcon from '../../../../components/ItemIcon';
 import { insertNode } from '../../../../utils/store';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import CreatorField from '../../common/form/CreatorField';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -126,70 +124,19 @@ export const syncStreamCollectionQuery = graphql`
     }
 `;
 
-const syncCreationUserQuery = graphql`
-  query SyncCreationUserQuery {
-    creators {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
-const UserSync = ({ setFieldValue, queryRef }) => {
-  const { t } = useFormatter();
-  const classes = useStyles();
-  const { creators } = usePreloadedQuery(syncCreationUserQuery, queryRef);
-  return <Field
-      component={AutocompleteField}
-      name="user_id"
-      onChange={(name, value) => setFieldValue(name, value.value)}
-      textfieldprops={{
-        variant: 'standard',
-        label: t('User responsible for data creation'),
-      }}
-      containerstyle={{ width: '100%' }}
-      style={{ marginTop: 20 }}
-      noOptionsText={t('No available options')}
-      options={(creators?.edges ?? []).map(({ node }) => ({
-        id: node.id,
-        value: node.id,
-        label: node.name,
-      }))}
-      renderOption={(optionProps, option) => (
-          <li {...optionProps}>
-            <div className={classes.icon}>
-              <ItemIcon type="User" />
-            </div>
-            <div className={classes.text}>
-              {option.label}
-            </div>
-          </li>
-      )}
-  />;
-};
-
 const SyncCreation = ({ paginationOptions }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [verified, setVerified] = useState(false);
   const [streams, setStreams] = useState([]);
-  const [queryRef, loadQuery] = useQueryLoader(syncCreationUserQuery);
-  const handleOpen = () => {
-    loadQuery({}, { fetchPolicy: 'network-only' });
-    setOpen(true);
-  };
+  const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const handleVerify = (values, setErrors) => {
+    const input = { ...values, user_id: values.user_id?.value };
     commitMutation({
       mutation: syncCheckMutation,
-      variables: {
-        input: values,
-      },
+      variables: { input },
       onCompleted: (data) => {
         if (data && data.synchronizerTest === 'Connection success') {
           MESSAGING$.notifySuccess(t('Connection successfully verified'));
@@ -203,11 +150,10 @@ const SyncCreation = ({ paginationOptions }) => {
     });
   };
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input = { ...values, user_id: values.user_id?.value };
     commitMutation({
       mutation: syncCreationMutation,
-      variables: {
-        input: values,
-      },
+      variables: { input },
       updater: (store) => {
         insertNode(store, 'Pagination_synchronizers', paginationOptions, 'synchronizerAdd');
       },
@@ -339,10 +285,11 @@ const SyncCreation = ({ paginationOptions }) => {
                         ))}
                       </Field>
                     </>}
-                    {queryRef && (
-                        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                          <UserSync queryRef={queryRef} setFieldValue={setFieldValue}/>
-                        </React.Suspense>)}
+                    <CreatorField
+                        name={'user_id'}
+                        label={'User responsible for data creation (empty = system)'}
+                        containerStyle={{ marginTop: 20, width: '100%' }}
+                    />
                     <Field
                         component={DateTimePickerField}
                         name="current_state"
