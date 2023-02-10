@@ -251,12 +251,7 @@ class SyncPopover extends Component {
             variables={{ id: syncId }}
             render={({ props }) => {
               if (props) {
-                return (
-                  <SyncEdition
-                    synchronizer={props.synchronizer}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
+                return (<SyncEdition synchronizer={props.synchronizer} handleClose={this.handleCloseUpdate.bind(this)}/>);
               }
               return <Loader variant="inElement" />;
             }}

@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
@@ -14,7 +12,8 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
@@ -24,7 +23,7 @@ import { buildDate } from '../../../../utils/Time';
 import SelectField from '../../../../components/SelectField';
 import CreatorField from '../../common/form/CreatorField';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 0px 20px 60px',
@@ -66,7 +65,7 @@ const styles = (theme) => ({
     width: '100%',
     overflow: 'hidden',
   },
-});
+}));
 
 const syncMutationFieldPatch = graphql`
   mutation SyncEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
@@ -92,8 +91,9 @@ const syncValidation = (t) => Yup.object().shape({
   user_id: Yup.object().nullable(),
 });
 
-const SyncEditionContainer = (props) => {
-  const { t, classes, handleClose, synchronizer } = props;
+const SyncEditionContainer = ({ handleClose, synchronizer }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
   const [streams, setStreams] = useState([]);
   const relatedUser = synchronizer.user ? { label: synchronizer.user.name, value: synchronizer.user.id } : '';
   const initialValues = R.pipe(
@@ -126,13 +126,13 @@ const SyncEditionContainer = (props) => {
   };
   const handleSubmitField = (name, value) => {
     const parsedValue = name === 'user_id' ? value.value : value;
-    syncValidation(props.t)
+    syncValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: syncMutationFieldPatch,
           variables: {
-            id: props.synchronizer.id,
+            id: synchronizer.id,
             input: { key: name, value: parsedValue || '' },
           },
         });
@@ -280,14 +280,6 @@ const SyncEditionContainer = (props) => {
   );
 };
 
-SyncEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  synchronizer: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
 const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
   synchronizer: graphql`
     fragment SyncEdition_synchronizer on Synchronizer {
@@ -308,7 +300,4 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
   `,
 });
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(SyncEditionFragment);
+export default SyncEditionFragment;
