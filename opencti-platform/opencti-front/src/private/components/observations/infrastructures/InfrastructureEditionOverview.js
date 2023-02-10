@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -102,20 +101,21 @@ const infrastructureValidation = (t) => Yup.object().shape({
   confidence: Yup.number(),
 });
 
-class InfrastructureEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: infrastructureEditionOverviewFocus,
-      variables: {
-        id: this.props.infrastructure.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const InfrastructureEditionOverviewComponent = (props) => {
+  const { infrastructure, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: infrastructureEditionOverviewFocus,
+    variables: {
+      id: infrastructure.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -140,7 +140,7 @@ class InfrastructureEditionOverviewComponent extends Component {
     commitMutation({
       mutation: infrastructureMutationFieldPatch,
       variables: {
-        id: this.props.infrastructure.id,
+        id: infrastructure.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -149,47 +149,45 @@ class InfrastructureEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      infrastructureValidation(this.props.t)
+      infrastructureValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: infrastructureMutationFieldPatch,
             variables: {
-              id: this.props.infrastructure.id,
+              id: infrastructure.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
-
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  };
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: infrastructureMutationFieldPatch,
         variables: {
-          id: this.props.infrastructure.id,
+          id: infrastructure.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { infrastructure } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -203,7 +201,7 @@ class InfrastructureEditionOverviewComponent extends Component {
         commitMutation({
           mutation: infrastructureMutationRelationAdd,
           variables: {
-            id: this.props.infrastructure.id,
+            id: infrastructure.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -215,18 +213,16 @@ class InfrastructureEditionOverviewComponent extends Component {
         commitMutation({
           mutation: infrastructureMutationRelationDelete,
           variables: {
-            id: this.props.infrastructure.id,
+            id: infrastructure.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
-
-  handleChangeKillChainPhases(name, values) {
-    if (!this.props.enableReferences) {
-      const { infrastructure } = this.props;
+  };
+  const handleChangeKillChainPhases = (name, values) => {
+    if (!enableReferences) {
       const currentKillChainPhases = R.pipe(
         R.pathOr([], ['killChainPhases', 'edges']),
         R.map((n) => ({
@@ -240,7 +236,7 @@ class InfrastructureEditionOverviewComponent extends Component {
         commitMutation({
           mutation: infrastructureMutationRelationAdd,
           variables: {
-            id: this.props.infrastructure.id,
+            id: infrastructure.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'kill-chain-phase',
@@ -253,270 +249,255 @@ class InfrastructureEditionOverviewComponent extends Component {
         commitMutation({
           mutation: infrastructureMutationRelationDelete,
           variables: {
-            id: this.props.infrastructure.id,
+            id: infrastructure.id,
             toId: R.head(removed).value,
             relationship_type: 'kill-chain-phase',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, infrastructure, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(infrastructure);
-    const objectMarking = convertMarkings(infrastructure);
-    const status = convertStatus(t, infrastructure);
-    const killChainPhases = R.pipe(
-      R.pathOr([], ['killChainPhases', 'edges']),
-      R.map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(infrastructure);
-    const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('killChainPhases', killChainPhases),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc('x_opencti_workflow_id', status),
-      R.assoc('first_seen', buildDate(infrastructure.first_seen)),
-      R.assoc('last_seen', buildDate(infrastructure.last_seen)),
-      R.assoc(
-        'infrastructure_types',
-        infrastructure.infrastructure_types
-          ? infrastructure.infrastructure_types
-          : [],
-      ),
-      R.pick([
-        'name',
-        'description',
-        'infrastructure_types',
-        'confidence',
-        'first_seen',
-        'last_seen',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
-        'x_opencti_workflow_id',
-        'confidence',
-      ]),
-    )(infrastructure);
-    return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={infrastructureValidation(t)}
-        onSubmit={() => true}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <OpenVocabField
-              label={t('Infrastructure types')}
-              type="infrastructure-type-ov"
-              name="infrastructure_types"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
-            <ConfidenceField
-              name="confidence"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={fieldSpacingContainerStyle}
-              editContext={context}
-              variant="edit"
-            />
-            <Field
-              component={DateTimePickerField}
-              name="first_seen"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              TextFieldProps={{
-                label: t('First seen'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="first_seen" />
-                ),
-              }}
-            />
-            <Field
-              component={DateTimePickerField}
-              name="last_seen"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              TextFieldProps={{
-                label: t('Last seen'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="last_seen" />
-                ),
-              }}
-            />
-            <KillChainPhasesField
-              name="killChainPhases"
-              style={{ marginTop: 20, width: '100%' }}
+  const createdBy = convertCreatedBy(infrastructure);
+  const objectMarking = convertMarkings(infrastructure);
+  const status = convertStatus(t, infrastructure);
+  const killChainPhases = R.pipe(
+    R.pathOr([], ['killChainPhases', 'edges']),
+    R.map((n) => ({
+      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+      value: n.node.id,
+    })),
+  )(infrastructure);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('first_seen', buildDate(infrastructure.first_seen)),
+    R.assoc('last_seen', buildDate(infrastructure.last_seen)),
+    R.assoc(
+      'infrastructure_types',
+      infrastructure.infrastructure_types
+        ? infrastructure.infrastructure_types
+        : [],
+    ),
+    R.pick([
+      'name',
+      'description',
+      'infrastructure_types',
+      'confidence',
+      'first_seen',
+      'last_seen',
+      'createdBy',
+      'killChainPhases',
+      'objectMarking',
+      'x_opencti_workflow_id',
+      'confidence',
+    ]),
+  )(infrastructure);
+  return (
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={infrastructureValidation(t)}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
+          />
+          <OpenVocabField
+            label={t('Infrastructure types')}
+            type="infrastructure-type-ov"
+            name="infrastructure_types"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={true}
+            editContext={context}
+          />
+          <ConfidenceField
+            name="confidence"
+            onFocus={handleChangeFocus}
+            onChange={handleSubmitField}
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
+          />
+          <Field
+            component={DateTimePickerField}
+            name="first_seen"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('First seen'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="first_seen" />
+              ),
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="last_seen"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Last seen'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="last_seen" />
+              ),
+            }}
+          />
+          <KillChainPhasesField
+            name="killChainPhases"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus
+                context={context}
+                fieldName="killChainPhases"
+              />
+            }
+            onChange={handleChangeKillChainPhases}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          {infrastructure.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Infrastructure"
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
               setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="killChainPhases"
-                />
-              }
-              onChange={this.handleChangeKillChainPhases.bind(this)}
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
-            />
-            {infrastructure.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Infrastructure"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
-              onChange={this.handleChangeCreatedBy.bind(this)}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldname="objectMarking"
+                  fieldName="x_opencti_workflow_id"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={infrastructure.id}
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
+            onChange={handleChangeCreatedBy}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
+            helpertext={
+              <SubscriptionFocus
+                context={context}
+                fieldname="objectMarking"
               />
-            )}
-          </Form>
-        )}
-      </Formik>
-    );
-  }
-}
-
-InfrastructureEditionOverviewComponent.propTypes = {
-  t: PropTypes.func,
-  infrastructure: PropTypes.object,
-  enableReferences: PropTypes.bool,
-  context: PropTypes.array,
+            }
+            onChange={handleChangeObjectMarking}
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={infrastructure.id}
+            />
+          )}
+        </Form>
+      )}
+    </Formik>
+  );
 };
 
-const InfrastructureEditionOverview = createFragmentContainer(
-  InfrastructureEditionOverviewComponent,
-  {
-    infrastructure: graphql`
-      fragment InfrastructureEditionOverview_infrastructure on Infrastructure {
-        id
-        name
-        description
-        confidence
-        first_seen
-        last_seen
-        infrastructure_types
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        killChainPhases {
-          edges {
-            node {
-              id
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
-        }
-        status {
+export default createFragmentContainer(InfrastructureEditionOverviewComponent, {
+  infrastructure: graphql`
+    fragment InfrastructureEditionOverview_infrastructure on Infrastructure {
+      id
+      name
+      description
+      confidence
+      first_seen
+      last_seen
+      infrastructure_types
+      createdBy {
+        ... on Identity {
           id
-          order
-          template {
-            name
-            color
+          name
+          entity_type
+        }
+      }
+      killChainPhases {
+        edges {
+          node {
+            id
+            kill_chain_name
+            phase_name
+            x_opencti_order
           }
         }
-        workflowEnabled
       }
-    `,
-  },
-);
-
-export default inject18n(InfrastructureEditionOverview);
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
+});

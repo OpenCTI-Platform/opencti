@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import * as R from 'ramda';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -16,11 +14,9 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -28,7 +24,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -75,7 +71,7 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
 
 const narrativeMutation = graphql`
   mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
@@ -115,21 +111,16 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class NarrativeCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+const NarrativeCreation = ({ paginationOptions, contextual, display }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
 
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = R.pipe(
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -148,7 +139,7 @@ class NarrativeCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
-          this.props.paginationOptions,
+          paginationOptions,
           newEdge,
         );
       },
@@ -160,21 +151,59 @@ class NarrativeCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  onReset() {
-    this.handleClose();
-  }
+  const fields = (setFieldValue, values) => (
+    <React.Fragment>
+      <Field
+        component={TextField}
+        variant="standard"
+        name="name"
+        label={t('Name')}
+        fullWidth={true}
+        detectDuplicate={['Narrative']}
+      />
+      <Field
+        component={MarkDownField}
+        name="description"
+        label={t('Description')}
+        fullWidth={true}
+        multiline={true}
+        rows="4"
+        style={{ marginTop: 20 }}
+      />
+      <CreatedByField
+        name="createdBy"
+        style={{ marginTop: 20, width: '100%' }}
+        setFieldValue={setFieldValue}
+      />
+      <ObjectLabelField
+        name="objectLabel"
+        style={{ marginTop: 20, width: '100%' }}
+        setFieldValue={setFieldValue}
+        values={values.objectLabel}
+      />
+      <ObjectMarkingField
+        name="objectMarking"
+        style={{ marginTop: 20, width: '100%' }}
+      />
+      <ExternalReferencesField
+        name="externalReferences"
+        style={{ marginTop: 20, width: '100%' }}
+        setFieldValue={setFieldValue}
+        values={values.externalReferences}
+      />
+    </React.Fragment>
+  );
 
-  renderClassic() {
-    const { t, classes } = this.props;
+  const renderClassic = () => {
     return (
       <div>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -182,18 +211,18 @@ class NarrativeCreation extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
+              onClick={handleClose}
               size="large"
               color="primary"
             >
@@ -212,8 +241,8 @@ class NarrativeCreation extends Component {
                 externalReferences: [],
               }}
               validationSchema={narrativeValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
+              onSubmit={onSubmit}
+              onReset={onReset}
             >
               {({
                 submitForm,
@@ -223,44 +252,7 @@ class NarrativeCreation extends Component {
                 values,
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['Narrative', 'Malware']}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
+                  {fields(setFieldValue, values)}
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -287,14 +279,13 @@ class NarrativeCreation extends Component {
         </Drawer>
       </div>
     );
-  }
+  };
 
-  renderContextual() {
-    const { t, classes, display } = this.props;
+  const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButtonContextual}
@@ -302,8 +293,8 @@ class NarrativeCreation extends Component {
           <Add />
         </Fab>
         <Dialog
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
+          open={open}
+          onClose={handleClose}
           PaperProps={{ elevation: 1 }}
         >
           <Formik
@@ -316,8 +307,8 @@ class NarrativeCreation extends Component {
               externalReferences: [],
             }}
             validationSchema={narrativeValidation(t)}
-            onSubmit={this.onSubmit.bind(this)}
-            onReset={this.onReset.bind(this)}
+            onSubmit={onSubmit}
+            onReset={onReset}
           >
             {({
               submitForm,
@@ -329,44 +320,7 @@ class NarrativeCreation extends Component {
               <Form>
                 <DialogTitle>{t('Create a narrative')}</DialogTitle>
                 <DialogContent>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['Narrative']}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
+                  {fields(setFieldValue, values)}
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
@@ -386,25 +340,12 @@ class NarrativeCreation extends Component {
         </Dialog>
       </div>
     );
-  }
+  };
 
-  render() {
-    const { contextual } = this.props;
-    if (contextual) {
-      return this.renderContextual();
-    }
-    return this.renderClassic();
+  if (contextual) {
+    return renderContextual();
   }
-}
-
-NarrativeCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  return renderClassic();
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(NarrativeCreation);
+export default NarrativeCreation;

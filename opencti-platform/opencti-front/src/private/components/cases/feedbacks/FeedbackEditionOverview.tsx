@@ -289,7 +289,7 @@ FeedbackEditionOverviewProps
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             variant="edit"
-            containerStyle={{ width: '100%' }}
+            containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             editContext={context}
           />

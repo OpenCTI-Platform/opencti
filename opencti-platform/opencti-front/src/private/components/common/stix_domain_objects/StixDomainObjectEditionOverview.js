@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import { assoc, difference, head, join, map, pathOr, pick, pipe, split } from 'ramda';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
@@ -217,7 +216,7 @@ const StixDomainObjectEditionContainer = (props) => {
                 key: name,
                 value:
                   name === 'aliases' || name === 'x_opencti_aliases'
-                    ? split(',', value)
+                    ? R.split(',', value)
                     : value,
               },
             },
@@ -241,22 +240,22 @@ const StixDomainObjectEditionContainer = (props) => {
 
   const handleChangeObjectMarking = (name, values) => {
     if (!enableReferences) {
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(stixDomainObject);
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
       if (added.length > 0) {
         commitMutation({
           mutation: stixDomainObjectMutationRelationAdd,
           variables: {
             id: stixDomainObject.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -267,7 +266,7 @@ const StixDomainObjectEditionContainer = (props) => {
           mutation: stixDomainObjectMutationRelationDelete,
           variables: {
             id: stixDomainObject.id,
-            toId: head(removed).value,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
@@ -276,36 +275,36 @@ const StixDomainObjectEditionContainer = (props) => {
   };
 
   const { editContext } = stixDomainObject;
-  const createdBy = pathOr(null, ['createdBy', 'name'], stixDomainObject) === null
+  const createdBy = R.pathOr(null, ['createdBy', 'name'], stixDomainObject) === null
     ? ''
     : {
-      label: pathOr(null, ['createdBy', 'name'], stixDomainObject),
-      value: pathOr(null, ['createdBy', 'id'], stixDomainObject),
+      label: R.pathOr(null, ['createdBy', 'name'], stixDomainObject),
+      value: R.pathOr(null, ['createdBy', 'id'], stixDomainObject),
     };
-  const objectMarking = pipe(
-    pathOr([], ['objectMarking', 'edges']),
-    map((n) => ({
+  const objectMarking = R.pipe(
+    R.pathOr([], ['objectMarking', 'edges']),
+    R.map((n) => ({
       label: n.node.definition,
       value: n.node.id,
     })),
   )(stixDomainObject);
-  let initialValues = pipe(
-    assoc('createdBy', createdBy),
-    assoc('objectMarking', objectMarking),
-    pick(['name', 'description', 'createdBy', 'objectMarking']),
+  let initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.pick(['name', 'description', 'createdBy', 'objectMarking']),
   )(stixDomainObject);
   if ('aliases' in stixDomainObject) {
-    initialValues = assoc(
+    initialValues = R.assoc(
       'aliases',
-      stixDomainObject.aliases ? join(',', stixDomainObject.aliases) : '',
+      stixDomainObject.aliases ? R.join(',', stixDomainObject.aliases) : '',
       initialValues,
     );
   }
   if ('x_opencti_aliases' in stixDomainObject) {
-    initialValues = assoc(
+    initialValues = R.assoc(
       'x_opencti_aliases',
       stixDomainObject.x_opencti_aliases
-        ? join(',', stixDomainObject.x_opencti_aliases)
+        ? R.join(',', stixDomainObject.x_opencti_aliases)
         : '',
       initialValues,
     );

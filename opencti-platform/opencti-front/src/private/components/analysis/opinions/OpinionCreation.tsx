@@ -88,7 +88,7 @@ export const opinionCreationMutation = graphql`
 
 const opinionValidation = (t: (message: string) => string) => Yup.object().shape({
   opinion: Yup.string().required(t('This field is required')),
-  explanation: Yup.string().required(t('This field is required')),
+  explanation: Yup.string().nullable(),
   confidence: Yup.number(),
 });
 

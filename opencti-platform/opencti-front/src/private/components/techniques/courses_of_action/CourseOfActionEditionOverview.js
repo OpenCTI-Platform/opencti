@@ -1,61 +1,19 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-  split,
-} from 'ramda';
-import * as Yup from 'yup';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import * as Yup from 'yup';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
@@ -132,20 +90,21 @@ const courseOfActionValidation = (t) => Yup.object().shape({
   x_mitre_id: Yup.string().nullable(),
 });
 
-class CourseOfActionEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: courseOfActionEditionOverviewFocus,
-      variables: {
-        id: this.props.courseOfAction.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const CourseOfActionEditionOverviewComponent = (props) => {
+  const { courseOfAction, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: courseOfActionEditionOverviewFocus,
+    variables: {
+      id: courseOfAction.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -163,7 +122,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
     commitMutation({
       mutation: courseOfActionMutationFieldPatch,
       variables: {
-        id: this.props.courseOfAction.id,
+        id: courseOfAction.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -172,68 +131,66 @@ class CourseOfActionEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_log_sources') {
-        finalValue = split('\n', value);
+        finalValue = R.split('\n', value);
       }
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      courseOfActionValidation(this.props.t)
+      courseOfActionValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: courseOfActionMutationFieldPatch,
             variables: {
-              id: this.props.courseOfAction.id,
+              id: courseOfAction.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
-
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  };
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: courseOfActionMutationFieldPatch,
         variables: {
-          id: this.props.courseOfAction.id,
+          id: courseOfAction.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { courseOfAction } = this.props;
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(courseOfAction);
 
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
 
       if (added.length > 0) {
         commitMutation({
           mutation: courseOfActionMutationRelationAdd,
           variables: {
-            id: this.props.courseOfAction.id,
+            id: courseOfAction.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -244,42 +201,40 @@ class CourseOfActionEditionOverviewComponent extends Component {
         commitMutation({
           mutation: courseOfActionMutationRelationDelete,
           variables: {
-            id: this.props.courseOfAction.id,
-            toId: head(removed).value,
+            id: courseOfAction.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, courseOfAction, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(courseOfAction);
-    const objectMarking = convertMarkings(courseOfAction);
-    const status = convertStatus(t, courseOfAction);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      assoc('x_opencti_workflow_id', status),
-      pick([
-        'name',
-        'description',
-        'x_mitre_id',
-        'x_opencti_threat_hunting',
-        'x_opencti_log_sources',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-        'x_mitre_id',
-      ]),
-    )(courseOfAction);
-    return (
+  const createdBy = convertCreatedBy(courseOfAction);
+  const objectMarking = convertMarkings(courseOfAction);
+  const status = convertStatus(t, courseOfAction);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'name',
+      'description',
+      'x_mitre_id',
+      'x_opencti_threat_hunting',
+      'x_opencti_log_sources',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+      'x_mitre_id',
+    ]),
+  )(courseOfAction);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={courseOfActionValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -294,8 +249,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -307,8 +262,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
               label={t('External ID')}
               fullWidth={true}
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="x_mitre_id" />
               }
@@ -321,8 +276,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
@@ -335,8 +290,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus
                   context={context}
@@ -353,8 +308,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus
                   context={context}
@@ -366,8 +321,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Course-Of-Action"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -385,7 +340,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -396,7 +351,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             {enableReferences && (
               <CommitMessage
@@ -411,23 +366,11 @@ class CourseOfActionEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-CourseOfActionEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  courseOfAction: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const CourseOfActionEditionOverview = createFragmentContainer(
-  CourseOfActionEditionOverviewComponent,
-  {
-    courseOfAction: graphql`
+export default createFragmentContainer(CourseOfActionEditionOverviewComponent, {
+  courseOfAction: graphql`
       fragment CourseOfActionEditionOverview_courseOfAction on CourseOfAction {
         id
         name
@@ -464,10 +407,4 @@ const CourseOfActionEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(CourseOfActionEditionOverview);
+});

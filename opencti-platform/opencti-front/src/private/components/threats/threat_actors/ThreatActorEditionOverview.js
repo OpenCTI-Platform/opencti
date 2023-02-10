@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -15,12 +13,9 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { useFormatter } from '../../../../components/i18n';
 
 const threatActorMutationFieldPatch = graphql`
   mutation ThreatActorEditionOverviewFieldPatchMutation(
@@ -96,20 +91,21 @@ const threatActorValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class ThreatActorEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: threatActorEditionOverviewFocus,
-      variables: {
-        id: this.props.threatActor.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const ThreatActorEditionOverviewComponent = (props) => {
+  const { threatActor, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: threatActorEditionOverviewFocus,
+    variables: {
+      id: threatActor.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -124,7 +120,7 @@ class ThreatActorEditionOverviewComponent extends Component {
     commitMutation({
       mutation: threatActorMutationFieldPatch,
       variables: {
-        id: this.props.threatActor.id,
+        id: threatActor.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -133,47 +129,45 @@ class ThreatActorEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      threatActorValidation(this.props.t)
+      threatActorValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: threatActorMutationFieldPatch,
             variables: {
-              id: this.props.threatActor.id,
+              id: threatActor.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
-
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  };
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: threatActorMutationFieldPatch,
         variables: {
-          id: this.props.threatActor.id,
+          id: threatActor.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { threatActor } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -187,7 +181,7 @@ class ThreatActorEditionOverviewComponent extends Component {
         commitMutation({
           mutation: threatActorMutationRelationAdd,
           variables: {
-            id: this.props.threatActor.id,
+            id: threatActor.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -199,53 +193,51 @@ class ThreatActorEditionOverviewComponent extends Component {
         commitMutation({
           mutation: threatActorMutationRelationDelete,
           variables: {
-            id: this.props.threatActor.id,
+            id: threatActor.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, threatActor, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(threatActor);
-    const objectMarking = convertMarkings(threatActor);
-    const status = convertStatus(t, threatActor);
-    const killChainPhases = R.pipe(
-      R.pathOr([], ['killChainPhases', 'edges']),
-      R.map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(threatActor);
-    const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('killChainPhases', killChainPhases),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc('x_opencti_workflow_id', status),
-      R.assoc(
-        'threat_actor_types',
-        threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
-      ),
-      R.pick([
-        'name',
-        'threat_actor_types',
-        'confidence',
-        'description',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(threatActor);
-    return (
+  const createdBy = convertCreatedBy(threatActor);
+  const objectMarking = convertMarkings(threatActor);
+  const status = convertStatus(t, threatActor);
+  const killChainPhases = R.pipe(
+    R.pathOr([], ['killChainPhases', 'edges']),
+    R.map((n) => ({
+      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+      value: n.node.id,
+    })),
+  )(threatActor);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.assoc(
+      'threat_actor_types',
+      threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
+    ),
+    R.pick([
+      'name',
+      'threat_actor_types',
+      'confidence',
+      'description',
+      'createdBy',
+      'killChainPhases',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(threatActor);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={{ ...initialValues, references: [] }}
         validationSchema={threatActorValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -260,26 +252,28 @@ class ThreatActorEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
             <OpenVocabField
+              variant="edit"
               type="threat-actor-type-ov"
               name="threat_actor_types"
               label={t('Threat actor types')}
               containerStyle={{ width: '100%', marginTop: 20 }}
               multiple={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
+              editContext={context}
             />
             <ConfidenceField
               name="confidence"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
               containerStyle={{ width: '100%', marginTop: 20 }}
@@ -294,8 +288,8 @@ class ThreatActorEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
@@ -304,8 +298,8 @@ class ThreatActorEditionOverviewComponent extends Component {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Threat-Actor"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -323,7 +317,7 @@ class ThreatActorEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -334,7 +328,7 @@ class ThreatActorEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             {enableReferences && (
               <CommitMessage
@@ -349,23 +343,11 @@ class ThreatActorEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-ThreatActorEditionOverviewComponent.propTypes = {
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  threatActor: PropTypes.object,
-  enableReferences: PropTypes.bool,
-  context: PropTypes.array,
-  handleClose: PropTypes.func,
+  );
 };
 
-const ThreatActorEditionOverview = createFragmentContainer(
-  ThreatActorEditionOverviewComponent,
-  {
-    threatActor: graphql`
+export default createFragmentContainer(ThreatActorEditionOverviewComponent, {
+  threatActor: graphql`
       fragment ThreatActorEditionOverview_threatActor on ThreatActor {
         id
         name
@@ -401,7 +383,4 @@ const ThreatActorEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default inject18n(ThreatActorEditionOverview);
+});

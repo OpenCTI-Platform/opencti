@@ -1,7 +1,5 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import React, { useState } from 'react';
+import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -12,11 +10,9 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -30,7 +26,7 @@ import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -71,7 +67,7 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
 
 const infrastructureMutation = graphql`
   mutation InfrastructureCreationMutation($input: InfrastructureAddInput!) {
@@ -105,21 +101,16 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class InfrastructureCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+const InfrastructureCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
 
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(
       {
         confidence: () => parseInt(values.confidence, 10),
@@ -145,7 +136,7 @@ class InfrastructureCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
-          this.props.paginationOptions,
+          paginationOptions,
           newEdge,
         );
       },
@@ -157,189 +148,172 @@ class InfrastructureCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  onReset() {
-    this.handleClose();
-  }
-
-  render() {
-    const { t, classes } = this.props;
-    return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">
-              {t('Create an infrastructure')}
-            </Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                infrastructure_types: [],
-                confidence: 75,
-                description: '',
-                createdBy: '',
-                objectMarking: [],
-                objectLabel: [],
-                externalReferences: [],
-                first_seen: null,
-                last_seen: null,
-                killChainPhases: [],
-              }}
-              validationSchema={infrastructureValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['Infrastructure']}
-                  />
-                  <OpenVocabField
-                    label={t('Infrastructure types')}
-                    type="infrastructure-type-ov"
-                    name="infrastructure_types"
-                    containerStyle={fieldSpacingContainerStyle}
-                    multiple={true}
-                    onChange={(name, value) => setFieldValue(name, value)}
-                  />
-                  <ConfidenceField
-                    name="confidence"
-                    label={t('Confidence')}
-                    fullWidth={true}
-                    containerStyle={{ width: '100%', marginTop: 20 }}
-                  />
-                  <Field
-                    component={DateTimePickerField}
-                    name="first_seen"
-                    TextFieldProps={{
-                      label: t('First seen'),
-                      variant: 'standard',
-                      fullWidth: true,
-                      style: { marginTop: 20 },
-                    }}
-                  />
-                  <Field
-                    component={DateTimePickerField}
-                    name="last_seen"
-                    TextFieldProps={{
-                      label: t('Last seen'),
-                      variant: 'standard',
-                      fullWidth: true,
-                      style: { marginTop: 20 },
-                    }}
-                  />
-                  <KillChainPhasesField
-                    name="killChainPhases"
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </div>
-    );
-  }
-}
-
-InfrastructureCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  return (
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
+        <Add />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        sx={{ zIndex: 1202 }}
+        elevation={1}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">
+            {t('Create an infrastructure')}
+          </Typography>
+        </div>
+        <div className={classes.container}>
+          <Formik
+            initialValues={{
+              name: '',
+              infrastructure_types: [],
+              confidence: 75,
+              description: '',
+              createdBy: '',
+              objectMarking: [],
+              objectLabel: [],
+              externalReferences: [],
+              first_seen: null,
+              last_seen: null,
+              killChainPhases: [],
+            }}
+            validationSchema={infrastructureValidation(t)}
+            onSubmit={onSubmit}
+            onReset={onReset}
+          >
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  label={t('Name')}
+                  fullWidth={true}
+                  detectDuplicate={['Infrastructure']}
+                />
+                <OpenVocabField
+                  label={t('Infrastructure types')}
+                  type="infrastructure-type-ov"
+                  name="infrastructure_types"
+                  containerStyle={fieldSpacingContainerStyle}
+                  multiple={true}
+                  onChange={(name, value) => setFieldValue(name, value)}
+                />
+                <ConfidenceField
+                  name="confidence"
+                  label={t('Confidence')}
+                  fullWidth={true}
+                  containerStyle={{ width: '100%', marginTop: 20 }}
+                />
+                <Field
+                  component={DateTimePickerField}
+                  name="first_seen"
+                  TextFieldProps={{
+                    label: t('First seen'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
+                />
+                <Field
+                  component={DateTimePickerField}
+                  name="last_seen"
+                  TextFieldProps={{
+                    label: t('Last seen'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
+                />
+                <KillChainPhasesField
+                  name="killChainPhases"
+                  style={fieldSpacingContainerStyle}
+                />
+                <Field
+                  component={MarkDownField}
+                  name="description"
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 20 }}
+                />
+                <CreatedByField
+                  name="createdBy"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
+                />
+                <ObjectMarkingField
+                  name="objectMarking"
+                  style={fieldSpacingContainerStyle}
+                />
+                <ExternalReferencesField
+                  name="externalReferences"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.externalReferences}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </Drawer>
+    </div>
+  );
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(InfrastructureCreation);
+export default InfrastructureCreation;

@@ -1,12 +1,10 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -18,30 +16,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 export const opinionMutationFieldPatch = graphql`
   mutation OpinionEditionOverviewFieldPatchMutation(
@@ -109,8 +83,21 @@ const opinionValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class OpinionEditionOverviewComponent extends Component {
-  onSubmit(values, { setSubmitting }) {
+const OpinionEditionOverviewComponent = (props) => {
+  const { opinion, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
+
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: opinionEditionOverviewFocus,
+    variables: {
+      id: opinion.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -128,7 +115,7 @@ class OpinionEditionOverviewComponent extends Component {
     commitMutation({
       mutation: opinionMutationFieldPatch,
       variables: {
-        id: this.props.opinion.id,
+        id: opinion.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -137,59 +124,46 @@ class OpinionEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: opinionEditionOverviewFocus,
-      variables: {
-        id: this.props.opinion.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
-
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      opinionValidation(this.props.t)
+      opinionValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: opinionMutationFieldPatch,
             variables: {
-              id: this.props.opinion.id,
+              id: opinion.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: opinionMutationFieldPatch,
         variables: {
-          id: this.props.opinion.id,
+          id: opinion.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { opinion } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -205,7 +179,7 @@ class OpinionEditionOverviewComponent extends Component {
         commitMutation({
           mutation: opinionMutationRelationAdd,
           variables: {
-            id: this.props.opinion.id,
+            id: opinion.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -218,153 +192,137 @@ class OpinionEditionOverviewComponent extends Component {
         commitMutation({
           mutation: opinionMutationRelationDelete,
           variables: {
-            id: this.props.opinion.id,
+            id: opinion.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, opinion, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(opinion);
-    const objectMarking = convertMarkings(opinion);
-    const status = convertStatus(t, opinion);
-    const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc('x_opencti_workflow_id', status),
-      R.pick([
-        'attribute_abstract',
-        'content',
-        'opinion',
-        'confidence',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(opinion);
-    return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={opinionValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-
-          setFieldValue,
-          values,
-        }) => (
-          <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <OpenVocabField
-                label={t('Opinion')}
-                type="opinion-ov"
-                name="opinion"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                onChange={(name, value) => setFieldValue(name, value)}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={false}
-                editContext={context}
-              />
-              <Field
-                component={MarkDownField}
-                name="explanation"
-                label={t('Explanation')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="content" />
-                }
-              />
-              <ConfidenceField
-                name="confidence"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
-                label={t('Confidence')}
-                fullWidth={true}
-                containerStyle={fieldSpacingContainerStyle}
-                editContext={context}
-                variant="edit"
-              />
-              {opinion.workflowEnabled && (
-                <StatusField
-                  name="x_opencti_workflow_id"
-                  type="Opinion"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  setFieldValue={setFieldValue}
-                  style={{ marginTop: 20 }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="x_opencti_workflow_id"
-                    />
-                  }
-                />
-              )}
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
+  const createdBy = convertCreatedBy(opinion);
+  const objectMarking = convertMarkings(opinion);
+  const status = convertStatus(t, opinion);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'opinion',
+      'explanation',
+      'confidence',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(opinion);
+  return (
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={opinionValidation(t)}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
+        <div>
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <OpenVocabField
+              label={t('Opinion')}
+              type="opinion-ov"
+              name="opinion"
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              variant="edit"
+              multiple={false}
+              editContext={context}
+            />
+            <Field
+              component={MarkDownField}
+              name="explanation"
+              label={t('Explanation')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="content" />
+              }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              variant="edit"
+            />
+            {opinion.workflowEnabled && (
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="Opinion"
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="createdBy" />
-                }
-                onChange={this.handleChangeCreatedBy.bind(this)}
-              />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
+                style={{ marginTop: 20 }}
                 helpertext={
                   <SubscriptionFocus
                     context={context}
-                    fieldname="objectMarking"
+                    fieldName="x_opencti_workflow_id"
                   />
                 }
-                onChange={this.handleChangeObjectMarking.bind(this)}
               />
-              {enableReferences && (
-                <CommitMessage
-                  submitForm={submitForm}
-                  disabled={isSubmitting}
-                  open={false}
-                  values={values.references}
-                  setFieldValue={setFieldValue}
-                  id={opinion.id}
+            )}
+            <CreatedByField
+              name="createdBy"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              helpertext={
+                <SubscriptionFocus context={context} fieldName="createdBy" />
+              }
+              onChange={handleChangeCreatedBy}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              style={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldname="objectMarking"
                 />
-              )}
-            </Form>
-          </div>
-        )}
-      </Formik>
-    );
-  }
-}
-
-OpinionEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  opinion: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+              }
+              onChange={handleChangeObjectMarking}
+            />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                open={false}
+                values={values.references}
+                setFieldValue={setFieldValue}
+                id={opinion.id}
+              />
+            )}
+          </Form>
+        </div>
+      )}
+    </Formik>
+  );
 };
 
-const OpinionEditionOverview = createFragmentContainer(
-  OpinionEditionOverviewComponent,
-  {
-    opinion: graphql`
+export default createFragmentContainer(OpinionEditionOverviewComponent, {
+  opinion: graphql`
       fragment OpinionEditionOverview_opinion on Opinion {
         id
         opinion
@@ -399,10 +357,4 @@ const OpinionEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(OpinionEditionOverview);
+});

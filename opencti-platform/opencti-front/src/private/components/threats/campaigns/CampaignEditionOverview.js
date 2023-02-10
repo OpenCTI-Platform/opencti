@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -91,20 +90,21 @@ const campaignValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class CampaignEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: campaignEditionOverviewFocus,
-      variables: {
-        id: this.props.campaign.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const CampaignEditionOverviewComponent = (props) => {
+  const { campaign, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: campaignEditionOverviewFocus,
+    variables: {
+      id: campaign.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -122,7 +122,7 @@ class CampaignEditionOverviewComponent extends Component {
     commitMutation({
       mutation: campaignMutationFieldPatch,
       variables: {
-        id: this.props.campaign.id,
+        id: campaign.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -131,47 +131,45 @@ class CampaignEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      campaignValidation(this.props.t)
+      campaignValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: campaignMutationFieldPatch,
             variables: {
-              id: this.props.campaign.id,
+              id: campaign.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
-
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  };
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: campaignMutationFieldPatch,
         variables: {
-          id: this.props.campaign.id,
+          id: campaign.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { campaign } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -187,7 +185,7 @@ class CampaignEditionOverviewComponent extends Component {
         commitMutation({
           mutation: campaignMutationRelationAdd,
           variables: {
-            id: this.props.campaign.id,
+            id: campaign.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -200,39 +198,37 @@ class CampaignEditionOverviewComponent extends Component {
         commitMutation({
           mutation: campaignMutationRelationDelete,
           variables: {
-            id: this.props.campaign.id,
+            id: campaign.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, campaign, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(campaign);
-    const objectMarking = convertMarkings(campaign);
-    const status = convertStatus(t, campaign);
-    const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc('x_opencti_workflow_id', status),
-      R.pick([
-        'name',
-        'confidence',
-        'description',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(campaign);
-    return (
+  const createdBy = convertCreatedBy(campaign);
+  const objectMarking = convertMarkings(campaign);
+  const status = convertStatus(t, campaign);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'name',
+      'confidence',
+      'description',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(campaign);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={campaignValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -247,16 +243,16 @@ class CampaignEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
             <ConfidenceField
               name="confidence"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
               containerStyle={fieldSpacingContainerStyle}
@@ -271,8 +267,8 @@ class CampaignEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
@@ -281,8 +277,8 @@ class CampaignEditionOverviewComponent extends Component {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Campaign"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -300,7 +296,7 @@ class CampaignEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -311,7 +307,7 @@ class CampaignEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             {enableReferences && (
               <CommitMessage
@@ -325,22 +321,11 @@ class CampaignEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-CampaignEditionOverviewComponent.propTypes = {
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  campaign: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const CampaignEditionOverview = createFragmentContainer(
-  CampaignEditionOverviewComponent,
-  {
-    campaign: graphql`
+export default createFragmentContainer(CampaignEditionOverviewComponent, {
+  campaign: graphql`
       fragment CampaignEditionOverview_campaign on Campaign {
         id
         name
@@ -375,7 +360,4 @@ const CampaignEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default inject18n(CampaignEditionOverview);
+});

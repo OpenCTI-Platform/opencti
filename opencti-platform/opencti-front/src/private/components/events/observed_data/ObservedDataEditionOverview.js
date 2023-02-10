@@ -1,11 +1,10 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -15,11 +14,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -97,20 +92,21 @@ const observedDataValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class ObservedDataEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: observedDataEditionOverviewFocus,
-      variables: {
-        id: this.props.observedData.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const ObservedDataEditionOverviewComponent = (props) => {
+  const { observedData, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: observedDataEditionOverviewFocus,
+    variables: {
+      id: observedData.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -127,7 +123,7 @@ class ObservedDataEditionOverviewComponent extends Component {
     commitMutation({
       mutation: observedDataMutationFieldPatch,
       variables: {
-        id: this.props.observedData.id,
+        id: observedData.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -136,24 +132,24 @@ class ObservedDataEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      observedDataValidation(this.props.t)
+      observedDataValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: observedDataMutationFieldPatch,
             variables: {
-              id: this.props.observedData.id,
+              id: observedData.id,
               input: {
                 key: name,
                 value: finalValue ?? '',
@@ -163,23 +159,21 @@ class ObservedDataEditionOverviewComponent extends Component {
         })
         .catch(() => false);
     }
-  }
-
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  };
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: observedDataMutationFieldPatch,
         variables: {
-          id: this.props.observedData.id,
+          id: observedData.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { observedData } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -193,7 +187,7 @@ class ObservedDataEditionOverviewComponent extends Component {
         commitMutation({
           mutation: observedDataMutationRelationAdd,
           variables: {
-            id: this.props.observedData.id,
+            id: observedData.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -205,42 +199,40 @@ class ObservedDataEditionOverviewComponent extends Component {
         commitMutation({
           mutation: observedDataMutationRelationDelete,
           variables: {
-            id: this.props.observedData.id,
+            id: observedData.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, observedData, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(observedData);
-    const objectMarking = convertMarkings(observedData);
-    const status = convertStatus(t, observedData);
-    const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc('first_observed', buildDate(observedData.first_observed)),
-      R.assoc('last_observed', buildDate(observedData.last_observed)),
-      R.assoc('x_opencti_workflow_id', status),
-      R.pick([
-        'first_observed',
-        'last_observed',
-        'number_observed',
-        'confidence',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(observedData);
-    return (
+  const createdBy = convertCreatedBy(observedData);
+  const objectMarking = convertMarkings(observedData);
+  const status = convertStatus(t, observedData);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('first_observed', buildDate(observedData.first_observed)),
+    R.assoc('last_observed', buildDate(observedData.last_observed)),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'first_observed',
+      'last_observed',
+      'number_observed',
+      'confidence',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(observedData);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={observedDataValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -253,8 +245,8 @@ class ObservedDataEditionOverviewComponent extends Component {
               <Field
                 component={DateTimePickerField}
                 name="first_observed"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
                 TextFieldProps={{
                   label: t('First observed'),
                   variant: 'standard',
@@ -270,8 +262,8 @@ class ObservedDataEditionOverviewComponent extends Component {
               <Field
                 component={DateTimePickerField}
                 name="last_observed"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
                 TextFieldProps={{
                   label: t('Last observed'),
                   variant: 'standard',
@@ -292,8 +284,8 @@ class ObservedDataEditionOverviewComponent extends Component {
                 label={t('Number observed')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
                 helperText={
                   <SubscriptionFocus
                     context={context}
@@ -303,8 +295,8 @@ class ObservedDataEditionOverviewComponent extends Component {
               />
               <ConfidenceField
                 name="confidence"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 label={t('Confidence')}
                 fullWidth={true}
                 containerStyle={fieldSpacingContainerStyle}
@@ -315,8 +307,8 @@ class ObservedDataEditionOverviewComponent extends Component {
                 <StatusField
                   name="x_opencti_workflow_id"
                   type="Observed-Data"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
+                  onFocus={handleChangeFocus}
+                  onChange={handleSubmitField}
                   setFieldValue={setFieldValue}
                   style={{ marginTop: 20 }}
                   helpertext={
@@ -334,7 +326,7 @@ class ObservedDataEditionOverviewComponent extends Component {
                 helpertext={
                   <SubscriptionFocus context={context} fieldName="createdBy" />
                 }
-                onChange={this.handleChangeCreatedBy.bind(this)}
+                onChange={handleChangeCreatedBy}
               />
               <ObjectMarkingField
                 name="objectMarking"
@@ -345,7 +337,7 @@ class ObservedDataEditionOverviewComponent extends Component {
                     fieldname="objectMarking"
                   />
                 }
-                onChange={this.handleChangeObjectMarking.bind(this)}
+                onChange={handleChangeObjectMarking}
               />
               {enableReferences && (
                 <CommitMessage
@@ -360,23 +352,11 @@ class ObservedDataEditionOverviewComponent extends Component {
           </div>
         )}
       </Formik>
-    );
-  }
-}
-
-ObservedDataEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  observedData: PropTypes.object,
-  enableReferences: PropTypes.bool,
-  context: PropTypes.array,
+  );
 };
 
-const ObservedDataEditionOverview = createFragmentContainer(
-  ObservedDataEditionOverviewComponent,
-  {
-    observedData: graphql`
+export default createFragmentContainer(ObservedDataEditionOverviewComponent, {
+  observedData: graphql`
       fragment ObservedDataEditionOverview_observedData on ObservedData {
         id
         confidence
@@ -413,7 +393,4 @@ const ObservedDataEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default inject18n(ObservedDataEditionOverview);
+});

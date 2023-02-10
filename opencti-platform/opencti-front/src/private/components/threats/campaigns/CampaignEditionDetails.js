@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -13,30 +11,6 @@ import { buildDate, parse } from '../../../../utils/Time';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionDetailsFieldPatchMutation(
@@ -79,20 +53,21 @@ const campaignValidation = (t) => Yup.object().shape({
   references: Yup.array().required(t('This field is required')),
 });
 
-class CampaignEditionDetailsComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: campaignEditionDetailsFocus,
-      variables: {
-        id: this.props.campaign.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const CampaignEditionDetailsComponent = (props) => {
+  const { campaign, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: campaignEditionDetailsFocus,
+    variables: {
+      id: campaign.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -115,7 +90,7 @@ class CampaignEditionDetailsComponent extends Component {
     commitMutation({
       mutation: campaignMutationFieldPatch,
       variables: {
-        id: this.props.campaign.id,
+        id: campaign.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -124,41 +99,39 @@ class CampaignEditionDetailsComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
-      campaignValidation(this.props.t)
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
+      campaignValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: campaignMutationFieldPatch,
             variables: {
-              id: this.props.campaign.id,
+              id: campaign.id,
               input: { key: name, value: value || '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  render() {
-    const { t, campaign, context, enableReferences } = this.props;
-    const initialValues = R.pipe(
-      R.assoc('first_seen', buildDate(campaign.first_seen)),
-      R.assoc('last_seen', buildDate(campaign.last_seen)),
-      R.pick(['first_seen', 'last_seen', 'objective']),
-    )(campaign);
-    return (
+  const initialValues = R.pipe(
+    R.assoc('first_seen', buildDate(campaign.first_seen)),
+    R.assoc('last_seen', buildDate(campaign.last_seen)),
+    R.pick(['first_seen', 'last_seen', 'objective']),
+  )(campaign);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={campaignValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -170,8 +143,8 @@ class CampaignEditionDetailsComponent extends Component {
             <Field
               component={DateTimePickerField}
               name="first_seen"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('First seen'),
                 variant: 'standard',
@@ -184,8 +157,8 @@ class CampaignEditionDetailsComponent extends Component {
             <Field
               component={DateTimePickerField}
               name="last_seen"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('Last seen'),
                 variant: 'standard',
@@ -205,8 +178,8 @@ class CampaignEditionDetailsComponent extends Component {
               multiline={true}
               rows={4}
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="objective" />
               }
@@ -223,22 +196,11 @@ class CampaignEditionDetailsComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-CampaignEditionDetailsComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  campaign: PropTypes.object,
-  context: PropTypes.array,
+  );
 };
 
-const CampaignEditionDetails = createFragmentContainer(
-  CampaignEditionDetailsComponent,
-  {
-    campaign: graphql`
+export default createFragmentContainer(CampaignEditionDetailsComponent, {
+  campaign: graphql`
       fragment CampaignEditionDetails_campaign on Campaign {
         id
         first_seen
@@ -246,10 +208,4 @@ const CampaignEditionDetails = createFragmentContainer(
         objective
       }
     `,
-  },
-);
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(CampaignEditionDetails);
+});
