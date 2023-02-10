@@ -155,6 +155,8 @@ const Position = createFragmentContainer(PositionComponent, {
       name
       latitude
       longitude
+      street_address
+      postal_code
       x_opencti_aliases
       status {
         id
