@@ -56,7 +56,7 @@ export const handleChangesObjectMarking = (element, values) => {
   return { added, removed };
 };
 
-export const handleChangesObjectAssignee = (element, values) => {
+export const getUpdatedObjectAssignees = (element, values) => {
   const currentAssignees = convertAssignees(element);
   const added = values
     .filter(

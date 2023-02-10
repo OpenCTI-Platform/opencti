@@ -18,7 +18,7 @@ import {
   convertCreatedBy,
   convertMarkings,
   convertStatus,
-  handleChangesObjectAssignee,
+  getUpdatedObjectAssignees,
   handleChangesObjectMarking,
 } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -216,6 +216,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
       createdBy: values.createdBy?.value,
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+      objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     commitFieldPatch({
@@ -280,7 +281,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
 
   const handleChangeObjectAssignee = (name: string, values: Option[]) => {
     if (!enableReferences) {
-      const { added, removed } = handleChangesObjectAssignee(incident, values);
+      const { added, removed } = getUpdatedObjectAssignees(incident, values);
       if (added) {
         commitRelationAdd({
           variables: {
