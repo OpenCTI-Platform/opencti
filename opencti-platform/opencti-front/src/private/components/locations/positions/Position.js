@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import PositionEdition from './PositionEdition';
 import PositionPopover from './PositionPopover';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
+import StixCoreObjectOrStixCoreRelationshipLastReports
+  from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -15,8 +16,10 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships
+  from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import LocationMiniMap from '../../common/location/LocationMiniMap';
+import PositionDetails from "./PositionDetails";
 
 const styles = () => ({
   container: {
@@ -30,6 +33,7 @@ const styles = () => ({
 class PositionComponent extends Component {
   render() {
     const { classes, position } = this.props;
+    console.log('position', position);
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -44,7 +48,10 @@ class PositionComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
+            <PositionDetails position={position} />
+          </Grid>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <LocationMiniMap
               center={
                 position.latitude && position.longitude
@@ -55,7 +62,7 @@ class PositionComponent extends Component {
               zoom={8}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={position} />
           </Grid>
         </Grid>
@@ -153,10 +160,16 @@ const Position = createFragmentContainer(PositionComponent, {
         }
       }
       name
+      description
       latitude
       longitude
       street_address
       postal_code
+      city {
+          id
+          name
+          description
+      }
       x_opencti_aliases
       status {
         id
