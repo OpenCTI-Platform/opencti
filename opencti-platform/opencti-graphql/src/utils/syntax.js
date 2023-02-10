@@ -20,6 +20,14 @@ const unflatten = (data) => {
   return result;
 };
 
+const parsePattern = (pattern) => {
+  const chars = new antlr4.InputStream(pattern);
+  const lexer = new STIXPatternLexer(chars);
+  const tokens = new antlr4.CommonTokenStream(lexer);
+  const parser = new STIXPatternParser(tokens);
+  return { parser, parsedPattern: parser.pattern() };
+};
+
 export const extractObservablesFromIndicatorPattern = (pattern) => {
   const observables = [];
   class ObservableBuilder extends STIXPatternListener {
@@ -76,12 +84,32 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
       }
     }
   }
-  const chars = new antlr4.InputStream(pattern);
-  const lexer = new STIXPatternLexer(chars);
-  const tokens = new antlr4.CommonTokenStream(lexer);
-  const parser = new STIXPatternParser(tokens);
-  antlr4.tree.ParseTreeWalker.DEFAULT.walk(new ObservableBuilder(), parser.pattern());
+  const { parsedPattern } = parsePattern(pattern);
+  antlr4.tree.ParseTreeWalker.DEFAULT.walk(new ObservableBuilder(), parsedPattern);
   return observables;
+};
+
+export const cleanupIndicatorPattern = (pattern) => {
+  const grabInterestingTokens = (ctx, parser, acc) => {
+    const operators = [...parser.symbolicNames, '=', '!=', '<', '>', '<=', '>='];
+    const numberOfTokens = ctx.getChildCount();
+    for (let i = 0; i < numberOfTokens; i += 1) {
+      const child = ctx.getChild(i);
+      const subCount = child.getChildCount();
+      if (subCount > 0) {
+        grabInterestingTokens(child, parser, acc);
+      } else if (operators.includes(child.getText())) {
+        acc.push(` ${child.getText()} `);
+      } else {
+        acc.push(child.getText());
+      }
+    }
+  };
+  const { parser, parsedPattern } = parsePattern(pattern);
+  const patternContext = parsedPattern.getChild(0);
+  const patternTokens = [];
+  grabInterestingTokens(patternContext, parser, patternTokens);
+  return patternTokens.join('').trim();
 };
 
 const systemChecker = /^\d{0,10}$/;

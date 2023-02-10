@@ -26,7 +26,7 @@ import {
 } from '../schema/general';
 import { elCount } from '../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { extractObservablesFromIndicatorPattern } from '../utils/syntax';
+import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../utils/syntax';
 import { computeValidPeriod } from '../utils/indicator-utils';
 
 export const findById = (context, user, indicatorId) => {
@@ -95,11 +95,12 @@ export const addIndicator = async (context, user, indicator) => {
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
+    R.assoc('pattern', cleanupIndicatorPattern(indicator.pattern)),
     R.assoc('x_opencti_main_observable_type', observableType),
     R.assoc('x_opencti_score', indicator.x_opencti_score ?? 50),
     R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),
     R.assoc('valid_from', validFrom),
-    R.assoc('valid_until', validUntil)
+    R.assoc('valid_until', validUntil),
   )(indicator);
   // create the linked observables
   let observablesToLink = [];
