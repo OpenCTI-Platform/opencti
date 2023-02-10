@@ -65,12 +65,17 @@ class Stream extends Component {
       },
       description: {
         label: 'Description',
-        width: '20%',
+        width: '15%',
         isSortable: true,
       },
       id: {
         label: 'Stream ID',
-        width: '20%',
+        width: '15%',
+        isSortable: true,
+      },
+      stream_live: {
+        label: 'Status',
+        width: '10%',
         isSortable: true,
       },
       filters: {

@@ -9,7 +9,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import {
   CastConnectedOutlined,
   MoreVert,
-  StopCircleOutlined,
+  StopCircleOutlined, Stream,
   Visibility,
   VisibilityOffOutlined,
 } from '@mui/icons-material';
@@ -17,6 +17,7 @@ import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import { Icon } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import StreamPopover from './StreamPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -55,16 +56,22 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    maxWidth: 120,
+    display: 'table-cell',
+  },
 });
 
 class StreamLineLineComponent extends Component {
   render() {
-    const { classes, node, dataColumns, paginationOptions } = this.props;
+    const { classes, node, dataColumns, paginationOptions, t } = this.props;
     const filters = JSON.parse(node.filters);
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {node.stream_live ? <CastConnectedOutlined color='success' /> : <StopCircleOutlined color='error' />}
+          <Stream />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -89,6 +96,17 @@ class StreamLineLineComponent extends Component {
                 style={{ width: dataColumns.id.width }}
               >
                 <code>{node.id}</code>
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.stream_live.width }}
+              >
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  color={node.stream_live ? 'success' : 'error'}
+                  variant="outlined"
+                  label={t(node.stream_live ? 'Started' : 'Stopped')}
+                />
               </div>
               <FilterIconButton
                 filters={filters}

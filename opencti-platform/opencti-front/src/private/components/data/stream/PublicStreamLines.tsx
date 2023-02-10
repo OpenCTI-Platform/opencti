@@ -53,8 +53,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   chipInList: {
     fontSize: 12,
     height: 20,
-    float: 'left',
-    width: 120,
+    maxWidth: 120,
+    display: 'table-cell',
   },
 }));
 

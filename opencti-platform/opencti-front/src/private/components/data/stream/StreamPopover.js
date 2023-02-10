@@ -138,14 +138,16 @@ class StreamCollectionPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem component="a" href={`/stream/${streamCollection.id}`}>
-            {t('View')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
           <MenuItem onClick={this.handleOnOff.bind(this)}>
             {t(streamCollection.stream_live ? 'Stop' : 'Start')}
+          </MenuItem>
+          {streamCollection.stream_live && (
+            <MenuItem component="a" href={`/stream/${streamCollection.id}`}>
+              {t('View')}
+            </MenuItem>
+          )}
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+            {t('Update')}
           </MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
