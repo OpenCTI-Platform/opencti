@@ -4,7 +4,7 @@ import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
 import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
-import { createStreamProcessor, EVENT_CURRENT_VERSION, STREAM_BATCH_TIME } from '../database/redis';
+import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { streamCollectionGroups } from '../domain/stream';
 import { stixLoadById, stixLoadByIds, storeLoadByIdWithRefs } from '../database/middleware';
@@ -53,25 +53,15 @@ const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_H
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 
 const createBroadcastClient = (channel) => {
-  let lastHeartbeat;
   return {
     id: channel.id,
     userId: channel.userId,
     expirationTime: channel.expirationTime,
     setChannelDelay: (d) => channel.setDelay(d),
+    setLastEventId: (id) => channel.setLastEventId(id),
     close: () => channel.close(),
     sendEvent: (eventId, topic, event) => {
       channel.sendEvent(eventId, topic, event);
-    },
-    sendHeartbeat: (eventId) => {
-      // Debounce the heartbeat to STREAM_BATCH_TIME
-      const now = new Date().getTime();
-      if (lastHeartbeat === undefined || (now - lastHeartbeat) > STREAM_BATCH_TIME) {
-        const [idTime] = eventId.split('-');
-        const idDate = utcDate(parseInt(idTime, 10)).toISOString();
-        channel.sendEvent(eventId, 'heartbeat', idDate);
-        lastHeartbeat = now;
-      }
     },
     sendConnected: (streamInfo) => {
       channel.sendEvent(undefined, 'connected', streamInfo);
@@ -232,6 +222,7 @@ const createSseMiddleware = () => {
     const broadcasterInfo = processor ? await processor.info() : {};
     req.on('close', () => {
       req.finished = true;
+      client.close();
       delete broadcastClients[client.id];
       logApp.info(`[STREAM] Closing stream processor for ${client.id}`);
       processor.shutdown();
@@ -245,7 +236,8 @@ const createSseMiddleware = () => {
     client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
     broadcastClients[client.id] = client;
   };
-  const createSseChannel = (req, res) => {
+  const createSseChannel = (req, res, startTime) => {
+    let lastEventId = `${utcDate(startTime).valueOf()}-0`;
     const channel = {
       id: generateInternalId(),
       delay: parseInt(extractQueryParameter(req, 'delay') || req.headers['event-delay'] || 10, 10),
@@ -257,6 +249,7 @@ const createSseMiddleware = () => {
       setDelay: (d) => {
         channel.delay = d;
       },
+      setLastEventId: (id) => { lastEventId = id; },
       connected: () => !req.finished,
       sendEvent: (eventId, topic, data) => {
         if (req.finished) {
@@ -265,6 +258,7 @@ const createSseMiddleware = () => {
         }
         let message = '';
         if (eventId) {
+          lastEventId = eventId;
           message += `id: ${eventId}\n`;
         }
         if (topic) {
@@ -281,26 +275,40 @@ const createSseMiddleware = () => {
       },
       close: () => {
         logApp.info('[STREAM] Closing SSE channel', { clientId: channel.userId });
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
         channel.expirationTime = 0;
-        try {
-          res.end();
-        } catch (e) {
-          logApp.error('[STREAM] Failing to close client', { clientId: channel.userId, error: e });
+        if (!req.finished) {
+          try {
+            res.end();
+          } catch (e) {
+            logApp.error('[STREAM] Failing to close client', { clientId: channel.userId, error: e });
+          }
         }
       },
     };
+    const heartTimer = () => {
+      if (lastEventId && !req.finished) {
+        const [idTime] = lastEventId.split('-');
+        const idDate = utcDate(parseInt(idTime, 10)).toISOString();
+        channel.sendEvent(lastEventId, 'heartbeat', idDate);
+      }
+    };
+    const heartbeatInterval = setInterval(heartTimer, 5000);
     return { channel, client: createBroadcastClient(channel) };
   };
   const genericStreamHandler = async (req, res) => {
     try {
       const sessionUser = req.user;
       const context = executionContext('raw_stream');
+      const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
+      const startIsoDate = convertParameterToDate(paramStartFrom);
+      const startStreamId = convertParameterToStreamId(paramStartFrom);
       if (!isUserGlobalCapabilityGranted(sessionUser)) {
         res.statusMessage = 'You are not authorized, please check your credentials';
         res.status(401).end();
         return;
       }
-      const { client } = createSseChannel(req, res);
+      const { client } = createSseChannel(req, res, startIsoDate);
       const processor = createStreamProcessor(sessionUser, sessionUser.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
@@ -310,12 +318,9 @@ const createSseMiddleware = () => {
             client.sendEvent(eventId, event, data);
           }
         }
-        // Send the Heartbeat with last event id
-        client.sendHeartbeat(lastEventId);
+        client.setLastEventId(lastEventId);
       });
       await initBroadcasting(req, res, client, processor);
-      const paramStartFrom = extractQueryParameter(req, 'from') || req.headers['last-event-id'];
-      const startStreamId = convertParameterToStreamId(paramStartFrom);
       await processor.start(startStreamId);
     } catch (err) {
       res.statusMessage = `Error in stream: ${err.message}`;
@@ -349,15 +354,17 @@ const createSseMiddleware = () => {
     const missingElements = await resolveMissingReferences(context, req, refs, cache);
     for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
       const missingRef = missingElements[missingIndex];
-      const missingInstance = await storeLoadByIdWithRefs(context, req.user, missingRef);
-      if (missingInstance) {
-        const missingData = convertStoreToStix(missingInstance);
-        const message = generateCreateMessage(missingInstance);
-        const origin = { referer: EVENT_TYPE_DEPENDENCIES };
-        const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
-        channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-        cache.set(missingData.id);
-        await wait(channel.delay);
+      if (channel.connected()) {
+        const missingInstance = await storeLoadByIdWithRefs(context, req.user, missingRef);
+        if (missingInstance) {
+          const missingData = convertStoreToStix(missingInstance);
+          const message = generateCreateMessage(missingInstance);
+          const origin = { referer: EVENT_TYPE_DEPENDENCIES };
+          const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
+          channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
+          cache.set(missingData.id);
+          await wait(channel.delay);
+        }
       }
     }
   };
@@ -370,20 +377,25 @@ const createSseMiddleware = () => {
         const notCachedRelations = relations.filter((m) => !cache.has(m.standard_id));
         for (let relIndex = 0; relIndex < notCachedRelations.length; relIndex += 1) {
           const relation = notCachedRelations[relIndex];
-          const missingRelation = await storeLoadByIdWithRefs(context, req.user, relation.id);
-          if (missingRelation) {
-            const stixRelation = convertStoreToStix(missingRelation);
-            // Resolve refs
-            await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stixRelation);
-            // Publish relations
-            const message = generateCreateMessage(missingRelation);
-            const origin = { referer: EVENT_TYPE_DEPENDENCIES };
-            const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
-            channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-            cache.set(stixRelation.id);
+          if (channel.connected()) {
+            const missingRelation = await storeLoadByIdWithRefs(context, req.user, relation.id);
+            if (missingRelation) {
+              const stixRelation = convertStoreToStix(missingRelation);
+              // Resolve refs
+              await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stixRelation);
+              // Publish relations
+              const message = generateCreateMessage(missingRelation);
+              const origin = { referer: EVENT_TYPE_DEPENDENCIES };
+              const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
+              channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
+              cache.set(stixRelation.id);
+            }
           }
         }
+        // Send the Heartbeat with last event id
         await wait(channel.delay);
+        // Return channel status to stop the iteration if channel is disconnected
+        return channel.connected();
       };
       const allRelOptions = {
         elementId: stix.extensions[STIX_EXT_OCTI].id,
@@ -454,7 +466,6 @@ const createSseMiddleware = () => {
         channel.sendEvent(eventId, type, content);
       }
     }
-    client.sendHeartbeat(eventId);
   };
   const convertParameterToDate = (param) => {
     if (!param) {
@@ -517,7 +528,7 @@ const createSseMiddleware = () => {
       let { streamFilters, collection } = req;
 
       // Create channel.
-      const { channel, client } = createSseChannel(req, res);
+      const { channel, client } = createSseChannel(req, res, startIsoDate);
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
       if (isNotEmptyField(recoverIsoDate) && isEmptyField(startIsoDate)) {
@@ -526,7 +537,6 @@ const createSseMiddleware = () => {
       // Init stream and broadcasting
       const userEmail = user.user_email;
       let error;
-      let heartbeatLastEventId = paramStartFrom;
       const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
         // Default Live collection doesn't have a stored Object associated
         if (!error && (!collection || collection.stream_live)) {
@@ -544,7 +554,7 @@ const createSseMiddleware = () => {
               if (!isInferredData || (isInferredData && withInferences)) {
                 const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, streamFilters);
                 if (type === EVENT_TYPE_UPDATE) {
-                  const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
+                  const {newDocument: previous} = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
                   const isPreviouslyVisible = await isStixMatchFilters(context, user, previous, streamFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
@@ -562,8 +572,8 @@ const createSseMiddleware = () => {
                     // Entity can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
                     const elementInternalId = stix.extensions[STIX_EXT_OCTI].id;
-                    const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }];
-                    const args = { connectionFormat: false, filters };
+                    const filters = [{key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId]}];
+                    const args = {connectionFormat: false, filters};
                     const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);
                     let isContainerMatching = false;
                     for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
@@ -597,13 +607,10 @@ const createSseMiddleware = () => {
                 }
               }
             }
-            client.sendHeartbeat(eventId);
-            heartbeatLastEventId = eventId;
           }
         }
-        // Send the Heartbeat with last event id
-        client.sendHeartbeat(heartbeatLastEventId ?? lastEventId);
         // Wait to prevent flooding
+        channel.setLastEventId(lastEventId);
         await wait(channel.delay);
         const newComputed = await computeUserAndCollection(res, { id, user, context });
         streamFilters = newComputed.streamFilters;
