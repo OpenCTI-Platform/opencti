@@ -28,7 +28,7 @@ interface CreatorFieldProps {
   label: string;
   onChange?: (name: string, value: unknown) => void;
   containerStyle?: Record<string, string | number>;
-  helpertext: string;
+  helpertext?: string;
 }
 
 const CreatorFieldQuery = graphql`

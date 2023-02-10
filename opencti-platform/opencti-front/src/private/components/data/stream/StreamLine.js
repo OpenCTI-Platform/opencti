@@ -6,13 +6,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import {
-  CastConnectedOutlined,
-  MoreVert,
-  StopCircleOutlined, Stream,
-  Visibility,
-  VisibilityOffOutlined,
-} from '@mui/icons-material';
+import { MoreVert, Stream, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';

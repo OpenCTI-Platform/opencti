@@ -221,6 +221,7 @@ const StreamCollectionCreation = (props) => {
                   control={
                     <Switch />
                   }
+                  style={{ marginTop: 20 }}
                   name='stream_public'
                   onChange={(_, checked) => setFieldValue('stream_public', checked)}
                   label={t('Public')}

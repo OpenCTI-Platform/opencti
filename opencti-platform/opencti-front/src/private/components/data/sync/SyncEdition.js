@@ -13,6 +13,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
+import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -22,6 +23,8 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
 import SelectField from '../../../../components/SelectField';
 import CreatorField from '../../common/form/CreatorField';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -143,7 +146,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
   const handleGetStreams = ({ uri, token, ssl_verify }) => {
     const args = { uri, token, ssl_verify: ssl_verify ?? false };
     fetchQuery(syncStreamCollectionQuery, args).toPromise().then((result) => {
-      const resultStreams = [...result.synchronizerFetch.map((s) => ({ value: s.id, label: s.name }))];
+      const resultStreams = [...result.synchronizerFetch.map((s) => ({ value: s.id, label: s.name, ...s }))];
       setStreams(resultStreams);
     }).catch(() => {
       setStreams([]);
@@ -219,8 +222,31 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
                 label={t('Remote OpenCTI stream ID')}
                 containerstyle={{ marginTop: 20, width: '100%' }}
                 disabled={true}>
-                {streams.map(({ value, label }) => (
-                  <MenuItem key={value} value={value}>{label}</MenuItem>
+                {streams.map(({ value, label, name, description, filters }) => (
+                  <EnrichedTooltip
+                    key={value}
+                    style={{ overflow: 'hidden' }}
+                    title={
+                      <Grid container spacing={1} style={{ overflow: 'hidden' }}>
+                        <Grid key={name} item xs={12}>
+                          <Typography>{name}</Typography>
+                        </Grid>
+                        <Grid key={description} item xs={12}>
+                          <Typography>{description}</Typography>
+                        </Grid>
+                        <Grid key={filters} item xs={12}>
+                          <FilterIconButton
+                            filters={JSON.parse(filters)}
+                            classNameNumber={3}
+                            styleNumber={3}
+                          />
+                        </Grid>
+                      </Grid>
+                    }
+                    placement="bottom"
+                  >
+                    <MenuItem key={value} value={value}>{label}</MenuItem>
+                  </EnrichedTooltip>
                 ))}
               </Field>
               <CreatorField
