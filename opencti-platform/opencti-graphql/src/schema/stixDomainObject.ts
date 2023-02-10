@@ -20,7 +20,7 @@ import {
 } from './stixMetaRelationship';
 import { RELATION_INDICATES } from './stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
-import { ENTITY_TYPE_WORK } from './internalObject';
+import { ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'abstract';
@@ -174,7 +174,8 @@ export const STIX_ORGANIZATIONS_UNRESTRICTED = [
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
-  ENTITY_TYPE_WORK // Work is not declared as an internal object
+  ENTITY_TYPE_WORK, // Work is defined as an history object
+  ENTITY_TYPE_TAXII_COLLECTION // TODO TaxiiCollection must be migrate to add according parent types
 ];
 
 export const stixDomainObjectOptions = {
