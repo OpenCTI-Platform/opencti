@@ -330,11 +330,13 @@ const initRuleManager = () => {
       setTimeout(resolve, ms);
     });
   };
-  const ruleHandler = async (lastEventId: string) => {
+  const ruleHandler = async () => {
     let lock;
     try {
       // Lock the manager
       lock = await lockResource([RULE_ENGINE_KEY], { retryCount: 0 });
+      const ruleManager = await getInitRuleManager();
+      const { lastEventId } = ruleManager;
       running = true;
       logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
       // Start the stream listening
@@ -358,9 +360,8 @@ const initRuleManager = () => {
   };
   return {
     start: async () => {
-      const ruleManager = await getInitRuleManager();
       scheduler = setIntervalAsync(async () => {
-        await ruleHandler(ruleManager.lastEventId);
+        await ruleHandler();
       }, SCHEDULE_TIME);
     },
     status: () => {
