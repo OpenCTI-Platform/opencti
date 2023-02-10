@@ -48,7 +48,6 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           {t('Update')}
         </Button>
       )}
-      { values && (
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={handleClose ? open : controlOpen}
@@ -85,7 +84,6 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             </Button>
           </DialogActions>
         </Dialog>
-      )}
     </div>
   );
 };

@@ -67,7 +67,7 @@ interface ExternalReferencesFieldProps {
     }[],
     shouldValidate?: boolean
   ) => void;
-  values: ExternalReferencesValues;
+  values?: ExternalReferencesValues;
   helpertext?: string;
   noStoreUpdate?: boolean;
   id?: string;
