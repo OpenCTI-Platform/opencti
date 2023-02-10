@@ -26,8 +26,10 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isEmptyField } from '../../../../utils/utils';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Theme } from '../../../../components/Theme';
-import { IncidentsLinesPaginationQuery$variables } from './__generated__/IncidentsLinesPaginationQuery.graphql';
 import { Option } from '../../common/form/ReferenceField';
+import {
+  IncidentsCardsAndLinesPaginationQuery$variables,
+} from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -106,7 +108,7 @@ interface IncidentAddInput {
   externalReferences: Option[]
 }
 
-const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsLinesPaginationQuery$variables }) => {
+const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsCardsAndLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
