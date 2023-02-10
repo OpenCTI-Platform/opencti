@@ -1034,6 +1034,7 @@ const i18n = {
       Order: 'Orden',
       Options: 'Opciones',
       Author: 'Autor',
+      'Assignee(s)': 'Referente',
       Owner: 'Propietario',
       'Publication date': 'Fecha de publicación',
       'Top 10 threats targeting this entity':
@@ -2759,6 +2760,7 @@ const i18n = {
       Order: 'Ordre',
       Options: 'Options',
       Author: 'Auteur',
+      'Assignee(s)': 'Référent(s)',
       Owner: 'Propriétaire',
       'Publication date': 'Date de publication',
       'Top 10 threats targeting this entity':
@@ -4443,6 +4445,7 @@ const i18n = {
       'Kill chain name': 'キルチェーン名',
       Order: '順序',
       Options: 'オプション',
+      'Assignee(s)': '参照',
       Author: '著者',
       Owner: '所有者',
       'Publication date': '公開日',
@@ -6047,6 +6050,7 @@ const i18n = {
       Renew: '更新',
       Order: '次序',
       Options: '选项',
+      'Assignee(s)': '协调人',
       Author: '作者',
       Owner: '所有者',
       'Publication date': '发布日期',
