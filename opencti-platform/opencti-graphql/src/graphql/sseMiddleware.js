@@ -435,7 +435,7 @@ const createSseMiddleware = () => {
     }
     return match;
   };
-  const publishRelationDependencies = async (context, client, noDependencies, cache, channel, req, streamFilters, element) => {
+  const publishRelationDependencies = async (context, noDependencies, cache, channel, req, streamFilters, element) => {
     const { user } = req;
     const { id: eventId, data: eventData } = element;
     const { type, data: stix, message } = eventData;
@@ -567,7 +567,7 @@ const createSseMiddleware = () => {
                   } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                     // In case of relationship publication, from or to can be related to something that
                     // is part of the filtering. We can consider this as dependencies
-                    await publishRelationDependencies(context, client, noDependencies, cache, channel, req, streamFilters, element);
+                    await publishRelationDependencies(context, noDependencies, cache, channel, req, streamFilters, element);
                   } else { // Update but not visible - entity type
                     // Entity can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
@@ -603,7 +603,7 @@ const createSseMiddleware = () => {
                 } else if (isRelation && publishDependencies) { // Not an update and not visible
                   // In case of relationship publication, from or to can be related to something that
                   // is part of the filtering. We can consider this as dependencies
-                  await publishRelationDependencies(context, client, noDependencies, cache, channel, req, streamFilters, element);
+                  await publishRelationDependencies(context, noDependencies, cache, channel, req, streamFilters, element);
                 }
               }
             }
