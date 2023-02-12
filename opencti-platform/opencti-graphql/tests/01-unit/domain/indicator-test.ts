@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../../../src/utils/syntax';
+import {
+  cleanupIndicatorPattern,
+  extractObservablesFromIndicatorPattern,
+  STIX_PATTERN_TYPE
+} from '../../../src/utils/syntax';
 import * as C from '../../../src/schema/stixCyberObservable';
 import { computeValidPeriod, computeValidTTL, DEFAULT_INDICATOR_TTL } from '../../../src/utils/indicator-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
@@ -53,18 +57,34 @@ describe('indicator utils', () => {
     expect(unknown.length).toEqual(0);
   });
   it('should indicator cleaned', async () => {
-    expect(cleanupIndicatorPattern('[ipv4-addr:value   =   \'198.51.100.1/32\']'))
-      .toBe('[ipv4-addr:value = \'198.51.100.1/32\']');
-    expect(cleanupIndicatorPattern(' [   file:extensions.\'windows-pebinary-ext\'.sections[*].entropy   > 7.0    ]  '))
-      .toBe('[file:extensions.\'windows-pebinary-ext\'.sections[*].entropy > 7.0]');
-    expect(cleanupIndicatorPattern('[    network-traffic:dst_ref.value = \'phones-luxury   at.ply.gg\' AND     network-traffic:dst_port    =     12864     ]'))
-      .toBe('[network-traffic:dst_ref.value = \'phones-luxury   at.ply.gg\' AND network-traffic:dst_port = 12864]');
-    expect(cleanupIndicatorPattern('[ network-traffic:src_ref.value = \'203.0.113.10\' AND network-traffic:dst_ref.value = \'198.51.100.58\' ]'))
-      .toBe('[network-traffic:src_ref.value = \'203.0.113.10\' AND network-traffic:dst_ref.value = \'198.51.100.58\']');
-    expect(cleanupIndicatorPattern('([ipv4-addr:value = \'198.51.100.1/32\' OR ipv4-addr:value = \'203.0.113.33/32\' OR ipv6-addr:value = \'2001:0db8:dead:beef:dead:beef:dead:0001/128\'] FOLLOWEDBY [domain-name:value = \'example.com\']) WITHIN   600    SECONDS   '))
-      .toBe('([ipv4-addr:value = \'198.51.100.1/32\' OR ipv4-addr:value = \'203.0.113.33/32\' OR ipv6-addr:value = \'2001:0db8:dead:beef:dead:beef:dead:0001/128\'] FOLLOWEDBY [domain-name:value = \'example.com\']) WITHIN 600 SECONDS');
-    expect(cleanupIndicatorPattern('[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']'))
-      .toBe('[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']');
+    const testIndicatorPattern = (from: string, expectation: string) => {
+      const formattedPattern = cleanupIndicatorPattern(STIX_PATTERN_TYPE, from);
+      expect(formattedPattern).toBe(expectation);
+    };
+    testIndicatorPattern(
+      '[ipv4-addr:value   =   \'198.51.100.1/32\']',
+      '[ipv4-addr:value = \'198.51.100.1/32\']'
+    );
+    testIndicatorPattern(
+      ' [   file:extensions.\'windows-pebinary-ext\'.sections[*].entropy   > 7.0    ]  ',
+      '[file:extensions.\'windows-pebinary-ext\'.sections[*].entropy > 7.0]'
+    );
+    testIndicatorPattern(
+      '[    network-traffic:dst_ref.value = \'phones-luxury   at.ply.gg\' AND     network-traffic:dst_port    =     12864     ]',
+      '[network-traffic:dst_ref.value = \'phones-luxury   at.ply.gg\' AND network-traffic:dst_port = 12864]'
+    );
+    testIndicatorPattern(
+      '[ network-traffic:src_ref.value = \'203.0.113.10\' AND network-traffic:dst_ref.value = \'198.51.100.58\' ]',
+      '[network-traffic:src_ref.value = \'203.0.113.10\' AND network-traffic:dst_ref.value = \'198.51.100.58\']'
+    );
+    testIndicatorPattern(
+      '([ipv4-addr:value = \'198.51.100.1/32\' OR ipv4-addr:value = \'203.0.113.33/32\' OR ipv6-addr:value = \'2001:0db8:dead:beef:dead:beef:dead:0001/128\'] FOLLOWEDBY [domain-name:value = \'example.com\']) WITHIN   600    SECONDS   ',
+      '([ipv4-addr:value = \'198.51.100.1/32\' OR ipv4-addr:value = \'203.0.113.33/32\' OR ipv6-addr:value = \'2001:0db8:dead:beef:dead:beef:dead:0001/128\'] FOLLOWEDBY [domain-name:value = \'example.com\']) WITHIN 600 SECONDS'
+    );
+    testIndicatorPattern(
+      '[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']',
+      '[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']'
+    );
   });
   it('should valid_from default', async () => {
     const { validFrom } = await computeValidPeriod(testContext, ADMIN_USER, { ...DEFAULT_PARAM });

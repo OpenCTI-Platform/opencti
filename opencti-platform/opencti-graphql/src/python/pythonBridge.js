@@ -5,6 +5,7 @@ import nconf from 'nconf';
 import { DEV_MODE, logApp } from '../config/conf';
 import { UnknownError } from '../config/errors';
 import { telemetry } from '../config/tracing';
+import { cleanupIndicatorPattern, STIX_PATTERN_TYPE } from '../utils/syntax';
 
 const PYTHON_EXECUTOR = nconf.get('app:python_execution') ?? 'native';
 const USE_NATIVE_EXEC = PYTHON_EXECUTOR === 'native';
@@ -143,10 +144,9 @@ const checkNativePythonAvailability = async (context, user) => {
 
 // region functions
 export const createStixPattern = async (context, user, observableType, observableValue) => {
-  if (USE_NATIVE_EXEC) {
-    return createNativeStixPattern(context, user, observableType, observableValue);
-  }
-  return createChildStixPattern(context, user, observableType, observableValue);
+  const stixPattern = await (USE_NATIVE_EXEC ? createNativeStixPattern(context, user, observableType, observableValue)
+    : createChildStixPattern(context, user, observableType, observableValue));
+  return cleanupIndicatorPattern(STIX_PATTERN_TYPE, stixPattern);
 };
 export const checkIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
   if (USE_NATIVE_EXEC) {

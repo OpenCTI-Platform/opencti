@@ -87,7 +87,9 @@ export const addIndicator = async (context, user, indicator) => {
     throw FunctionalError(`Observable type ${indicator.x_opencti_main_observable_type} is not supported.`);
   }
   // check indicator syntax
-  const check = await checkIndicatorSyntax(context, user, indicator.pattern_type.toLowerCase(), indicator.pattern);
+  const patternType = indicator.pattern_type.toLowerCase();
+  const formattedPattern = cleanupIndicatorPattern(patternType, indicator.pattern);
+  const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
@@ -95,7 +97,7 @@ export const addIndicator = async (context, user, indicator) => {
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
-    R.assoc('pattern', cleanupIndicatorPattern(indicator.pattern)),
+    R.assoc('pattern', formattedPattern),
     R.assoc('x_opencti_main_observable_type', observableType),
     R.assoc('x_opencti_score', indicator.x_opencti_score ?? 50),
     R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),

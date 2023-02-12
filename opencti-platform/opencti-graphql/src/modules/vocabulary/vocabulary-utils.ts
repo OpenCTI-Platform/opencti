@@ -3,6 +3,7 @@ import { vocabularyDefinitions } from './vocabulary-types';
 import { UnsupportedError } from '../../config/errors';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
+import { STIX_PATTERN_TYPE } from '../../utils/syntax';
 
 export const builtInOv = [
   'pattern_type_ov',
@@ -777,7 +778,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'network' },
   ],
   pattern_type_ov: [
-    { key: 'stix' },
+    { key: STIX_PATTERN_TYPE },
     { key: 'pcre' },
     { key: 'sigma' },
     { key: 'snort' },

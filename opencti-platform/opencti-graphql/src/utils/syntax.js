@@ -7,6 +7,8 @@ import { isFieldContributingToStandardId } from '../schema/identifier';
 import { BASE_TYPE_ENTITY } from '../schema/general';
 import { pascalize } from '../database/utils';
 
+export const STIX_PATTERN_TYPE = 'stix';
+
 const unflatten = (data) => {
   const result = {};
   // eslint-disable-next-line no-restricted-syntax,guard-for-in
@@ -89,27 +91,31 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
   return observables;
 };
 
-export const cleanupIndicatorPattern = (pattern) => {
-  const grabInterestingTokens = (ctx, parser, acc) => {
-    const operators = [...parser.symbolicNames, '=', '!=', '<', '>', '<=', '>='];
-    const numberOfTokens = ctx.getChildCount();
-    for (let i = 0; i < numberOfTokens; i += 1) {
-      const child = ctx.getChild(i);
-      const subCount = child.getChildCount();
-      if (subCount > 0) {
-        grabInterestingTokens(child, parser, acc);
-      } else if (operators.includes(child.getText())) {
-        acc.push(` ${child.getText()} `);
-      } else {
-        acc.push(child.getText());
+export const cleanupIndicatorPattern = (patternType, pattern) => {
+  if (pattern && patternType.toLowerCase() === STIX_PATTERN_TYPE) {
+    const grabInterestingTokens = (ctx, parser, acc) => {
+      const operators = [...parser.symbolicNames, '=', '!=', '<', '>', '<=', '>='];
+      const numberOfTokens = ctx.getChildCount();
+      for (let i = 0; i < numberOfTokens; i += 1) {
+        const child = ctx.getChild(i);
+        const subCount = child.getChildCount();
+        if (subCount > 0) {
+          grabInterestingTokens(child, parser, acc);
+        } else if (operators.includes(child.getText())) {
+          acc.push(` ${child.getText()} `);
+        } else {
+          acc.push(child.getText());
+        }
       }
-    }
-  };
-  const { parser, parsedPattern } = parsePattern(pattern);
-  const patternContext = parsedPattern.getChild(0);
-  const patternTokens = [];
-  grabInterestingTokens(patternContext, parser, patternTokens);
-  return patternTokens.join('').trim();
+    };
+    const { parser, parsedPattern } = parsePattern(pattern);
+    const patternContext = parsedPattern.getChild(0);
+    const patternTokens = [];
+    grabInterestingTokens(patternContext, parser, patternTokens);
+    return patternTokens.join('').trim();
+  }
+  // For other pattern type, cleanup is not yet implemented
+  return pattern;
 };
 
 const systemChecker = /^\d{0,10}$/;
