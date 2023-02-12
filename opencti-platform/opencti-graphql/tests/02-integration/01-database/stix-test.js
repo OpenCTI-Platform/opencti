@@ -9,7 +9,6 @@ import {
   ENTITY_TYPE_MALWARE,
   isStixDomainObject
 } from '../../../src/schema/stixDomainObject';
-import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { convertTypeToStixType } from '../../../src/database/stix-converter';
@@ -95,9 +94,9 @@ describe('Stix opencti converter', () => {
     }
     // Default values for malware
     if (opencti_type === ENTITY_TYPE_MALWARE || opencti_type === ENTITY_TYPE_INTRUSION_SET) {
-      expect(remainingData.first_seen).toEqual(FROM_START_STR);
+      expect(remainingData.first_seen).toBeUndefined();
       remainingData = R.dissoc('first_seen', remainingData);
-      expect(remainingData.last_seen).toEqual(UNTIL_END_STR);
+      expect(remainingData.last_seen).toBeUndefined();
       remainingData = R.dissoc('last_seen', remainingData);
     }
     // Default values for malware
