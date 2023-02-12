@@ -174,7 +174,7 @@ export const cleanObject = <T>(data: T): T => {
   }
   return obj;
 };
-const cleanDate = (date: Date | string | undefined): string | undefined => {
+export const convertToStixDate = (date: Date | string | undefined): S.StixDate => {
   if (date === undefined) {
     return undefined;
   }
@@ -407,8 +407,8 @@ const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixInc
     ...incident,
     name: instance.name,
     description: instance.description,
-    first_seen: instance.first_seen,
-    last_seen: instance.last_seen,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
     aliases: instance.aliases,
     objective: instance.objective,
     incident_type: instance.incident_type,
@@ -429,8 +429,8 @@ const convertCampaignToStix = (instance: StoreEntity, type: string): SDO.StixCam
     name: instance.name,
     description: instance.description,
     aliases: instance.aliases,
-    first_seen: instance.first_seen,
-    last_seen: instance.last_seen,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
     objective: instance.objective,
   };
 };
@@ -474,8 +474,8 @@ const convertThreatActorToStix = (instance: StoreEntity, type: string): SDO.Stix
     description: instance.description,
     threat_actor_types: instance.threat_actor_types,
     aliases: instance.aliases,
-    first_seen: instance.first_seen,
-    last_seen: instance.last_seen,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
     roles: instance.roles,
     goals: instance.goals,
     sophistication: instance.sophistication,
@@ -494,8 +494,8 @@ const convertInfrastructureToStix = (instance: StoreEntity, type: string): SDO.S
     infrastructure_types: instance.infrastructure_types,
     aliases: instance.aliases,
     kill_chain_phases: buildKillChainPhases(instance),
-    first_seen: instance.first_seen,
-    last_seen: instance.last_seen,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
   };
 };
 const convertIntrusionSetToStix = (instance: StoreEntity, type: string): SDO.StixIntrusionSet => {
@@ -505,8 +505,8 @@ const convertIntrusionSetToStix = (instance: StoreEntity, type: string): SDO.Sti
     name: instance.name,
     description: instance.description,
     aliases: instance.aliases,
-    first_seen: instance.first_seen,
-    last_seen: instance.last_seen,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
     goals: instance.goals,
     resource_level: instance.resource_level,
     primary_motivation: instance.primary_motivation,
@@ -524,8 +524,8 @@ const convertIndicatorToStix = (instance: StoreEntity, type: string): SDO.StixIn
     pattern: instance.pattern,
     pattern_type: instance.pattern_type,
     pattern_version: instance.pattern_version,
-    valid_from: instance.valid_from,
-    valid_until: instance.valid_until,
+    valid_from: convertToStixDate(instance.valid_from),
+    valid_until: convertToStixDate(instance.valid_until),
     kill_chain_phases: buildKillChainPhases(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
@@ -561,8 +561,8 @@ const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalw
     is_family: instance.is_family,
     aliases: instance.aliases,
     kill_chain_phases: buildKillChainPhases(instance),
-    first_seen: instance.first_seen,
-    last_seen: instance.last_seen,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
     architecture_execution_envs: instance.architecture_execution_envs,
     implementation_languages: instance.implementation_languages,
     capabilities: instance.capabilities,
@@ -727,9 +727,9 @@ const convertDirectoryToStix = (instance: StoreCyberObservable, type: string): S
     ...buildStixCyberObservable(instance),
     path: instance.path,
     path_enc: instance.path_enc,
-    ctime: instance.ctime,
-    mtime: instance.mtime,
-    atime: instance.atime,
+    ctime: convertToStixDate(instance.ctime),
+    mtime: convertToStixDate(instance.mtime),
+    atime: convertToStixDate(instance.atime),
     contains_refs: (instance[INPUT_CONTAINS] ?? []).map((m) => m.standard_id)
   };
 };
@@ -755,7 +755,7 @@ const convertEmailMessageToStix = (instance: StoreCyberObservable, type: string)
   return {
     ...buildStixCyberObservable(instance),
     is_multipart: instance.is_multipart,
-    date: instance.attribute_date,
+    date: convertToStixDate(instance.attribute_date),
     content_type: instance.content_type,
     from_ref: instance[INPUT_FROM]?.standard_id,
     sender_ref: instance[INPUT_SENDER]?.standard_id,
@@ -782,9 +782,9 @@ const convertFileToStix = (instance: StoreCyberObservable, type: string): SCO.St
     name_enc: instance.name_enc,
     magic_number_hex: instance.magic_number_hex,
     mime_type: instance.mime_type,
-    ctime: instance.ctime,
-    mtime: instance.mtime,
-    atime: instance.atime,
+    ctime: convertToStixDate(instance.ctime),
+    mtime: convertToStixDate(instance.mtime),
+    atime: convertToStixDate(instance.atime),
     parent_directory_ref: instance[INPUT_PARENT_DIRECTORY]?.standard_id,
     contains_refs: (instance[INPUT_CONTAINS] ?? []).map((m) => m.standard_id),
     content_ref: instance[INPUT_CONTENT]?.standard_id,
@@ -851,8 +851,8 @@ const convertNetworkTrafficToStix = (instance: StoreCyberObservable, type: strin
   assertType(ENTITY_NETWORK_TRAFFIC, type);
   return {
     ...buildStixCyberObservable(instance),
-    start: instance.start,
-    end: instance.end,
+    start: convertToStixDate(instance.start),
+    end: convertToStixDate(instance.end),
     is_active: instance.is_active,
     src_ref: instance[INPUT_SRC]?.standard_id,
     dst_ref: instance[INPUT_DST]?.standard_id,
@@ -877,7 +877,7 @@ const convertProcessToStix = (instance: StoreCyberObservable, type: string): SCO
     ...stixCyberObject,
     is_hidden: instance.is_hidden,
     pid: instance.pid,
-    created_time: instance.created_time,
+    created_time: convertToStixDate(instance.created_time),
     cwd: instance.cwd,
     command_line: instance.command_line,
     environment_variables: instance.environment_variables,
@@ -985,7 +985,7 @@ const convertMediaContentToStix = (instance: StoreCyberObservable, type: string)
     content: instance.content,
     media_category: instance.media_category,
     url: instance.url,
-    publication_date: instance.publication_date,
+    publication_date: convertToStixDate(instance.publication_date),
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     score: instance.x_opencti_score,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
@@ -1002,7 +1002,7 @@ const convertPaymentCardToStix = (instance: StoreCyberObservable, type: string):
   return {
     ...stixCyberObject,
     card_number: instance.card_number,
-    expiration_date: instance.expiration_date,
+    expiration_date: convertToStixDate(instance.expiration_date),
     cvv: instance.cvv,
     holder_name: instance.holder_name,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
@@ -1037,11 +1037,11 @@ const convertUserAccountToStix = (instance: StoreCyberObservable, type: string):
     is_privileged: instance.is_privileged,
     can_escalate_privs: instance.can_escalate_privs,
     is_disabled: instance.is_disabled,
-    account_created: instance.account_created,
-    account_expires: instance.account_expires,
-    credential_last_changed: instance.credential_last_changed,
-    account_first_login: instance.account_first_login,
-    account_last_login: instance.account_last_login,
+    account_created: convertToStixDate(instance.account_created),
+    account_expires: convertToStixDate(instance.account_expires),
+    credential_last_changed: convertToStixDate(instance.credential_last_changed),
+    account_first_login: convertToStixDate(instance.account_first_login),
+    account_last_login: convertToStixDate(instance.account_last_login),
   };
 };
 const convertWindowsRegistryKeyToStix = (instance: StoreCyberObservable, type: string): SCO.StixWindowsRegistryKey => {
@@ -1050,7 +1050,7 @@ const convertWindowsRegistryKeyToStix = (instance: StoreCyberObservable, type: s
     ...buildStixCyberObservable(instance),
     key: instance.attribute_key,
     values: buildWindowsRegistryValueType(instance),
-    modified_time: instance.modified_time,
+    modified_time: convertToStixDate(instance.modified_time),
     creator_user_ref: instance[INPUT_CREATOR_USER]?.standard_id,
     number_of_subkeys: instance.number_of_subkeys,
   };
@@ -1065,8 +1065,8 @@ const convertX509CertificateToStix = (instance: StoreCyberObservable, type: stri
     serial_number: instance.serial_number,
     signature_algorithm: instance.signature_algorithm,
     issuer: instance.issuer,
-    validity_not_before: instance.validity_not_before,
-    validity_not_after: instance.validity_not_after,
+    validity_not_before: convertToStixDate(instance.validity_not_before),
+    validity_not_after: convertToStixDate(instance.validity_not_after),
     subject: instance.subject,
     subject_public_key_algorithm: instance.subject_public_key_algorithm,
     subject_public_key_modulus: instance.subject_public_key_modulus,
@@ -1084,8 +1084,8 @@ const convertX509CertificateToStix = (instance: StoreCyberObservable, type: stri
       subject_directory_attributes: instance.subject_directory_attributes,
       crl_distribution_points: instance.crl_distribution_points,
       inhibit_any_policy: instance.inhibit_any_policy,
-      private_key_usage_period_not_before: instance.private_key_usage_period_not_before,
-      private_key_usage_period_not_after: instance.private_key_usage_period_not_after,
+      private_key_usage_period_not_before: convertToStixDate(instance.private_key_usage_period_not_before),
+      private_key_usage_period_not_after: convertToStixDate(instance.private_key_usage_period_not_after),
       certificate_policies: instance.certificate_policies,
       policy_mappings: instance.policy_mappings,
     })
@@ -1112,8 +1112,8 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
     description: instance.description,
     source_ref: instance.from.standard_id,
     target_ref: instance.to.standard_id,
-    start_time: cleanDate(instance.start_time),
-    stop_time: cleanDate(instance.stop_time),
+    start_time: convertToStixDate(instance.start_time),
+    stop_time: convertToStixDate(instance.stop_time),
     external_references: buildExternalReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
@@ -1138,8 +1138,8 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
   return {
     ...stixRelationship,
     description: instance.description,
-    first_seen: cleanDate(instance.first_seen),
-    last_seen: cleanDate(instance.last_seen),
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
     count: instance.attribute_count,
     sighting_of_ref: instance.from.standard_id,
     where_sighted_refs: [instance.to.standard_id],

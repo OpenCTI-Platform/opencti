@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixDomain, cleanObject } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject, convertToStixDate } from '../../database/stix-converter';
 import type { StixEvent, StoreEntityEvent } from './event-types';
 
 const convertEventToStix = (instance: StoreEntityEvent): StixEvent => {
@@ -9,8 +9,8 @@ const convertEventToStix = (instance: StoreEntityEvent): StixEvent => {
     name: instance.name,
     description: instance.description,
     event_types: instance.event_types,
-    start_time: instance.start_time,
-    stop_time: instance.stop_time,
+    start_time: convertToStixDate(instance.start_time),
+    stop_time: convertToStixDate(instance.stop_time),
     aliases: instance.x_opencti_aliases ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

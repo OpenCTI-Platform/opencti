@@ -7,7 +7,7 @@ import type {
   StixContainerExtension
 } from './stix-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from './stix-extensions';
-import { OrganizationReliability, StixOpenctiExtensionSDO } from './stix-common';
+import { OrganizationReliability, StixOpenctiExtensionSDO, StixDate } from './stix-common';
 
 // Attack Pattern Specific Properties
 // name, description, aliases, kill_chain_phases
@@ -28,8 +28,8 @@ export interface StixCampaign extends StixDomainObject {
   name: string;
   description: string; // optional
   aliases: Array<string>; // optional
-  first_seen: Date; // optional
-  last_seen: Date; // optional
+  first_seen: StixDate; // optional
+  last_seen: StixDate; // optional
   objective: string; // optional
 }
 
@@ -72,8 +72,8 @@ interface StixIncident extends StixDomainObject {
   name: string;
   incident_type: string; // optional
   description: string; // optional
-  first_seen: Date;
-  last_seen: Date;
+  first_seen: StixDate;
+  last_seen: StixDate;
   objective: string;
   aliases: Array<string>;
   source: string;
@@ -97,8 +97,8 @@ export interface StixIndicator extends StixDomainObject {
   pattern : string;
   pattern_type : string;
   pattern_version : string; // optional
-  valid_from : Date;
-  valid_until : Date; // optional
+  valid_from : StixDate;
+  valid_until : StixDate; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixIndicatorExtension;
@@ -114,8 +114,8 @@ export interface StixInfrastructure extends StixDomainObject {
   infrastructure_types: Array<string>; // infrastructure-type-ov - optional
   aliases : Array<string>; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
-  first_seen: Date; // optional
-  last_seen: Date; // optional
+  first_seen: StixDate; // optional
+  last_seen: StixDate; // optional
 }
 
 // Intrusion Set Specific Properties
@@ -124,8 +124,8 @@ export interface StixIntrusionSet extends StixDomainObject {
   name: string;
   description: string; // optional
   aliases: Array<string>; // optional
-  first_seen : Date; // optional
-  last_seen : Date; // optional
+  first_seen : StixDate; // optional
+  last_seen : StixDate; // optional
   goals: Array<string>; // optional
   resource_level: string; // optional
   primary_motivation: string; // optional
@@ -157,8 +157,8 @@ export interface StixMalware extends StixDomainObject {
   is_family: boolean;
   aliases: Array<string>; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
-  first_seen: Date; // optional
-  last_seen: Date; // optional
+  first_seen: StixDate; // optional
+  last_seen: StixDate; // optional
   architecture_execution_envs: Array<string>; // optional
   implementation_languages: Array<string>; // optional
   capabilities: Array<string>; // optional
@@ -181,9 +181,9 @@ export interface StixMalwareAnalysis extends StixDomainObject {
   modules: Array<string>; // optional
   analysis_engine_version: string; // optional
   analysis_definition_version: string; // optional
-  submitted: Date; // optional
-  analysis_started: Date; // optional
-  analysis_ended: Date; // optional
+  submitted: StixDate; // optional
+  analysis_started: StixDate; // optional
+  analysis_ended: StixDate; // optional
   result_name: string; // optional
   result: string; // malware-result-ov - optional
   analysis_sco_refs: Array<StixId>; // optional
@@ -241,8 +241,8 @@ export interface StixThreatActor extends StixDomainObject {
   description: string; // optional
   threat_actor_types : Array<string>; // threat-actor-type-ov - optional
   aliases: Array<string>; // optional
-  first_seen: Date; // optional
-  last_seen: Date; // optional
+  first_seen: StixDate; // optional
+  last_seen: StixDate; // optional
   roles: Array<string>; // threat-actor-role-ov - optional
   goals: Array<string>; // optional
   sophistication: string; // threat-actor-sophistication-ov - optional
