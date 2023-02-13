@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import * as jsonpatch from 'fast-json-patch';
 import { createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
@@ -21,6 +22,7 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { OrderingMode } from '../generated/graphql';
+import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../database/stix';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -80,18 +82,26 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Sse
       const updateEvent: UpdateEvent = event.data as UpdateEvent;
       contextData.commit = updateEvent.commit?.message;
       contextData.external_references = updateEvent.commit?.external_references ?? [];
+      // Previous markings must be kept to ensure data visibility restrictions
+      const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), updateEvent.context.reverse_patch);
+      const previousMarkingRefs = (previous.object_marking_refs ?? [])
+        .map((stixId) => markingsById.get(stixId)?.internal_id)
+        .filter((o) => isNotEmptyField(o));
+      eventMarkingRefs.push(...previousMarkingRefs);
     }
-    if (stix.type === 'relationship') {
+    if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;
       contextData.from_id = rel.extensions[STIX_EXT_OCTI].source_ref;
       contextData.to_id = rel.extensions[STIX_EXT_OCTI].target_ref;
+      // Markings of the source/target must be taken into account to ensure data visibility restrictions
       eventMarkingRefs.push(...(rel.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs ?? []));
       eventMarkingRefs.push(...(rel.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs ?? []));
     }
-    if (stix.type === 'sighting') {
+    if (stix.type === STIX_TYPE_SIGHTING) {
       const sighting: StixSighting = stix as StixSighting;
       contextData.from_id = sighting.extensions[STIX_EXT_OCTI].sighting_of_ref;
       contextData.to_id = R.head(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs);
+      // Markings of the source/target must be taken into account to ensure data visibility restrictions
       eventMarkingRefs.push(...(sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs ?? []));
       eventMarkingRefs.push(...(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs ?? []));
     }
@@ -110,8 +120,8 @@ export const eventsApplyHandler = async (context: AuthContext, events: Array<Sse
       applicant_id: event.data.origin?.applicant_id,
       timestamp: eventDate,
       context_data: contextData,
-      'rel_object-marking.internal_id': eventMarkingRefs,
-      'rel_granted.internal_id': eventGrantedRefs
+      'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
+      'rel_granted.internal_id': R.uniq(eventGrantedRefs)
     };
   });
   // Bulk the history data insertions
