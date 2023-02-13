@@ -152,8 +152,19 @@ class InformationSystemCardComponent extends Component {
                 <Typography
                   variant="h3"
                   color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Severity')}
+                </Typography>
+                <Typography>
+                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
                   gutterBottom={true}>
-                  {t('Privacy Sensitive')}
+                  {t('Sensitivity Level')}
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
@@ -178,11 +189,12 @@ class InformationSystemCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Severity')}
+                  {t('Risks')}
                 </Typography>
                 <Typography>
-                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
+                  {node.patch_level && t(node.patch_level)}
                 </Typography>
+                <div className="clearfix" />
               </Grid>
               <Grid xs={5} item={true} className={classes.body}>
                 <Typography
@@ -198,13 +210,11 @@ class InformationSystemCardComponent extends Component {
                 <Typography
                   variant="h3"
                   color="textSecondary"
-                  style={{ marginTop: '13px' }}
-                  gutterBottom={true}
-                >
-                  {t('Risks')}
+                  gutterBottom={true}>
+                  {t('Privacy Sensitivity')}
                 </Typography>
                 <Typography>
-                  {node.patch_level && t(node.patch_level)}
+                  {node.vendor_name && t(node.vendor_name)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
