@@ -81,7 +81,7 @@ const positionDetailsLocationRelationshipsLinesQuery = graphql`
     }
 `;
 
-const styles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -106,7 +106,7 @@ interface PositionDetailsProps {
 
 const PositionDetails: FunctionComponent<PositionDetailsProps> = ({ position }) => {
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
 
   return (
     <QueryRenderer
