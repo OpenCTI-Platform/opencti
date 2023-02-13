@@ -22,6 +22,7 @@ import ListItem from '@material-ui/core/ListItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
+import InfoGraphImg from '../../../../resources/images/entities/information_graph.svg';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -121,6 +122,20 @@ class CyioDomainObjectAssetHeader extends Component {
         </Typography>
         <div className={classes.aliases}>
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
+          {goBack === '/defender HQ/assets/information_systems' && (
+            <Tooltip title={t('Graph')}>
+              <Button
+                variant="contained"
+                // onClick={handleDisplayEdit?.bind(this)}
+                className={classes.iconButton}
+                disabled={Boolean(!cyioDomainObject?.id) || disabled}
+                color="primary"
+                size="large"
+              >
+                <img src={InfoGraphImg} alt='' />
+              </Button>
+            </Tooltip>
+          )}
           {handleDisplayEdit && <Tooltip title={t('Edit')}>
             <Button
               variant="contained"
