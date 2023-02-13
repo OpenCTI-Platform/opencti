@@ -11116,14 +11116,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:2.29.3":
-  version: 2.29.3
-  resolution: "moment@npm:2.29.3"
-  checksum: 2e780e36d9a1823c08a1b6313cbb08bd01ecbb2a9062095820a34f42c878991ccba53abaa6abb103fd5c01e763724f295162a8c50b7e95b4f1c992ef0772d3f0
-  languageName: node
-  linkType: hard
-
-"moment@npm:^2.11.2":
+"moment@npm:2.29.4, moment@npm:^2.11.2":
   version: 2.29.4
   resolution: "moment@npm:2.29.4"
   checksum: 0ec3f9c2bcba38dc2451b1daed5daded747f17610b92427bebe1d08d48d8b7bdd8d9197500b072d14e326dd0ccf3e326b9e3d07c5895d3d49e39b6803b76e80e
@@ -11687,11 +11680,11 @@ __metadata:
     lru-cache: ^6.0.0
     migrate: 1.7.0
     mime-types: 2.1.32
-    moment: 2.29.3
+    moment: 2.29.4
     moment-range: 4.0.2
     nconf: 0.12.0
     nconf-etcd2: ^1.4.0
-    node-fetch: 2.6.1
+    node-fetch: 3.3.0
     nodemailer: 6.6.3
     openid-client: 4.7.4
     passport: 0.4.1
