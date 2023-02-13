@@ -8,7 +8,6 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,6 +19,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -117,15 +117,7 @@ const PositionCreation = ({ paginationOptions }) => {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('positionAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
-        );
+        insertNode(store, 'Pagination_positions', this.props.paginationOptions, 'positionAdd');
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);

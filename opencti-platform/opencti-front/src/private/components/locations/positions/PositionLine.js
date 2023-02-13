@@ -130,7 +130,7 @@ class PositionLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: dataColumns?.name.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -141,7 +141,7 @@ class PositionLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns?.created.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -152,7 +152,7 @@ class PositionLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
+                style={{ width: dataColumns?.modified.width }}
               >
                 <Skeleton
                   animation="wave"
