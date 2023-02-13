@@ -365,7 +365,7 @@ class Dashboard extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      dashboard: or(localStorage.getItem('view-dashboard'), 'default'),
+      dashboard: or(localStorage.getItem('view-dashboard'), '15794f5d-b071-4ddc-9567-d786149fa74f'),
     };
   }
 
