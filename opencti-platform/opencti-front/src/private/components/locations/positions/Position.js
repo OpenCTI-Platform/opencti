@@ -19,7 +19,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships
   from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import LocationMiniMap from '../../common/location/LocationMiniMap';
-import PositionDetails from "./PositionDetails";
+import PositionDetails from './PositionDetails';
 
 const styles = () => ({
   container: {
@@ -33,7 +33,6 @@ const styles = () => ({
 class PositionComponent extends Component {
   render() {
     const { classes, position } = this.props;
-    console.log('position', position);
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
