@@ -47,7 +47,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({ objectId, author
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
-      sortBy: 'name',
+      sortBy: 'created',
       orderAsc: true,
       openExports: false,
       filters: {},
