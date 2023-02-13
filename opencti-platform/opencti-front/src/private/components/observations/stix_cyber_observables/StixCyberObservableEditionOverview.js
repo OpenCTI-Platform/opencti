@@ -240,19 +240,11 @@ const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enab
         variables={{ elementType: [stixCyberObservable.entity_type] }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
-            const createdBy = pathOr(null, ['createdBy', 'name'], stixCyberObservable) === null
+            const createdBy = (stixCyberObservable?.createdBy?.name ?? null) === null
               ? ''
               : {
-                label: pathOr(
-                  null,
-                  ['createdBy', 'name'],
-                  stixCyberObservable,
-                ),
-                value: pathOr(
-                  null,
-                  ['createdBy', 'id'],
-                  stixCyberObservable,
-                ),
+                label: stixCyberObservable?.createdBy?.name ?? null,
+                value: stixCyberObservable?.createdBy?.id ?? null,
               };
             const objectMarking = pipe(
               pathOr([], ['objectMarking', 'edges']),

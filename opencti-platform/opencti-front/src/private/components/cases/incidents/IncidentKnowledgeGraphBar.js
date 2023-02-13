@@ -227,7 +227,6 @@ class IncidentKnowledgeGraphBar extends Component {
       this.setState({ openEditDomainObject: true });
     } else if (
       this.props.numberOfSelectedNodes === 1
-      && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
       && this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
     ) {
       this.setState({ openEditObservable: true });

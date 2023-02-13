@@ -151,7 +151,7 @@ class StixCyberObservableEdition extends Component {
   }
 
   render() {
-    if (this.props.open && this.props.handleClose) { // in a graph bar
+    if (this.props.handleClose) { // in a graph bar
       return this.renderInGraph();
     }
     return this.renderClassic();
