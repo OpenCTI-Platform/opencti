@@ -526,7 +526,6 @@ class ReportKnowledgeGraphComponent extends Component {
       height: null,
       zoomed: false,
       keyword: '',
-      openEntityDetailsRightsBar: false,
     };
   }
 
@@ -795,8 +794,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleNodeClick(node, event) {
-    console.log('node:   ', node);
-    console.log('selelectedNodes:   ', this.selectedNodes);
     if (event.ctrlKey || event.shiftKey || event.altKey) {
       if (this.selectedNodes.has(node)) {
         this.selectedNodes.delete(node);
@@ -1066,21 +1063,13 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
- /* handleOpenEntityDetailsRightsBar() {
-    if (
-      this.state.numberOfSelectedNodes === 1
-    ) {
-      this.setState({ openEntityDetailsRightsBar: true });
-    }
-  }
-
   handleCloseEntityDetailsRightsBar() {
     if (
       this.state.numberOfSelectedNodes === 0
     ) {
-      this.setState({ openEntityDetailsRightsBar: false });
+      this.setState({ open: false });
     }
-  }*/
+  }
 
   handleCloseEntityEdition(entityId) {
     setTimeout(() => {
@@ -1264,7 +1253,7 @@ class ReportKnowledgeGraphComponent extends Component {
         {numberOfSelectedNodes > 0 && (
           <EntityDetailsRightsBar
           selectedNodes={Array.from(this.selectedNodes)}
-          open={this.state.openEntityDetailsRightsBar}
+          open={false}
           handleClose={this.handleCloseEntityDetailsRightsBar.bind(this)}
         />
         )}
