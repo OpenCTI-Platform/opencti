@@ -1066,7 +1066,7 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
-  handleOpenEntityDetailsRightsBar() {
+ /* handleOpenEntityDetailsRightsBar() {
     if (
       this.state.numberOfSelectedNodes === 1
     ) {
@@ -1076,11 +1076,11 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleCloseEntityDetailsRightsBar() {
     if (
-      this.state.numberOfSelectedNodes !== 1
+      this.state.numberOfSelectedNodes === 0
     ) {
       this.setState({ openEntityDetailsRightsBar: false });
     }
-  }
+  }*/
 
   handleCloseEntityEdition(entityId) {
     setTimeout(() => {
