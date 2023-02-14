@@ -1926,6 +1926,7 @@ enum StixDomainObjectsFilter {
   indicator_types
   x_opencti_main_observable_type
   report_types
+  incident_type
   context
   x_opencti_organization_type
   published

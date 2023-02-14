@@ -19891,6 +19891,7 @@ export enum StixDomainObjectsFilter {
   EntityType = 'entity_type',
   FromId = 'fromId',
   HasExternalReference = 'hasExternalReference',
+  IncidentType = 'incident_type',
   Indicates = 'indicates',
   IndicatorTypes = 'indicator_types',
   LabelledBy = 'labelledBy',
