@@ -327,7 +327,7 @@ class ReportEditionOverviewComponent extends Component {
                   {({
                     submitForm,
                     isSubmitting,
-                    validateForm,
+
                     setFieldValue,
                     values,
                   }) => (
@@ -451,9 +451,9 @@ class ReportEditionOverviewComponent extends Component {
                         <CommitMessage
                           submitForm={submitForm}
                           disabled={isSubmitting}
-                          validateForm={validateForm}
                           setFieldValue={setFieldValue}
-                          values={values}
+                          open={false}
+                          values={values.references}
                           id={report.id}
                         />
                       )}

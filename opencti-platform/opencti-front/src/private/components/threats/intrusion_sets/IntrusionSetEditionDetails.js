@@ -169,7 +169,6 @@ class IntrusionSetEditionDetailsComponent extends Component {
         {({
           submitForm,
           isSubmitting,
-          validateForm,
           setFieldValue,
           values,
         }) => (
@@ -258,9 +257,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                validateForm={validateForm}
-                setFieldValue={setFieldValue}
-                values={values}
+                setFieldValue={setFieldValue}open={false}
+                values={values.references}
                 id={intrusionSet.id}
               />
             )}

@@ -245,7 +245,6 @@ class ChannelEditionOverviewComponent extends Component {
                 {({
                   submitForm,
                   isSubmitting,
-                  validateForm,
                   setFieldValue,
                   values,
                 }) => (
@@ -342,9 +341,9 @@ class ChannelEditionOverviewComponent extends Component {
                       <CommitMessage
                         submitForm={submitForm}
                         disabled={isSubmitting}
-                        validateForm={validateForm}
                         setFieldValue={setFieldValue}
-                        values={values}
+                        open={false}
+                        values={values.references}
                         id={channel.id}
                       />
                     )}

@@ -256,7 +256,7 @@ class OpinionEditionOverviewComponent extends Component {
         {({
           submitForm,
           isSubmitting,
-          validateForm,
+
           setFieldValue,
           values,
         }) => (
@@ -338,9 +338,9 @@ class OpinionEditionOverviewComponent extends Component {
                 <CommitMessage
                   submitForm={submitForm}
                   disabled={isSubmitting}
-                  validateForm={validateForm}
+                  open={false}
+                  values={values.references}
                   setFieldValue={setFieldValue}
-                  values={values}
                   id={opinion.id}
                 />
               )}

@@ -49,7 +49,7 @@ const ExternalReferenceOverviewComponent: FunctionComponent<ExternalReferenceOve
               {t('Description')}
             </Typography>
             <ExpandableMarkdown
-              source={externalReference.description ?? ''}
+              source={externalReference.description}
               limit={400}
             />
           </Grid>

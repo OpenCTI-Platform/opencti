@@ -270,7 +270,6 @@ class IndividualEditionOverviewComponent extends Component {
         {({
           submitForm,
           isSubmitting,
-          validateForm,
           setFieldValue,
           values,
         }) => (
@@ -360,9 +359,9 @@ class IndividualEditionOverviewComponent extends Component {
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                validateForm={validateForm}
                 setFieldValue={setFieldValue}
-                values={values}
+                open={false}
+                values={values.references}
                 id={individual.id}
               />
             )}

@@ -46,6 +46,7 @@ export interface UseLocalStorageHelpers {
   }) => void;
   handleSetRedirectionMode: (value: string) => void;
   handleAddProperty: (field: string, value: unknown) => void;
+  handleChangeView: (value: string) => void;
 }
 
 const localStorageToPaginationOptions = ({
@@ -252,6 +253,7 @@ export const usePaginationLocalStorage = <U>(
         }));
       }
     },
+    handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
     handleSetNumberOfElements: (nbElements: {
       number?: number | string;

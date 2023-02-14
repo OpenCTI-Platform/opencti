@@ -280,7 +280,6 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
       {({
         submitForm,
         isSubmitting,
-        validateForm,
         setFieldValue,
         values,
       }) => (
@@ -380,9 +379,9 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}
-              validateForm={validateForm}
               setFieldValue={setFieldValue}
-              values={values}
+              open={false}
+              values={values.references}
               id={dataSource.id}
             />
           )}

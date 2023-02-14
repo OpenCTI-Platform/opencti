@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import inject18n from '../../../../components/i18n';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO Remove this when V6
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+import React from 'react';
+import { Route, Switch } from 'react-router-dom';
+import { graphql, useFragment } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -13,25 +14,42 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixSightingRelationship from '../stix_sighting_relationships/StixSightingRelationship';
+import { IncidentKnowledge_incident$key } from './__generated__/IncidentKnowledge_incident.graphql';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
   },
-});
+}));
 
-class IncidentKnowledgeComponent extends Component {
-  render() {
-    const { classes, incident } = this.props;
-    const link = `/dashboard/events/incidents/${incident.id}/knowledge`;
-    return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Incident'}
-          stixDomainObject={incident}
-          PopoverComponent={<IncidentPopover />}
-        />
+const IncidentKnowledgeFragment = graphql`
+    fragment IncidentKnowledge_incident on Incident {
+        id
+        name
+        aliases
+        first_seen
+        last_seen
+    }
+`;
+
+const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_incident$key }) => {
+  const classes = useStyles();
+
+  const incident = useFragment<IncidentKnowledge_incident$key>(
+    IncidentKnowledgeFragment,
+    incidentData,
+  );
+  const link = `/dashboard/events/incidents/${incident.id}/knowledge`;
+
+  return (
+    <div className={classes.container}>
+      <StixDomainObjectHeader
+        entityType={'Incident'}
+        stixDomainObject={incident}
+        PopoverComponent={IncidentPopover }
+      />
+      <Switch>
         <Route
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/relations/:relationId"
@@ -224,31 +242,9 @@ class IncidentKnowledgeComponent extends Component {
             />
           )}
         />
-      </div>
-    );
-  }
-}
-
-IncidentKnowledgeComponent.propTypes = {
-  incident: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
+      </Switch>
+    </div>
+  );
 };
 
-const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
-  incident: graphql`
-    fragment IncidentKnowledge_incident on Incident {
-      id
-      name
-      aliases
-      first_seen
-      last_seen
-    }
-  `,
-});
-
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(IncidentKnowledge);
+export default IncidentKnowledge;

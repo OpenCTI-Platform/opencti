@@ -7,28 +7,31 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isEmptyField } from '../../../../utils/utils';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  IncidentsCardsAndLinesPaginationQuery$variables,
+} from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -79,7 +82,7 @@ const IncidentMutation = graphql`
   }
 `;
 
-const IncidentValidation = (t) => Yup.object().shape({
+const IncidentValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number(),
   incident_type: Yup.string(),
@@ -91,30 +94,41 @@ const IncidentValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-const IncidentCreation = ({ paginationOptions }) => {
+interface IncidentAddInput {
+  name: string
+  description: string
+  confidence: number
+  incident_type: string
+  severity: string
+  source: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  objectAssignee: Option[]
+  externalReferences: Option[]
+}
+
+const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsCardsAndLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
+  const [open, setOpen] = useState<boolean>(false);
+  const [commit] = useMutation(IncidentMutation);
+  const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const cleanedValues = isEmptyField(values.severity)
       ? R.dissoc('severity', values)
       : values;
-    const adaptedValues = R.evolve(
-      {
-        confidence: () => parseInt(values.confidence, 10),
-        createdBy: R.path(['value']),
-        objectMarking: R.pluck('value'),
-        objectAssignee: R.pluck('value'),
-        objectLabel: R.pluck('value'),
-        objectOrganization: R.pluck('value'),
-        externalReferences: R.pluck('value'),
-      },
-      cleanedValues,
-    );
-    commitMutation({
-      mutation: IncidentMutation,
+    const finalValues = {
+      ...cleanedValues,
+      confidence: parseInt(String(cleanedValues.confidence), 10),
+      createdBy: cleanedValues.createdBy?.value,
+      objectMarking: cleanedValues.objectMarking.map((v) => v.value),
+      objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
+      objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
+      externalReferences: cleanedValues.externalReferences.map(({ value }) => value),
+    };
+    commit({
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
       updater: (store) => insertNode(
         store,
@@ -126,7 +140,6 @@ const IncidentCreation = ({ paginationOptions }) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -165,7 +178,7 @@ const IncidentCreation = ({ paginationOptions }) => {
           <Typography variant="h6">{t('Create an incident')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik
+          <Formik<IncidentAddInput>
             initialValues={{
               name: '',
               confidence: 75,
@@ -173,7 +186,7 @@ const IncidentCreation = ({ paginationOptions }) => {
               severity: '',
               source: '',
               description: '',
-              createdBy: '',
+              createdBy: { value: '', label: '' },
               objectMarking: [],
               objectAssignee: [],
               objectLabel: [],
@@ -261,7 +274,7 @@ const IncidentCreation = ({ paginationOptions }) => {
                   name="externalReferences"
                   style={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
-                  values={values.externalReferences}
+                  values={values.externalReferences }
                 />
                 <div className={classes.buttons}>
                   <Button

@@ -267,7 +267,6 @@ FeedbackEditionOverviewProps
       {({
         submitForm,
         isSubmitting,
-        validateForm,
         setFieldValue,
         values,
       }) => (
@@ -384,9 +383,9 @@ FeedbackEditionOverviewProps
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}
-              validateForm={validateForm}
               setFieldValue={setFieldValue}
-              values={values}
+              open={false}
+              values={values.references}
               id={caseData.id}
             />
           )}

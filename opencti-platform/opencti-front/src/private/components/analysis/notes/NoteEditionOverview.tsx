@@ -254,7 +254,6 @@ NoteEditionOverviewProps
       {({
         submitForm,
         isSubmitting,
-        validateForm,
         setFieldValue,
         values,
       }) => (
@@ -378,9 +377,9 @@ NoteEditionOverviewProps
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}
-              validateForm={validateForm}
               setFieldValue={setFieldValue}
-              values={values}
+              open={false}
+              values={values.references}
               id={note.id}
             />
           )}

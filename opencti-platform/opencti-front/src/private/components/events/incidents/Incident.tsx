@@ -1,10 +1,7 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
 import IncidentDetails from './IncidentDetails';
 import IncidentEdition from './IncidentEdition';
 import IncidentPopover from './IncidentPopover';
@@ -17,25 +14,94 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
   },
   gridContainer: {
     marginBottom: 20,
   },
-});
+}));
 
-class IncidentComponent extends Component {
-  render() {
-    const { classes, incident } = this.props;
-    return (
+const incidentFragment = graphql`
+      fragment Incident_incident on Incident {
+          id
+          standard_id
+          x_opencti_stix_ids
+          spec_version
+          revoked
+          confidence
+          created
+          modified
+          created_at
+          updated_at
+          createdBy {
+              ... on Identity {
+                  id
+                  name
+                  entity_type
+              }
+          }
+          creator {
+              name
+          }
+          objectMarking {
+              edges {
+                  node {
+                      id
+                      definition_type
+                      definition
+                      x_opencti_order
+                      x_opencti_color
+                  }
+              }
+          }
+          objectLabel {
+              edges {
+                  node {
+                      id
+                      value
+                      color
+                  }
+              }
+          }
+          objectAssignee {
+              edges {
+                  node {
+                      id
+                      name
+                      entity_type
+                  }
+              }
+          }
+          name
+          aliases
+          status {
+              id
+              order
+              template {
+                  name
+                  color
+              }
+          }
+          workflowEnabled
+          ...IncidentDetails_incident
+      }
+  `;
+
+const Incident = ({ incidentData }: { incidentData: Incident_incident$key }) => {
+  const classes = useStyles();
+
+  const incident = useFragment<Incident_incident$key>(incidentFragment, incidentData);
+
+  return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           entityType={'Incident'}
           stixDomainObject={incident}
-          PopoverComponent={<IncidentPopover />}
+          PopoverComponent={IncidentPopover}
         />
         <Grid
           container={true}
@@ -43,7 +109,7 @@ class IncidentComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <IncidentDetails incident={incident} />
+            <IncidentDetails incidentData={incident} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview
@@ -90,85 +156,12 @@ class IncidentComponent extends Component {
           )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentEdition incidentId={incident.id} />
+          <IncidentEdition
+            incidentId={incident.id}
+          />
         </Security>
       </div>
-    );
-  }
-}
-
-IncidentComponent.propTypes = {
-  incident: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-const Incident = createFragmentContainer(IncidentComponent, {
-  incident: graphql`
-    fragment Incident_incident on Incident {
-      id
-      standard_id
-      x_opencti_stix_ids
-      spec_version
-      revoked
-      confidence
-      created
-      modified
-      created_at
-      updated_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      creator {
-        name
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
-      objectAssignee {
-        edges {
-          node {
-            id
-            name
-            entity_type
-          }
-        }
-      }
-      name
-      aliases
-      status {
-        id
-        order
-        template {
-          name
-          color
-        }
-      }
-      workflowEnabled
-      ...IncidentDetails_incident
-    }
-  `,
-});
-
-export default compose(inject18n, withStyles(styles))(Incident);
+export default Incident;

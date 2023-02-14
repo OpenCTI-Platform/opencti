@@ -228,7 +228,7 @@ const GroupingEditionOverviewComponent = (props) => {
       {({
         submitForm,
         isSubmitting,
-        validateForm,
+
         setFieldValue,
         values,
       }) => (
@@ -319,9 +319,9 @@ const GroupingEditionOverviewComponent = (props) => {
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                validateForm={validateForm}
+                open={false}
                 setFieldValue={setFieldValue}
-                values={values}
+                values={values.references}
                 id={grouping.id}
               />
             )}

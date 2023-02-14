@@ -43,7 +43,7 @@ export const MarkDownComponents = (theme: Theme): Record<string, FunctionCompone
 });
 
 interface ExpandableMarkdownProps {
-  source: string,
+  source: string | null,
   limit: number,
 }
 

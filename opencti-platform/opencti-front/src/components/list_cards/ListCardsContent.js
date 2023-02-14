@@ -39,17 +39,7 @@ class ListCardsContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const diff = R.symmetricDifferenceWith(
-      (x, y) => x.node.id === y.node.id,
-      this.props.dataList,
-      prevProps.dataList,
-    );
-    const diffBookmark = R.symmetricDifferenceWith(
-      (x, y) => x.node.id === y.node.id,
-      this.props.bookmarkList || [],
-      prevProps.bookmarkList || [],
-    );
-    if (diff.length > 0 || diffBookmark.length > 0) {
+    if (!R.equals(prevProps.dataList, this.props.dataList) || !R.equals(prevProps.bookmarkList, this.props.bookmarkList)) {
       this.gridRef.forceUpdate();
     }
   }
@@ -118,7 +108,12 @@ class ListCardsContent extends Component {
     if (initialLoading || !this._isCellLoaded({ index })) {
       return (
         <div className={className} key={key} style={finalStyle}>
-          {React.cloneElement(DummyCardComponent)}
+          {/* TODO remove this when all components are pure function without compose() */}
+          {!React.isValidElement(DummyCardComponent) ? (
+            <DummyCardComponent />
+          ) : (
+            React.cloneElement(DummyCardComponent)
+          )}
         </div>
       );
     }
@@ -133,11 +128,20 @@ class ListCardsContent extends Component {
     const { node } = edge;
     return (
       <div className={className} key={key} style={finalStyle}>
-        {React.cloneElement(CardComponent, {
-          node,
-          bookmarksIds,
-          onLabelClick,
-        })}
+        {/* TODO remove this when all components are pure function without compose() */}
+        {!React.isValidElement(CardComponent) ? (
+          <CardComponent
+            node={node}
+            bookmarksIds={bookmarksIds}
+            onLabelClick={onLabelClick}
+          />
+        ) : (
+          React.cloneElement(CardComponent, {
+            node,
+            bookmarksIds,
+            onLabelClick,
+          })
+        )}
       </div>
     );
   }
@@ -225,8 +229,8 @@ ListCardsContent.propTypes = {
   dataList: PropTypes.array,
   bookmarkList: PropTypes.array,
   globalCount: PropTypes.number,
-  CardComponent: PropTypes.object,
-  DummyCardComponent: PropTypes.object,
+  CardComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+  DummyCardComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
   nbOfCardsToLoad: PropTypes.number,
   width: PropTypes.number,
   rowHeight: PropTypes.number,

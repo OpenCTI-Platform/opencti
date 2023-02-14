@@ -320,7 +320,6 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
         {({
           submitForm,
           isSubmitting,
-          validateForm,
           setFieldValue,
           values,
         }) => (
@@ -515,9 +514,9 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}
-                validateForm={validateForm}
                 setFieldValue={setFieldValue}
-                values={values}
+                open={false}
+                values={values.references}
                 id={indicator.id}
               />
             )}
