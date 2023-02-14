@@ -258,7 +258,7 @@ export const batchLoader = (loader) => {
       const ids = objects.map((i) => i.id);
       return loader(context, user, ids, args);
     },
-    { maxBatchSize: MAX_BATCH_SIZE }
+    { maxBatchSize: MAX_BATCH_SIZE, cache: false }
   );
   return {
     load: (id, context, user, args = {}) => {
