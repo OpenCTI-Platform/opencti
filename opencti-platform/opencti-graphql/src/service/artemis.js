@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import https from 'node:https';
 import { readFileSync } from 'fs';
-import conf, { logApp } from '../config/conf.js';
+import conf, { logApp } from '../config/conf';
 
 const host = conf.get('artemis:rest:hostname');
 const port = conf.get('artemis:rest:port');
