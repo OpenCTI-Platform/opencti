@@ -148,11 +148,12 @@ class Events extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'start_date',
-          'end_date',
-          'start_time_date',
-          'stop_time_date',
+          'event_types',
           'createdBy',
+          'start_time_end_date',
+          'start_time_start_date',
+          'stop_time_end_date',
+          'stop_time_start_date',
         ]}
       >
         <QueryRenderer
