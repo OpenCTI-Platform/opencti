@@ -35,6 +35,7 @@ export const EqFilters = [
   'report_types',
   'note_types',
   'channel_types',
+  'event_types',
   'sightedBy',
   'relationship_type',
   'creator',

@@ -870,6 +870,22 @@ const useSearchEntities = ({
             );
           });
         break;
+      case 'event_types':
+        fetchQuery(vocabularySearchQuery, {
+          category: 'event_type_ov',
+        })
+          .toPromise()
+          .then((data) => {
+            unionSetEntities(
+              'event_types',
+              (data?.vocabularies?.edges ?? []).map(({ node }) => ({
+                label: t(node.name),
+                value: node.name,
+                type: 'Vocabulary',
+              })),
+            );
+          });
+        break;
       case 'context':
         fetchQuery(vocabularySearchQuery, {
           category: 'grouping_context_ov',

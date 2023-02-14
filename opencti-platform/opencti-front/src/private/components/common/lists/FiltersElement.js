@@ -1,14 +1,10 @@
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
-import * as R from 'ramda';
 import { compose } from 'ramda';
 import React from 'react';
 import withStyles from '@mui/styles/withStyles';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  directFilters,
-  FiltersVariant,
-} from '../../../../utils/filters/filtersUtils';
+import { directFilters, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 
@@ -51,9 +47,8 @@ const FiltersElement = ({
             />
           </Grid>
         )}
-        {R.filter(
-          (n) => noDirectFilters || !R.includes(n, directFilters),
-          availableFilterKeys,
+        {availableFilterKeys.filter(
+          (n) => noDirectFilters || !directFilters.includes(n),
         ).map((filterKey) => {
           if (
             filterKey.endsWith('start_date')
