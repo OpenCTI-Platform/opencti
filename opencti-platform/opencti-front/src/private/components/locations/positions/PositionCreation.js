@@ -81,6 +81,8 @@ const positionValidation = (t) => Yup.object().shape({
   longitude: Yup.number()
     .typeError(t('This field must be a number'))
     .nullable(),
+  street_address: Yup.string().nullable().max(1000, t('The value is too long')),
+  postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -169,6 +171,8 @@ const PositionCreation = ({ paginationOptions }) => {
                 description: '',
                 latitude: '',
                 longitude: '',
+                street_address: '',
+                postal_code: '',
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
@@ -216,6 +220,22 @@ const PositionCreation = ({ paginationOptions }) => {
                     variant="standard"
                     name="longitude"
                     label={t('Longitude')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="street_address"
+                    label={t('Street address')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="postal_code"
+                    label={t('Postal code')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
