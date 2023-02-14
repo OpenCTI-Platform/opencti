@@ -794,6 +794,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleNodeClick(node, event) {
+    console.log(node);
     if (event.ctrlKey || event.shiftKey || event.altKey) {
       if (this.selectedNodes.has(node)) {
         this.selectedNodes.delete(node);

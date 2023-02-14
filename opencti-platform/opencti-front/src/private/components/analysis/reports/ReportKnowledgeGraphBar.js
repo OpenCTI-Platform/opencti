@@ -12,7 +12,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   FilterListOutlined,
-  InfoOutlined,
   LinkOutlined,
   ReadMoreOutlined,
   ScatterPlotOutlined,
