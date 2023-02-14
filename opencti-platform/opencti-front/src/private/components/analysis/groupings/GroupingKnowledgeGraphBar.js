@@ -6,26 +6,20 @@ import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import {
-  AspectRatio,
-  FilterListOutlined,
   AccountBalanceOutlined,
-  DeleteOutlined,
-  LinkOutlined,
+  AspectRatio,
   CenterFocusStrongOutlined,
-  EditOutlined,
-  InfoOutlined,
-  ScatterPlotOutlined,
   DateRangeOutlined,
-  VisibilityOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FilterListOutlined,
+  InfoOutlined,
+  LinkOutlined,
   ReadMoreOutlined,
+  ScatterPlotOutlined,
+  VisibilityOutlined,
 } from '@mui/icons-material';
-import {
-  Video3d,
-  SelectAll,
-  SelectGroup,
-  FamilyTree,
-  AutoFix,
-} from 'mdi-material-ui';
+import { AutoFix, FamilyTree, SelectAll, SelectGroup, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -36,13 +30,7 @@ import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
 import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
-import {
-  ResponsiveContainer,
-  Scatter,
-  ScatterChart,
-  YAxis,
-  ZAxis,
-} from 'recharts';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -59,12 +47,16 @@ import StixCoreRelationshipEdition from '../../common/stix_core_relationships/St
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
-import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
+import StixSightingRelationshipCreation
+  from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
-import StixCyberObservableRelationshipCreation from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
-import StixCyberObservableRelationshipEdition from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
+import StixCyberObservableRelationshipCreation
+  from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
+import StixCyberObservableRelationshipEdition
+  from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
 import { MESSAGING$ } from '../../../../relay/environment';
+import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 
 const styles = () => ({
   bottomNav: {
@@ -106,7 +98,8 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditRelation: false,
       openEditSighting: false,
       openEditNested: false,
-      openEditEntity: false,
+      openEditDomainObject: false,
+      openEditObservable: false,
       displayRemove: false,
       navOpen: localStorage.getItem('navOpen') === 'true',
     };
@@ -220,8 +213,14 @@ class GroupingKnowledgeGraphBar extends Component {
     if (
       this.props.numberOfSelectedNodes === 1
       && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
+      && !this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
     ) {
-      this.setState({ openEditEntity: true });
+      this.setState({ openEditDomainObject: true });
+    } else if (
+      this.props.numberOfSelectedNodes === 1
+      && this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
+    ) {
+      this.setState({ openEditObservable: true });
     } else if (
       (this.props.numberOfSelectedLinks === 1
         && this.props.selectedLinks[0].parent_types.includes(
@@ -256,31 +255,38 @@ class GroupingKnowledgeGraphBar extends Component {
     }
   }
 
-  handleCloseEntityEdition() {
-    this.setState({ openEditEntity: false });
+  handleCloseDomainObjectEdition() {
+    this.setState({ openEditDomainObject: false });
     this.props.handleCloseEntityEdition(
-      R.propOr(null, 'id', this.props.selectedNodes[0]),
+      this.props.selectedNodes[0]?.id ?? null,
+    );
+  }
+
+  handleCloseObservableEdition() {
+    this.setState({ openEditObservable: false });
+    this.props.handleCloseEntityEdition(
+      this.props.selectedNodes[0]?.id ?? null,
     );
   }
 
   handleCloseRelationEdition() {
     this.setState({ openEditRelation: false });
     this.props.handleCloseRelationEdition(
-      R.propOr(null, 'id', this.props.selectedLinks[0]),
+      this.props.selectedLinks[0]?.id ?? null,
     );
   }
 
   handleCloseSightingEdition() {
     this.setState({ openEditSighting: false });
     this.props.handleCloseRelationEdition(
-      R.propOr(null, 'id', this.props.selectedLinks[0]),
+      this.props.selectedLinks[0]?.id ?? null,
     );
   }
 
   handleCloseNestedEdition() {
     this.setState({ openEditNested: false });
     this.props.handleCloseRelationEdition(
-      R.propOr(null, 'id', this.props.selectedLinks[0]),
+      this.props.selectedLinks[0]?.id ?? null,
     );
   }
 
@@ -347,15 +353,16 @@ class GroupingKnowledgeGraphBar extends Component {
       nestedReversed,
       openEditRelation,
       openEditSighting,
-      openEditEntity,
+      openEditDomainObject,
+      openEditObservable,
       openEditNested,
       navOpen,
     } = this.state;
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
     let viewLink = null;
-    const isInferred = R.filter((n) => n.inferred, selectedNodes).length > 0
-      || R.filter((n) => n.inferred, selectedLinks).length > 0;
+    const isInferred = selectedNodes.filter((n) => n.inferred).length > 0
+      || selectedLinks.filter((n) => n.inferred).length > 0;
     if (viewEnabled) {
       if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
         if (
@@ -392,8 +399,7 @@ class GroupingKnowledgeGraphBar extends Component {
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
-        && selectedNodes.length === 1
-        && !selectedNodes[0].isObservable)
+        && selectedNodes.length === 1)
       || (!isInferred
         && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
@@ -827,10 +833,9 @@ class GroupingKnowledgeGraphBar extends Component {
                     containerId={grouping.id}
                     containerStixCoreObjects={grouping.objects.edges}
                     knowledgeGraph={true}
-                    defaultCreatedBy={R.propOr(null, 'createdBy', grouping)}
-                    defaultMarkingDefinitions={R.map(
+                    defaultCreatedBy={grouping.createdBy ?? null}
+                    defaultMarkingDefinitions={(grouping.objectMarking?.edges ?? []).map(
                       (n) => n.node,
-                      R.pathOr([], ['objectMarking', 'edges'], grouping),
                     )}
                     targetStixCoreObjectTypes={[
                       'Stix-Domain-Object',
@@ -868,16 +873,21 @@ class GroupingKnowledgeGraphBar extends Component {
                   </span>
                 </Tooltip>
                 <StixDomainObjectEdition
-                  open={openEditEntity}
-                  stixDomainObjectId={R.propOr(null, 'id', selectedNodes[0])}
-                  handleClose={this.handleCloseEntityEdition.bind(this)}
+                  open={openEditDomainObject}
+                  stixDomainObjectId={selectedNodes[0]?.id ?? null}
+                  handleClose={this.handleCloseDomainObjectEdition.bind(this)}
                   noStoreUpdate={true}
+                />
+                <StixCyberObservableEdition
+                  open={openEditObservable}
+                  stixCyberObservableId={selectedNodes[0]?.id ?? null}
+                  handleClose={this.handleCloseObservableEdition.bind(this)}
                 />
                 <StixCoreRelationshipEdition
                   open={openEditRelation}
                   stixCoreRelationshipId={
-                    R.propOr(null, 'id', selectedNodes[0])
-                    || R.propOr(null, 'id', selectedLinks[0])
+                    (selectedNodes[0]?.id ?? null)
+                    || (selectedLinks[0]?.id ?? null)
                   }
                   handleClose={this.handleCloseRelationEdition.bind(this)}
                   noStoreUpdate={true}
@@ -885,8 +895,8 @@ class GroupingKnowledgeGraphBar extends Component {
                 <StixSightingRelationshipEdition
                   open={openEditSighting}
                   stixSightingRelationshipId={
-                    R.propOr(null, 'id', selectedNodes[0])
-                    || R.propOr(null, 'id', selectedLinks[0])
+                    (selectedNodes[0]?.id ?? null)
+                    || (selectedLinks[0]?.id ?? null)
                   }
                   handleClose={this.handleCloseSightingEdition.bind(this)}
                   noStoreUpdate={true}
@@ -894,8 +904,8 @@ class GroupingKnowledgeGraphBar extends Component {
                 <StixCyberObservableRelationshipEdition
                   open={openEditNested}
                   stixCyberObservableRelationshipId={
-                    R.propOr(null, 'id', selectedNodes[0])
-                    || R.propOr(null, 'id', selectedLinks[0])
+                    (selectedNodes[0]?.id ?? null)
+                    || (selectedLinks[0]?.id ?? null)
                   }
                   handleClose={this.handleCloseNestedEdition.bind(this)}
                   noStoreUpdate={true}
@@ -931,10 +941,9 @@ class GroupingKnowledgeGraphBar extends Component {
                     handleReverseRelation={this.handleReverseRelation.bind(
                       this,
                     )}
-                    defaultCreatedBy={R.propOr(null, 'createdBy', grouping)}
-                    defaultMarkingDefinitions={R.map(
+                    defaultCreatedBy={grouping.createdBy ?? null}
+                    defaultMarkingDefinitions={(grouping.objectMarking?.edges ?? []).map(
                       (n) => n.node,
-                      R.pathOr([], ['objectMarking', 'edges'], grouping),
                     )}
                   />
                 )}
@@ -967,9 +976,8 @@ class GroupingKnowledgeGraphBar extends Component {
                     handleClose={this.handleCloseCreateNested.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseNested.bind(this)}
-                    defaultMarkingDefinitions={R.map(
+                    defaultMarkingDefinitions={(grouping.objectMarking?.edges ?? []).map(
                       (n) => n.node,
-                      R.pathOr([], ['objectMarking', 'edges'], grouping),
                     )}
                   />
                 )}
@@ -1004,10 +1012,9 @@ class GroupingKnowledgeGraphBar extends Component {
                     handleReverseSighting={this.handleReverseSighting.bind(
                       this,
                     )}
-                    defaultCreatedBy={R.propOr(null, 'createdBy', grouping)}
-                    defaultMarkingDefinitions={R.map(
+                    defaultCreatedBy={grouping.createdBy ?? null}
+                    defaultMarkingDefinitions={(grouping.objectMarking?.edges ?? []).map(
                       (n) => n.node,
-                      R.pathOr([], ['objectMarking', 'edges'], grouping),
                     )}
                   />
                 )}
