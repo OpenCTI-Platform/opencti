@@ -37,6 +37,7 @@ import {
 } from './ReportKnowledgeGraphQuery';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportPopover from './ReportPopover';
+import EntityDetailsRightsBar from '../../../../utils/graph/EntityDetailsRightBar';
 
 const ignoredStixCoreObjectsTypes = ['Report', 'Note', 'Opinion'];
 
@@ -525,6 +526,7 @@ class ReportKnowledgeGraphComponent extends Component {
       height: null,
       zoomed: false,
       keyword: '',
+      openEntityDetailsRightsBar: false,
     };
   }
 
@@ -793,6 +795,8 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleNodeClick(node, event) {
+    console.log('node:   ', node);
+    console.log('selelectedNodes:   ', this.selectedNodes);
     if (event.ctrlKey || event.shiftKey || event.altKey) {
       if (this.selectedNodes.has(node)) {
         this.selectedNodes.delete(node);
@@ -1062,6 +1066,22 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
+  handleOpenEntityDetailsRightsBar() {
+    if (
+      this.state.numberOfSelectedNodes === 1
+    ) {
+      this.setState({ openEntityDetailsRightsBar: true });
+    }
+  }
+
+  handleCloseEntityDetailsRightsBar() {
+    if (
+      this.state.numberOfSelectedNodes !== 1
+    ) {
+      this.setState({ openEntityDetailsRightsBar: false });
+    }
+  }
+
   handleCloseEntityEdition(entityId) {
     setTimeout(() => {
       fetchQuery(reportKnowledgeGraphStixCoreObjectQuery, {
@@ -1241,6 +1261,12 @@ class ReportKnowledgeGraphComponent extends Component {
           enableSuggestions={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
+        <EntityDetailsRightsBar
+          selectedNodes={Array.from(this.selectedNodes)}
+          open={this.state.openEntityDetailsRightsBar}
+          handleClose={this.handleCloseEntityDetailsRightsBar.bind(this)}
+        >
+        </EntityDetailsRightsBar>
         <ReportKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
