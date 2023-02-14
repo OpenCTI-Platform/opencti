@@ -2,8 +2,11 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles/createTheme';
-import Typography from '@mui/material/Typography';
-// import { useFormatter } from '../../components/i18n';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import { useFormatter } from '../../components/i18n';
 
 const useStyles = makeStyles < Theme >((theme) => ({
   drawerPaper: {
@@ -11,20 +14,10 @@ const useStyles = makeStyles < Theme >((theme) => ({
     width: 250,
     padding: '0 20px 20px 20px',
     display: 'flex',
-    overflow: 'hidden',
     zIndex: 1100,
   },
   title: {
     marginTop: '100px',
-  },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 6px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
   },
   toolbar: theme.mixins.toolbar,
 }));
@@ -36,7 +29,7 @@ interface EntityDetailsRightsBarProps {
 }
 const EntityDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedNodes, open, handleClose }) => {
   const classes = useStyles();
-  // const { t } = useFormatter();
+  const { t } = useFormatter();
   const entity = selectedNodes[0];
   console.log('entity:   ', entity);
   return (
@@ -47,9 +40,21 @@ const EntityDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = (
       classes={{ paper: classes.drawerPaper }}
       onClose={handleClose}
     >
-      {entity && <Typography variant="h6" classes={{ root: classes.title }}>
-        {entity.id}
-      </Typography>}
+      <List classes={{ root: classes.title }}
+        subheader={
+          <ListSubheader component="div">
+            {t('Entity List')}
+          </ListSubheader>
+        }
+      >
+        {selectedNodes.map((node) => (
+          <ListItem
+            classes={{ root: classes.item }}
+          >
+            <ListItemText primary={node.id} />
+          </ListItem>
+        ))}
+      </List>
     </Drawer>
   );
 };

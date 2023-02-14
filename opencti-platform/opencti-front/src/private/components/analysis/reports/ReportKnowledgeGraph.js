@@ -1261,12 +1261,13 @@ class ReportKnowledgeGraphComponent extends Component {
           enableSuggestions={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
-        {numberOfSelectedNodes === 1 && (<EntityDetailsRightsBar
+        {numberOfSelectedNodes > 0 && (
+          <EntityDetailsRightsBar
           selectedNodes={Array.from(this.selectedNodes)}
           open={this.state.openEntityDetailsRightsBar}
           handleClose={this.handleCloseEntityDetailsRightsBar.bind(this)}
-        >
-        </EntityDetailsRightsBar>)}
+        />
+        )}
         <ReportKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
