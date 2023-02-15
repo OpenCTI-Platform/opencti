@@ -39,61 +39,57 @@ export const reportsLinesQuery = graphql`
 `;
 
 const reportsLineFragment = graphql`
-  fragment ReportsLines_data on Query
-  @argumentDefinitions(
-    search: { type: "String" }
-    count: { type: "Int", defaultValue: 25 }
-    cursor: { type: "ID" }
-    orderBy: { type: "ReportsOrdering", defaultValue: name }
-    orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[ReportsFiltering]" }
-  )
-  @refetchable(queryName: "ReportsLinesRefetchQuery") {
-    reports(
-      search: $search
-      first: $count
-      after: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) @connection(key: "Pagination_reports") {
-      edges {
-        node {
-          id
-          name
-          published
-          createdBy {
-            ... on Identity {
-              id
-              name
-              entity_type
-            }
-          }
-          objectMarking {
+    fragment ReportsLines_data on Query
+    @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "ReportsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[ReportsFiltering]" }
+    )
+    @refetchable(queryName: "ReportsLinesRefetchQuery") {
+        reports(
+            search: $search
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+        ) @connection(key: "Pagination_reports") {
             edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
+                node {
+                    id
+                    name
+                    published
+                    createdBy {
+                        ... on Identity {
+                            id
+                            name
+                            entity_type
+                        }
+                    }
+                    objectMarking {
+                        edges {
+                            node {
+                                id
+                                definition_type
+                                definition
+                                x_opencti_order
+                                x_opencti_color
+                            }
+                        }
+                    }
+                    ...ReportLine_node
+                }
             }
-          }
-          creator {
-            id
-            name
-          }
-          ...ReportLine_node
+            pageInfo {
+                endCursor
+                hasNextPage
+                globalCount
+            }
         }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-        globalCount
-      }
     }
-  }
 `;
 
 interface ReportsLinesProps {

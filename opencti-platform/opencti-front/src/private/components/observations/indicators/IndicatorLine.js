@@ -183,7 +183,7 @@ export const IndicatorLine = createFragmentContainer(IndicatorLineComponent, {
           }
         }
       }
-      creator {
+      creators {
         id
         name
       }

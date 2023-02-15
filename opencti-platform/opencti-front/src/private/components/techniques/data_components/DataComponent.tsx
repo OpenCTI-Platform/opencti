@@ -41,7 +41,7 @@ const DataComponentFragment = graphql`
         entity_type
       }
     }
-    creator {
+    creators {
       id
       name
     }

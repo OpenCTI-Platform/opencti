@@ -122,7 +122,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   description: String
   rating: Int
   # Technical
-  creator: Creator
+  creators: [Creator]
   toStix: String
   importFiles(first: Int): FileConnection
   pendingFiles(first: Int): FileConnection

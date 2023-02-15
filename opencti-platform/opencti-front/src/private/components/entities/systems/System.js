@@ -129,7 +129,7 @@ const System = createFragmentContainer(SystemComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

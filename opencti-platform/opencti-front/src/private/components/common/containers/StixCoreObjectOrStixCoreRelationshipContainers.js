@@ -193,7 +193,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
         isSortable: isRuntimeSort ?? false,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '12%',
         isSortable: isRuntimeSort ?? false,
       },

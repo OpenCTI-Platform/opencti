@@ -99,7 +99,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     stop_time: DateTime
     aliases: [String]
     # Technical
-    creator: Creator
+    creators: [Creator]
     toStix: String
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection

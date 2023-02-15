@@ -109,7 +109,7 @@ const Opinion = createFragmentContainer(OpinionComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

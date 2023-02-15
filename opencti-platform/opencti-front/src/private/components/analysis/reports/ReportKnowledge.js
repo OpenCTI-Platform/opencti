@@ -101,10 +101,6 @@ export const reportKnowledgeAttackPatternsGraphQuery = graphql`
                   }
                 }
               }
-              creator {
-                id
-                name
-              }
               killChainPhases {
                 edges {
                   node {

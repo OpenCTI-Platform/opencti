@@ -126,7 +126,7 @@ const StixCyberObservable = createFragmentContainer(
             entity_type
           }
         }
-        creator {
+        creators {
           id
           name
         }

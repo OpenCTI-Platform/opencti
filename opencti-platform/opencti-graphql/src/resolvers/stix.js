@@ -25,7 +25,7 @@ const stixResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
-    creator: (stix, _, context) => creatorsLoader.load(stix.creator_id, context, context.user),
+    creators: (stix, _, context) => creatorsLoader.load(stix.creator_id, context, context.user),
   }
 };
 

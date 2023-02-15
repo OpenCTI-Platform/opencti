@@ -122,10 +122,6 @@ const OrganizationDetails = createFragmentContainer(
         contact_information
         x_opencti_reliability
         x_opencti_organization_type
-        creator {
-          id
-          name
-        }
         objectLabel {
           edges {
             node {

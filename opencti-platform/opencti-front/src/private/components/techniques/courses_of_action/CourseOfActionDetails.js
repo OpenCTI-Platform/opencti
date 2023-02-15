@@ -117,10 +117,6 @@ const CourseOfActionDetails = createFragmentContainer(
         x_mitre_id
         x_opencti_threat_hunting
         x_opencti_log_sources
-        creator {
-          id
-          name
-        }
         objectLabel {
           edges {
             node {

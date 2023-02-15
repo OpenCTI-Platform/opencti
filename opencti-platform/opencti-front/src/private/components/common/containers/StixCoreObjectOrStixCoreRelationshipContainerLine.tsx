@@ -190,7 +190,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
               color
             }
           }
-          creator {
+          creators {
             id
             name
           }

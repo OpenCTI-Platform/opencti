@@ -118,7 +118,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

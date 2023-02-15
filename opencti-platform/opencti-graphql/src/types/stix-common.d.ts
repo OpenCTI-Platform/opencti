@@ -37,7 +37,6 @@ interface StixOpenctiExtension {
   files: Array<StixFileExtension>;
   aliases: Array<string>;
   granted_refs: Array<StixId>;
-  object_assignee_refs: Array<Id>;
   linked_to_refs: Array<StixId>;
   stix_ids: Array<StixId>;
   type: string;
@@ -45,14 +44,12 @@ interface StixOpenctiExtension {
   updated_at: Date;
   is_inferred: boolean;
   workflow_id: string | undefined;
+  assignee_ids: string[];
+  creator_ids: string[];
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
   extension_type : 'new-sdo';
-}
-
-interface StixOpenctiExtensionProperty extends StixOpenctiExtension {
-  extension_type : 'property-extension';
 }
 
 interface StixObject {

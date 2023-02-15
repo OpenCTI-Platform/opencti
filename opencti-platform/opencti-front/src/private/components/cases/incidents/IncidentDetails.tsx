@@ -108,10 +108,6 @@ const IncidentDetailsFragment = graphql`
     created
     modified
     created_at
-    creator {
-      id
-      name
-    }
     objectLabel {
       edges {
         node {

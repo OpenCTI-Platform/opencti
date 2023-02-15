@@ -135,7 +135,7 @@ class NoteLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.creator.width }}
               >
-                {node.creator?.name}
+                {(node.creators ?? []).map((c) => c?.name).join(', ')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -230,7 +230,7 @@ const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
           }
         }
       }
-      creator {
+      creators {
         id
         name
       }

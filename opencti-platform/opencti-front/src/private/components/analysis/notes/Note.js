@@ -120,7 +120,7 @@ const Note = createFragmentContainer(NoteComponent, {
         name
         entity_type
       }
-      creator {
+      creators {
         id
         name
       }

@@ -119,7 +119,7 @@ const ObservedData = createFragmentContainer(ObservedDataComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

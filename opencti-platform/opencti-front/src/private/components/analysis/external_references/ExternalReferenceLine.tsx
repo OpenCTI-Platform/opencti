@@ -170,7 +170,7 @@ ExternalReferenceLineComponentProps
               className={classes.bodyItem}
               style={{ width: dataColumns?.creator.width }}
             >
-              {node?.creator?.name}
+              {(node.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}
@@ -199,7 +199,7 @@ const ExternalReferenceLineFragment = createFragmentContainer(
         external_id
         url
         created
-        creator {
+        creators {
           id
           name
         }

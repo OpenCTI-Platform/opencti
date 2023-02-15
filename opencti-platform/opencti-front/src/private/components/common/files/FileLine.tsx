@@ -397,9 +397,6 @@ const FileLine = createFragmentContainer(FileLineComponent, {
           timestamp
           message
         }
-        creator {
-          name
-        }
         labels
       }
       ...FileWork_file

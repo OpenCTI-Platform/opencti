@@ -243,7 +243,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                         className={classes.bodyItem}
                         style={{ width: '12%' }}
                       >
-                        {R.pathOr('', ['creator', 'name'], node)}
+                        {(node.creators ?? []).map((c) => c?.name).join(', ')}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -409,7 +409,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                   }
                 }
               }
-              creator {
+              creators {
                 id
                 name
               }

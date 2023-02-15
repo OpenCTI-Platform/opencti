@@ -91,10 +91,6 @@ export const groupingKnowledgeAttackPatternsGraphQuery = graphql`
                   }
                 }
               }
-              creator {
-                id
-                name
-              }
               killChainPhases {
                 edges {
                   node {

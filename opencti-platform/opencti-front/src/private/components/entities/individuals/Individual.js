@@ -137,7 +137,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

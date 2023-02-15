@@ -177,7 +177,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.creator.width }}
               >
-                {R.pathOr('', ['creator', 'name'], node)}
+                {(node.creators ?? []).map((c) => c?.name).join(', ')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -287,7 +287,7 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
             }
           }
         }
-        creator {
+        creators {
           id
           name
         }
@@ -332,7 +332,7 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
                 }
               }
             }
-            creator {
+            creators {
               id
               name
             }

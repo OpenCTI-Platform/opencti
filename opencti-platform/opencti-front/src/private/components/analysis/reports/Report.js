@@ -103,7 +103,7 @@ const Report = createFragmentContainer(ReportComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

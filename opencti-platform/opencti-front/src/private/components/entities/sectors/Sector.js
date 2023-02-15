@@ -120,7 +120,7 @@ const Sector = createFragmentContainer(SectorComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

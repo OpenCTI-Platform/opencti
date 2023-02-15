@@ -47,7 +47,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -335,7 +335,7 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   decryption_key?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   encryption_algorithm?: Maybe<Scalars['String']>;
@@ -573,7 +573,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   dataComponents?: Maybe<DataComponentConnection>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -891,7 +891,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -1099,7 +1099,7 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -1307,7 +1307,7 @@ export type BasicObject = {
 
 export type BasicRelationship = {
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   entity_type: Scalars['String'];
   fromRole?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
@@ -1326,7 +1326,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -1658,7 +1658,7 @@ export type Case = BasicObject & Container & StixCoreObject & StixDomainObject &
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -1947,7 +1947,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -2226,7 +2226,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -2518,7 +2518,7 @@ export type Container = {
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   entity_type: Scalars['String'];
   externalReferences?: Maybe<ExternalReferenceConnection>;
   groupings?: Maybe<GroupingConnection>;
@@ -2813,7 +2813,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -3059,7 +3059,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -3352,7 +3352,7 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -3554,7 +3554,7 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -3760,7 +3760,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   dataSource?: Maybe<DataSource>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -4001,7 +4001,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   dataComponents?: Maybe<DataComponentConnection>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -4267,7 +4267,7 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   ctime?: Maybe<Scalars['DateTime']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -4506,7 +4506,7 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -4738,7 +4738,7 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   display_name?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -4945,7 +4945,7 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   content_type?: Maybe<Scalars['String']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -5159,7 +5159,7 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   content_type?: Maybe<Scalars['String']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -5410,7 +5410,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -5653,7 +5653,7 @@ export type ExternalReference = BasicObject & StixMetaObject & StixObject & {
   connectors?: Maybe<Array<Maybe<Connector>>>;
   created?: Maybe<Scalars['DateTime']>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -5997,7 +5997,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -6285,7 +6285,7 @@ export type HashedObservable = {
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -6482,7 +6482,7 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -6685,7 +6685,7 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   countries?: Maybe<CountryConnection>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -6890,7 +6890,7 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   countries?: Maybe<CountryConnection>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -7129,7 +7129,7 @@ export type Identity = {
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -7379,7 +7379,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -7676,7 +7676,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -7998,7 +7998,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -8296,7 +8296,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -8581,7 +8581,7 @@ export type InternalObject = {
 export type InternalRelationship = BasicRelationship & {
   __typename?: 'InternalRelationship';
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   entity_type: Scalars['String'];
   from?: Maybe<InternalObject>;
   fromRole?: Maybe<Scalars['String']>;
@@ -8608,7 +8608,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -8889,7 +8889,7 @@ export type KillChainPhase = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'KillChainPhase';
   created?: Maybe<Scalars['DateTime']>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
@@ -8988,7 +8988,7 @@ export type Label = BasicObject & StixMetaObject & StixObject & {
   color?: Maybe<Scalars['String']>;
   created?: Maybe<Scalars['DateTime']>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
@@ -9075,7 +9075,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -9329,7 +9329,7 @@ export type Location = {
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -9660,7 +9660,7 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -9867,7 +9867,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -10157,7 +10157,7 @@ export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'MarkingDefinition';
   created?: Maybe<Scalars['DateTime']>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   definition?: Maybe<Scalars['String']>;
   definition_type?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -10292,7 +10292,7 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   content?: Maybe<Scalars['String']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -12015,7 +12015,7 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -12220,7 +12220,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -12461,7 +12461,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   dst_byte_count?: Maybe<Scalars['Int']>;
   dst_packets?: Maybe<Scalars['Int']>;
   dst_port?: Maybe<Scalars['Int']>;
@@ -12687,7 +12687,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -13094,7 +13094,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -13403,7 +13403,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   explanation?: Maybe<Scalars['String']>;
@@ -13713,7 +13713,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -14028,7 +14028,7 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   cvv?: Maybe<Scalars['Int']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -14235,7 +14235,7 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -14440,7 +14440,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -14722,7 +14722,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
   created_time?: Maybe<Scalars['DateTime']>;
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   cwd?: Maybe<Scalars['String']>;
   dep_enabled?: Maybe<Scalars['Boolean']>;
   descriptions?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -17171,7 +17171,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -17465,7 +17465,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   deleteWithElementsCount?: Maybe<Scalars['Int']>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -17942,7 +17942,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -18293,7 +18293,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   cpe?: Maybe<Scalars['String']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -18589,7 +18589,7 @@ export type StixCoreObject = {
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -18922,7 +18922,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -19191,7 +19191,7 @@ export type StixCyberObservable = {
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -19459,7 +19459,7 @@ export type StixCyberObservableRelationship = BasicRelationship & StixRelationsh
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   from: StixObjectOrStixRelationship;
@@ -19635,7 +19635,7 @@ export type StixDomainObject = {
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -20000,7 +20000,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   ctime?: Maybe<Scalars['DateTime']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -20245,7 +20245,7 @@ export type StixMetaObject = {
 export type StixMetaRelationship = BasicRelationship & StixRelationship & {
   __typename?: 'StixMetaRelationship';
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   entity_type: Scalars['String'];
   from: StixObjectOrStixRelationship;
   fromRole?: Maybe<Scalars['String']>;
@@ -20303,7 +20303,7 @@ export enum StixMetaRelationshipsOrdering {
 
 export type StixObject = {
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
   is_inferred: Scalars['Boolean'];
@@ -20391,7 +20391,7 @@ export enum StixObjectOrStixRelationshipsOrdering {
 }
 
 export type StixRelationship = {
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   entity_type: Scalars['String'];
   from: StixObjectOrStixRelationship;
   fromRole?: Maybe<Scalars['String']>;
@@ -20470,7 +20470,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -20956,7 +20956,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -21377,7 +21377,7 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -21583,7 +21583,7 @@ export type ThreatActor = BasicObject & StixCoreObject & StixDomainObject & Stix
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -21883,7 +21883,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -22245,7 +22245,7 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -22485,7 +22485,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   credential?: Maybe<Scalars['String']>;
   credential_last_changed?: Maybe<Scalars['DateTime']>;
   display_name?: Maybe<Scalars['String']>;
@@ -22720,7 +22720,7 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -23023,7 +23023,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   category: VocabularyDefinition;
   created?: Maybe<Scalars['DateTime']>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
@@ -23181,7 +23181,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -23431,7 +23431,7 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -23636,7 +23636,7 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   data?: Maybe<Scalars['String']>;
   data_type?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -24060,7 +24060,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   connectors?: Maybe<Array<Maybe<Connector>>>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
-  creator?: Maybe<Creator>;
+  creators?: Maybe<Array<Maybe<Creator>>>;
   crl_distribution_points?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -25680,7 +25680,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -25779,7 +25779,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ArtifactConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   decryption_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   encryption_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -25851,7 +25851,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -25952,7 +25952,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AutonomousSystemConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AutonomousSystemExportFilesArgs>>;
@@ -25998,7 +25998,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<BankAccountConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<BankAccountExportFilesArgs>>;
@@ -26046,7 +26046,7 @@ export type BasicObjectResolvers<ContextType = any, ParentType extends Resolvers
 export type BasicRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicRelationship'] = ResolversParentTypes['BasicRelationship']> = ResolversObject<{
   __resolveType: TypeResolveFn<'InternalRelationship' | 'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixMetaRelationship' | 'StixSightingRelationship', ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -26064,7 +26064,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26163,7 +26163,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26229,7 +26229,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26290,7 +26290,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26408,7 +26408,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ContainerExternalReferencesArgs>>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ContainerGroupingsArgs>>;
@@ -26480,7 +26480,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26555,7 +26555,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26645,7 +26645,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CryptocurrencyWalletConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletExportFilesArgs>>;
@@ -26687,7 +26687,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CryptographicKeyConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyExportFilesArgs>>;
@@ -26733,7 +26733,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -26795,7 +26795,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -26871,7 +26871,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<DirectoryConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   ctime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26946,7 +26946,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<DomainNameConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DomainNameExportFilesArgs>>;
@@ -27002,7 +27002,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<EmailAddrConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   display_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27048,7 +27048,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMessageExportFilesArgs>>;
@@ -27096,7 +27096,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeExportFilesArgs>>;
@@ -27170,7 +27170,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27229,7 +27229,7 @@ export type ExternalReferenceResolvers<ContextType = any, ParentType extends Res
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ExternalReferenceConnectorsArgs>>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27409,7 +27409,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27476,7 +27476,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<HashedObservableConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HashedObservableExportFilesArgs>>;
@@ -27516,7 +27516,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<HostnameConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnameExportFilesArgs>>;
@@ -27559,7 +27559,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv4AddrExportFilesArgs>>;
@@ -27602,7 +27602,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv6AddrExportFilesArgs>>;
@@ -27648,7 +27648,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27719,7 +27719,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27800,7 +27800,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27882,7 +27882,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27972,7 +27972,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -28046,7 +28046,7 @@ export type InternalObjectResolvers<ContextType = any, ParentType extends Resolv
 
 export type InternalRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalRelationship'] = ResolversParentTypes['InternalRelationship']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<Maybe<ResolversTypes['InternalObject']>, ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28067,7 +28067,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -28139,7 +28139,7 @@ export type IntrusionSetEditMutationsResolvers<ContextType = any, ParentType ext
 export type KillChainPhaseResolvers<ContextType = any, ParentType extends ResolversParentTypes['KillChainPhase'] = ResolversParentTypes['KillChainPhase']> = ResolversObject<{
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -28183,7 +28183,7 @@ export type LabelResolvers<ContextType = any, ParentType extends ResolversParent
   color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -28228,7 +28228,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<LanguageExportFilesArgs>>;
@@ -28302,7 +28302,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -28404,7 +28404,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<MacAddrConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MacAddrExportFilesArgs>>;
@@ -28451,7 +28451,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -28522,7 +28522,7 @@ export type MalwareEditMutationsResolvers<ContextType = any, ParentType extends 
 export type MarkingDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkingDefinition'] = ResolversParentTypes['MarkingDefinition']> = ResolversObject<{
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   definition_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -28610,7 +28610,7 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -28901,7 +28901,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<MutexConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MutexExportFilesArgs>>;
@@ -28946,7 +28946,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -29007,7 +29007,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<NetworkTrafficConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   dst_byte_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   dst_packets?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   dst_port?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -29064,7 +29064,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NoteExportFilesArgs>>;
@@ -29195,7 +29195,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataExportFilesArgs>>;
@@ -29269,7 +29269,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   explanation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29341,7 +29341,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -29442,7 +29442,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<PaymentCardConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   cvv?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -29486,7 +29486,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<PhoneNumberConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<PhoneNumberExportFilesArgs>>;
@@ -29531,7 +29531,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -29607,7 +29607,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   created_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   cwd?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   dep_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   descriptions?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -29963,7 +29963,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -30047,7 +30047,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   deleteWithElementsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -30236,7 +30236,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -30371,7 +30371,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   cpe?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SoftwareExportFilesArgs>>;
@@ -30462,7 +30462,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixCoreObjectConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCoreObjectExportFilesArgs>>;
@@ -30527,7 +30527,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -30595,7 +30595,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixCyberObservableConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservableExportFilesArgs>>;
@@ -30660,7 +30660,7 @@ export type StixCyberObservableRelationshipResolvers<ContextType = any, ParentTy
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<StixCyberObservableRelationshipCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
@@ -30714,7 +30714,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixDomainObjectExportFilesArgs>>;
@@ -30789,7 +30789,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixFileConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   ctime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -30869,7 +30869,7 @@ export type StixMetaObjectResolvers<ContextType = any, ParentType extends Resolv
 
 export type StixMetaRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaRelationship'] = ResolversParentTypes['StixMetaRelationship']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30901,7 +30901,7 @@ export type StixMetaRelationshipEdgeResolvers<ContextType = any, ParentType exte
 export type StixObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObject'] = ResolversParentTypes['StixObject']> = ResolversObject<{
   __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Case' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Event' | 'ExternalReference' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixFile' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -30948,7 +30948,7 @@ export interface StixRefScalarConfig extends GraphQLScalarTypeConfig<ResolversTy
 
 export type StixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationship'] = ResolversParentTypes['StixRelationship']> = ResolversObject<{
   __resolveType: TypeResolveFn<'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixMetaRelationship' | 'StixSightingRelationship', ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30986,7 +30986,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31166,7 +31166,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31311,7 +31311,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TextConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextExportFilesArgs>>;
@@ -31357,7 +31357,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31444,7 +31444,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31559,7 +31559,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<UrlConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UrlExportFilesArgs>>;
@@ -31639,7 +31639,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<UserAccountConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   credential?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   credential_last_changed?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   display_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31688,7 +31688,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<UserAgentConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentExportFilesArgs>>;
@@ -31762,7 +31762,7 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
   category?: Resolver<ResolversTypes['VocabularyDefinition'], ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -31813,7 +31813,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31889,7 +31889,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<WindowsRegistryKeyConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyExportFilesArgs>>;
@@ -31932,7 +31932,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<WindowsRegistryValueTypeConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   data_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -32074,7 +32074,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<X509CertificateConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
   crl_distribution_points?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

@@ -64,7 +64,7 @@ class IndicatorEntities extends Component {
         isSortable: false,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '12%',
         isSortable: false,
       },

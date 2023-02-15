@@ -119,7 +119,7 @@ const Narrative = createFragmentContainer(NarrativeComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

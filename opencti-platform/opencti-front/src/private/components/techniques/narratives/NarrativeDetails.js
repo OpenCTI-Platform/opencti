@@ -73,10 +73,6 @@ const NarrativeDetails = createFragmentContainer(NarrativeDetailsComponent, {
       id
       description
       isSubNarrative
-      creator {
-        id
-        name
-      }
       ...NarrativeSubNarratives_narrative
       ...NarrativeParentNarratives_narrative
     }

@@ -242,14 +242,17 @@ class StixDomainObjectOverview extends Component {
                 {t('Creation date (in this platform)')}
               </Typography>
               {fldt(stixDomainObject.created_at)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Creator')}
+              <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+                {t('Creators')}
               </Typography>
-              <ItemCreator creator={stixDomainObject.creator} />
+              <div>
+                {(stixDomainObject.creators ?? []).map((c) => {
+                  return <div style={{ float: 'left', marginRight: '10px' }}>
+                      <ItemCreator creator={c} />
+                    </div>;
+                })}
+                <div style={{ clear: 'both' }}/>
+              </div>
               <div style={{ marginTop: 20 }}>
                 <Typography
                   variant="h3"

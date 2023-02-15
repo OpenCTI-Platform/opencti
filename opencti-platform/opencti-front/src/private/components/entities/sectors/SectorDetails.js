@@ -64,10 +64,6 @@ const SectorDetails = createFragmentContainer(SectorDetailsComponent, {
       id
       description
       isSubSector
-      creator {
-        id
-        name
-      }
       ...SectorSubSectors_sector
       ...SectorParentSectors_sector
     }

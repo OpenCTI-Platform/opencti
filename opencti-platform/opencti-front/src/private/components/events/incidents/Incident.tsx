@@ -44,7 +44,7 @@ const incidentFragment = graphql`
                   entity_type
               }
           }
-          creator {
+          creators {
               name
           }
           objectMarking {

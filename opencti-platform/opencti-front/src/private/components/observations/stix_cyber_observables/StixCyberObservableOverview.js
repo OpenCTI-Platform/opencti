@@ -182,9 +182,16 @@ class StixCyberObservableOverview extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Creator')}
+                {t('Creators')}
               </Typography>
-              <ItemCreator creator={stixCyberObservable.creator} />
+              <div>
+                {(stixCyberObservable.creators ?? []).map((c) => {
+                  return <div style={{ float: 'left', marginRight: '10px' }}>
+                    <ItemCreator creator={c} />
+                  </div>;
+                })}
+                <div style={{ clear: 'both' }}/>
+              </div>
               <Typography
                 variant="h3"
                 gutterBottom={true}

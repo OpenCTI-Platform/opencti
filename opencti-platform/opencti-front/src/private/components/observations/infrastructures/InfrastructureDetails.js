@@ -151,10 +151,6 @@ const InfrastructureDetails = createFragmentContainer(
         infrastructure_types
         first_seen
         last_seen
-        creator {
-          id
-          name
-        }
         killChainPhases {
           edges {
             node {

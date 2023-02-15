@@ -89,7 +89,7 @@ export default createFragmentContainer(GroupingComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

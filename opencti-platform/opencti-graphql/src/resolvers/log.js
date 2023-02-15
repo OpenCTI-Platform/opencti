@@ -1,10 +1,10 @@
 import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
-import { batchCreators } from '../domain/user';
+import { batchCreator } from '../domain/user';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { batchLoader } from '../database/middleware';
 
-const creatorLoader = batchLoader(batchCreators);
+const creatorLoader = batchLoader(batchCreator);
 
 const logResolvers = {
   Query: {

@@ -259,7 +259,7 @@ class Indicators extends Component {
         isSortable: true,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '10%',
         isSortable: true,
       },

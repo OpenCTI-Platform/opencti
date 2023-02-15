@@ -13,14 +13,14 @@ import {
   workspaceDeleteRelation,
   workspaceDeleteRelations,
 } from '../domain/workspace';
-import { batchCreators } from '../domain/user';
+import { batchCreator } from '../domain/user';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader } from '../database/middleware';
 
-const creatorLoader = batchLoader(batchCreators);
+const creatorLoader = batchLoader(batchCreator);
 
 const workspaceResolvers = {
   Query: {

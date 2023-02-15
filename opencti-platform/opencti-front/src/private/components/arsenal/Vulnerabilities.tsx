@@ -63,7 +63,7 @@ const Vulnerabilities = () => {
         isSortable: true,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '12%',
         isSortable: true,
       },

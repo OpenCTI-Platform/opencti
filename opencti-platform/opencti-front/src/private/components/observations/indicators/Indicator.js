@@ -121,7 +121,7 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

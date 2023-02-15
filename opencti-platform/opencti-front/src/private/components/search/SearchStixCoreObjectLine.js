@@ -139,7 +139,7 @@ const SearchStixCoreObjectLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
             >
-              {R.pathOr('', ['creator', 'name'], node)}
+              {(node.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}
@@ -389,7 +389,7 @@ export const SearchStixCoreObjectLine = createFragmentContainer(
             }
           }
         }
-        creator {
+        creators {
           id
           name
         }

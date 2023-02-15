@@ -118,7 +118,7 @@ const Channel = createFragmentContainer(ChannelComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

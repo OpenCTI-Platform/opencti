@@ -44,7 +44,7 @@ export const countryFragment = graphql`
         entity_type
       }
     }
-    creator {
+    creators {
       id
       name
     }

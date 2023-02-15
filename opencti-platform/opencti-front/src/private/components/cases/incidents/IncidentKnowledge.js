@@ -100,10 +100,6 @@ export const incidentKnowledgeAttackPatternsGraphQuery = graphql`
                   }
                 }
               }
-              creator {
-                id
-                name
-              }
               killChainPhases {
                 edges {
                   node {
