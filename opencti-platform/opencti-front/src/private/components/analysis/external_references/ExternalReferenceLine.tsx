@@ -170,7 +170,7 @@ ExternalReferenceLineComponentProps
               className={classes.bodyItem}
               style={{ width: dataColumns?.creator.width }}
             >
-              {(node.creators ?? []).map((c) => c?.name).join(', ')}
+              {(node?.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}

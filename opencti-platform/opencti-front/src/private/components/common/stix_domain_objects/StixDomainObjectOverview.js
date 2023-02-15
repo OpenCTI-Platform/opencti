@@ -247,7 +247,7 @@ class StixDomainObjectOverview extends Component {
               </Typography>
               <div>
                 {(stixDomainObject.creators ?? []).map((c) => {
-                  return <div style={{ float: 'left', marginRight: '10px' }}>
+                  return <div key={`creator-${c.id}`} style={{ float: 'left', marginRight: '10px' }}>
                       <ItemCreator creator={c} />
                     </div>;
                 })}

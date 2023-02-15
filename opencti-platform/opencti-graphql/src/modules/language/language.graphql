@@ -95,7 +95,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     name: String!
     aliases: [String]
     # Technical
-    creators: [Creator]
+    creators: [Creator!]
     toStix: String
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection

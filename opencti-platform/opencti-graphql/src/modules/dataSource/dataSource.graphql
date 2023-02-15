@@ -97,7 +97,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     objectAssignee: AssigneeConnection
 
     # Technical
-    creators: [Creator]
+    creators: [Creator!]
     toStix: String
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection
