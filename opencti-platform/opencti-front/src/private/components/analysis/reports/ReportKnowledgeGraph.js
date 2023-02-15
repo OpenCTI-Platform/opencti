@@ -37,7 +37,7 @@ import {
 } from './ReportKnowledgeGraphQuery';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportPopover from './ReportPopover';
-import EntityDetailsRightsBar from '../../../../utils/graph/EntityDetailsRightBar';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 
 const ignoredStixCoreObjectsTypes = ['Report', 'Note', 'Opinion'];
 
@@ -1252,7 +1252,7 @@ class ReportKnowledgeGraphComponent extends Component {
           onApplied={this.handleApplySuggestion.bind(this)}
         />
         {numberOfSelectedNodes > 0 && (
-          <EntityDetailsRightsBar
+          <EntitiesDetailsRightsBar
           selectedNodes={Array.from(this.selectedNodes)}
           open={false}
           handleClose={this.handleCloseEntityDetailsRightsBar.bind(this)}
