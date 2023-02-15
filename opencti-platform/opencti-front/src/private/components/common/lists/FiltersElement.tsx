@@ -21,14 +21,14 @@ interface FiltersElementProps {
   keyword: string,
   availableFilterKeys: string[],
   handleChangeKeyword: (event: React.SyntheticEvent) => void,
-  noDirectFilters: boolean,
+  noDirectFilters?: boolean,
   setInputValues: Dispatch<Record<string, string | Date>>,
   inputValues: Record<string, string | Date>,
   defaultHandleAddFilter: (k: string, id: string, value: Record<string, unknown> | string, event?: React.SyntheticEvent) => void,
-  availableEntityTypes: string[],
-  availableRelationshipTypes: string[],
-  availableRelationFilterTypes: Record<string, string[]>,
-  allEntityTypes: boolean,
+  availableEntityTypes?: string[],
+  availableRelationshipTypes?: string[],
+  availableRelationFilterTypes?: Record<string, string[]>,
+  allEntityTypes?: boolean,
 }
 
 const FiltersElement: FunctionComponent<FiltersElementProps> = ({
@@ -47,7 +47,6 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  console.log('inputValues', inputValues);
   return (
     <div>
       <Grid container={true} spacing={2}>
