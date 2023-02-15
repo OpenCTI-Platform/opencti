@@ -16,6 +16,10 @@ import {
   IncidentsCardsAndLinesPaginationQuery,
   IncidentsCardsAndLinesPaginationQuery$variables,
 } from './incidents/__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
+import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import { IncidentLine_node$data } from './incidents/__generated__/IncidentLine_node.graphql';
+import ToolBar from '../data/ToolBar';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 export const LOCAL_STORAGE_KEY = 'view-incidents';
 const Incidents: FunctionComponent = () => {
@@ -58,6 +62,18 @@ const Incidents: FunctionComponent = () => {
     numberOfElements,
     view,
   } = viewStorage;
+
+  const {
+    onToggleEntity,
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+    selectedElements,
+    deSelectedElements,
+    handleToggleSelectAll,
+    selectAll,
+  } = useEntityToggle<IncidentLine_node$data>(
+    LOCAL_STORAGE_KEY,
+  );
 
   const queryRef = useQueryLoading<IncidentsCardsAndLinesPaginationQuery>(
     incidentsCardsAndLinesPaginationQuery,
@@ -160,7 +176,10 @@ const Incidents: FunctionComponent = () => {
   };
 
   const renderLines = () => {
+    let renderFilters = filters;
+    renderFilters = { ...renderFilters, entity_type: [{ id: 'Incident', value: 'Incident' }] };
     return (
+      <div>
           <ListLines
             sortBy={sortBy}
             orderAsc={orderAsc}
@@ -171,12 +190,15 @@ const Incidents: FunctionComponent = () => {
             handleAddFilter={helpers.handleAddFilter}
             handleRemoveFilter={helpers.handleRemoveFilter}
             handleToggleExports={helpers.handleToggleExports}
+            handleToggleSelectAll={handleToggleSelectAll}
+            selectAll={selectAll}
             openExports={openExports}
             exportEntityType="Incident"
             keyword={searchTerm}
             filters={filters}
             paginationOptions={paginationOptions}
             numberOfElements={numberOfElements}
+            iconExtension={true}
             availableFilterKeys={[
               'incident_type',
               'labelledBy',
@@ -198,21 +220,47 @@ const Incidents: FunctionComponent = () => {
                   dataColumns={buildColumns}
                   onLabelClick={helpers.handleAddFilter}
                   setNumberOfElements={helpers.handleSetNumberOfElements}
+                  selectedElements={selectedElements}
+                  deSelectedElements={deSelectedElements}
+                  onToggleEntity={onToggleEntity}
+                  selectAll={selectAll}
                 />
               </React.Suspense>
             )}
           </ListLines>
+          <ToolBar
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            numberOfSelectedElements={numberOfSelectedElements}
+            selectAll={selectAll}
+            search={searchTerm}
+            filters={renderFilters}
+            handleClearSelectedElements={handleClearSelectedElements}
+            type="Incident"
+          />
+      </div>
     );
   };
 
+  if (view === 'cards') {
+    return (
+        <div>
+          {renderCards()}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IncidentCreation paginationOptions={paginationOptions}/>
+          </Security>
+        </div>
+    );
+  }
   return (
+    <ExportContextProvider>
       <div>
-        {view === 'cards' ? renderCards() : ''}
-        {view === 'lines' ? renderLines() : ''}
+        {renderLines()}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentCreation paginationOptions={paginationOptions} />
+          <IncidentCreation paginationOptions={paginationOptions}/>
         </Security>
       </div>
+    </ExportContextProvider>
   );
 };
 

@@ -11,6 +11,7 @@ import {
   IncidentsCardsAndLinesPaginationQuery$variables,
 } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 import { IncidentsCardsAndLines_data$key } from './__generated__/IncidentsCardsAndLines_data.graphql';
+import { IncidentLine_node$data } from './__generated__/IncidentLine_node.graphql';
 
 const nbOfRowsToLoad = 50;
 
@@ -19,9 +20,26 @@ interface IncidentsLinesProps {
   dataColumns: DataColumns,
   queryRef: PreloadedQuery<IncidentsCardsAndLinesPaginationQuery>,
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
-  onLabelClick: HandleAddFilter
+  onLabelClick: HandleAddFilter,
+  selectedElements: Record<string, IncidentLine_node$data>;
+  deSelectedElements: Record<string, IncidentLine_node$data>;
+  onToggleEntity: (
+    entity: IncidentLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
 }
-const IncidentsLines: FunctionComponent<IncidentsLinesProps> = ({ setNumberOfElements, dataColumns, queryRef, paginationOptions, onLabelClick }) => {
+const IncidentsLines: FunctionComponent<IncidentsLinesProps> = ({
+  setNumberOfElements,
+  dataColumns,
+  queryRef,
+  paginationOptions,
+  onLabelClick,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+}) => {
   const {
     data,
     hasMore,
@@ -48,6 +66,10 @@ const IncidentsLines: FunctionComponent<IncidentsLinesProps> = ({ setNumberOfEle
       nbOfRowsToLoad={nbOfRowsToLoad}
       onLabelClick={onLabelClick}
       paginationOptions={paginationOptions}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      selectAll={selectAll}
+      onToggleEntity={onToggleEntity}
     />
   );
 };

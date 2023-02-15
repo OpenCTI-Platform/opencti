@@ -25,7 +25,6 @@ interface ReportsProps {
   objectId: string,
   authorId: string,
   onChangeOpenExports: () => void,
-  match: { params: { reportType: string } },
 }
 
 const Reports: FunctionComponent<ReportsProps> = ({
@@ -79,6 +78,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
+    numberOfSelectedElements,
   } = useEntityToggle<ReportLine_node$data>(
     'view-reports',
   );
@@ -92,11 +92,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
       exportContext = `of-entity-${objectId}`;
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
-    }
-    let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-    if (selectAll) {
-      numberOfSelectedElements = (numberOfElements?.original ?? 0)
-        - Object.keys(deSelectedElements || {}).length;
     }
     let renderFilters = filters;
     renderFilters = { ...renderFilters, entity_type: [{ id: 'Report', value: 'Report' }] };

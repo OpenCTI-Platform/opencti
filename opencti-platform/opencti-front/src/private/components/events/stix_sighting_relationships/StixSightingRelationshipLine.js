@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -12,8 +13,8 @@ import Chip from '@mui/material/Chip';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
+import Checkbox from '@mui/material/Checkbox';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -68,7 +69,7 @@ const styles = (theme) => ({
 
 class StixSightingRelationshipLineComponent extends Component {
   render() {
-    const { nsdt, t, fd, classes, dataColumns, node, paginationOptions } = this.props;
+    const { nsdt, t, fd, classes, dataColumns, node, paginationOptions, selectedElements, deSelectedElements, selectAll, onToggleEntity, onToggleShiftEntity, index } = this.props;
     const entityFrom = node.from;
     const entityTo = node.to;
     const restrictedFrom = entityFrom === null;
@@ -82,6 +83,23 @@ class StixSightingRelationshipLineComponent extends Component {
         component={Link}
         to={link}
       >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={(event) => (event.shiftKey
+            ? onToggleShiftEntity(index, node, event)
+            : onToggleEntity(node, event))
+          }
+        >
+          <Checkbox
+            edge="start"
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
+            disableRipple={true}
+          />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={!restrictedFrom ? entityFrom.entity_type : 'restricted'} />
         </ListItemIcon>
@@ -210,6 +228,11 @@ StixSightingRelationshipLineComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
+  selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
+  onToggleEntity: PropTypes.func,
+  onToggleShiftEntity: PropTypes.func,
 };
 
 const StixSightingRelationshipLineFragment = createFragmentContainer(
@@ -413,6 +436,12 @@ class StixSightingRelationshipLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"

@@ -8,6 +8,7 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
+import Checkbox from '@mui/material/Checkbox';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -16,7 +17,7 @@ import ItemSeverity from '../../../../components/ItemSeverity';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
-import { IncidentLine_node$key } from './__generated__/IncidentLine_node.graphql';
+import { IncidentLine_node$data, IncidentLine_node$key } from './__generated__/IncidentLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -57,7 +58,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface IncidentLineComponentProps {
   dataColumns: DataColumns;
   node: IncidentLine_node$key;
-  onLabelClick: () => void
+  onLabelClick: () => void;
+  selectedElements: Record<string, IncidentLine_node$data>;
+  deSelectedElements: Record<string, IncidentLine_node$data>;
+  onToggleEntity: (
+    entity: IncidentLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
 }
 
 const IncidentLineFragment = graphql`
@@ -101,7 +109,15 @@ const IncidentLineFragment = graphql`
     }
 `;
 
-export const IncidentLine : FunctionComponent<IncidentLineComponentProps> = ({ dataColumns, node, onLabelClick }) => {
+export const IncidentLine : FunctionComponent<IncidentLineComponentProps> = ({
+  dataColumns,
+  node,
+  onLabelClick,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleEntity,
+}) => {
   const classes = useStyles();
   const { fd, t } = useFormatter();
   const data = useFragment(IncidentLineFragment, node);
@@ -114,6 +130,20 @@ export const IncidentLine : FunctionComponent<IncidentLineComponentProps> = ({ d
       component={Link}
       to={`/dashboard/events/incidents/${data.id}`}
     >
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
+        onClick={(event) => onToggleEntity(data, event)}
+      >
+        <Checkbox
+          edge="start"
+          checked={
+            (selectAll && !(data.id in (deSelectedElements || {})))
+            || data.id in (selectedElements || {})
+          }
+          disableRipple={true}
+        />
+      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Incident" />
       </ListItemIcon>
@@ -203,6 +233,12 @@ export const IncidentLineDummy = ({ dataColumns }: { dataColumns: DataColumns })
   const classes = useStyles();
   return (
       <ListItem classes={{ root: classes.item }} divider={true}>
+        <ListItemIcon
+          classes={{ root: classes.itemIconDisabled }}
+          style={{ minWidth: 40 }}
+        >
+          <Checkbox edge="start" disabled={true} disableRipple={true} />
+        </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"

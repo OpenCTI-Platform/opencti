@@ -1560,7 +1560,7 @@ class ToolBar extends Component {
                               )}
                             </span>
                           )}
-                          {R.map((currentFilter) => {
+                          {R.toPairs(filters).map((currentFilter) => {
                             const label = `${truncate(
                               currentFilter[0].startsWith('rel_')
                                 ? t(
@@ -1618,7 +1618,7 @@ class ToolBar extends Component {
                                 )}
                               </span>
                             );
-                          }, R.toPairs(filters))}
+                          })}
                         </div>
                       ) : (
                         <span>

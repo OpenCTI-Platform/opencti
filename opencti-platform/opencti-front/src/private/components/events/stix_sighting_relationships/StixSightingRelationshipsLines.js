@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  StixSightingRelationshipLine,
-  StixSightingRelationshipLineDummy,
-} from './StixSightingRelationshipLine';
+import { StixSightingRelationshipLine, StixSightingRelationshipLineDummy } from './StixSightingRelationshipLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
@@ -22,7 +18,17 @@ class StixSightingRelationshipsLines extends Component {
   }
 
   render() {
-    const { initialLoading, dataColumns, relay, onLabelClick } = this.props;
+    const {
+      initialLoading,
+      dataColumns,
+      relay,
+      onLabelClick,
+      onToggleEntity,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+      data,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -30,21 +36,17 @@ class StixSightingRelationshipsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr(
-          [],
-          ['stixSightingRelationships', 'edges'],
-          this.props.data,
-        )}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['stixSightingRelationships', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        dataList={data?.stixSightingRelationships?.edges ?? []}
+        globalCount={data?.stixSightingRelationships?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={<StixSightingRelationshipLine />}
         DummyLineComponent={<StixSightingRelationshipLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        selectAll={selectAll}
+        onToggleEntity={onToggleEntity.bind(this)}
       />
     );
   }
@@ -59,6 +61,9 @@ StixSightingRelationshipsLines.propTypes = {
   stixSightingRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
+  selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
 };
 
 export const stixSightingRelationshipsLinesQuery = graphql`
@@ -120,6 +125,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_stixSightingRelationships") {
           edges {
             node {
+              id
               ...StixSightingRelationshipLine_node
             }
           }
