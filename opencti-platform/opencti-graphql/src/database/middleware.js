@@ -1317,6 +1317,11 @@ const checkAttributeConsistency = (entityType, key) => {
   if (key.startsWith(RULE_PREFIX)) {
     return;
   }
+  // Always ok for creator_id, need a stronger schena definition
+  // Waiting for merge of https://github.com/OpenCTI-Platform/opencti/issues/1850
+  if (key === 'creator_id') {
+    return;
+  }
   let masterKey = key;
   if (key.includes('.')) {
     const [firstPart] = key.split('.');

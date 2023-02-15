@@ -247,7 +247,7 @@ const executeReplace = async (context, user, actionContext, element) => {
           script: {
             source: 'ctx._source["creator_id"] = params.creator_id;',
             lang: 'painless',
-            params: { creator_id: historicCreator }
+            params: { creator_id: [historicCreator] }
           },
         });
       }
