@@ -76,7 +76,6 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
     setDisplayUpdate(false);
     refetch();
   };
-
   let deleteLabel = t('Delete');
   const deletable = !vocab.builtIn && (!vocab.category.fields.some(({ required }) => required) || vocab.usages.length === 0);
   if (!deletable) {
@@ -108,6 +107,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
       onCompleted: () => {
         setDeleting(false);
         handleClose();
+        handleCloseDelete();
       },
     });
   };
