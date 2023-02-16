@@ -21,6 +21,7 @@ import { insertNode } from '../../../../utils/store';
 import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLinesPaginationQuery.graphql';
 import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -89,10 +90,10 @@ interface CityAddInput {
   description: string
   latitude: string
   longitude: string
-  createdBy?: { value: string, label?: string }
-  objectMarking: { value: string }[]
-  objectLabel: { value: string }[]
-  externalReferences: { value: string }[]
+  createdBy?: Option
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
 }
 
 const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPaginationQuery$variables }) => {

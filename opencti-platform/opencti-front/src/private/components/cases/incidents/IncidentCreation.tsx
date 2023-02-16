@@ -250,7 +250,7 @@ const IncidentCreation = ({
                 />
                 <ObjectLabelField
                   name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.objectLabel}
                 />

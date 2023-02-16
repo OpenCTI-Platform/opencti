@@ -271,7 +271,7 @@ class InfrastructureCreation extends Component {
                   />
                   <KillChainPhasesField
                     name="killChainPhases"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                   <Field
                     component={MarkDownField}

@@ -21,6 +21,7 @@ import { insertNode } from '../../../../utils/store';
 import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -230,22 +231,22 @@ const AdministrativeAreaCreation = ({
                 />
                 <CreatedByField
                   name="createdBy"
-                  style={{ marginTop: 20, width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                 />
                 <ObjectLabelField
                   name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.objectLabel}
                 />
                 <ObjectMarkingField
                   name="objectMarking"
-                  style={{ marginTop: 20, width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                 />
                 <ExternalReferencesField
                   name="externalReferences"
-                  style={{ marginTop: 20, width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.externalReferences}
                 />

@@ -21,6 +21,8 @@ import { CountriesLinesPaginationQuery$variables } from './__generated__/Countri
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { Option } from '../../common/form/ReferenceField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -95,10 +97,10 @@ const countryValidation = (t: (message: string) => string) => Yup.object()
 interface CountryAddInput {
   name: string
   description: string
-  createdBy?: { value: string, label?: string }
-  objectMarking: { value: string }[]
-  objectLabel: { value: string }[]
-  externalReferences: { value: string }[]
+  createdBy?: Option
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
 }
 
 const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLinesPaginationQuery$variables }) => {
@@ -218,7 +220,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
                 />
                 <ObjectLabelField
                   name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.objectLabel}
                 />
@@ -231,7 +233,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
                 />
                 <ExternalReferencesField
                   name="externalReferences"
-                  style={{ marginTop: 20, width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.externalReferences}
                 />

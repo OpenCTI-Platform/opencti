@@ -22,6 +22,7 @@ import { RegionsLinesPaginationQuery$variables } from './__generated__/RegionsLi
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { Option } from '../../common/form/ReferenceField';
 
 const styles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -96,10 +97,10 @@ const regionValidation = (t: (message: string) => string) => Yup.object()
 interface RegionAddInput {
   name: string
   description: string
-  createdBy?: { value: string, label?: string }
-  objectMarking: { value: string }[]
-  objectLabel: { value: string }[]
-  externalReferences: { value: string }[]
+  createdBy?: Option
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
 }
 
 const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLinesPaginationQuery$variables }) => {
@@ -219,7 +220,7 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
                 />
                 <ObjectLabelField
                   name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
+                  style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.objectLabel}
                 />
