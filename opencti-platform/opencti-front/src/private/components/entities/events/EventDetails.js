@@ -44,7 +44,7 @@ class EventDetailsComponent extends Component {
                 {t('Event types')}
               </Typography>
               {R.propOr(['-'], 'event_types', event).map((eventType) => (
-                <div style={{ marginBottom: 10 }}>
+                <div key={`event_type_ov_${eventType}`} style={{ marginBottom: 10 }}>
                     <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType}/>
                 </div>
               ))}
