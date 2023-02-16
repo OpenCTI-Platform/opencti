@@ -1,9 +1,6 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles/createTheme';
-import List from '@mui/material/List';
-import ListSubheader from '@mui/material/ListSubheader';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -17,10 +14,14 @@ import { resolveLink } from '../Entity';
 import ItemAuthor from '../../components/ItemAuthor';
 import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
-import { EntityDetailsQuery, EntityDetailsQuery$data } from './__generated__/EntityDetailsQuery.graphql';
+import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
+import ExpandableMarkdown from '../../components/ExpandableMarkdown';
+import ItemMarkings from '../../components/ItemMarkings';
 
-const useStyles = makeStyles < Theme >((theme) => ({
-
+const useStyles = makeStyles < Theme >(() => ({
+  entity: {
+    marginTop: '20px',
+  },
 }));
 
 const entityDetailsQuery = graphql`
@@ -85,52 +86,66 @@ const entityDetailsQuery = graphql`
             }
             ... on Individual {
                 name
+                description
             }
             ... on Organization {
                 name
+                description
             }
             ... on Sector {
                 name
+                description
             }
             ... on System {
                 name
+                description
             }
             ... on Indicator {
                 name
                 valid_from
+                description
             }
             ... on Infrastructure {
                 name
+                description
             }
             ... on IntrusionSet {
                 name
                 first_seen
                 last_seen
+                description
             }
             ... on Position {
                 name
+                description
             }
             ... on City {
                 name
+                description
             }
             ... on AdministrativeArea {
                 name
+                description
             }
             ... on Country {
                 name
+                description
             }
             ... on Region {
                 name
+                description
             }
             ... on Malware {
                 name
                 first_seen
                 last_seen
+                description
             }
             ... on ThreatActor {
                 name
                 first_seen
                 last_seen
+                description
             }
             ... on Tool {
                 name
@@ -142,6 +157,7 @@ const entityDetailsQuery = graphql`
                 name
                 first_seen
                 last_seen
+                description
             }
             ... on StixCyberObservable {
                 observable_value
@@ -171,54 +187,39 @@ const entityDetailsQuery = graphql`
     }
 `;
 
-interface EntityDetailsProps {
-  id: string
+interface EntityDetailsComponentProps {
   queryRef: PreloadedQuery<EntityDetailsQuery>
 }
-const EntityDetailsComponent: FunctionComponent<EntityDetailsProps> = ({ id, queryRef }) => {
-  // const classes = useStyles();
+const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = ({ queryRef }) => {
+  const classes = useStyles();
   const { t } = useFormatter();
 
   const entity = usePreloadedQuery<EntityDetailsQuery>(entityDetailsQuery, queryRef);
-  /*  const viewLink = (node: EntityDetailsQuery$data) => {
-    if (
-      !node.stixCoreObject?.parent_types.includes(
-        'stix-cyber-observable-relationship',
-      )
-      && node.stixCoreObject?.relationship_type
-      && node.stixCoreObject?.fromType
-      && node.stixCoreObject?.entity_type
-    ) {
-      return `${resolveLink(node.stixCoreObject?.fromType)}/${
-        node.stixCoreObject?.fromId
-      }/knowledge/relations/${node.stixCoreObject?.id}`;
-    }
-    return `${resolveLink(node.stixCoreObject?.entity_type)}/${
-      node.stixCoreObject?.id
-    }`;
-  }; */
+  const { stixCoreObject } = entity;
 
   return (
-    <div>
+    <div className={classes.entity}>
       <Typography
         variant="h3"
         gutterBottom={false}
         style={{ marginTop: 10 }}
       >
-        {entity.stixCoreObject?.id}
-{/*        <Tooltip title={t('View the item')}>
+        {entity.stixCoreObject?.name}
+     { stixCoreObject
+       && <Tooltip title={t('View the item')}>
                   <span>
                     <IconButton
                       color="primary"
                       component={Link}
-                      to={viewLink(entity)}
-                      disabled={!viewLink(entity)}
+                      to={`${resolveLink(stixCoreObject.entity_type)}/${
+                        stixCoreObject.id
+                      }`}
                       size="large"
                     >
-                      <InfoOutlined />
+                        <InfoOutlined/>
                     </IconButton>
                   </span>
-        </Tooltip> */}
+        </Tooltip> }
       </Typography>
       <Typography
         variant="h3"
@@ -235,14 +236,22 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsProps> = ({ id, que
       >
         {t('Description')}
       </Typography>
-      {entity.stixCoreObject?.description}
+      {entity.stixCoreObject?.description
+        && <ExpandableMarkdown
+          source={entity.stixCoreObject?.description}
+          limit={400}
+        />}
       <Typography variant="h3"
                   gutterBottom={true}
                   style={{ marginTop: 15 }}
       >
         {t('Marking')}
       </Typography>
-      {'Entity marking'}
+      { entity.stixCoreObject?.objectMarking
+        && <ItemMarkings
+        markingDefinitionsEdges={entity.stixCoreObject?.objectMarking.edges}
+        limit={1}
+      />}
       <Typography
         variant="h3"
         gutterBottom={true}
@@ -251,7 +260,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsProps> = ({ id, que
         {t('Author')}
       </Typography>
       <ItemAuthor
-        createdBy={R.propOr(null, 'createdBy', entity)}
+        createdBy={R.propOr(null, 'createdBy', entity.stixCoreObject)}
       />
       <Typography
         variant="h3"
@@ -265,14 +274,16 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsProps> = ({ id, que
   );
 };
 
-const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = (
-  props,
-) => {
-  const nodeId = '946cc606-2f09-49bf-97b5-2b57847ff07a';
+interface EntityDetailsProps {
+  nodeId: string
+  queryRef: PreloadedQuery<EntityDetailsQuery>
+}
+
+const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = ({ nodeId }) => {
   const queryRef = useQueryLoading<EntityDetailsQuery>(entityDetailsQuery, { id: nodeId });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <EntityDetailsComponent {...props} queryRef={queryRef} />
+      <EntityDetailsComponent queryRef={queryRef} />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

@@ -2,27 +2,11 @@ import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles/createTheme';
-import List from '@mui/material/List';
-import ListSubheader from '@mui/material/ListSubheader';
-import ListItemText from '@mui/material/ListItemText';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { Link } from 'react-router-dom';
-import { InfoOutlined } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
-import * as R from 'ramda';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../components/i18n';
-import { resolveLink } from '../Entity';
-import { Option } from '../../private/components/common/form/ReferenceField';
-import ItemAuthor from '../../components/ItemAuthor';
-import useQueryLoading from '../hooks/useQueryLoading';
-import { EntityDetailsRightBarQuery } from './__generated__/EntityDetailsRightBarQuery.graphql';
-import Loader, { LoaderVariant } from '../../components/Loader';
 import EntityDetails from './EntityDetails';
 
 const useStyles = makeStyles < Theme >((theme) => ({
@@ -35,21 +19,24 @@ const useStyles = makeStyles < Theme >((theme) => ({
   },
   formControl: {
     width: '100%',
-    marginTop: '60px',
-  },
-  item: {
-    padding: '0 0 0 6px',
+    marginTop: '20px',
   },
   toolbar: theme.mixins.toolbar,
 }));
 
-interface selectedNode {
+export interface SelectedNode {
   id: string
   name: string
   label: string
+  description: string
+  parent_types: string
+  relationship_type: string
+  fromType: string
+  fromId: string
+  entity_type: string
 }
 interface EntityDetailsRightsBarProps {
-  selectedNodes: selectedNode[];
+  selectedNodes: SelectedNode[];
   open: boolean
   handleClose?: () => void
 }
@@ -60,10 +47,9 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleControlClose = () => setControlOpen(false);
 
-  let entityId: string;
-
-  const onEntityChange = (event: SelectChangeEvent) => {
-    entityId = event.target.value;
+  const [selectedNodeId, setSelectedNodeId] = useState<string>(selectedNodes[0].id);
+  const handleSelectNode = (event: SelectChangeEvent<string>) => {
+    setSelectedNodeId(event.target.value);
   };
 
   return (
@@ -78,9 +64,6 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
       <FormControl
         className={classes.formControl}
         fullWidth={true}
-        style={{
-          flex: 1,
-        }}
       >
         <InputLabel id="entityField">
           {t('Selected entities')}
@@ -88,21 +71,18 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         <Select
           labelId="entityField"
           fullWidth={true}
-          onChange={onEntityChange}
+          onChange={(event: SelectChangeEvent<string>) => handleSelectNode(event)}
         >
           {selectedNodes.map((node) => (
-            <MenuItem key={node.label} value={node.id}>
+            <MenuItem key={node.id} value={node.id}>
               {node.label}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
-        {selectedNodes.map((node) => (
-          <EntityDetails
-            id={node.id}
-          />
-        ))}
-
+        <EntityDetails
+          nodeId={selectedNodeId}
+        />
     </Drawer>
   );
 };
