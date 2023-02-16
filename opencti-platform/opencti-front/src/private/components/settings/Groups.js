@@ -25,6 +25,10 @@ export const groupsSearchQuery = graphql`
           description
           created_at
           updated_at
+          roles {
+              id
+              name
+          }
         }
       }
     }
@@ -85,7 +89,7 @@ class Groups extends Component {
         isSortable: true,
       },
       auto_new_marking: {
-        label: 'Auto new marking',
+        label: 'Auto new markings',
         width: '15%',
         isSortable: true,
       },
@@ -108,7 +112,7 @@ class Groups extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
-        secondaryAction={true}
+        secondaryAction={false}
         keyword={searchTerm}
       >
         <QueryRenderer

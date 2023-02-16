@@ -10,6 +10,8 @@ import TopBar from '../../nav/TopBar';
 import User, { userQuery } from './User';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const subscription = graphql`
   subscription RootUsersSubscription($id: ID!) {
@@ -45,7 +47,7 @@ class RootUser extends Component {
       },
     } = this.props;
     return (
-      <div>
+      <Security needs={[SETTINGS_SETACCESSES]}>
         <TopBar />
         <QueryRenderer
           query={userQuery}
@@ -70,7 +72,7 @@ class RootUser extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </Security>
     );
   }
 }

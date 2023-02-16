@@ -8,11 +8,14 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
-import EntitySetting from './EntitySetting';
+import EntitySetting, { entitySettingsRolesHiddenTypesQuery } from './EntitySetting';
 import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
-import { SubTypeEntitySettingSubscription } from './__generated__/SubTypeEntitySettingSubscription.graphql';
 import EntitySettingAttributesConfiguration from './EntitySettingAttributesConfiguration';
 import EntitySettingAttributesConfigurationScale from './EntitySettingAttributesConfigurationScale';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { EntitySettingsRolesHiddenTypesQuery } from './__generated__/EntitySettingsRolesHiddenTypesQuery.graphql';
+import { SubTypeEntitySettingSubscription } from './__generated__/SubTypeEntitySettingSubscription.graphql';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -64,6 +67,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   const classes = useStyles();
   const subType = useFragment(subTypeFragment, data);
   const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
+  const roleQueryRef = useQueryLoading<EntitySettingsRolesHiddenTypesQuery>(entitySettingsRolesHiddenTypesQuery);
 
   const subTypeSettingsId = subType.settings?.id;
   if (subTypeSettingsId) {
@@ -91,7 +95,13 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
               {t('Configuration')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
-              <EntitySetting entitySettingsData={subType.settings} />
+              {roleQueryRef ? (
+                <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+                  <EntitySetting entitySettingsData={subType.settings} roleQueryRef={roleQueryRef}/>
+                </React.Suspense>
+              ) : (
+                <Loader variant={LoaderVariant.inElement}/>
+              )}
               <div style={{ marginTop: 10 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Workflow')}

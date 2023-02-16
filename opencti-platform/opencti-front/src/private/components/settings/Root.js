@@ -23,6 +23,8 @@ import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
 import SubTypes from './sub_types/SubTypes';
 import RootSubType from './sub_types/Root';
+import RootGroup from './groups/Root';
+import RootRole from './roles/Root';
 
 const Root = () => (
     <Switch>
@@ -64,22 +66,30 @@ const Root = () => (
           )}
         />
         <BoundaryRoute
-          exact
-          path="/dashboard/settings/accesses/groups"
-          render={() => (
-            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
-              <Groups />
-            </Security>
-          )}
+          path="/dashboard/settings/accesses/roles/:roleId"
+        component={RootRole}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/accesses/groups"
+        render={() => (
+          <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+            <Groups />
+          </Security>
+        )}
         />
         <BoundaryRoute
-          exact
-          path="/dashboard/settings/accesses/sessions"
-          render={() => (
-            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
-              <Sessions />
-            </Security>
-          )}
+          path="/dashboard/settings/accesses/groups/:groupId"
+        component={RootGroup}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/accesses/sessions"
+        render={() => (
+          <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+            <Sessions />
+          </Security>
+        )}
         />
         <BoundaryRoute
           exact

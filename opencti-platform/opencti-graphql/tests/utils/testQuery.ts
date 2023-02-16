@@ -76,18 +76,6 @@ export const adminQuery = async (query: unknown, variables = {}) => {
   return executeInternalQuery(adminClient, query, variables);
 };
 
-// Groups
-interface Group { id: string, name: string, markings: string[] }
-export const GREEN_GROUP: Group = {
-  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'GREEN GROUP' }),
-  name: 'GREEN GROUP',
-  markings: [MARKING_TLP_GREEN]
-};
-export const AMBER_GROUP: Group = {
-  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
-  name: 'AMBER GROUP',
-  markings: [MARKING_TLP_AMBER]
-};
 // Roles
 interface Role { id: string, name: string, description: string, capabilities: string[] }
 const ROLE_PARTICIPATE: Role = {
@@ -102,8 +90,22 @@ export const ROLE_EDITOR: Role = {
   description: 'Knowledge edit/delete',
   capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE']
 };
+// Groups
+interface Group { id: string, name: string, markings: string[], roles: Role[] }
+export const GREEN_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'GREEN GROUP' }),
+  name: 'GREEN GROUP',
+  markings: [MARKING_TLP_GREEN],
+  roles: [ROLE_PARTICIPATE],
+};
+export const AMBER_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
+  name: 'AMBER GROUP',
+  markings: [MARKING_TLP_AMBER],
+  roles: [ROLE_EDITOR],
+};
 // Users
-interface User { id: string, email: string, password: string, roles: Role[], groups: Group[], client: AxiosInstance }
+interface User { id: string, email: string, password: string, roles?: Role[], groups: Group[], client: AxiosInstance }
 export const ADMIN_USER: AuthUser = {
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
@@ -126,7 +128,6 @@ export const USER_PARTICIPATE: User = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'participate@opencti.io' }),
   email: 'participate@opencti.io',
   password: 'participate',
-  roles: [ROLE_PARTICIPATE],
   groups: [GREEN_GROUP],
   client: createHttpClient('participate@opencti.io', 'participate')
 };
@@ -135,7 +136,6 @@ export const USER_EDITOR: User = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'editor@opencti.io' }),
   email: 'editor@opencti.io',
   password: 'editor',
-  roles: [ROLE_EDITOR],
   groups: [AMBER_GROUP],
   client: createHttpClient('editor@opencti.io', 'editor')
 };
@@ -151,12 +151,24 @@ const GROUP_CREATION_MUTATION = `
     }
   }
 `;
-const GROUP_EDITION_MUTATION = `
+const GROUP_EDITION_MARKINGS_MUTATION = `
   mutation groupEdition($groupId: ID!, $toId: ID) {
     groupEdit(id: $groupId) {
       relationAdd(input: {
         toId: $toId
         relationship_type: "accesses-to"
+      }) {
+        id
+      }
+    }
+  }
+`;
+const GROUP_EDITION_ROLES_MUTATION = `
+  mutation groupEdition($groupId: ID!, $toId: ID) {
+    groupEdit(id: $groupId) {
+      relationAdd(input: {
+        toId: $toId
+        relationship_type: "has-role"
       }) {
         id
       }
@@ -175,11 +187,15 @@ const GROUP_ASSIGN_MUTATION = `
     }
   }
 `;
-const createGroup = async (input: { name: string, markings: string[] }): Promise<string> => {
+const createGroup = async (input: { name: string, markings: string[], roles: Role[] }): Promise<string> => {
   const { data } = await adminQuery(GROUP_CREATION_MUTATION, { name: input.name });
   for (let index = 0; index < input.markings.length; index += 1) {
     const marking = input.markings[index];
-    await adminQuery(GROUP_EDITION_MUTATION, { groupId: data.groupAdd.id, toId: marking });
+    await adminQuery(GROUP_EDITION_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: marking });
+  }
+  for (let index = 0; index < input.roles.length; index += 1) {
+    const role = input.roles[index];
+    await adminQuery(GROUP_EDITION_ROLES_MUTATION, { groupId: data.groupAdd.id, toId: role.id });
   }
   return data.groupAdd.id;
 };
@@ -244,16 +260,23 @@ const USER_CREATION_MUTATION = `
   }
 `;
 const createUser = async (user: User) => {
-  // roles
-  for (let index = 0; index < user.roles.length; index += 1) {
-    const role = user.roles[index];
-    await createRole(role);
-  }
-  const roleIds = user.roles.map((r) => r.name);
-  await adminQuery(USER_CREATION_MUTATION, { email: user.email, name: user.email, password: user.password, roles: roleIds });
   // Assign user to groups
   for (let indexGroup = 0; indexGroup < user.groups.length; indexGroup += 1) {
     const group = user.groups[indexGroup];
+    // roles
+    if (group.roles) {
+      for (let index = 0; index < group.roles.length; index += 1) {
+        const role = group.roles[index];
+        await createRole(role);
+      }
+      const roleIds = group.roles.map((r) => r.name);
+      await adminQuery(USER_CREATION_MUTATION, {
+        email: user.email,
+        name: user.email,
+        password: user.password,
+        roles: roleIds
+      });
+    }
     await createGroup(group);
     // Assign user to group
     await assignGroupToUser(group, user);

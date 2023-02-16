@@ -203,6 +203,7 @@ const i18n = {
       'Global parameters': 'Parámetros globales',
       'External authentication': 'Autenticación externa',
       'Authentication strategies': 'Estrategias de autenticación',
+      'Groups with this role': 'Grupos con este rol',
       'Granted by default': 'Asignado por defecto',
       'Granted by default at user creation':
         'Asignado por defecto en la creación del usuario',
@@ -228,7 +229,8 @@ const i18n = {
         'Esta configuración no está disponible para este tipo de entidad',
       'Hidden entity types': 'Tipos de entidad ocultos',
       'Hidden entity type': 'Tipo de entidad ocultos',
-      'This configuration hidde a specific entity type across the entire platform.':
+      'Hidden in roles': 'Oculto en roles',
+      'This configuration hide a specific entity type across the entire platform.':
         'Esta configuración oculta un tipo de entidad específico en toda la plataforma.',
       'Enforce reference on entity types':
         'Hacer cumplir la referencia en los tipos de entidad',
@@ -517,8 +519,8 @@ const i18n = {
       'Selected entities': 'Entidades seleccionadas',
       'Merged entity': 'Entidad fusionada',
       'Demo credentials': 'Credenciales de prueba',
-      'User will be created with default roles.':
-        'El usuario se creará con los roles por defecto.',
+      'User will be created with default groups.':
+        'El usuario se creará con grupos por defecto.',
       'No connectors are enabled on this platform.':
         'Ningún conector se ha habilitado en esta plataforma.',
       'Enabled import connectors': 'Conectores de importación activados',
@@ -1034,6 +1036,9 @@ const i18n = {
       Firstname: 'Nombre',
       Lastname: 'Apellido',
       Permissions: 'Permisos',
+      'Auto new markings': 'Autorización de nuevos marcados',
+      'Default membership': 'Pertenencia predeterminada',
+      'Allowed markings': 'Marcas permitidas',
       Members: 'Miembros',
       'First seen': 'Primera observación',
       'Last seen': 'Última observación',
@@ -1995,6 +2000,7 @@ const i18n = {
       'Global parameters': 'Paramètres généraux',
       'External authentication': 'Authentification externe',
       'Authentication strategies': "Stratégies d'authentification",
+      'Groups with this role': 'Groupes avec ce role',
       'Granted by default': 'Alloué par défaut',
       'Granted by default at user creation':
         "Alloué par défaut à la création d'un utilisateur",
@@ -2020,7 +2026,8 @@ const i18n = {
         "Cette configuration n'est pas disponible pour ce type d'entité",
       'Hidden entity types': "Types d'entité cachés",
       'Hidden entity type': "Type d'entité caché",
-      'This configuration hidde a specific entity type across the entire platform.':
+      'Hidden in roles': 'Caché dans les roles',
+      'This configuration hide a specific entity type across the entire platform.':
         "Cette configuration masque un type d'entité spécifique sur l'ensemble de la plateforme.",
       'Enforce reference on entity types':
         "Appliquer la référence sur les types d'entités",
@@ -2298,8 +2305,8 @@ const i18n = {
       'Selected entities': 'Entités sélectionnées',
       'Merged entity': 'Entité fusionnée',
       'Demo credentials': 'Identifiants de démo',
-      'User will be created with default roles.':
-        "L'utilisateur sera créé avec les rôles par défaut.",
+      'User will be created with default groups.':
+        "L'utilisateur sera créé avec les groupes par défaut.",
       'No connectors are enabled on this platform.':
         "Aucun connecteur n'est actif sur cette plateforme",
       'Enabled import connectors': "Connecteurs d'import activés",
@@ -2810,6 +2817,9 @@ const i18n = {
       Firstname: 'Prénom',
       Lastname: 'Nom',
       Permissions: 'Permissions',
+      'Auto new markings': 'Autorisation pour les nouveaux marquages',
+      'Default membership': 'Adhésion par défaut',
+      'Allowed markings': 'Marquages autorisés',
       Members: 'Membres',
       'First seen': 'Première observation',
       'Last seen': 'Dernière observation',
@@ -3727,6 +3737,7 @@ const i18n = {
       'Global parameters': 'グローバルパラメータ',
       'External authentication': '外部認証',
       'Authentication strategies': '認証方法',
+      'Groups with this role': 'この役割を持つグループ',
       'Granted by default': 'デフォルトで付与',
       'Granted by default at user creation': 'ユーザー作成時にデフォルトで付与',
       'Automatically authorize this group to new marking definition':
@@ -3751,7 +3762,8 @@ const i18n = {
         'この構成は、このエンティティ タイプでは使用できません',
       'Hidden entity types': '非表示のエンティティ種別',
       'Hidden entity type': '非表示のエンティティ種別',
-      'This configuration hidde a specific entity type across the entire platform.':
+      'Hidden in roles': 'ロールに隠されている',
+      'This configuration hide a specific entity type across the entire platform.':
         'この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。',
       'Enforce reference on entity types':
         'エンティティ タイプの参照を強制する',
@@ -4033,8 +4045,8 @@ const i18n = {
       'Selected entities': '選択したエンティティ',
       'Merged entity': 'マージされたエンティティ',
       'Demo credentials': 'デモ用の認証情報',
-      'User will be created with default roles.':
-        '規定のロールでユーザーを作成します。',
+      'User will be created with default groups.':
+        'ユーザーは既定のグループで作成されます。',
       'No connectors are enabled on this platform.':
         '有効なコネクタがありません。',
       'Enabled import connectors': '有効なインポート用コネクタ',
@@ -4542,6 +4554,9 @@ const i18n = {
       Firstname: '名前',
       Lastname: '苗字',
       Permissions: 'パーミッション',
+      'Auto new markings': '新しいマーキングの自動化',
+      'Default membership': '既定のメンバーシップ',
+      'Allowed markings': '許可されるマーキング',
       Members: 'メンバ',
       'First seen': '初観測日時',
       'Last seen': '最終観測日時',
@@ -5426,6 +5441,7 @@ const i18n = {
       'Global parameters': '全局参数',
       'External authentication': '外部认证',
       'Authentication strategies': '认证策略',
+      'Groups with this role': '具有此角色的組',
       'Granted by default': '默认授予',
       'Granted by default at user creation': '在用户创建时默认授予',
       'Automatically authorize this group to new marking definition':
@@ -5450,7 +5466,8 @@ const i18n = {
         '此配置不适用于此实体类型',
       'Hidden entity types': '隐藏的实体类型',
       'Hidden entity type': '隐藏的实体类型',
-      'This configuration hidde a specific entity type across the entire platform.':
+      'Hidden in roles': '隱藏在角色中',
+      'This configuration hide a specific entity type across the entire platform.':
         '此配置隐藏了整个平台的特定实体类型。',
       'Enforce reference on entity types': '对实体类型强制引用',
       'Enforce reference on entity type': '对实体类型强制引用',
@@ -5709,7 +5726,7 @@ const i18n = {
       'Selected entities': '选定的实体',
       'Merged entity': '归并的实体',
       'Demo credentials': 'Demo凭证',
-      'User will be created with default roles.': '使用默认角色创建用户。',
+      'User will be created with default groups.': '將使用預設組創建使用者。',
       'No connectors are enabled on this platform.': '此平台未启用任何连接器。',
       'Enabled import connectors': '已启用的导入连接器',
       'No enrichment connectors on this platform': '此平台上没有富化连接器',
@@ -6190,6 +6207,9 @@ const i18n = {
       Firstname: '名字',
       Lastname: '姓氏',
       Permissions: '权限',
+      'Auto new markings': '新標記的自動化',
+      'Default membership': '默認成員資格',
+      'Allowed markings': '允許的標記',
       Members: '成员',
       'First seen': '首次看到',
       'Last seen': '上次看到',

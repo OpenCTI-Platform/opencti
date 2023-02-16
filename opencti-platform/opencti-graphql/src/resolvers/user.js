@@ -74,7 +74,6 @@ const userResolvers = {
   User: {
     groups: (current, _, context) => groupsLoader.load(current.id, context, context.user),
     objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
-    roles: (current, _, context) => rolesLoader.load(current.id, context, context.user),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
   },
@@ -87,6 +86,9 @@ const userResolvers = {
   Role: {
     editContext: (role) => fetchEditContext(role.id),
     capabilities: (role, _, context) => rolesCapabilitiesLoader.load(role.id, context, context.user),
+  },
+  Group: {
+    roles: (group, _, context) => rolesLoader.load(group.id, context, context.user),
   },
   Mutation: {
     otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),

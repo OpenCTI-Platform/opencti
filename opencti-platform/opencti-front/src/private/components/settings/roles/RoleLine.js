@@ -1,27 +1,23 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import {
-  MoreVert,
-  Security,
-  CheckCircleOutlined,
-  DoNotDisturbOnOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined, Security } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
-import RolePopover from './RolePopover';
+import { groupsSearchQuery } from '../Groups';
+import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -51,9 +47,15 @@ const styles = (theme) => ({
 
 class RoleLineComponent extends Component {
   render() {
-    const { fd, classes, dataColumns, node, paginationOptions } = this.props;
+    const { fd, classes, dataColumns, node } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`/dashboard/settings/accesses/roles/${node.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Security />
         </ListItemIcon>
@@ -66,16 +68,37 @@ class RoleLineComponent extends Component {
               >
                 {node.name}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.default_assignation.width }}
-              >
-                {node.default_assignation ? (
-                  <CheckCircleOutlined fontSize="small" color="success" />
-                ) : (
-                  <DoNotDisturbOnOutlined fontSize="small" color="primary" />
-                )}
-              </div>
+              <QueryRenderer
+                query={groupsSearchQuery}
+                variables={{
+                  count: 50,
+                  orderBy: 'name',
+                  orderMode: 'asc',
+                }}
+                render={({ props }) => {
+                  if (props) {
+                    const groupIds = props.groups.edges
+                      .map((group) => (((group.node.roles
+                        .map((role) => role.id)).includes(node.id)) ? group.node.id : null));
+                    const numberOfGroups = groupIds.filter((id) => id !== null).length;
+                    return (
+                      <div
+                        className={classes.bodyItem}
+                        style={{ width: dataColumns.groups.width }}
+                      >
+                        {numberOfGroups}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      className={classes.bodyItem}
+                      style={{ width: dataColumns.groups.width }}
+                    >
+                    </div>
+                  );
+                }}
+              />
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
@@ -91,9 +114,9 @@ class RoleLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <RolePopover roleId={node.id} paginationOptions={paginationOptions} />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -113,7 +136,6 @@ const RoleLineFragment = createFragmentContainer(RoleLineComponent, {
     fragment RoleLine_node on Role {
       id
       name
-      default_assignation
       created_at
       updated_at
     }
@@ -154,7 +176,7 @@ class RoleLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.default_assignation.width }}
+                style={{ width: dataColumns.groups.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -189,7 +211,7 @@ class RoleLineDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <KeyboardArrowRightOutlined />
         </ListItemSecondaryAction>
       </ListItem>
     );

@@ -1,27 +1,26 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import {
-  MoreVert,
-  GroupOutlined,
   CheckCircleOutlined,
   DoNotDisturbOnOutlined,
+  GroupOutlined,
+  KeyboardArrowRightOutlined,
 } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
-import GroupPopover from './GroupPopover';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -51,9 +50,15 @@ const styles = (theme) => ({
 
 class GroupLineComponent extends Component {
   render() {
-    const { fd, classes, dataColumns, node, paginationOptions } = this.props;
+    const { fd, classes, dataColumns, node } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`/dashboard/settings/accesses/groups/${node.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <GroupOutlined />
         </ListItemIcon>
@@ -101,12 +106,9 @@ class GroupLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <GroupPopover
-            groupId={node.id}
-            paginationOptions={paginationOptions}
-          />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -214,7 +216,7 @@ class GroupLineDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <KeyboardArrowRightOutlined />
         </ListItemSecondaryAction>
       </ListItem>
     );

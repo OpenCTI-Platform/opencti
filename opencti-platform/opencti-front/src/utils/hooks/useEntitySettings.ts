@@ -25,15 +25,16 @@ const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
 };
 
 export const useIsHiddenEntities = (...types: string[]): boolean => {
+  const { me } = useAuth();
   return useEntitySettings(types)
     .filter((node) => node.platform_hidden_type !== null)
-    .every((node) => node.platform_hidden_type);
+    .every((node) => node.platform_hidden_type || me.default_hidden_types.includes(node.target_type));
 };
 
 export const useIsHiddenEntity = (id: string): boolean => {
-  return useEntitySettings(id).some(
-    (node) => node.platform_hidden_type !== null && node.platform_hidden_type,
-  );
+  const { me } = useAuth();
+  return useEntitySettings(id).some((node) => node.platform_hidden_type !== null
+    && (node.platform_hidden_type || me.default_hidden_types.includes(node.target_type)));
 };
 
 export const useIsEnforceReference = (id: string): boolean => {

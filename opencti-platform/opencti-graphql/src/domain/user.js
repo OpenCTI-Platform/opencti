@@ -1,24 +1,65 @@
 import * as R from 'ramda';
-import { map } from 'ramda';
+import { uniq } from 'ramda';
 import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
-import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, } from '../database/middleware';
+import {
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
+  createEntity,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  listThroughGetFrom,
+  listThroughGetTo,
+  patchAttribute,
+  updateAttribute,
+} from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
+import {
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
+import {
+  isInternalRelationship,
+  RELATION_ACCESSES_TO,
+  RELATION_HAS_CAPABILITY,
+  RELATION_HAS_ROLE,
+  RELATION_MEMBER_OF,
+  RELATION_PARTICIPATE_TO,
+} from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { convertRelationToAction, IMPERSONATE_ACTION, LOGIN_ACTION, LOGOUT_ACTION, ROLE_DELETION, USER_CREATION, USER_DELETION, } from '../config/audit';
+import {
+  convertRelationToAction,
+  IMPERSONATE_ACTION,
+  LOGIN_ACTION,
+  LOGOUT_ACTION,
+  ROLE_DELETION,
+  USER_CREATION,
+  USER_DELETION,
+} from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  executionContext,
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  SETTINGS_SET_ACCESSES,
+  SYSTEM_USER
+} from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
@@ -97,6 +138,10 @@ export const batchGroups = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
 
+export const batchGroupsFromRoles = async (context, user, roleId, opts = {}) => {
+  return batchListThroughGetFrom(context, user, roleId, RELATION_HAS_ROLE, ENTITY_TYPE_GROUP, opts);
+};
+
 const internalUserIds = Object.keys(INTERNAL_USERS);
 export const batchCreator = async (context, user, userIds) => {
   const userToFinds = R.uniq(userIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
@@ -116,8 +161,8 @@ export const batchOrganizations = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
 };
 
-export const batchRoles = async (context, user, userId) => {
-  return batchListThroughGetTo(context, user, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
+export const batchRoles = async (context, user, groupId) => {
+  return batchListThroughGetTo(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
 };
 
 export const computeAvailableMarkings = (markings, all) => {
@@ -139,7 +184,7 @@ export const computeAvailableMarkings = (markings, all) => {
 
 const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilities) => {
   const groupIds = userGroups.map((r) => r.id);
-  const userCapabilities = map((c) => c.name, capabilities);
+  const userCapabilities = capabilities.map((c) => c.name);
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
   const allMarkingsPromise = getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   let userMarkingsPromise;
@@ -153,10 +198,16 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
   return { user: computedMarkings, all: markings };
 };
 
-export const getCapabilities = async (context, userId, isUserPlatform) => {
-  const roles = await listThroughGetTo(context, SYSTEM_USER, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
-  const roleIds = roles.map((r) => r.id);
-  const capabilities = await listThroughGetTo(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
+export const getRoles = async (context, userGroups) => {
+  const groupIds = userGroups.map((r) => r.id);
+  const roles = await listThroughGetTo(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
+  return roles;
+};
+
+export const getCapabilities = async (context, userId, userRoles, isUserPlatform) => {
+  const roleIds = userRoles.map((r) => r.id);
+  let capabilities = await listThroughGetTo(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
+  capabilities = R.uniq(capabilities);
   if (userId === OPENCTI_ADMIN_UUID && !R.find(R.propEq('name', BYPASS))(capabilities)) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
@@ -167,6 +218,12 @@ export const getCapabilities = async (context, userId, isUserPlatform) => {
 
 export const batchRoleCapabilities = async (context, user, roleId) => {
   return batchListThroughGetTo(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, { paginate: false });
+};
+
+export const getDefaultHiddenTypes = async (context, userId, userRoles) => {
+  let userDefaultHiddenTypes = userRoles.map((role) => role.default_hidden_types).flat();
+  userDefaultHiddenTypes = uniq(userDefaultHiddenTypes.filter((type) => type !== undefined));
+  return userDefaultHiddenTypes;
 };
 
 export const findRoleById = (context, user, roleId) => {
@@ -256,16 +313,8 @@ export const addUser = async (context, user, newUser) => {
   )(newUser);
   const userCreated = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER);
   // Link to the roles
-  let userRoles = newUser.roles ?? []; // Expected roles name
-  const defaultRoles = await findRoles(context, user, { filters: [{ key: 'default_assignation', values: [true] }] });
-  if (defaultRoles && defaultRoles.edges.length > 0) {
-    userRoles = R.pipe(
-      R.map((n) => n.node.name),
-      R.append(userRoles),
-      R.flatten
-    )(defaultRoles.edges);
-  }
-  await Promise.all(R.map((role) => assignRoleToUser(context, user, userCreated.id, role), userRoles));
+  const userRoles = newUser.roles ?? []; // Expected roles name
+  await Promise.all(userRoles.map((role) => assignRoleToUser(context, user, userCreated.id, role)));
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
   await Promise.all(R.map((organization) => assignOrganizationToUser(context, user, userCreated.id, organization), userOrganizations));
@@ -445,7 +494,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 };
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
-  const { providerRoles = [], providerGroups = [], providerOrganizations = [] } = opts;
+  const { providerGroups = [], providerOrganizations = [] } = opts;
   const context = executionContext('login_provider');
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const listOpts = { paginate: false };
@@ -466,24 +515,6 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // Update the basic information
   const patch = { name, firstname, lastname, external: true };
   await patchAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
-  // region Update the roles
-  // If roles are specified here, that overwrite the default assignation
-  if (providerRoles.length > 0) {
-    // 01 - Delete all roles from the user
-    const userRoles = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, listOpts);
-    const deleteRoles = userRoles.filter((o) => !providerRoles.includes(o.name));
-    for (let index = 0; index < deleteRoles.length; index += 1) {
-      const userRole = userRoles[index];
-      await userDeleteRelation(context, SYSTEM_USER, user, userRole.id, RELATION_HAS_ROLE);
-    }
-    // 02 - Create roles from providers
-    const createRoles = providerRoles.filter((n) => !userRoles.map((o) => o.name).includes(n));
-    if (createRoles.length > 0) {
-      const rolesCreation = createRoles.map((role) => assignRoleToUser(context, SYSTEM_USER, user.id, role));
-      await Promise.all(rolesCreation);
-    }
-  }
-  // endregion
   // region Update the groups
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
@@ -608,8 +639,10 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     external: user.external,
     login_provider: provider,
     impersonate: impersonate !== undefined,
+    roles: user.roles,
     impersonate_user_id: impersonate !== undefined ? origin.id : null,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
+    default_hidden_types: user.default_hidden_types,
     organizations: user.organizations,
     allowed_organizations: user.allowed_organizations,
     inside_platform_organization: user.inside_platform_organization,
@@ -642,13 +675,18 @@ const buildCompleteUser = async (context, client) => {
   const allowed_organizations = await batchOrganizations(context, SYSTEM_USER, client.id, batchOpts);
   const userOrganizations = allowed_organizations.map((m) => m.internal_id);
   const isUserPlatform = settings.platform_organization ? userOrganizations.includes(settings.platform_organization) : true;
-  const capabilities = await getCapabilities(context, client.id, isUserPlatform);
   const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
+  const roles = await getRoles(context, groups);
+  const capabilitiesPromise = getCapabilities(context, client.id, roles, isUserPlatform);
+  const defaultHiddenTypesPromise = getDefaultHiddenTypes(context, client.id, roles);
+  const [capabilities, default_hidden_types] = await Promise.all([capabilitiesPromise, defaultHiddenTypesPromise]);
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
   const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
   return {
     ...client,
+    roles,
     capabilities,
+    default_hidden_types,
     groups,
     organizations,
     allowed_organizations,

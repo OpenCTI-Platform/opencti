@@ -165,6 +165,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const lastname = user[mappedConfig.lastname_attribute] || '';
         // region roles mapping
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+        if (isRoleBaseAccess) {
+          logApp.error('Warning: SSO mapping on roles is deprecated and will be removed in 5.8.0+, you should clean roles_management in your config and bind on groups.');
+        }
+        const isGroupBaseAccess = isNotEmptyField(mappedConfig.groups_management) || isRoleBaseAccess;
+        // @deprecated: SSO mapping on roles is deprecated but kept to ensure the correct migration
         const computeRolesMapping = () => {
           const rolesGroupsMapping = mappedConfig.roles_management?.groups_mapping || [];
           const userRolesGroups = (user._groups || [])
@@ -173,7 +178,6 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const rolesMapper = genConfigMapper(rolesGroupsMapping);
           return userRolesGroups.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
         };
-        const rolesToAssociate = computeRolesMapping();
         // endregion
         // region groups mapping
         const computeGroupsMapping = () => {
@@ -184,7 +188,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const groupsMapper = genConfigMapper(groupsMapping);
           return userGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
         };
-        const groupsToAssociate = computeGroupsMapping();
+        const groupsToAssociate = R.uniq(computeGroupsMapping().concat(computeRolesMapping()));
         // endregion
         // region organizations mapping
         const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
@@ -201,10 +205,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         if (!userMail) {
           logApp.warn('[LDAP] Configuration error, cant map mail and username', { user, userMail, userName });
           done({ message: 'Configuration error, ask your administrator' });
-        } else if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
+        } else if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
           const userInfo = { email: userMail, name: userName, firstname, lastname };
-          const opts = { providerRoles: rolesToAssociate, providerGroups: groupsToAssociate, providerOrganizations: organizationsToAssociate };
+          const opts = { providerGroups: groupsToAssociate, providerOrganizations: organizationsToAssociate };
           providerLoginHandler(userInfo, done, opts);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
@@ -220,11 +224,16 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
         logApp.debug('[SAML] Successfully logged', { profile });
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['Role'];
+        const groupAttributes = mappedConfig.groups_management?.group_attributes || ['Group'];
         const userName = profile[mappedConfig.account_attribute] || '';
         const firstname = profile[mappedConfig.firstname_attribute] || '';
         const lastname = profile[mappedConfig.lastname_attribute] || '';
         // region roles mapping
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+        if (isRoleBaseAccess) {
+          logApp.error('Warning: SSO mapping on roles is deprecated and will be removed in 5.8.0+, you should clean roles_management in your config and bind on groups.');
+        }
+        const isGroupBaseAccess = isNotEmptyField(mappedConfig.groups_management) || isRoleBaseAccess;
         const computeRolesMapping = () => {
           const attrRoles = roleAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]));
           const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
@@ -232,7 +241,16 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const rolesMapper = genConfigMapper(rolesMapping);
           return samlRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
         };
-        const rolesToAssociate = computeRolesMapping();
+        // endregion
+        // region groups mapping
+        const computeGroupsMapping = () => {
+          const attrGroups = groupAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]));
+          const samlGroups = R.flatten(attrGroups).filter((v) => isNotEmptyField(v));
+          const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+          const groupsMapper = genConfigMapper(groupsMapping);
+          return samlGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+        };
+        const groupsToAssociate = R.uniq(computeGroupsMapping().concat(computeRolesMapping()));
         // endregion
         // region organizations mapping
         const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
@@ -246,9 +264,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         };
         const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
         // endregion
-        if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
+        if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           const { nameID: email } = profile;
-          const opts = { providerRoles: rolesToAssociate, providerOrganizations: organizationsToAssociate };
+          const opts = { groupOrganizations: groupsToAssociate, providerOrganizations: organizationsToAssociate };
           providerLoginHandler({ email, name: userName, firstname, lastname }, done, opts);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
@@ -283,6 +301,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           logApp.debug('[OPENID] Successfully logged', { userinfo });
           // region roles mapping
           const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+          if (isRoleBaseAccess) {
+            logApp.error('Warning: SSO mapping on roles is deprecated and will be removed in 5.8.0+, you should clean roles_management in your config and bind on groups.');
+          }
           const computeRolesMapping = () => {
             const token = mappedConfig.roles_management?.token_reference || 'access_token';
             const rolesPath = mappedConfig.roles_management?.roles_path || ['roles'];
@@ -293,7 +314,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const rolesMapper = genConfigMapper(rolesMapping);
             return availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
           };
-          const rolesToAssociate = isRoleBaseAccess ? computeRolesMapping() : [];
+          const mappedRoles = isRoleBaseAccess ? computeRolesMapping() : [];
           // endregion
           // region groups mapping
           const isGroupMapping = isNotEmptyField(mappedConfig.groups_management);
@@ -307,7 +328,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const groupsMapper = genConfigMapper(groupsMapping);
             return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
           };
-          const groupsToAssociate = isGroupMapping ? computeGroupsMapping() : [];
+          const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
+          const groupsToAssociate = R.uniq((mappedGroups).concat(mappedRoles));
           // endregion
           // region organizations mapping
           const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
@@ -323,7 +345,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           };
           const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
           // endregion
-          if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
+          if (!isGroupMapping || groupsToAssociate.length > 0) {
             const nameAttribute = mappedConfig.name_attribute ?? 'name';
             const emailAttribute = mappedConfig.email_attribute ?? 'email';
             const firstnameAttribute = mappedConfig.firstname_attribute ?? 'given_name';
@@ -333,7 +355,6 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const firstname = userinfo[firstnameAttribute];
             const lastname = userinfo[lastnameAttribute];
             const opts = {
-              providerRoles: rolesToAssociate,
               providerGroups: groupsToAssociate,
               providerOrganizations: organizationsToAssociate
             };

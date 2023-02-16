@@ -1,9 +1,9 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
-import { elLoadById } from '../../../src/database/engine';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
-import { ENTITY_TYPE_ROLE } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
+import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
   query users(
@@ -48,12 +48,19 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      groups {
+          edges {
+              node {
+                  id
+                  name
+              }
+          }
+      }
       roles {
         id
         standard_id
         name
         description
-        default_assignation
       }
       capabilities {
         id
@@ -70,6 +77,8 @@ describe('User resolver standard behavior', () => {
   let userInternalId;
   let groupInternalId;
   let userStandardId;
+  let roleInternalId;
+  let capabilityId;
   it('should user created', async () => {
     const CREATE_QUERY = gql`
       mutation UserAdd($input: UserAddInput) {
@@ -115,45 +124,6 @@ describe('User resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.id).toEqual(userInternalId);
-  });
-  it('should user roles to be accurate', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.roles.length).toEqual(1);
-    expect(queryResult.data.user.roles[0].name).toEqual('Default');
-  });
-  it('should user capabilities to be accurate', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.capabilities.length).toEqual(1);
-    expect(queryResult.data.user.capabilities[0].name).toEqual('KNOWLEDGE');
-  });
-  it('should user remove role', async () => {
-    const roleStandardId = generateStandardId(ENTITY_TYPE_ROLE, { name: 'Default' });
-    const role = await elLoadById(testContext, ADMIN_USER, roleStandardId);
-    const REMOTE_ROLE_QUERY = gql`
-      mutation UserEditRemoveRole($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-        userEdit(id: $id) {
-          relationDelete(toId: $toId, relationship_type: $relationship_type) {
-            id
-            roles {
-              name
-              description
-              default_assignation
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: REMOTE_ROLE_QUERY,
-      variables: { id: userInternalId, toId: role.id, relationship_type: 'has-role' },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.userEdit).not.toBeNull();
-    expect(queryResult.data.userEdit.relationDelete.roles.length).toEqual(0);
   });
   it('should user login', async () => {
     const res = await queryAsAdmin({
@@ -222,7 +192,7 @@ describe('User resolver standard behavior', () => {
     });
     expect(queryResult.data.userEdit.contextClean.id).toEqual(userInternalId);
   });
-  it('should add relation in user', async () => {
+  it('should add user in group', async () => {
     const GROUP_ADD_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput) {
         groupAdd(input: $input) {
@@ -235,8 +205,8 @@ describe('User resolver standard behavior', () => {
     // Create the group
     const GROUP_TO_CREATE = {
       input: {
-        name: 'Group in user',
-        description: 'Group in user description',
+        name: 'Group of user',
+        description: 'Group of user description',
       },
     };
     const group = await queryAsAdmin({
@@ -245,16 +215,16 @@ describe('User resolver standard behavior', () => {
     });
     expect(group).not.toBeNull();
     expect(group.data.groupAdd).not.toBeNull();
-    expect(group.data.groupAdd.name).toEqual('Group in user');
+    expect(group.data.groupAdd.name).toEqual('Group of user');
     groupInternalId = group.data.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: InternalRelationshipAddInput!) {
-        userEdit(id: $id) {
+      mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
+        groupEdit(id: $id) {
           relationAdd(input: $input) {
             id
-            from {
-              ... on User {
-                groups {
+            to {
+              ... on Group {
+                members {
                   edges {
                     node {
                       id
@@ -270,14 +240,122 @@ describe('User resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: userInternalId,
+        id: groupInternalId,
         input: {
-          toId: groupInternalId,
+          fromId: userInternalId,
           relationship_type: 'member-of',
         },
       },
     });
-    expect(queryResult.data.userEdit.relationAdd.from.groups.edges.length).toEqual(1);
+    expect(queryResult.data.groupEdit.relationAdd.to.members.edges.length).toEqual(1);
+  });
+  it('should user groups to be accurate', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).not.toBeNull();
+    expect(queryResult.data.user.groups.edges.length).toEqual(2); // the 2 groups are: 'Group of user' and 'Default'
+  });
+  it('should add role in group', async () => {
+    const ROLE_ADD_QUERY = gql`
+        mutation RoleAdd($input: RoleAddInput) {
+            roleAdd(input: $input) {
+                id
+                name
+                description
+            }
+        }
+    `;
+    // Create the role
+    const ROLE_TO_CREATE = {
+      input: {
+        name: 'Role in group',
+        description: 'Role in group description',
+      },
+    };
+    const role = await queryAsAdmin({
+      query: ROLE_ADD_QUERY,
+      variables: ROLE_TO_CREATE,
+    });
+    expect(role).not.toBeNull();
+    expect(role.data.roleAdd).not.toBeNull();
+    expect(role.data.roleAdd.name).toEqual('Role in group');
+    roleInternalId = role.data.roleAdd.id;
+    const RELATION_ADD_QUERY = gql`
+        mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
+            groupEdit(id: $id) {
+                relationAdd(input: $input) {
+                    id
+                    from {
+                        ... on Group {
+                            roles {
+                                id
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: RELATION_ADD_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: {
+          toId: roleInternalId,
+          relationship_type: 'has-role',
+        },
+      },
+    });
+    expect(queryResult.data.groupEdit.relationAdd.from.roles.length).toEqual(1);
+  });
+  it('should user roles to be accurate', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).not.toBeNull();
+    expect(queryResult.data.user.roles.length).toEqual(2); // the 2 roles are: 'Role in group' and 'Default'
+  });
+  it('should add capability in role', async () => {
+    const capabilityStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
+    const capability = await elLoadById(testContext, ADMIN_USER, capabilityStandardId);
+    capabilityId = capability.id;
+    const RELATION_ADD_QUERY = gql`
+        mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {
+            roleEdit(id: $id) {
+                relationAdd(input: $input) {
+                    id
+                    from {
+                        ... on Role {
+                            capabilities {
+                                id
+                                standard_id
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: RELATION_ADD_QUERY,
+      variables: {
+        id: roleInternalId,
+        input: {
+          toId: capabilityId,
+          relationship_type: 'has-capability',
+        },
+      },
+    });
+    expect(queryResult.data.roleEdit.relationAdd.from.capabilities.length).toEqual(1);
+    expect(queryResult.data.roleEdit.relationAdd.from.capabilities[0].name).toEqual('KNOWLEDGE');
+  });
+  it('should user capabilities to be accurate', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).not.toBeNull();
+    expect(queryResult.data.user.capabilities.length).toEqual(1);
+    expect(queryResult.data.user.capabilities[0].name).toEqual('KNOWLEDGE');
   });
   it('should delete relation in user', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -289,6 +367,7 @@ describe('User resolver standard behavior', () => {
               edges {
                 node {
                   id
+                  name
                 }
               }
             }
@@ -304,7 +383,8 @@ describe('User resolver standard behavior', () => {
         relationship_type: 'member-of',
       },
     });
-    expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(0);
+    expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(1);
+    expect(queryResult.data.userEdit.relationDelete.groups.edges[0].node.name).toEqual('Default');
     const DELETE_GROUP_QUERY = gql`
       mutation groupDelete($id: ID!) {
         groupEdit(id: $id) {

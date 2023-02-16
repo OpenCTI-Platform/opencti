@@ -157,7 +157,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     standardId,
     entityType,
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'default_assignation', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     createdAt,
     updatedAt,

@@ -33,6 +33,8 @@ import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
 import Chart from 'react-apexcharts';
+import { Link } from 'react-router-dom';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import UserEdition from './UserEdition';
 import UserPopover, { userEditionQuery } from './UserPopover';
@@ -99,9 +101,10 @@ const styles = (theme) => ({
     fontSize: 12,
     lineHeight: '12px',
     backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text.primary,
+    borderRadius: 5,
+    color: theme.palette.text?.primary,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    margin: '0 5px 5px 0',
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -340,12 +343,14 @@ class UserComponent extends Component {
                     {t('Roles')}
                   </Typography>
                   <List>
-                    {user.roles.map((role) => (
+                    {(R.uniq(user.roles ?? [])).sort((a, b) => a.name.localeCompare(b.name)).map((role) => (
                       <ListItem
                         key={role.id}
                         dense={true}
                         divider={true}
-                        button={false}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/roles/${role.id}`}
                       >
                         <ListItemIcon>
                           <SecurityOutlined color="primary" />
@@ -365,7 +370,9 @@ class UserComponent extends Component {
                         key={groupEdge.node.id}
                         dense={true}
                         divider={true}
-                        button={false}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/groups/${groupEdge.node.id}`}
                       >
                         <ListItemIcon>
                           <GroupOutlined color="primary" />
@@ -451,6 +458,16 @@ class UserComponent extends Component {
                       </ListItem>
                     ))}
                   </List>
+                </Grid>
+                <Grid item={true} xs={12}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Hidden entity types')}
+                  </Typography>
+                  {user.default_hidden_types && user.default_hidden_types.map((name) => <Chip
+                    key={name}
+                    classes={{ root: classes.chip }}
+                    label={name}
+                  />)}
                 </Grid>
               </Grid>
             </Paper>
@@ -647,6 +664,10 @@ const User = createRefetchContainer(
           name
           description
         }
+        capabilities {
+            id
+            name
+        }
         groups {
           edges {
             node {
@@ -656,6 +677,7 @@ const User = createRefetchContainer(
             }
           }
         }
+        default_hidden_types
         objectOrganization {
           edges {
             node {

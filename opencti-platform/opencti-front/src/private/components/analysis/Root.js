@@ -51,7 +51,10 @@ const Root = () => {
         path="/dashboard/analysis/groupings/:groupingId"
         component={RootGrouping}
       />
-      <BoundaryRoute exact path="/dashboard/analysis/notes" component={Notes} />
+      <BoundaryRoute
+        exact
+        path="/dashboard/analysis/notes"
+        component={Notes} />
       <BoundaryRoute
         path="/dashboard/analysis/notes/:noteId"
         component={RootNote}

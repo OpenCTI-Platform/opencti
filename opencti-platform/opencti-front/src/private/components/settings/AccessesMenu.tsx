@@ -18,14 +18,14 @@ const SettingsMenu: FunctionComponent = () => {
       icon: <SecurityIcon fontSize="medium" />,
     },
     {
-      path: '/dashboard/settings/accesses/users',
-      label: 'Users',
-      icon: <PermIdentityOutlined fontSize="medium" />,
-    },
-    {
       path: '/dashboard/settings/accesses/groups',
       label: 'Groups',
       icon: <GroupOutlined fontSize="medium" />,
+    },
+    {
+      path: '/dashboard/settings/accesses/users',
+      label: 'Users',
+      icon: <PermIdentityOutlined fontSize="medium" />,
     },
     {
       path: '/dashboard/settings/accesses/sessions',

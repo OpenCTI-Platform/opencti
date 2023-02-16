@@ -24,7 +24,7 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import Loader from '../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
@@ -33,6 +33,8 @@ import useGranted, {
 } from '../../../utils/hooks/useGranted';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
 import SwitchField from '../../../components/SwitchField';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { entitySettingsRolesHiddenTypesQuery } from './sub_types/EntitySetting';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -227,6 +229,8 @@ const settingsValidation = (t) => Yup.object().shape({
 const Settings = () => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const queryRef = useQueryLoading(entitySettingsRolesHiddenTypesQuery);
+
   const isAccessAdmin = useGranted([SETTINGS_SETACCESSES]);
   const handleChangeFocus = (id, name) => {
     commitMutation({
@@ -450,7 +454,13 @@ const Settings = () => {
                               <MenuItem value="ja-jp">日本語</MenuItem>
                               <MenuItem value="zh-cn">简化字</MenuItem>
                             </Field>
-                            <HiddenTypesList />
+                            {queryRef && (
+                              <React.Suspense
+                                fallback={<Loader variant={LoaderVariant.inElement} />}
+                              >
+                                <HiddenTypesList queryRef={queryRef} />
+                              </React.Suspense>
+                            )}
                             <div style={{ marginTop: 20 }}>
                               {isAccessAdmin && (
                                 <div>
