@@ -120,10 +120,10 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({ position }) 
       }}
       render={({ props }: { props: PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery$data }) => {
         const targets = props?.stixCoreRelationships?.edges;
-        const cities = targets?.filter((n) => n?.node.to?.entity_type === 'City').map((n) => n?.node.to?.name);
-        const countries = targets?.filter((n) => n?.node.to?.entity_type === 'Country').map((n) => n?.node.to?.name);
-        const regions = targets?.filter((n) => n?.node.to?.entity_type === 'Region').map((n) => n?.node.to?.name);
-        const areas = targets?.filter((n) => n?.node.to?.entity_type === 'Administrative-Area').map((n) => n?.node.to?.name);
+        const cities = targets?.filter((n) => n?.node.to.entity_type === 'City').map((n) => n?.node.to.name);
+        const countries = targets?.filter((n) => n?.node.to.entity_type === 'Country').map((n) => n?.node.to.name);
+        const regions = targets?.filter((n) => n?.node.to.entity_type === 'Region').map((n) => n?.node.to.name);
+        const areas = targets?.filter((n) => n?.node.to.entity_type === 'Administrative-Area').map((n) => n?.node.to.name);
         return (
             <div style={{ height: '100%' }}>
               <Typography variant="h4" gutterBottom={true}>
