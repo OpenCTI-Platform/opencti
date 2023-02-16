@@ -82,14 +82,14 @@ export default {
           const { data, path, stack } = callError;
           const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
           const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && callError.name !== UNSUPPORTED_ERROR;
-          const isAuthenticationCall = includes(callError.name, [AUTH_REQUIRED, AUTH_FAILURE, FORBIDDEN_ACCESS]);
-          // Dont log auth fail in dev mode.
-          if (DEV_MODE && isAuthenticationCall) {
+          const isAuthenticationCall = includes(callError.name, [AUTH_REQUIRED]);
+          // Don't log for a simple missing authentication
+          if (isAuthenticationCall) {
             return;
           }
           // Authentication problem can be logged in warning (dissoc variables to hide password)
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
-          if (isRetryableCall || isAuthenticationCall) {
+          if (isRetryableCall) {
             logApp.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error });
           } else {
             // Every other uses cases are logged with error level
