@@ -7,9 +7,9 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import * as R from 'ramda';
-import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const styles = () => ({
   paper: {
@@ -44,11 +44,9 @@ class EventDetailsComponent extends Component {
                 {t('Event types')}
               </Typography>
               {R.propOr(['-'], 'event_types', event).map((eventType) => (
-                <Chip
-                  key={eventType}
-                  classes={{ root: classes.chip }}
-                  label={eventType}
-                />
+                <div style={{ marginBottom: 10 }}>
+                    <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType}/>
+                </div>
               ))}
             </Grid>
             <Grid item={true} xs={6}>

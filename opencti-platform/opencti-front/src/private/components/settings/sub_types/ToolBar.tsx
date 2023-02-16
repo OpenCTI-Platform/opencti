@@ -122,14 +122,14 @@ const ToolBar: FunctionComponent<{
     },
   );
 
-  const [navOpen, setNavOpen] = useState<boolean>(
-    localStorage.getItem('navOpen') === 'true',
-  );
+  const [navOpen, setNavOpen] = useState<boolean>(localStorage.getItem('navOpen') === 'true');
   useEffect(() => {
     const subscription = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
     });
-    return subscription.unsubscribe();
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
   });
 
   const [display, setDisplay] = useState<boolean>(false);

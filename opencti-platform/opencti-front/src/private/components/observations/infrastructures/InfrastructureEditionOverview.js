@@ -291,6 +291,7 @@ class InfrastructureEditionOverviewComponent extends Component {
         'name',
         'description',
         'infrastructure_types',
+        'confidence',
         'first_seen',
         'last_seen',
         'createdBy',
@@ -472,6 +473,7 @@ const InfrastructureEditionOverview = createFragmentContainer(
         id
         name
         description
+        confidence
         first_seen
         last_seen
         infrastructure_types

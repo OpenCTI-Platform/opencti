@@ -132,7 +132,7 @@ const IndicatorCreation = ({ paginationOptions }) => {
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
         externalReferences: pluck('value'),
-        x_opencti_score: parseInt(values.x_opencti_score, 10),
+        x_opencti_score: () => parseInt(values.x_opencti_score, 10),
       },
       values,
     );

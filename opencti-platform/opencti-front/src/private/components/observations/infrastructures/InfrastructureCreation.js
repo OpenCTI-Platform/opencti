@@ -122,7 +122,7 @@ class InfrastructureCreation extends Component {
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const adaptedValues = R.evolve(
       {
-        confidence: parseInt(values.confidence, 10),
+        confidence: () => parseInt(values.confidence, 10),
         createdBy: R.path(['value']),
         objectMarking: R.pluck('value'),
         objectLabel: R.pluck('value'),
