@@ -26,7 +26,7 @@ import {
 } from '../schema/general';
 import { elCount } from '../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { extractObservablesFromIndicatorPattern } from '../utils/syntax';
+import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../utils/syntax';
 import { computeValidPeriod } from '../utils/indicator-utils';
 
 export const findById = (context, user, indicatorId) => {
@@ -87,7 +87,9 @@ export const addIndicator = async (context, user, indicator) => {
     throw FunctionalError(`Observable type ${indicator.x_opencti_main_observable_type} is not supported.`);
   }
   // check indicator syntax
-  const check = await checkIndicatorSyntax(context, user, indicator.pattern_type.toLowerCase(), indicator.pattern);
+  const patternType = indicator.pattern_type.toLowerCase();
+  const formattedPattern = cleanupIndicatorPattern(patternType, indicator.pattern);
+  const check = await checkIndicatorSyntax(context, user, patternType, formattedPattern);
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
@@ -95,11 +97,12 @@ export const addIndicator = async (context, user, indicator) => {
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
+    R.assoc('pattern', formattedPattern),
     R.assoc('x_opencti_main_observable_type', observableType),
     R.assoc('x_opencti_score', indicator.x_opencti_score ?? 50),
     R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),
     R.assoc('valid_from', validFrom),
-    R.assoc('valid_until', validUntil)
+    R.assoc('valid_until', validUntil),
   )(indicator);
   // create the linked observables
   let observablesToLink = [];

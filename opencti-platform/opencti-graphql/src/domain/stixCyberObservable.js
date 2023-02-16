@@ -25,7 +25,7 @@ import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
-import { checkObservableSyntax } from '../utils/syntax';
+import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import { upload } from '../database/file-storage';
 import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -127,7 +127,7 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
     const pattern = await createStixPattern(context, user, key, value);
     if (pattern) {
       const indicatorToCreate = {
-        pattern_type: 'stix',
+        pattern_type: STIX_PATTERN_TYPE,
         pattern,
         x_opencti_main_observable_type: entityType,
         name: indicatorName,
