@@ -1,10 +1,10 @@
 import { dissoc, filter, head, includes, isEmpty, isNil } from 'ramda';
 // eslint-disable-next-line import/extensions
 import { stripIgnoredCharacters } from 'graphql/index.js';
-import { booleanConf, DEV_MODE, logApp } from '../config/conf';
+import { booleanConf, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
-import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR } from '../config/errors';
+import { AUTH_REQUIRED, UNSUPPORTED_ERROR } from '../config/errors';
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
