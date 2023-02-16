@@ -236,7 +236,6 @@ class MarkingDefinition:
     def import_from_stix2(self, **kwargs):
         stix_object = kwargs.get("stixObject", None)
         update = kwargs.get("update", False)
-
         if stix_object is not None:
             definition = None
             definition_type = stix_object["definition_type"]
@@ -250,9 +249,17 @@ class MarkingDefinition:
                     definition = stix_object["name"]
             else:
                 if "definition" in stix_object:
-                    definition = stix_object["definition"][
-                        stix_object["definition_type"]
-                    ]
+                    if isinstance(stix_object["definition"], str):
+                        definition = stix_object["definition"]
+                    elif (
+                        isinstance(stix_object["definition"], dict)
+                        and stix_object["definition_type"] in stix_object["definition"]
+                    ):
+                        definition = stix_object["definition"][
+                            stix_object["definition_type"]
+                        ]
+                    else:
+                        definition = stix_object["name"]
                 elif "name" in stix_object:
                     definition = stix_object["name"]
 
