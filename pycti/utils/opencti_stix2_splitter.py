@@ -1,6 +1,6 @@
 import json
-import uuid
 import re
+import uuid
 
 MITRE_X_CAPEC = (
     "x_capec_*"  # https://github.com/mitre-attack/attack-stix-data/issues/34
