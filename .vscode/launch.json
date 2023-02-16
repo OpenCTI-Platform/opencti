@@ -4,8 +4,9 @@
             "type": "node-terminal",
             "name": "Cyio",
             "request": "launch",
-            "command": "REACT_APP_GRAPHQL_HOST=https://cyio-dev.darklight.ai:9443/ yarn start",
-            "cwd": "${workspaceFolder}/opencti-platform/opencti-front"
+            "command": "yarn start",
+            "cwd": "${workspaceFolder}/opencti-platform/opencti-front",
+            "envFile": "${workspaceFolder}/opencti-platform/opencti-front/.env"
         },
         {
             "type": "node-terminal",

@@ -11116,14 +11116,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:2.29.3":
-  version: 2.29.3
-  resolution: "moment@npm:2.29.3"
-  checksum: 2e780e36d9a1823c08a1b6313cbb08bd01ecbb2a9062095820a34f42c878991ccba53abaa6abb103fd5c01e763724f295162a8c50b7e95b4f1c992ef0772d3f0
-  languageName: node
-  linkType: hard
-
-"moment@npm:^2.11.2":
+"moment@npm:2.29.4, moment@npm:^2.11.2":
   version: 2.29.4
   resolution: "moment@npm:2.29.4"
   checksum: 0ec3f9c2bcba38dc2451b1daed5daded747f17610b92427bebe1d08d48d8b7bdd8d9197500b072d14e326dd0ccf3e326b9e3d07c5895d3d49e39b6803b76e80e
@@ -11687,11 +11680,11 @@ __metadata:
     lru-cache: ^6.0.0
     migrate: 1.7.0
     mime-types: 2.1.32
-    moment: 2.29.3
+    moment: 2.29.4
     moment-range: 4.0.2
     nconf: 0.12.0
     nconf-etcd2: ^1.4.0
-    node-fetch: 2.6.1
+    node-fetch: 3.3.0
     nodemailer: 6.6.3
     openid-client: 4.7.4
     passport: 0.4.1
@@ -11719,6 +11712,7 @@ __metadata:
     source-map-support: 0.5.19
     sparqljson-to-tree: ^2.1.0
     stardog: ^3.2.0
+    subscriptions-transport-ws: ^0.11.0
     terser-webpack-plugin: 5.1.4
     uuid: 8.3.2
     uuid-time: 1.0.0
@@ -13776,6 +13770,21 @@ __metadata:
   version: 1.0.5
   resolution: "strnum@npm:1.0.5"
   checksum: 651b2031db5da1bf4a77fdd2f116a8ac8055157c5420f5569f64879133825915ad461513e7202a16d7fec63c54fd822410d0962f8ca12385c4334891b9ae6dd2
+  languageName: node
+  linkType: hard
+
+"subscriptions-transport-ws@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "subscriptions-transport-ws@npm:0.11.0"
+  dependencies:
+    backo2: ^1.0.2
+    eventemitter3: ^3.1.0
+    iterall: ^1.2.1
+    symbol-observable: ^1.0.4
+    ws: ^5.2.0 || ^6.0.0 || ^7.0.0
+  peerDependencies:
+    graphql: ^15.7.2 || ^16.0.0
+  checksum: cc2e98d5c9d89c44d2e15eca188781c6ebae13d1661c42a99cee9d2897aebe2a22bc118eefff83244a79c88ee4ea24d46973ebf26ae7cb47ac1857fb8ee2c947
   languageName: node
   linkType: hard
 
