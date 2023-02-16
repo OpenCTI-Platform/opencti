@@ -1,7 +1,7 @@
 import type { StixId } from './stix';
 import type { StixRelationshipObject, StixOpenctiExtension } from './stix-common';
 import { STIX_EXT_OCTI } from './stix-extensions';
-import { StixKillChainPhase } from './stix-common';
+import { StixDate, StixKillChainPhase } from './stix-common';
 
 // Relationship Specific Properties
 // relationship_type, description, source_ref, target_ref, start_time, stop_time
@@ -22,8 +22,8 @@ export interface StixRelation extends StixRelationshipObject {
   description: string;
   source_ref: StixId;
   target_ref: StixId;
-  start_time: string | undefined;
-  stop_time: string | undefined;
+  start_time: StixDate;
+  stop_time: StixDate;
   extensions: {
     [STIX_EXT_OCTI] : RelationExtension
   };
@@ -44,8 +44,8 @@ export interface SightingExtension extends StixOpenctiExtension {
 }
 export interface StixSighting extends StixRelationshipObject {
   description: string;
-  first_seen: string | undefined;
-  last_seen: string | undefined;
+  first_seen: StixDate;
+  last_seen: StixDate;
   count: number;
   sighting_of_ref: StixId;
   observed_data_refs: Array<StixId>;

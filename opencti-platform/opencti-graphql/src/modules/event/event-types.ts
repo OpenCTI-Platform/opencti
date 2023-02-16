@@ -1,5 +1,5 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
+import type { StixDomainObject, StixOpenctiExtensionSDO, StixDate } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 export const ENTITY_TYPE_EVENT = 'Event';
@@ -28,8 +28,8 @@ export interface StixEvent extends StixDomainObject {
   description: string;
   event_types: Array<string>;
   aliases: Array<string>;
-  start_time: Date;
-  stop_time: Date;
+  start_time: StixDate;
+  stop_time: StixDate;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   };

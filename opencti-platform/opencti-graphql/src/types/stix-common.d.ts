@@ -3,6 +3,7 @@ import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-extensions';
 import type { StixRelation, StixSighting } from './stix-sro';
 import type { StixInternalExternalReference } from './stix-smo';
 
+export type StixDate = string | undefined;
 type StixId = `${string}--${v4 | v5}`;
 
 export enum OrganizationReliability {
