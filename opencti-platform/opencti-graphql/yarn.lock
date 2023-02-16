@@ -11712,6 +11712,7 @@ __metadata:
     source-map-support: 0.5.19
     sparqljson-to-tree: ^2.1.0
     stardog: ^3.2.0
+    subscriptions-transport-ws: ^0.11.0
     terser-webpack-plugin: 5.1.4
     uuid: 8.3.2
     uuid-time: 1.0.0
@@ -13769,6 +13770,21 @@ __metadata:
   version: 1.0.5
   resolution: "strnum@npm:1.0.5"
   checksum: 651b2031db5da1bf4a77fdd2f116a8ac8055157c5420f5569f64879133825915ad461513e7202a16d7fec63c54fd822410d0962f8ca12385c4334891b9ae6dd2
+  languageName: node
+  linkType: hard
+
+"subscriptions-transport-ws@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "subscriptions-transport-ws@npm:0.11.0"
+  dependencies:
+    backo2: ^1.0.2
+    eventemitter3: ^3.1.0
+    iterall: ^1.2.1
+    symbol-observable: ^1.0.4
+    ws: ^5.2.0 || ^6.0.0 || ^7.0.0
+  peerDependencies:
+    graphql: ^15.7.2 || ^16.0.0
+  checksum: cc2e98d5c9d89c44d2e15eca188781c6ebae13d1661c42a99cee9d2897aebe2a22bc118eefff83244a79c88ee4ea24d46973ebf26ae7cb47ac1857fb8ee2c947
   languageName: node
   linkType: hard
 
