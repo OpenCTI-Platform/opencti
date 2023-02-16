@@ -20,7 +20,7 @@ const noop = () => {};
 class RedisStore extends Store {
   constructor(options = {}) {
     super(options);
-    this.ttl = options.ttl;
+    this.ttl = options.ttl / 1000;
     this.prefix = options.prefix == null ? 'sess:' : options.prefix;
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
