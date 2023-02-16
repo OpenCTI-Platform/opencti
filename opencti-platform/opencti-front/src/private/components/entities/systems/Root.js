@@ -199,9 +199,6 @@ class RootSystem extends Component {
                             stixDomainObject={props.system}
                             PopoverComponent={<SystemPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
-                            enableReferences={props.settings.platform_enable_reference?.includes(
-                              'System',
-                            )}
                           />
                           <EntityStixSightingRelationships
                             entityId={props.system.id}

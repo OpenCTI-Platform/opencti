@@ -93,8 +93,8 @@ const groupingMutation = graphql`
 
 const groupingValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  confidence: Yup.number(),
   context: Yup.string().required(t('This field is required')),
-  confidence: Yup.number().required(t('This field is required')),
   description: Yup.string().nullable(),
 });
 
@@ -105,8 +105,7 @@ const GroupingCreation = ({ paginationOptions }) => {
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(
       {
-        confidence: () => parseInt(values.confidence, 10),
-        killChainPhases: R.pluck('value'),
+        confidence: parseInt(values.confidence, 10),
         createdBy: R.path(['value']),
         objectMarking: R.pluck('value'),
         objectLabel: R.pluck('value'),
@@ -173,8 +172,8 @@ const GroupingCreation = ({ paginationOptions }) => {
             initialValues={{
               name: '',
               confidence: 75,
-              description: '',
               context: '',
+              description: '',
               createdBy: '',
               objectMarking: [],
               objectLabel: [],

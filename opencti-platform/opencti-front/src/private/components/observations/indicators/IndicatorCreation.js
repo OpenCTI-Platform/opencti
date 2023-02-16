@@ -90,6 +90,7 @@ const indicatorValidation = (t) => Yup.object().shape({
   indicator_types: Yup.array(),
   confidence: Yup.number(),
   description: Yup.string().nullable(),
+  x_opencti_score: Yup.number().nullable(),
   pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
   valid_from: Yup.date()
@@ -131,6 +132,7 @@ const IndicatorCreation = ({ paginationOptions }) => {
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
         externalReferences: pluck('value'),
+        x_opencti_score: () => parseInt(values.x_opencti_score, 10),
       },
       values,
     );
@@ -207,6 +209,7 @@ const IndicatorCreation = ({ paginationOptions }) => {
               objectLabel: [],
               externalReferences: [],
               x_opencti_detection: false,
+              x_opencti_score: 50,
             }}
             validationSchema={indicatorValidation(t)}
             onSubmit={onSubmit}
@@ -292,6 +295,15 @@ const IndicatorCreation = ({ paginationOptions }) => {
                   onChange={(name, value) => setFieldValue(name, value)}
                   containerStyle={fieldSpacingContainerStyle}
                   multiple={true}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="x_opencti_score"
+                  label={t('Score')}
+                  type="number"
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
                 />
                 <Field
                   component={MarkDownField}

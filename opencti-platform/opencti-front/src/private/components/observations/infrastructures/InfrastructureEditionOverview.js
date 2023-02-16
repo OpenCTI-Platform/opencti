@@ -291,6 +291,7 @@ class InfrastructureEditionOverviewComponent extends Component {
         'name',
         'description',
         'infrastructure_types',
+        'confidence',
         'first_seen',
         'last_seen',
         'createdBy',
@@ -337,20 +338,6 @@ class InfrastructureEditionOverviewComponent extends Component {
               variant="edit"
               multiple={true}
               editContext={context}
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
             />
             <ConfidenceField
               name="confidence"
@@ -403,6 +390,20 @@ class InfrastructureEditionOverviewComponent extends Component {
                 />
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
+            />
+            <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="description" />
+              }
             />
             {infrastructure.workflowEnabled && (
               <StatusField
@@ -472,6 +473,7 @@ const InfrastructureEditionOverview = createFragmentContainer(
         id
         name
         description
+        confidence
         first_seen
         last_seen
         infrastructure_types

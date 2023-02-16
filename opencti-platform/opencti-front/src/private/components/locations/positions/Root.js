@@ -167,9 +167,6 @@ class RootPosition extends Component {
                             disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}
-                            enableReferences={props.settings?.platform_enable_reference?.includes(
-                              'Position',
-                            )}
                           />
                           <EntityStixSightingRelationships
                             entityId={props.position.id}

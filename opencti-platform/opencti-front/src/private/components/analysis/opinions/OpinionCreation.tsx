@@ -27,6 +27,7 @@ import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { OpinionsLinesPaginationQuery$variables } from './__generated__/OpinionsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -94,10 +95,11 @@ const opinionValidation = (t: (message: string) => string) => Yup.object().shape
 interface OpinionAddInput {
   opinion: string
   explanation: string
+  confidence: number
   createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
-  confidence: number
+  externalReferences: { value: string }[]
 }
 
 interface OpinionCreationProps {
@@ -123,10 +125,11 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
   const initialValues: OpinionAddInput = {
     opinion: inputValue || '',
     explanation: '',
+    confidence: 75,
     createdBy: '' as unknown as Option,
     objectMarking: [],
     objectLabel: [],
-    confidence: 75,
+    externalReferences: [],
   };
 
   const [commit] = useMutation(opinionCreationMutation);
@@ -146,6 +149,7 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
     };
     commit({
       variables: {
@@ -195,16 +199,16 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
         rows="4"
         style={{ marginTop: 20 }}
       />
-      <CreatedByField
-        name="createdBy"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-      />
       <ConfidenceField
         name="confidence"
         label={t('Confidence')}
         fullWidth={true}
         containerStyle={fieldSpacingContainerStyle}
+      />
+      <CreatedByField
+        name="createdBy"
+        style={fieldSpacingContainerStyle}
+        setFieldValue={setFieldValue}
       />
       <ObjectLabelField
         name="objectLabel"
@@ -215,6 +219,12 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
       <ObjectMarkingField
         name="objectMarking"
         style={fieldSpacingContainerStyle}
+      />
+      <ExternalReferencesField
+        name="externalReferences"
+        style={fieldSpacingContainerStyle}
+        setFieldValue={setFieldValue}
+        values={values.externalReferences}
       />
     </>
   );

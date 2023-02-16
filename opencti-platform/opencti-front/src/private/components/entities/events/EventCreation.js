@@ -23,6 +23,7 @@ import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -123,6 +124,7 @@ class EventCreation extends Component {
       ),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
@@ -196,6 +198,7 @@ class EventCreation extends Component {
                 stop_time: null,
                 createdBy: '',
                 objectMarking: [],
+                objectLabel: [],
                 externalReferences: [],
               }}
               validationSchema={eventValidation(t)}
@@ -257,16 +260,22 @@ class EventCreation extends Component {
                   />
                   <CreatedByField
                     name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
                   />
                   <ObjectMarkingField
                     name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                   <ExternalReferencesField
                     name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                   />

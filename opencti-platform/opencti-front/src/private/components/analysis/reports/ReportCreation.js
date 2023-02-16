@@ -97,7 +97,7 @@ const reportValidation = (t) => Yup.object().shape({
   published: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
-  confidence: Yup.number().required(t('This field is required')),
+  confidence: Yup.number(),
   report_types: Yup.array().required(t('This field is required')),
   description: Yup.string().nullable(),
 });
@@ -118,8 +118,8 @@ class ReportCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
-      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('published', parse(values.published).format()),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('report_types', values.report_types),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -191,9 +191,9 @@ class ReportCreation extends Component {
                 initialValues={{
                   name: '',
                   published: dayStartDate(),
+                  report_types: [],
                   confidence: 75,
                   description: '',
-                  report_types: [],
                   createdBy: '',
                   objectMarking: [],
                   objectAssignee: [],

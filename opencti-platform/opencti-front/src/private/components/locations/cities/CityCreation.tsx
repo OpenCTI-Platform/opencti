@@ -20,6 +20,8 @@ import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLinesPaginationQuery.graphql';
 import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -84,13 +86,14 @@ const cityValidation = (t: (v: string) => string) => Yup.object().shape({
 });
 
 interface CityAddInput {
-  name: string,
-  description: string,
+  name: string
+  description: string
   latitude: string
   longitude: string
-  createdBy?: { value: string, label?: string }
-  objectMarking: { value: string }[]
-  externalReferences: { value: string }[]
+  createdBy?: Option
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
 }
 
 const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPaginationQuery$variables }) => {
@@ -109,6 +112,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
       latitude: parseFloat(values.latitude),
       longitude: parseFloat(values.longitude),
       objectMarking: values.objectMarking.map(({ value }) => value),
+      objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
     };
@@ -166,6 +170,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
               longitude: '',
               createdBy: { value: '', label: '' },
               objectMarking: [],
+              objectLabel: [],
               externalReferences: [],
             }}
             validationSchema={cityValidation(t)}
@@ -217,6 +222,12 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
                   name="createdBy"
                   style={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
                 />
                 <ObjectMarkingField
                   name="objectMarking"

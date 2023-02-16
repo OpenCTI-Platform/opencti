@@ -82,7 +82,7 @@ const intrusionSetMutationRelationDelete = graphql`
 
 const intrusionSetValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number().required(t('This field is required')),
+  confidence: Yup.number(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))

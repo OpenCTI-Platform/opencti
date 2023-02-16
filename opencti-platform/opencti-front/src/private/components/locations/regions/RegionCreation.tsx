@@ -19,6 +19,10 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { RegionsLinesPaginationQuery$variables } from './__generated__/RegionsLinesPaginationQuery.graphql';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { Option } from '../../common/form/ReferenceField';
 
 const styles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -91,10 +95,12 @@ const regionValidation = (t: (message: string) => string) => Yup.object()
   });
 
 interface RegionAddInput {
-  name: string,
-  description: string,
-  createdBy?: { value: string, label?: string },
-  objectMarking: { value: string }[],
+  name: string
+  description: string
+  createdBy?: Option
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
 }
 
 const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLinesPaginationQuery$variables }) => {
@@ -117,6 +123,8 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
     const finalValues = R.pipe(
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
+      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commit({
       variables: {
@@ -170,6 +178,8 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
               description: '',
               createdBy: { value: '', label: '' },
               objectMarking: [],
+              objectLabel: [],
+              externalReferences: [],
             }}
             validationSchema={regionValidation(t)}
             onSubmit={onSubmit}
@@ -180,6 +190,7 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
               handleReset,
               isSubmitting,
               setFieldValue,
+              values,
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
@@ -207,12 +218,24 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
                   }}
                   setFieldValue={setFieldValue}
                 />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
+                />
                 <ObjectMarkingField
                   name="objectMarking"
                   style={{
                     marginTop: 20,
                     width: '100%',
                   }}
+                />
+                <ExternalReferencesField
+                  name="externalReferences"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.externalReferences}
                 />
                 <div className={classes.buttons}>
                   <Button

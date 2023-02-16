@@ -7,13 +7,13 @@ import { makeStyles } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemSeverity from '../../../../components/ItemSeverity';
 import { Theme } from '../../../../components/Theme';
 import {
   IncidentDetails_incident$data,
   IncidentDetails_incident$key,
 } from './__generated__/IncidentDetails_incident.graphql';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -131,10 +131,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({ incidentData
             <Typography variant="h3" gutterBottom={true}>
               {t('Severity')}
             </Typography>
-            <ItemSeverity
-              severity={incident.severity}
-              label={t(incident.severity || 'Unknown')}
-            />
+            <ItemOpenVocab key="type" small={true} type="incident_severity_ov" value={incident.severity}/>
             <Typography
               variant="h3"
               gutterBottom={true}

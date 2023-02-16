@@ -272,17 +272,6 @@ FeedbackEditionOverviewProps
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
-            label={t('Case priority')}
-            type="case_priority_ov"
-            name="priority"
-            onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
-            variant="edit"
-            containerStyle={{ width: '100%' }}
-            multiple={false}
-            editContext={context}
-          />
-          <OpenVocabField
             label={t('Case severity')}
             type="case_severity_ov"
             name="severity"
@@ -290,6 +279,17 @@ FeedbackEditionOverviewProps
             onChange={(name, value) => setFieldValue(name, value)}
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            editContext={context}
+          />
+          <OpenVocabField
+            label={t('Case priority')}
+            type="case_priority_ov"
+            name="priority"
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            variant="edit"
+            containerStyle={{ width: '100%' }}
             multiple={false}
             editContext={context}
           />
@@ -318,6 +318,24 @@ FeedbackEditionOverviewProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          <ConfidenceField
+            name="confidence"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
+          />
+          <RatingField
+            label={t('Rating')}
+            rating={caseData.rating}
+            size="small"
+            style={fieldSpacingContainerStyle}
+            handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))
             }
           />
           <ObjectAssigneeField
@@ -360,24 +378,6 @@ FeedbackEditionOverviewProps
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }
             onChange={editor.changeMarking}
-          />
-          <ConfidenceField
-            name="confidence"
-            onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
-            containerStyle={fieldSpacingContainerStyle}
-            editContext={context}
-            variant="edit"
-          />
-          <RatingField
-            label={t('Rating')}
-            rating={caseData.rating}
-            size="small"
-            style={fieldSpacingContainerStyle}
-            handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))
-            }
           />
           {enableReferences && (
             <CommitMessage

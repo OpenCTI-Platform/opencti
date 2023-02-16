@@ -23,6 +23,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -121,6 +123,7 @@ class CourseOfActionCreation extends Component {
       assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('objectLabel', pluck('value', values.objectLabel)),
+      assoc('externalReferences', pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
       mutation: courseOfActionMutation,
@@ -197,6 +200,7 @@ class CourseOfActionCreation extends Component {
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
+                externalReferences: [],
               }}
               validationSchema={courseOfActionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -229,18 +233,24 @@ class CourseOfActionCreation extends Component {
                   />
                   <CreatedByField
                     name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                   />
                   <ObjectLabelField
                     name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                   />
                   <ObjectMarkingField
                     name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -294,6 +304,7 @@ class CourseOfActionCreation extends Component {
               createdBy: '',
               objectMarking: [],
               objectLabel: [],
+              externalReferences: [],
             }}
             validationSchema={courseOfActionValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -327,18 +338,24 @@ class CourseOfActionCreation extends Component {
                   />
                   <CreatedByField
                     name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                   />
                   <ObjectLabelField
                     name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                   />
                   <ObjectMarkingField
                     name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
                   />
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogActions }}>

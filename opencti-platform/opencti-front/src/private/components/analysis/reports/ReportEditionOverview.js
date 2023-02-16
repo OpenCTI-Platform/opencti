@@ -122,8 +122,8 @@ const reportValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .required(t('This field is required')),
   report_types: Yup.array().required(t('This field is required')),
-  description: Yup.string().nullable(),
   confidence: Yup.number(),
+  description: Yup.string().nullable(),
   x_opencti_workflow_id: Yup.object(),
 });
 
@@ -147,11 +147,11 @@ class ReportEditionOverviewComponent extends Component {
       R.dissoc('message'),
       R.dissoc('references'),
       R.assoc('published', parse(values.published).format()),
+      R.assoc('report_types', values.report_types),
+      R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('report_types', values.report_types),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -292,12 +292,12 @@ class ReportEditionOverviewComponent extends Component {
     const objectAssignee = convertAssignees(report);
     const status = convertStatus(t, report);
     const initialValues = R.pipe(
+      R.assoc('published', buildDate(report.published)),
+      R.assoc('report_types', report.report_types ?? []),
+      R.assoc('objectAssignee', objectAssignee),
+      R.assoc('x_opencti_workflow_id', status),
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('objectAssignee', objectAssignee),
-      R.assoc('published', buildDate(report.published)),
-      R.assoc('x_opencti_workflow_id', status),
-      R.assoc('report_types', report.report_types ?? []),
       R.pick([
         'name',
         'published',
@@ -347,6 +347,24 @@ class ReportEditionOverviewComponent extends Component {
                           />
                         }
                       />
+                      <Field
+                        component={DateTimePickerField}
+                        name="published"
+                        onFocus={this.handleChangeFocus.bind(this)}
+                        onSubmit={this.handleSubmitField.bind(this)}
+                        TextFieldProps={{
+                          label: t('Publication date'),
+                          variant: 'standard',
+                          fullWidth: true,
+                          style: { marginTop: 20 },
+                          helperText: (
+                            <SubscriptionFocus
+                              context={context}
+                              fieldName="published"
+                            />
+                          ),
+                        }}
+                      />
                       <OpenVocabField
                         label={t('Report types')}
                         type="report_types_ov"
@@ -367,24 +385,6 @@ class ReportEditionOverviewComponent extends Component {
                         containerStyle={fieldSpacingContainerStyle}
                         editContext={context}
                         variant="edit"
-                      />
-                      <Field
-                        component={DateTimePickerField}
-                        name="published"
-                        onFocus={this.handleChangeFocus.bind(this)}
-                        onSubmit={this.handleSubmitField.bind(this)}
-                        TextFieldProps={{
-                          label: t('Publication date'),
-                          variant: 'standard',
-                          fullWidth: true,
-                          style: { marginTop: 20 },
-                          helperText: (
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="published"
-                            />
-                          ),
-                        }}
                       />
                       <Field
                         component={MarkDownField}

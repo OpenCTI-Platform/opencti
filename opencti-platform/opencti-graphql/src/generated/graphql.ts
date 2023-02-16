@@ -20741,6 +20741,7 @@ export enum SubTypesOrdering {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  entitySetting?: Maybe<EntitySetting>;
   externalReference?: Maybe<ExternalReference>;
   group?: Maybe<Group>;
   killChainPhase?: Maybe<KillChainPhase>;
@@ -20758,6 +20759,11 @@ export type Subscription = {
   stixSightingRelationship?: Maybe<StixSightingRelationship>;
   user?: Maybe<User>;
   workspace?: Maybe<Workspace>;
+};
+
+
+export type SubscriptionEntitySettingArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -31021,6 +31027,7 @@ export type SubTypeEditMutationsResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
+  entitySetting?: SubscriptionResolver<Maybe<ResolversTypes['EntitySetting']>, "entitySetting", ParentType, ContextType, RequireFields<SubscriptionEntitySettingArgs, 'id'>>;
   externalReference?: SubscriptionResolver<Maybe<ResolversTypes['ExternalReference']>, "externalReference", ParentType, ContextType, RequireFields<SubscriptionExternalReferenceArgs, 'id'>>;
   group?: SubscriptionResolver<Maybe<ResolversTypes['Group']>, "group", ParentType, ContextType, RequireFields<SubscriptionGroupArgs, 'id'>>;
   killChainPhase?: SubscriptionResolver<Maybe<ResolversTypes['KillChainPhase']>, "killChainPhase", ParentType, ContextType, RequireFields<SubscriptionKillChainPhaseArgs, 'id'>>;

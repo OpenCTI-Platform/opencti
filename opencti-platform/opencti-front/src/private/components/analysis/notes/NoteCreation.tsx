@@ -33,6 +33,7 @@ import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import SliderField from '../../../../components/SliderField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -113,15 +114,16 @@ const noteValidation = (t: (message: string) => string) => Yup.object().shape({
 });
 
 interface NoteAddInput {
-  created: Date;
-  attribute_abstract: string;
-  content: string;
-  confidence: number;
-  note_types: string[];
-  likelihood?: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  created: Date
+  attribute_abstract: string
+  content: string
+  note_types: string[]
+  confidence: number
+  likelihood?: number
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
 }
 
 interface NoteCreationProps {
@@ -148,12 +150,13 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     created: dayStartDate(),
     attribute_abstract: '',
     content: inputValue || '',
-    likelihood: 50,
-    confidence: 75,
     note_types: [],
+    confidence: 75,
+    likelihood: 50,
     createdBy: '' as unknown as Option,
     objectMarking: [],
     objectLabel: [],
+    externalReferences: [],
   };
   const [commit] = userIsKnowledgeEditor
     ? useMutation(noteCreationMutation)
@@ -166,12 +169,13 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
       created: values.created,
       attribute_abstract: values.attribute_abstract,
       content: values.content,
-      confidence: parseInt(String(values.confidence), 10),
       note_types: values.note_types,
+      confidence: parseInt(String(values.confidence), 10),
       likelihood: parseInt(String(values.likelihood), 10),
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
     };
     if (!userIsKnowledgeEditor) {
       delete finalValues.createdBy;
@@ -268,6 +272,12 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
       <ObjectMarkingField
         name="objectMarking"
         style={fieldSpacingContainerStyle}
+      />
+      <ExternalReferencesField
+        name="externalReferences"
+        style={fieldSpacingContainerStyle}
+        setFieldValue={setFieldValue}
+        values={values.externalReferences}
       />
     </>
   );

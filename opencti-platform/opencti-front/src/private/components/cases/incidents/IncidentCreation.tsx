@@ -25,6 +25,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -82,17 +83,17 @@ const caseValidation = () => Yup.object().shape({
 });
 
 interface FormikCaseAddInput {
-  name: string;
-  confidence: number;
-  severity: string;
-  priority: string;
-  description: string;
-  file: File | undefined;
-  createdBy?: { value: string; label?: string };
-  objectMarking: { value: string }[];
-  objectAssignee: { value: string }[];
-  objectLabel: { value: string }[];
-  externalReferences: { value: string }[];
+  name: string
+  confidence: number
+  severity: string
+  priority: string
+  description: string
+  file: File | undefined
+  createdBy?: { value: string; label?: string }
+  objectMarking: { value: string }[]
+  objectAssignee: { value: string }[]
+  objectLabel: { value: string }[]
+  externalReferences: { value: string }[]
 }
 
 const IncidentCreation = ({
@@ -246,6 +247,12 @@ const IncidentCreation = ({
                   name="createdBy"
                   style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
                 />
                 <ObjectMarkingField
                   name="objectMarking"

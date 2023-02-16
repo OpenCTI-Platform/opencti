@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -13,15 +13,14 @@ import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -122,6 +121,7 @@ class SectorCreation extends Component {
     const finalValues = R.pipe(
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
     commitMutation({
@@ -191,6 +191,7 @@ class SectorCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
+                objectLabel: [],
                 externalReferences: [],
               }}
               validationSchema={sectorValidation(t)}
@@ -224,16 +225,22 @@ class SectorCreation extends Component {
                   />
                   <CreatedByField
                     name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
                   />
                   <ObjectMarkingField
                     name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                   <ExternalReferencesField
                     name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                   />

@@ -19,6 +19,10 @@ import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import RatingField from '../../../../components/RatingField';
 import useAuth from '../../../../utils/hooks/useAuth';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import { Option } from '../../common/form/ReferenceField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -73,14 +77,17 @@ const feedbackMutation = graphql`
 
 const caseValidation = () => Yup.object().shape({
   description: Yup.string().nullable(),
+  confidence: Yup.number(),
   rating: Yup.number(),
 });
 
 interface FormikCaseAddInput {
-  description: string;
-  rating: number;
-  objects: { value: string }[];
-  file: File | undefined;
+  description: string
+  confidence: number
+  rating: number
+  objects: { value: string }[]
+  file: File | undefined
+  objectLabel: Option[]
 }
 
 const FeedbackCreation: FunctionComponent<{
@@ -91,6 +98,7 @@ const FeedbackCreation: FunctionComponent<{
   const { t } = useFormatter();
   const { me } = useAuth();
   const [commit] = useMutation(feedbackMutation);
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
@@ -99,8 +107,10 @@ const FeedbackCreation: FunctionComponent<{
       name: `Feedback from ${me.user_email}`,
       case_type: 'feedback',
       description: values.description,
+      confidence: parseInt(String(values.confidence), 10),
       rating: parseInt(String(values.rating), 6),
       objects: values.objects.map((o) => o.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
     };
     if (values.file) {
       finalValues.file = values.file;
@@ -144,8 +154,10 @@ const FeedbackCreation: FunctionComponent<{
             initialValues={{
               rating: 5,
               description: '',
+              confidence: 75,
               objects: [],
               file: undefined,
+              objectLabel: [],
             }}
             validationSchema={caseValidation()}
             onSubmit={onSubmit}
@@ -166,6 +178,12 @@ const FeedbackCreation: FunctionComponent<{
                   fullWidth={true}
                   multiline={true}
                   rows="4"
+                />
+                <ConfidenceField
+                  name="confidence"
+                  label={t('Confidence')}
+                  fullWidth={true}
+                  containerStyle={fieldSpacingContainerStyle}
                 />
                 <RatingField
                   label={t('Rating')}
@@ -190,6 +208,12 @@ const FeedbackCreation: FunctionComponent<{
                   InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                   InputProps={{ fullWidth: true, variant: 'standard' }}
                   fullWidth={true}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
                 />
                 <div className={classes.buttons}>
                   <Button
