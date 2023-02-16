@@ -1,11 +1,26 @@
 import json
 import uuid
+import re
+
+MITRE_X_CAPEC = (
+    "x_capec_*"  # https://github.com/mitre-attack/attack-stix-data/issues/34
+)
+unsupported_ref_patterns = [MITRE_X_CAPEC]
 
 
 class OpenCTIStix2Splitter:
     def __init__(self):
         self.cache_index = {}
         self.elements = []
+        self.unsupported_patterns = list(
+            map(lambda pattern: re.compile(pattern), unsupported_ref_patterns)
+        )
+
+    def is_ref_key_supported(self, key):
+        for pattern in self.unsupported_patterns:
+            if pattern.match(key):
+                return False
+        return True
 
     def enlist_element(self, item_id, raw_data):
         nb_deps = 1
@@ -18,14 +33,14 @@ class OpenCTIStix2Splitter:
         item = raw_data[item_id]
         for key in list(item.keys()):
             value = item[key]
-            if key.endswith("_refs"):
+            if key.endswith("_refs") and self.is_ref_key_supported(key):
                 to_keep = []
                 for element_ref in item[key]:
                     if element_ref != item_id:
                         nb_deps += self.enlist_element(element_ref, raw_data)
                         to_keep.append(element_ref)
                     item[key] = to_keep
-            elif key.endswith("_ref"):
+            elif key.endswith("_ref") and self.is_ref_key_supported(key):
                 if item[key] == item_id:
                     item[key] = None
                 else:
