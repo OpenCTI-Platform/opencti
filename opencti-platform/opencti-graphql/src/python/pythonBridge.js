@@ -138,7 +138,7 @@ const checkNativeIndicatorSyntax = async (context, user, patternType, indicatorV
   });
 };
 const checkNativePythonAvailability = async (context, user) => {
-  return createStixPattern(context, user, 'check', 'health');
+  return createStixPattern(context, user, 'Text', 'test');
 };
 // endregion
 
