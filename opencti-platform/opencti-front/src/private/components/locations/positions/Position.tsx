@@ -16,8 +16,13 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships
   from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import LocationMiniMap from '../../common/location/LocationMiniMap';
-import PositionDetails from './PositionDetails';
+import PositionDetails, { positionDetailsLocationRelationshipsLinesQuery } from './PositionDetails';
 import { Position_position$data } from './__generated__/Position_position.graphql';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import {
+  PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery,
+} from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -35,6 +40,12 @@ interface PositionComponentProps {
 const PositionComponent: FunctionComponent<PositionComponentProps> = ({ position }) => {
   const classes = useStyles();
 
+  const queryRef = useQueryLoading<PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery>(positionDetailsLocationRelationshipsLinesQuery, {
+    count: 20,
+    elementId: [position.id],
+    relationship_type: ['located-at'],
+  });
+
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
@@ -50,7 +61,11 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({ position
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
-          <PositionDetails position={position} />
+          {queryRef && <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement}/>}
+          >
+            <PositionDetails position={position} queryRef={queryRef}/>
+          </React.Suspense>}
         </Grid>
         <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
           <LocationMiniMap
