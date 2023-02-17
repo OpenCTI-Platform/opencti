@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import { assoc, map, pathOr, pipe, pick, difference, head } from 'ramda';
-import * as Yup from 'yup';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import * as Yup from 'yup';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -14,11 +12,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 
 const sectorMutationFieldPatch = graphql`
@@ -90,25 +84,21 @@ const sectorValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class SectorEditionOverviewComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { subSectors: [] };
-  }
+const SectorEditionOverviewComponent = (props) => {
+  const { sector, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: sectorEditionOverviewFocus,
-      variables: {
-        id: this.props.sector.id,
-        input: {
-          focusOn: name,
-        },
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: sectorEditionOverviewFocus,
+    variables: {
+      id: sector.id,
+      input: {
+        focusOn: name,
       },
-    });
-  }
+    },
+  });
 
-  onSubmit(values, { setSubmitting }) {
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -123,7 +113,7 @@ class SectorEditionOverviewComponent extends Component {
     commitMutation({
       mutation: sectorMutationFieldPatch,
       variables: {
-        id: this.props.sector.id,
+        id: sector.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -132,63 +122,62 @@ class SectorEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      sectorValidation(this.props.t)
+      sectorValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: sectorMutationFieldPatch,
             variables: {
-              id: this.props.sector.id,
+              id: sector.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: sectorMutationFieldPatch,
         variables: {
-          id: this.props.sector.id,
+          id: sector.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { sector } = this.props;
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(sector);
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
       if (added.length > 0) {
         commitMutation({
           mutation: sectorMutationRelationAdd,
           variables: {
-            id: this.props.sector.id,
+            id: sector.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -198,38 +187,36 @@ class SectorEditionOverviewComponent extends Component {
         commitMutation({
           mutation: sectorMutationRelationDelete,
           variables: {
-            id: this.props.sector.id,
-            toId: head(removed).value,
+            id: sector.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, sector, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(sector);
-    const objectMarking = convertMarkings(sector);
-    const status = convertStatus(t, sector);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      assoc('x_opencti_workflow_id', status),
-      pick([
-        'name',
-        'description',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(sector);
-    return (
+  const createdBy = convertCreatedBy(sector);
+  const objectMarking = convertMarkings(sector);
+  const status = convertStatus(t, sector);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'name',
+      'description',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(sector);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={sectorValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -244,8 +231,8 @@ class SectorEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -258,8 +245,8 @@ class SectorEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
@@ -268,8 +255,8 @@ class SectorEditionOverviewComponent extends Component {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Sector"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -287,7 +274,7 @@ class SectorEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -298,7 +285,7 @@ class SectorEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             {enableReferences && (
               <CommitMessage
@@ -313,23 +300,11 @@ class SectorEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-SectorEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  sector: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const SectorEditionOverview = createFragmentContainer(
-  SectorEditionOverviewComponent,
-  {
-    sector: graphql`
+export default createFragmentContainer(SectorEditionOverviewComponent, {
+  sector: graphql`
       fragment SectorEditionOverview_sector on Sector {
         id
         name
@@ -364,7 +339,4 @@ const SectorEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default inject18n(SectorEditionOverview);
+});

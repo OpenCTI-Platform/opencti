@@ -1,21 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
-import * as Yup from 'yup';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import * as Yup from 'yup';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -26,39 +14,10 @@ import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const toolMutationFieldPatch = graphql`
   mutation ToolEditionOverviewFieldPatchMutation(
@@ -131,20 +90,21 @@ const toolValidation = (t) => Yup.object().shape({
   confidence: Yup.number(),
 });
 
-class ToolEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: toolEditionOverviewFocus,
-      variables: {
-        id: this.props.tool.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const ToolEditionOverviewComponent = (props) => {
+  const { tool, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: toolEditionOverviewFocus,
+    variables: {
+      id: tool.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -163,7 +123,7 @@ class ToolEditionOverviewComponent extends Component {
     commitMutation({
       mutation: toolMutationFieldPatch,
       variables: {
-        id: this.props.tool.id,
+        id: tool.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -172,65 +132,64 @@ class ToolEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      toolValidation(this.props.t)
+      toolValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: toolMutationFieldPatch,
             variables: {
-              id: this.props.tool.id,
+              id: tool.id,
               input: { key: name, value: finalValue },
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: toolMutationFieldPatch,
         variables: {
-          id: this.props.tool.id,
+          id: tool.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeKillChainPhases(name, values) {
-    if (!this.props.enableReferences) {
-      const { tool } = this.props;
-      const currentKillChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        map((n) => ({
+  const handleChangeKillChainPhases = (name, values) => {
+    if (!enableReferences) {
+      const currentKillChainPhases = R.pipe(
+        R.pathOr([], ['killChainPhases', 'edges']),
+        R.map((n) => ({
           label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
           value: n.node.id,
         })),
       )(tool);
 
-      const added = difference(values, currentKillChainPhases);
-      const removed = difference(currentKillChainPhases, values);
+      const added = R.difference(values, currentKillChainPhases);
+      const removed = R.difference(currentKillChainPhases, values);
 
       if (added.length > 0) {
         commitMutation({
           mutation: toolMutationRelationAdd,
           variables: {
-            id: this.props.tool.id,
+            id: tool.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'kill-chain-phase',
             },
           },
@@ -241,36 +200,35 @@ class ToolEditionOverviewComponent extends Component {
         commitMutation({
           mutation: toolMutationRelationDelete,
           variables: {
-            id: this.props.tool.id,
-            toId: head(removed).value,
+            id: tool.id,
+            toId: R.head(removed).value,
             relationship_type: 'kill-chain-phase',
           },
         });
       }
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { tool } = this.props;
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(tool);
 
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
 
       if (added.length > 0) {
         commitMutation({
           mutation: toolMutationRelationAdd,
           variables: {
-            id: this.props.tool.id,
+            id: tool.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -281,50 +239,48 @@ class ToolEditionOverviewComponent extends Component {
         commitMutation({
           mutation: toolMutationRelationDelete,
           variables: {
-            id: this.props.tool.id,
-            toId: head(removed).value,
+            id: tool.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, tool, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(tool);
-    const objectMarking = convertMarkings(tool);
-    const status = convertStatus(t, tool);
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(tool);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
-      assoc('objectMarking', objectMarking),
-      assoc('x_opencti_workflow_id', status),
-      assoc('tool_types', tool.tool_types ?? []),
-      pick([
-        'name',
-        'description',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
-        'x_opencti_workflow_id',
-        'tool_types',
-        'confidence',
-      ]),
-    )(tool);
-    return (
+  const createdBy = convertCreatedBy(tool);
+  const objectMarking = convertMarkings(tool);
+  const status = convertStatus(t, tool);
+  const killChainPhases = R.pipe(
+    R.pathOr([], ['killChainPhases', 'edges']),
+    R.map((n) => ({
+      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+      value: n.node.id,
+    })),
+  )(tool);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('tool_types', tool.tool_types ?? []),
+    R.pick([
+      'name',
+      'description',
+      'createdBy',
+      'killChainPhases',
+      'objectMarking',
+      'x_opencti_workflow_id',
+      'tool_types',
+      'confidence',
+    ]),
+  )(tool);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={toolValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -339,8 +295,8 @@ class ToolEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -353,16 +309,16 @@ class ToolEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
             <ConfidenceField
               name="confidence"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
               containerStyle={fieldSpacingContainerStyle}
@@ -379,14 +335,14 @@ class ToolEditionOverviewComponent extends Component {
                   fieldName="killChainPhases"
                 />
               }
-              onChange={this.handleChangeKillChainPhases.bind(this)}
+              onChange={handleChangeKillChainPhases}
             />
             {tool.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Tool"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -404,7 +360,7 @@ class ToolEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -415,14 +371,14 @@ class ToolEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             <OpenVocabField
               type="tool_types_ov"
               name="tool_types"
               label={t('Tool types')}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
@@ -442,21 +398,11 @@ class ToolEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-ToolEditionOverviewComponent.propTypes = {
-  t: PropTypes.func,
-  tool: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const ToolEditionOverview = createFragmentContainer(
-  ToolEditionOverviewComponent,
-  {
-    tool: graphql`
+export default createFragmentContainer(ToolEditionOverviewComponent, {
+  tool: graphql`
       fragment ToolEditionOverview_tool on Tool {
         id
         name
@@ -502,10 +448,4 @@ const ToolEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ToolEditionOverview);
+});

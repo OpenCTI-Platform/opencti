@@ -1,12 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
-import { assoc, compose, difference, head, map, pathOr, pick, pipe } from 'ramda';
 import * as Yup from 'yup';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -18,31 +15,6 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionOverviewFieldPatchMutation(
@@ -116,20 +88,21 @@ const attackPatternValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class AttackPatternEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: attackPatternEditionOverviewFocus,
-      variables: {
-        id: this.props.attackPattern.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const AttackPatternEditionOverviewComponent = (props) => {
+  const { attackPattern, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: attackPatternEditionOverviewFocus,
+    variables: {
+      id: attackPattern.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -145,7 +118,7 @@ class AttackPatternEditionOverviewComponent extends Component {
     commitMutation({
       mutation: attackPatternMutationFieldPatch,
       variables: {
-        id: this.props.attackPattern.id,
+        id: attackPattern.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -154,65 +127,63 @@ class AttackPatternEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      attackPatternValidation(this.props.t)
+      attackPatternValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: attackPatternMutationFieldPatch,
             variables: {
-              id: this.props.attackPattern.id,
+              id: attackPattern.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
-
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  };
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: attackPatternMutationFieldPatch,
         variables: {
-          id: this.props.attackPattern.id,
+          id: attackPattern.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeKillChainPhases(name, values) {
-    if (!this.props.enableReferences) {
-      const { attackPattern } = this.props;
-      const currentKillChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        map((n) => ({
+  const handleChangeKillChainPhases = (name, values) => {
+    if (!enableReferences) {
+      const currentKillChainPhases = R.pipe(
+        R.pathOr([], ['killChainPhases', 'edges']),
+        R.map((n) => ({
           label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
           value: n.node.id,
         })),
       )(attackPattern);
 
-      const added = difference(values, currentKillChainPhases);
-      const removed = difference(currentKillChainPhases, values);
+      const added = R.difference(values, currentKillChainPhases);
+      const removed = R.difference(currentKillChainPhases, values);
 
       if (added.length > 0) {
         commitMutation({
           mutation: attackPatternMutationRelationAdd,
           variables: {
-            id: this.props.attackPattern.id,
+            id: attackPattern.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'kill-chain-phase',
             },
           },
@@ -223,36 +194,35 @@ class AttackPatternEditionOverviewComponent extends Component {
         commitMutation({
           mutation: attackPatternMutationRelationDelete,
           variables: {
-            id: this.props.attackPattern.id,
-            toId: head(removed).value,
+            id: attackPattern.id,
+            toId: R.head(removed).value,
             relationship_type: 'kill-chain-phase',
           },
         });
       }
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { attackPattern } = this.props;
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(attackPattern);
 
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
 
       if (added.length > 0) {
         commitMutation({
           mutation: attackPatternMutationRelationAdd,
           variables: {
-            id: this.props.attackPattern.id,
+            id: attackPattern.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -263,47 +233,45 @@ class AttackPatternEditionOverviewComponent extends Component {
         commitMutation({
           mutation: attackPatternMutationRelationDelete,
           variables: {
-            id: this.props.attackPattern.id,
-            toId: head(removed).value,
+            id: attackPattern.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, attackPattern, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(attackPattern);
-    const objectMarking = convertMarkings(attackPattern);
-    const status = convertStatus(t, attackPattern);
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(attackPattern);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
-      assoc('objectMarking', objectMarking),
-      R.assoc('x_opencti_workflow_id', status),
-      pick([
-        'name',
-        'description',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(attackPattern);
-    return (
+  const createdBy = convertCreatedBy(attackPattern);
+  const objectMarking = convertMarkings(attackPattern);
+  const status = convertStatus(t, attackPattern);
+  const killChainPhases = R.pipe(
+    R.pathOr([], ['killChainPhases', 'edges']),
+    R.map((n) => ({
+      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+      value: n.node.id,
+    })),
+  )(attackPattern);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'name',
+      'description',
+      'createdBy',
+      'killChainPhases',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(attackPattern);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={{ ...initialValues, references: [] }}
         validationSchema={attackPatternValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -318,8 +286,8 @@ class AttackPatternEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -332,8 +300,8 @@ class AttackPatternEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
@@ -348,14 +316,14 @@ class AttackPatternEditionOverviewComponent extends Component {
                   fieldName="killChainPhases"
                 />
               }
-              onChange={this.handleChangeKillChainPhases.bind(this)}
+              onChange={handleChangeKillChainPhases}
             />
             {attackPattern.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Attack-Pattern"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -373,7 +341,7 @@ class AttackPatternEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -384,7 +352,7 @@ class AttackPatternEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             {enableReferences && (
               <CommitMessage
@@ -399,23 +367,11 @@ class AttackPatternEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-AttackPatternEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  attackPattern: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const AttackPatternEditionOverview = createFragmentContainer(
-  AttackPatternEditionOverviewComponent,
-  {
-    attackPattern: graphql`
+export default createFragmentContainer(AttackPatternEditionOverviewComponent, {
+  attackPattern: graphql`
       fragment AttackPatternEditionOverview_attackPattern on AttackPattern {
         id
         name
@@ -459,10 +415,4 @@ const AttackPatternEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(AttackPatternEditionOverview);
+});

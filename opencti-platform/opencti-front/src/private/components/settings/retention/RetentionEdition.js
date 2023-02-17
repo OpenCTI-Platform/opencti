@@ -8,7 +8,6 @@ import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { assoc, pipe } from 'ramda';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
@@ -132,8 +131,8 @@ const RetentionEditionContainer = (props) => {
     setFilters(R.dissoc(key, filters));
   };
   const handleVerify = (values) => {
-    const finalValues = pipe(
-      assoc('max_retention', Number(values.max_retention)),
+    const finalValues = R.pipe(
+      R.assoc('max_retention', Number(values.max_retention)),
     )(values);
     const jsonFilters = JSON.stringify(filters);
     commitMutation({

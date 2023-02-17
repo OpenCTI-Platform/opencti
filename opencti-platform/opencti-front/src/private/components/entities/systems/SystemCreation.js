@@ -1,7 +1,5 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import React, { useState } from 'react';
+import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -12,8 +10,9 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -21,7 +20,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -62,7 +61,7 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
 
 const systemMutation = graphql`
   mutation SystemCreationMutation($input: SystemAddInput!) {
@@ -90,23 +89,16 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class SystemCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-    };
-  }
+const SystemCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
 
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
+  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = R.pipe(
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -125,29 +117,27 @@ class SystemCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
-          this.props.paginationOptions,
+          paginationOptions,
           newEdge,
         );
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  onReset() {
-    this.handleClose();
-  }
-
-  render() {
-    const { t, classes } = this.props;
-    return (
+  return (
       <div>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -155,18 +145,18 @@ class SystemCreation extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
+              onClick={handleClose}
               size="large"
               color="primary"
             >
@@ -185,8 +175,8 @@ class SystemCreation extends Component {
                 externalReferences: [],
               }}
               validationSchema={systemValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
+              onSubmit={onSubmit}
+              onReset={onReset}
             >
               {({
                 submitForm,
@@ -259,18 +249,7 @@ class SystemCreation extends Component {
           </div>
         </Drawer>
       </div>
-    );
-  }
-}
-
-SystemCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(SystemCreation);
+export default SystemCreation;

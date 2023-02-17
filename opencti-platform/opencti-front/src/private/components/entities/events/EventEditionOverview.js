@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -15,40 +13,11 @@ import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const eventMutationFieldPatch = graphql`
   mutation EventEditionOverviewFieldPatchMutation(
@@ -115,20 +84,21 @@ const eventValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class EventEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: eventEditionOverviewFocus,
-      variables: {
-        id: this.props.event.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const EventEditionOverviewComponent = (props) => {
+  const { event, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: eventEditionOverviewFocus,
+    variables: {
+      id: event.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -148,7 +118,7 @@ class EventEditionOverviewComponent extends Component {
     commitMutation({
       mutation: eventMutationFieldPatch,
       variables: {
-        id: this.props.event.id,
+        id: event.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -157,47 +127,46 @@ class EventEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      eventValidation(this.props.t)
+      eventValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: eventMutationFieldPatch,
             variables: {
-              id: this.props.event.id,
+              id: event.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
-        mutation: eventMutationRelationAdd,
+        mutation: eventMutationFieldPatch,
         variables: {
-          id: this.props.event.id,
+          id: event.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { event } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -211,7 +180,7 @@ class EventEditionOverviewComponent extends Component {
         commitMutation({
           mutation: eventMutationRelationAdd,
           variables: {
-            id: this.props.event.id,
+            id: event.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -223,43 +192,41 @@ class EventEditionOverviewComponent extends Component {
         commitMutation({
           mutation: eventMutationRelationDelete,
           variables: {
-            id: this.props.event.id,
+            id: event.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, event, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(event);
-    const objectMarking = convertMarkings(event);
-    const status = convertStatus(t, event);
-    const initialValues = R.pipe(
-      R.assoc('start_time', buildDate(event.start_time)),
-      R.assoc('stop_time', buildDate(event.stop_time)),
-      R.assoc('createdBy', createdBy),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc('x_opencti_workflow_id', status),
-      R.pick([
-        'name',
-        'event_types',
-        'description',
-        'start_time',
-        'stop_time',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(event);
-    return (
+  const createdBy = convertCreatedBy(event);
+  const objectMarking = convertMarkings(event);
+  const status = convertStatus(t, event);
+  const initialValues = R.pipe(
+    R.assoc('start_time', buildDate(event.start_time)),
+    R.assoc('stop_time', buildDate(event.stop_time)),
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'name',
+      'event_types',
+      'description',
+      'start_time',
+      'stop_time',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(event);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={eventValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -274,8 +241,8 @@ class EventEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -284,8 +251,8 @@ class EventEditionOverviewComponent extends Component {
               label={t('Event types')}
               type="event-type-ov"
               name="event_types"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
@@ -300,8 +267,8 @@ class EventEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
@@ -309,8 +276,8 @@ class EventEditionOverviewComponent extends Component {
             <Field
               component={DateTimePickerField}
               name="start_time"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('Start date'),
                 variant: 'standard',
@@ -324,8 +291,8 @@ class EventEditionOverviewComponent extends Component {
             <Field
               component={DateTimePickerField}
               name="stop_time"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('End date'),
                 variant: 'standard',
@@ -340,8 +307,8 @@ class EventEditionOverviewComponent extends Component {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Event"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -359,7 +326,7 @@ class EventEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -370,7 +337,7 @@ class EventEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             {enableReferences && (
               <CommitMessage
@@ -385,23 +352,11 @@ class EventEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-EventEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  event: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const EventEditionOverview = createFragmentContainer(
-  EventEditionOverviewComponent,
-  {
-    event: graphql`
+export default createFragmentContainer(EventEditionOverviewComponent, {
+  event: graphql`
       fragment EventEditionOverview_event on Event {
         id
         name
@@ -438,10 +393,4 @@ const EventEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(EventEditionOverview);
+});

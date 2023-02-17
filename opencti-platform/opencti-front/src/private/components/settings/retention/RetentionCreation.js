@@ -12,7 +12,6 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import { assoc, pipe } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
@@ -103,8 +102,8 @@ const RetentionCreation = (props) => {
   };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const finalValues = pipe(
-      assoc('max_retention', Number(values.max_retention)),
+    const finalValues = R.pipe(
+      R.assoc('max_retention', Number(values.max_retention)),
     )(values);
     const jsonFilters = JSON.stringify(filters);
     commitMutation({
@@ -129,8 +128,8 @@ const RetentionCreation = (props) => {
   };
 
   const handleVerify = (values) => {
-    const finalValues = pipe(
-      assoc('max_retention', Number(values.max_retention)),
+    const finalValues = R.pipe(
+      R.assoc('max_retention', Number(values.max_retention)),
     )(values);
     const jsonFilters = JSON.stringify(filters);
     commitMutation({

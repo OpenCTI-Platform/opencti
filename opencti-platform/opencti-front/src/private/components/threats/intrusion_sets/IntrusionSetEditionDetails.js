@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
-import { assoc, compose, join, pick, pipe } from 'ramda';
-import * as Yup from 'yup';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import * as Yup from 'yup';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import { buildDate, parse } from '../../../../utils/Time';
@@ -63,20 +61,21 @@ const intrusionSetValidation = (t) => Yup.object().shape({
   references: Yup.array().required(t('This field is required')),
 });
 
-class IntrusionSetEditionDetailsComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: intrusionSetEditionDetailsFocus,
-      variables: {
-        id: this.props.intrusionSet.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const IntrusionSetEditionDetailsComponent = (props) => {
+  const { intrusionSet, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: intrusionSetEditionDetailsFocus,
+    variables: {
+      id: intrusionSet.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -103,7 +102,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
     commitMutation({
       mutation: intrusionSetMutationFieldPatch,
       variables: {
-        id: this.props.intrusionSet.id,
+        id: intrusionSet.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -112,59 +111,57 @@ class IntrusionSetEditionDetailsComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'goals') {
         finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
-      intrusionSetValidation(this.props.t)
+      intrusionSetValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: intrusionSetMutationFieldPatch,
             variables: {
-              id: this.props.intrusionSet.id,
+              id: intrusionSet.id,
               input: { key: name, value: finalValue || '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  render() {
-    const { t, intrusionSet, context, enableReferences } = this.props;
-    const initialValues = pipe(
-      R.assoc('first_seen', buildDate(intrusionSet.first_seen)),
-      R.assoc('last_seen', buildDate(intrusionSet.last_seen)),
-      assoc(
-        'secondary_motivations',
-        intrusionSet.secondary_motivations
-          ? intrusionSet.secondary_motivations
-          : [],
-      ),
-      assoc('goals', join('\n', intrusionSet.goals ? intrusionSet.goals : [])),
-      pick([
-        'first_seen',
-        'last_seen',
-        'resource_level',
-        'primary_motivation',
-        'secondary_motivations',
-        'goals',
-      ]),
-    )(intrusionSet);
-    return (
+  const initialValues = R.pipe(
+    R.assoc('first_seen', buildDate(intrusionSet.first_seen)),
+    R.assoc('last_seen', buildDate(intrusionSet.last_seen)),
+    R.assoc(
+      'secondary_motivations',
+      intrusionSet.secondary_motivations
+        ? intrusionSet.secondary_motivations
+        : [],
+    ),
+    R.assoc('goals', R.join('\n', intrusionSet.goals ? intrusionSet.goals : [])),
+    R.pick([
+      'first_seen',
+      'last_seen',
+      'resource_level',
+      'primary_motivation',
+      'secondary_motivations',
+      'goals',
+    ]),
+  )(intrusionSet);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={intrusionSetValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -176,8 +173,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
             <Field
               component={DateTimePickerField}
               name="first_seen"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('First seen'),
                 variant: 'standard',
@@ -190,8 +187,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
             <Field
               component={DateTimePickerField}
               name="last_seen"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('Last seen'),
                 variant: 'standard',
@@ -206,9 +203,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
               label={t('Resource level')}
               type="attack-resource-level-ov"
               name="resource_level"
-              onFocus={this.handleChangeFocus.bind(this)}
+              onFocus={handleChangeFocus}
               onChange={(name, value) => setFieldValue(name, value)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onSubmit={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
@@ -218,9 +215,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
               label={t('Primary motivation')}
               type="attack-motivation-ov"
               name="primary_motivation"
-              onFocus={this.handleChangeFocus.bind(this)}
+              onFocus={handleChangeFocus}
               onChange={(name, value) => setFieldValue(name, value)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onSubmit={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
               multiple={false}
@@ -230,8 +227,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
               label={t('Secondary motivations')}
               type="attack-motivation-ov"
               name="secondary_motivations"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               variant="edit"
@@ -247,8 +244,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="goals" />
               }
@@ -265,20 +262,11 @@ class IntrusionSetEditionDetailsComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-IntrusionSetEditionDetailsComponent.propTypes = {
-  t: PropTypes.func,
-  intrusionSet: PropTypes.object,
-  context: PropTypes.array,
+  );
 };
 
-const IntrusionSetEditionDetails = createFragmentContainer(
-  IntrusionSetEditionDetailsComponent,
-  {
-    intrusionSet: graphql`
+export default createFragmentContainer(IntrusionSetEditionDetailsComponent, {
+  intrusionSet: graphql`
       fragment IntrusionSetEditionDetails_intrusionSet on IntrusionSet {
         id
         first_seen
@@ -289,7 +277,4 @@ const IntrusionSetEditionDetails = createFragmentContainer(
         goals
       }
     `,
-  },
-);
-
-export default compose(inject18n)(IntrusionSetEditionDetails);
+});

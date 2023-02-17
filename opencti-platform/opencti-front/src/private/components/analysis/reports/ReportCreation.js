@@ -1,7 +1,5 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -11,9 +9,10 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
+import makeStyles from '@mui/styles/makeStyles';
 import { dayStartDate, parse } from '../../../../utils/Time';
-import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -27,7 +26,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -82,7 +81,7 @@ const styles = (theme) => ({
   autoCompleteIndicator: {
     display: 'none',
   },
-});
+}));
 
 const reportMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
@@ -102,21 +101,16 @@ const reportValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
-class ReportCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+const ReportCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
 
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
+  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = R.pipe(
       R.assoc('published', parse(values.published).format()),
       R.assoc('confidence', parseInt(values.confidence, 10)),
@@ -136,29 +130,27 @@ class ReportCreation extends Component {
         insertNode(
           store,
           'Pagination_reports',
-          this.props.paginationOptions,
+          paginationOptions,
           'reportAdd',
         );
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  onReset() {
-    this.handleClose();
-  }
-
-  render() {
-    const { t, classes } = this.props;
-    return (
+  return (
       <div>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -166,19 +158,19 @@ class ReportCreation extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <div>
             <div className={classes.header}>
               <IconButton
                 aria-label="Close"
                 className={classes.closeButton}
-                onClick={this.handleClose.bind(this)}
+                onClick={handleClose}
                 size="large"
                 color="primary"
               >
@@ -201,8 +193,8 @@ class ReportCreation extends Component {
                   externalReferences: [],
                 }}
                 validationSchema={reportValidation(t)}
-                onSubmit={this.onSubmit.bind(this)}
-                onReset={this.onReset.bind(this)}
+                onSubmit={onSubmit}
+                onReset={onReset}
               >
                 {({
                   submitForm,
@@ -303,15 +295,7 @@ class ReportCreation extends Component {
           </div>
         </Drawer>
       </div>
-    );
-  }
-}
-
-ReportCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-export default R.compose(inject18n, withStyles(styles))(ReportCreation);
+export default ReportCreation;

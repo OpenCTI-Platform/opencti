@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -14,37 +12,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const positionMutationFieldPatch = graphql`
   mutation PositionEditionOverviewFieldPatchMutation(
@@ -117,20 +86,21 @@ const positionValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class PositionEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: positionEditionOverviewFocus,
-      variables: {
-        id: this.props.position.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const PositionEditionOverviewComponent = (props) => {
+  const { position, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: positionEditionOverviewFocus,
+    variables: {
+      id: position.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -145,7 +115,7 @@ class PositionEditionOverviewComponent extends Component {
     commitMutation({
       mutation: positionMutationFieldPatch,
       variables: {
-        id: this.props.position.id,
+        id: position.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -154,24 +124,24 @@ class PositionEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      positionValidation(this.props.t)
+      positionValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: positionMutationFieldPatch,
             variables: {
-              id: this.props.position.id,
+              id: position.id,
               input: {
                 key: name,
                 value: finalValue ?? '',
@@ -181,23 +151,22 @@ class PositionEditionOverviewComponent extends Component {
         })
         .catch(() => false);
     }
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: positionMutationFieldPatch,
         variables: {
-          id: this.props.position.id,
+          id: position.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { position } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -211,7 +180,7 @@ class PositionEditionOverviewComponent extends Component {
         commitMutation({
           mutation: positionMutationRelationAdd,
           variables: {
-            id: this.props.position.id,
+            id: position.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -223,40 +192,38 @@ class PositionEditionOverviewComponent extends Component {
         commitMutation({
           mutation: positionMutationRelationDelete,
           variables: {
-            id: this.props.position.id,
+            id: position.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, position, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(position);
-    const objectMarking = convertMarkings(position);
-    const status = convertStatus(t, position);
-    const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('objectMarking', objectMarking),
-      R.assoc('x_opencti_workflow_id', status),
-      R.pick([
-        'name',
-        'description',
-        'latitude',
-        'longitude',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(position);
-    return (
+  const createdBy = convertCreatedBy(position);
+  const objectMarking = convertMarkings(position);
+  const status = convertStatus(t, position);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'name',
+      'description',
+      'latitude',
+      'longitude',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(position);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={positionValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -271,8 +238,8 @@ class PositionEditionOverviewComponent extends Component {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -285,8 +252,8 @@ class PositionEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
@@ -298,8 +265,8 @@ class PositionEditionOverviewComponent extends Component {
               name="latitude"
               label={t('Latitude')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="latitude" />
               }
@@ -311,8 +278,8 @@ class PositionEditionOverviewComponent extends Component {
               name="longitude"
               label={t('Longitude')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="longitude" />
               }
@@ -321,8 +288,8 @@ class PositionEditionOverviewComponent extends Component {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Position"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -340,7 +307,7 @@ class PositionEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -351,7 +318,7 @@ class PositionEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             {enableReferences && (
               <CommitMessage
@@ -366,23 +333,11 @@ class PositionEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-PositionEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  position: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const PositionEditionOverview = createFragmentContainer(
-  PositionEditionOverviewComponent,
-  {
-    position: graphql`
+export default createFragmentContainer(PositionEditionOverviewComponent, {
+  position: graphql`
       fragment PositionEditionOverview_position on Position {
         id
         name
@@ -418,10 +373,4 @@ const PositionEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(PositionEditionOverview);
+});

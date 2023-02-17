@@ -1,21 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Formik, Form, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
-import * as Yup from 'yup';
+import React from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import * as Yup from 'yup';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -24,37 +12,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const individualMutationFieldPatch = graphql`
   mutation IndividualEditionOverviewFieldPatchMutation(
@@ -129,20 +88,21 @@ const individualValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class IndividualEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: individualEditionOverviewFocus,
-      variables: {
-        id: this.props.individual.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const IndividualEditionOverviewComponent = (props) => {
+  const { individual, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: individualEditionOverviewFocus,
+    variables: {
+      id: individual.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -157,7 +117,7 @@ class IndividualEditionOverviewComponent extends Component {
     commitMutation({
       mutation: individualMutationFieldPatch,
       variables: {
-        id: this.props.individual.id,
+        id: individual.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -166,63 +126,62 @@ class IndividualEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      individualValidation(this.props.t)
+      individualValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: individualMutationFieldPatch,
             variables: {
-              id: this.props.individual.id,
+              id: individual.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: individualMutationFieldPatch,
         variables: {
-          id: this.props.individual.id,
+          id: individual.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { individual } = this.props;
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(individual);
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
       if (added.length > 0) {
         commitMutation({
           mutation: individualMutationRelationAdd,
           variables: {
-            id: this.props.individual.id,
+            id: individual.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -232,40 +191,38 @@ class IndividualEditionOverviewComponent extends Component {
         commitMutation({
           mutation: individualMutationRelationDelete,
           variables: {
-            id: this.props.individual.id,
-            toId: head(removed).value,
+            id: individual.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, individual, context, enableReferences } = this.props;
-    const external = individual.external === true;
-    const createdBy = convertCreatedBy(individual);
-    const objectMarking = convertMarkings(individual);
-    const status = convertStatus(t, individual);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      assoc('x_opencti_workflow_id', status),
-      pick([
-        'name',
-        'description',
-        'contact_information',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(individual);
-    return (
+  const external = individual.external === true;
+  const createdBy = convertCreatedBy(individual);
+  const objectMarking = convertMarkings(individual);
+  const status = convertStatus(t, individual);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.pick([
+      'name',
+      'description',
+      'contact_information',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(individual);
+  return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={individualValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
+        onSubmit={onSubmit}
       >
         {({
           submitForm,
@@ -281,8 +238,8 @@ class IndividualEditionOverviewComponent extends Component {
               disabled={external}
               label={t('Name')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -295,8 +252,8 @@ class IndividualEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
@@ -310,8 +267,8 @@ class IndividualEditionOverviewComponent extends Component {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus
                   context={context}
@@ -323,8 +280,8 @@ class IndividualEditionOverviewComponent extends Component {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Individual"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
@@ -342,7 +299,7 @@ class IndividualEditionOverviewComponent extends Component {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedBy.bind(this)}
+              onChange={handleChangeCreatedBy}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -353,7 +310,7 @@ class IndividualEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeObjectMarking.bind(this)}
+              onChange={handleChangeObjectMarking}
             />
             {enableReferences && (
               <CommitMessage
@@ -368,23 +325,11 @@ class IndividualEditionOverviewComponent extends Component {
           </Form>
         )}
       </Formik>
-    );
-  }
-}
-
-IndividualEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  individual: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+  );
 };
 
-const IndividualEditionOverview = createFragmentContainer(
-  IndividualEditionOverviewComponent,
-  {
-    individual: graphql`
+export default createFragmentContainer(IndividualEditionOverviewComponent, {
+  individual: graphql`
       fragment IndividualEditionOverview_individual on Individual {
         id
         name
@@ -419,10 +364,4 @@ const IndividualEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IndividualEditionOverview);
+});

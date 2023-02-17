@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -91,20 +90,21 @@ const intrusionSetValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class IntrusionSetEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: intrusionSetEditionOverviewFocus,
-      variables: {
-        id: this.props.intrusionSet.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const IntrusionSetEditionOverviewComponent = (props) => {
+  const { intrusionSet, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: intrusionSetEditionOverviewFocus,
+    variables: {
+      id: intrusionSet.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -122,56 +122,54 @@ class IntrusionSetEditionOverviewComponent extends Component {
     commitMutation({
       mutation: intrusionSetMutationFieldPatch,
       variables: {
-        id: this.props.intrusionSet.id,
+        id: intrusionSet.id,
         input: inputValues,
         commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      intrusionSetValidation(this.props.t)
+      intrusionSetValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: intrusionSetMutationFieldPatch,
             variables: {
-              id: this.props.intrusionSet.id,
+              id: intrusionSet.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
         })
         .catch(() => false);
     }
-  }
-
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  };
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: intrusionSetMutationFieldPatch,
         variables: {
-          id: this.props.intrusionSet.id,
+          id: intrusionSet.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { intrusionSet } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -186,7 +184,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
         commitMutation({
           mutation: intrusionSetMutationRelationAdd,
           variables: {
-            id: this.props.intrusionSet.id,
+            id: intrusionSet.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -199,156 +197,144 @@ class IntrusionSetEditionOverviewComponent extends Component {
         commitMutation({
           mutation: intrusionSetMutationRelationDelete,
           variables: {
-            id: this.props.intrusionSet.id,
+            id: intrusionSet.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, intrusionSet, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(intrusionSet);
-    const objectMarking = convertMarkings(intrusionSet);
-    const status = convertStatus(t, intrusionSet);
-    const killChainPhases = R.pipe(
-      R.pathOr([], ['killChainPhases', 'edges']),
-      R.map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(intrusionSet);
-    const initialValues = R.pipe(
-      R.assoc('createdBy', createdBy),
-      R.assoc('killChainPhases', killChainPhases),
-      R.assoc('x_opencti_workflow_id', status),
-      R.assoc('objectMarking', objectMarking),
-      R.pick([
-        'name',
-        'confidence',
-        'description',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
-        'x_opencti_workflow_id',
-      ]),
-    )(intrusionSet);
-    return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={intrusionSetValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <ConfidenceField
-              name="confidence"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={fieldSpacingContainerStyle}
-              editContext={context}
-              variant="edit"
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
-            />
-            {intrusionSet.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Intrusion-Set"
-                onFocus={this.handleChangeFocus.bind(this)}
-                onChange={this.handleSubmitField.bind(this)}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                }
+  const createdBy = convertCreatedBy(intrusionSet);
+  const objectMarking = convertMarkings(intrusionSet);
+  const status = convertStatus(t, intrusionSet);
+  const killChainPhases = R.pipe(
+    R.pathOr([], ['killChainPhases', 'edges']),
+    R.map((n) => ({
+      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+      value: n.node.id,
+    })),
+  )(intrusionSet);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('objectMarking', objectMarking),
+    R.pick([
+      'name',
+      'confidence',
+      'description',
+      'createdBy',
+      'killChainPhases',
+      'objectMarking',
+      'x_opencti_workflow_id',
+    ]),
+  )(intrusionSet);
+  return (
+  <Formik
+    enableReinitialize={true}
+    initialValues={initialValues}
+    validationSchema={intrusionSetValidation(t)}
+    onSubmit={onSubmit}
+  >
+    {({
+      submitForm,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          onFocus={handleChangeFocus}
+          onSubmit={handleSubmitField}
+          helperText={
+            <SubscriptionFocus context={context} fieldName="name" />
+          }
+        />
+        <ConfidenceField
+          name="confidence"
+          onFocus={handleChangeFocus}
+          onChange={handleSubmitField}
+          label={t('Confidence')}
+          fullWidth={true}
+          containerStyle={fieldSpacingContainerStyle}
+          editContext={context}
+          variant="edit"
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={{ marginTop: 20 }}
+          onFocus={handleChangeFocus}
+          onSubmit={handleSubmitField}
+          helperText={
+            <SubscriptionFocus context={context} fieldName="description" />
+          }
+        />
+        {intrusionSet.workflowEnabled && (
+          <StatusField
+            name="x_opencti_workflow_id"
+            type="Intrusion-Set"
+            onFocus={handleChangeFocus}
+            onChange={handleSubmitField}
+            setFieldValue={setFieldValue}
+            style={{ marginTop: 20 }}
+            helpertext={
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_workflow_id"
               />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
-              onChange={this.handleChangeCreatedBy.bind(this)}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
-              }
-              onChange={this.handleChangeObjectMarking.bind(this)}
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting}
-                setFieldValue={setFieldValue}open={false}
-                values={values.references}
-                id={intrusionSet.id}
-              />
-            )}
-          </Form>
+            }
+          />
         )}
-      </Formik>
-    );
-  }
-}
-
-IntrusionSetEditionOverviewComponent.propTypes = {
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  intrusionSet: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+        <CreatedByField
+          name="createdBy"
+          style={{ marginTop: 20, width: '100%' }}
+          setFieldValue={setFieldValue}
+          helpertext={
+            <SubscriptionFocus context={context} fieldName="createdBy" />
+          }
+          onChange={handleChangeCreatedBy}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={{ marginTop: 20, width: '100%' }}
+          helpertext={
+            <SubscriptionFocus
+              context={context}
+              fieldname="objectMarking"
+            />
+          }
+          onChange={handleChangeObjectMarking}
+        />
+        {enableReferences && (
+          <CommitMessage
+            submitForm={submitForm}
+            disabled={isSubmitting}
+            setFieldValue={setFieldValue}
+            open={false}
+            values={values.references}
+            id={intrusionSet.id}
+          />
+        )}
+      </Form>
+    )}
+  </Formik>
+  );
 };
 
-const IntrusionSetEditionOverview = createFragmentContainer(
-  IntrusionSetEditionOverviewComponent,
-  {
-    intrusionSet: graphql`
+export default createFragmentContainer(IntrusionSetEditionOverviewComponent, {
+  intrusionSet: graphql`
       fragment IntrusionSetEditionOverview_intrusionSet on IntrusionSet {
         id
         name
@@ -383,7 +369,4 @@ const IntrusionSetEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default inject18n(IntrusionSetEditionOverview);
+});

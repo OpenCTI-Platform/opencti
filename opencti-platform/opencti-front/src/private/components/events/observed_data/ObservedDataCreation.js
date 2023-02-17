@@ -1,18 +1,17 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { compose, evolve, path, pluck } from 'ramda';
+import { evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -25,7 +24,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -66,7 +65,7 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
 
 const observedDataCreationMutation = graphql`
   mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
@@ -88,21 +87,16 @@ const observedDataValidation = (t) => Yup.object().shape({
   confidence: Yup.number(),
 });
 
-class ObservedDataCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+const ObservedDataCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
 
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = evolve(
       {
         first_observed: () => parse(values.first_observed).format(),
@@ -125,7 +119,7 @@ class ObservedDataCreation extends Component {
       updater: (store) => insertNode(
         store,
         'Pagination_observedDatas',
-        this.props.paginationOptions,
+        paginationOptions,
         'observedDataAdd',
       ),
       onError: (error) => {
@@ -136,181 +130,154 @@ class ObservedDataCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  onResetClassic() {
-    this.handleClose();
-  }
-
-  onResetContextual() {
-    this.handleClose();
-  }
-
-  renderClassic() {
-    const { t, classes } = this.props;
-    return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create an observed data')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                objects: [],
-                first_observed: dayStartDate(),
-                last_observed: dayStartDate(),
-                number_observed: 1,
-                confidence: 75,
-                createdBy: '',
-                objectMarking: [],
-                objectLabel: [],
-                externalReferences: [],
-              }}
-              validationSchema={observedDataValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onResetClassic.bind(this)}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <StixCoreObjectsField
-                    name="objects"
-                    style={{ width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objects}
-                  />
-                  <Field
-                    component={DateTimePickerField}
-                    name="first_observed"
-                    TextFieldProps={{
-                      label: t('First observed'),
-                      variant: 'standard',
-                      fullWidth: true,
-                      style: { marginTop: 20 },
-                    }}
-                  />
-                  <Field
-                    component={DateTimePickerField}
-                    name="last_observed"
-                    TextFieldProps={{
-                      label: t('Last observed'),
-                      variant: 'standard',
-                      fullWidth: true,
-                      style: { marginTop: 20 },
-                    }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="number_observed"
-                    type="number"
-                    label={t('Number observed')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <ConfidenceField
-                    name="confidence"
-                    label={t('Confidence')}
-                    fullWidth={true}
-                    containerStyle={fieldSpacingContainerStyle}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </div>
-    );
-  }
-
-  render() {
-    return this.renderClassic();
-  }
-}
-
-ObservedDataCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  display: PropTypes.bool,
-  inputValue: PropTypes.string,
+  return (
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
+        <Add />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create an observed data')}</Typography>
+        </div>
+        <div className={classes.container}>
+          <Formik
+            initialValues={{
+              objects: [],
+              first_observed: dayStartDate(),
+              last_observed: dayStartDate(),
+              number_observed: 1,
+              confidence: 75,
+              createdBy: '',
+              objectMarking: [],
+              objectLabel: [],
+              externalReferences: [],
+            }}
+            validationSchema={observedDataValidation(t)}
+            onSubmit={onSubmit}
+            onReset={onReset}
+          >
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <StixCoreObjectsField
+                  name="objects"
+                  style={{ width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objects}
+                />
+                <Field
+                  component={DateTimePickerField}
+                  name="first_observed"
+                  TextFieldProps={{
+                    label: t('First observed'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
+                />
+                <Field
+                  component={DateTimePickerField}
+                  name="last_observed"
+                  TextFieldProps={{
+                    label: t('Last observed'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="number_observed"
+                  type="number"
+                  label={t('Number observed')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <ConfidenceField
+                  name="confidence"
+                  label={t('Confidence')}
+                  fullWidth={true}
+                  containerStyle={fieldSpacingContainerStyle}
+                />
+                <CreatedByField
+                  name="createdBy"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
+                />
+                <ObjectMarkingField
+                  name="objectMarking"
+                  style={{ marginTop: 20, width: '100%' }}
+                />
+                <ExternalReferencesField
+                  name="externalReferences"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.externalReferences}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </Drawer>
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ObservedDataCreation);
+export default ObservedDataCreation;

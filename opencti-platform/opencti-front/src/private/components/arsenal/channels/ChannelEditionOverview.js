@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import { assoc, compose, difference, head, map, pathOr, pick, pipe } from 'ramda';
 import * as Yup from 'yup';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -87,20 +85,21 @@ const channelValidation = (t) => Yup.object().shape({
   confidence: Yup.number(),
 });
 
-class ChannelEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: channelEditionOverviewFocus,
-      variables: {
-        id: this.props.channel.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const ChannelEditionOverviewComponent = (props) => {
+  const { channel, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: channelEditionOverviewFocus,
+    variables: {
+      id: channel.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -119,7 +118,7 @@ class ChannelEditionOverviewComponent extends Component {
     commitMutation({
       mutation: channelMutationFieldPatch,
       variables: {
-        id: this.props.channel.id,
+        id: channel.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -128,65 +127,64 @@ class ChannelEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      channelValidation(this.props.t)
+      channelValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: channelMutationFieldPatch,
             variables: {
-              id: this.props.channel.id,
+              id: channel.id,
               input: { key: name, value: finalValue },
             },
           });
         })
         .catch(() => false);
     }
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: channelMutationFieldPatch,
         variables: {
-          id: this.props.channel.id,
+          id: channel.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { channel } = this.props;
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
+      const currentMarkingDefinitions = R.pipe(
+        R.pathOr([], ['objectMarking', 'edges']),
+        R.map((n) => ({
           label: n.node.definition,
           value: n.node.id,
         })),
       )(channel);
 
-      const added = difference(values, currentMarkingDefinitions);
-      const removed = difference(currentMarkingDefinitions, values);
+      const added = R.difference(values, currentMarkingDefinitions);
+      const removed = R.difference(currentMarkingDefinitions, values);
 
       if (added.length > 0) {
         commitMutation({
           mutation: channelMutationRelationAdd,
           variables: {
-            id: this.props.channel.id,
+            id: channel.id,
             input: {
-              toId: head(added).value,
+              toId: R.head(added).value,
               relationship_type: 'object-marking',
             },
           },
@@ -197,179 +195,167 @@ class ChannelEditionOverviewComponent extends Component {
         commitMutation({
           mutation: channelMutationRelationDelete,
           variables: {
-            id: this.props.channel.id,
-            toId: head(removed).value,
+            id: channel.id,
+            toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, channel, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(channel);
-    const objectMarking = convertMarkings(channel);
-    const status = convertStatus(t, channel);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      assoc('x_opencti_workflow_id', status),
-      R.assoc(
-        'channel_types',
-        (channel.channel_types || []),
-      ),
-      pick([
-        'name',
-        'channel_types',
-        'description',
-        'createdBy',
-        'objectMarking',
-        'x_opencti_workflow_id',
-        'confidence',
-      ]),
-    )(channel);
-    return (
-      <QueryRenderer
-        query={vocabulariesQuery}
-        variables={{ category: 'channel_types_ov' }}
-        render={({ props }) => {
-          if (props && props.vocabularies) {
-            return (
-              <Formik
-                enableReinitialize={true}
-                initialValues={initialValues}
-                validationSchema={channelValidation(t)}
-                onSubmit={this.onSubmit.bind(this)}
-              >
-                {({
-                  submitForm,
-                  isSubmitting,
-                  setFieldValue,
-                  values,
-                }) => (
-                  <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="name"
-                      label={t('Name')}
-                      fullWidth={true}
-                      onFocus={this.handleChangeFocus.bind(this)}
-                      onSubmit={this.handleSubmitField.bind(this)}
-                      helperText={
-                        <SubscriptionFocus context={context} fieldName="name" />
-                      }
-                    />
-                    <OpenVocabField
-                      type="channel_types_ov"
-                      name="channel_types"
-                      label="Channel types"
-                      variant="edit"
-                      multiple={true}
-                      containerStyle={fieldSpacingContainerStyle}
-                      onSubmit={this.handleSubmitField.bind(this)}
-                      onChange={(name, value) => setFieldValue(name, value)}
-                    />
-                    <Field
-                      component={MarkDownField}
-                      name="description"
-                      label={t('Description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      style={{ marginTop: 20 }}
-                      onFocus={this.handleChangeFocus.bind(this)}
-                      onSubmit={this.handleSubmitField.bind(this)}
-                      helperText={
-                        <SubscriptionFocus
-                          context={context}
-                          fieldName="description"
-                        />
-                      }
-                    />
-                    <ConfidenceField
-                      name="confidence"
-                      onFocus={this.handleChangeFocus.bind(this)}
-                      onChange={this.handleSubmitField.bind(this)}
-                      label={t('Confidence')}
-                      fullWidth={true}
-                      containerStyle={fieldSpacingContainerStyle}
-                      editContext={context}
-                      variant="edit"
-                    />
-                    {channel.workflowEnabled && (
-                      <StatusField
-                        name="x_opencti_workflow_id"
-                        type="Channel"
-                        onFocus={this.handleChangeFocus.bind(this)}
-                        onChange={this.handleSubmitField.bind(this)}
-                        setFieldValue={setFieldValue}
-                        style={{ marginTop: 20 }}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={context}
-                            fieldName="x_opencti_workflow_id"
-                          />
-                        }
+  const createdBy = convertCreatedBy(channel);
+  const objectMarking = convertMarkings(channel);
+  const status = convertStatus(t, channel);
+  const initialValues = R.pipe(
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.assoc('x_opencti_workflow_id', status),
+    R.assoc(
+      'channel_types',
+      (channel.channel_types || []),
+    ),
+    R.pick([
+      'name',
+      'channel_types',
+      'description',
+      'createdBy',
+      'objectMarking',
+      'x_opencti_workflow_id',
+      'confidence',
+    ]),
+  )(channel);
+  return (
+    <QueryRenderer
+      query={vocabulariesQuery}
+      variables={{ category: 'channel_types_ov' }}
+      render={({ props: rendererProps }) => {
+        if (rendererProps && rendererProps.vocabularies) {
+          return (
+            <Formik
+              enableReinitialize={true}
+              initialValues={initialValues}
+              validationSchema={channelValidation(t)}
+              onSubmit={onSubmit}
+            >
+              {({
+                submitForm,
+                isSubmitting,
+                setFieldValue,
+                values,
+              }) => (
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                    onFocus={handleChangeFocus}
+                    onSubmit={handleSubmitField}
+                    helperText={
+                      <SubscriptionFocus context={context} fieldName="name" />
+                    }
+                  />
+                  <OpenVocabField
+                    type="channel_types_ov"
+                    name="channel_types"
+                    label={t('Channel types')}
+                    variant="edit"
+                    multiple={true}
+                    containerStyle={fieldSpacingContainerStyle}
+                    onSubmit={handleSubmitField}
+                    onChange={(name, value) => setFieldValue(name, value)}
+                  />
+                  <Field
+                    component={MarkDownField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                    onFocus={handleChangeFocus}
+                    onSubmit={handleSubmitField}
+                    helperText={
+                      <SubscriptionFocus
+                        context={context}
+                        fieldName="description"
                       />
-                    )}
-                    <CreatedByField
-                      name="createdBy"
-                      style={{ marginTop: 20, width: '100%' }}
+                    }
+                  />
+                  <ConfidenceField
+                    name="confidence"
+                    onFocus={handleChangeFocus}
+                    onChange={handleSubmitField}
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerStyle={fieldSpacingContainerStyle}
+                    editContext={context}
+                    variant="edit"
+                  />
+                  {channel.workflowEnabled && (
+                    <StatusField
+                      name="x_opencti_workflow_id"
+                      type="Channel"
+                      onFocus={handleChangeFocus}
+                      onChange={handleSubmitField}
                       setFieldValue={setFieldValue}
+                      style={{ marginTop: 20 }}
                       helpertext={
                         <SubscriptionFocus
                           context={context}
-                          fieldName="createdBy"
+                          fieldName="x_opencti_workflow_id"
                         />
                       }
-                      onChange={this.handleChangeCreatedBy.bind(this)}
                     />
-                    <ObjectMarkingField
-                      name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
-                      helpertext={
-                        <SubscriptionFocus
-                          context={context}
-                          fieldname="objectMarking"
-                        />
-                      }
-                      onChange={this.handleChangeObjectMarking.bind(this)}
-                    />
-                    {enableReferences && (
-                      <CommitMessage
-                        submitForm={submitForm}
-                        disabled={isSubmitting}
-                        setFieldValue={setFieldValue}
-                        open={false}
-                        values={values.references}
-                        id={channel.id}
+                  )}
+                  <CreatedByField
+                    name="createdBy"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    helpertext={
+                      <SubscriptionFocus
+                        context={context}
+                        fieldName="createdBy"
                       />
-                    )}
-                  </Form>
-                )}
-              </Formik>
-            );
-          }
-          return <Loader variant="inElement" />;
-        }}
-      />
-    );
-  }
-}
-
-ChannelEditionOverviewComponent.propTypes = {
-  t: PropTypes.func,
-  channel: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+                    }
+                    onChange={handleChangeCreatedBy}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
+                    helpertext={
+                      <SubscriptionFocus
+                        context={context}
+                        fieldname="objectMarking"
+                      />
+                    }
+                    onChange={handleChangeObjectMarking}
+                  />
+                  {enableReferences && (
+                    <CommitMessage
+                      submitForm={submitForm}
+                      disabled={isSubmitting}
+                      setFieldValue={setFieldValue}
+                      open={false}
+                      values={values.references}
+                      id={channel.id}
+                    />
+                  )}
+                </Form>
+              )}
+            </Formik>
+          );
+        }
+        return <Loader variant="inElement" />;
+      }}
+    />
+  );
 };
 
-const ChannelEditionOverview = createFragmentContainer(
-  ChannelEditionOverviewComponent,
-  {
-    channel: graphql`
+export default createFragmentContainer(ChannelEditionOverviewComponent, {
+  channel: graphql`
       fragment ChannelEditionOverview_channel on Channel {
         id
         name
@@ -405,9 +391,4 @@ const ChannelEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default compose(
-  inject18n,
-)(ChannelEditionOverview);
+});

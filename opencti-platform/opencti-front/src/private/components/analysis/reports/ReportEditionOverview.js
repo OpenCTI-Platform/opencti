@@ -1,13 +1,11 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { buildDate, parse } from '../../../../utils/Time';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import Loader from '../../../../components/Loader';
@@ -18,43 +16,12 @@ import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertAssignees,
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-
-const styles = (theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-});
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -127,20 +94,21 @@ const reportValidation = (t) => Yup.object().shape({
   x_opencti_workflow_id: Yup.object(),
 });
 
-class ReportEditionOverviewComponent extends Component {
-  handleChangeFocus(name) {
-    commitMutation({
-      mutation: reportEditionOverviewFocus,
-      variables: {
-        id: this.props.report.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  }
+const ReportEditionOverviewComponent = (props) => {
+  const { report, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
 
-  onSubmit(values, { setSubmitting }) {
+  const handleChangeFocus = (name) => commitMutation({
+    mutation: reportEditionOverviewFocus,
+    variables: {
+      id: report.id,
+      input: {
+        focusOn: name,
+      },
+    },
+  });
+
+  const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -161,7 +129,7 @@ class ReportEditionOverviewComponent extends Component {
     commitMutation({
       mutation: reportMutationFieldPatch,
       variables: {
-        id: this.props.report.id,
+        id: report.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -170,24 +138,24 @@ class ReportEditionOverviewComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        this.props.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleSubmitField(name, value) {
-    if (!this.props.enableReferences) {
+  const handleSubmitField = (name, value) => {
+    if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      reportValidation(this.props.t)
+      reportValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
             mutation: reportMutationFieldPatch,
             variables: {
-              id: this.props.report.id,
+              id: report.id,
               input: {
                 key: name,
                 value: finalValue,
@@ -197,23 +165,22 @@ class ReportEditionOverviewComponent extends Component {
         })
         .catch(() => false);
     }
-  }
+  };
 
-  handleChangeCreatedBy(name, value) {
-    if (!this.props.enableReferences) {
+  const handleChangeCreatedBy = (name, value) => {
+    if (!enableReferences) {
       commitMutation({
         mutation: reportMutationFieldPatch,
         variables: {
-          id: this.props.report.id,
+          id: report.id,
           input: { key: 'createdBy', value: value.value || '' },
         },
       });
     }
-  }
+  };
 
-  handleChangeObjectMarking(name, values) {
-    if (!this.props.enableReferences) {
-      const { report } = this.props;
+  const handleChangeObjectMarking = (name, values) => {
+    if (!enableReferences) {
       const currentMarkingDefinitions = R.pipe(
         R.pathOr([], ['objectMarking', 'edges']),
         R.map((n) => ({
@@ -227,7 +194,7 @@ class ReportEditionOverviewComponent extends Component {
         commitMutation({
           mutation: reportMutationRelationAdd,
           variables: {
-            id: this.props.report.id,
+            id: report.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-marking',
@@ -239,18 +206,17 @@ class ReportEditionOverviewComponent extends Component {
         commitMutation({
           mutation: reportMutationRelationDelete,
           variables: {
-            id: this.props.report.id,
+            id: report.id,
             toId: R.head(removed).value,
             relationship_type: 'object-marking',
           },
         });
       }
     }
-  }
+  };
 
-  handleChangeObjectAssignee(name, values) {
-    if (!this.props.enableReferences) {
-      const { report } = this.props;
+  const handleChangeObjectAssignee = (name, values) => {
+    if (!enableReferences) {
       const currentAssignees = R.pipe(
         R.pathOr([], ['objectAssignee', 'edges']),
         R.map((n) => ({
@@ -264,7 +230,7 @@ class ReportEditionOverviewComponent extends Component {
         commitMutation({
           mutation: reportMutationRelationAdd,
           variables: {
-            id: this.props.report.id,
+            id: report.id,
             input: {
               toId: R.head(added).value,
               relationship_type: 'object-assignee',
@@ -276,213 +242,198 @@ class ReportEditionOverviewComponent extends Component {
         commitMutation({
           mutation: reportMutationRelationDelete,
           variables: {
-            id: this.props.report.id,
+            id: report.id,
             toId: R.head(removed).value,
             relationship_type: 'object-assignee',
           },
         });
       }
     }
-  }
+  };
 
-  render() {
-    const { t, report, context, enableReferences } = this.props;
-    const createdBy = convertCreatedBy(report);
-    const objectMarking = convertMarkings(report);
-    const objectAssignee = convertAssignees(report);
-    const status = convertStatus(t, report);
-    const initialValues = R.pipe(
-      R.assoc('published', buildDate(report.published)),
-      R.assoc('report_types', report.report_types ?? []),
-      R.assoc('objectAssignee', objectAssignee),
-      R.assoc('x_opencti_workflow_id', status),
-      R.assoc('createdBy', createdBy),
-      R.assoc('objectMarking', objectMarking),
-      R.pick([
-        'name',
-        'published',
-        'description',
-        'report_types',
-        'createdBy',
-        'objectMarking',
-        'objectAssignee',
-        'confidence',
-        'x_opencti_workflow_id',
-      ]),
-    )(report);
-    return (
-      <div>
-        <QueryRenderer
-          query={vocabulariesQuery}
-          variables={{ category: 'report_types_ov' }}
-          render={({ props }) => {
-            if (props && props.vocabularies) {
-              return (
-                <Formik
-                  enableReinitialize={true}
-                  initialValues={initialValues}
-                  validationSchema={reportValidation(t)}
-                  onSubmit={this.onSubmit.bind(this)}
-                >
-                  {({
-                    submitForm,
-                    isSubmitting,
-
-                    setFieldValue,
-                    values,
-                  }) => (
-                    <Form style={{ margin: '20px 0 20px 0' }}>
-                      <Field
-                        component={TextField}
-                        variant="standard"
-                        name="name"
-                        label={t('Name')}
-                        fullWidth={true}
-                        onFocus={this.handleChangeFocus.bind(this)}
-                        onSubmit={this.handleSubmitField.bind(this)}
-                        helperText={
-                          <SubscriptionFocus
-                            context={context}
-                            fieldName="name"
-                          />
-                        }
-                      />
-                      <Field
-                        component={DateTimePickerField}
-                        name="published"
-                        onFocus={this.handleChangeFocus.bind(this)}
-                        onSubmit={this.handleSubmitField.bind(this)}
-                        TextFieldProps={{
-                          label: t('Publication date'),
-                          variant: 'standard',
-                          fullWidth: true,
-                          style: { marginTop: 20 },
-                          helperText: (
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="published"
-                            />
-                          ),
-                        }}
-                      />
-                      <OpenVocabField
-                        label={t('Report types')}
-                        type="report_types_ov"
-                        name="report_types"
-                        onSubmit={this.handleSubmitField.bind(this)}
-                        onChange={(name, value) => setFieldValue(name, value)}
-                        containerStyle={fieldSpacingContainerStyle}
-                        variant="edit"
-                        multiple={true}
-                        editContext={context}
-                      />
-                      <ConfidenceField
-                        name="confidence"
-                        onFocus={this.handleChangeFocus.bind(this)}
-                        onChange={this.handleSubmitField.bind(this)}
-                        label={t('Confidence')}
-                        fullWidth={true}
-                        containerStyle={fieldSpacingContainerStyle}
-                        editContext={context}
-                        variant="edit"
-                      />
-                      <Field
-                        component={MarkDownField}
-                        name="description"
-                        label={t('Description')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        style={{ marginTop: 20 }}
-                        onFocus={this.handleChangeFocus.bind(this)}
-                        onSubmit={this.handleSubmitField.bind(this)}
-                      />
-                      <ObjectAssigneeField
-                        name="objectAssignee"
-                        style={{ marginTop: 20, width: '100%' }}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={context}
-                            fieldname="objectAssignee"
-                          />
-                        }
-                        onChange={this.handleChangeObjectAssignee.bind(this)}
-                      />
-                      {report.workflowEnabled && (
-                        <StatusField
-                          name="x_opencti_workflow_id"
-                          type="Report"
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onChange={this.handleSubmitField.bind(this)}
-                          setFieldValue={setFieldValue}
-                          style={{ marginTop: 20 }}
-                          helpertext={
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="x_opencti_workflow_id"
-                            />
-                          }
+  const createdBy = convertCreatedBy(report);
+  const objectMarking = convertMarkings(report);
+  const objectAssignee = convertAssignees(report);
+  const status = convertStatus(t, report);
+  const initialValues = R.pipe(
+    R.assoc('published', buildDate(report.published)),
+    R.assoc('report_types', report.report_types ?? []),
+    R.assoc('objectAssignee', objectAssignee),
+    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', createdBy),
+    R.assoc('objectMarking', objectMarking),
+    R.pick([
+      'name',
+      'published',
+      'description',
+      'report_types',
+      'createdBy',
+      'objectMarking',
+      'objectAssignee',
+      'confidence',
+      'x_opencti_workflow_id',
+    ]),
+  )(report);
+  return (
+    <div>
+      <QueryRenderer
+        query={vocabulariesQuery}
+        variables={{ category: 'report_types_ov' }}
+        render={({ props: rendererProps }) => {
+          if (rendererProps && rendererProps.vocabularies) {
+            return (
+              <Formik
+                enableReinitialize={true}
+                initialValues={initialValues}
+                validationSchema={reportValidation(t)}
+                onSubmit={onSubmit}
+              >
+                {({
+                  submitForm,
+                  isSubmitting,
+                  setFieldValue,
+                  values,
+                }) => (
+                  <Form style={{ margin: '20px 0 20px 0' }}>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="name"
+                      label={t('Name')}
+                      fullWidth={true}
+                      onFocus={handleChangeFocus}
+                      onSubmit={handleSubmitField}
+                      helperText={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldName="name"
                         />
-                      )}
-                      <CreatedByField
-                        name="createdBy"
-                        style={{ marginTop: 20, width: '100%' }}
+                      }
+                    />
+                    <Field
+                      component={DateTimePickerField}
+                      name="published"
+                      onFocus={handleChangeFocus}
+                      onSubmit={handleSubmitField}
+                      TextFieldProps={{
+                        label: t('Publication date'),
+                        variant: 'standard',
+                        fullWidth: true,
+                        style: { marginTop: 20 },
+                        helperText: (
+                          <SubscriptionFocus
+                            context={context}
+                            fieldName="published"
+                          />
+                        ),
+                      }}
+                    />
+                    <OpenVocabField
+                      label={t('Report types')}
+                      type="report_types_ov"
+                      name="report_types"
+                      onSubmit={handleSubmitField}
+                      onChange={(name, value) => setFieldValue(name, value)}
+                      containerStyle={fieldSpacingContainerStyle}
+                      variant="edit"
+                      multiple={true}
+                      editContext={context}
+                    />
+                    <ConfidenceField
+                      name="confidence"
+                      onFocus={handleChangeFocus}
+                      onChange={handleSubmitField}
+                      label={t('Confidence')}
+                      fullWidth={true}
+                      containerStyle={fieldSpacingContainerStyle}
+                      editContext={context}
+                      variant="edit"
+                    />
+                    <Field
+                      component={MarkDownField}
+                      name="description"
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                      onFocus={handleChangeFocus}
+                      onSubmit={handleSubmitField}
+                    />
+                    <ObjectAssigneeField
+                      name="objectAssignee"
+                      style={{ marginTop: 20, width: '100%' }}
+                      helpertext={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldname="objectAssignee"
+                        />
+                      }
+                      onChange={handleChangeObjectAssignee}
+                    />
+                    {report.workflowEnabled && (
+                      <StatusField
+                        name="x_opencti_workflow_id"
+                        type="Report"
+                        onFocus={handleChangeFocus}
+                        onChange={handleSubmitField}
                         setFieldValue={setFieldValue}
+                        style={{ marginTop: 20 }}
                         helpertext={
                           <SubscriptionFocus
                             context={context}
-                            fieldName="createdBy"
+                            fieldName="x_opencti_workflow_id"
                           />
                         }
-                        onChange={this.handleChangeCreatedBy.bind(this)}
                       />
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={{ marginTop: 20, width: '100%' }}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={context}
-                            fieldname="objectMarking"
-                          />
-                        }
-                        onChange={this.handleChangeObjectMarking.bind(this)}
-                      />
-                      {enableReferences && (
-                        <CommitMessage
-                          submitForm={submitForm}
-                          disabled={isSubmitting}
-                          setFieldValue={setFieldValue}
-                          open={false}
-                          values={values.references}
-                          id={report.id}
+                    )}
+                    <CreatedByField
+                      name="createdBy"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      helpertext={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldName="createdBy"
                         />
-                      )}
-                    </Form>
-                  )}
-                </Formik>
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
-      </div>
-    );
-  }
-}
-
-ReportEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  report: PropTypes.object,
-  context: PropTypes.array,
-  enableReferences: PropTypes.bool,
+                      }
+                      onChange={handleChangeCreatedBy}
+                    />
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                      helpertext={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldname="objectMarking"
+                        />
+                      }
+                      onChange={handleChangeObjectMarking}
+                    />
+                    {enableReferences && (
+                      <CommitMessage
+                        submitForm={submitForm}
+                        disabled={isSubmitting}
+                        setFieldValue={setFieldValue}
+                        open={false}
+                        values={values.references}
+                        id={report.id}
+                      />
+                    )}
+                  </Form>
+                )}
+              </Formik>
+            );
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
+    </div>
+  );
 };
 
-const ReportEditionOverview = createFragmentContainer(
-  ReportEditionOverviewComponent,
-  {
-    report: graphql`
+export default createFragmentContainer(ReportEditionOverviewComponent, {
+  report: graphql`
       fragment ReportEditionOverview_report on Report {
         id
         name
@@ -528,10 +479,4 @@ const ReportEditionOverview = createFragmentContainer(
         workflowEnabled
       }
     `,
-  },
-);
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ReportEditionOverview);
+});
