@@ -382,23 +382,17 @@ class StixDomainObjectCreation extends Component {
               [R.ascend(R.prop('label'))],
               result,
             );
-            const availableEntityTypes = R.filter((n) => {
+            const availableEntityTypes = entitiesTypes.filter((n) => {
               if (
                 !stixDomainObjectTypes
                 || stixDomainObjectTypes.length === 0
                 || stixDomainObjectTypes.includes('Stix-Domain-Object')
               ) {
-                return true;
+                return n.value !== 'Note';
               }
               if (
                 stixDomainObjectTypes.includes('Identity')
-                && [
-                  'Sector',
-                  'Organization',
-                  'Individual',
-                  'System',
-                  'Event',
-                ].includes(n.value)
+                && ['Sector', 'Organization', 'Individual', 'System', 'Event'].includes(n.value)
               ) {
                 return true;
               }
@@ -409,7 +403,7 @@ class StixDomainObjectCreation extends Component {
                 return true;
               }
               return !!stixDomainObjectTypes.includes(n.value);
-            }, entitiesTypes);
+            });
             return (
               <Field
                 component={SelectField}

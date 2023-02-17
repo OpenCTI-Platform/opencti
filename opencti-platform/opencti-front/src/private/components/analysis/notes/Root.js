@@ -2,18 +2,15 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Note from './Note';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
-import ReportPopover from '../reports/ReportPopover';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import NotePopover from './NotePopover';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -102,7 +99,7 @@ class RootNote extends Component {
                         <>
                           <ContainerHeader
                             container={props.note}
-                            PopoverComponent={<ReportPopover />}
+                            PopoverComponent={<NotePopover note={props.note}/>}
                           />
                           <FileManager
                             {...routeProps}
@@ -121,7 +118,7 @@ class RootNote extends Component {
                         <>
                           <ContainerHeader
                             container={props.note}
-                            PopoverComponent={<ReportPopover />}
+                            PopoverComponent={<NotePopover note={props.note}/>}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}
