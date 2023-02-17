@@ -10,7 +10,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 it('Check if python is well configured', async () => {
   const check = await checkPythonAvailability(testContext, ADMIN_USER);
   expect(check).not.toBeNull();
-  expect(check).toEqual('check');
+  expect(check).toEqual("[text:value = 'test']");
   // noinspection ES6MissingAwait
   expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('An unknown error has occurred');
   // noinspection ES6MissingAwait
