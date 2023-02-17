@@ -229,6 +229,7 @@ const createSseMiddleware = () => {
     });
     res.writeHead(200, {
       Connection: 'keep-alive',
+      'Transfer-Encoding': 'gzip', // To prevent chunk sending
       'Content-Type': 'text/event-stream; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
