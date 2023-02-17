@@ -9,9 +9,11 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import InformationSystem from './InformationSystem';
+import Analysis from './analysis/Analysis';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import TopBar from '../../nav/TopBar';
 
 const informationSystemQuery = graphql`
   query RootInformationSystemQuery($id: ID!) {
@@ -19,6 +21,7 @@ const informationSystemQuery = graphql`
       id
       name
       ...InformationSystem_information
+      ...Analysis_analysis
     }
   }
 `;
@@ -51,6 +54,7 @@ class RootInformationSystem extends Component {
             ]}
           />
         </Route>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={informationSystemQuery}
           variables={{ id: informationSystemId }}
@@ -64,6 +68,17 @@ class RootInformationSystem extends Component {
                       path="/defender HQ/assets/information_systems/:informationSystemId"
                       render={(routeProps) => (
                         <InformationSystem
+                          {...routeProps}
+                          refreshQuery={retry}
+                          informationSystem={props.softwareAsset}
+                        />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/defender HQ/assets/information_systems/:informationSystemId/analysis"
+                      render={(routeProps) => (
+                        <Analysis
                           {...routeProps}
                           refreshQuery={retry}
                           informationSystem={props.softwareAsset}

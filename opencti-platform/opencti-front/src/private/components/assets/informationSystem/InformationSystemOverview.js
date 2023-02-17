@@ -125,9 +125,9 @@ class InformationSystemOverviewComponent extends Component {
                   gutterBottom={true}
                   style={{ margin: 0 }}
                 >
-                  {t("Description")}
+                  {t('Description')}
                 </Typography>
-                <Tooltip title={t("Description")}>
+                <Tooltip title={t('Description')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -136,7 +136,7 @@ class InformationSystemOverviewComponent extends Component {
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
                     {/* {cyioDomainObject?.description &&
-                        t(cyioDomainObject.description)} */}
+                      t(cyioDomainObject.description)} */}
                   </div>
                 </div>
               </div>
@@ -208,7 +208,7 @@ class InformationSystemOverviewComponent extends Component {
               </div>
               <div className="clearfix" />
               {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
-            </Grid >
+            </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
                 <Typography

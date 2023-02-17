@@ -245,12 +245,19 @@ class TopMenuAssets extends Component {
   }
 
   renderMenuInformationSystems() {
-    const { t, classes } = this.props;
+    const {
+      t,
+      classes,
+      location,
+      match: {
+        params: { informationSystemId },
+      },
+    } = this.props;
     return (
       <div className={classes.root}>
         <Button
           component={Link}
-          to="/defender HQ/assets/information_systems"
+          to='/defender HQ/assets/information_systems'
           variant="contained"
           color="primary"
           classes={{ root: classes.buttonHome }}
@@ -261,13 +268,46 @@ class TopMenuAssets extends Component {
           classes={{ root: classes.arrow }}
         />
         <Button
-          variant='contained'
+          component={Link}
           size="small"
-          color='secondary'
-          classes={{ root: classes.button }}
           data-cy='asset overview'
+          classes={{ root: classes.button }}
+          variant={
+            location.pathname
+              === `/defender HQ/assets/information_systems/${informationSystemId}`
+              ? 'contained'
+              : 'text'
+          }
+          color={
+            location.pathname
+              === `/defender HQ/assets/information_systems/${informationSystemId}`
+              ? 'secondary'
+              : 'inherit'
+          }
+          to={`/defender HQ/assets/information_systems/${informationSystemId}`}
         >
           {t('Overview')}
+        </Button>
+        <Button
+          component={Link}
+          size="small"
+          data-cy='asset analysis'
+          classes={{ root: classes.button }}
+          variant={
+            location.pathname
+              === `/defender HQ/assets/information_systems/${informationSystemId}/analysis`
+              ? 'contained'
+              : 'text'
+          }
+          color={
+            location.pathname
+              === `/defender HQ/assets/information_systems/${informationSystemId}/analysis`
+              ? 'secondary'
+              : 'inherit'
+          }
+          to={`/defender HQ/assets/information_systems/${informationSystemId}/analysis`}
+        >
+          {t('Analysis')}
         </Button>
       </div>
     );
