@@ -43,13 +43,29 @@ interface EntityDetailsRightsBarProps {
 const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedNodes, open, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  console.log(selectedNodes[0]);
 
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleControlClose = () => setControlOpen(false);
 
-  const [selectedNodeId, setSelectedNodeId] = useState<string>(selectedNodes[0].id);
-  const handleSelectNode = (event: SelectChangeEvent<string>) => {
-    setSelectedNodeId(event.target.value);
+  const [selectedNode, setSelectedNode] = useState<SelectedNode>(selectedNodes[0]);
+  const handleSelectNode = (event: SelectChangeEvent<SelectedNode>) => {
+    setSelectedNode(event.target);
+  };
+
+  const fillSelectLabel = () => {
+    if (selectedNodes.length > 1) {
+      return (
+        <InputLabel id="entityField">
+          {t('Selected entities')}
+        </InputLabel>
+      );
+    }
+    return (
+      <InputLabel id="entityField">
+        {selectedNodes[0].label}
+      </InputLabel>
+    );
   };
 
   return (
@@ -65,13 +81,11 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         className={classes.formControl}
         fullWidth={true}
       >
-        <InputLabel id="entityField">
-          {t('Selected entities')}
-        </InputLabel>
+        {fillSelectLabel()}
         <Select
           labelId="entityField"
           fullWidth={true}
-          onChange={(event: SelectChangeEvent<string>) => handleSelectNode(event)}
+          onChange={(event: SelectChangeEvent<SelectedNode>) => handleSelectNode(event)}
         >
           {selectedNodes.map((node) => (
             <MenuItem key={node.id} value={node.id}>
@@ -81,7 +95,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         </Select>
       </FormControl>
         <EntityDetails
-          nodeId={selectedNodeId}
+          node={selectedNode}
         />
     </Drawer>
   );

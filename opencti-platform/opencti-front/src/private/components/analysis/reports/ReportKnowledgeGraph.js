@@ -794,7 +794,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleNodeClick(node, event) {
-    console.log(node);
     if (event.ctrlKey || event.shiftKey || event.altKey) {
       if (this.selectedNodes.has(node)) {
         this.selectedNodes.delete(node);
@@ -1064,7 +1063,7 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
-  handleCloseEntityDetailsRightsBar() {
+  handleCloseEntitiesDetailsRightsBar() {
     if (
       this.state.numberOfSelectedNodes === 0
     ) {
@@ -1255,7 +1254,7 @@ class ReportKnowledgeGraphComponent extends Component {
           <EntitiesDetailsRightsBar
           selectedNodes={Array.from(this.selectedNodes)}
           open={false}
-          handleClose={this.handleCloseEntityDetailsRightsBar.bind(this)}
+          handleClose={this.handleCloseEntitiesDetailsRightsBar.bind(this)}
         />
         )}
         <ReportKnowledgeGraphBar

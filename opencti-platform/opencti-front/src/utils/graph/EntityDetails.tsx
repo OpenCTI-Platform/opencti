@@ -17,6 +17,10 @@ import Loader, { LoaderVariant } from '../../components/Loader';
 import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
+import { truncate } from '../String';
+import type { SelectedNode } from './EntitiesDetailsRightBar';
+import { EntityDetailsRelationshipQuery } from './__generated__/EntityDetailsRelationshipQuery.graphql';
+import ItemConfidence from '../../components/ItemConfidence';
 
 const useStyles = makeStyles < Theme >(() => ({
   entity: {
@@ -70,8 +74,6 @@ const entityDetailsQuery = graphql`
             }
             ... on ObservedData {
                 name
-                first_observed
-                last_observed
             }
             ... on Opinion {
                 opinion
@@ -102,7 +104,6 @@ const entityDetailsQuery = graphql`
             }
             ... on Indicator {
                 name
-                valid_from
                 description
             }
             ... on Infrastructure {
@@ -187,6 +188,71 @@ const entityDetailsQuery = graphql`
     }
 `;
 
+const entityDetailsRelationshipQuery = graphql`
+    query EntityDetailsRelationshipQuery($id: String!) {
+        stixCoreRelationship(id: $id) {
+            id
+            entity_type
+            description
+            parent_types
+            start_time
+            stop_time
+            created
+            confidence
+            relationship_type
+            from {
+                ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on StixCoreRelationship {
+                    relationship_type
+                }
+            }
+            to {
+                ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on StixCoreRelationship {
+                    relationship_type
+                }
+            }
+            created_at
+            createdBy {
+                ... on Identity {
+                    id
+                    name
+                    entity_type
+                }
+            }
+            objectMarking {
+                edges {
+                    node {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                    }
+                }
+            }
+        }
+    }
+`;
+
 interface EntityDetailsComponentProps {
   queryRef: PreloadedQuery<EntityDetailsQuery>
 }
@@ -195,6 +261,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
   const { t } = useFormatter();
 
   const entity = usePreloadedQuery<EntityDetailsQuery>(entityDetailsQuery, queryRef);
+  console.log(entity);
   const { stixCoreObject } = entity;
 
   return (
@@ -202,11 +269,13 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
       <Typography
         variant="h3"
         gutterBottom={false}
-        style={{ marginTop: 10 }}
+        style={{ marginTop: 15 }}
       >
-        {entity.stixCoreObject?.name}
-     { stixCoreObject
-       && <Tooltip title={t('View the item')}>
+        {t('Name')}
+      </Typography>
+      {truncate(stixCoreObject?.name, 30)}
+      { stixCoreObject
+        && <Tooltip title={t('View the item')}>
                   <span>
                     <IconButton
                       color="primary"
@@ -220,7 +289,6 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
                     </IconButton>
                   </span>
         </Tooltip> }
-      </Typography>
       <Typography
         variant="h3"
         gutterBottom={true}
@@ -228,59 +296,180 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
       >
         {t('Type')}
       </Typography>
-      {entity.stixCoreObject?.entity_type}
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        style={{ marginTop: 15 }}
-      >
-        {t('Description')}
-      </Typography>
-      {entity.stixCoreObject?.description
-        && <ExpandableMarkdown
-          source={entity.stixCoreObject?.description}
+      { stixCoreObject?.entity_type}
+      { stixCoreObject?.description
+        && <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 15 }}
+          >
+            {t('Description')}
+          </Typography>
+         <ExpandableMarkdown
+          source={ stixCoreObject?.description}
           limit={400}
-        />}
-      <Typography variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 15 }}
+        />
+        </div>
+      }
+      { (stixCoreObject?.objectMarking?.edges.length && stixCoreObject?.objectMarking?.edges.length > 0)
+       && <div>
+        <Typography variant="h3"
+        gutterBottom={true}
+        style={{ marginTop: 15 }}
+        >
+      {t('Marking')}
+        </Typography>
+         <ItemMarkings
+        markingDefinitionsEdges={ stixCoreObject?.objectMarking.edges}
+        limit={2}
+        />
+      </div>
+      }
+      { stixCoreObject?.createdBy
+        && <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 15 }}
+          >
+            {t('Author')}
+          </Typography>
+          <ItemAuthor
+            createdBy={R.propOr(null, 'createdBy', stixCoreObject)}
+          />
+        </div>
+      }
+    </div>
+  );
+};
+
+interface RelationshipDetailsComponentProps {
+  queryRef: PreloadedQuery<EntityDetailsRelationshipQuery>
+}
+const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsComponentProps> = ({ queryRef }) => {
+  const classes = useStyles();
+  const { t, fldt } = useFormatter();
+
+  const entity = usePreloadedQuery<EntityDetailsRelationshipQuery>(entityDetailsRelationshipQuery, queryRef);
+  const { stixCoreRelationship } = entity;
+  console.log(entity);
+
+  return (
+    <div className={classes.entity}>
+      <Typography
+        variant="h3"
+        gutterBottom={false}
+        style={{ marginTop: 15 }}
       >
-        {t('Marking')}
+        {t('Relation type')}
       </Typography>
-      { entity.stixCoreObject?.objectMarking
-        && <ItemMarkings
-        markingDefinitionsEdges={entity.stixCoreObject?.objectMarking.edges}
-        limit={1}
-      />}
+      {stixCoreRelationship?.relationship_type}
+      { stixCoreRelationship
+        && <Tooltip title={t('View the item')}>
+                  <span>
+                    <IconButton
+                      color="primary"
+                      component={Link}
+                      to={`${resolveLink(stixCoreRelationship.entity_type)}/${
+                        stixCoreRelationship.id
+                      }`}
+                      size="large"
+                    >
+                        <InfoOutlined/>
+                    </IconButton>
+                  </span>
+        </Tooltip> }
+      { stixCoreRelationship?.description
+        && <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 15 }}
+          >
+            {t('Description')}
+          </Typography>
+          <ExpandableMarkdown
+            source={ stixCoreRelationship?.description}
+            limit={400}
+          />
+        </div>
+      }
+      { stixCoreRelationship?.objectMarking
+        && <Typography variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 15 }}
+          >
+            {t('Marking')}
+          </Typography>
+            && <ItemMarkings
+              markingDefinitionsEdges={ stixCoreRelationship?.objectMarking.edges}
+              limit={2}
+            />
+      }
+      { stixCoreRelationship?.createdBy
+        && <div>
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          style={{ marginTop: 15 }}
+        >
+          {t('Author')}
+        </Typography>
+        <ItemAuthor
+          createdBy={R.propOr(null, 'createdBy', stixCoreRelationship)}
+        />
+      </div>
+      }
+      {stixCoreRelationship?.confidence
+        && <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Confidence level')}
+          </Typography>
+          <ItemConfidence confidence={stixCoreRelationship?.confidence} />
+        </div>
+      }
       <Typography
         variant="h3"
         gutterBottom={true}
-        style={{ marginTop: 15 }}
+        style={{ marginTop: 20 }}
       >
-        {t('Author')}
+        {t('First seen')}
       </Typography>
-      <ItemAuthor
-        createdBy={R.propOr(null, 'createdBy', entity.stixCoreObject)}
-      />
+      {fldt(stixCoreRelationship?.start_time)}
       <Typography
         variant="h3"
         gutterBottom={true}
-        style={{ marginTop: 15 }}
+        style={{ marginTop: 20 }}
       >
-        {t('Id')}
+        {t('Last seen')}
       </Typography>
-      <ListItemText primary={entity.stixCoreObject?.id} />
+      {fldt(stixCoreRelationship?.stop_time)}
     </div>
   );
 };
 
 interface EntityDetailsProps {
-  nodeId: string
+  node: SelectedNode
   queryRef: PreloadedQuery<EntityDetailsQuery>
 }
 
-const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = ({ nodeId }) => {
-  const queryRef = useQueryLoading<EntityDetailsQuery>(entityDetailsQuery, { id: nodeId });
+const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = ({ node }) => {
+  if (node.entity_type === 'uses') {
+    const queryRef = useQueryLoading<EntityDetailsRelationshipQuery>(entityDetailsRelationshipQuery, { id: node.id });
+    return queryRef ? (
+      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <RelationshipDetailsComponent queryRef={queryRef} />
+      </React.Suspense>
+    ) : (
+      <Loader variant={LoaderVariant.inElement} />
+    );
+  }
+  const queryRef = useQueryLoading<EntityDetailsQuery>(entityDetailsQuery, { id: node.id });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <EntityDetailsComponent queryRef={queryRef} />
