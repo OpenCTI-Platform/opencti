@@ -85,17 +85,7 @@ const positionValidation = (t) => Yup.object().shape({
   postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_positions',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-const PositionCreation = ({ paginationOptions }) => {
+const PositionCreation = () => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);

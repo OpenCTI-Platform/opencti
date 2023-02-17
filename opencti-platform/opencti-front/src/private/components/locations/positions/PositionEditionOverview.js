@@ -216,8 +216,8 @@ const PositionEditionOverviewComponent = (props) => {
       'latitude',
       'longitude',
       'street_address',
-        'postal_code',
-        'createdBy',
+      'postal_code',
+      'createdBy',
       'objectMarking',
       'x_opencti_workflow_id',
     ]),
@@ -295,8 +295,8 @@ const PositionEditionOverviewComponent = (props) => {
               name="street_address"
               label={t('Street address')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="street_address" />
               }
@@ -308,8 +308,8 @@ const PositionEditionOverviewComponent = (props) => {
               name="postal_code"
               label={t('Postal code')}
               fullWidth={true}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="postal_code" />
               }

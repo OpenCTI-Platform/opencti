@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';
 import PositionCreation from './positions/PositionCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -12,6 +11,7 @@ import {
 } from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { PositionLineDummy } from './positions/PositionLine';
+import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'view-positions';
 
@@ -103,7 +103,7 @@ const Positions: FunctionComponent = () => {
     <div>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <PositionCreation paginationOptions={paginationOptions} />
+        <PositionCreation />
       </Security>
     </div>
   );
