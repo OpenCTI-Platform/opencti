@@ -95,9 +95,14 @@ class InformationSystemLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.privacy_sensitive.width }}
+                style={{ width: dataColumns.risks.width }}
               >
-                {node.asset_type && <ItemIcon type={node.asset_type} />}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.severity.width }}
+              >
+                {node.software_identifier && node.software_identifier}
               </div>
               <div
                 className={classes.bodyItem}
@@ -107,20 +112,20 @@ class InformationSystemLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.sensitivity_level.width }}
+              >
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.privacy_sensitive.width }}
+              >
+                {node.asset_type && <ItemIcon type={node.asset_type} />}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.status.width }}
               >
                 {node.version && node.version}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.risks.width }}
-              >
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.severity.width }}
-              >
-                {node.software_identifier && node.software_identifier}
               </div>
               <div
                 className={classes.bodyItem}

@@ -284,23 +284,8 @@ class InformationSystems extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '20%',
-        isSortable: true,
-      },
-      privacy_sensitive: {
-        label: 'Privacy Sensitive',
-        width: '8%',
-        isSortable: true,
-      },
-      critical_system: {
-        label: 'Critical System',
-        width: '6%',
-        isSortable: true,
-      },
-      status: {
-        label: 'Status',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       risks: {
         label: 'Risks',
@@ -312,9 +297,29 @@ class InformationSystems extends Component {
         width: '8%',
         isSortable: true,
       },
+      critical_system: {
+        label: 'Critical System',
+        width: '6%',
+        isSortable: true,
+      },
+      sensitivity_level: {
+        label: 'Sensitivity Level',
+        width: '8%',
+        isSortable: true,
+      },
+      privacy_sensitive: {
+        label: 'Privacy Sensitive',
+        width: '8%',
+        isSortable: true,
+      },
+      status: {
+        label: 'Status',
+        width: '15%',
+        isSortable: false,
+      },
       label_name: {
         label: 'Labels',
-        width: '23%',
+        width: '20%',
         isSortable: true,
       },
       date_created: {

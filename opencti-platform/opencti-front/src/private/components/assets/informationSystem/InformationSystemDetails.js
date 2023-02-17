@@ -3,14 +3,13 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
 import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import AddIcon from '@material-ui/icons/Add';
-import IconButton from '@material-ui/core/IconButton';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import {
@@ -28,6 +27,7 @@ import InformationTypeCreation from './InformationTypeCreation';
 import AuthorizationBoundaryEditionPopover from './AuthorizationBoundaryEditionPopover';
 import NetworkArchitectureEditionPopover from './NetworkArchitectureEditionPopover';
 import DataFlowEditionPopover from './DataFlowEditionPopover';
+import HyperLinkField from '../../common/form/HyperLinkField';
 
 const styles = (theme) => ({
   paper: {
@@ -175,235 +175,256 @@ class InformationSystemDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, informationSystem, fldt, history,
+      t, classes, informationSystem,
     } = this.props;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
-          {t('Details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Information Type(s)')}
-                </Typography>
-                <Tooltip title={t('Information Type(s)')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-                <IconButton size='small' onClick={this.handleInformationType.bind(this)}>
-                  <AddIcon />
-                </IconButton>
-              </div>
-              <div className='clearfix' />
-              <div className={classes.scrollBg}>
-                <div className={classes.scrollDiv}>
-                  <div className={classes.scrollObj}>
+      <Formik
+        enableReinitialize={true}
+      >
+        {({
+          setFieldValue,
+        }) => (
+          <Form>
+            <div style={{ height: '100%' }}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Details')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
+                <Grid container={true} spacing={3}>
+                  <Grid item={true} xs={12}>
+                    <HyperLinkField
+                      variant='outlined'
+                      type='hardware'
+                      multiple={true}
+                      name="installed_hardware"
+                      fullWidth={true}
+                      style={{ height: '38.09px' }}
+                      containerstyle={{ width: '90%' }}
+                      helperText={'Indicates installed hardware on this entity.'}
+                      data={[]}
+                      title={'Information Type(s)'}
+                      setFieldValue={setFieldValue}
+                      link='/defender HQ/assets/devices'
+                    />
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <div className={classes.textBase}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ margin: 0 }}
+                      >
+                        {t('Security Sensitivity Level')}
+                      </Typography>
+                      <Tooltip title={t('Security Sensitivity Level')}>
+                        <Information
+                          style={{ marginLeft: '5px' }}
+                          fontSize="inherit"
+                          color="disabled"
+                        />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
                     {/* Content here */}
-                  </div>
-                </div>
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Security Sensitivity Level')}
-                </Typography>
-                <Tooltip title={t('Security Sensitivity Level')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-              </div>
-              <div className='clearfix' />
-              {/* Content here */}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Security Impact Level')}
-                </Typography>
-                <Tooltip title={t('Security Impact Level')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-              </div>
-              <div className='clearfix' />
-              {/* Content here */}
-            </Grid>
-            <Grid item={true} xs={12}>
-              <Divider />
-            </Grid>
-            <Grid item={true} xs={12}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('System Implementation')}
-                </Typography>
-                <Tooltip title={t('System Implementation')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Inventory Items')}
-                </Typography>
-                <Tooltip title={t('Inventory Items')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-                <IconButton size='small'>
-                  <AddIcon />
-                </IconButton>
-              </div>
-              <div className='clearfix' />
-              <div className={classes.scrollBg}>
-                <div className={classes.scrollDiv}>
-                  <div className={classes.scrollObj}>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <div className={classes.textBase}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ margin: 0 }}
+                      >
+                        {t('Security Impact Level')}
+                      </Typography>
+                      <Tooltip title={t('Security Impact Level')}>
+                        <Information
+                          style={{ marginLeft: '5px' }}
+                          fontSize="inherit"
+                          color="disabled"
+                        />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
                     {/* Content here */}
-                  </div>
-                </div>
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Components')}
-                </Typography>
-                <Tooltip title={t('Components')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-                <IconButton size='small'>
-                  <AddIcon />
-                </IconButton>
-              </div>
-              <div className='clearfix' />
-              <div className={classes.scrollBg}>
-                <div className={classes.scrollDiv}>
-                  <div className={classes.scrollObj}>
-                    {/* Content here */}
-                  </div>
-                </div>
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Users')}
-                </Typography>
-                <Tooltip title={t('Users')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-                <IconButton size='small'>
-                  <AddIcon />
-                </IconButton>
-              </div>
-              <div className='clearfix' />
-              <div className={classes.scrollBg}>
-                <div className={classes.scrollDiv}>
-                  <div className={classes.scrollObj}>
-                    {/* Content here */}
-                  </div>
-                </div>
-              </div>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Leveraged Authorization')}
-                </Typography>
-                <Tooltip title={t('Leveraged Authorization')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-                <IconButton size='small'>
-                  <AddIcon />
-                </IconButton>
-              </div>
-              <div className='clearfix' />
-              <div className={classes.scrollBg}>
-                <div className={classes.scrollDiv}>
-                  <div className={classes.scrollObj}>
-                    {/* Content here */}
-                  </div>
-                </div>
-              </div>
-            </Grid>
-            <Grid item={true} xs={12}>
-              <Divider />
-            </Grid>
-            <Grid item={true} xs={12}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('System Documentation')}
-                </Typography>
-                <Tooltip title={t('System Documentation')}>
-                  <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-                </Tooltip>
-              </div>
-            </Grid>
-            <Grid item={true} xs={12}>
-              {this.renderButtons('authorizationBoundary', 'Authorization Boundary')}
-              {this.renderButtons('networkArchitecture', 'Network Architecture')}
-              {this.renderButtons('dataFlow', 'Data Flow')}
-            </Grid>
-          </Grid>
-        </Paper>
-        <InformationTypeCreation
-          openInformationType={this.state.openInfoType}
-          handleInformationType={this.handleInformationType.bind(this)}
-        />
-        {/* View Modal */}
-        {this.state.mode === 'view' && this.state.modal === 'authorizationBoundary' && <AuthorizationBoundaryPopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)} />}
-        {this.state.mode === 'view' && this.state.modal === 'networkArchitecture' && <NetworkArchitecturePopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)} />}
-        {this.state.mode === 'view' && this.state.modal === 'dataFlow' && <DataFlowPopover openView={this.state.openView} handleCloseView={this.handleCloseView.bind(this)} />}
-        {/* Edit Modals */}
-        {this.state.mode === 'edit' && this.state.modal === 'authorizationBoundary' && <AuthorizationBoundaryEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
-        {this.state.mode === 'edit' && this.state.modal === 'networkArchitecture' && <NetworkArchitectureEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
-        {this.state.mode === 'edit' && this.state.modal === 'dataFlow' && <DataFlowEditionPopover openEdit={this.state.openEdit} handleCloseEdit={this.handleCloseEdit.bind(this)} />}
-      </div>
+                  </Grid>
+                  <Grid item={true} xs={12}>
+                    <Divider />
+                  </Grid>
+                  <Grid item={true} xs={12}>
+                    <div className={classes.textBase}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ margin: 0 }}
+                      >
+                        {t('System Implementation')}
+                      </Typography>
+                      <Tooltip title={t('System Implementation')}>
+                        <Information
+                          style={{ marginLeft: '5px' }}
+                          fontSize="inherit"
+                          color="disabled"
+                        />
+                      </Tooltip>
+                    </div>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <HyperLinkField
+                      variant='outlined'
+                      type='hardware'
+                      multiple={true}
+                      name="installed_hardware"
+                      fullWidth={true}
+                      style={{ height: '38.09px' }}
+                      containerstyle={{ width: '90%' }}
+                      helperText={'Indicates installed hardware on this entity.'}
+                      data={[]}
+                      title={'Inventory Items'}
+                      setFieldValue={setFieldValue}
+                      link='/defender HQ/assets/devices'
+                    />
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <HyperLinkField
+                      variant='outlined'
+                      type='hardware'
+                      multiple={true}
+                      name="installed_hardware"
+                      fullWidth={true}
+                      style={{ height: '38.09px' }}
+                      containerstyle={{ width: '90%' }}
+                      helperText={'Indicates installed hardware on this entity.'}
+                      data={[]}
+                      title={'Components'}
+                      setFieldValue={setFieldValue}
+                      link='/defender HQ/assets/devices'
+                    />
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <HyperLinkField
+                      variant='outlined'
+                      type='hardware'
+                      multiple={true}
+                      name="installed_hardware"
+                      fullWidth={true}
+                      style={{ height: '38.09px' }}
+                      containerstyle={{ width: '90%' }}
+                      helperText={'Indicates installed hardware on this entity.'}
+                      data={[]}
+                      title={'Users'}
+                      setFieldValue={setFieldValue}
+                      link='/defender HQ/assets/devices'
+                    />
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <HyperLinkField
+                      variant='outlined'
+                      type='hardware'
+                      multiple={true}
+                      name="installed_hardware"
+                      fullWidth={true}
+                      style={{ height: '38.09px' }}
+                      containerstyle={{ width: '90%' }}
+                      helperText={'Indicates installed hardware on this entity.'}
+                      data={[]}
+                      title={'Leveraged Authorization'}
+                      setFieldValue={setFieldValue}
+                      link='/defender HQ/assets/devices'
+                    />
+                  </Grid>
+                  <Grid item={true} xs={12}>
+                    <Divider />
+                  </Grid>
+                  <Grid item={true} xs={12}>
+                    <div className={classes.textBase}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ margin: 0 }}
+                      >
+                        {t('System Documentation')}
+                      </Typography>
+                      <Tooltip title={t('System Documentation')}>
+                        <Information
+                          style={{ marginLeft: '5px' }}
+                          fontSize="inherit"
+                          color="disabled"
+                        />
+                      </Tooltip>
+                    </div>
+                  </Grid>
+                  <Grid item={true} xs={12}>
+                    {this.renderButtons(
+                      'authorizationBoundary',
+                      'Authorization Boundary',
+                    )}
+                    {this.renderButtons(
+                      'networkArchitecture',
+                      'Network Architecture',
+                    )}
+                    {this.renderButtons('dataFlow', 'Data Flow')}
+                  </Grid>
+                </Grid>
+              </Paper>
+              <InformationTypeCreation
+                openInformationType={this.state.openInfoType}
+                handleInformationType={this.handleInformationType.bind(this)}
+              />
+              {/* View Modal */}
+              {this.state.mode === 'view'
+                && this.state.modal === 'authorizationBoundary' && (
+                  <AuthorizationBoundaryPopover
+                    openView={this.state.openView}
+                    handleCloseView={this.handleCloseView.bind(this)}
+                  />
+              )}
+              {this.state.mode === 'view'
+                && this.state.modal === 'networkArchitecture' && (
+                  <NetworkArchitecturePopover
+                    openView={this.state.openView}
+                    handleCloseView={this.handleCloseView.bind(this)}
+                  />
+              )}
+              {this.state.mode === 'view'
+                && this.state.modal === 'dataFlow' && (
+                  <DataFlowPopover
+                    openView={this.state.openView}
+                    handleCloseView={this.handleCloseView.bind(this)}
+                  />
+              )}
+              {/* Edit Modals */}
+              {this.state.mode === 'edit'
+                && this.state.modal === 'authorizationBoundary' && (
+                  <AuthorizationBoundaryEditionPopover
+                    openEdit={this.state.openEdit}
+                    handleCloseEdit={this.handleCloseEdit.bind(this)}
+                    informationSystem={informationSystem}
+                  />
+              )}
+              {this.state.mode === 'edit'
+                && this.state.modal === 'networkArchitecture' && (
+                  <NetworkArchitectureEditionPopover
+                    openEdit={this.state.openEdit}
+                    handleCloseEdit={this.handleCloseEdit.bind(this)}
+                    informationSystem={informationSystem}
+                  />
+              )}
+              {this.state.mode === 'edit'
+                && this.state.modal === 'dataFlow' && (
+                  <DataFlowEditionPopover
+                    openEdit={this.state.openEdit}
+                    handleCloseEdit={this.handleCloseEdit.bind(this)}
+                    informationSystem={informationSystem}
+                  />
+              )}
+            </div>
+          </Form>
+        )}
+      </Formik>
     );
   }
 }

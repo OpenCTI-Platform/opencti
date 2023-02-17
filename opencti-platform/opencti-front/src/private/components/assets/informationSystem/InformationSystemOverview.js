@@ -15,6 +15,7 @@ import Link from '@material-ui/core/Link';
 import LaunchIcon from '@material-ui/icons/Launch';
 import inject18n from '../../../../components/i18n';
 import Switch from '@material-ui/core/Switch';
+import ResponsiblePartiesPopover from './ResponsiblePartiesPopover'
 
 const styles = (theme) => ({
   paper: {
@@ -294,28 +295,7 @@ class InformationSystemOverviewComponent extends Component {
               {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
             </Grid>
             <Grid item={true} xs={12}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Responsible Parties')}
-                </Typography>
-                <Tooltip title={t('Responsible Parties')} >
-                  <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              <div className={classes.scrollBg}>
-                <div className={classes.scrollDiv}>
-                  <div className={classes.scrollObj}>
-                    {/* {cyioDomainObject?.description &&
-                      t(cyioDomainObject.description)} */}
-                  </div>
-                </div>
-              </div>
+              <ResponsiblePartiesPopover name={'responsible_parties'} />
             </Grid>
           </Grid>
         </Paper>

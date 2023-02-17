@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
-import { Formik, Form, Field } from 'formik';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
@@ -16,8 +14,13 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../components/i18n';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
+  root: {
+    minWidth: '600px',
+    minHeight: '700px',
+  },
   dialogTitle: {
     padding: '24px 0 16px 24px',
   },
@@ -26,6 +29,8 @@ const styles = (theme) => ({
     marginBottom: '24px',
     overflowY: 'auto',
     overflowX: 'hidden',
+    minWidth: '580px',
+    minHeight: '550px',
   },
   dialogClosebutton: {
     float: 'left',
@@ -72,7 +77,7 @@ const styles = (theme) => ({
   },
 });
 
-class AuthorizationBoundaryPopover extends Component {
+class AuthorizationBoundaryComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -99,7 +104,6 @@ class AuthorizationBoundaryPopover extends Component {
       classes,
     } = this.props;
     return (
-      <>
         <Dialog open={this.props.openView} keepMounted={true}>
           <DialogTitle classes={{ root: classes.dialogTitle }}>
             {t('Authorization Boundary')}
@@ -125,13 +129,6 @@ class AuthorizationBoundaryPopover extends Component {
                   </Tooltip>
                 </div>
                 <div className='clearfix' />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {/* Content here */}
-                    </div>
-                  </div>
-                </div>
               </Grid>
               <Grid item={true} xs={12}>
                 <div className={classes.textBase}>
@@ -160,6 +157,15 @@ class AuthorizationBoundaryPopover extends Component {
                   </div>
                 </div>
               </Grid>
+              <Grid item={true} xs={12}>
+                <CyioCoreObjectExternalReferences
+                    typename={''}
+                    externalReferences={[]}
+                    fieldName='external_references'
+                    cyioCoreObjectId={''}
+                    refreshQuery={{}}
+                  />
+              </Grid>
             </Grid>
           </DialogContent>
           <DialogActions classes={{ root: classes.dialogClosebutton }}>
@@ -172,12 +178,11 @@ class AuthorizationBoundaryPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </>
     );
   }
 }
 
-AuthorizationBoundaryPopover.propTypes = {
+AuthorizationBoundaryComponent.propTypes = {
   t: PropTypes.func,
   fldt: PropTypes.func,
   classes: PropTypes.object,
@@ -186,5 +191,32 @@ AuthorizationBoundaryPopover.propTypes = {
   openConnection: PropTypes.bool,
   handleCloseConnection: PropTypes.func,
 };
+
+const AuthorizationBoundaryPopover = createFragmentContainer(AuthorizationBoundaryComponent, {
+  informationSystem: graphql`
+    fragment AuthorizationBoundaryPopover_information on SoftwareAsset {
+      id
+      software_identifier
+      license_key
+      cpe_identifier
+      patch_level
+      installation_id
+      implementation_point
+      last_scanned
+      is_scanned
+      installed_on {
+        id
+        entity_type
+        vendor_name
+        name
+        version
+      }
+      related_risks {
+        id
+        name
+      }
+    }
+  `,
+});
 
 export default compose(inject18n, withStyles(styles))(AuthorizationBoundaryPopover);
