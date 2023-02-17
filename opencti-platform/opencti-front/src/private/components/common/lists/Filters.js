@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import {
-  FiltersVariant,
-  isUniqFilter,
-} from '../../../../utils/filters/filtersUtils';
+import { FiltersVariant, isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const Filters = ({
   variant,
@@ -22,6 +20,7 @@ const Filters = ({
   allEntityTypes,
   handleAddFilter,
   type,
+  usedFilters,
 }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -29,6 +28,45 @@ const Filters = ({
   const [inputValues, setInputValues] = useState({});
   const [filters, setFilters] = useState({});
   const [keyword, setKeyword] = useState('');
+
+  const handleUpdateDateInputValues = (filtersToApply) => {
+    if (filtersToApply) {
+      const filtersToApplyDateKeys = Object.keys(filtersToApply).filter((key) => key.endsWith('date'));
+      const inputValuesDateKeys = Object.keys(inputValues).filter((key) => key.endsWith('date'));
+      const keysToRemove = inputValuesDateKeys.map((inputKey) => {
+        if (!filtersToApplyDateKeys.includes(inputKey)) {
+          return (inputKey);
+        }
+        return (null);
+      }).filter((n) => n !== null);
+      if (isNotEmptyField(keysToRemove)) {
+        let newInputValues = inputValues;
+        // eslint-disable-next-line no-return-assign
+        keysToRemove.map((key) => newInputValues = R.dissoc(key, newInputValues));
+        setInputValues(newInputValues);
+      }
+      const keysToAdd = filtersToApplyDateKeys.map((filterKey) => {
+        if (!inputValuesDateKeys.includes(filterKey)) {
+          return (filterKey);
+        }
+        return (null);
+      }).filter((n) => n !== null);
+      if (isNotEmptyField(keysToAdd)) {
+        let newInputValues = inputValues;
+        // eslint-disable-next-line array-callback-return
+        keysToAdd.map((key) => {
+          newInputValues = {
+            ...newInputValues,
+            [key]: new Date(filtersToApply[key].map((n) => n.id)[0]),
+          };
+        });
+        setInputValues(newInputValues);
+      }
+    } else if (isNotEmptyField(inputValues)) {
+      setInputValues({});
+    }
+  };
+
   const handleOpenFilters = (event) => {
     setOpen(true);
     setAnchorEl(event.currentTarget);
@@ -65,6 +103,12 @@ const Filters = ({
     );
   };
   const handleChangeKeyword = (event) => setKeyword(event.target.value);
+
+  if (variant === FiltersVariant.dialog) {
+    handleUpdateDateInputValues(filters);
+  } else {
+    handleUpdateDateInputValues(usedFilters);
+  }
   const filterElement = (
     <FiltersElement
       variant={variant}

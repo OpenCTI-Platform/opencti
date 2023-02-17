@@ -322,6 +322,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
           <Filters
             availableFilterKeys={availableFilterKeys}
             handleAddFilter={this.handleAddFilter.bind(this)}
+            usedFilters={filters}
           />
           <FilterIconButton
             filters={filters}

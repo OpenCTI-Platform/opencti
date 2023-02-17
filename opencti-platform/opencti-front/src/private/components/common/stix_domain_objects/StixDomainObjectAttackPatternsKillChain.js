@@ -178,6 +178,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             ]}
             handleAddFilter={handleAddFilter}
             handleRemoveFilter={handleRemoveFilter}
+            usedFilters={filters}
           />
           <FilterIconButton
             filters={filters}

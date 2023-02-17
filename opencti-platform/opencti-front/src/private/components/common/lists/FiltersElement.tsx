@@ -1,27 +1,37 @@
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
-import * as R from 'ramda';
-import { compose } from 'ramda';
-import React from 'react';
-import withStyles from '@mui/styles/withStyles';
+import React, { Dispatch, FunctionComponent } from 'react';
+import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  directFilters,
-  FiltersVariant,
-} from '../../../../utils/filters/filtersUtils';
+import { directFilters, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
+import { Theme } from '../../../../components/Theme';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   helpertext: {
     display: 'inline-block',
-    color: theme.palette.text.secondary,
+    color: theme.palette.text?.secondary,
     marginTop: 20,
   },
-});
+}));
 
-const FiltersElement = ({
-  classes,
+interface FiltersElementProps {
+  variant?: string,
+  keyword: string,
+  availableFilterKeys: string[],
+  handleChangeKeyword: (event: React.SyntheticEvent) => void,
+  noDirectFilters?: boolean,
+  setInputValues: Dispatch<Record<string, string | Date>>,
+  inputValues: Record<string, string | Date>,
+  defaultHandleAddFilter: (k: string, id: string, value: Record<string, unknown> | string, event?: React.SyntheticEvent) => void,
+  availableEntityTypes?: string[],
+  availableRelationshipTypes?: string[],
+  availableRelationFilterTypes?: Record<string, string[]>,
+  allEntityTypes?: boolean,
+}
+
+const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   variant,
   keyword,
   availableFilterKeys,
@@ -36,6 +46,7 @@ const FiltersElement = ({
   allEntityTypes,
 }) => {
   const { t } = useFormatter();
+  const classes = useStyles();
   return (
     <div>
       <Grid container={true} spacing={2}>
@@ -51,9 +62,8 @@ const FiltersElement = ({
             />
           </Grid>
         )}
-        {R.filter(
-          (n) => noDirectFilters || !R.includes(n, directFilters),
-          availableFilterKeys,
+        {availableFilterKeys.filter(
+          (n) => noDirectFilters || !directFilters.includes(n),
         ).map((filterKey) => {
           if (
             filterKey.endsWith('start_date')
@@ -95,4 +105,4 @@ const FiltersElement = ({
   );
 };
 
-export default compose(withStyles(styles))(FiltersElement);
+export default FiltersElement;
