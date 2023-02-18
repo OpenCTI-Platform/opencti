@@ -1,0 +1,179 @@
+extend type Query {
+  # OSCAL User
+  oscalUser(id: ID!): OscalUser  @hasPermission(resources:"OscalUser:view")
+  oscalUsers(
+    first: Int
+    offset: Int
+    orderedBy: OscalUsersOrdering
+    orderMode: OrderingMode
+    filters: [OscalUsersFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OscalUserConnection  @hasPermission(resources:"OscalUser:view")
+}
+
+extend type Mutation {
+  # OSCAL User
+  createOscalUser(input: OscalUserAddInput): OscalUser  @hasPermission(resources:"OscalUser:update")
+  deleteOscalUser(id: ID!): String!  @hasPermission(resources:"OscalUser:delete")
+  deleteOscalUsers(ids: [ID!]!): [ID] @hasPermission(resources: "OscalUser:delete")
+  editOscalUser(id: ID!, input: [EditInput]!, commitMessage: String): OscalUser  @hasPermission(resources:"OscalUser:update")
+  #
+  attachToOscalUser(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "OscalUser:update")
+  detachFromOscalUser(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "OscalUser:update")
+}
+
+##### OSCAL User
+##
+"Defines identifying information about a type of user that interacts with the system based on an associated role."
+type OscalUser implements BasicObject & LifecycleObject & OscalObject {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # CoreObject
+  "Indicates the date and time at which the object was originally created."
+  created: Timestamp
+  "Indicates the date and time that this particular version of the object was last modified."
+  modified: Timestamp
+  "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+  labels: [CyioLabel]
+  # OscalObject
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [CyioNote]
+  "Identifies one or more relationships to other entities."
+  relationships(
+    first: Int
+    offset: Int
+    orderedBy: OscalRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: [OscalRelationshipsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OscalRelationshipConnection
+  # OSCAL SystemAsset User
+  "Identifies type of user, such as internal, external, or general-public."
+  user_type: UserType
+  "Identifies a name given to the user, which may be used by a tool for display and navigation."
+  name: String!
+  "Identifies a short common name, abbreviation, or acronym for the user."
+  short_name: String
+  "Identifies a summary of the user's purpose within the system."
+  description: String
+  "Identifies one or more references to the roles served by the user."
+  roles: [OscalRole]
+  "Identifies a specific system privilege held by the user, along with an associated description and/or rationale for the privilege."
+  authorized_privileges: [AuthorizedPrivilege!]
+  "Identifies the user's privilege level within the system, such as privileged, non-privileged, no-logical-access."
+  privilege_level: PrivilegeLevel!
+}
+input OscalUserAddInput {
+  # OSCAL User
+  "Identifies type of user, such as internal, external, or general-public."
+  user_type: UserType
+  "Identifies a name given to the user, which may be used by a tool for display and navigation."
+  name: String!
+  "Identifies a short common name, abbreviation, or acronym for the user."
+  short_name: String
+  "Identifies a summary of the user's purpose within the system."
+  description: String
+  "Identifies a specific system privilege held by the user, along with an associated description and/or rationale for the privilege."
+  authorized_privileges: [AuthorizedPrivilegeAddInput]
+  "Identifies the user's privilege level within the system, such as privileged, non-privileged, no-logical-access."
+  privilege_level: PrivilegeLevel!
+}
+# Ordering
+enum OscalUsersOrdering {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Label"
+  label_name
+  "Name"
+  name
+  "Privilege Level"
+  privilege_level
+  "User Type"
+  user_type
+  "Marking"
+  marking
+}
+# Filtering
+input OscalUsersFiltering {
+  key: OscalUsersFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+enum OscalUsersFilter {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Label"
+  label_name
+  "Name"
+  name
+  "Privilege Level"
+  privilege_level
+  "User Type"
+  user_type
+}
+# Pagination
+type OscalUserConnection {
+  pageInfo: PageInfo!
+  edges: [OscalUserEdge]
+}
+type OscalUserEdge {
+  cursor: String!
+  node: OscalUser!
+}
+
+# Object-specific Enumerations
+"Defines the set of types of users"
+enum UserType {
+  "Identifies a user account for a person or entity that is part of the organization who owns or operates the system."
+  internal
+  "Identifies a user account for a person or entity that is not part of the organization who owns or operates the system."
+  external
+  "Identifies a user of the system considered to be outside."
+  general_public
+}
+"Characterizes the type level of privileges"
+enum PrivilegeLevel {
+  "This role has elevated access to the system, such as a group or system administrator."
+  privileged
+  "This role has typical user-level access to the system without elevated access."
+  non_privileged
+  "This role has no access to the system, such as a manager who approves access as part of a process."
+  no_logical_access
+}
+"Defines identifying information about a system privilege held by the user."
+type AuthorizedPrivilege {
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies a human readable name for the privilege."
+  name: String!
+  "Identifies a summary of the privilege's purpose within the system."
+  description: String
+  "Identifies one or more functions performed for a given authorized privilege by this user class."
+  functions_performed: [String!]
+}
+input AuthorizedPrivilegeAddInput {
+  "Identifies a human readable name for the privilege."
+  name: String!
+  "Identifies a summary of the privilege's purpose within the system."
+  description: String
+  "Identifies one or more functions performed for a given authorized privilege by this user class."
+  functions_performed: [String!]
+}

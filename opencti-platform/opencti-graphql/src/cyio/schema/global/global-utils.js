@@ -78,6 +78,13 @@ import {
 import {
   informationTypeEntryPredicateMap, attachToInformationTypeEntryQuery, detachFromInformationTypeEntryQuery
 } from '../information-system/schema/sparql/informationTypeEntry.js';
+import {
+  descriptionBlockPredicateMap, attachToDescriptionBlockQuery, detachFromDescriptionBlockQuery,
+  diagramPredicateMap, attachToDiagramQuery, detachFromDiagramQuery
+} from '../information-system/schema/sparql/descriptionBlock.js';
+import {
+  informationTypePredicateMap, attachToInformationTypeQuery, detachFromInformationTypeQuery
+} from '../information-system/schema/sparql/informationType.js';
 
 
 // find id of parent
@@ -136,12 +143,13 @@ export const selectObjectIriByIdQuery = (id, type) => {
   }
   
   return `
-  SELECT DISTINCT ?iri 
+  SELECT DISTINCT ?iri ?object_type
   FROM <tag:stardog:api:context:local>
   WHERE {
       ?iri a <${objectMap[type].classIri}> .
       ?iri <http://darklight.ai/ns/common#id>|<http://docs.oasis-open.org/ns/cti#id> "${id}" .
-  }
+      ?iri <http://darklight.ai/ns/common#object_type> ?object_type .
+    }
   `
 }
 // Replacement for selectObjectByIriQuery
@@ -300,6 +308,22 @@ export const objectMap = {
     classIri: "<http://darklight.ai/ns/cyio/datasource#DataSource",
     iriTemplate: "http://cyio.darklight.ai/data-source"
   },
+  "description-block": {
+    predicateMap: descriptionBlockPredicateMap,
+    attachQuery: attachToDescriptionBlockQuery,
+    detachQuery: detachFromDescriptionBlockQuery,
+    graphQLType: "DescriptionBlock",
+    classIri: "http://csrc.nist.gov/ns/oscal/info-system#DescriptionBlock",
+    iriTemplate: "http://cyio.darklight.ai/description-block"
+  },
+  "diagram": {
+    predicateMap: diagramPredicateMap,
+    attachQuery: attachToDiagramQuery,
+    detachQuery: detachFromDiagramQuery,
+    graphQLType: "DiagramRef",
+    classIri: "http://csrc.nist.gov/ns/oscal/info-system#Diagram",
+    iriTemplate: "http://cyio.darklight.ai/diagram"
+  },
   "embedded": {
     predicateMap: hardwarePredicateMap,
     attachQuery: attachToHardwareQuery,
@@ -375,6 +399,14 @@ export const objectMap = {
     graphQLType: "InventoryItem",
     classIri: "http://csrc.nist.gov/ns/oscal/common#InventoryItem",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/common#InventoryItem"
+  },
+  "information-type": {
+    predicateMap: informationTypePredicateMap,
+    attachQuery: attachToInformationTypeQuery,
+    detachQuery: detachFromInformationTypeQuery,
+    graphQLType: "InformationType",
+    classIri: "http://csrc.nist.gov/ns/oscal/info-system#InformationType",
+    iriTemplate: "http://cyio.darklight.ai/information-type"
   },
   "information-type-catalog": {
     predicateMap: informationTypeCatalogPredicateMap,

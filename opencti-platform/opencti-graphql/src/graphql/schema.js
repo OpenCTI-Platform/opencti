@@ -134,8 +134,11 @@ import cyioDataMarkingResolvers from '../cyio/schema/data-markings/resolvers/dat
 import cyioDataSourceResolvers from '../cyio/schema/data-sources/resolvers/dataSource.js';
 import cyioConnectionInformationResolvers from '../cyio/schema/data-sources/resolvers/connectionInformation.js';
 import cyioWorkActivityResolvers from '../cyio/schema/data-sources/resolvers/workActivity.js';
+import cyioInformationSystemResolvers from '../cyio/schema/information-system/resolvers/informationSystem.js';
+import cyioInformationTypeResolvers from '../cyio/schema/information-system/resolvers/informationType.js';
 import cyioInformationTypeCatalogResolvers from '../cyio/schema/information-system/resolvers/informationTypeCatalog.js';
 import cyioInformationTypeEntryResolvers from '../cyio/schema/information-system/resolvers/informationTypeEntry.js';
+import cyioDescriptionBlockResolvers from '../cyio/schema/information-system/resolvers/descriptionBlock.js';
 
 // Cyio Extensions to support merged graphQL schema
 
@@ -283,8 +286,11 @@ const createSchema = () => {
     cyioDataMarkingResolvers,
     cyioDataSourceResolvers,
     cyioWorkActivityResolvers,
+    cyioInformationSystemResolvers,
+    cyioInformationTypeResolvers,
     cyioInformationTypeCatalogResolvers,
     cyioInformationTypeEntryResolvers,
+    cyioDescriptionBlockResolvers,
 ]);
 
   // load the OpenCTI and each of the Cyio GraphQL schema files
