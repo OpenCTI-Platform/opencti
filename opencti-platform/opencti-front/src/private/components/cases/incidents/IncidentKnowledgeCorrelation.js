@@ -9,6 +9,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
+import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import {
@@ -282,6 +283,8 @@ class IncidentKnowledgeCorrelationComponent extends Component {
     );
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
+      selectModeFree: R.propOr(false, 'selectModeFree', params),
+      rectSelected: { origin: [0, 0], target: [0, 0], shiftKey: false, altKey: false },
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
@@ -386,6 +389,10 @@ class IncidentKnowledgeCorrelationComponent extends Component {
 
   handleToggle3DMode() {
     this.setState({ mode3D: !this.state.mode3D }, () => this.saveParameters());
+  }
+
+  handleToggleSelectModeFree() {
+    this.setState({ selectModeFree: !this.state.selectModeFree }, () => this.saveParameters());
   }
 
   handleToggleTreeMode(modeTree) {
@@ -632,6 +639,52 @@ class IncidentKnowledgeCorrelationComponent extends Component {
     }, 1500);
   }
 
+  inSelectionRect(n) {
+    const graphOrigin = this.graph.current.screen2GraphCoords(this.state.rectSelected.origin[0], this.state.rectSelected.origin[1]);
+    const graphTarget = this.graph.current.screen2GraphCoords(this.state.rectSelected.target[0], this.state.rectSelected.target[1]);
+    return (n.x >= graphOrigin.x) && (n.x <= graphTarget.x)
+      && (n.y >= graphOrigin.y) && (n.y <= graphTarget.y);
+  }
+
+  handleRectSelectMove(e, coords) {
+    if (
+      this.state.selectModeFree
+    ) {
+      const container = document.getElementsByTagName('canvas')[0];
+      const { left, top } = container.getBoundingClientRect();
+      this.state.rectSelected.origin[0] = R.min(coords.origin[0], coords.target[0]) - left;
+      this.state.rectSelected.origin[1] = R.min(coords.origin[1], coords.target[1]) - top;
+      this.state.rectSelected.target[0] = R.max(coords.origin[0], coords.target[0]) - left;
+      this.state.rectSelected.target[1] = R.max(coords.origin[1], coords.target[1]) - top;
+      this.state.rectSelected.shiftKey = e.shiftKey;
+      this.state.rectSelected.altKey = e.altKey;
+    }
+  }
+
+  handleRectSelectUp() {
+    if (
+      this.state.selectModeFree
+      && (
+        this.state.rectSelected.origin[0] !== this.state.rectSelected.target[0]
+        || this.state.rectSelected.origin[1] !== this.state.rectSelected.target[1]
+      )
+    ) {
+      if (
+        !this.state.rectSelected.shiftKey && !this.state.rectSelected.altKey
+      ) {
+        this.selectedLinks.clear();
+        this.selectedNodes.clear();
+      }
+      if (this.state.rectSelected.altKey) {
+        R.map((n) => this.inSelectionRect(n) && this.selectedNodes.delete(n), this.state.graphData.nodes);
+      } else {
+        R.map((n) => this.inSelectionRect(n) && this.selectedNodes.add(n), this.state.graphData.nodes);
+      }
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
+    this.state.rectSelected = { origin: [0, 0], target: [0, 0], shiftKey: false, altKey: false };
+  }
+
   handleSelectAll() {
     this.selectedLinks.clear();
     this.selectedNodes.clear();
@@ -727,6 +780,7 @@ class IncidentKnowledgeCorrelationComponent extends Component {
       numberOfSelectedLinks,
       displayTimeRange,
       selectedTimeRangeInterval,
+      selectModeFree,
     } = this.state;
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
@@ -813,8 +867,10 @@ class IncidentKnowledgeCorrelationComponent extends Component {
             this,
           )}
           handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
+          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(this)}
           stixCoreObjectsTypes={stixCoreObjectsTypes}
           currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
+          currentSelectModeFree={selectModeFree}
           markedBy={markedBy}
           currentMarkedBy={currentMarkedBy}
           createdBy={createdBy}
@@ -938,6 +994,15 @@ class IncidentKnowledgeCorrelationComponent extends Component {
             }
           />
         ) : (
+         <RectangleSelection
+           onSelect={(e, coords) => { this.handleRectSelectMove(e, coords); }}
+           onMouseUp={(e) => { this.handleRectSelectUp(e); }}
+           style={{
+             backgroundColor: 'rgba(0,0,255,0.4)',
+             borderColor: 'orange',
+           }}
+           disabled={!selectModeFree}
+          >
           <ForceGraph2D
             ref={this.graph}
             width={width}
@@ -946,6 +1011,7 @@ class IncidentKnowledgeCorrelationComponent extends Component {
             onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
+            enablePanInteraction={!selectModeFree}
             nodeCanvasObject={(
               node,
               ctx, //
@@ -1035,6 +1101,7 @@ class IncidentKnowledgeCorrelationComponent extends Component {
                   : undefined
             }
           />
+         </RectangleSelection>
         )}
       </div>
     );

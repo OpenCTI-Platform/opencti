@@ -28,6 +28,7 @@ import {
   FamilyTree,
   SelectAll,
   SelectGroup,
+  SelectionDrag,
   Video3d,
 } from 'mdi-material-ui';
 import TimeRange from 'react-timeline-range-slider';
@@ -241,6 +242,7 @@ class InvestigationGraphBar extends Component {
       currentCreatedBy,
       currentMarkedBy,
       currentStixCoreObjectsTypes,
+      currentSelectModeFree,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -248,6 +250,7 @@ class InvestigationGraphBar extends Component {
       handleToggleMarkedBy,
       handleToggleStixCoreObjectType,
       handleZoomToFit,
+      handleToggleSelectModeFree,
       stixCoreObjectsTypes,
       createdBy,
       markedBy,
@@ -523,6 +526,17 @@ class InvestigationGraphBar extends Component {
                   ))}
                 </List>
               </Popover>
+              <Tooltip title={t('Free Rectangle Select')}>
+                <span>
+                  <IconButton
+                    color={currentSelectModeFree ? 'secondary' : 'primary'}
+                    size="large"
+                    onClick={handleToggleSelectModeFree.bind(this)}
+                  >
+                    <SelectionDrag />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Tooltip title={t('Select all nodes')}>
                 <span>
                   <IconButton
@@ -933,8 +947,9 @@ InvestigationGraphBar.propTypes = {
   t: PropTypes.func,
   workspace: PropTypes.object,
   handleToggle3DMode: PropTypes.func,
-  currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,
+  currentMode3D: PropTypes.bool,
+  handleToggleSelectModeFree: PropTypes.func,
   currentModeTree: PropTypes.string,
   currentModeFixed: PropTypes.bool,
   handleToggleFixedMode: PropTypes.func,

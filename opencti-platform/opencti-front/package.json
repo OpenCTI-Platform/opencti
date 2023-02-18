@@ -53,6 +53,7 @@
     "react-mde": "11.5.0",
     "react-otp-input": "2.4.0",
     "react-pdf": "6.2.2",
+    "react-rectangle-selection": "^1.0.4",
     "react-relay": "14.1.0",
     "react-relay-network-modern": "6.2.1",
     "react-router-dom": "5.3.4",

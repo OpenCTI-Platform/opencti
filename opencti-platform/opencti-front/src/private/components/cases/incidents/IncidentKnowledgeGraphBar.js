@@ -17,7 +17,7 @@ import {
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
-import { AutoFix, FamilyTree, SelectAll, SelectGroup, Video3d } from 'mdi-material-ui';
+import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -311,6 +311,7 @@ class IncidentKnowledgeGraphBar extends Component {
       currentCreatedBy,
       currentMarkedBy,
       currentStixCoreObjectsTypes,
+      currentSelectModeFree,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -318,6 +319,7 @@ class IncidentKnowledgeGraphBar extends Component {
       handleToggleMarkedBy,
       handleToggleStixCoreObjectType,
       handleZoomToFit,
+      handleToggleSelectModeFree,
       stixCoreObjectsTypes,
       createdBy,
       markedBy,
@@ -590,6 +592,17 @@ class IncidentKnowledgeGraphBar extends Component {
                   ))}
                 </List>
               </Popover>
+              <Tooltip title={t('Free Rectangle Select')}>
+                <span>
+                  <IconButton
+                    color={currentSelectModeFree ? 'secondary' : 'primary'}
+                    size="large"
+                    onClick={handleToggleSelectModeFree.bind(this)}
+                  >
+                    <SelectionDrag />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Tooltip title={t('Select all nodes')}>
                 <span>
                   <IconButton
@@ -1121,6 +1134,7 @@ IncidentKnowledgeGraphBar.propTypes = {
   t: PropTypes.func,
   caseData: PropTypes.object,
   handleToggle3DMode: PropTypes.func,
+  handleToggleSelectModeFree: PropTypes.func,
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,
   currentModeTree: PropTypes.string,

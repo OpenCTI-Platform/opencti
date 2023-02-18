@@ -12563,6 +12563,7 @@ __metadata:
     react-mde: 11.5.0
     react-otp-input: 2.4.0
     react-pdf: 6.2.2
+    react-rectangle-selection: ^1.0.4
     react-relay: 14.1.0
     react-relay-network-modern: 6.2.1
     react-router-dom: 5.3.4
@@ -13976,6 +13977,16 @@ __metadata:
   peerDependencies:
     react: ^17.0.2
   checksum: 2ebceace56f547f51eaf142becefef9cca980eae4f42d90ee5a966f54a375f5082d78b71b00c40bbd9bca69e0e0f698c7d4e81cc7373437caa19831fddc1d01b
+  languageName: node
+  linkType: hard
+
+"react-rectangle-selection@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "react-rectangle-selection@npm:1.0.4"
+  dependencies:
+    react: 18.2.0
+    webpack: ^5.74.0
+  checksum: 80794ac51f5eb854670130c136ed15da386043c268b2e0489496d3e4ab580494d6fa027a4da2cd7ab97aea50fef7e9d104500bccaacb48faf054922f78246d0c
   languageName: node
   linkType: hard
 
