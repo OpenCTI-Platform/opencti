@@ -29,32 +29,46 @@ export interface SelectedNode {
   name: string
   label: string
   description: string
-  parent_types: string
+  parent_types: string[]
   relationship_type: string
   fromType: string
   fromId: string
   entity_type: string
 }
+
+export interface SelectedLink {
+  id: string
+  name: string
+  label: string
+  source: SelectedNode
+  source_id: string
+  parent_types: string[]
+  relationship_type: string
+  target: SelectedNode
+  target_id: string
+  entity_type: string
+}
 interface EntityDetailsRightsBarProps {
   selectedNodes: SelectedNode[];
+  selectedLinks:SelectedLink[]
   open: boolean
   handleClose?: () => void
 }
-const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedNodes, open, handleClose }) => {
+const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedNodes, selectedLinks, open, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  console.log(selectedNodes[0]);
+  const nodesAndLinks: Array<SelectedLink | SelectedNode> = [...selectedLinks, ...selectedNodes];
 
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleControlClose = () => setControlOpen(false);
 
-  const [selectedNode, setSelectedNode] = useState<SelectedNode>(selectedNodes[0]);
-  const handleSelectNode = (event: SelectChangeEvent<SelectedNode>) => {
-    setSelectedNode(event.target);
+  const [selectedEntity, setSelectedEntity] = useState<SelectedLink | SelectedNode>(nodesAndLinks[0]);
+  const handleSelectNode = (event: SelectChangeEvent<SelectedLink | SelectedNode>) => {
+    setSelectedEntity(event.target);
   };
 
   const fillSelectLabel = () => {
-    if (selectedNodes.length > 1) {
+    if (nodesAndLinks.length > 1) {
       return (
         <InputLabel id="entityField">
           {t('Selected entities')}
@@ -63,7 +77,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
     }
     return (
       <InputLabel id="entityField">
-        {selectedNodes[0].label}
+        {nodesAndLinks[0].label}
       </InputLabel>
     );
   };
@@ -87,15 +101,15 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
           fullWidth={true}
           onChange={(event: SelectChangeEvent<SelectedNode>) => handleSelectNode(event)}
         >
-          {selectedNodes.map((node) => (
-            <MenuItem key={node.id} value={node.id}>
-              {node.label}
+          {nodesAndLinks.map((nodeOrLink) => (
+            <MenuItem key={nodeOrLink.id} value={nodeOrLink.id}>
+              {nodeOrLink.label}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
         <EntityDetails
-          node={selectedNode}
+          entity={selectedEntity}
         />
     </Drawer>
   );

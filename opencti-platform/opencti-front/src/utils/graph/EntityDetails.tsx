@@ -18,7 +18,7 @@ import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import { truncate } from '../String';
-import type { SelectedNode } from './EntitiesDetailsRightBar';
+import type { SelectedLink, SelectedNode } from './EntitiesDetailsRightBar';
 import { EntityDetailsRelationshipQuery } from './__generated__/EntityDetailsRelationshipQuery.graphql';
 import ItemConfidence from '../../components/ItemConfidence';
 
@@ -454,13 +454,13 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
 };
 
 interface EntityDetailsProps {
-  node: SelectedNode
+  entity: SelectedNode | SelectedLink
   queryRef: PreloadedQuery<EntityDetailsQuery>
 }
 
-const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = ({ node }) => {
-  if (node.entity_type === 'uses') {
-    const queryRef = useQueryLoading<EntityDetailsRelationshipQuery>(entityDetailsRelationshipQuery, { id: node.id });
+const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = ({ entity }) => {
+  if (entity.entity_type === 'uses') {
+    const queryRef = useQueryLoading<EntityDetailsRelationshipQuery>(entityDetailsRelationshipQuery, { id: entity.id });
     return queryRef ? (
       <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <RelationshipDetailsComponent queryRef={queryRef} />
@@ -469,7 +469,7 @@ const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = (
       <Loader variant={LoaderVariant.inElement} />
     );
   }
-  const queryRef = useQueryLoading<EntityDetailsQuery>(entityDetailsQuery, { id: node.id });
+  const queryRef = useQueryLoading<EntityDetailsQuery>(entityDetailsQuery, { id: entity.id });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <EntityDetailsComponent queryRef={queryRef} />

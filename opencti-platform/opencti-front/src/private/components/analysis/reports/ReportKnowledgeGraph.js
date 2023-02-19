@@ -1250,9 +1250,10 @@ class ReportKnowledgeGraphComponent extends Component {
           enableSuggestions={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
-        {numberOfSelectedNodes > 0 && (
+        {(numberOfSelectedNodes > 0 || numberOfSelectedLinks > 0) && (
           <EntitiesDetailsRightsBar
           selectedNodes={Array.from(this.selectedNodes)}
+          selectedLinks={Array.from(this.selectedLinks)}
           open={false}
           handleClose={this.handleCloseEntitiesDetailsRightsBar.bind(this)}
         />
