@@ -3,7 +3,6 @@ import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
@@ -14,6 +13,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -86,6 +86,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {
     dataSourceAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
       ...DataSourceLine_node
     }
   }
@@ -110,42 +114,38 @@ interface DataSourceCreationProps {
   paginationOptions: DataSourcesLinesPaginationQuery$variables;
 }
 
-const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
-  contextual,
-  display,
-  inputValue,
-  paginationOptions,
-}) => {
-  const { t } = useFormatter();
+interface DataSourceFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  inputValue?: string
+  defaultCreatedBy?: Option
+  defaultMarkingDefinitions?: Option[]
+  defaultConfidence?: number
+}
+
+export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({ updater, onReset, inputValue, onCompleted,
+  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
-
-  const [open, setOpen] = useState(false);
-
+  const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
   };
   const dataSourceValidator = useSchemaCreationValidation('Data-Source', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
   const initialValues: DataSourceAddInput = {
     name: inputValue || '',
     description: '',
-    createdBy: '' as unknown as Option,
-    objectMarking: [],
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
-    confidence: 75,
+    confidence: defaultConfidence ?? 75,
     x_mitre_platforms: [],
     collection_layers: [],
   };
-
   const [commit] = useMutation(dataSourceMutation);
-
   const onSubmit: FormikConfig<DataSourceAddInput>['onSubmit'] = (
     values: DataSourceAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<DataSourceAddInput>,
@@ -166,12 +166,9 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_dataSources',
-          paginationOptions,
-          'dataSourceAdd',
-        );
+        if (updater) {
+          updater(store, 'dataSourceAdd');
+        }
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -180,163 +177,168 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
 
-  const fields = (
-    setFieldValue: (
-      field: string,
-      value: unknown,
-      shouldValidate?: boolean | undefined
-    ) => void,
-    values: DataSourceAddInput,
-  ) => (
-    <React.Fragment>
-      <Field
-        component={TextField}
-        variant="standard"
-        name="name"
-        label={t('Name')}
-        fullWidth={true}
-        detectDuplicate={['Data-Source']}
-      />
-      <ConfidenceField
-        name="confidence"
-        label={t('Confidence')}
-        fullWidth={true}
-        containerStyle={fieldSpacingContainerStyle}
-      />
-      <Field
-        component={MarkDownField}
-        name="description"
-        label={t('Description')}
-        fullWidth={true}
-        multiline={true}
-        rows="4"
-        style={{ marginTop: 20 }}
-      />
-      <CreatedByField
-        name="createdBy"
-        style={{
-          marginTop: 20,
-          width: '100%',
-        }}
-        setFieldValue={setFieldValue}
-      />
-      <ObjectLabelField
-        name="objectLabel"
-        style={{
-          marginTop: 20,
-          width: '100%',
-        }}
-        setFieldValue={setFieldValue}
-        values={values.objectLabel}
-      />
-      <ObjectMarkingField
-        name="objectMarking"
-        style={{
-          marginTop: 20,
-          width: '100%',
-        }}
-      />
-      <ExternalReferencesField
-        name="externalReferences"
-        style={{
-          marginTop: 20,
-          width: '100%',
-        }}
-        setFieldValue={setFieldValue}
-        values={values.externalReferences}
-      />
-      <OpenVocabField
-        label={t('Platforms')}
-        type="platforms_ov"
-        name="x_mitre_platforms"
-        onChange={(name, value) => setFieldValue(name, value)}
-        containerStyle={fieldSpacingContainerStyle}
-        multiple={true}
-      />
-      <OpenVocabField
-        label={t('Layers')}
-        type="collection_layers_ov"
-        name="collection_layers"
-        onChange={(name, value) => setFieldValue(name, value)}
-        containerStyle={fieldSpacingContainerStyle}
-        multiple={true}
-      />
-    </React.Fragment>
+  return <Formik<DataSourceAddInput>
+      initialValues={initialValues}
+      validationSchema={dataSourceValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              detectDuplicate={['Data-Source']}
+          />
+          <ConfidenceField
+              name="confidence"
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+          />
+          <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <OpenVocabField
+              label={t('Platforms')}
+              type="platforms_ov"
+              name="x_mitre_platforms"
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={true}
+          />
+          <OpenVocabField
+              label={t('Layers')}
+              type="collection_layers_ov"
+              name="collection_layers"
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
+  contextual,
+  display,
+  inputValue,
+  paginationOptions,
+}) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_dataSources',
+    paginationOptions,
+    'dataSourceAdd',
   );
 
   const renderClassic = () => (
     <div>
-      <Fab
-        onClick={handleOpen}
+      <Fab onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
+          <IconButton aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a data source')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<DataSourceAddInput>
-            initialValues={initialValues}
-            validationSchema={dataSourceValidator}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                {fields(setFieldValue, values)}
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <DataSourceCreationForm inputValue={inputValue} updater={updater}
+                                  onCompleted={handleClose} onReset={handleClose}/>
         </div>
       </Drawer>
     </div>
@@ -344,46 +346,16 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButtonContextual}
-      >
+      <Fab onClick={handleOpen} color="secondary" aria-label="Add"
+        className={classes.createButtonContextual}>
         <Add />
       </Fab>
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={dataSourceValidator}
-          onSubmit={onSubmit}
-          onReset={onReset}
-        >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <div>
-              <DialogTitle>{t('Create a data source')}</DialogTitle>
-              <DialogContent>{fields(setFieldValue, values)}</DialogContent>
-              <DialogActions classes={{ root: classes.dialogActions }}>
-                <Button onClick={handleReset} disabled={isSubmitting}>
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
-                  {t('Create')}
-                </Button>
-              </DialogActions>
-            </div>
-          )}
-        </Formik>
+        <DialogTitle>{t('Create a data source')}</DialogTitle>
+        <DialogContent>
+          <DataSourceCreationForm inputValue={inputValue} updater={updater}
+                                 onCompleted={handleClose} onReset={handleClose}/>
+        </DialogContent>
       </Dialog>
     </div>
   );

@@ -1,45 +1,48 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Field, Form, Formik } from 'formik';
-import { ConnectionHandler } from 'relay-runtime';
+import React, { useState } from 'react';
 import * as R from 'ramda';
-import {
-  assoc,
-  compose,
-  dissoc,
-  filter,
-  includes,
-  map,
-  pipe,
-  pluck,
-  split,
-} from 'ramda';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
-import SelectField from '../../../../components/SelectField';
-import CreatedByField from '../form/CreatedByField';
-import ObjectMarkingField from '../form/ObjectMarkingField';
-import ObjectLabelField from '../form/ObjectLabelField';
-import ConfidenceField from '../form/ConfidenceField';
-import {
-  typesWithOpenCTIAliases,
-  typesWithoutAliases,
-} from '../../../../utils/Entity';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import OpenVocabField from '../form/OpenVocabField';
+import { Select } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { ConnectionHandler } from 'relay-runtime';
+import { useFormatter } from '../../../../components/i18n';
+import { MalwareCreationForm } from '../../arsenal/malwares/MalwareCreation';
+import { AdministrativeAreaCreationForm } from '../../locations/administrative_areas/AdministrativeAreaCreation';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { AttackPatternCreationForm } from '../../techniques/attack_patterns/AttackPatternCreation';
+import { CampaignCreationForm } from '../../threats/campaigns/CampaignCreation';
+import { CaseCreationForm } from '../../cases/incidents/IncidentCreation';
+import { ChannelCreationForm } from '../../arsenal/channels/ChannelCreation';
+import { CityCreationForm } from '../../locations/cities/CityCreation';
+import { CountryCreationForm } from '../../locations/countries/CountryCreation';
+import { EventCreationForm } from '../../entities/events/EventCreation';
+import { GroupingCreationForm } from '../../analysis/groupings/GroupingCreation';
+import { IncidentCreationForm } from '../../events/incidents/IncidentCreation';
+import { IndicatorCreationForm } from '../../observations/indicators/IndicatorCreation';
+import { IndividualCreationForm } from '../../entities/individuals/IndividualCreation';
+import { InfrastructureCreationForm } from '../../observations/infrastructures/InfrastructureCreation';
+import { IntrusionSetCreationForm } from '../../threats/intrusion_sets/IntrusionSetCreation';
+import { ObservedDataCreationForm } from '../../events/observed_data/ObservedDataCreation';
+import { OrganizationCreationForm } from '../../entities/organizations/OrganizationCreation';
+import { PositionCreationForm } from '../../locations/positions/PositionCreation';
+import { RegionCreationForm } from '../../locations/regions/RegionCreation';
+import { ReportCreationForm } from '../../analysis/reports/ReportCreation';
+import { SectorCreationForm } from '../../entities/sectors/SectorCreation';
+import { SystemCreationForm } from '../../entities/systems/SystemCreation';
+import { ThreatActorCreationForm } from '../../threats/threat_actors/ThreatActorCreation';
+import { ToolCreationForm } from '../../arsenal/tools/ToolCreation';
+import { VulnerabilityCreationForm } from '../../arsenal/vulnerabilities/VulnerabilityCreation';
+import { OpinionCreationForm } from '../../analysis/opinions/OpinionCreation';
+import { NarrativeCreationForm } from '../../techniques/narratives/NarrativeCreation';
+import { DataSourceCreationForm } from '../../techniques/data_sources/DataSourceCreation';
+import { DataComponentCreationForm } from '../../techniques/data_components/DataComponentCreation';
+import { CourseOfActionCreationForm } from '../../techniques/courses_of_action/CourseOfActionCreation';
+import { NoteCreationForm } from '../../analysis/notes/NoteCreation';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -54,7 +57,11 @@ export const stixDomainObjectCreationAllTypesQuery = graphql`
   }
 `;
 
-const styles = (theme) => ({
+const UNSUPPORTED_TYPES = ['Language', 'Note', 'Opinion']; // Language as no ui, note and opinion are not useful
+const IDENTITY_ENTITIES = ['Sector', 'Organization', 'Individual', 'System', 'Event'];
+const LOCATION_ENTITIES = ['Region', 'Country', 'City', 'Location'];
+
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -96,170 +103,9 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
 
-const stixDomainObjectCreationMutation = graphql`
-  mutation StixDomainObjectCreationMutation($input: StixDomainObjectAddInput!) {
-    stixDomainObjectAdd(input: $input) {
-      id
-      entity_type
-      parent_types
-      revoked
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
-      }
-      ... on AttackPattern {
-        name
-        description
-      }
-      ... on Campaign {
-        name
-        description
-      }
-      ... on CourseOfAction {
-        name
-        description
-      }
-      ... on Individual {
-        name
-        description
-      }
-      ... on Organization {
-        name
-        description
-      }
-      ... on Sector {
-        name
-        description
-      }
-      ... on System {
-        name
-        description
-      }
-      ... on Indicator {
-        name
-        description
-      }
-      ... on Infrastructure {
-        name
-        description
-      }
-      ... on IntrusionSet {
-        name
-        description
-      }
-      ... on Position {
-        name
-        description
-      }
-      ... on City {
-        name
-        description
-      }
-      ... on AdministrativeArea {
-        name
-        description
-      }
-      ... on Country {
-        name
-        description
-      }
-      ... on Region {
-        name
-        description
-      }
-      ... on Malware {
-        name
-        description
-      }
-      ... on ThreatActor {
-        name
-        description
-      }
-      ... on Tool {
-        name
-        description
-      }
-      ... on Vulnerability {
-        name
-        description
-      }
-      ... on Incident {
-        name
-        description
-      }
-      ... on Event {
-        name
-        description
-      }
-      ... on Channel {
-        name
-        description
-      }
-      ... on Narrative {
-        name
-        description
-      }
-      ... on Language {
-        name
-      }
-      ... on DataComponent {
-        name
-      }
-      ... on DataSource {
-        name
-      }
-      ... on Case {
-        name
-      }
-      ... on Report {
-        name
-      }
-      ... on Grouping {
-        name
-      }
-    }
-  }
-`;
-
-const stixDomainObjectValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  description: Yup.string().nullable(),
-  type: Yup.string().required(t('This field is required')),
-});
-
-const sharedUpdater = (
-  store,
-  userId,
-  paginationOptions,
-  paginationKey,
-  newEdge,
-) => {
+const sharedUpdater = (store, userId, paginationOptions, paginationKey, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
@@ -269,379 +115,278 @@ const sharedUpdater = (
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixDomainObjectCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
-    let finalValues = pipe(
-      assoc('confidence', parseInt(values.confidence, 10)),
-      assoc('createdBy', values.createdBy?.value),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-      assoc('objectLabel', pluck('value', values.objectLabel)),
-    )(values);
-    if (finalValues.type !== 'Indicator') {
-      finalValues = pipe(
-        dissoc('pattern_type'),
-        dissoc('pattern'),
-      )(finalValues);
+const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
+  const choices = (queryData.sdoTypes?.edges ?? []).map((edge) => ({
+    label: t(`entity_${edge.node.label}`),
+    value: edge.node.label,
+    type: edge.node.label,
+  }));
+  const entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], choices);
+  return entitiesTypes.filter((n) => {
+    if (!stixDomainObjectTypes || stixDomainObjectTypes.length === 0 || stixDomainObjectTypes.includes('Stix-Domain-Object')) {
+      return !UNSUPPORTED_TYPES.includes(n.value);
     }
-    if (includes(finalValues.type, typesWithoutAliases)) {
-      finalValues = pipe(
-        dissoc('aliases'),
-        dissoc('x_opencti_aliases'),
-      )(finalValues);
-    } else if (includes(finalValues.type, typesWithOpenCTIAliases)) {
-      finalValues = pipe(
-        dissoc('aliases'),
-        assoc(
-          'x_opencti_aliases',
-          filter((n) => n.length > 0, split(',', finalValues.x_opencti_aliases)),
-        ),
-      )(finalValues);
-    } else {
-      finalValues = pipe(
-        dissoc('x_opencti_aliases'),
-        assoc(
-          'aliases',
-          filter((n) => n.length > 0, split(',', finalValues.aliases)),
-        ),
-      )(finalValues);
+    if (stixDomainObjectTypes.includes('Identity') && IDENTITY_ENTITIES.includes(n.value)) {
+      return true;
     }
-    commitMutation({
-      mutation: stixDomainObjectCreationMutation,
-      variables: {
-        input: finalValues,
-      },
-      updater: (store) => {
-        if (!this.props.creationCallback) {
-          const payload = store.getRootField('stixDomainObjectAdd');
-          const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-          const container = store.getRoot();
-          sharedUpdater(
-            store,
-            container.getDataID(),
-            this.props.paginationOptions,
-            this.props.paginationKey || 'Pagination_stixDomainObjects',
-            newEdge,
-          );
-        }
-      },
-      setSubmitting,
-      onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        if (this.props.creationCallback) {
-          this.props.creationCallback(response);
-          this.props.handleClose();
-        } else {
-          this.handleClose();
-        }
-      },
-    });
-  }
-
-  onResetContextual() {
-    if (this.props.speeddial) {
-      this.props.handleClose();
-    } else {
-      this.handleClose();
+    if (stixDomainObjectTypes.includes('Location') && LOCATION_ENTITIES.includes(n.value)) {
+      return true;
     }
-  }
-
-  renderEntityTypesList() {
-    const { t, stixDomainObjectTypes } = this.props;
-    return (
-      <QueryRenderer
-        query={stixDomainObjectCreationAllTypesQuery}
-        render={({ props: data }) => {
-          if (data && data.sdoTypes) {
-            let result = [];
-            result = [
-              ...R.pipe(
-                R.pathOr([], ['sdoTypes', 'edges']),
-                R.map((n) => ({
-                  label: t(`entity_${n.node.label}`),
-                  value: n.node.label,
-                  type: n.node.label,
-                })),
-              )(data),
-              ...result,
-            ];
-            const entitiesTypes = R.sortWith(
-              [R.ascend(R.prop('label'))],
-              result,
-            );
-            const availableEntityTypes = entitiesTypes.filter((n) => {
-              if (
-                !stixDomainObjectTypes
-                || stixDomainObjectTypes.length === 0
-                || stixDomainObjectTypes.includes('Stix-Domain-Object')
-              ) {
-                return n.value !== 'Note';
-              }
-              if (
-                stixDomainObjectTypes.includes('Identity')
-                && ['Sector', 'Organization', 'Individual', 'System', 'Event'].includes(n.value)
-              ) {
-                return true;
-              }
-              if (
-                stixDomainObjectTypes.includes('Location')
-                && ['Region', 'Country', 'City', 'Location'].includes(n.value)
-              ) {
-                return true;
-              }
-              return !!stixDomainObjectTypes.includes(n.value);
-            });
-            return (
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="type"
-                label={t('Entity type')}
-                fullWidth={true}
-                containerstyle={{ width: '100%' }}
-              >
-                {availableEntityTypes.map((type) => (
-                  <MenuItem key={type.value} value={type.value}>
-                    {type.label}
-                  </MenuItem>
-                ))}
-              </Field>
-            );
-          }
-          return <div />;
-        }}
-      />
-    );
-  }
-
-  renderContextual() {
-    const {
-      t,
-      classes,
-      inputValue,
-      display,
-      speeddial,
-      defaultCreatedBy,
-      defaultMarkingDefinitions,
-      confidence,
-      stixCoreObjectTypes,
-    } = this.props;
-    const initialValues = {
-      type: (stixCoreObjectTypes ?? []).at(0),
-      name: inputValue,
-      confidence: confidence || 15,
-      description: '',
-      aliases: '',
-      x_opencti_aliases: '',
-      pattern_type: '',
-      pattern: '',
-      createdBy: defaultCreatedBy
-        ? {
-          label: defaultCreatedBy.name,
-          value: defaultCreatedBy.id,
-          type: defaultCreatedBy.entity_type,
-        }
-        : '',
-      objectLabel: [],
-      objectMarking: defaultMarkingDefinitions
-        ? map(
-          (n) => ({
-            label: n.definition,
-            value: n.id,
-            color: n.x_opencti_color,
-          }),
-          defaultMarkingDefinitions,
-        )
-        : [],
-    };
-    return (
-      <div style={{ display: display ? 'block' : 'none' }}>
-        {!speeddial && (
-          <Fab
-            onClick={this.handleOpen.bind(this)}
-            color="secondary"
-            aria-label="Add"
-            className={classes.createButton}
-          >
-            <Add />
-          </Fab>
-        )}
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={stixDomainObjectValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.onResetContextual.bind(this)}
-        >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <Form>
-              <Dialog
-                PaperProps={{ elevation: 1 }}
-                open={speeddial ? this.props.open : this.state.open}
-                onClose={
-                  speeddial
-                    ? this.props.handleClose.bind(this)
-                    : this.handleClose.bind(this)
-                }
-                fullWidth={true}
-              >
-                <DialogTitle>{t('Create an entity')}</DialogTitle>
-                <DialogContent>
-                  {this.renderEntityTypesList()}
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                    detectDuplicate={stixCoreObjectTypes || []}
-                  />
-                  {!includes(values.type, typesWithoutAliases) && (
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name={
-                        includes(values.type, typesWithOpenCTIAliases)
-                          ? 'x_opencti_aliases'
-                          : 'aliases'
-                      }
-                      label={t('Aliases separated by commas')}
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
-                    />
-                  )}
-                  {values.type === 'Indicator' && (
-                    <div>
-                      <OpenVocabField
-                        label={t('Pattern type')}
-                        type="pattern_type_ov"
-                        name="pattern_type"
-                        onChange={(name, value) => setFieldValue(name, value)}
-                        containerStyle={fieldSpacingContainerStyle}
-                        multiple={false}
-                      />
-                      <Field
-                        component={TextField}
-                        variant="standard"
-                        name="pattern"
-                        label={t('Pattern')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        style={{ marginTop: 20 }}
-                        detectDuplicate={['Indicator']}
-                      />
-                    </div>
-                  )}
-                  <ConfidenceField
-                    name="confidence"
-                    label={t('Confidence')}
-                    fullWidth={true}
-                    containerStyle={fieldSpacingContainerStyle}
-                  />
-                  {values.type === 'Grouping' && (
-                    <div>
-                      <OpenVocabField
-                        label={t('Context')}
-                        type="grouping-context-ov"
-                        name="context"
-                        onChange={(name, value) => setFieldValue(name, value)}
-                        containerStyle={fieldSpacingContainerStyle}
-                        multiple={false}
-                      />
-                    </div>
-                  )}
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    defaultCreatedBy={defaultCreatedBy}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                    defaultMarkingDefinitions={defaultMarkingDefinitions}
-                  />
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    );
-  }
-
-  render() {
-    return this.renderContextual();
-  }
-}
-
-StixDomainObjectCreation.propTypes = {
-  paginationKey: PropTypes.string,
-  paginationOptions: PropTypes.object,
-  stixDomainObjectTypes: PropTypes.array,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  speeddial: PropTypes.bool,
-  handleClose: PropTypes.func,
-  creationCallback: PropTypes.func,
-  display: PropTypes.bool,
-  open: PropTypes.bool,
-  inputValue: PropTypes.string,
-  defaultCreatedBy: PropTypes.object,
-  defaultMarkingDefinitions: PropTypes.array,
-  confidence: PropTypes.number,
+    return !!stixDomainObjectTypes.includes(n.value);
+  });
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(StixDomainObjectCreation);
+const StixDomainPanel = ({ queryRef, stixDomainObjectTypes, onClose, creationUpdater,
+  confidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+  const { t } = useFormatter();
+  const queryData = usePreloadedQuery(stixDomainObjectCreationAllTypesQuery, queryRef);
+  const availableEntityTypes = buildEntityTypes(t, queryData, stixDomainObjectTypes);
+  const [status, setStatus] = useState(availableEntityTypes.at(0).value);
+  const baseCreatedBy = defaultCreatedBy ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name } : undefined;
+  const baseMarkingDefinitions = (defaultMarkingDefinitions ?? []).map(
+    (n) => ({
+      label: n.definition,
+      value: n.id,
+      color: n.x_opencti_color,
+      entity: n,
+    }),
+  );
+
+  const renderEntityCreationInterface = () => {
+    if (status === 'Administrative-Area') {
+      return <AdministrativeAreaCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Attack-Pattern') {
+      return <AttackPatternCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Campaign') {
+      return <CampaignCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Case') { // Default to Incident case type
+      return <CaseCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Channel') {
+      return <ChannelCreationForm defaultConfidence={confidence}
+           defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+           onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'City') {
+      return <CityCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Country') {
+      return <CountryCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Course-Of-Action') { // Course-Of-Action
+      return <CourseOfActionCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Data-Component') { // Data-Component
+      return <DataComponentCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Data-Source') { // Data-Source
+      return <DataSourceCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Event') { // Event
+      return <EventCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Grouping') { // Grouping
+      return <GroupingCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Incident') { // Incident
+      return <IncidentCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Indicator') { // Indicator
+      return <IndicatorCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Individual') { // Individual
+      return <IndividualCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Infrastructure') { // Infrastructure
+      return <InfrastructureCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Intrusion-Set') { // IntrusionSet
+      return <IntrusionSetCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Malware') { // Malware
+      return <MalwareCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Narrative') { // Narrative
+      return <NarrativeCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Note') { // Note
+      return <NoteCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Observed-Data') { // Observed data
+      return <ObservedDataCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Opinion') { // Opinion
+      return <OpinionCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Organization') { // Organization
+      return <OrganizationCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Position') { // Position
+      return <PositionCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Region') { // Region
+      return <RegionCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Report') { // Report
+      return <ReportCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Sector') { // Sector
+      return <SectorCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'System') { // System
+      return <SystemCreationForm
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Threat-Actor') { // Threat-Actor
+      return <ThreatActorCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Tool') { // Tool
+      return <ToolCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    if (status === 'Vulnerability') { // Vulnerability
+      return <VulnerabilityCreationForm defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose} updater={creationUpdater}/>;
+    }
+    return <div>{t('Unsupported')}</div>;
+  };
+
+  return <Dialog PaperProps={{ elevation: 1 }} open={true} onClose={onClose} fullWidth={true}>
+    <DialogTitle>{t('Create an entity')}</DialogTitle>
+    <DialogContent>
+      <Select value={status} onChange={(event) => setStatus(event.target.value)} fullWidth={true}>
+        {availableEntityTypes.map((type) => (
+            <MenuItem key={type.value} value={type.value}>
+              {type.label}
+            </MenuItem>
+        ))}
+      </Select>
+      {renderEntityCreationInterface()}
+    </DialogContent>
+  </Dialog>;
+};
+
+const StixDomainObjectCreation = ({ creationCallback,
+  confidence, defaultCreatedBy, defaultMarkingDefinitions,
+  stixDomainObjectTypes, display, open, speeddial, handleClose, paginationKey, paginationOptions }) => {
+  const classes = useStyles();
+  const [status, setStatus] = useState({ open: false, type: null });
+  const [queryRef, loadQuery] = useQueryLoader(stixDomainObjectCreationAllTypesQuery);
+  const isOpen = speeddial ? open : status.open;
+
+  // In speed dial mode the open/close is handled by a parent
+  // So we need to load only once directly
+  if (speeddial && open && !queryRef) {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }
+
+  const stateHandleOpen = () => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+    setStatus({ open: true, type: null });
+  };
+  const stateHandleClose = () => setStatus({ open: false, type: null });
+  const creationUpdater = (store, rootField) => {
+    const payload = store.getRootField(rootField);
+    if (creationCallback) {
+      creationCallback(payload);
+    } else {
+      const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+      const container = store.getRoot();
+      sharedUpdater(
+        store,
+        container.getDataID(),
+        paginationOptions,
+        paginationKey || 'Pagination_stixDomainObjects',
+        newEdge,
+      );
+    }
+    if (speeddial) {
+      handleClose();
+    } else {
+      stateHandleClose();
+    }
+  };
+
+  return (
+      <div style={{ display: display ? 'block' : 'none' }}>
+        {!speeddial && (
+            <Fab onClick={stateHandleOpen} color="secondary" aria-label="Add" className={classes.createButton}>
+              <Add />
+            </Fab>
+        )}
+        {isOpen && queryRef && (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <StixDomainPanel queryRef={queryRef}
+                               confidence={confidence} defaultCreatedBy={defaultCreatedBy}
+                               defaultMarkingDefinitions={defaultMarkingDefinitions}
+                               stixDomainObjectTypes={stixDomainObjectTypes}
+                               creationUpdater={creationUpdater}
+                               onClose={speeddial ? handleClose : stateHandleClose}
+              />
+            </React.Suspense>
+        )}
+      </div>
+  );
+};
+
+export default StixDomainObjectCreation;

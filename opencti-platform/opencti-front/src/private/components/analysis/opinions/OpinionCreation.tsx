@@ -3,10 +3,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import Drawer from '@mui/material/Drawer';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -14,6 +10,7 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -82,6 +79,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 export const opinionCreationMutation = graphql`
   mutation OpinionCreationMutation($input: OpinionAddInput!) {
     opinionAdd(input: $input) {
+      id
+      entity_type
+      opinion
+      explanation
       ...OpinionLine_node
     }
   }
@@ -98,45 +99,39 @@ interface OpinionAddInput {
 }
 
 interface OpinionCreationProps {
-  contextual?: boolean
-  display?: boolean
-  inputValue?: string
   paginationOptions: OpinionsLinesPaginationQuery$variables
 }
 
-const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
-  contextual,
-  display,
-  inputValue,
-  paginationOptions,
-}) => {
+interface OpinionFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: Option
+  defaultMarkingDefinitions?: Option[]
+  defaultConfidence?: number
+}
+
+export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({ updater, onReset, onCompleted,
+  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-
   const basicShape = {
     opinion: Yup.string().required(t('This field is required')),
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
   };
   const opinionValidator = useSchemaCreationValidation('Opinion', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
   const initialValues: OpinionAddInput = {
-    opinion: inputValue || '',
+    opinion: '',
     explanation: '',
-    confidence: 75,
-    createdBy: '' as unknown as Option,
-    objectMarking: [],
+    confidence: defaultConfidence ?? 75,
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
   };
 
   const [commit] = useMutation(opinionCreationMutation);
-
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     {
@@ -158,12 +153,11 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
       variables: {
         input: finalValues,
       },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_opinions',
-        paginationOptions,
-        'opinionAdd',
-      ),
+      updater: (store) => {
+        if (updater) {
+          updater(store, 'opinionAdd');
+        }
+      },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -171,200 +165,134 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
 
-  const fields = (
-    setFieldValue: (
-      field: string,
-      value: unknown,
-      shouldValidate?: boolean | undefined
-    ) => void,
-    values: OpinionAddInput,
-  ) => (
-    <>
-      <OpenVocabField
-        label={t('Opinion')}
-        type="opinion_ov"
-        name="opinion"
-        onChange={(name, value) => setFieldValue(name, value)}
-        containerStyle={fieldSpacingContainerStyle}
-        multiple={false}
-      />
-      <Field
-        component={MarkDownField}
-        name="explanation"
-        label={t('Explanation')}
-        fullWidth={true}
-        multiline={true}
-        rows="4"
-        style={{ marginTop: 20 }}
-      />
-      <ConfidenceField
-        name="confidence"
-        label={t('Confidence')}
-        fullWidth={true}
-        containerStyle={fieldSpacingContainerStyle}
-      />
-      <CreatedByField
-        name="createdBy"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-      />
-      <ObjectLabelField
-        name="objectLabel"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-        values={values.objectLabel}
-      />
-      <ObjectMarkingField
-        name="objectMarking"
-        style={fieldSpacingContainerStyle}
-      />
-      <ExternalReferencesField
-        name="externalReferences"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-        values={values.externalReferences}
-      />
-    </>
+  return <Formik<OpinionAddInput>
+      initialValues={initialValues}
+      validationSchema={opinionValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <OpenVocabField
+              label={t('Opinion')}
+              type="opinion_ov"
+              name="opinion"
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={false}
+          />
+          <Field
+              component={MarkDownField}
+              name="explanation"
+              label={t('Explanation')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+              name="confidence"
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}>
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}>
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_opinions',
+    paginationOptions,
+    'opinionAdd',
   );
 
-  const renderClassic = () => {
-    return (
+  return (
       <div>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
+        <Fab onClick={handleOpen}
+            color="secondary"
+            aria-label="Add"
+            className={classes.createButton}>
+          <Add/>
         </Fab>
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
+        <Drawer open={open} anchor="right"
+            elevation={1}
+            sx={{ zIndex: 1202 }}
+            classes={{ paper: classes.drawerPaper }}
+            onClose={handleClose}>
           <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
+            <IconButton aria-label="Close"
+                className={classes.closeButton}
+                onClick={handleClose}
+                size="large"
+                color="primary">
+              <Close fontSize="small" color="primary"/>
             </IconButton>
-            <Typography variant="h6">{t('Create an opinion')}</Typography>
+            <Typography variant="h6">{t('Create a opinions')}</Typography>
           </div>
           <div className={classes.container}>
-            <Formik<OpinionAddInput>
-              initialValues={initialValues}
-              validationSchema={opinionValidator}
-              onSubmit={onSubmit}
-              onReset={onReset}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  {fields(setFieldValue, values)}
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
+            <OpinionCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
           </div>
         </Drawer>
       </div>
-    );
-  };
-  const renderContextual = () => {
-    return (
-      <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButtonContextual}
-        >
-          <Add />
-        </Fab>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          PaperProps={{ elevation: 1 }}
-        >
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={opinionValidator}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form>
-                <DialogTitle>{t('Create an opinion')}</DialogTitle>
-                <DialogContent>
-                  {fields(setFieldValue, values)}
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </Dialog>
-      </div>
-    );
-  };
-
-  if (contextual) {
-    return renderContextual();
-  }
-  return renderClassic();
+  );
 };
 
 export default OpinionCreation;

@@ -344,7 +344,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                         <div style={{ marginLeft: 10 }}>
                           <ItemMarkings
                             markingDefinitionsEdges={
-                              stixCoreObject.objectMarking.edges
+                              stixCoreObject.objectMarking?.edges ?? []
                             }
                             limit={1}
                           />

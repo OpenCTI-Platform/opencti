@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { SimpleFileUpload } from 'formik-mui';
 import Drawer from '@mui/material/Drawer';
@@ -11,6 +11,7 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import Fab from '@mui/material/Fab';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
@@ -75,6 +76,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const incidentMutation = graphql`
   mutation IncidentCreationCaseMutation($input: CaseAddInput!) {
     caseAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
       ...IncidentLineCase_node
     }
   }
@@ -94,24 +99,26 @@ interface FormikCaseAddInput {
   externalReferences: { value: string }[]
 }
 
-const IncidentCreation = ({
-  paginationOptions,
-}: {
-  paginationOptions: IncidentsLinesCasesPaginationQuery$variables;
-}) => {
+interface IncidentFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultConfidence?: number,
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+}
+
+export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater, onReset, onCompleted,
+  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState<boolean>(false);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const caseValidator = useSchemaCreationValidation('Case', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const [commit] = useMutation(incidentMutation);
+
   const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
@@ -136,170 +143,185 @@ const IncidentCreation = ({
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_incidents_cases',
-          paginationOptions,
-          'caseAdd',
-        );
+        if (updater) {
+          updater(store, 'caseAdd');
+        }
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
+
+  return <Formik<FormikCaseAddInput>
+      initialValues={{
+        name: '',
+        confidence: defaultConfidence ?? 75,
+        description: '',
+        severity: '',
+        priority: '',
+        createdBy: defaultCreatedBy ?? undefined,
+        objectMarking: defaultMarkingDefinitions ?? [],
+        objectAssignee: [],
+        objectLabel: [],
+        externalReferences: [],
+        file: undefined,
+      }}
+      validationSchema={caseValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              detectDuplicate={['Case']}
+          />
+          <OpenVocabField
+              label={t('Severity')}
+              type="case_severity_ov"
+              name="severity"
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+          />
+          <OpenVocabField
+              label={t('Priority')}
+              type="case_priority_ov"
+              name="priority"
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+          />
+          <ConfidenceField
+              name="confidence"
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+          />
+          <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={fieldSpacingContainerStyle}
+          />
+          <ObjectAssigneeField
+              name="objectAssignee"
+              style={fieldSpacingContainerStyle}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <Field
+              component={SimpleFileUpload}
+              name="file"
+              label={t('Associated file')}
+              FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+              InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+              InputProps={{ fullWidth: true, variant: 'standard' }}
+              fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsLinesCasesPaginationQuery$variables }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState<boolean>(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_incidents_cases',
+    paginationOptions,
+    'caseAdd',
+  );
+
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
+      <Fab onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a case (incident)')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<FormikCaseAddInput>
-            initialValues={{
-              name: '',
-              confidence: 75,
-              description: '',
-              severity: '',
-              priority: '',
-              createdBy: undefined,
-              objectMarking: [],
-              objectAssignee: [],
-              objectLabel: [],
-              externalReferences: [],
-              file: undefined,
-            }}
-            validationSchema={caseValidator}
-            onSubmit={onSubmit}
-            onReset={handleClose}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                  detectDuplicate={['Case']}
-                />
-                <OpenVocabField
-                  label={t('Severity')}
-                  type="case_severity_ov"
-                  name="severity"
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  containerStyle={fieldSpacingContainerStyle}
-                />
-                <OpenVocabField
-                  label={t('Priority')}
-                  type="case_priority_ov"
-                  name="priority"
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  containerStyle={fieldSpacingContainerStyle}
-                />
-                <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
-                  containerStyle={fieldSpacingContainerStyle}
-                />
-                <Field
-                  component={MarkDownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={fieldSpacingContainerStyle}
-                />
-                <ObjectAssigneeField
-                  name="objectAssignee"
-                  style={fieldSpacingContainerStyle}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={fieldSpacingContainerStyle}
-                />
-                <ExternalReferencesField
-                  name="externalReferences"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.externalReferences}
-                />
-                <Field
-                  component={SimpleFileUpload}
-                  name="file"
-                  label={t('Associated file')}
-                  FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-                  InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                  InputProps={{ fullWidth: true, variant: 'standard' }}
-                  fullWidth={true}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <CaseCreationForm
+              updater={updater}
+              onCompleted={() => handleClose()}
+              onReset={onReset}
+          />
         </div>
       </Drawer>
     </div>

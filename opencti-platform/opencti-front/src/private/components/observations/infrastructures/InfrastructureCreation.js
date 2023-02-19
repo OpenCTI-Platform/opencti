@@ -9,7 +9,6 @@ import { Add, Close } from '@mui/icons-material';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
@@ -26,6 +25,7 @@ import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -73,26 +73,19 @@ const useStyles = makeStyles((theme) => ({
 const infrastructureMutation = graphql`
   mutation InfrastructureCreationMutation($input: InfrastructureAddInput!) {
     infrastructureAdd(input: $input) {
+      id
+      name
+      entity_type
+      description
       ...InfrastructureLine_node
     }
   }
 `;
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_infrastructures',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-const InfrastructureCreation = ({ paginationOptions }) => {
+export const InfrastructureCreationForm = ({ updater, onReset, onCompleted,
+  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -104,11 +97,6 @@ const InfrastructureCreation = ({ paginationOptions }) => {
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   };
   const infrastructureValidator = useSchemaCreationValidation('Infrastructure', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(
       {
@@ -129,15 +117,9 @@ const InfrastructureCreation = ({ paginationOptions }) => {
         input: adaptedValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('infrastructureAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
-        );
+        if (updater) {
+          updater(store, 'infrastructureAdd');
+        }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -147,93 +129,61 @@ const InfrastructureCreation = ({ paginationOptions }) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
 
-  return (
-    <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">
-            {t('Create an infrastructure')}
-          </Typography>
-        </div>
-        <div className={classes.container}>
-          <Formik
-            initialValues={{
-              name: '',
-              infrastructure_types: [],
-              confidence: 75,
-              description: '',
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
-              externalReferences: [],
-              first_seen: null,
-              last_seen: null,
-              killChainPhases: [],
-            }}
-            validationSchema={infrastructureValidator}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
+  return <Formik
+      initialValues={{
+        name: '',
+        infrastructure_types: [],
+        confidence: defaultConfidence ?? 75,
+        description: '',
+        createdBy: defaultCreatedBy ?? '',
+        objectMarking: defaultMarkingDefinitions ?? [],
+        objectLabel: [],
+        externalReferences: [],
+        first_seen: null,
+        last_seen: null,
+        killChainPhases: [],
+      }}
+      validationSchema={infrastructureValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
                   component={TextField}
                   variant="standard"
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
                   detectDuplicate={['Infrastructure']}
-                />
-                <OpenVocabField
+              />
+              <OpenVocabField
                   label={t('Infrastructure types')}
                   type="infrastructure-type-ov"
                   name="infrastructure_types"
                   containerStyle={fieldSpacingContainerStyle}
                   multiple={true}
                   onChange={(name, value) => setFieldValue(name, value)}
-                />
-                <ConfidenceField
+              />
+              <ConfidenceField
                   name="confidence"
                   label={t('Confidence')}
                   fullWidth={true}
                   containerStyle={{ width: '100%', marginTop: 20 }}
-                />
-                <Field
+              />
+              <Field
                   component={DateTimePickerField}
                   name="first_seen"
                   TextFieldProps={{
@@ -242,8 +192,8 @@ const InfrastructureCreation = ({ paginationOptions }) => {
                     fullWidth: true,
                     style: { marginTop: 20 },
                   }}
-                />
-                <Field
+              />
+              <Field
                   component={DateTimePickerField}
                   name="last_seen"
                   TextFieldProps={{
@@ -252,12 +202,12 @@ const InfrastructureCreation = ({ paginationOptions }) => {
                     fullWidth: true,
                     style: { marginTop: 20 },
                   }}
-                />
-                <KillChainPhasesField
+              />
+              <KillChainPhasesField
                   name="killChainPhases"
                   style={fieldSpacingContainerStyle}
-                />
-                <Field
+              />
+              <Field
                   component={MarkDownField}
                   name="description"
                   label={t('Description')}
@@ -265,50 +215,100 @@ const InfrastructureCreation = ({ paginationOptions }) => {
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20 }}
-                />
-                <CreatedByField
+              />
+              <CreatedByField
                   name="createdBy"
                   style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
+              />
+              <ObjectLabelField
                   name="objectLabel"
                   style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.objectLabel}
-                />
-                <ObjectMarkingField
+              />
+              <ObjectMarkingField
                   name="objectMarking"
                   style={fieldSpacingContainerStyle}
-                />
-                <ExternalReferencesField
+              />
+              <ExternalReferencesField
                   name="externalReferences"
                   style={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                   values={values.externalReferences}
-                />
-                <div className={classes.buttons}>
+              />
+              <div className={classes.buttons}>
                   <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                      {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
+                      variant="contained"
+                      color="secondary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                      {t('Create')}
                   </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+              </div>
+          </Form>
+      )}
+  </Formik>;
+};
+
+const InfrastructureCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
+
+  const updater = (store) => insertNode(
+    store,
+    'Pagination_infrastructures',
+    paginationOptions,
+    'infrastructureAdd',
+  );
+
+  return (
+    <div>
+      <Fab onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}>
+        <Add />
+      </Fab>
+      <Drawer open={open}
+        anchor="right"
+        sx={{ zIndex: 1202 }}
+        elevation={1}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}>
+        <div className={classes.header}>
+          <IconButton aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary">
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">
+            {t('Create an infrastructure')}
+          </Typography>
+        </div>
+        <div className={classes.container}>
+            <InfrastructureCreationForm
+                updater={updater}
+                onCompleted={() => handleClose()}
+                onReset={onReset}
+            />
         </div>
       </Drawer>
     </div>

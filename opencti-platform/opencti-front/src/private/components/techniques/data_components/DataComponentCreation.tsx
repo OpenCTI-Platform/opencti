@@ -11,9 +11,7 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Dialog } from '@mui/material';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -85,6 +83,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const dataComponentMutation = graphql`
   mutation DataComponentCreationMutation($input: DataComponentAddInput!) {
     dataComponentAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
       ...DataComponentLine_node
     }
   }
@@ -100,44 +102,36 @@ interface DataComponentAddInput {
   confidence: number
 }
 
-const DataComponentCreation: FunctionComponent<{
-  contextual?: boolean,
-  display?: boolean,
-  inputValue?: string,
-  paginationOptions: DataComponentsLinesPaginationQuery$variables }> = ({
-  contextual,
-  display,
-  inputValue,
-  paginationOptions,
-}) => {
-  const { t } = useFormatter();
+interface DataComponentFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  inputValue?: string
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+}
+
+export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps> = ({ updater, onReset, inputValue, onCompleted,
+  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
-
-  const [open, setOpen] = useState(false);
-
+  const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
   };
   const dataComponentValidator = useSchemaCreationValidation('Data-Component', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
   const initialValues: DataComponentAddInput = {
     name: inputValue || '',
     description: '',
-    createdBy: '' as unknown as Option,
-    objectMarking: [],
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
-    confidence: 75,
+    confidence: defaultConfidence ?? 75,
   };
-
   const [commit] = useMutation(dataComponentMutation);
-
   const onSubmit: FormikConfig<DataComponentAddInput>['onSubmit'] = (
     values: DataComponentAddInput,
     {
@@ -160,12 +154,9 @@ const DataComponentCreation: FunctionComponent<{
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_dataComponents',
-          paginationOptions,
-          'dataComponentAdd',
-        );
+        if (updater) {
+          updater(store, 'dataComponentAdd');
+        }
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -174,147 +165,153 @@ const DataComponentCreation: FunctionComponent<{
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
 
-  const fields = (setFieldValue:
-  (field: string,
-    value: {
-      label?: string;
-      value: string;
-      entity?: { created: string; description: string | null; external_id: string | null; id: string; source_name: string; url: string | null; };
-    }[]
-    , shouldValidate?: (boolean | undefined)) => void, values: DataComponentAddInput) => (
-    <React.Fragment>
-      <Field
-        component={TextField}
-        variant="standard"
-        name="name"
-        label={t('Name')}
-        fullWidth={true}
-        detectDuplicate={['Data-Component']}
-      />
-      <ConfidenceField
-        name="confidence"
-        label={t('Confidence')}
-        fullWidth={true}
-        containerStyle={fieldSpacingContainerStyle}
-      />
-      <Field
-        component={MarkDownField}
-        name="description"
-        label={t('Description')}
-        fullWidth={true}
-        multiline={true}
-        rows="4"
-        style={{ marginTop: 20 }}
-      />
-      <CreatedByField
-        name="createdBy"
-        style={{
-          marginTop: 20,
-          width: '100%',
-        }}
-        setFieldValue={setFieldValue}
-      />
-      <ObjectLabelField
-        name="objectLabel"
-        style={{
-          marginTop: 20,
-          width: '100%',
-        }}
-        setFieldValue={setFieldValue}
-        values={values.objectLabel}
-      />
-      <ObjectMarkingField
-        name="objectMarking"
-        style={{
-          marginTop: 20,
-          width: '100%',
-        }}
-      />
-      <ExternalReferencesField
-        name="externalReferences"
-        style={{
-          marginTop: 20,
-          width: '100%',
-        }}
-        setFieldValue={setFieldValue}
-        values={values.externalReferences}
-      />
-    </React.Fragment>
+  return <Formik<DataComponentAddInput>
+      initialValues={initialValues}
+      validationSchema={dataComponentValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              detectDuplicate={['Data-Component']}
+          />
+          <ConfidenceField
+              name="confidence"
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+          />
+          <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}>
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}>
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const DataComponentCreation: FunctionComponent<{
+  contextual?: boolean,
+  display?: boolean,
+  inputValue?: string,
+  paginationOptions: DataComponentsLinesPaginationQuery$variables }> = ({
+  contextual,
+  display,
+  inputValue,
+  paginationOptions,
+}) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_dataComponents',
+    paginationOptions,
+    'dataComponentAdd',
   );
 
   const renderClassic = () => (
     <div>
-      <Fab
-        onClick={handleOpen}
+      <Fab onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
+      <Drawer open={open} anchor="right"
+        elevation={1} sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a data component')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<DataComponentAddInput>
-            initialValues={initialValues}
-            validationSchema={dataComponentValidator}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                {fields(setFieldValue, values)}
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <DataComponentCreationForm inputValue={inputValue} updater={updater}
+                                  onCompleted={handleClose} onReset={handleClose}/>
         </div>
       </Drawer>
     </div>
@@ -322,55 +319,13 @@ const DataComponentCreation: FunctionComponent<{
 
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButtonContextual}
-      >
+      <Fab onClick={handleOpen} color="secondary" aria-label="Add"
+        className={classes.createButtonContextual}>
         <Add />
       </Fab>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{ elevation: 1 }}
-      >
-        <Formik<DataComponentAddInput>
-          initialValues={initialValues}
-          validationSchema={dataComponentValidator}
-          onSubmit={onSubmit}
-          onReset={onReset}
-        >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <div>
-              <DialogTitle>{t('Create a data component')}</DialogTitle>
-              <DialogContent>
-                {fields(setFieldValue, values)}
-              </DialogContent>
-              <DialogActions classes={{ root: classes.dialogActions }}>
-                <Button
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
-                  {t('Create')}
-                </Button>
-              </DialogActions>
-            </div>
-          )}
-        </Formik>
+      <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+        <DataComponentCreationForm inputValue={inputValue} updater={updater}
+                                   onCompleted={handleClose} onReset={handleClose}/>
       </Dialog>
     </div>
   );

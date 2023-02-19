@@ -4,7 +4,6 @@ import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -13,7 +12,6 @@ import { Add, Close } from '@mui/icons-material';
 import { assoc, pipe, pluck } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
@@ -25,6 +23,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -81,36 +80,24 @@ const useStyles = makeStyles((theme) => ({
 const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
     courseOfActionAdd(input: $input) {
-      ...CourseOfActionLine_node
+        id
+        name
+        description
+        entity_type
+        ...CourseOfActionLine_node
     }
   }
 `;
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_coursesOfAction',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputValue }) => {
+export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCompleted,
+  defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const courseOfActionValidator = useSchemaCreationValidation('Course-Of-Action', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = pipe(
       assoc('createdBy', values.createdBy?.value),
@@ -124,15 +111,9 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('courseOfActionAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
-        );
+        if (updater) {
+          updater(store, 'courseOfActionAdd');
+        }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -142,73 +123,124 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
 
-  const fields = (setFieldValue, values) => (
-    <React.Fragment>
-      <Field
-        component={TextField}
-        variant="standard"
-        name="name"
-        label={t('Name')}
-        fullWidth={true}
-        detectDuplicate={['Course-Of-Action']}
-      />
-      <Field
-        component={MarkDownField}
-        name="description"
-        label={t('Description')}
-        fullWidth={true}
-        multiline={true}
-        rows="4"
-        style={{ marginTop: 20 }}
-      />
-      <CreatedByField
-        name="createdBy"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-      />
-      <ObjectLabelField
-        name="objectLabel"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-        values={values.objectLabel}
-      />
-      <ObjectMarkingField
-        name="objectMarking"
-        style={fieldSpacingContainerStyle}
-      />
-      <ExternalReferencesField
-        name="externalReferences"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-        values={values.externalReferences}
-      />
-    </React.Fragment>
+  return <Formik
+        initialValues={{
+          name: inputValue ?? '',
+          description: '',
+          createdBy: defaultCreatedBy ?? '',
+          objectMarking: defaultMarkingDefinitions ?? [],
+          objectLabel: [],
+          externalReferences: [],
+        }}
+        validationSchema={courseOfActionValidator}
+        onSubmit={onSubmit}
+        onReset={onReset}>
+        {({
+          submitForm,
+          handleReset,
+          isSubmitting,
+          setFieldValue,
+          values,
+        }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                    component={TextField}
+                    variant="standard"
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                    detectDuplicate={['Course-Of-Action']}
+                />
+                <Field
+                    component={MarkDownField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                />
+                <CreatedByField
+                    name="createdBy"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                />
+                <ObjectLabelField
+                    name="objectLabel"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                />
+                <ObjectMarkingField
+                    name="objectMarking"
+                    style={fieldSpacingContainerStyle}
+                />
+                <ExternalReferencesField
+                    name="externalReferences"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
+                />
+                <div className={classes.buttons}>
+                    <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                    >
+                        {t('Cancel')}
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                    >
+                        {t('Create')}
+                    </Button>
+                </div>
+            </Form>
+        )}
+    </Formik>;
+};
+
+const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputValue }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store) => insertNode(
+    store,
+    'Pagination_coursesOfAction',
+    paginationOptions,
+    'courseOfActionAdd',
   );
 
   const renderClassic = () => {
     return (
       <div>
-        <Fab
-          onClick={handleOpen}
+        <Fab onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
         >
           <Add />
         </Fab>
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
+        <Drawer open={open}
+          anchor="right" elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
+          onClose={handleClose}>
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
@@ -224,50 +256,8 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
             </Typography>
           </div>
           <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                description: '',
-                createdBy: '',
-                objectMarking: [],
-                objectLabel: [],
-                externalReferences: [],
-              }}
-              validationSchema={courseOfActionValidator}
-              onSubmit={onSubmit}
-              onReset={onReset}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  {fields(setFieldValue, values)}
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
+              <CourseOfActionCreationForm inputValue={inputValue} updater={updater}
+                                     onCompleted={handleClose} onReset={handleClose}/>
           </div>
         </Drawer>
       </div>
@@ -277,66 +267,17 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButtonContextual}
-        >
+        <Fab onClick={handleOpen}
+          color="secondary" aria-label="Add"
+          className={classes.createButtonContextual}>
           <Add />
         </Fab>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          PaperProps={{ elevation: 1 }}
-        >
-          <Formik
-            initialValues={{
-              name: inputValue,
-              description: '',
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
-              externalReferences: [],
-            }}
-            validationSchema={courseOfActionValidator}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form>
-                <DialogTitle>{t('Create a course of action')}</DialogTitle>
-                <DialogContent>
-                  {fields(setFieldValue, values)}
-                </DialogContent>
-                <DialogActions classes={{ root: classes.dialogActions }}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
+        <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+            <DialogTitle>{t('Create a course of action')}</DialogTitle>
+            <DialogContent>
+                <CourseOfActionCreationForm inputValue={inputValue} updater={updater}
+                                       onCompleted={handleClose} onReset={handleClose}/>
+            </DialogContent>
         </Dialog>
       </div>
     );

@@ -799,26 +799,15 @@ class ReportKnowledgeGraphBar extends Component {
               </div>
             </div>
             {report && (
-              <div
-                style={{
-                  float: 'right',
-                  display: 'flex',
-                  height: '100%',
-                }}
-              >
+              <div style={{ float: 'right', display: 'flex', height: '100%' }}>
                 {onAdd && (
                   <ContainerAddStixCoreObjects
                     containerId={report.id}
                     containerStixCoreObjects={report.objects.edges}
                     knowledgeGraph={true}
                     defaultCreatedBy={report.createdBy ?? null}
-                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map(
-                      (n) => n.node,
-                    )}
-                    targetStixCoreObjectTypes={[
-                      'Stix-Domain-Object',
-                      'Stix-Cyber-Observable',
-                    ]}
+                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map((n) => n.node)}
+                    targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
                     onAdd={onAdd}
                     onDelete={onDelete}
                     confidence={report.confidence}
