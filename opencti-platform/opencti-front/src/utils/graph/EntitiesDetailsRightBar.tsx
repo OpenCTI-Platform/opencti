@@ -8,6 +8,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../components/i18n';
 import EntityDetails from './EntityDetails';
+import RelationshipDetails from './RelationshipDetails';
 
 const useStyles = makeStyles < Theme >((theme) => ({
   drawerPaper: {
@@ -108,9 +109,14 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
           ))}
         </Select>
       </FormControl>
-        <EntityDetails
-          entity={selectedEntity}
+      { (selectedEntity.entity_type === 'uses')
+        && <RelationshipDetails
+          relation={selectedEntity}
         />
+      }
+      <EntityDetails
+        entity={selectedEntity}
+      />
     </Drawer>
   );
 };

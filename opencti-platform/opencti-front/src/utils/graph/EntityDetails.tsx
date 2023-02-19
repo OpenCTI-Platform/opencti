@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
@@ -19,8 +18,6 @@ import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import { truncate } from '../String';
 import type { SelectedLink, SelectedNode } from './EntitiesDetailsRightBar';
-import { EntityDetailsRelationshipQuery } from './__generated__/EntityDetailsRelationshipQuery.graphql';
-import ItemConfidence from '../../components/ItemConfidence';
 
 const useStyles = makeStyles < Theme >(() => ({
   entity: {
@@ -188,71 +185,6 @@ const entityDetailsQuery = graphql`
     }
 `;
 
-const entityDetailsRelationshipQuery = graphql`
-    query EntityDetailsRelationshipQuery($id: String!) {
-        stixCoreRelationship(id: $id) {
-            id
-            entity_type
-            description
-            parent_types
-            start_time
-            stop_time
-            created
-            confidence
-            relationship_type
-            from {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCoreRelationship {
-                    relationship_type
-                }
-            }
-            to {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCoreRelationship {
-                    relationship_type
-                }
-            }
-            created_at
-            createdBy {
-                ... on Identity {
-                    id
-                    name
-                    entity_type
-                }
-            }
-            objectMarking {
-                edges {
-                    node {
-                        id
-                        definition_type
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
-            }
-        }
-    }
-`;
-
 interface EntityDetailsComponentProps {
   queryRef: PreloadedQuery<EntityDetailsQuery>
 }
@@ -344,131 +276,12 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
   );
 };
 
-interface RelationshipDetailsComponentProps {
-  queryRef: PreloadedQuery<EntityDetailsRelationshipQuery>
-}
-const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsComponentProps> = ({ queryRef }) => {
-  const classes = useStyles();
-  const { t, fldt } = useFormatter();
-
-  const entity = usePreloadedQuery<EntityDetailsRelationshipQuery>(entityDetailsRelationshipQuery, queryRef);
-  const { stixCoreRelationship } = entity;
-  console.log(entity);
-
-  return (
-    <div className={classes.entity}>
-      <Typography
-        variant="h3"
-        gutterBottom={false}
-        style={{ marginTop: 15 }}
-      >
-        {t('Relation type')}
-      </Typography>
-      {stixCoreRelationship?.relationship_type}
-      { stixCoreRelationship
-        && <Tooltip title={t('View the item')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      component={Link}
-                      to={`${resolveLink(stixCoreRelationship.entity_type)}/${
-                        stixCoreRelationship.id
-                      }`}
-                      size="large"
-                    >
-                        <InfoOutlined/>
-                    </IconButton>
-                  </span>
-        </Tooltip> }
-      { stixCoreRelationship?.description
-        && <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 15 }}
-          >
-            {t('Description')}
-          </Typography>
-          <ExpandableMarkdown
-            source={ stixCoreRelationship?.description}
-            limit={400}
-          />
-        </div>
-      }
-      { stixCoreRelationship?.objectMarking
-        && <Typography variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 15 }}
-          >
-            {t('Marking')}
-          </Typography>
-            && <ItemMarkings
-              markingDefinitionsEdges={ stixCoreRelationship?.objectMarking.edges}
-              limit={2}
-            />
-      }
-      { stixCoreRelationship?.createdBy
-        && <div>
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 15 }}
-        >
-          {t('Author')}
-        </Typography>
-        <ItemAuthor
-          createdBy={R.propOr(null, 'createdBy', stixCoreRelationship)}
-        />
-      </div>
-      }
-      {stixCoreRelationship?.confidence
-        && <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Confidence level')}
-          </Typography>
-          <ItemConfidence confidence={stixCoreRelationship?.confidence} />
-        </div>
-      }
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        style={{ marginTop: 20 }}
-      >
-        {t('First seen')}
-      </Typography>
-      {fldt(stixCoreRelationship?.start_time)}
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        style={{ marginTop: 20 }}
-      >
-        {t('Last seen')}
-      </Typography>
-      {fldt(stixCoreRelationship?.stop_time)}
-    </div>
-  );
-};
-
 interface EntityDetailsProps {
   entity: SelectedNode | SelectedLink
   queryRef: PreloadedQuery<EntityDetailsQuery>
 }
 
 const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = ({ entity }) => {
-  if (entity.entity_type === 'uses') {
-    const queryRef = useQueryLoading<EntityDetailsRelationshipQuery>(entityDetailsRelationshipQuery, { id: entity.id });
-    return queryRef ? (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <RelationshipDetailsComponent queryRef={queryRef} />
-      </React.Suspense>
-    ) : (
-      <Loader variant={LoaderVariant.inElement} />
-    );
-  }
   const queryRef = useQueryLoading<EntityDetailsQuery>(entityDetailsQuery, { id: entity.id });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
