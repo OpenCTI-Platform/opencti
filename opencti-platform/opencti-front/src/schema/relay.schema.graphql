@@ -7175,7 +7175,7 @@ input StixCoreRelationshipsFiltering {
 
 type StixCoreRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixCoreRelationshipEdge]
+  edges: [StixCoreRelationshipEdge!]!
 }
 
 type StixCoreRelationshipEdge {
