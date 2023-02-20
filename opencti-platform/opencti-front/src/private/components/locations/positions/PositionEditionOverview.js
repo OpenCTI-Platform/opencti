@@ -82,6 +82,8 @@ const positionValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable().max(5000, t('The value is too long')),
   latitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
   longitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
+  street_address: Yup.string().nullable().max(1000, t('The value is too long')),
+  postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
   references: Yup.array().required(t('This field is required')),
   x_opencti_workflow_id: Yup.object(),
 });
@@ -213,6 +215,8 @@ const PositionEditionOverviewComponent = (props) => {
       'description',
       'latitude',
       'longitude',
+      'street_address',
+      'postal_code',
       'createdBy',
       'objectMarking',
       'x_opencti_workflow_id',
@@ -284,6 +288,32 @@ const PositionEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="longitude" />
               }
             />
+            <Field
+              component={TextField}
+              variant="standard"
+              style={{ marginTop: 20 }}
+              name="street_address"
+              label={t('Street address')}
+              fullWidth={true}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="street_address" />
+              }
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              style={{ marginTop: 20 }}
+              name="postal_code"
+              label={t('Postal code')}
+              fullWidth={true}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="postal_code" />
+              }
+            />
             {position.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
@@ -343,6 +373,8 @@ export default createFragmentContainer(PositionEditionOverviewComponent, {
         name
         latitude
         longitude
+        street_address
+        postal_code
         description
         createdBy {
           ... on Identity {

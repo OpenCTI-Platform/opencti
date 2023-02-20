@@ -8,7 +8,6 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,6 +19,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -81,17 +81,9 @@ const positionValidation = (t) => Yup.object().shape({
   longitude: Yup.number()
     .typeError(t('This field must be a number'))
     .nullable(),
+  street_address: Yup.string().nullable().max(1000, t('The value is too long')),
+  postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
 });
-
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_positions',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
 
 const PositionCreation = ({ paginationOptions }) => {
   const classes = useStyles();
@@ -117,15 +109,7 @@ const PositionCreation = ({ paginationOptions }) => {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('positionAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
-        );
+        insertNode(store, 'Pagination_positions', paginationOptions, 'positionAdd');
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -177,6 +161,8 @@ const PositionCreation = ({ paginationOptions }) => {
                 description: '',
                 latitude: '',
                 longitude: '',
+                street_address: '',
+                postal_code: '',
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
@@ -224,6 +210,22 @@ const PositionCreation = ({ paginationOptions }) => {
                     variant="standard"
                     name="longitude"
                     label={t('Longitude')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="street_address"
+                    label={t('Street address')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="postal_code"
+                    label={t('Postal code')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />

@@ -7110,8 +7110,8 @@ interface StixRelationship {
   standard_id: String!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  from: StixObjectOrStixRelationship
-  to: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationship!
+  to: StixObjectOrStixRelationship!
   x_opencti_inferences: [Inference]
   creator: Creator
 }
@@ -7175,7 +7175,7 @@ input StixCoreRelationshipsFiltering {
 
 type StixCoreRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixCoreRelationshipEdge]
+  edges: [StixCoreRelationshipEdge!]!
 }
 
 type StixCoreRelationshipEdge {
@@ -7194,8 +7194,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   standard_id: String!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  from: StixObjectOrStixRelationship
-  to: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationship!
+  to: StixObjectOrStixRelationship!
   spec_version: String!
   x_opencti_inferences: [Inference]
   relationship_type: String!
@@ -7316,8 +7316,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
-  from: StixObjectOrStixRelationship
-  to: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationship!
+  to: StixObjectOrStixRelationship!
   x_opencti_inferences: [Inference]
   relationship_type: String!
   description: String
@@ -7417,8 +7417,8 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
-  from: StixObjectOrStixRelationship
-  to: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationship!
+  to: StixObjectOrStixRelationship!
   x_opencti_inferences: [Inference]
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -7490,8 +7490,8 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
-  from: StixObjectOrStixRelationship
-  to: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationship!
+  to: StixObjectOrStixRelationship!
   x_opencti_inferences: [Inference]
   creator: Creator
 }
