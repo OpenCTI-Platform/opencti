@@ -11,6 +11,7 @@ import { Theme } from '../components/Theme';
 import { rootPublicQuery } from './LoginRoot';
 import PublicStreamLines from '../private/components/data/stream/PublicStreamLines';
 import { LoginRootPublicQuery, LoginRootPublicQuery$data } from './__generated__/LoginRootPublicQuery.graphql';
+import Message from '../components/Message';
 
 const useStyles = makeStyles({
   container: {
@@ -34,10 +35,13 @@ const PublicRootWithStyle = ({ settings }: { settings: LoginRootPublicQuery$data
     : settings.platform_theme_light_logo_login;
 
   return (
-    <div className={classes.container}>
-      <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo} />
-      <PublicStreamLines />
-    </div>
+      <>
+        <Message />
+        <div className={classes.container}>
+          <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo} />
+          <PublicStreamLines />
+        </div>
+      </>
   );
 };
 

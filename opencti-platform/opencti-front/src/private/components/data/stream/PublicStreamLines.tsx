@@ -2,26 +2,24 @@ import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay'
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { toPairs } from 'ramda';
 import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { Stream } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
-import { ListItemSecondaryAction } from '@mui/material';
-import { OpenInNew } from 'mdi-material-ui';
+import { IconButton, ListItemSecondaryAction, Tooltip } from '@mui/material';
+import { OpenInNew, ContentCopy } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import { environment } from '../../../../relay/environment';
 import { PublicStreamLinesQuery } from './__generated__/PublicStreamLinesQuery.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { StreamLineDummy } from './StreamLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
-import { isNotEmptyField } from '../../../../utils/utils';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import { copyToClipboard } from '../../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   bodyItem: {
@@ -112,51 +110,14 @@ const dataColumns: DataColumns = {
     label: 'Filters',
     width: '40%',
     isSortable: false,
-    render: (node, { t, classes }) => {
+    render: (node) => {
       const nodeFilters = JSON.parse(node.filters);
-      return (
-        <>
-          {isNotEmptyField(nodeFilters) && toPairs(nodeFilters).map(([key, filters]) => {
-            const label = `${truncate(
-              t(`filter_${key}`),
-              20,
-            )}`;
-            const currentValues = (
-              <span>
-              {filters.map((n: { value: string }) => (
-                <span key={n.value}>
-                  {n.value && n.value.length > 0
-                    ? truncate(n.value, 15)
-                    : t('No label')}{' '}
-                  {filters.at(-1)?.value !== n.value && (
-                    <code>OR</code>
-                  )}{' '}
-                </span>
-              ))}
-            </span>
-            );
-            return (
-              <span key={key}>
-                <Chip
-                  key={key}
-                  classes={{ root: classes.filter }}
-                  label={
-                    <div>
-                      <strong>{label}</strong>: {currentValues}
-                    </div>
-                  }
-                />
-                {toPairs(nodeFilters).at(-1)?.[0] !== key && (
-                  <Chip
-                    classes={{ root: classes.operator }}
-                    label={t('AND')}
-                  />
-                )}
-            </span>
-            );
-          })}
-        </>
-      );
+      return <FilterIconButton
+          filters={nodeFilters}
+          dataColumns={this}
+          classNameNumber={3}
+          styleNumber={3}
+      />;
     },
   },
 };
@@ -166,17 +127,14 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
   const { t } = useFormatter();
 
   const stream = useFragment(publicStreamLinesFragment, node);
+  const browseClick = () => { window.location.pathname = `/stream/${stream.id}`; };
+  const copyClick = () => { copyToClipboard(t, window.location.origin); };
 
   return (
     <ListItem
       classes={{ root: classes.item }}
-      component={Button}
-      onClick={() => {
-        window.location.pathname = `/stream/${stream.id}`;
-      }}
       color="primary"
-      divider={true}
-    >
+      divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Stream />
       </ListItemIcon>
@@ -184,11 +142,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
         primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(stream, { t, classes })}
               </div>
             ))}
@@ -196,7 +150,20 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
         }
       />
       <ListItemSecondaryAction>
-        <OpenInNew />
+        <Tooltip title={t('Copy uri to clipboard for your OpenCTI synchronizer configuration')}>
+          <span>
+            <IconButton onClick={copyClick} size="large" color="primary">
+              <ContentCopy />
+            </IconButton>
+          </span>
+        </Tooltip>
+        <Tooltip title={t('Access stream directly in your browser')}>
+          <span>
+            <IconButton onClick={browseClick} size="large" color="primary">
+              <OpenInNew />
+            </IconButton>
+          </span>
+        </Tooltip>
       </ListItemSecondaryAction>
     </ListItem>
   );
@@ -210,15 +177,10 @@ const PublicStreamLines = () => {
       <Typography variant="h2" gutterBottom={true}>
         {t('Public stream collections')}
       </Typography>
-      <ListLines
-        dataColumns={dataColumns}
-        secondaryAction={true}
-      >
+      <ListLines dataColumns={dataColumns} secondaryAction={true}>
         <ListLinesContent
-          isLoading={() => {
-          }}
-          hasNext={() => {
-          }}
+          isLoading={() => {}}
+          hasNext={() => {}}
           dataColumns={dataColumns}
           dataList={streamCollections.edges}
           LineComponent={PublicStreamLine}

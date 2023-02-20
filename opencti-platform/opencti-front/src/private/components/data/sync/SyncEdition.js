@@ -3,17 +3,15 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
+import { CheckCircleOutlined, Close, WarningOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -21,10 +19,8 @@ import SwitchField from '../../../../components/SwitchField';
 import { syncCheckMutation, syncStreamCollectionQuery } from './SyncCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
-import SelectField from '../../../../components/SelectField';
 import CreatorField from '../../common/form/CreatorField';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import EnrichedTooltip from '../../../../components/EnrichedTooltip';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -114,6 +110,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
       'ssl_verify',
     ]),
   )(synchronizer);
+  const isStreamAccessible = isNotEmptyField(streams.find((s) => s.id === initialValues.stream_id));
   const handleVerify = (values) => {
     commitMutation({
       mutation: syncCheckMutation,
@@ -191,7 +188,9 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
                      variant="outlined"
                      style={{ position: 'relative' }}>
                 <AlertTitle>
-                  {t('Remote OpenCTI configuration')}
+                  &nbsp;&nbsp;{t('Remote OpenCTI configuration')} {isStreamAccessible ? <CheckCircleOutlined
+                    style={{ fontSize: 22, color: '#4caf50', float: 'left' }}
+                  /> : <WarningOutlined style={{ fontSize: 22, color: '#f44336', float: 'left' }}/>}
                 </AlertTitle>
                 <Tooltip title={t('You need to configure a valid remote OpenCTI. Token is optional to consume public streams')}>
                   <InformationOutline fontSize="small" color="primary" style={{ position: 'absolute', top: 10, right: 18 }}/>
@@ -214,41 +213,17 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
                   style={{ marginTop: 20 }}
                   disabled={true}
                 />
+                <Field
+                    component={TextField}
+                    variant="standard"
+                    name="dd"
+                    label={t('Remote OpenCTI stream ID')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                    value={streams.find((s) => s.id === initialValues.stream_id)?.label ?? '-'}
+                    disabled={true}
+                />
               </Alert>
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="stream_id"
-                label={t('Remote OpenCTI stream ID')}
-                containerstyle={{ marginTop: 20, width: '100%' }}
-                disabled={true}>
-                {streams.map(({ value, label, name, description, filters }) => (
-                  <EnrichedTooltip
-                    key={value}
-                    style={{ overflow: 'hidden' }}
-                    title={
-                      <Grid container spacing={1} style={{ overflow: 'hidden' }}>
-                        <Grid key={name} item xs={12}>
-                          <Typography>{name}</Typography>
-                        </Grid>
-                        <Grid key={description} item xs={12}>
-                          <Typography>{description}</Typography>
-                        </Grid>
-                        <Grid key={filters} item xs={12}>
-                          <FilterIconButton
-                            filters={JSON.parse(filters)}
-                            classNameNumber={3}
-                            styleNumber={3}
-                          />
-                        </Grid>
-                      </Grid>
-                    }
-                    placement="bottom"
-                  >
-                    <MenuItem key={value} value={value}>{label}</MenuItem>
-                  </EnrichedTooltip>
-                ))}
-              </Field>
               <CreatorField
                   name={'user_id'}
                   label={'User responsible for data creation (empty = system)'}

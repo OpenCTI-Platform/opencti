@@ -6,11 +6,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert, Stream, Visibility, VisibilityOffOutlined } from '@mui/icons-material';
+import { MoreVert, Stream } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
-import { Icon } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import StreamPopover from './StreamPopover';
 import inject18n from '../../../../components/i18n';
@@ -63,38 +62,21 @@ class StreamLineLineComponent extends Component {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
     const filters = JSON.parse(node.filters);
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true} button={true}
+                component="a" href={`/stream/${node.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Stream />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              <Icon classes={{ root: classes.itemIcon }}>
-                {node.stream_public ? <Visibility /> : <VisibilityOffOutlined />}
-              </Icon>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.name}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
                 {node.description}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
-              >
-                <code>{node.id}</code>
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stream_live.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.stream_live.width }}>
                 <Chip
                   classes={{ root: classes.chipInList }}
                   color={node.stream_live ? 'success' : 'error'}
@@ -108,14 +90,18 @@ class StreamLineLineComponent extends Component {
                 classNameNumber={3}
                 styleNumber={3}
               />
+              <div className={classes.bodyItem} style={{ width: dataColumns.stream_public.width }}>
+                <Chip
+                    classes={{ root: classes.chipInList }}
+                    variant="outlined"
+                    label={t(node.stream_public ? 'Public' : 'Private')}
+                />
+              </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          <StreamPopover
-            streamCollection={node}
-            paginationOptions={paginationOptions}
-          />
+          <StreamPopover streamCollection={node} paginationOptions={paginationOptions}/>
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -191,17 +177,6 @@ class StreamDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.description.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
               >
                 <Skeleton
                   animation="wave"

@@ -65,12 +65,7 @@ class Stream extends Component {
       },
       description: {
         label: 'Description',
-        width: '15%',
-        isSortable: true,
-      },
-      id: {
-        label: 'Stream ID',
-        width: '15%',
+        width: '25%',
         isSortable: true,
       },
       stream_live: {
@@ -84,7 +79,7 @@ class Stream extends Component {
       },
       stream_public: {
         label: 'Public',
-        width: '5%',
+        width: '10%',
         isSortable: true,
       },
     };
@@ -102,35 +97,22 @@ class Stream extends Component {
           <>
             <div>
               {t('Global streams are available for granted users. Live at')}{' '}
-              <a
-                href="/stream/live"
-                target="_blank"
-                style={{ color: theme.palette.secondary.main }}
-              >
+              <a href="/stream/live" target="_blank" style={{ color: theme.palette.secondary.main }}>
                 <i>/stream/live</i>
               </a>{' '}
               {t('and raw at')}{' '}
-              <a
-                href="/stream"
-                target="_blank"
-                style={{ color: theme.palette.secondary.main }}
-              >
+              <a href="/stream" target="_blank" style={{ color: theme.palette.secondary.main }}>
                 <i>/stream</i>
               </a>
             </div>
             <div>
               {t('Public streams are available for anyone at')}{' '}
-              <a
-                href="/public"
-                target="_blank"
-                style={{ color: theme.palette.secondary.main }}
-              >
+              <a href="/public" target="_blank" style={{ color: theme.palette.secondary.main }}>
                 <i>/public</i>
               </a>
             </div>
           </>
-        }
-      >
+        }>
         <QueryRenderer
           query={StreamLinesQuery}
           variables={{ count: 25, ...paginationOptions }}

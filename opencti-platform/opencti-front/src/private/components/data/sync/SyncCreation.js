@@ -255,6 +255,43 @@ const SyncCreation = ({ paginationOptions }) => {
                            disabled={streams.length > 0}
                            style={{ marginTop: 20, width: '100%' }}
                     />
+                    {streams.length > 0 && (
+                        <Field
+                            component={SelectField}
+                            variant="standard"
+                            name="stream_id"
+                            label={t('Remote OpenCTI stream ID')}
+                            inputProps={{ name: 'stream_id', id: 'stream_id' }}
+                            containerstyle={{ marginTop: 20, width: '100%' }}>
+                          {streams.map(({ value, label, name, description, filters }) => (
+                              <EnrichedTooltip
+                                  key={value}
+                                  value={value}
+                                  style={{ overflow: 'hidden' }}
+                                  title={
+                                    <Grid container spacing={1} style={{ overflow: 'hidden' }}>
+                                      <Grid key={name} item xs={12}>
+                                        <Typography>{name}</Typography>
+                                      </Grid>
+                                      <Grid key={description} item xs={12}>
+                                        <Typography>{description}</Typography>
+                                      </Grid>
+                                      <Grid key={filters} item xs={12}>
+                                        <FilterIconButton
+                                            filters={JSON.parse(filters)}
+                                            classNameNumber={3}
+                                            styleNumber={3}
+                                        />
+                                      </Grid>
+                                    </Grid>
+                                  }
+                                  placement="bottom"
+                              >
+                                <MenuItem key={value} value={value}>{label}</MenuItem>
+                              </EnrichedTooltip>
+                          ))}
+                        </Field>
+                    )}
                     <div className={classes.buttons}>
                       {streams.length === 0 && (
                         <Button
@@ -282,43 +319,6 @@ const SyncCreation = ({ paginationOptions }) => {
                       )}
                     </div>
                   </Alert>
-                  {streams.length > 0 && (
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="stream_id"
-                      label={t('Remote OpenCTI stream ID')}
-                      inputProps={{ name: 'stream_id', id: 'stream_id' }}
-                      containerstyle={{ marginTop: 20, width: '100%' }}>
-                      {streams.map(({ value, label, name, description, filters }) => (
-                        <EnrichedTooltip
-                          key={value}
-                          value={value}
-                          style={{ overflow: 'hidden' }}
-                          title={
-                            <Grid container spacing={1} style={{ overflow: 'hidden' }}>
-                              <Grid key={name} item xs={12}>
-                                <Typography>{name}</Typography>
-                              </Grid>
-                              <Grid key={description} item xs={12}>
-                                <Typography>{description}</Typography>
-                              </Grid>
-                              <Grid key={filters} item xs={12}>
-                                <FilterIconButton
-                                  filters={JSON.parse(filters)}
-                                  classNameNumber={3}
-                                  styleNumber={3}
-                                />
-                              </Grid>
-                            </Grid>
-                          }
-                          placement="bottom"
-                        >
-                          <MenuItem key={value} value={value}>{label}</MenuItem>
-                        </EnrichedTooltip>
-                      ))}
-                    </Field>
-                  )}
                   <CreatorField
                     name={'user_id'}
                     label={'User responsible for data creation (empty = system)'}

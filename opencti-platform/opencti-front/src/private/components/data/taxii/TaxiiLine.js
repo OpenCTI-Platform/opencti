@@ -82,16 +82,10 @@ class TaxiiLineLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.name}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
                 {node.description}
               </div>
               <FilterIconButton
@@ -155,10 +149,7 @@ class TaxiiDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
@@ -166,10 +157,7 @@ class TaxiiDummyComponent extends Component {
                   height="100%"
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
@@ -177,10 +165,7 @@ class TaxiiDummyComponent extends Component {
                   height="100%"
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
