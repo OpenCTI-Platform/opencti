@@ -65,8 +65,8 @@ const styles = (theme) => ({
   },
 });
 
-const responsiblePartiesPopoverMutation = graphql`
-  mutation ResponsiblePartiesPopoverMutation(
+const informationTypesPopoverMutation = graphql`
+  mutation InformationTypesPopoverMutation(
     $input: OscalResponsiblePartyAddInput
   ) {
     createOscalResponsibleParty(input: $input) {
@@ -105,7 +105,7 @@ class InformationTypesPopover extends Component {
       R.dissoc("marking")
     )(values);
     commitMutation({
-      mutation: responsiblePartiesPopoverMutation,
+      mutation: informationTypesPopoverMutation,
       variables: {
         input: finalValues,
       },
