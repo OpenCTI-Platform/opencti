@@ -140,16 +140,18 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
         </div>
       }
       { stixCoreRelationship?.objectMarking
-        && <Typography variant="h3"
-                       gutterBottom={true}
-                       style={{ marginTop: 15 }}
-        >
-          {t('Marking')}
-        </Typography>
-        && <ItemMarkings
+        && <div>
+          <Typography variant="h3"
+                      gutterBottom={true}
+                      style={{ marginTop: 15 }}
+          >
+            {t('Marking')}
+          </Typography>
+          <ItemMarkings
           markingDefinitionsEdges={ stixCoreRelationship?.objectMarking.edges}
           limit={2}
         />
+        </div>
       }
       { stixCoreRelationship?.createdBy
         && <div>

@@ -243,7 +243,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
         />
         </div>
       }
-      { (stixCoreObject?.objectMarking?.edges.length && stixCoreObject?.objectMarking?.edges.length > 0)
+      { (stixCoreObject?.objectMarking?.edges && stixCoreObject?.objectMarking?.edges.length > 0)
        && <div>
         <Typography variant="h3"
         gutterBottom={true}
