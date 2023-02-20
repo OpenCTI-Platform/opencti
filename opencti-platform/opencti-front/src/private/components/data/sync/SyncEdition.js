@@ -1,23 +1,28 @@
-import React from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import React, { useEffect, useState } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
+import { CheckCircleOutlined, Close, WarningOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
-import inject18n from '../../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
-import { syncCheckMutation } from './SyncCreation';
+import { syncCheckMutation, syncStreamCollectionQuery } from './SyncCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
+import CreatorField from '../../common/form/CreatorField';
+import { isNotEmptyField } from '../../../../utils/utils';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 0px 20px 60px',
@@ -51,7 +56,15 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
-});
+  alert: {
+    width: '100%',
+    marginTop: 20,
+  },
+  message: {
+    width: '100%',
+    overflow: 'hidden',
+  },
+}));
 
 const syncMutationFieldPatch = graphql`
   mutation SyncEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
@@ -66,7 +79,7 @@ const syncMutationFieldPatch = graphql`
 const syncValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   uri: Yup.string().required(t('This field is required')),
-  token: Yup.string().required(t('This field is required')),
+  token: Yup.string(),
   stream_id: Yup.string().required(t('This field is required')),
   current_state: Yup.date()
     .nullable()
@@ -74,23 +87,30 @@ const syncValidation = (t) => Yup.object().shape({
   listen_deletion: Yup.bool(),
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
+  user_id: Yup.object().nullable(),
 });
 
-const SyncEditionContainer = (props) => {
-  const { t, classes, handleClose, synchronizer } = props;
+const SyncEditionContainer = ({ handleClose, synchronizer }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const [streams, setStreams] = useState([]);
+  const relatedUser = synchronizer.user ? { label: synchronizer.user.name, value: synchronizer.user.id } : '';
   const initialValues = R.pipe(
     R.assoc('current_state', buildDate(synchronizer.current_state)),
+    R.assoc('user_id', relatedUser),
     R.pick([
       'name',
       'uri',
       'token',
       'stream_id',
+      'user_id',
       'listen_deletion',
       'no_dependencies',
       'current_state',
       'ssl_verify',
     ]),
   )(synchronizer);
+  const isStreamAccessible = isNotEmptyField(streams.find((s) => s.id === initialValues.stream_id));
   const handleVerify = (values) => {
     commitMutation({
       mutation: syncCheckMutation,
@@ -105,19 +125,37 @@ const SyncEditionContainer = (props) => {
     });
   };
   const handleSubmitField = (name, value) => {
-    syncValidation(props.t)
+    const parsedValue = name === 'user_id' ? value.value : value;
+    syncValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: syncMutationFieldPatch,
           variables: {
-            id: props.synchronizer.id,
-            input: { key: name, value: value || '' },
+            id: synchronizer.id,
+            input: { key: name, value: parsedValue || '' },
           },
         });
       })
       .catch(() => false);
   };
+
+  const handleGetStreams = ({ uri, token, ssl_verify }) => {
+    const args = { uri, token, ssl_verify: ssl_verify ?? false };
+    fetchQuery(syncStreamCollectionQuery, args).toPromise().then((result) => {
+      const resultStreams = [...result.synchronizerFetch.map((s) => ({ value: s.id, label: s.name, ...s }))];
+      setStreams(resultStreams);
+    }).catch(() => {
+      setStreams([]);
+    });
+  };
+
+  useEffect(() => {
+    if (initialValues) {
+      handleGetStreams(initialValues);
+    }
+  }, []);
+
   return (
     <div>
       <div className={classes.header}>
@@ -126,18 +164,15 @@ const SyncEditionContainer = (props) => {
           className={classes.closeButton}
           onClick={handleClose}
           size="large"
-          color="primary"
-        >
+          color="primary">
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6">{t('Update a synchronizer')}</Typography>
       </div>
       <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
+        <Formik enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={syncValidation(t)}
-        >
+          validationSchema={syncValidation(t)}>
           {({ values }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -148,32 +183,52 @@ const SyncEditionContainer = (props) => {
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="uri"
-                label={t('Remote OpenCTI URL')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="token"
-                label={t('Remote OpenCTI token')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="stream_id"
-                label={t('Remote OpenCTI stream ID')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
+              <Alert icon={false} classes={{ root: classes.alert, message: classes.message }}
+                     severity="warning"
+                     variant="outlined"
+                     style={{ position: 'relative' }}>
+                <AlertTitle>
+                  &nbsp;&nbsp;{t('Remote OpenCTI configuration')} {isStreamAccessible ? <CheckCircleOutlined
+                    style={{ fontSize: 22, color: '#4caf50', float: 'left' }}
+                  /> : <WarningOutlined style={{ fontSize: 22, color: '#f44336', float: 'left' }}/>}
+                </AlertTitle>
+                <Tooltip title={t('You need to configure a valid remote OpenCTI. Token is optional to consume public streams')}>
+                  <InformationOutline fontSize="small" color="primary" style={{ position: 'absolute', top: 10, right: 18 }}/>
+                </Tooltip>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="uri"
+                  label={t('Remote OpenCTI URL')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  disabled={true}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="token"
+                  label={t('Remote OpenCTI token')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  disabled={true}
+                />
+                <Field
+                    component={TextField}
+                    variant="standard"
+                    name="dd"
+                    label={t('Remote OpenCTI stream ID')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                    value={streams.find((s) => s.id === initialValues.stream_id)?.label ?? '-'}
+                    disabled={true}
+                />
+              </Alert>
+              <CreatorField
+                  name={'user_id'}
+                  label={'User responsible for data creation (empty = system)'}
+                  containerStyle={{ marginTop: 20, width: '100%' }}
+                  onChange={handleSubmitField}
               />
               <Field
                 component={DateTimePickerField}
@@ -226,14 +281,6 @@ const SyncEditionContainer = (props) => {
   );
 };
 
-SyncEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  synchronizer: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
 const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
   synchronizer: graphql`
     fragment SyncEdition_synchronizer on Synchronizer {
@@ -246,11 +293,12 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       no_dependencies
       current_state
       ssl_verify
+      user {
+        id
+        name
+      }
     }
   `,
 });
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(SyncEditionFragment);
+export default SyncEditionFragment;

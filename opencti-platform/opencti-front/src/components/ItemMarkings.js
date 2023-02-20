@@ -5,8 +5,8 @@ import { styled, useTheme } from '@mui/material/styles';
 import Badge from '@mui/material/Badge';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
+import EnrichedTooltip from './EnrichedTooltip';
 
 const useStyles = makeStyles(() => ({
   chip: {
@@ -78,15 +78,6 @@ const inlineStylesLight = {
     color: '#ffffff',
   },
 };
-
-const EnrichedTooltip = styled(({ className, ...props }) => (
-  <Tooltip {...props} classes={{ popper: className }} />
-))(() => ({
-  [`& .${tooltipClasses.tooltip}`]: {
-    width: 400,
-    padding: '20px 20px 10px 20px',
-  },
-}));
 
 const StyledBadge = styled(Badge)(() => ({
   '& .MuiBadge-badge': {
@@ -208,9 +199,9 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
   return (
     <EnrichedTooltip
       title={
-        <Grid container={true} spacing={3}>
+        <Grid container spacing={3}>
           {markings.map((markingDefinition) => (
-            <Grid key={markingDefinition.id} item={true} xs={6}>
+            <Grid key={markingDefinition.id} xs={6}>
               {renderChip(markingDefinition, true)}
             </Grid>
           ))}

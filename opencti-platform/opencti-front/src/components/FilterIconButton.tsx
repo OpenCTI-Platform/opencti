@@ -167,9 +167,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
                 disabledPossible ? Object.keys(filters).length === 1 : undefined
               }
               onDelete={
-                handleRemoveFilter
-                  ? () => handleRemoveFilter?.(filterKey)
-                  : undefined
+                handleRemoveFilter ? () => handleRemoveFilter(filterKey) : undefined
               }
             />
             {lastKey !== filterKey && (

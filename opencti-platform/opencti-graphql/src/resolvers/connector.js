@@ -3,6 +3,7 @@ import {
   connectorDelete,
   connectorForWork,
   connectorsForExport,
+  fetchRemoteStreams,
   findAllSync,
   findSyncById,
   loadConnectorById,
@@ -47,6 +48,7 @@ const connectorResolvers = {
     work: (_, { id }, context) => findById(context, context.user, id),
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id),
     synchronizers: (_, args, context) => findAllSync(context, context.user, args),
+    synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
   },
   Connector: {
     works: (connector, args, context) => worksForConnector(context, context.user, connector.id, args),

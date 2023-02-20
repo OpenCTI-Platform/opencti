@@ -15158,10 +15158,11 @@ export type Query = {
   stixSightingRelationshipsNumber?: Maybe<Number>;
   stixSightingRelationshipsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   streamCollection?: Maybe<StreamCollection>;
-  streamCollections?: Maybe<StreamCollectionConnection>;
+  streamCollections: StreamCollectionConnection;
   subType?: Maybe<SubType>;
   subTypes: SubTypeConnection;
   synchronizer?: Maybe<Synchronizer>;
+  synchronizerFetch?: Maybe<Array<Maybe<RemoteStreamCollection>>>;
   synchronizers?: Maybe<SynchronizerConnection>;
   system?: Maybe<System>;
   systems?: Maybe<SystemConnection>;
@@ -16870,6 +16871,7 @@ export type QueryStreamCollectionArgs = {
 
 export type QueryStreamCollectionsArgs = {
   after?: InputMaybe<Scalars['ID']>;
+  filters?: InputMaybe<Array<InputMaybe<StreamCollectionFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<StreamCollectionOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -16895,6 +16897,11 @@ export type QuerySubTypesArgs = {
 
 export type QuerySynchronizerArgs = {
   id: Scalars['String'];
+};
+
+
+export type QuerySynchronizerFetchArgs = {
+  input?: InputMaybe<SynchronizerFetchInput>;
 };
 
 
@@ -17436,6 +17443,14 @@ export type RegisterConnectorInput = {
   only_contextual?: InputMaybe<Scalars['Boolean']>;
   scope?: InputMaybe<Array<Scalars['String']>>;
   type: ConnectorType;
+};
+
+export type RemoteStreamCollection = {
+  __typename?: 'RemoteStreamCollection';
+  description?: Maybe<Scalars['String']>;
+  filters?: Maybe<Scalars['String']>;
+  id: Scalars['ID'];
+  name?: Maybe<Scalars['String']>;
 };
 
 export type Report = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
@@ -20644,6 +20659,8 @@ export type StreamCollection = {
   groups?: Maybe<Array<Maybe<Group>>>;
   id: Scalars['ID'];
   name?: Maybe<Scalars['String']>;
+  stream_live?: Maybe<Scalars['Boolean']>;
+  stream_public?: Maybe<Scalars['Boolean']>;
 };
 
 export type StreamCollectionAddInput = {
@@ -20651,11 +20668,13 @@ export type StreamCollectionAddInput = {
   filters?: InputMaybe<Scalars['String']>;
   groups?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   name: Scalars['String'];
+  stream_live?: InputMaybe<Scalars['Boolean']>;
+  stream_public?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type StreamCollectionConnection = {
   __typename?: 'StreamCollectionConnection';
-  edges?: Maybe<Array<Maybe<StreamCollectionEdge>>>;
+  edges: Array<StreamCollectionEdge>;
   pageInfo: PageInfo;
 };
 
@@ -20688,9 +20707,23 @@ export type StreamCollectionEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
 };
 
+export enum StreamCollectionFilter {
+  Name = 'name',
+  StreamLive = 'stream_live',
+  StreamPublic = 'stream_public'
+}
+
+export type StreamCollectionFiltering = {
+  filterMode?: InputMaybe<FilterMode>;
+  key: Array<StreamCollectionFilter>;
+  operator?: InputMaybe<Scalars['String']>;
+  values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
 export enum StreamCollectionOrdering {
   Description = 'description',
-  Name = 'name'
+  Name = 'name',
+  StreamPublic = 'stream_public'
 }
 
 export type SubType = {
@@ -20853,7 +20886,7 @@ export type Synchronizer = {
   running: Scalars['Boolean'];
   ssl_verify?: Maybe<Scalars['Boolean']>;
   stream_id: Scalars['String'];
-  token: Scalars['String'];
+  token?: Maybe<Scalars['String']>;
   uri: Scalars['String'];
   user?: Maybe<Creator>;
 };
@@ -20866,7 +20899,7 @@ export type SynchronizerAddInput = {
   recover?: InputMaybe<Scalars['DateTime']>;
   ssl_verify?: InputMaybe<Scalars['Boolean']>;
   stream_id: Scalars['String'];
-  token: Scalars['String'];
+  token?: InputMaybe<Scalars['String']>;
   uri: Scalars['String'];
   user_id?: InputMaybe<Scalars['String']>;
 };
@@ -20892,6 +20925,12 @@ export type SynchronizerEditMutations = {
 
 export type SynchronizerEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
+};
+
+export type SynchronizerFetchInput = {
+  ssl_verify?: InputMaybe<Scalars['Boolean']>;
+  token?: InputMaybe<Scalars['String']>;
+  uri: Scalars['String'];
 };
 
 export enum SynchronizersOrdering {
@@ -24749,6 +24788,7 @@ export type ResolversTypes = ResolversObject<{
   RegionsFiltering: RegionsFiltering;
   RegionsOrdering: RegionsOrdering;
   RegisterConnectorInput: RegisterConnectorInput;
+  RemoteStreamCollection: ResolverTypeWrapper<RemoteStreamCollection>;
   Report: ResolverTypeWrapper<Omit<Report, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, relatedContainers?: Maybe<ResolversTypes['ContainerConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   ReportAddInput: ReportAddInput;
   ReportConnection: ResolverTypeWrapper<Omit<ReportConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ReportEdge']>>> }>;
@@ -24886,9 +24926,11 @@ export type ResolversTypes = ResolversObject<{
   StixSightingRelationshipsOrdering: StixSightingRelationshipsOrdering;
   StreamCollection: ResolverTypeWrapper<Omit<StreamCollection, 'groups'> & { groups?: Maybe<Array<Maybe<ResolversTypes['Group']>>> }>;
   StreamCollectionAddInput: StreamCollectionAddInput;
-  StreamCollectionConnection: ResolverTypeWrapper<Omit<StreamCollectionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StreamCollectionEdge']>>> }>;
+  StreamCollectionConnection: ResolverTypeWrapper<Omit<StreamCollectionConnection, 'edges'> & { edges: Array<ResolversTypes['StreamCollectionEdge']> }>;
   StreamCollectionEdge: ResolverTypeWrapper<Omit<StreamCollectionEdge, 'node'> & { node: ResolversTypes['StreamCollection'] }>;
   StreamCollectionEditMutations: ResolverTypeWrapper<Omit<StreamCollectionEditMutations, 'addGroup' | 'deleteGroup' | 'fieldPatch'> & { addGroup?: Maybe<ResolversTypes['StreamCollection']>, deleteGroup?: Maybe<ResolversTypes['StreamCollection']>, fieldPatch?: Maybe<ResolversTypes['StreamCollection']> }>;
+  StreamCollectionFilter: StreamCollectionFilter;
+  StreamCollectionFiltering: StreamCollectionFiltering;
   StreamCollectionOrdering: StreamCollectionOrdering;
   String: ResolverTypeWrapper<Scalars['String']>;
   SubType: ResolverTypeWrapper<Omit<SubType, 'settings'> & { settings?: Maybe<ResolversTypes['EntitySetting']> }>;
@@ -24902,6 +24944,7 @@ export type ResolversTypes = ResolversObject<{
   SynchronizerConnection: ResolverTypeWrapper<SynchronizerConnection>;
   SynchronizerEdge: ResolverTypeWrapper<SynchronizerEdge>;
   SynchronizerEditMutations: ResolverTypeWrapper<SynchronizerEditMutations>;
+  SynchronizerFetchInput: SynchronizerFetchInput;
   SynchronizersOrdering: SynchronizersOrdering;
   System: ResolverTypeWrapper<Omit<System, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, organizations?: Maybe<ResolversTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   SystemAddInput: SystemAddInput;
@@ -25366,6 +25409,7 @@ export type ResolversParentTypes = ResolversObject<{
   RegionEditMutations: Omit<RegionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Region']>, contextPatch?: Maybe<ResolversParentTypes['Region']>, fieldPatch?: Maybe<ResolversParentTypes['Region']>, relationDelete?: Maybe<ResolversParentTypes['Region']> };
   RegionsFiltering: RegionsFiltering;
   RegisterConnectorInput: RegisterConnectorInput;
+  RemoteStreamCollection: RemoteStreamCollection;
   Report: Omit<Report, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, relatedContainers?: Maybe<ResolversParentTypes['ContainerConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   ReportAddInput: ReportAddInput;
   ReportConnection: Omit<ReportConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ReportEdge']>>> };
@@ -25475,9 +25519,10 @@ export type ResolversParentTypes = ResolversObject<{
   StixSightingRelationshipsFiltering: StixSightingRelationshipsFiltering;
   StreamCollection: Omit<StreamCollection, 'groups'> & { groups?: Maybe<Array<Maybe<ResolversParentTypes['Group']>>> };
   StreamCollectionAddInput: StreamCollectionAddInput;
-  StreamCollectionConnection: Omit<StreamCollectionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StreamCollectionEdge']>>> };
+  StreamCollectionConnection: Omit<StreamCollectionConnection, 'edges'> & { edges: Array<ResolversParentTypes['StreamCollectionEdge']> };
   StreamCollectionEdge: Omit<StreamCollectionEdge, 'node'> & { node: ResolversParentTypes['StreamCollection'] };
   StreamCollectionEditMutations: Omit<StreamCollectionEditMutations, 'addGroup' | 'deleteGroup' | 'fieldPatch'> & { addGroup?: Maybe<ResolversParentTypes['StreamCollection']>, deleteGroup?: Maybe<ResolversParentTypes['StreamCollection']>, fieldPatch?: Maybe<ResolversParentTypes['StreamCollection']> };
+  StreamCollectionFiltering: StreamCollectionFiltering;
   String: Scalars['String'];
   SubType: Omit<SubType, 'settings'> & { settings?: Maybe<ResolversParentTypes['EntitySetting']> };
   SubTypeConnection: Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversParentTypes['SubTypeEdge']> };
@@ -25489,6 +25534,7 @@ export type ResolversParentTypes = ResolversObject<{
   SynchronizerConnection: SynchronizerConnection;
   SynchronizerEdge: SynchronizerEdge;
   SynchronizerEditMutations: SynchronizerEditMutations;
+  SynchronizerFetchInput: SynchronizerFetchInput;
   System: Omit<System, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, organizations?: Maybe<ResolversParentTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   SystemAddInput: SystemAddInput;
   SystemConnection: Omit<SystemConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['SystemEdge']>>> };
@@ -29801,10 +29847,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixSightingRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixSightingRelationshipsNumberArgs>>;
   stixSightingRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixSightingRelationshipsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   streamCollection?: Resolver<Maybe<ResolversTypes['StreamCollection']>, ParentType, ContextType, RequireFields<QueryStreamCollectionArgs, 'id'>>;
-  streamCollections?: Resolver<Maybe<ResolversTypes['StreamCollectionConnection']>, ParentType, ContextType, Partial<QueryStreamCollectionsArgs>>;
+  streamCollections?: Resolver<ResolversTypes['StreamCollectionConnection'], ParentType, ContextType, Partial<QueryStreamCollectionsArgs>>;
   subType?: Resolver<Maybe<ResolversTypes['SubType']>, ParentType, ContextType, RequireFields<QuerySubTypeArgs, 'id'>>;
   subTypes?: Resolver<ResolversTypes['SubTypeConnection'], ParentType, ContextType, Partial<QuerySubTypesArgs>>;
   synchronizer?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<QuerySynchronizerArgs, 'id'>>;
+  synchronizerFetch?: Resolver<Maybe<Array<Maybe<ResolversTypes['RemoteStreamCollection']>>>, ParentType, ContextType, Partial<QuerySynchronizerFetchArgs>>;
   synchronizers?: Resolver<Maybe<ResolversTypes['SynchronizerConnection']>, ParentType, ContextType, Partial<QuerySynchronizersArgs>>;
   system?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, Partial<QuerySystemArgs>>;
   systems?: Resolver<Maybe<ResolversTypes['SystemConnection']>, ParentType, ContextType, Partial<QuerySystemsArgs>>;
@@ -29963,6 +30010,14 @@ export type RegionEditMutationsResolvers<ContextType = any, ParentType extends R
   fieldPatch?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<RegionEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<RegionEditMutationsRelationAddArgs>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<RegionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type RemoteStreamCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RemoteStreamCollection'] = ResolversParentTypes['RemoteStreamCollection']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -30977,11 +31032,13 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
   groups?: Resolver<Maybe<Array<Maybe<ResolversTypes['Group']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  stream_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StreamCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionConnection'] = ResolversParentTypes['StreamCollectionConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StreamCollectionEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['StreamCollectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -31058,7 +31115,7 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -32288,6 +32345,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   RegionConnection?: RegionConnectionResolvers<ContextType>;
   RegionEdge?: RegionEdgeResolvers<ContextType>;
   RegionEditMutations?: RegionEditMutationsResolvers<ContextType>;
+  RemoteStreamCollection?: RemoteStreamCollectionResolvers<ContextType>;
   Report?: ReportResolvers<ContextType>;
   ReportConnection?: ReportConnectionResolvers<ContextType>;
   ReportEdge?: ReportEdgeResolvers<ContextType>;

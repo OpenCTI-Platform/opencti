@@ -5,11 +5,11 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import Login from './components/Login';
-import { RootPublicQuery } from './__generated__/RootPublicQuery.graphql';
 import { environment } from '../relay/environment';
+import { LoginRootPublicQuery } from './__generated__/LoginRootPublicQuery.graphql';
 
 export const rootPublicQuery = graphql`
-  query RootPublicQuery {
+  query LoginRootPublicQuery {
     settings {
       platform_theme
       platform_login_message
@@ -26,10 +26,10 @@ export const rootPublicQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<RootPublicQuery>(environment, rootPublicQuery, {});
+const queryRef = loadQuery<LoginRootPublicQuery>(environment, rootPublicQuery, {});
 
-const Root = ({ type }: { type : string }) => {
-  const data = usePreloadedQuery<RootPublicQuery>(rootPublicQuery, queryRef);
+const LoginRoot = ({ type }: { type: string }) => {
+  const data = usePreloadedQuery<LoginRootPublicQuery>(rootPublicQuery, queryRef);
   const { settings } = data;
   return (
     <StyledEngineProvider injectFirst={true}>
@@ -43,4 +43,4 @@ const Root = ({ type }: { type : string }) => {
   );
 };
 
-export default Root;
+export default LoginRoot;

@@ -1,25 +1,10 @@
 import * as R from 'ramda';
 import { Promise as Bluebird } from 'bluebird';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
-import { pubSubSubscription } from '../database/redis';
-import { connectors as findConnectors } from '../database/repository';
-import {
-  ENTITY_TYPE_CONNECTOR,
-  ENTITY_TYPE_RULE,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_STATUS_TEMPLATE,
-  ENTITY_TYPE_STREAM_COLLECTION,
-  ENTITY_TYPE_USER
-} from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import type {
-  BasicStoreEntity,
-  BasicStreamEntity,
-  BasicTriggerEntity,
-  BasicWorkflowStatusEntity,
-  BasicWorkflowTemplateEntity
-} from '../types/store';
+import { connectors as findConnectors } from '../database/repository';
+import type { BasicStoreEntity, BasicStreamEntity, BasicTriggerEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
 import { EntityOptions, internalFindByIds, listAllEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
@@ -31,6 +16,7 @@ import { extractFilterIdsToResolve } from '../utils/filtering';
 import { BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { resolveUserById } from '../domain/user';
+import { pubSubSubscription } from '../database/redis';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -111,6 +97,13 @@ const platformEntitySettings = (context: AuthContext) => {
   return { values: null, fn: reloadEntitySettings };
 };
 
+const platformStreams = (context: AuthContext) => {
+  const reloadStreams = () => {
+    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
+  };
+  return { values: null, fn: reloadStreams };
+};
+
 const initCacheManager = () => {
   let subscribeIdentifier: { topic: string; unsubscribe: () => void; };
   const initCacheContent = () => {
@@ -125,6 +118,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_RULE, platformRules(context));
     writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, platformOrganizations(context));
     writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
+    writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));
   };
   return {
     init: () => initCacheContent(), // Use for testing
