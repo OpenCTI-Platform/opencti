@@ -41,6 +41,8 @@ import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import TypesField from '../../common/form/TypesField';
 
+import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 const DBL_CLICK_TIMEOUT = 500; // ms
@@ -884,6 +886,7 @@ class InvestigationGraphComponent extends Component {
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
+      numberOfSelectedEntities: 0,
       displayProgress: false,
       width: null,
       height: null,
@@ -1213,6 +1216,7 @@ class InvestigationGraphComponent extends Component {
       },
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -1234,6 +1238,7 @@ class InvestigationGraphComponent extends Component {
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -1243,6 +1248,7 @@ class InvestigationGraphComponent extends Component {
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -1434,6 +1440,7 @@ class InvestigationGraphComponent extends Component {
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -1503,7 +1510,9 @@ class InvestigationGraphComponent extends Component {
     this.selectedLinks.clear();
     this.selectedNodes.clear();
     R.map((n) => this.selectedNodes.add(n), this.state.graphData.nodes);
-    this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
+    });
   }
 
   handleSelectByType(type) {
@@ -1698,6 +1707,7 @@ class InvestigationGraphComponent extends Component {
       timeRangeInterval,
       this.graphObjects,
     );
+    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     return (
       <div>
         <WorkspaceHeader
@@ -1778,6 +1788,11 @@ class InvestigationGraphComponent extends Component {
             )}
           </Formik>
         </Dialog>
+        {(selectedEntities.length > 0) && (
+          <EntitiesDetailsRightsBar
+            selectedEntities={selectedEntities}
+          />
+        )}
         <InvestigationGraphBar
           displayProgress={displayProgress}
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
