@@ -196,7 +196,6 @@ class InformationTypesPopover extends Component {
                 maxWidth='md'
                 keepMounted={true}
                 className={classes.dialogMain}
-                maxWidth='md'
               >
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
                   {t('Information Type')}
