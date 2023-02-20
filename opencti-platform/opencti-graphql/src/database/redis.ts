@@ -78,12 +78,12 @@ export const generateClusterNodes = (nodes: string[]): { host: string; port: num
   });
 };
 
-// From "HOST:PORT-HOST:PORT" to { ["HOST:PORT"]: { host, port } }
+// From "HOST:PORT>HOST:PORT" to { ["HOST:PORT"]: { host, port } }
 export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number; }> => {
   const natMap: Record<string, { host: string; port: number; }> = {};
   for (let i = 0; i < mappings.length; i += 1) {
     const mapping = mappings[i];
-    const [from, to] = mapping.split('-');
+    const [from, to] = mapping.split('>');
     const [host, port] = to.split(':');
     natMap[from] = { host, port: parseInt(port, 10) };
   }

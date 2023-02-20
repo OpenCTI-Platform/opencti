@@ -12,7 +12,7 @@ describe('redis', () => {
   });
 
   it('should cluster nat map configuration correctly generated', () => {
-    const nat = generateNatMap(['10.0.1.230:30001-203.0.113.73:30001', '10.0.1.231:30001-203.0.113.73:30002']);
+    const nat = generateNatMap(['10.0.1.230:30001>203.0.113.73:30001', '10.0.1.231:30001>203.0.113.73:30002']);
     const entries = Object.entries(nat);
     expect(entries.length).toBe(2);
     const first = entries.at(0);
