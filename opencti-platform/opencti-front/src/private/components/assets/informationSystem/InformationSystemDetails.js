@@ -28,6 +28,7 @@ import AuthorizationBoundaryEditionPopover from './AuthorizationBoundaryEditionP
 import NetworkArchitectureEditionPopover from './NetworkArchitectureEditionPopover';
 import DataFlowEditionPopover from './DataFlowEditionPopover';
 import HyperLinkField from '../../common/form/HyperLinkField';
+import InformationTypesPopover from './InformationTypesPopover';
 
 const styles = (theme) => ({
   paper: {
@@ -192,20 +193,7 @@ class InformationSystemDetailsComponent extends Component {
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={12}>
-                    <HyperLinkField
-                      variant='outlined'
-                      type='hardware'
-                      multiple={true}
-                      name="installed_hardware"
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '90%' }}
-                      helperText={'Indicates installed hardware on this entity.'}
-                      data={[]}
-                      title={'Information Type(s)'}
-                      setFieldValue={setFieldValue}
-                      link='/defender HQ/assets/devices'
-                    />
+                    <InformationTypesPopover name={'information_types'} setFieldValue={setFieldValue}/>
                   </Grid>
                   <Grid item={true} xs={6}>
                     <div className={classes.textBase}>
