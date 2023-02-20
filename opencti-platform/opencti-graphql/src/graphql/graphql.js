@@ -5,12 +5,13 @@ import { dissocPath } from 'ramda';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { createPrometheusExporterPlugin } from '@bmatei/apollo-prometheus-exporter';
 import nconf from 'nconf';
+import axios from 'axios';
 import {
   ApolloServerPluginLandingPageDisabled,
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from 'apollo-server-core';
 import createSchema from './schema';
-import conf, { basePath, DEV_MODE } from '../config/conf';
+import conf, { basePath, DEV_MODE, logApp } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
@@ -18,14 +19,13 @@ import httpResponsePlugin from './httpResponsePlugin';
 import { checkSystemDependencies } from '../initialization';
 import { getSettings } from '../domain/settings';
 import { applicationSession } from '../database/session';
-import StardogKB from '../datasources/stardog.js';
-import Artemis from '../datasources/artemis.js';
-import DynamoDB from '../datasources/dynamoDB.js';
+import StardogKB from '../datasources/stardog';
+import Artemis from '../datasources/artemis';
+import DynamoDB from '../datasources/dynamoDB';
 import querySelectMap from '../cyio/schema/querySelectMap';
 import {
   applyKeycloakContext,
   authDirectiveTransformer,
-  getKeycloak,
   permissionDirectiveTransformer,
   roleDirectiveTransformer,
 } from '../service/keycloak';
@@ -133,11 +133,40 @@ const createApolloServer = async (app, httpServer) => {
       const user = await authenticateUserFromRequest(req);
       return buildContext(user, req, res);
     },
-    tracing: false,
+    tracing: DEV_MODE,
     plugins,
     formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof GraphQLError) {
+        if (process.env.MS_TEAMS_WEBHOOK) {
+          axios
+            .post(process.env.MS_TEAMS_WEBHOOK, {
+              '@type': 'MessageCard',
+              '@Context': 'http://schema.org/extensions',
+              title: 'Error',
+              text: `${e.message}`,
+              sections: [
+                {
+                  facts: [
+                    {
+                      name: 'Stacktrace',
+                      value: JSON.stringify(e),
+                    },
+                  ],
+                },
+              ],
+            })
+            .then((response) => {
+              logApp.debug('GraphQL error sent to Teams', {
+                status: response.status,
+                statusText: response.statusText,
+              });
+            })
+            .catch((axiosError) => {
+              logApp.error(axiosError);
+            });
+        }
+
         const errorCode = e.extensions.exception.code;
         if (errorCode === 'ERR_GRAPHQL_CONSTRAINT_VALIDATION') {
           const { fieldName } = e.extensions.exception;

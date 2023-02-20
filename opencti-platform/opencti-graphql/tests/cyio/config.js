@@ -13,7 +13,7 @@ const buildHeaders = () => {
 };
 
 export default async function submitOperation(operation, vars, res) {
-  return new Promise((resolve) => {
+  return new Promise((resolve,reject) => {
     const data = JSON.stringify({
       query: operation,
       variables: vars,
@@ -33,7 +33,11 @@ export default async function submitOperation(operation, vars, res) {
         resolve(response.data);
       })
       .catch(function err(error) {
-        res.status(404).json(error);
+        if(null != res) {
+          res.status(404).json(error);
+        } else {
+          reject(error)   //TODO: afaik res never used so instead reject every time like so?
+        }
       });
   });
 }
