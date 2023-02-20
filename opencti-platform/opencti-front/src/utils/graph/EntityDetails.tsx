@@ -17,7 +17,7 @@ import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import { truncate } from '../String';
-import type { SelectedLink, SelectedNode } from './EntitiesDetailsRightBar';
+import type { SelectedEntity } from './EntitiesDetailsRightBar';
 
 const useStyles = makeStyles < Theme >(() => ({
   entity: {
@@ -277,7 +277,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
 };
 
 interface EntityDetailsProps {
-  entity: SelectedNode | SelectedLink
+  entity: SelectedEntity
   queryRef: PreloadedQuery<EntityDetailsQuery>
 }
 

@@ -1237,6 +1237,7 @@ class ReportKnowledgeGraphComponent extends Component {
       timeRangeInterval,
       this.graphObjects,
     );
+    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     return (
       <div>
         <ContainerHeader
@@ -1250,10 +1251,9 @@ class ReportKnowledgeGraphComponent extends Component {
           enableSuggestions={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
-        {(numberOfSelectedNodes > 0 || numberOfSelectedLinks > 0) && (
+        {(selectedEntities.length > 0) && (
           <EntitiesDetailsRightsBar
-          selectedNodes={Array.from(this.selectedNodes)}
-          selectedLinks={Array.from(this.selectedLinks)}
+          selectedEntities={selectedEntities}
           open={false}
           handleClose={this.handleCloseEntitiesDetailsRightsBar.bind(this)}
         />

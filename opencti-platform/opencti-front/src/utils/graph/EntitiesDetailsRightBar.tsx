@@ -58,7 +58,7 @@ interface EntityDetailsRightsBarProps {
 const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedNodes, selectedLinks, open, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const nodesAndLinks: Array<SelectedLink | SelectedNode> = [...selectedLinks, ...selectedNodes];
+  console.log('selectedEntities:', selectedEntities);
 
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleControlClose = () => setControlOpen(false);
@@ -67,7 +67,8 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
   const handleSelectNode = (event: SelectChangeEvent<SelectedLink | SelectedNode>) => {
     setSelectedEntity(event.target);
   };
-
+  console.log('selectedEntity apres handlechange: ', selectedEntity);
+  console.log('selectedEntities apres handlechange:', selectedEntities);
   const fillSelectLabel = () => {
     if (nodesAndLinks.length > 1) {
       return (
@@ -100,23 +101,22 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         <Select
           labelId="entityField"
           fullWidth={true}
-          onChange={(event: SelectChangeEvent<SelectedNode>) => handleSelectNode(event)}
+          onChange={handleSelectEntity}
         >
-          {nodesAndLinks.map((nodeOrLink) => (
-            <MenuItem key={nodeOrLink.id} value={nodeOrLink.id}>
-              {nodeOrLink.label}
+          {selectedEntities.map((entity) => (
+            <MenuItem key={entity.id} value={entity.id}>
+              {entity.label}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
-      { (selectedEntity.entity_type === 'uses')
-        && <RelationshipDetails
+        {selectedEntity.relationship_type
+          ? <RelationshipDetails
           relation={selectedEntity}
-        />
-      }
-      <EntityDetails
-        entity={selectedEntity}
-      />
+            />
+          : <EntityDetails
+          entity={selectedEntity}
+            />}
     </Drawer>
   );
 };

@@ -16,8 +16,8 @@ import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import ItemAuthor from '../../components/ItemAuthor';
 import ItemConfidence from '../../components/ItemConfidence';
-import type { SelectedLink, SelectedNode } from './EntitiesDetailsRightBar';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
+import type { SelectedEntity } from './EntitiesDetailsRightBar';
 
 const useStyles = makeStyles < Theme >(() => ({
   relation: {
@@ -199,7 +199,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
 };
 
 interface RelationshipDetailsProps {
-  relation: SelectedNode | SelectedLink
+  relation: SelectedEntity
   queryRef: PreloadedQuery<RelationshipDetailsQuery>
 }
 const RelationshipDetails: FunctionComponent<Omit<RelationshipDetailsProps, 'queryRef'>> = ({ relation }) => {
