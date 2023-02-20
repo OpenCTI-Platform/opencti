@@ -9,7 +9,7 @@ import {
   DARKLIGHT_NS,
 } from '../../../utils.js';
   
-  // Reducer Selection
+// Reducer Selection
 export function getReducer(type) {
   switch (type) {
     case 'OSCAL-USER':

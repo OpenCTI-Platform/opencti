@@ -540,7 +540,7 @@ export const editUserTypeById = async ( id, input, dbName, dataSources, select, 
 
   const query = updateQuery(
     `http://cyio.darklight.ai/oscal-user--${id}`,
-    "http://csrc.nist.gov/ns/oscal/common#OscalUser",
+    "http://csrc.nist.gov/ns/oscal/common#User",
     input,
     oscalUserPredicateMap
   );
@@ -574,7 +574,7 @@ export const attachToUserType = async ( id, field, entityId, dbName, dataSources
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
-  // check to see if the information system exists
+  // check to see if the OSCAL User exists
   let iri = `<http://cyio.darklight.ai/oscal-user--${id}>`;
   sparqlQuery = selectOscalUserByIriQuery(iri, select);
   let response;
@@ -620,7 +620,7 @@ export const attachToUserType = async ( id, field, entityId, dbName, dataSources
   // retrieve the IRI of the entity
   let entityIri = `<${response[0].iri}>`;
 
-  // Attach the object to the information system
+  // Attach the object to the User
   sparqlQuery = attachToOscalUserQuery(id, field, entityIri);
   try {
     response = await dataSources.Stardog.create({
@@ -641,7 +641,7 @@ export const detachFromUserType = async ( id, field, entityId, dbName, dataSourc
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
-  // check to see if the information system exists
+  // check to see if the OSCAL User exists
   let iri = `<http://cyio.darklight.ai/oscal-user--${id}>`;
   sparqlQuery = selectOscalUserByIriQuery(iri, select);
   let response;
@@ -687,7 +687,7 @@ export const detachFromUserType = async ( id, field, entityId, dbName, dataSourc
   // retrieve the IRI of the entity
   let entityIri = `<${response[0].iri}>`;
 
-  // Attach the object to the information system
+  // Attach the object to the OSCAL User
   sparqlQuery = detachFromOscalUserQuery(id, field, entityIri);
   try {
     response = await dataSources.Stardog.create({
@@ -1048,7 +1048,7 @@ export const attachToAuthorizedPrivilege = async (id, field, entityId, dbName, d
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
-  // check to see if the information system exists
+  // check to see if the authorized privilege exists
   let iri = `<http://cyio.darklight.ai/authorized-privilege--${id}>`;
   sparqlQuery = selectAuthorizedPrivilegeByIriQuery(iri, select);
   let response;
@@ -1090,7 +1090,7 @@ export const attachToAuthorizedPrivilege = async (id, field, entityId, dbName, d
   // retrieve the IRI of the entity
   let entityIri = `<${response[0].iri}>`;
 
-  // Attach the object to the information system
+  // Attach the object to the authorized privilege
   sparqlQuery = attachToAuthorizedPrivilegeQuery(id, field, entityIri);
   try {
     response = await dataSources.Stardog.create({
@@ -1111,7 +1111,7 @@ export const detachFromAuthorizedPrivilege = async (id, field, entityId, dbName,
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
-  // check to see if the information system exists
+  // check to see if the OSCAL User exists
   let iri = `<http://cyio.darklight.ai/authorized-privilege--${id}>`;
   sparqlQuery = selectAuthorizedPrivilegeByIriQuery(iri, select);
   let response;
@@ -1153,7 +1153,7 @@ export const detachFromAuthorizedPrivilege = async (id, field, entityId, dbName,
   // retrieve the IRI of the entity
   let entityIri = `<${response[0].iri}>`;
 
-  // Attach the object to the information system
+  // Attach the object to the authorized privilege
   sparqlQuery = detachFromAuthorizedPrivilegeQuery(id, field, entityIri);
   try {
     response = await dataSources.Stardog.create({

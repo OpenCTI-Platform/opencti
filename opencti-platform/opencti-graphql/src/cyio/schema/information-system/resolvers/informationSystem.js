@@ -79,7 +79,7 @@ const cyioInformationSystemResolvers = {
       if (parent.responsible_party_iris === undefined) return [];
       let results = []
       for (let iri of parent.responsible_party_iris) {
-        let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('information_types'));
+        let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
         if (result === undefined || result === null) return null;
         results.push(result);
       }
@@ -89,7 +89,7 @@ const cyioInformationSystemResolvers = {
       if (parent.label_iris === undefined) return [];
       let results = []
       for (let iri of parent.label_iris) {
-        let result = await findLabelByIri(iri, dbName, dataSources, selectMap.getNode('information_types'));
+        let result = await findLabelByIri(iri, dbName, dataSources, selectMap.getNode('labels'));
         if (result === undefined || result === null) return null;
         results.push(result);
       }
@@ -99,7 +99,7 @@ const cyioInformationSystemResolvers = {
       if (parent.link_iris === undefined) return [];
       let results = []
       for (let iri of parent.link_iris) {
-        let result = await findLinkByIri(iri, dbName, dataSources, selectMap.getNode('information_types'));
+        let result = await findLinkByIri(iri, dbName, dataSources, selectMap.getNode('links'));
         if (result === undefined || result === null) return null;
         results.push(result);
       }
@@ -109,7 +109,7 @@ const cyioInformationSystemResolvers = {
       if (parent.remark_iris === undefined) return [];
       let results = []
       for (let iri of parent.remark_iris) {
-        let result = await findRemarkByIri(iri, dbName, dataSources, selectMap.getNode('information_types'));
+        let result = await findRemarkByIri(iri, dbName, dataSources, selectMap.getNode('remarks'));
         if (result === undefined || result === null) return null;
         results.push(result);
       }

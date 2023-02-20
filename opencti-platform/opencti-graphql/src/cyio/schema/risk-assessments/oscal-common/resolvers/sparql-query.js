@@ -916,7 +916,7 @@ export const insertResponsibleRoleQuery = (propValues) => {
   return { iri, id, query };
 };
 export const selectResponsibleRoleQuery = (id, select) => {
-  return selectResponsiblePartyByIriQuery(`http://csrc.nist.gov/ns/oscal/common#ResponsibleRole-${id}`, select);
+  return selectResponsibleRoleByIriQuery(`http://csrc.nist.gov/ns/oscal/common#ResponsibleRole-${id}`, select);
 };
 export const selectResponsibleRoleByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
