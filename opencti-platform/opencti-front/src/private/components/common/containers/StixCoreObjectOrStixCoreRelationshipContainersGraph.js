@@ -31,6 +31,7 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectMutationFieldPatch } from '../stix_domain_objects/StixDomainObjectEditionOverview';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -129,6 +130,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
+      numberOfSelectedEntities: 0,
       width: null,
       height: null,
       zoomed: false,
@@ -358,6 +360,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -379,6 +382,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -388,6 +392,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -395,7 +400,9 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.selectedLinks.clear();
     this.selectedNodes.clear();
     R.map((n) => this.selectedNodes.add(n), this.state.graphData.nodes);
-    this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
+    });
   }
 
   handleSelectByType(type) {
@@ -493,6 +500,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       timeRangeInterval,
       this.graphObjects,
     );
+    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     return (
       <div>
         <div className={classes.views}>
@@ -543,6 +551,11 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           </div>
         </div>
         <div className="clearfix" />
+        {(selectedEntities.length > 0) && (
+          <EntitiesDetailsRightsBar
+            selectedEntities={selectedEntities}
+          />
+        )}
         <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
