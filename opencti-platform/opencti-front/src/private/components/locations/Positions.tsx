@@ -103,7 +103,7 @@ const Positions: FunctionComponent = () => {
     <div>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <PositionCreation />
+        <PositionCreation paginationOptions={paginationOptions} />
       </Security>
     </div>
   );

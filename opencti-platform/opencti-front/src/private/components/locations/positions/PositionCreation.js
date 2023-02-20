@@ -85,7 +85,7 @@ const positionValidation = (t) => Yup.object().shape({
   postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
 });
 
-const PositionCreation = () => {
+const PositionCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -109,7 +109,7 @@ const PositionCreation = () => {
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_positions', this.props.paginationOptions, 'positionAdd');
+        insertNode(store, 'Pagination_positions', paginationOptions, 'positionAdd');
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
