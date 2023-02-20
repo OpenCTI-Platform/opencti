@@ -31,6 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface OptionValue extends Option {
   type: string;
+  parentTypes: string[];
   group?: string;
 }
 
@@ -105,7 +106,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   if (isStixObjectTypes) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
       options = (entities[filterKey] || [])
-        .filter((n) => searchScope[filterKey].includes(n.type))
+        .filter((n) => searchScope[filterKey].some((s) => (n.parentTypes ?? []).concat(n.type).includes(s)))
         .sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
     } else {
       options = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));

@@ -65,6 +65,7 @@ const filtersStixCoreObjectsSearchQuery = graphql`
         node {
           id
           entity_type
+          parent_types
           ... on AttackPattern {
             name
             description
@@ -360,7 +361,7 @@ const useSearchEntities = ({
         break;
       case 'elementId':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
-          types: (searchScope && searchScope.fromId) || ['Stix-Core-Object'],
+          types: (searchScope && searchScope.elementId) || ['Stix-Core-Object'],
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
         })
@@ -372,6 +373,7 @@ const useSearchEntities = ({
                 label: defaultValue(n.node),
                 value: n.node.id,
                 type: n.node.entity_type,
+                parentTypes: n.node.parent_types,
               })),
             )(data);
             unionSetEntities('elementId', elementIdEntities);
@@ -391,6 +393,7 @@ const useSearchEntities = ({
                 label: defaultValue(n.node),
                 value: n.node.id,
                 type: n.node.entity_type,
+                parentTypes: n.node.parent_types,
               })),
             )(data);
             unionSetEntities('fromId', fromIdEntities);
@@ -410,6 +413,7 @@ const useSearchEntities = ({
                 label: defaultValue(n.node),
                 value: n.node.id,
                 type: n.node.entity_type,
+                parentTypes: n.node.parent_types,
               })),
             )(data);
             unionSetEntities('toId', toIdEntities);
@@ -429,6 +433,7 @@ const useSearchEntities = ({
                 label: defaultValue(n.node),
                 value: n.node.id,
                 type: n.node.entity_type,
+                parentTypes: n.node.parent_types,
               })),
             )(data);
             unionSetEntities('targets', toIdEntities);
@@ -450,6 +455,7 @@ const useSearchEntities = ({
                 label: defaultValue(n.node),
                 value: n.node.id,
                 type: n.node.entity_type,
+                parentTypes: n.node.parent_types,
               })),
             )(data);
             unionSetEntities('objectContains', objectContainsEntities);
