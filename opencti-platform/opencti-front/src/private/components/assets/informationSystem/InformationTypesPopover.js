@@ -195,9 +195,10 @@ class InformationTypesPopover extends Component {
                 open={open}
                 keepMounted={true}
                 className={classes.dialogMain}
+                maxWidth='md'
               >
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t("Responsible Party")}
+                  {t("Information Type(s)")}
                 </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
