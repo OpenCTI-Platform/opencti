@@ -193,7 +193,6 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
   const { t } = useFormatter();
 
   const entity = usePreloadedQuery<EntityDetailsQuery>(entityDetailsQuery, queryRef);
-  console.log(entity);
   const { stixCoreObject } = entity;
 
   return (

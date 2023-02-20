@@ -98,7 +98,6 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
 
   const entity = usePreloadedQuery<RelationshipDetailsQuery>(relationshipDetailsQuery, queryRef);
   const { stixCoreRelationship } = entity;
-  console.log(entity);
 
   return (
     <div className={classes.relation}>

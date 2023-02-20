@@ -522,6 +522,7 @@ class ReportKnowledgeGraphComponent extends Component {
       graphData: graphWithFilters,
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
+      numberOfSelectedEntities: 0,
       width: null,
       height: null,
       zoomed: false,
@@ -809,6 +810,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -830,6 +832,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -839,6 +842,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -1060,12 +1064,13 @@ class ReportKnowledgeGraphComponent extends Component {
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
   handleCloseEntitiesDetailsRightsBar() {
     if (
-      this.state.numberOfSelectedNodes === 0
+      this.state.numberOfSelectedEntities === 0
     ) {
       this.setState({ open: false });
     }
@@ -1139,7 +1144,9 @@ class ReportKnowledgeGraphComponent extends Component {
     this.selectedLinks.clear();
     this.selectedNodes.clear();
     R.map((n) => this.selectedNodes.add(n), this.state.graphData.nodes);
-    this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size,
+      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
+    });
   }
 
   handleSelectByType(type) {
@@ -1224,6 +1231,7 @@ class ReportKnowledgeGraphComponent extends Component {
       graphData,
       numberOfSelectedNodes,
       numberOfSelectedLinks,
+      numberOfSelectedEntities,
       displayTimeRange,
       selectedTimeRangeInterval,
       width,
@@ -1288,6 +1296,7 @@ class ReportKnowledgeGraphComponent extends Component {
           selectedLinks={Array.from(this.selectedLinks)}
           numberOfSelectedNodes={numberOfSelectedNodes}
           numberOfSelectedLinks={numberOfSelectedLinks}
+          numberOfSelectedEntities={numberOfSelectedEntities}
           handleCloseEntityEdition={this.handleCloseEntityEdition.bind(this)}
           handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
             this,

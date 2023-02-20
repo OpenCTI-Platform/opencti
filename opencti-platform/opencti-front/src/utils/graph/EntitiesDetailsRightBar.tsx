@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -6,7 +6,6 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { useFormatter } from '../../components/i18n';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 
@@ -25,63 +24,38 @@ const useStyles = makeStyles < Theme >((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-export interface SelectedNode {
+export interface SelectedEntity {
   id: string
-  name: string
   label: string
-  description: string
-  parent_types: string[]
-  relationship_type: string
-  fromType: string
-  fromId: string
-  entity_type: string
+  relationship_type?: string
 }
 
-export interface SelectedLink {
-  id: string
-  name: string
-  label: string
-  source: SelectedNode
-  source_id: string
-  parent_types: string[]
-  relationship_type: string
-  target: SelectedNode
-  target_id: string
-  entity_type: string
-}
 interface EntityDetailsRightsBarProps {
-  selectedNodes: SelectedNode[];
-  selectedLinks:SelectedLink[]
+  selectedEntities: SelectedEntity[]
   open: boolean
   handleClose?: () => void
 }
-const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedNodes, selectedLinks, open, handleClose }) => {
+const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedEntities, open, handleClose }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
-  console.log('selectedEntities:', selectedEntities);
 
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleControlClose = () => setControlOpen(false);
 
-  const [selectedEntity, setSelectedEntity] = useState<SelectedLink | SelectedNode>(nodesAndLinks[0]);
-  const handleSelectNode = (event: SelectChangeEvent<SelectedLink | SelectedNode>) => {
-    setSelectedEntity(event.target);
-  };
-  console.log('selectedEntity apres handlechange: ', selectedEntity);
-  console.log('selectedEntities apres handlechange:', selectedEntities);
-  const fillSelectLabel = () => {
-    if (nodesAndLinks.length > 1) {
-      return (
-        <InputLabel id="entityField">
-          {t('Selected entities')}
-        </InputLabel>
-      );
+  const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(selectedEntities[0]);
+  useEffect(() => {
+    if (selectedEntities[0] !== selectedEntity) {
+      setSelectedEntity(selectedEntities[0]);
     }
-    return (
-      <InputLabel id="entityField">
-        {nodesAndLinks[0].label}
-      </InputLabel>
-    );
+  }, [selectedEntities[0].id]);
+  const handleSelectEntity = (event: SelectChangeEvent<SelectedEntity>) => {
+    const { value } = event.target;
+    const entity = selectedEntities.find((el) => (el.id === value));
+    if (entity === undefined) {
+      setSelectedEntity(selectedEntities[0]);
+    }
+    if (entity) {
+      setSelectedEntity(entity);
+    }
   };
 
   return (
@@ -97,7 +71,9 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         className={classes.formControl}
         fullWidth={true}
       >
-        {fillSelectLabel()}
+        <InputLabel id="entityField">
+          {selectedEntities[0].label}
+        </InputLabel>
         <Select
           labelId="entityField"
           fullWidth={true}
