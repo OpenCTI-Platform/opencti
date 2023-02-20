@@ -32,14 +32,9 @@ export interface SelectedEntity {
 
 interface EntityDetailsRightsBarProps {
   selectedEntities: SelectedEntity[]
-  open: boolean
-  handleClose?: () => void
 }
-const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedEntities, open, handleClose }) => {
+const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedEntities }) => {
   const classes = useStyles();
-
-  const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
-  const handleControlClose = () => setControlOpen(false);
 
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(selectedEntities[0]);
   useEffect(() => {
@@ -60,11 +55,10 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
 
   return (
     <Drawer
-      open={handleClose ? open : controlOpen}
+      open={true}
       variant="permanent"
       anchor="right"
       classes={{ paper: classes.drawerPaper }}
-      onClose={handleClose ?? handleControlClose }
     >
       <div className={classes.toolbar} />
       <FormControl

@@ -1068,14 +1068,6 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
-  handleCloseEntitiesDetailsRightsBar() {
-    if (
-      this.state.numberOfSelectedEntities === 0
-    ) {
-      this.setState({ open: false });
-    }
-  }
-
   handleCloseEntityEdition(entityId) {
     setTimeout(() => {
       fetchQuery(reportKnowledgeGraphStixCoreObjectQuery, {
@@ -1231,7 +1223,6 @@ class ReportKnowledgeGraphComponent extends Component {
       graphData,
       numberOfSelectedNodes,
       numberOfSelectedLinks,
-      numberOfSelectedEntities,
       displayTimeRange,
       selectedTimeRangeInterval,
       width,
@@ -1262,8 +1253,6 @@ class ReportKnowledgeGraphComponent extends Component {
         {(selectedEntities.length > 0) && (
           <EntitiesDetailsRightsBar
           selectedEntities={selectedEntities}
-          open={false}
-          handleClose={this.handleCloseEntitiesDetailsRightsBar.bind(this)}
         />
         )}
         <ReportKnowledgeGraphBar
@@ -1296,7 +1285,6 @@ class ReportKnowledgeGraphComponent extends Component {
           selectedLinks={Array.from(this.selectedLinks)}
           numberOfSelectedNodes={numberOfSelectedNodes}
           numberOfSelectedLinks={numberOfSelectedLinks}
-          numberOfSelectedEntities={numberOfSelectedEntities}
           handleCloseEntityEdition={this.handleCloseEntityEdition.bind(this)}
           handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
             this,
