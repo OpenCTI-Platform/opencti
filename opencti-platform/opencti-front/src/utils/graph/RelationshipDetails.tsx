@@ -16,7 +16,10 @@ import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import ItemAuthor from '../../components/ItemAuthor';
 import ItemConfidence from '../../components/ItemConfidence';
-import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
+import {
+  RelationshipDetailsQuery,
+  RelationshipDetailsQuery$data,
+} from './__generated__/RelationshipDetailsQuery.graphql';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 
 const useStyles = makeStyles < Theme >(() => ({
@@ -109,15 +112,15 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
         {t('Relation type')}
       </Typography>
       {stixCoreRelationship?.relationship_type}
-      { stixCoreRelationship
+      { stixCoreRelationship?.from?.entity_type
         && <Tooltip title={t('View the item')}>
                   <span>
                     <IconButton
                       color="primary"
                       component={Link}
-                      to={`${resolveLink(stixCoreRelationship.entity_type)}/${
-                        stixCoreRelationship.id
-                      }`}
+                      to={`${resolveLink(stixCoreRelationship.from.entity_type)}/${
+                        stixCoreRelationship.from.id
+                      }/knowledge/relations/${stixCoreRelationship.id}`}
                       size="large"
                     >
                         <InfoOutlined/>
@@ -139,7 +142,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           />
         </div>
       }
-      { stixCoreRelationship?.objectMarking
+      { (stixCoreRelationship?.objectMarking && stixCoreRelationship?.objectMarking?.edges.length > 0)
         && <div>
           <Typography variant="h3"
                       gutterBottom={true}
@@ -147,7 +150,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           >
             {t('Marking')}
           </Typography>
-          <ItemMarkings
+         <ItemMarkings
           markingDefinitionsEdges={ stixCoreRelationship?.objectMarking.edges}
           limit={2}
         />
