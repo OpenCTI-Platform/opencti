@@ -15,6 +15,7 @@ import {
 import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEditionDetailsFocusMutation.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
+import { parse } from '../../../../utils/Time';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -111,8 +112,8 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
 
     const inputValues = Object.entries({
       ...otherValues,
-      first_seen: values.first_seen?.value,
-      last_seen: values.last_seen?.value,
+      first_seen: values.first_seen ? parse(values.first_seen).format() : null,
+      last_seen: values.last_seen ? parse(values.last_seen).format() : null,
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     commitFieldPatch({
