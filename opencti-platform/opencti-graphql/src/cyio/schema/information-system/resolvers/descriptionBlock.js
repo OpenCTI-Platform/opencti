@@ -27,7 +27,7 @@ const cyioDescriptionBlockResolvers = {
 	},
 	Mutation: {
 		// Description Block
-		createDescriptionBlock: async (_, { input }, { dbName, selectMap, dataSources }) => createDescriptionBlock(input, dbName, dataSources, selectMap.get("createDescriptionBlock")),
+		createDescriptionBlock: async (_, { input }, { dbName, selectMap, dataSources }) => createDescriptionBlock(input, dbName, dataSources, selectMap.getNode("createDescriptionBlock")),
 		deleteDescriptionBlock: async (_, { id }, { dbName, dataSources }) => deleteDescriptionBlockById( id, dbName, dataSources),
 		deleteDescriptionBlocks: async (_, { ids }, { dbName, dataSources }) => deleteDescriptionBlockById( ids, dbName, dataSources),
 		editDescriptionBlock: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editDescriptionBlockById(id, input, dbName, dataSources, selectMap.getNode("editDescriptionBlock"), schema),

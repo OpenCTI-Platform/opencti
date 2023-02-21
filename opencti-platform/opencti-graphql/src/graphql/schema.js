@@ -139,6 +139,8 @@ import cyioInformationTypeResolvers from '../cyio/schema/information-system/reso
 import cyioInformationTypeCatalogResolvers from '../cyio/schema/information-system/resolvers/informationTypeCatalog.js';
 import cyioInformationTypeEntryResolvers from '../cyio/schema/information-system/resolvers/informationTypeEntry.js';
 import cyioDescriptionBlockResolvers from '../cyio/schema/information-system/resolvers/descriptionBlock.js';
+import cyioOscalUserResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalUser.js';
+import cyioOscalLeveragedAuthorizationResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalLeveragedAuthorization.js';
 
 // Cyio Extensions to support merged graphQL schema
 
@@ -291,6 +293,8 @@ const createSchema = () => {
     cyioInformationTypeCatalogResolvers,
     cyioInformationTypeEntryResolvers,
     cyioDescriptionBlockResolvers,
+    cyioOscalUserResolvers,
+    cyioOscalLeveragedAuthorizationResolvers,
 ]);
 
   // load the OpenCTI and each of the Cyio GraphQL schema files

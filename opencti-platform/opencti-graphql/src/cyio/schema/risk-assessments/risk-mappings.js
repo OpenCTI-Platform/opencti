@@ -238,6 +238,7 @@ export const riskTypeMapping = {
   // object-type: GraphQL-Type
   activity: 'Activity',
   actor: 'Actor',
+  'authorized-privilege': 'AuthorizedPrivilege',
   'assessment-asset': 'AssessmentAsset',
   'assessment-log-entry': 'AssessmentLogEntry',
   'assessment-platform': 'AssessmentPlatform',
@@ -252,6 +253,7 @@ export const riskTypeMapping = {
   'mitigating-factor': 'MitigatingFactor',
   observation: 'Observation',
   origin: 'Origin',
+  'oscal-leveraged-authorization': 'OscalLeveragedAuthorization',
   'oscal-location': 'OscalLocation',
   'oscal-party': 'OscalParty',
   'oscal-relationship': 'OscalRelationship',

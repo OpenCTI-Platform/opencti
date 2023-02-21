@@ -1,6 +1,6 @@
 import { UserInputError } from 'apollo-server-errors';
-import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../utils.js';
-import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
+import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../../utils.js';
+import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 import {
   getReducer,
 	// OSCAL User
@@ -228,7 +228,7 @@ export const createUserType = async (input, dbName, dataSources, select) => {
     throw e
   }
 
-  // Attach any impact definitions
+  // Attach any nested definitions
   for (let [key, value] of Object.entries(nestedDefinitions)) {
 		let itemName = value.objectType.replace(/-/g, ' ');
     if (Object.keys(value.props).length !== 0 ) {

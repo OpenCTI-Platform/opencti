@@ -25,7 +25,7 @@ extend type Query {
 }
 
 extend type Mutation {
-  createDescriptionBlock(input: DescriptionBlockInput): DescriptionBlock @hasPermission(resources: "Asset:update")
+  createDescriptionBlock(input: DescriptionBlockInput!): DescriptionBlock @hasPermission(resources: "Asset:update")
   deleteDescriptionBlock(id: ID!): ID @hasPermission(resources: "Asset:delete")
   deleteDescriptionBlocks(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
   editDescriptionBlock(id: ID!, input: [EditInput]!, commitMessage: String): DescriptionBlock @hasPermission(resources: "Asset:update")
@@ -35,7 +35,7 @@ extend type Mutation {
 
   #
   # Diagram Ref
-  createDiagramRef(input: DiagramRefInput): DiagramRef @hasPermission(resources: "Asset:update")
+  createDiagramRef(input: DiagramRefInput!): DiagramRef @hasPermission(resources: "Asset:update")
   deleteDiagramRef(id: ID!): ID @hasPermission(resources: "Asset:delete")
   deleteDiagramRefs(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
   editDiagramRef(id: ID!, input: [EditInput]!, commitMessage: String): DiagramRef @hasPermission(resources: "Asset:update")

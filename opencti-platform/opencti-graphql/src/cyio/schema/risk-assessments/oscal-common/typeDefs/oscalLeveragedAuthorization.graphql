@@ -15,7 +15,7 @@ extend type Query {
 
 extend type Mutation {
   # OSCAL User
-  createLeveragedAuthorization(input: OscalLeveragedAuthorizationAddInput): OscalLeveragedAuthorization  @hasPermission(resources:"SystemSecurityPlan:update")
+  createLeveragedAuthorization(input: OscalLeveragedAuthorizationInput!): OscalLeveragedAuthorization  @hasPermission(resources:"SystemSecurityPlan:update")
   deleteLeveragedAuthorization(id: ID!): String!  @hasPermission(resources:"SystemSecurityPlan:delete")
   deleteLeveragedAuthorizations(ids: [ID!]!): [ID] @hasPermission(resources: "SystemSecurityPlan:delete")
   editLeveragedAuthorization(id: ID!, input: [EditInput]!, commitMessage: String): OscalLeveragedAuthorization  @hasPermission(resources:"SystemSecurityPlan:update")
@@ -69,18 +69,18 @@ type OscalLeveragedAuthorization implements BasicObject & LifecycleObject & Osca
   # LeveragedAuthorization
   "Identifies a human readable name for the leveraged authorization in the context of the system."
   title: String!
-  "Identifies a reference to the party that manages the leveraged system."
-  party: OscalParty!
   "Identifies the date the system received its authorization."
   date_authorized: Date!
+  "Identifies a reference to the party that manages the leveraged system."
+  party: OscalParty!
 }
 input OscalLeveragedAuthorizationInput {
   "Identifies a human readable name for the leveraged authorization in the context of the system."
   title: String!
-  "Identifies a reference to the party that manages the leveraged system."
-  party: ID!
   "Identifies the date the system received its authorization."
   date_authorized: Date!
+  "Identifies a reference to the party that manages the leveraged system."
+  party: ID!
 }
 # Ordering
 enum OscalLeveragedAuthorizationOrdering {

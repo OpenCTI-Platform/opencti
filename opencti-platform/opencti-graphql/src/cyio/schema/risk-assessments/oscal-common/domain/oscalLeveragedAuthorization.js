@@ -1,6 +1,6 @@
 import { UserInputError } from 'apollo-server-errors';
-import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../utils.js';
-import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
+import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../../utils.js';
+import { selectObjectIriByIdQuery } from '../../../global/global-utils.js'
 import {
   getReducer,
 	// OSCAL User
@@ -150,7 +150,7 @@ export const createLeveragedAuthorization = async (input, dbName, dataSources, s
 
   // Need to escape contents, remove explicit newlines, and collapse multiple what spaces.
   if (input.title !== undefined ) {
-    input.name = input.name.replace(/\s+/g, ' ')
+    input.title = input.title.replace(/\s+/g, ' ')
                             .replace(/\n/g, '\\n')
                             .replace(/\"/g, '\\"')
                             .replace(/\'/g, "\\'")
@@ -160,7 +160,7 @@ export const createLeveragedAuthorization = async (input, dbName, dataSources, s
 
   // Collect all the referenced objects and remove them from input array
   let objectReferences = {
-    'party': { ids: input.party, objectType: 'oscal-party' },
+    'party': { ids: [input.party], objectType: 'oscal-party' },
   };
   if (input.party) delete input.party;
   
@@ -181,7 +181,7 @@ export const createLeveragedAuthorization = async (input, dbName, dataSources, s
   // Attach any references to other objects
   for (let [key, value] of Object.entries(objectReferences)) {
     if (value.ids === undefined || value.ids === null) continue;
-        let itemName = value.objectType.replace(/-/g, ' ');
+    let itemName = value.objectType.replace(/-/g, ' ');
     let iris = [];
     for (let refId of value.ids) {
       let sparqlQuery = selectObjectIriByIdQuery(refId, value.objectType);

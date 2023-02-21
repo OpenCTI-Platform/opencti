@@ -85,6 +85,13 @@ import {
 import {
   informationTypePredicateMap, attachToInformationTypeQuery, detachFromInformationTypeQuery
 } from '../information-system/schema/sparql/informationType.js';
+import {
+  oscalUserPredicateMap, attachToOscalUserQuery, detachFromOscalUserQuery,
+  authorizedPrivilegePredicateMap, attachToAuthorizedPrivilegeQuery, detachFromAuthorizedPrivilegeQuery,
+} from '../risk-assessments/oscal-common/schema/sparql/oscalUser.js' ;
+import {
+  oscalLeveragedAuthorizationPredicateMap, attachToOscalLeveragedAuthorizationQuery, detachFromOscalLeveragedAuthorizationQuery,
+} from '../risk-assessments/oscal-common/schema/sparql/oscalLeveragedAuthorization.js';
 
 
 // find id of parent
@@ -266,6 +273,14 @@ export const objectMap = {
     graphQLType: "AssociatedActivity",
     classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#AssociatedActivity",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssociatedActivity",
+  },
+  "authorized-privilege": {
+    predicateMap: oscalLeveragedAuthorizationPredicateMap,
+    attachQuery: attachToOscalLeveragedAuthorizationQuery,
+    detachQuery: detachFromOscalLeveragedAuthorizationQuery,
+    graphQLType: "AuthorizedPrivilege",
+    classIri:  "http://csrc.nist.gov/ns/oscal/common#AuthorizedPrivilege",
+    iriTemplate: "http://cyio.darklight.ai/authorized-privilege",
   },
   "characterization": {
     predicateMap: characterizationPredicateMap,
@@ -543,6 +558,14 @@ export const objectMap = {
     classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Origin",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Origin",
   },
+  "oscal-leveraged-authorization": {
+    predicateMap: oscalLeveragedAuthorizationPredicateMap,
+    attachQuery: attachToOscalLeveragedAuthorizationQuery,
+    detachQuery: detachFromOscalLeveragedAuthorizationQuery,
+    graphQLType: "OscalLeveragedAuthorization",
+    classIri:  "http://csrc.nist.gov/ns/oscal/common#LeveragedAuthorization",
+    iriTemplate: "http://cyio.darklight.ai/oscal-leveraged-authorization",
+  },
   "oscal-location": {
     predicateMap: oscalLocationPredicateMap,
     attachQuery: attachToLocationQuery,
@@ -596,6 +619,15 @@ export const objectMap = {
     graphQLType: "OscalTask",
     classIri: "http://csrc.nist.gov/ns/oscal/assessment/common#Task",
     iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Task"
+  },
+  "oscal-user": {
+    predicateMap: oscalUserPredicateMap,
+    attachQuery: attachToOscalUserQuery,
+    detachQuery: detachFromOscalUserQuery,
+    alternateKey: "user",
+    graphQLType: "OscalUser",
+    classIri: "http://csrc.nist.gov/ns/oscal/common#User",
+    iriTemplate: "http://cyio.darklight.ai/oscal-user",
   },
   "pbx": {
     predicateMap: hardwarePredicateMap,

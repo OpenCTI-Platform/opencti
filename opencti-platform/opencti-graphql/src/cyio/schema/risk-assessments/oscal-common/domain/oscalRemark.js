@@ -11,7 +11,7 @@ import { selectNoteByIriQuery, getReducer } from '../../../global/resolvers/spar
 // } from '../schema/sparql/oscalRemark.js';
 
 
-export const findLinkByIri = async (iri, dbName, dataSources, select) => {
+export const findRemarkByIri = async (iri, dbName, dataSources, select) => {
   const sparqlQuery = selectNoteByIriQuery(iri, select);
   let response;
   try {

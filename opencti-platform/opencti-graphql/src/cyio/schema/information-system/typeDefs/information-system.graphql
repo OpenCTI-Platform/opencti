@@ -14,7 +14,7 @@ extend type Query {
 }
 
 extend type Mutation {
-  createInformationSystem(input: InformationSystemInput): InformationSystem @hasPermission(resources: "Asset:update")
+  createInformationSystem(input: InformationSystemInput!): InformationSystem @hasPermission(resources: "Asset:update")
   deleteInformationSystem(id: ID!): ID @hasPermission(resources: "Asset:delete")
   deleteInformationSystems(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
   editInformationSystem(id: ID!, input: [EditInput]!, commitMessage: String): InformationSystem @hasPermission(resources: "Asset:update")

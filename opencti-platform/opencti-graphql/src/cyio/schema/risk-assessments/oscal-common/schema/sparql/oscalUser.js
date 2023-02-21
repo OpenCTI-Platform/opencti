@@ -7,7 +7,7 @@ import {
   detachQuery,
   generateId, 
   DARKLIGHT_NS,
-} from '../../../utils.js';
+} from '../../../../utils.js';
   
 // Reducer Selection
 export function getReducer(type) {
@@ -453,7 +453,7 @@ export const oscalUserPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   roles: {
-    predicate: "<http://darklight.ai/ns/common#roles>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#roles>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "roles");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
@@ -537,9 +537,11 @@ export const singularizeOscalUserSchema = {
     "entity_type": true,
     "created": true,
     "modified": true,
+    "user_type": true,
     "name": true,
     "short_name": true,
     "description": true,
+    "privilege_level": true,
   }
 };
 

@@ -8,10 +8,8 @@ import {
   detachFromLeveragedAuthorization,
 } from '../domain/oscalLeveragedAuthorization';
 import { findLabelByIri } from '../../../global/domain/label.js';
-import { findNoteByIri } from '../../../global/domain/note.js';
-import { findExternalReferenceByIri } from '../../../global/domain/externalReference.js';
-import { findLinkByIri } from '../domain/oscalLink.js';
 import { findPartyByIri } from '../domain/oscalParty.js';
+import { findLinkByIri } from '../domain/oscalLink.js';
 import { findRemarkByIri } from '../domain/oscalRemark.js';
 
 
@@ -22,7 +20,7 @@ const cyioOscalLeveragedAuthorizationResolvers = {
         leveragedAuthorization: async (_, { id }, { dbName, dataSources, selectMap }) => findLeveragedAuthorizationById(id, dbName, dataSources, selectMap.getNode('leveragedAuthorization')),
   },
   Mutation: {
-        createLeveragedAuthorization: async (_, { input }, { dbName, selectMap, dataSources }) => createLeveragedAuthorization(input, dbName, dataSources, selectMap.get("createLeveragedAuthorization")),
+        createLeveragedAuthorization: async (_, { input }, { dbName, selectMap, dataSources }) => createLeveragedAuthorization(input, dbName, dataSources, selectMap.getNode("createLeveragedAuthorization")),
         deleteLeveragedAuthorization: async (_, { id }, { dbName, dataSources }) => deleteLeveragedAuthorizationById( id, dbName, dataSources),
         deleteLeveragedAuthorizations: async (_, { ids }, { dbName, dataSources }) => deleteLeveragedAuthorizationById( ids, dbName, dataSources),
         editLeveragedAuthorization: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editLeveragedAuthorizationById(id, input, dbName, dataSources, selectMap.getNode("editLeveragedAuthorization"), schema),
@@ -32,7 +30,7 @@ const cyioOscalLeveragedAuthorizationResolvers = {
   OscalLeveragedAuthorization: {
     party: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.party_iri === undefined) return [];
-      let result = await findPartyByIri(iri, dbName, dataSources, selectMap.getNode('party'));
+      let result = await findPartyByIri(parent.party_iri, dbName, dataSources, selectMap.getNode('party'));
       if (result === undefined || result === null) return null;
       return result;
     },

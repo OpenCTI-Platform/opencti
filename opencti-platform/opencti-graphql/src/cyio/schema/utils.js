@@ -300,6 +300,14 @@ export const attachQuery = (iri, statements, predicateMap, classIri) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (!classIri.startsWith('<')) classIri = `<${classIri}>`;
 
+  if (Array.isArray(statements)) {
+    for (let statement of statements) {
+      if (!statement.endsWith('.')) statement = statement + ' .';
+    }
+  } else {
+    if ( !statements.endsWith('.')) statements = statements + ' .'
+  }
+
   // if entity has a 'modified' field
   if (predicateMap.hasOwnProperty('modified')) {
     const timestamp = new Date().toISOString();

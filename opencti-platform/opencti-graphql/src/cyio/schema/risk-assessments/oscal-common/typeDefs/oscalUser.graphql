@@ -10,17 +10,39 @@ extend type Query {
     filterMode: FilterMode
     search: String
   ): OscalUserConnection  @hasPermission(resources:"OscalUser:view")
+  # Authorized Privilege
+  authorizedPrivilege(id: ID!): AuthorizedPrivilege @hasPermission(resources:"OscalUser:view")
+  authorizedPrivileges(
+    first: Int
+    offset: Int
+    orderedBy: AuthorizedPrivilegeOrdering
+    orderMode: OrderingMode
+    filters: [AuthorizedPrivilegeFiltering]
+    filterMode: FilterMode
+    search: String
+  ): AuthorizedPrivilegeConnection  @hasPermission(resources:"OscalUser:view")
 }
 
 extend type Mutation {
   # OSCAL User
-  createOscalUser(input: OscalUserAddInput): OscalUser  @hasPermission(resources:"OscalUser:update")
+  createOscalUser(input: OscalUserInput!): OscalUser  @hasPermission(resources:"OscalUser:update")
   deleteOscalUser(id: ID!): String!  @hasPermission(resources:"OscalUser:delete")
   deleteOscalUsers(ids: [ID!]!): [ID] @hasPermission(resources: "OscalUser:delete")
   editOscalUser(id: ID!, input: [EditInput]!, commitMessage: String): OscalUser  @hasPermission(resources:"OscalUser:update")
   #
   attachToOscalUser(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "OscalUser:update")
   detachFromOscalUser(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "OscalUser:update")
+  #
+  # Authorized Privilege
+  #
+  createAuthorizedPrivilege(input: AuthorizedPrivilegeInput!): AuthorizedPrivilege  @hasPermission(resources:"OscalUser:update")
+  deleteAuthorizedPrivilege(id: ID!): String!  @hasPermission(resources:"OscalUser:delete")
+  deleteAuthorizedPrivileges(ids: [ID!]!): [ID] @hasPermission(resources: "OscalUser:delete")
+  editAuthorizedPrivilege(id: ID!, input: [EditInput]!, commitMessage: String): AuthorizedPrivilege  @hasPermission(resources:"OscalUser:update")
+  #
+  attachToAuthorizedPrivilege(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "OscalUser:update")
+  detachFromAuthorizedPrivilege(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "OscalUser:update")
+
 }
 
 ##### OSCAL User
@@ -74,7 +96,7 @@ type OscalUser implements BasicObject & LifecycleObject & OscalObject {
   "Identifies the user's privilege level within the system, such as privileged, non-privileged, no-logical-access."
   privilege_level: PrivilegeLevel!
 }
-input OscalUserAddInput {
+input OscalUserInput {
   # OSCAL User
   "Identifies type of user, such as internal, external, or general-public."
   user_type: UserType
@@ -84,8 +106,10 @@ input OscalUserAddInput {
   short_name: String
   "Identifies a summary of the user's purpose within the system."
   description: String
+  "Identifies one or more references to the roles served by the user."
+  roles: [ID!]
   "Identifies a specific system privilege held by the user, along with an associated description and/or rationale for the privilege."
-  authorized_privileges: [AuthorizedPrivilegeAddInput]
+  authorized_privileges: [AuthorizedPrivilegeInput]
   "Identifies the user's privilege level within the system, such as privileged, non-privileged, no-logical-access."
   privilege_level: PrivilegeLevel!
 }
@@ -156,6 +180,8 @@ enum PrivilegeLevel {
   "This role has no access to the system, such as a manager who approves access as part of a process."
   no_logical_access
 }
+
+
 "Defines identifying information about a system privilege held by the user."
 type AuthorizedPrivilege {
   "Uniquely identifies this object."
@@ -169,11 +195,36 @@ type AuthorizedPrivilege {
   "Identifies one or more functions performed for a given authorized privilege by this user class."
   functions_performed: [String!]
 }
-input AuthorizedPrivilegeAddInput {
+input AuthorizedPrivilegeInput {
   "Identifies a human readable name for the privilege."
   name: String!
   "Identifies a summary of the privilege's purpose within the system."
   description: String
   "Identifies one or more functions performed for a given authorized privilege by this user class."
   functions_performed: [String!]
+}
+# Ordering
+enum AuthorizedPrivilegeOrdering {
+  "Name"
+  name
+}
+# Filtering
+input AuthorizedPrivilegeFiltering {
+  key: AuthorizedPrivilegeFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+enum AuthorizedPrivilegeFilter {
+  "Name"
+  name
+}
+# Pagination
+type AuthorizedPrivilegeConnection {
+  pageInfo: PageInfo!
+  edges: [AuthorizedPrivilegeEdge]
+}
+type AuthorizedPrivilegeEdge {
+  cursor: String!
+  node: AuthorizedPrivilege!
 }
