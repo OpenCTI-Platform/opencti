@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Redirect, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
+import graphql from 'react-relay';
 import inject18n from '../../components/i18n';
 import { QueryRenderer } from '../../relay/environment';
 import { resolveLink } from '../../utils/Entity';

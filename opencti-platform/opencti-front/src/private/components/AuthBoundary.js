@@ -2,7 +2,6 @@ import React from 'react';
 import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import { ApplicationError } from '../../relay/environment';
 import RootPublic from '../../public/Root';
 
 class AuthBoundaryComponent extends React.Component {
@@ -16,21 +15,31 @@ class AuthBoundaryComponent extends React.Component {
   }
 
   render() {
-    if (this.state.stack) {
-      if (this.state.error instanceof ApplicationError) {
-        const types = map((e) => e.name, this.state.error.data.res.errors);
-        // If access is forbidden, just redirect to home page
-        if (includes('ForbiddenAccess', types)) window.location.href = '/';
-        // If user not authenticated, redirect to login with encoded path
-        if (includes('AuthRequired', types)) {
-          return <RootPublic />;
-        }
+    if (this.state.error) {
+      const baseErrors = this.state.error.res?.errors ?? [];
+      const retroErrors = this.state.error.data?.res?.errors ?? [];
+      const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
+
+      // If access is forbidden, just redirect to home page
+      if (includes('ForbiddenAccess', types)) {
+        return <RootPublic type="LOGIN" />;
+        // window.location.href = '/';
+      }
+
+      // If user not authenticated, redirect to login with encoded path
+      if (includes('AuthRequired', types)) {
+        return <RootPublic type="LOGIN" />;
+      }
+      if (includes('OtpRequired', types)) {
+        return <RootPublic type="2FA" />;
       }
     }
     return this.props.children;
   }
 }
+
 AuthBoundaryComponent.propTypes = {
   children: PropTypes.node,
 };
+
 export default compose(withRouter)(AuthBoundaryComponent);

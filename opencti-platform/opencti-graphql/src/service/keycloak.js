@@ -1,10 +1,34 @@
-// Keycloak Admin Client
 import Keycloak from 'keycloak-connect';
 import { defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import { auth, hasPermission, hasRole, KeycloakContext } from 'keycloak-connect-graphql';
 import KeycloakAdminClient, { AuthError } from '@darklight/keycloak-admin-client';
 import conf, { logApp } from '../config/conf';
+
+const realm = conf.get('keycloak:realm');
+const keycloakServer = conf.get('keycloak:server');
+const clientId = conf.get('keycloak:client_id');
+const secret = conf.get('keycloak:client_secret');
+const enabled = process.env.POLICY_ENFORCEMENT ? process.env.POLICY_ENFORCEMENT === '1' : false;
+
+let keycloakInstance;
+
+const keycloakAdminClient = new KeycloakAdminClient({
+  serverUrl: keycloakServer,
+  clientId,
+  realm,
+  credentials: {
+    secret,
+  },
+});
+
+export const keycloakEnabled = () => {
+  return enabled;
+};
+
+const getKeycloak = () => {
+  return keycloakInstance;
+};
 
 export const authDirectiveTransformer = (schema, directiveName = 'auth') => {
   return mapSchema(schema, {
@@ -77,18 +101,6 @@ export const roleDirectiveTransformer = (schema, directiveName = 'hasRole') => {
   });
 };
 
-const realm = conf.get('keycloak:realm');
-const keycloakServer = conf.get('keycloak:server');
-const clientId = conf.get('keycloak:client_id');
-const secret = conf.get('keycloak:client_secret');
-const enabled = process.env.POLICY_ENFORCEMENT ? process.env.POLICY_ENFORCEMENT === '1' : false;
-
-let keycloakInstance;
-
-export const keycloakEnabled = () => {
-  return enabled;
-};
-
 export const keycloakAlive = async () => {
   try {
     logApp.info('[INIT] Authentication Keycloak admin client');
@@ -129,18 +141,5 @@ export const applyKeycloakContext = (context, req) => {
     context.kauth = new KeycloakContext({ req }, getKeycloak());
   }
 };
-
-const getKeycloak = () => {
-  return keycloakInstance;
-};
-
-const keycloakAdminClient = new KeycloakAdminClient({
-  serverUrl: keycloakServer,
-  clientId,
-  realm,
-  credentials: {
-    secret,
-  },
-});
 
 export { keycloakAdminClient };
