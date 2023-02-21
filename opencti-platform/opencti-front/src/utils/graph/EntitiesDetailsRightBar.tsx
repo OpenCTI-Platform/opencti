@@ -21,6 +21,9 @@ const useStyles = makeStyles < Theme >((theme) => ({
     width: '100%',
     marginTop: '20px',
   },
+  label: {
+    backgroundColor: '#001e3c',
+  },
   toolbar: theme.mixins.toolbar,
 }));
 
@@ -65,7 +68,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         className={classes.formControl}
         fullWidth={true}
       >
-        <InputLabel id="entityField">
+        <InputLabel id="entityField" className={classes.label}>
           {selectedEntities[0].label}
         </InputLabel>
         <Select

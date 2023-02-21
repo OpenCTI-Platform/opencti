@@ -18,13 +18,19 @@ import ItemAuthor from '../../components/ItemAuthor';
 import ItemConfidence from '../../components/ItemConfidence';
 import {
   RelationshipDetailsQuery,
-  RelationshipDetailsQuery$data,
 } from './__generated__/RelationshipDetailsQuery.graphql';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 
 const useStyles = makeStyles < Theme >(() => ({
   relation: {
     marginTop: '20px',
+  },
+  label: {
+    marginTop: '20px',
+  },
+  relationTypeLabel: {
+    marginTop: '15px',
+    marginBottom: -1,
   },
 }));
 
@@ -107,7 +113,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
       <Typography
         variant="h3"
         gutterBottom={false}
-        style={{ marginTop: 15 }}
+        className={classes.relationTypeLabel}
       >
         {t('Relation type')}
       </Typography>
@@ -121,7 +127,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
                       to={`${resolveLink(stixCoreRelationship.from.entity_type)}/${
                         stixCoreRelationship.from.id
                       }/knowledge/relations/${stixCoreRelationship.id}`}
-                      size="large"
+                      size="small"
                     >
                         <InfoOutlined/>
                     </IconButton>
@@ -132,7 +138,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           <Typography
             variant="h3"
             gutterBottom={true}
-            style={{ marginTop: 15 }}
+            className={classes.label}
           >
             {t('Description')}
           </Typography>
@@ -146,7 +152,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
         && <div>
           <Typography variant="h3"
                       gutterBottom={true}
-                      style={{ marginTop: 15 }}
+                      className={classes.label}
           >
             {t('Marking')}
           </Typography>
@@ -161,7 +167,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           <Typography
             variant="h3"
             gutterBottom={true}
-            style={{ marginTop: 15 }}
+            className={classes.label}
           >
             {t('Author')}
           </Typography>
@@ -175,7 +181,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           <Typography
             variant="h3"
             gutterBottom={true}
-            style={{ marginTop: 20 }}
+            className={classes.label}
           >
             {t('Confidence level')}
           </Typography>
@@ -185,7 +191,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
       <Typography
         variant="h3"
         gutterBottom={true}
-        style={{ marginTop: 20 }}
+        className={classes.label}
       >
         {t('First seen')}
       </Typography>
@@ -193,7 +199,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
       <Typography
         variant="h3"
         gutterBottom={true}
-        style={{ marginTop: 20 }}
+        className={classes.label}
       >
         {t('Last seen')}
       </Typography>

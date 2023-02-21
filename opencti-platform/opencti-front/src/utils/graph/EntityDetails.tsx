@@ -23,6 +23,13 @@ const useStyles = makeStyles < Theme >(() => ({
   entity: {
     marginTop: '20px',
   },
+  label: {
+    marginTop: '20px',
+  },
+  nameLabel: {
+    marginTop: '15px',
+    marginBottom: -1,
+  },
 }));
 
 const entityDetailsQuery = graphql`
@@ -200,13 +207,13 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
       <Typography
         variant="h3"
         gutterBottom={false}
-        style={{ marginTop: 15 }}
+        className={classes.nameLabel}
       >
         {t('Name')}
       </Typography>
       {truncate(stixCoreObject?.name, 30)}
       { stixCoreObject
-        && <Tooltip title={t('View the item')}>
+        && <Tooltip title={t('View the item')} >
                   <span>
                     <IconButton
                       color="primary"
@@ -214,7 +221,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
                       to={`${resolveLink(stixCoreObject.entity_type)}/${
                         stixCoreObject.id
                       }`}
-                      size="large"
+                      size="small"
                     >
                         <InfoOutlined/>
                     </IconButton>
@@ -223,7 +230,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
       <Typography
         variant="h3"
         gutterBottom={true}
-        style={{ marginTop: 15 }}
+        className={classes.label}
       >
         {t('Type')}
       </Typography>
@@ -233,7 +240,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
           <Typography
             variant="h3"
             gutterBottom={true}
-            style={{ marginTop: 15 }}
+            className={classes.label}
           >
             {t('Description')}
           </Typography>
@@ -247,7 +254,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
        && <div>
         <Typography variant="h3"
         gutterBottom={true}
-        style={{ marginTop: 15 }}
+        className={classes.label}
         >
       {t('Marking')}
         </Typography>
@@ -262,7 +269,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
           <Typography
             variant="h3"
             gutterBottom={true}
-            style={{ marginTop: 15 }}
+            className={classes.label}
           >
             {t('Author')}
           </Typography>
