@@ -15,7 +15,7 @@ extend type Query {
 
 extend type Mutation {
   # ---- Information Type Catalog
-  createInformationTypeCatalog(input: InformationTypeCatalogInput): InformationTypeCatalog @hasPermission(resources: "Asset:update")
+  createInformationTypeCatalog(input: InformationTypeCatalogInput!): InformationTypeCatalog @hasPermission(resources: "Asset:update")
   deleteInformationTypeCatalog(id: ID!): ID @hasPermission(resources: "Asset:delete")
   deleteInformationTypeCatalogs(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
   editInformationTypeCatalog(id: ID!, input: [EditInput]!, commitMessage:String): InformationTypeCatalog @hasPermission(resources: "Asset:update")

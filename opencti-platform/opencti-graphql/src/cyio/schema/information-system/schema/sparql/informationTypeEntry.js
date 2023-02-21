@@ -1,10 +1,12 @@
+import { UserInputError } from 'apollo-server-errors';
 import { 
   optionalizePredicate, 
   parameterizePredicate, 
   buildSelectVariables, 
+  attachQuery,
+  detachQuery,
   generateId, 
   DARKLIGHT_NS,
-  CyioError 
 } from '../../../utils.js';
 import { getInformationTypeCatalogIri } from './informationTypeCatalog.js';
   
@@ -16,7 +18,7 @@ export function getReducer(type) {
     case 'IMPACT-DEFINITION':
       return impactDefinitionReducer;
     default:
-      throw new CyioError(`Unsupported reducer type ' ${type}'`)
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`)
   }
 }
   
@@ -64,8 +66,7 @@ const impactDefinitionReducer = (item) => {
       ...(item.recommendation &&  { recommendation: item.recommendation }),
   }
 };
-  
-  // Query Builders - Information Type Entry
+// Query Builders - Information Type Entry
 export const insertInformationTypeEntryQuery = (propValues) => {
   const id_material = {
     ...(propValues.identifier && {"identifier": propValues.identifier}),
@@ -223,15 +224,10 @@ export const attachToInformationTypeEntryQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return attachQuery(iri, statements, informationTypeEntryPredicateMap, '<http://nist.gov/ns/sp800-60#InformationTypeEntry>');
 }
 
 export const detachFromInformationTypeEntryQuery = (id, field, itemIris) => {
@@ -246,15 +242,10 @@ export const detachFromInformationTypeEntryQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return detachQuery(iri, statements, informationTypeEntryPredicateMap, '<http://nist.gov/ns/sp800-60#InformationTypeEntry>');
 }
 
 

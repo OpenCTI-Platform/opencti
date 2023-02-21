@@ -1,10 +1,12 @@
+import { UserInputError } from 'apollo-server-errors';
 import { 
   optionalizePredicate, 
   parameterizePredicate, 
   buildSelectVariables, 
+  attachQuery,
+  detachQuery,
   generateId, 
   DARKLIGHT_NS,
-  CyioError 
 } from '../../../utils.js';
   
   // Reducer Selection
@@ -13,7 +15,7 @@ export function getReducer(type) {
     case 'INFORMATION-TYPE-CATALOG':
       return informationTypeCatalogReducer;
     default:
-      throw new CyioError(`Unsupported reducer type ' ${type}'`)
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`)
   }
 }
   
@@ -207,15 +209,10 @@ export const attachToInformationTypeCatalogQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return attachQuery(iri, statements, informationTypeCatalogPredicateMap, '<http://nist.gov/ns/sp800-60#InformationTypeCatalog>');
 }
 
 export const detachFromInformationTypeCatalogQuery = (id, field, itemIris) => {
@@ -230,15 +227,10 @@ export const detachFromInformationTypeCatalogQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return detachQuery(iri, statements, informationTypeCatalogPredicateMap, '<http://nist.gov/ns/sp800-60#InformationTypeCatalog>');
 }
 
 // Predicate Maps

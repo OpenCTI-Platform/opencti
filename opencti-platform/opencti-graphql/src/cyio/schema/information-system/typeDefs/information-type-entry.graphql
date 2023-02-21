@@ -16,7 +16,7 @@ extend type Query {
 
 extend type Mutation {
   # ---- Information Type Entry
-  createInformationTypeEntry(input: InformationTypeEntryInput): InformationTypeEntry @hasPermission(resources: "Asset:update")
+  createInformationTypeEntry(input: InformationTypeEntryInput!): InformationTypeEntry @hasPermission(resources: "Asset:update")
   deleteInformationTypeEntry(id: ID!, catalogId: ID!): ID @hasPermission(resources: "Asset:delete")
   deleteInformationTypeEntries(ids: [ID!]!, catalogId: ID!): [ID] @hasPermission(resources: "Asset:delete")
   editInformationTypeEntry(id: ID!, input: [EditInput]!, commitMessage:String): InformationTypeEntry @hasPermission(resources: "Asset:update")

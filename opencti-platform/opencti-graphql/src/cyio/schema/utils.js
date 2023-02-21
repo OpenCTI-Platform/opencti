@@ -283,3 +283,104 @@ DELETE {
 }
   `;
 };
+
+// @function attachQuery
+//
+// This function generates an SPARQL query used attach a reference to
+// another object and update the 'modified' predicates of the target,
+// if it supports it.
+//
+// @param {string} iri - specifies the IRI of the instance of the target to attach
+// @param {string} statements[] - specifies an array of strings containing statements
+// @param {Object} predicateMap - specifies an map of predicates for the target instance
+// @param {string} classIri - specifies a string containing the IRI of the class of the target
+// @return {string} A string containing the generated SPARQL query
+//
+export const attachQuery = (iri, statements, predicateMap, classIri) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (!classIri.startsWith('<')) classIri = `<${classIri}>`;
+
+  if (Array.isArray(statements)) {
+    for (let statement of statements) {
+      if (!statement.endsWith('.')) statement = statement + ' .';
+    }
+  } else {
+    if ( !statements.endsWith('.')) statements = statements + ' .'
+  }
+
+  // if entity has a 'modified' field
+  if (predicateMap.hasOwnProperty('modified')) {
+    const timestamp = new Date().toISOString();
+    let modifiedPredicate = predicateMap['modified'].predicate;
+    return `
+      WITH ${iri}
+      DELETE { ${iri} ${modifiedPredicate} ?modified }
+      INSERT {
+        ${statements}
+        ${iri} ${modifiedPredicate} "${timestamp}"^^xsd:dateTime
+      }
+      WHERE {
+        ${iri} a ${classIri} .
+        ${iri} ${modifiedPredicate} ?modified .
+      }`
+  } else {
+    return `
+    INSERT DATA {
+      GRAPH ${iri} {
+        ${statements}
+      }
+    }`
+  }
+}
+
+// @function detachQuery
+//
+// This function generates an SPARQL query used detach a reference from
+// another object and update the 'modified' predicates of the target,
+// if it supports it.
+//
+// @param {string} iri - specifies the IRI of the instance of the target to detach
+// @param {string} statements[] - specifies an array of strings containing statements
+// @param {Object} predicateMap - specifies an map of predicates for the target instance
+// @param {string} classIri - specifies a string containing the class IRI of the target
+// @return {string} A string containing the generated SPARQL query
+//
+export const detachQuery = (iri, statements, predicateMap, classIri) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (!classIri.startsWith('<')) classIri = `<${classIri}>`;
+
+  if (Array.isArray(statements)) {
+    for (let statement of statements) {
+      if (!statement.endsWith('.')) statement = statement + ' .';
+    }
+  } else {
+    if ( !statements.endsWith('.')) statements = statements + ' .'
+  }
+
+  // if entity has a 'modified' field
+  if (predicateMap.hasOwnProperty('modified')) {
+    const timestamp = new Date().toISOString();
+    let modifiedPredicate = predicateMap['modified'].predicate;
+    return `
+      WITH ${iri}
+      DELETE { 
+        ${statements}
+        ${iri} ${modifiedPredicate} ?modified 
+      }
+      INSERT {
+        ${iri} ${modifiedPredicate} "${timestamp}"^^xsd:dateTime
+      }
+      WHERE {
+        ${iri} a ${classIri} .
+        ${iri} ${modifiedPredicate} ?modified .
+      }`
+  } else {
+    return `
+    DELETE DATA {
+      GRAPH ${iri} {
+        ${statements}
+      }
+    }`
+  }
+  
+}
