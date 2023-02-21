@@ -13,7 +13,8 @@
             "name": "GraphQL",
             "request": "launch",
             "command": "yarn start",
-            "cwd": "${workspaceFolder}/opencti-platform/opencti-graphql"
+            "cwd": "${workspaceFolder}/opencti-platform/opencti-graphql",
+            "envFile": "${workspaceFolder}/opencti-platform/opencti-graphql/.env"
         }
     ]
 }
