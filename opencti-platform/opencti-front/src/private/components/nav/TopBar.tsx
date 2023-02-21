@@ -478,7 +478,6 @@ const TopBar: FunctionComponent<TopBarProps> = ({
                   handleAddFilter={undefined}
                   type={undefined}
                   availableRelationFilterTypes={undefined}
-                  usedFilters={undefined}
                 />
                 <Tooltip title={t('Bulk search')}>
                   <IconButton

@@ -20,7 +20,7 @@ const Filters = ({
   allEntityTypes,
   handleAddFilter,
   type,
-  usedFilters,
+  usedFilters = {},
 }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -37,7 +37,7 @@ const Filters = ({
         if (!filtersToApplyDateKeys.includes(inputKey)) {
           return (inputKey);
         }
-        return (null);
+        return null;
       }).filter((n) => n !== null);
       if (isNotEmptyField(keysToRemove)) {
         let newInputValues = inputValues;
@@ -49,7 +49,7 @@ const Filters = ({
         if (!inputValuesDateKeys.includes(filterKey)) {
           return (filterKey);
         }
-        return (null);
+        return null;
       }).filter((n) => n !== null);
       if (isNotEmptyField(keysToAdd)) {
         let newInputValues = inputValues;
@@ -109,6 +109,7 @@ const Filters = ({
   } else {
     handleUpdateDateInputValues(usedFilters);
   }
+
   const filterElement = (
     <FiltersElement
       variant={variant}

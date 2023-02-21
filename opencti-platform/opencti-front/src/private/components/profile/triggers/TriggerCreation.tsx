@@ -397,7 +397,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
           allEntityTypes={undefined}
           type={undefined}
           availableRelationFilterTypes={undefined}
-          usedFilters={undefined}
         />
       </div>
       <div className="clearfix" />
