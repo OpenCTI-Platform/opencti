@@ -146,7 +146,7 @@ export const findAllInformationTypeEntries = async (args, dbName, dataSources, s
   }
 };
 
-export const createInformationTypeEntry = async (input, dbName, selectMap, dataSources) => {
+export const createInformationTypeEntry = async (input, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
   for (const [key, value] of Object.entries(input)) {
@@ -259,11 +259,12 @@ export const createInformationTypeEntry = async (input, dbName, selectMap, dataS
   await addInformationTypeToCatalog(input.catalog_id, id, dbName, dataSources);
 
   // retrieve the newly created Information Type Entry to be returned
-  const select = selectInformationTypeEntryQuery(id, selectMap.getNode("createInformationTypeEntry"));
+  const selectQuery = selectInformationTypeEntryQuery(id, select);
+  let result;
   try {
-    const result = await dataSources.Stardog.queryById({
+    result = await dataSources.Stardog.queryById({
       dbName: contextDB,
-      sparqlQuery: select,
+      sparqlQuery: selectQuery,
       queryId: "Select Information Type Entry object",
       singularizeSchema: singularizeInformationTypeEntrySchema
     });
@@ -276,7 +277,7 @@ export const createInformationTypeEntry = async (input, dbName, selectMap, dataS
   return reducer(result[0]);
 };
 
-export const deleteInformationTypeEntryById = async ( id, catalogId, dbName, dataSources, selectMap) => {
+export const deleteInformationTypeEntryById = async ( id, catalogId, dbName, dataSources ) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   let select = ['iri','id','object_type','system','title','confidentiality_impact','integrity_impact','availability_impact','catalog'];
   let idArray = [];
@@ -374,7 +375,7 @@ export const deleteInformationTypeEntryById = async ( id, catalogId, dbName, dat
   return removedIds;
 };
 
-export const editInformationTypeEntryById = async (id, input, dbName, dataSources, selectMap, schema) => {
+export const editInformationTypeEntryById = async (id, input, dbName, dataSources, select, schema) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);  
 
@@ -544,10 +545,10 @@ export const editInformationTypeEntryById = async (id, input, dbName, dataSource
     }
   }
 
-  const select = selectInformationTypeEntryQuery(id, selectMap.getNode("editInformationTypeEntry"));
+  const selectQuery = selectInformationTypeEntryQuery(id, select);
   const result = await dataSources.Stardog.queryById({
     dbName: contextDB,
-    sparqlQuery: select,
+    sparqlQuery: selectQuery,
     queryId: "Select Information Type Entry",
     singularizeSchema: singularizeInformationTypeEntrySchema
   });
@@ -555,6 +556,7 @@ export const editInformationTypeEntryById = async (id, input, dbName, dataSource
   return reducer(result[0]);
 };
 
+// Impact Definition
 export const findImpactDefinitionById = async (id, dbName, dataSources, select) => {
   if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);
 
@@ -562,8 +564,7 @@ export const findImpactDefinitionById = async (id, dbName, dataSources, select) 
   return findImpactDefinitionByIri(iri, dbName, dataSources, select) ;
 };
 
-// Impact Definition
-export const findImpactDefinitionByIri = async (iri, field, dbName, dataSources, select) => {
+export const findImpactDefinitionByIri = async (iri, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   const sparqlQuery = selectImpactDefinitionByIriQuery(iri, select);
   let response;
@@ -586,7 +587,7 @@ export const findImpactDefinitionByIri = async (iri, field, dbName, dataSources,
   }
 };
 
-export const createImpactDefinition = async (input, dbName, selectMap, dataSources) => {
+export const createImpactDefinition = async (input, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
   for (const [key, value] of Object.entries(input)) {
@@ -615,10 +616,10 @@ export const createImpactDefinition = async (input, dbName, selectMap, dataSourc
   }
 
   // retrieve the newly created Impact Definition to be returned
-  const select = selectImpactDefinitionQuery(id, selectMap.getNode("createImpactDefinition"));
+  const selectQuery = selectImpactDefinitionQuery(id, select);
   const result = await dataSources.Stardog.queryById({
     dbName: contextDB,
-    sparqlQuery: select,
+    sparqlQuery: selectQuery,
     queryId: "Select Connection Information object",
     singularizeSchema: singularizeImpactDefinitionSchema
   });

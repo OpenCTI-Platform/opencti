@@ -129,12 +129,11 @@ const hardwareResolvers = {
             continue;
           }
 
-          if (hardware.asset_type)
-            if (offset) {
-              // skip down past the offset
-              offset--;
-              continue;
-            }
+          if (offset) {
+            // skip down past the offset
+            offset--;
+            continue;
+          }
 
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {

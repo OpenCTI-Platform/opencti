@@ -143,7 +143,7 @@ export const findAllInformationTypeCatalogs = async (args, dbName, dataSources, 
   }
 };
 
-export const createInformationTypeCatalog = async (input, dbName, selectMap, dataSources) => {
+export const createInformationTypeCatalog = async (input, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
   for (const [key, value] of Object.entries(input)) {
@@ -175,10 +175,10 @@ export const createInformationTypeCatalog = async (input, dbName, selectMap, dat
   await attachToSystemConfiguration(id, 'information-type-catalog', dataSources);
 
   // retrieve the newly created Information Type Catalog to be returned
-  const select = selectInformationTypeCatalogQuery(id, selectMap.getNode("createInformationTypeCatalog"));
+  const selectQuery = selectInformationTypeCatalogQuery(id, select);
   response = await dataSources.Stardog.queryById({
     dbName: contextDB,
-    sparqlQuery: select,
+    sparqlQuery: selectQuery,
     queryId: "Select Connection Information object",
     singularizeSchema: singularizeInformationTypeCatalogSchema
   });
@@ -186,7 +186,7 @@ export const createInformationTypeCatalog = async (input, dbName, selectMap, dat
   return reducer(response[0]);
 };
 
-export const deleteInformationTypeCatalogById = async ( id, dbName, dataSources) => {
+export const deleteInformationTypeCatalogById = async ( id, dbName, dataSources ) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   let select = ['id','object_type','catalog','entries'];
   let idArray = []
@@ -255,7 +255,7 @@ export const deleteInformationTypeCatalogById = async ( id, dbName, dataSources)
   return removedIds;
 };
 
-export const editInformationTypeCatalogById = async (id, input, dbName, dataSources, selectMap, schema) => {
+export const editInformationTypeCatalogById = async (id, input, dbName, dataSources, select, schema) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);  
 
@@ -363,10 +363,10 @@ export const editInformationTypeCatalogById = async (id, input, dbName, dataSour
     }
   }
 
-  const select = selectInformationTypeCatalogQuery(id, selectMap.getNode("editInformationTypeCatalog"));
+  const selectQuery = selectInformationTypeCatalogQuery(id, select);
   const result = await dataSources.Stardog.queryById({
     dbName: contextDB,
-    sparqlQuery: select,
+    sparqlQuery: selectQuery,
     queryId: "Select Information Type Catalog",
     singularizeSchema: singularizeInformationTypeCatalogSchema
   });

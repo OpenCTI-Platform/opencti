@@ -172,8 +172,8 @@ const createApolloServer = async (app, httpServer) => {
           const { fieldName } = e.extensions.exception;
           const ConstraintError = ValidationError(fieldName);
           e = apolloFormatError(ConstraintError);
-        } else {
-          e = apolloFormatError(UnknownError(errorCode));
+        // } else {
+        //   // e = apolloFormatError(UnknownError(errorCode));
         }
       }
       // Remove the exception stack in production.

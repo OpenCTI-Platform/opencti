@@ -18,13 +18,13 @@ const cyioInformationTypeCatalogResolvers = {
   },
   Mutation: {
     // Information Type Catalog
-    createInformationTypeCatalog: async (_, { input }, { dbName, selectMap, dataSources }) => createInformationTypeCatalog(input, dbName, selectMap, dataSources),
+    createInformationTypeCatalog: async (_, { input }, { dbName, dataSources, selectMap }) => createInformationTypeCatalog(input, dbName, dataSources, selectMap.getNode('createInformationTypeCatalog')),
     deleteInformationTypeCatalog: async (_, { id }, { dbName, dataSources }) => deleteInformationTypeCatalogById( id, dbName, dataSources),
     deleteInformationTypeCatalogs: async (_, { ids }, { dbName, dataSources }) => deleteInformationTypeCatalogById( ids, dbName, dataSources),
-    editInformationTypeCatalog: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editInformationTypeCatalogById(id, input, dbName, dataSources, selectMap, schema),
+    editInformationTypeCatalog: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editInformationTypeCatalogById(id, input, dbName, dataSources, selectMap.getNode('editInformationTypeCatalog'), schema),
     // Attach & Detach
-    addInformationTypeToCatalog: async (_, { id, entryId }, { dbName, dataSources, selectMap }) => addInformationTypeToCatalog(id, entryId, dbName, dataSources, selectMap),
-    removeInformationTypeFromCatalog: async (_, { id, entryId }, { dbName, dataSources, selectMap }) => removeInformationTypeFromCatalog(id, entryId, dbName, dataSources, selectMap),
+    addInformationTypeToCatalog: async (_, { id, entryId }, { dbName, dataSources }) => addInformationTypeToCatalog(id, entryId, dbName, dataSources),
+    removeInformationTypeFromCatalog: async (_, { id, entryId }, { dbName, dataSources }) => removeInformationTypeFromCatalog(id, entryId, dbName, dataSources),
   },
   InformationTypeCatalog: {
     entries: async (parent, _, { dbName, dataSources, selectMap }) => {
