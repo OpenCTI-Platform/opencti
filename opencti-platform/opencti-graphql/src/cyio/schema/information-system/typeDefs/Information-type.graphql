@@ -1,6 +1,6 @@
 extend type Query {
   informationType(id: ID!): InformationType @hasPermission(resources:"Asset:view")
-  informationTypeList(
+  informationTypes(
     first: Int
     offset: Int
     orderedBy: InformationTypeOrdering
@@ -12,9 +12,13 @@ extend type Query {
 }
 
 extend type Mutation {
-  createInformationType(input: InformationTypeInput): InformationSystem @hasPermission(resources: "Asset:update")
-  deleteInformationType(id: ID!): String! @hasPermission(resources: "Asset:delete")
-  editInformationType(id: ID!, input: [EditInput]!, commitMessage: String): InformationSystem @hasPermission(resources: "Asset:update")
+  createInformationType(input: InformationTypeInput!): InformationType @hasPermission(resources: "Asset:update")
+  deleteInformationType(id: ID!): ID @hasPermission(resources: "Asset:delete")
+  deleteInformationTypes(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
+  editInformationType(id: ID!, input: [EditInput]!, commitMessage: String): InformationType @hasPermission(resources: "Asset:update")
+  #
+  attachToInformationType(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
+  detachFromInformationType(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
 }
 
 ## -------- Information Type
@@ -173,7 +177,7 @@ type ImpactLevel implements BasicObject & LifecycleObject & OscalObject {
   "Identifies the prescribed base (Confidentiality, Integrity, or Availability) security impact level."
   base_impact_level: FIPS199!
   "Identifies the selected (Confidentiality, Integrity, or Availability) security impact level."
-  select_impact_level: FIPS199
+  selected_impact_level: FIPS199
   "Identifies the justification for the change in impact level, if the selected is different from the base impact level provided in the categorization."
   adjustment_justification: String
 }
@@ -182,7 +186,7 @@ input ImpactLevelInput {
   "Identifies the prescribed base (Confidentiality, Integrity, or Availability) security impact level."
   base_impact_level: FIPS199!
   "Identifies the selected (Confidentiality, Integrity, or Availability) security impact level."
-  select_impact_level: FIPS199
+  selected_impact_level: FIPS199
   "Identifies the justification for the change in impact level, if the selected is different from the base impact level provided in the categorization."
   adjustment_justification: String
 }
