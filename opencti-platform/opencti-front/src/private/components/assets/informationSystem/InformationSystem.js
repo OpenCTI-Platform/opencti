@@ -57,7 +57,7 @@ class InformationSystemComponent extends Component {
         <div className={classes.container}>
           <CyioDomainObjectHeader
             history={history}
-            name={informationSystem.name}
+            name={informationSystem.short_name}
             cyioDomainObject={informationSystem}
             PopoverComponent={<InformationSystemPopover />}
             goBack='/defender HQ/assets/information_systems'
@@ -91,9 +91,9 @@ class InformationSystemComponent extends Component {
           >
             <Grid item={true} xs={12}>
               <CyioCoreObjectExternalReferences
-                externalReferences={informationSystem.external_references}
+                externalReferences={informationSystem.links}
                 cyioCoreObjectId={informationSystem.id}
-                fieldName='external_references'
+                fieldName='links'
                 refreshQuery={refreshQuery}
                 typename={informationSystem.__typename}
               />
@@ -102,8 +102,8 @@ class InformationSystemComponent extends Component {
           <CyioCoreObjectOrCyioCoreRelationshipNotes
             typename={informationSystem.__typename}
             refreshQuery={refreshQuery}
-            fieldName='notes'
-            notes={informationSystem.notes}
+            fieldName='remarks'
+            notes={informationSystem.remarks}
             cyioCoreObjectOrCyioCoreRelationshipId={informationSystem.id}
           />
           <InformationSystemFormCreation
@@ -129,11 +129,10 @@ InformationSystemComponent.propTypes = {
 
 const InformationSystem = createFragmentContainer(InformationSystemComponent, {
   informationSystem: graphql`
-    fragment InformationSystem_information on SoftwareAsset {
+    fragment InformationSystem_information on InformationSystem {
       __typename
       id
-      name
-      asset_id
+      short_name
       labels {
         __typename
         id
@@ -142,37 +141,26 @@ const InformationSystem = createFragmentContainer(InformationSystemComponent, {
         entity_type
         description
       }
-      external_references {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
-      }
-      notes {
+      links {
         __typename
         id
         # created
         # modified
+        external_id     # external id
+        source_name     # Title
+        description     # description
+        url             # URL
+        media_type      # Media Type
         entity_type
+      }
+      remarks {
+        __typename
+        id
         abstract
         content
         authors
+        entity_type
       }
-      description
-      version
-      vendor_name
-      patch_level
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      operational_status
       ...InformationSystemOverview_information
       ...InformationSystemDetails_information
     }

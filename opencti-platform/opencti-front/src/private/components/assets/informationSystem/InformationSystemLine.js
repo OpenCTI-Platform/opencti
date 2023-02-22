@@ -91,7 +91,7 @@ class InformationSystemLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {/* KK-HWELL-011 */}
-                {node.name && node.name}
+                {node.short_name && node.short_name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -131,11 +131,11 @@ class InformationSystemLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.label_name.width }}
               >
-                <CyioCoreObjectLabels
+                {/* <CyioCoreObjectLabels
                   variant="inList"
                   labels={node.labels}
                   onClick={onLabelClick.bind(this)}
-                />
+                /> */}
               </div>
               <div
                 className={classes.bodyItem}
@@ -162,65 +162,9 @@ InformationSystemLineComponent.propTypes = {
 
 const InformationSystemLineFragment = createFragmentContainer(InformationSystemLineComponent, {
   node: graphql`
-    fragment InformationSystemLine_node on SoftwareAsset {
+    fragment InformationSystemLine_node on InformationSystem {
       id
-      name
-      asset_type
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
-      external_references {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
-      }
-      notes {
-        id
-        # created
-        # modified
-        entity_type
-        abstract
-        content
-        authors
-      }
-      asset_type
-      asset_id
-      vendor_name
-      version
-      patch_level
-      cpe_identifier
-      software_identifier
-      # created
-      # modified
-      # objectMarking {
-      #   edges {
-      #     node {
-      #       id
-      #       definition
-      #     }
-      #   }
-      # }
-      # objectLabel {
-      #   edges {
-      #     node {
-      #       id
-      #       value
-      #       color
-      #     }
-      #   }
-      # }
+      short_name
     }
   `,
 });

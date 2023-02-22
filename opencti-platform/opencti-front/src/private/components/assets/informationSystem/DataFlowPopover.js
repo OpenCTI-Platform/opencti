@@ -189,27 +189,8 @@ DataFlowComponent.propTypes = {
 
 const DataFlowPopover = createFragmentContainer(DataFlowComponent, {
   informationSystem: graphql`
-    fragment DataFlowPopover_information on SoftwareAsset {
+    fragment DataFlowPopover_information on InformationSystem {
       id
-      software_identifier
-      license_key
-      cpe_identifier
-      patch_level
-      installation_id
-      implementation_point
-      last_scanned
-      is_scanned
-      installed_on {
-        id
-        entity_type
-        vendor_name
-        name
-        version
-      }
-      related_risks {
-        id
-        name
-      }
     }
   `,
 });

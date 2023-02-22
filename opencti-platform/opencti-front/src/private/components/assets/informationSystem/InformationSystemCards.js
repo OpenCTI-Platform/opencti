@@ -21,7 +21,7 @@ class InformationSystemCards extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'softwareAssetList',
+      'informationSystems',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -78,10 +78,10 @@ class InformationSystemCards extends Component {
         handleDecrementedOffsetChange={this.handleDecrementedOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['softwareAssetList', 'edges'], this.props.data)}
+        dataList={pathOr([], ['informationSystems', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfCardsToLoad,
-          ['softwareAssetList', 'pageInfo', 'globalCount'],
+          ['informationSystems', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         offset={offset}
@@ -115,9 +115,9 @@ export const informationSystemCardsQuery = graphql`
     $first: Int!
     $offset: Int!
     $cursor: ID
-    $orderedBy: SoftwareAssetOrdering
+    # $orderedBy: InformationSystemOrdering
     $orderMode: OrderingMode
-    $filters: [SoftwareAssetFiltering]
+    $filters: [InformationSystemFiltering]
     $filterMode: FilterMode
   ) {
     ...InformationSystemCards_data
@@ -126,7 +126,7 @@ export const informationSystemCardsQuery = graphql`
         first: $first
         offset: $offset
         cursor: $cursor
-        orderedBy: $orderedBy
+        # orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
         filterMode: $filterMode
@@ -144,26 +144,24 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "SoftwareAssetOrdering", defaultValue: name }
+        # orderedBy: { type: "InformationSystemOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[SoftwareAssetFiltering]" }
+        filters: { type: "[InformationSystemFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {
-        softwareAssetList(
+        informationSystems(
           search: $search
           first: $first
           offset: $offset
-          # after: $cursor
-          orderedBy: $orderedBy
+          # orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
           filterMode: $filterMode
-        ) @connection(key: "Pagination_softwareAssetList") {
+        ) @connection(key: "Pagination_informationSystems") {
           edges {
             node {
               id
-              name
-              description
+              short_name
               ...InformationSystemCard_node
             }
           }
@@ -179,7 +177,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.softwareAssetList;
+      return props.data && props.data.informationSystems;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

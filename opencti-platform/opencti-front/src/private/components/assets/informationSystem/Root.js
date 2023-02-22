@@ -17,9 +17,9 @@ import TopBar from '../../nav/TopBar';
 
 const informationSystemQuery = graphql`
   query RootInformationSystemQuery($id: ID!) {
-    softwareAsset(id: $id) {
+    informationSystem(id: $id) {
       id
-      name
+      short_name
       ...InformationSystem_information
       ...Analysis_analysis
     }
@@ -60,7 +60,7 @@ class RootInformationSystem extends Component {
           variables={{ id: informationSystemId }}
           render={({ props, retry }) => {
             if (props) {
-              if (props.softwareAsset) {
+              if (props.informationSystem) {
                 return (
                   <Switch>
                     <Route
@@ -70,7 +70,7 @@ class RootInformationSystem extends Component {
                         <InformationSystem
                           {...routeProps}
                           refreshQuery={retry}
-                          informationSystem={props.softwareAsset}
+                          informationSystem={props.informationSystem}
                         />
                       )}
                     />
@@ -81,7 +81,7 @@ class RootInformationSystem extends Component {
                         <Analysis
                           {...routeProps}
                           refreshQuery={retry}
-                          informationSystem={props.softwareAsset}
+                          informationSystem={props.informationSystem}
                         />
                       )}
                     />

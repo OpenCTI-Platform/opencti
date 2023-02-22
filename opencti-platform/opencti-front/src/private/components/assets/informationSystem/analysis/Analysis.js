@@ -73,11 +73,10 @@ AnalysisComponent.propTypes = {
 
 const InformationSystem = createFragmentContainer(AnalysisComponent, {
   informationSystem: graphql`
-    fragment Analysis_analysis on SoftwareAsset {
+    fragment Analysis_analysis on InformationSystem {
       __typename
       id
-      name
-      asset_id
+      short_name
       labels {
         __typename
         id
@@ -86,37 +85,6 @@ const InformationSystem = createFragmentContainer(AnalysisComponent, {
         entity_type
         description
       }
-      external_references {
-        __typename
-        id
-        source_name
-        description
-        entity_type
-        url
-        hashes {
-          value
-        }
-        external_id
-      }
-      notes {
-        __typename
-        id
-        # created
-        # modified
-        entity_type
-        abstract
-        content
-        authors
-      }
-      description
-      version
-      vendor_name
-      patch_level
-      asset_tag
-      asset_type
-      serial_number
-      release_date
-      operational_status
     }
   `,
 });

@@ -135,7 +135,7 @@ class InformationSystemCardComponent extends Component {
                 <div className="clearfix" />
                 <Typography variant="h2">
                   {/* {t('KK-HWELL-011')} */}
-                  {node.name && t(node.name)}
+                  {node.short_name && t(node.short_name)}
                 </Typography>
               </div>
               <div>
@@ -237,10 +237,10 @@ class InformationSystemCardComponent extends Component {
                 gutterBottom={true}>
                 {t('Label')}
               </Typography>
-              <CyioCoreObjectLabels
+              {/* <CyioCoreObjectLabels
                 labels={node.labels}
                 onClick={onLabelClick.bind(this)}
-              />
+              /> */}
             </div>
           </CardContent>
         </CardActionArea>
@@ -262,24 +262,9 @@ const InformationSystemCardFragment = createFragmentContainer(
   InformationSystemCardComponent,
   {
     node: graphql`
-      fragment InformationSystemCard_node on SoftwareAsset {
+      fragment InformationSystemCard_node on InformationSystem {
         id
-        asset_type
-        name
-        asset_id
-        vendor_name
-        version
-        created
-        patch_level
-        cpe_identifier
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
+        short_name
       }
     `,
   },

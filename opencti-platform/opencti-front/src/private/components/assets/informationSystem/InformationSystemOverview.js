@@ -313,27 +313,8 @@ InformationSystemOverviewComponent.propTypes = {
 
 const InformationSystemOverview = createFragmentContainer(InformationSystemOverviewComponent, {
   informationSystem: graphql`
-    fragment InformationSystemOverview_information on SoftwareAsset {
+    fragment InformationSystemOverview_information on InformationSystem {
       id
-      software_identifier
-      license_key
-      cpe_identifier
-      patch_level
-      installation_id
-      implementation_point
-      last_scanned
-      is_scanned
-      installed_on {
-        id
-        entity_type
-        vendor_name
-        name
-        version
-      }
-      related_risks {
-        id
-        name
-      }
     }
   `,
 });

@@ -248,27 +248,8 @@ NetworkArchitectureComponent.propTypes = {
 
 const NetworkArchitectureEditionPopover = createFragmentContainer(NetworkArchitectureComponent, {
   informationSystem: graphql`
-    fragment NetworkArchitectureEditionPopover_information on SoftwareAsset {
+    fragment NetworkArchitectureEditionPopover_information on InformationSystem {
       id
-      software_identifier
-      license_key
-      cpe_identifier
-      patch_level
-      installation_id
-      implementation_point
-      last_scanned
-      is_scanned
-      installed_on {
-        id
-        entity_type
-        vendor_name
-        name
-        version
-      }
-      related_risks {
-        id
-        name
-      }
     }
   `,
 });
