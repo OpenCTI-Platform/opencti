@@ -51,6 +51,7 @@ const DEFAULT_LIVE_STREAM = 'live';
 const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
+const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
 
 const createBroadcastClient = (channel) => {
   return {
@@ -293,7 +294,7 @@ const createSseMiddleware = () => {
         channel.sendEvent(lastEventId, 'heartbeat', idDate);
       }
     };
-    const heartbeatInterval = setInterval(heartTimer, 5000);
+    const heartbeatInterval = setInterval(heartTimer, HEARTBEAT_PERIOD);
     return { channel, client: createBroadcastClient(channel) };
   };
   const genericStreamHandler = async (req, res) => {
@@ -554,7 +555,7 @@ const createSseMiddleware = () => {
               if (!isInferredData || (isInferredData && withInferences)) {
                 const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, streamFilters);
                 if (type === EVENT_TYPE_UPDATE) {
-                  const {newDocument: previous} = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
+                  const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
                   const isPreviouslyVisible = await isStixMatchFilters(context, user, previous, streamFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
@@ -572,8 +573,8 @@ const createSseMiddleware = () => {
                     // Entity can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
                     const elementInternalId = stix.extensions[STIX_EXT_OCTI].id;
-                    const filters = [{key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId]}];
-                    const args = {connectionFormat: false, filters};
+                    const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }];
+                    const args = { connectionFormat: false, filters };
                     const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);
                     let isContainerMatching = false;
                     for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
