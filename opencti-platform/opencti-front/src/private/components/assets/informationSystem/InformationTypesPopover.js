@@ -124,11 +124,39 @@ class InformationTypesPopover extends Component {
       open: false,
       openAutocomplete: false,
       products: [],
-      productName: '',
+      productName: 'Windows',
       onSubmit: false,
       selectedProduct: {},
       displayCancel: false,
     };
+  }
+
+  componentDidMount() {
+    fetchQuery(informationTypesPopoverQuery, {
+      search: this.state.productName,
+      orderedBy: 'name',
+      orderMode: 'asc',
+      filters: [
+        { key: 'object_type', values: ['software'] },
+      ],
+    })
+      .toPromise()
+      .then((data) => {
+        const products = R.pipe(
+          R.pathOr([], ['products', 'edges']),
+          R.map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          products: R.union(this.state.products, products),
+        });
+      })
+      .catch((err) => {
+        const ErrorResponse = err.res.errors;
+        this.setState({ error: ErrorResponse });
+      });
   }
 
   searchProducts(event, value) {
@@ -306,7 +334,7 @@ class InformationTypesPopover extends Component {
                       </div>
                       <div className="clearfix" />
                       <Autocomplete
-                        open={this.state.openAutocomplete}
+                        // open={this.state.openAutocomplete}
                         onClose={() => this.setState({ openAutocomplete: false })}
                         size="small"
                         loading={selectedProduct.name || false}
