@@ -15,6 +15,9 @@ import graphql from "babel-plugin-relay/macro";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import Search from '@material-ui/icons/Search';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import {
   Dialog,
   DialogContent,
@@ -31,7 +34,7 @@ import RolesField from "../../common/form/RolesField";
 import LoggedBy from "../../common/form/LoggedBy";
 import SelectField from "../../../../components/SelectField";
 import { toastGenericError } from "../../../../utils/bakedToast";
-import { commitMutation } from "../../../../relay/environment";
+import { commitMutation, fetchQuery } from "../../../../relay/environment";
 
 const styles = (theme) => ({
   dialogMain: {
@@ -75,6 +78,36 @@ const informationTypesPopoverMutation = graphql`
   }
 `;
 
+const informationTypesPopoverQuery = graphql`
+  query InformationTypesPopoverQuery($search: String, $filters: [ProductFiltering], $orderedBy: ProductOrdering, $orderMode: OrderingMode) {
+    products(search: $search, filters: $filters, orderedBy: $orderedBy, orderMode: $orderMode) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const informationTypesPopoverIdQuery = graphql`
+  query InformationTypesPopoverIdQuery( $id: ID!) {
+    product(id: $id) {
+      id
+      created
+      modified
+      name
+      vendor
+      version
+      cpe_identifier
+      ... on SoftwareProduct {
+        software_identifier
+      }
+    }
+  }
+`;
+
 const ResponsiblePartyValidation = (t) =>
   Yup.object().shape({
     name: Yup.string().required(t("This field is required")),
@@ -89,9 +122,57 @@ class InformationTypesPopover extends Component {
     super(props);
     this.state = {
       open: false,
+      openAutocomplete: false,
+      products: [],
+      productName: '',
       onSubmit: false,
+      selectedProduct: {},
       displayCancel: false,
     };
+  }
+
+  searchProducts(event, value) {
+    this.setState({ productName: value });
+    if (event.type === 'click' && value) {
+      const selectedProductValue = this.state.products.filter(
+        (product) => product.label === value,
+      )[0];
+      fetchQuery(informationTypesPopoverIdQuery, {
+        id: selectedProductValue.value,
+      }).toPromise()
+        .then((data) => {
+          this.setState({ selectedProduct: data.product });
+        });
+    }
+  }
+
+  handleSearchProducts() {
+    this.setState({ selectedProduct: { name: this.state.productName }, openAutocomplete: true });
+    (this.state.productName.length > 2) && fetchQuery(informationTypesPopoverQuery, {
+      search: this.state.productName,
+      orderedBy: 'name',
+      orderMode: 'asc',
+      filters: [
+        { key: 'object_type', values: ['software'] },
+      ],
+    })
+      .toPromise()
+      .then((data) => {
+        const products = R.pipe(
+          R.pathOr([], ['products', 'edges']),
+          R.map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          products: R.union(this.state.products, products),
+        });
+      })
+      .catch((err) => {
+        const ErrorResponse = err.res.errors;
+        this.setState({ error: ErrorResponse });
+      });
   }
 
   handleOpen() {
@@ -139,7 +220,10 @@ class InformationTypesPopover extends Component {
 
   render() {
     const { t, classes, name, history } = this.props;
-    const { open } = this.state;
+    const {
+      open,
+      selectedProduct,
+    } = this.state;
 
     return (
       <div>
@@ -221,13 +305,46 @@ class InformationTypesPopover extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="name"
-                        fullWidth={true}
+                      <Autocomplete
+                        open={this.state.openAutocomplete}
+                        onClose={() => this.setState({ openAutocomplete: false })}
                         size="small"
-                        containerstyle={{ width: "100%" }}
-                        variant="outlined"
+                        loading={selectedProduct.name || false}
+                        loadingText='Searching...'
+                        className={classes.autocomplete}
+                        classes={{
+                          popupIndicatorOpen: classes.popupIndicator,
+                        }}
+                        noOptionsText={t('No available options')}
+                        popupIcon={<KeyboardArrowDownIcon onClick={this.handleSearchProducts.bind(this)} />}
+                        options={this.state.products}
+                        getOptionLabel={(option) => (option.label ? option.label : option)}
+                        onInputChange={this.searchProducts.bind(this)}
+                        selectOnFocus={true}
+                        autoHighlight={true}
+                        renderInput={(params) => (
+                          <TextField
+                            variant='outlined'
+                            {...params}
+                            inputProps={{
+                              ...params.inputProps,
+                              onKeyDown: (e) => {
+                                if (e.key === 'Enter') {
+                                  e.stopPropagation();
+                                  this.handleSearchProducts()
+                                }
+                              },
+                            }}
+                          />
+                          // <Field
+                          //   component={TextField}
+                          //   name="name"
+                          //   fullWidth={true}
+                          //   size="small"
+                          //   containerstyle={{ width: "100%" }}
+                          //   variant="outlined"
+                          // />
+                        )}
                       />
                     </Grid>
                     <Grid xs={12} item={true}>
