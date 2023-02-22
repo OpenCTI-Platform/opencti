@@ -151,8 +151,6 @@ const incidentEditionOverviewFragment = graphql`
 const IncidentValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
-  incident_type: Yup.string(),
-  severity: Yup.string(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
