@@ -4,22 +4,11 @@ import React, { ReactElement, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { Field } from 'formik';
-import { useFragment, useMutation } from 'react-relay';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import { useMutation } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
-import {
-  entitySettingFragment,
-  entitySettingsFragment,
-  entitySettingsPatch,
-  entitySettingsQuery,
-} from '../sub_types/EntitySetting';
-import {
-  EntitySettingConnection_entitySettings$key,
-} from '../sub_types/__generated__/EntitySettingConnection_entitySettings.graphql';
-import { EntitySetting_entitySetting$data } from '../sub_types/__generated__/EntitySetting_entitySetting.graphql';
-import { EntitySettingsQuery } from '../sub_types/__generated__/EntitySettingsQuery.graphql';
+import { entitySettingsPatch } from '../sub_types/EntitySetting';
+import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 
 const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Note', 'Opinion']],
@@ -61,23 +50,10 @@ interface EntitySettingHidden {
   group: string
 }
 
-const HiddenTypesList = ({ queryRef }: { queryRef: PreloadedQuery<EntitySettingsQuery> }) => {
+const HiddenTypesList = () => {
   const { t } = useFormatter();
 
-  const filterHidden = (node: EntitySetting_entitySetting$data) => node.platform_hidden_type !== null;
-
-  const entitySettings = usePreloadedFragment<
-  EntitySettingsQuery,
-  EntitySettingConnection_entitySettings$key
-  >({
-    linesQuery: entitySettingsQuery,
-    linesFragment: entitySettingsFragment,
-    queryRef,
-    nodePath: 'entitySettings',
-  })
-    ?.edges.map((edgeNode) => (edgeNode.node))
-    .map((node) => useFragment(entitySettingFragment, node) as EntitySetting_entitySetting$data)
-    .filter(filterHidden)
+  const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
       id: node.id,
       target_type: node.target_type,
@@ -85,8 +61,7 @@ const HiddenTypesList = ({ queryRef }: { queryRef: PreloadedQuery<EntitySettings
       group: findGroupKey(node.target_type),
     }))
     .filter((entitySetting) => entitySetting.group !== undefined)
-    .sort((a, b) => (groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group)))
-    ?? [];
+    .sort((a, b) => (groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group)));
 
   const entitySettingsHiddenGrouped = entitySettings.reduce(
     (entryMap, entry) => {

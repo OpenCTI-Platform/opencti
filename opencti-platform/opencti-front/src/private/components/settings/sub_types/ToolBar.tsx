@@ -1,12 +1,7 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import {
-  ClearOutlined,
-  VisibilityOffOutlined,
-  FileOpenOutlined,
-  LocalOfferOutlined,
-} from '@mui/icons-material';
+import { ClearOutlined, FileOpenOutlined, LocalOfferOutlined, VisibilityOffOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Toolbar from '@mui/material/Toolbar';
@@ -14,7 +9,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Switch from '@mui/material/Switch';
-import { useFragment, useMutation } from 'react-relay';
+import { useMutation } from 'react-relay';
 import * as R from 'ramda';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -24,9 +19,9 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { entitySettingFragment, entitySettingsPatch } from './EntitySetting';
+import { entitySettingsPatch } from './EntitySetting';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
-import { EntitySetting_entitySetting$data } from './__generated__/EntitySetting_entitySetting.graphql';
+import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import { MESSAGING$ } from '../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -91,15 +86,8 @@ const ToolBar: FunctionComponent<{
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const entitySettings = useEntitySettings()
-    .edges.map((edgeNode) => edgeNode.node)
-    .map(
-      (node) => useFragment(
-        entitySettingFragment,
-        node,
-      ) as EntitySetting_entitySetting$data,
-    );
-  let entitySettingsSelected: EntitySetting_entitySetting$data[];
+  const entitySettings = useEntitySettings();
+  let entitySettingsSelected;
   if (selectAll) {
     entitySettingsSelected = entitySettings;
   } else {
@@ -112,7 +100,7 @@ const ToolBar: FunctionComponent<{
       if (keyword) {
         return (
           node.target_type.toLowerCase().indexOf(keyword.toLowerCase())
-            !== -1
+          !== -1
           || t(`entity_${node.target_type}`)
             .toLowerCase()
             .indexOf(keyword.toLowerCase()) !== -1
@@ -137,9 +125,7 @@ const ToolBar: FunctionComponent<{
   const [description, setDescription] = useState<string>('');
   const [value, setValue] = useState<boolean>(false);
   const [key, setKey] = useState<string>('');
-  const [notAvailableSetting, setNotAvailableSetting] = useState<
-  EntitySetting_entitySetting$data[]
-  >([]);
+  const [notAvailableSetting, setNotAvailableSetting] = useState<EntitySetting[]>([]);
 
   const [commit] = useMutation(entitySettingsPatch);
 
@@ -149,11 +135,7 @@ const ToolBar: FunctionComponent<{
     setValue(false);
   };
 
-  const retrieveNotAvailableSetting = (currentKey: string) => {
-    return entitySettingsSelectedFiltered.filter(
-      (node) => node[currentKey as keyof EntitySetting_entitySetting$data] === null,
-    );
-  };
+  const retrieveNotAvailableSetting = (currentKey: keyof EntitySetting) => entitySettingsSelectedFiltered.filter(({ [currentKey]: v }) => v === null);
 
   const handleOpenFilesRef = () => {
     handleOpen();
@@ -248,8 +230,8 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('platform_entity_files_ref')
-                    .length
+                === retrieveNotAvailableSetting('platform_entity_files_ref')
+                  .length
               }
               onClick={handleOpenFilesRef}
               color="primary"
@@ -266,7 +248,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('platform_hidden_type').length
+                === retrieveNotAvailableSetting('platform_hidden_type').length
               }
               onClick={handleOpenHidden}
               color="primary"
@@ -283,7 +265,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('enforce_reference').length
+                === retrieveNotAvailableSetting('enforce_reference').length
               }
               onClick={handleOpenEnforceRef}
               color="primary"

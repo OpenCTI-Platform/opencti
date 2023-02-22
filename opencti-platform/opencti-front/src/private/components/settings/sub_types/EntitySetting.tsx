@@ -18,7 +18,11 @@ export const entitySettingsFragment = graphql`
   fragment EntitySettingConnection_entitySettings on EntitySettingConnection {
     edges {
       node {
-        ...EntitySetting_entitySetting
+        id
+        enforce_reference
+        platform_entity_files_ref
+        platform_hidden_type
+        target_type
       }
     }
   }

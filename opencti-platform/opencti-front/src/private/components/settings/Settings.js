@@ -24,14 +24,12 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import Loader, { LoaderVariant } from '../../../components/Loader';
+import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
-import { entitySettingsQuery } from './sub_types/EntitySetting';
 import SwitchField from '../../../components/SwitchField';
 
 const useStyles = makeStyles((theme) => ({
@@ -281,8 +279,6 @@ const Settings = () => {
       .catch(() => false);
   };
 
-  const queryRef = useQueryLoading(entitySettingsQuery);
-
   return (
     <div className={classes.container}>
       <QueryRenderer
@@ -343,7 +339,8 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -452,11 +449,7 @@ const Settings = () => {
                               <MenuItem value="ja-jp">日本語</MenuItem>
                               <MenuItem value="zh-cn">简化字</MenuItem>
                             </Field>
-                            {queryRef && (
-                              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                                 <HiddenTypesList queryRef={queryRef} />
-                              </React.Suspense>
-                            )}
+                            <HiddenTypesList />
                             <div style={{ marginTop: 20 }}>
                               {isAccessAdmin && (
                                 <div>
@@ -533,7 +526,8 @@ const Settings = () => {
                         ))}
                       </List>
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -590,7 +584,8 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -796,7 +791,8 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {}}
+                        onSubmit={() => {
+                        }}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
