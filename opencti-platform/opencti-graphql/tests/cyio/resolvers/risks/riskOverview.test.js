@@ -119,10 +119,10 @@ const riskOverviewQuery = `query RiskUI_riskOverview {
   }
   `;
 
-// describe('Risks Overview Tests', () => {
-//   it('Return a risk overview', async () => {
-//     const result = await submitOperation(riskOverviewQuery);
+describe('Risks Overview Tests', () => {
+  it('Return a risk overview', async () => {
+    const result = await submitOperation(riskOverviewQuery);
 
-//     expect(typeof { value: result.data }).toBe('object');
-//   });
-// });
+    expect(typeof { value: result.data }).toBe('object');
+  });
+});
