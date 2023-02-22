@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -14,8 +16,10 @@ import Button from '@material-ui/core/Button';
 import DialogContent from '@material-ui/core/DialogContent';
 import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import Search from '@material-ui/icons/Search';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
@@ -58,6 +62,36 @@ const styles = (theme) => ({
   },
 });
 
+const informationTypeCreationQuery = graphql`
+  query InformationTypeCreationQuery($search: String, $filters: [ProductFiltering], $orderedBy: ProductOrdering, $orderMode: OrderingMode) {
+    products(search: $search, filters: $filters, orderedBy: $orderedBy, orderMode: $orderMode) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const informationTypeCreationIdQuery = graphql`
+  query InformationTypeCreationIdQuery( $id: ID!) {
+    product(id: $id) {
+      id
+      created
+      modified
+      name
+      vendor
+      version
+      cpe_identifier
+      ... on SoftwareProduct {
+        software_identifier
+      }
+    }
+  }
+`;
+
 const informationTypeCreationMutation = graphql`
   mutation InformationTypeCreationMutation($input: OscalRoleAddInput) {
     createOscalRole (input: $input) {
@@ -74,7 +108,57 @@ class InformationTypeCreation extends Component {
     super(props);
     this.state = {
       open: false,
+      openAutocomplete: false,
+      products: [],
+      productName: '',
+      onSubmit: false,
+      selectedProduct: {},
+      displayCancel: false,
     };
+  }
+
+  searchProducts(event, value) {
+    this.setState({ productName: value });
+    if (event.type === 'click' && value) {
+      const selectedProductValue = this.state.products.filter(
+        (product) => product.label === value,
+      )[0];
+      fetchQuery(informationTypeCreationIdQuery, {
+        id: selectedProductValue.value,
+      }).toPromise()
+        .then((data) => {
+          this.setState({ selectedProduct: data.product });
+        });
+    }
+  }
+
+  handleSearchProducts() {
+    this.setState({ selectedProduct: { name: this.state.productName }, openAutocomplete: true });
+    (this.state.productName.length > 2) && fetchQuery(informationTypeCreationQuery, {
+      search: this.state.productName,
+      orderedBy: 'name',
+      orderMode: 'asc',
+      filters: [
+        { key: 'object_type', values: ['software'] },
+      ],
+    })
+      .toPromise()
+      .then((data) => {
+        const products = R.pipe(
+          R.pathOr([], ['products', 'edges']),
+          R.map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          products: R.union(this.state.products, products),
+        });
+      })
+      .catch((err) => {
+        const ErrorResponse = err.res.errors;
+        this.setState({ error: ErrorResponse });
+      });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -111,6 +195,9 @@ class InformationTypeCreation extends Component {
       classes,
       openInformationType,
     } = this.props;
+    const {
+      selectedProduct,
+    } = this.state;
     return (
       <>
         <Dialog
@@ -122,7 +209,7 @@ class InformationTypeCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              name: '',
+              name: selectedProduct?.name || '',
               created: null,
               modified: null,
               short_name: '',
@@ -137,6 +224,7 @@ class InformationTypeCreation extends Component {
               handleReset,
               submitForm,
               isSubmitting,
+              setFieldValue,
             }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Graph')}</DialogTitle>
@@ -157,14 +245,47 @@ class InformationTypeCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="name"
-                        disabled={true}
-                        fullWidth={true}
+                      <Autocomplete
+                        open={this.state.openAutocomplete}
+                        onClose={() => this.setState({ openAutocomplete: false })}
                         size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
+                        loading={selectedProduct.name || false}
+                        loadingText='Searching...'
+                        className={classes.autocomplete}
+                        classes={{
+                          popupIndicatorOpen: classes.popupIndicator,
+                        }}
+                        noOptionsText={t('No available options')}
+                        popupIcon={<Search onClick={this.handleSearchProducts.bind(this)} />}
+                        options={this.state.products}
+                        getOptionLabel={(option) => (option.label ? option.label : option)}
+                        onInputChange={this.searchProducts.bind(this)}
+                        selectOnFocus={true}
+                        autoHighlight={true}
+                        renderInput={(params) => (
+                          // <TextField
+                          //   variant='outlined'
+                          //   {...params}
+                          //   inputProps={{
+                          //     ...params.inputProps,
+                          //     onKeyDown: (e) => {
+                          //       if (e.key === 'Enter') {
+                          //         e.stopPropagation();
+                          //         this.handleSearchProducts()
+                          //       }
+                          //     },
+                          //   }}
+                          //   label='Products'
+                          // />
+                          <Field
+                            component={TextField}
+                            name="name"
+                            fullWidth={true}
+                            size="small"
+                            containerstyle={{ width: "100%" }}
+                            variant="outlined"
+                          />
+                        )}
                       />
                     </Grid>
                     <Grid xs={12} item={true}>
