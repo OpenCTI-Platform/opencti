@@ -24,7 +24,6 @@ import {
   Slide,
 } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
-import HyperLinks from '../../../../components/HyperLinks';
 import MarkDownField from '../../../../components/MarkDownField';
 import DatePickerField from '../../../../components/DatePickerField';
 import RolesField from '../../common/form/RolesField';
@@ -58,10 +57,26 @@ const styles = (theme) => ({
   buttonPopover: {
     textTransform: 'capitalize',
   },
-  popoverDialog: {
-    fontSize: '18px',
-    lineHeight: '24px',
+  scrollBg: {
+    background: theme.palette.header.background,
+    width: '100%',
+    color: 'white',
+    padding: '10px 5px 10px 15px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  scrollDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '78px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
+  scrollObj: {
     color: theme.palette.header.text,
+    fontFamily: 'sans-serif',
+    padding: '0px',
+    textAlign: 'left',
   },
 });
 
@@ -146,7 +161,33 @@ class ResponsiblePartiesPopover extends Component {
     const { open } = this.state;
 
     return (
-      <div>
+      <>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Typography
+            variant="h3"
+            color="textSecondary"
+            gutterBottom={true}
+          >
+            {t('Responsible Parties')}
+          </Typography>
+          <div style={{ float: 'left', margin: '5px 0 0 5px' }}>
+            <Tooltip title={t('Responsible Parties')}>
+              <Information fontSize="inherit" color="disabled" />
+            </Tooltip>
+          </div>
+          <IconButton
+            size="small"
+            onClick={() => this.setState({ open: true })}
+          >
+            <AddIcon />
+          </IconButton>
+        </div>
+        <div className={classes.scrollBg}>
+          <div className={classes.scrollDiv}>
+            <div className={classes.scrollObj}>
+            </div>
+          </div>
+        </div>
         <Formik
           enableReinitialize={true}
           initialValues={{
@@ -167,38 +208,6 @@ class ResponsiblePartiesPopover extends Component {
             isSubmitting,
           }) => (
             <Form>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Responsible Parties')}
-                </Typography>
-                <div style={{ float: 'left', margin: '5px 0 0 5px' }}>
-                  <Tooltip title={t('Responsible Parties')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <IconButton
-                  size="small"
-                  onClick={() => this.setState({ open: true })}
-                >
-                  <AddIcon />
-                </IconButton>
-              </div>
-              <Field
-                component={HyperLinks}
-                name={name}
-                fullWidth={true}
-                disabled={true}
-                multiline={true}
-                rows="3"
-                value={[]}
-                variant="outlined"
-                history={history}
-                handleDelete={this.handleDelete.bind(this)}
-              />
               <Dialog
                 open={open}
                 keepMounted={true}
@@ -461,7 +470,7 @@ class ResponsiblePartiesPopover extends Component {
             </Form>
           )}
         </Formik>
-      </div>
+      </>
     );
   }
 }

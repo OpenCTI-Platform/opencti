@@ -17,10 +17,10 @@ import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../utils/bakedToast';
+import TaskType from '../../common/form/TaskType';
 
 const styles = () => ({
   dialogMain: {
@@ -54,8 +54,8 @@ const styles = () => ({
 });
 
 const informationSystemGraphCreationMutation = graphql`
-  mutation InformationSystemGraphCreationMutation($input: OscalRoleAddInput) {
-    createOscalRole (input: $input) {
+  mutation InformationSystemGraphCreationMutation($input: InformationSystemInput!) {
+    createInformationSystem (input: $input) {
       id
     }
   }
@@ -116,12 +116,14 @@ class InformationSystemGraphCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              name: '',
-              created: null,
-              modified: null,
               short_name: '',
-              role_identifier: '',
+              system_name: '',
               description: '',
+              deployment_model: [],
+              cloud_service_model: '',
+              identify_assurance_level: '',
+              federation_assurance_level: '',
+              authenticator_assurance_level: '',
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -153,7 +155,7 @@ class InformationSystemGraphCreation extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name="name"
+                        name="system_name"
                         disabled={true}
                         fullWidth={true}
                         size="small"
@@ -225,13 +227,13 @@ class InformationSystemGraphCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="installed_software"
+                      <TaskType
+                        name="deployment_model"
+                        taskType='DeploymentModelType'
                         fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
+                        variant='outlined'
                       />
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -249,13 +251,13 @@ class InformationSystemGraphCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="installed_software"
+                      <TaskType
+                        name="cloud_service_model"
+                        taskType='CloudServiceModelType'
                         fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
+                        variant='outlined'
                       />
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -273,13 +275,13 @@ class InformationSystemGraphCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="installed_software"
+                      <TaskType
+                        name="identify_assurance_level"
+                        taskType='IdentityAssuranceLevel'
                         fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
+                        variant='outlined'
                       />
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -297,13 +299,13 @@ class InformationSystemGraphCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="installed_software"
+                      <TaskType
+                        name="authenticator_assurance_level"
+                        taskType='AuthenticatorAssuranceLevel'
                         fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
+                        variant='outlined'
                       />
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -321,13 +323,13 @@ class InformationSystemGraphCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="installed_software"
+                      <TaskType
+                        name="federation_assurance_level"
+                        taskType='FederationAssuranceLevel'
                         fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
+                        variant='outlined'
                       />
                     </Grid>
                   </Grid>
