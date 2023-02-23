@@ -1,9 +1,8 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
@@ -19,18 +18,18 @@ import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
+import { useFormatter } from '../../../components/i18n';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
     textTransform: 'uppercase',
@@ -63,7 +62,7 @@ const styles = () => ({
     fontSize: 14,
     float: 'left',
   },
-});
+}));
 
 const workspaceMutation = graphql`
   mutation WorkspaceHeaderFieldMutation($id: ID!, $input: [EditInput]!) {
@@ -75,77 +74,54 @@ const workspaceMutation = graphql`
   }
 `;
 
-class WorkspaceHeader extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      openTag: false,
-      openTags: false,
-      openTagsCreate: false,
-    };
-  }
+const WorkspaceHeader = ({ workspace, config, variant, adjust, handleDateChange }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [openTag, setOpenTag] = useState(false);
+  const [openTags, setOpenTags] = useState(false);
 
-  handleToggleOpenTags() {
-    this.setState({ openTags: !this.state.openTags });
-  }
-
-  handleToggleCreateTag() {
-    this.setState({ openTag: !this.state.openTag });
-  }
-
-  getCurrentTags() {
-    return this.props.workspace.tags;
-  }
-
-  onSubmitCreateTag(element, data, { resetForm }) {
-    const currentTags = this.getCurrentTags();
-    if (
-      (currentTags === null || !currentTags.includes(data.new_tag))
-      && data.new_tag !== ''
-    ) {
+  const handleToggleOpenTags = () => setOpenTags(!openTags);
+  const handleToggleCreateTag = () => setOpenTag(!openTag);
+  const getCurrentTags = () => workspace.tags;
+  const onSubmitCreateTag = (data, { resetForm }) => {
+    const currentTags = getCurrentTags();
+    if ((currentTags === null || !currentTags.includes(data.new_tag)) && data.new_tag !== '') {
       commitMutation({
         mutation: workspaceMutation,
         variables: {
-          id: this.props.workspace.id,
+          id: workspace.id,
           input: {
             key: 'tags',
             value: R.append(data.new_tag, currentTags),
           },
         },
-        onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The tag has been added')),
+        onCompleted: () => MESSAGING$.notifySuccess(t('The tag has been added')),
       });
     }
-    this.setState({ openTag: false });
+    setOpenTag(false);
     resetForm();
-  }
-
-  deleteTag(tag) {
-    const currentTags = this.getCurrentTags();
+  };
+  const deleteTag = (tag) => {
+    const currentTags = getCurrentTags();
     const tags = R.filter((a) => a !== tag, currentTags);
     commitMutation({
       mutation: workspaceMutation,
       variables: {
-        id: this.props.workspace.id,
+        id: workspace.id,
         input: {
           key: 'tags',
           value: tags,
         },
       },
-      onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The tag has been removed')),
+      onCompleted: () => MESSAGING$.notifySuccess(t('The tag has been removed')),
     });
-  }
+  };
 
-  render() {
-    const { t, classes, workspace, config, variant, adjust, handleDateChange } = this.props;
-    const tags = R.propOr([], 'tags', workspace);
-    const { relativeDate } = config ?? {};
-    return (
+  const tags = R.propOr([], 'tags', workspace);
+  const { relativeDate } = config ?? {};
+  return (
       <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
+        <Typography variant="h1" gutterBottom={true} classes={{ root: classes.title }}>
           {workspace.name}
         </Typography>
         <Security needs={[EXPLORE_EXUPDATE]}>
@@ -154,28 +130,14 @@ class WorkspaceHeader extends Component {
           </div>
         </Security>
         {variant === 'dashboard' && (
-          <Security
-            needs={[EXPLORE_EXUPDATE]}
+          <Security needs={[EXPLORE_EXUPDATE]}
             placeholder={
-              <div
-                style={{
-                  display: 'flex',
-                  margin: '-3px 0 0 5px',
-                  float: 'left',
-                }}
-              >
-                <FormControl
-                  variant="outlined"
-                  size="small"
-                  style={{ width: 194, marginRight: 20 }}
-                >
+              <div style={{ display: 'flex', margin: '-3px 0 0 5px', float: 'left' }}>
+                <FormControl variant="outlined" size="small" style={{ width: 194, marginRight: 20 }}>
                   <InputLabel id="relative">{t('Relative time')}</InputLabel>
-                  <Select
-                    labelId="relative"
-                    value={relativeDate ?? ''}
-                    onChange={handleDateChange.bind(this, 'relativeDate')}
-                    disabled={true}
-                  >
+                  <Select labelId="relative" value={relativeDate ?? ''}
+                    onChange={(value) => handleDateChange('relativeDate', value)}
+                    disabled={true}>
                     <MenuItem value="none">{t('None')}</MenuItem>
                     <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
                     <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
@@ -193,7 +155,7 @@ class WorkspaceHeader extends Component {
                   clearable={true}
                   disableFuture={true}
                   disabled={true}
-                  onChange={handleDateChange.bind(this, 'startDate')}
+                  onChange={(value) => handleDateChange('startDate', value)}
                   renderInput={(params) => (
                     <MUITextField
                       style={{ marginRight: 20 }}
@@ -211,7 +173,7 @@ class WorkspaceHeader extends Component {
                   clearable={true}
                   disabled={true}
                   disableFuture={true}
-                  onChange={handleDateChange.bind(this, 'endDate')}
+                  onChange={(value) => handleDateChange('endDate', value)}
                   renderInput={(params) => (
                     <MUITextField
                       style={{ marginRight: 20 }}
@@ -222,23 +184,14 @@ class WorkspaceHeader extends Component {
                   )}
                 />
               </div>
-            }
-          >
-            <div
-              style={{
-                display: 'flex',
-                margin: '-3px 0 0 5px',
-                float: 'left',
-              }}
-            >
+            }>
+            <div style={{ display: 'flex', margin: '-3px 0 0 5px', float: 'left' }}>
               <FormControl size="small" style={{ width: 194, marginRight: 20 }}>
                 <InputLabel id="relative">{t('Relative time')}</InputLabel>
-                <Select
-                  labelId="relative"
+                <Select labelId="relative"
                   value={relativeDate ?? relativeDate}
                   onChange={handleDateChange.bind(this, 'relativeDate')}
-                  label={t('Relative time')}
-                >
+                  label={t('Relative time')}>
                   <MenuItem value="none">{t('None')}</MenuItem>
                   <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
                   <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
@@ -282,11 +235,7 @@ class WorkspaceHeader extends Component {
           </Security>
         )}
         <div className={classes.export}>
-          <ExportButtons
-            domElementId="container"
-            name={workspace.name}
-            adjust={adjust}
-          />
+          <ExportButtons domElementId="container" name={workspace.name} adjust={adjust}/>
         </div>
         <div className={classes.tags}>
           {R.take(5, tags).map(
@@ -295,7 +244,7 @@ class WorkspaceHeader extends Component {
                   key={tag}
                   classes={{ root: classes.tag }}
                   label={tag}
-                  onDelete={this.deleteTag.bind(this, tag)}
+                  onDelete={() => deleteTag(tag)}
                 />
             ),
           )}
@@ -304,7 +253,7 @@ class WorkspaceHeader extends Component {
               <Button
                 color="primary"
                 aria-tag="More"
-                onClick={this.handleToggleOpenTags.bind(this)}
+                onClick={handleToggleOpenTags}
                 style={{ fontSize: 14 }}
               >
                 <DotsHorizontalCircleOutline />
@@ -313,12 +262,12 @@ class WorkspaceHeader extends Component {
             ) : (
               <IconButton
                 style={{ float: 'left', marginTop: -5 }}
-                color={this.state.openTag ? 'primary' : 'secondary'}
+                color={openTag ? 'primary' : 'secondary'}
                 aria-tag="Tag"
-                onClick={this.handleToggleCreateTag.bind(this)}
+                onClick={handleToggleCreateTag}
                 size="large"
               >
-                {this.state.openTag ? (
+                {openTag ? (
                   <Close fontSize="small" />
                 ) : (
                   <Add fontSize="small" />
@@ -326,17 +275,9 @@ class WorkspaceHeader extends Component {
               </IconButton>
             )}
           </Security>
-          <Slide
-            direction="left"
-            in={this.state.openTag}
-            mountOnEnter={true}
-            unmountOnExit={true}
-          >
+          <Slide direction="left" in={openTag} mountOnEnter={true} unmountOnExit={true}>
             <div style={{ float: 'left', marginTop: -5 }}>
-              <Formik
-                initialValues={{ new_tag: '' }}
-                onSubmit={this.onSubmitCreateTag.bind(this, 'main')}
-              >
+              <Formik initialValues={{ new_tag: '' }} onSubmit={onSubmitCreateTag}>
                 <Form style={{ float: 'right' }}>
                   <Field
                     component={TextField}
@@ -353,17 +294,7 @@ class WorkspaceHeader extends Component {
         </div>
         <div className="clearfix" />
       </div>
-    );
-  }
-}
-
-WorkspaceHeader.propTypes = {
-  workspace: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
-  variant: PropTypes.string,
-  adjust: PropTypes.func,
+  );
 };
 
-export default R.compose(inject18n, withStyles(styles))(WorkspaceHeader);
+export default WorkspaceHeader;

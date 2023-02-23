@@ -103,6 +103,7 @@ interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
     id: string;
     relationId: string;
   };
+  isTo?: boolean;
   elementId?: string | Array<string>;
   fromId?: string | Array<string>;
   fromRole?: string;
@@ -128,7 +129,7 @@ export interface RelationOptions<T extends BasicStoreCommon> extends RelationFil
   indices?: Array<string>;
 }
 
-const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
+export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
   const relationsToGet = Array.isArray(relationshipTypes) ? relationshipTypes : [relationshipTypes || 'stix-core-relationship'];
   const { relationFilter } = args;
   const {
@@ -141,6 +142,7 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
     fromTypes = [],
     toTypes = [],
     elementWithTargetTypes = [],
+    isTo = null,
   } = args;
   const {
     startTimeStart,
@@ -181,36 +183,40 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
   }
   // region from filtering
   const nestedFrom = [];
-  if (fromId) {
-    nestedFrom.push({ key: 'internal_id', values: Array.isArray(fromId) ? fromId : [fromId] });
-  }
-  if (fromTypes && fromTypes.length > 0) {
-    nestedFrom.push({ key: 'types', values: fromTypes });
-  }
-  if (fromRole) {
-    nestedFrom.push({ key: 'role', values: [fromRole] });
-  } else if (fromId || (fromTypes && fromTypes.length > 0)) {
-    nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-  }
-  if (nestedFrom.length > 0) {
-    finalFilters.push({ key: 'connections', nested: nestedFrom });
+  if (isTo === null || isTo === true) {
+    if (fromId) {
+      nestedFrom.push({ key: 'internal_id', values: Array.isArray(fromId) ? fromId : [fromId] });
+    }
+    if (fromTypes && fromTypes.length > 0) {
+      nestedFrom.push({ key: 'types', values: fromTypes });
+    }
+    if (fromRole) {
+      nestedFrom.push({ key: 'role', values: [fromRole] });
+    } else if (isTo === true || fromId || (fromTypes && fromTypes.length > 0)) {
+      nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+    }
+    if (nestedFrom.length > 0) {
+      finalFilters.push({ key: 'connections', nested: nestedFrom });
+    }
   }
   // endregion
   // region to filtering
   const nestedTo = [];
-  if (toId) {
-    nestedTo.push({ key: 'internal_id', values: Array.isArray(toId) ? toId : [toId] });
-  }
-  if (toTypes && toTypes.length > 0) {
-    nestedTo.push({ key: 'types', values: toTypes });
-  }
-  if (toRole) {
-    nestedTo.push({ key: 'role', values: [toRole] });
-  } else if (toId || (toTypes && toTypes.length > 0)) {
-    nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-  }
-  if (nestedTo.length > 0) {
-    finalFilters.push({ key: 'connections', nested: nestedTo });
+  if (isTo === null || isTo === false) {
+    if (toId) {
+      nestedTo.push({ key: 'internal_id', values: Array.isArray(toId) ? toId : [toId] });
+    }
+    if (toTypes && toTypes.length > 0) {
+      nestedTo.push({ key: 'types', values: toTypes });
+    }
+    if (toRole) {
+      nestedTo.push({ key: 'role', values: [toRole] });
+    } else if (isTo === false || toId || (toTypes && toTypes.length > 0)) {
+      nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+    }
+    if (nestedTo.length > 0) {
+      finalFilters.push({ key: 'connections', nested: nestedTo });
+    }
   }
   // endregion
   if (startTimeStart) finalFilters.push({ key: 'start_time', values: [startTimeStart], operator: 'gt' });

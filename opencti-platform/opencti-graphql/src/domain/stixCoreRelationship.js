@@ -70,15 +70,21 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 export const stixCoreRelationshipsDistribution = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
   let finalArgs = args;
-  if (dynamicFrom && isNotEmptyField(dynamicFrom)) {
-    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], { connectionFormat: false, first: 500, filters: dynamicFrom })
+  if (isNotEmptyField(dynamicFrom)) {
+    const fromArgs = { connectionFormat: false, first: 500, filters: dynamicFrom };
+    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], fromArgs)
       .then((result) => result.map((n) => n.id));
-    finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+    if (fromIds.length > 0) {
+      finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+    }
   }
-  if (dynamicTo && isNotEmptyField(dynamicTo)) {
-    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], { connectionFormat: false, first: 500, filters: dynamicTo })
+  if (isNotEmptyField(dynamicTo)) {
+    const toArgs = { connectionFormat: false, first: 500, filters: dynamicTo };
+    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], toArgs)
       .then((result) => result.map((n) => n.id));
-    finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
+    if (toIds.length > 0) {
+      finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
+    }
   }
   return distributionRelations(context, context.user, finalArgs);
 };

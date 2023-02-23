@@ -1269,6 +1269,11 @@ const useSearchEntities = ({
                   value: 'stix-sighting-relationship',
                   type: 'stix-sighting-relationship',
                 }),
+                R.append({
+                  label: t('relationship_object'),
+                  value: 'object',
+                  type: 'stix-internal-relationship',
+                }),
                 R.sortWith([R.ascend(R.prop('label'))]),
               )(data);
               unionSetEntities('relationship_type', relationshipsTypes);

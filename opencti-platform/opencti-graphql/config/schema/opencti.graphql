@@ -1735,6 +1735,7 @@ enum StixCoreObjectsOrdering {
 enum StixCoreObjectsFilter {
   name
   entity_type
+  relationship_type
   aliases
   x_opencti_aliases
   x_mitre_id

@@ -1399,28 +1399,12 @@ export const elAggregationCount = async (context, user, indexName, options = {})
 };
 // field can be "entity_type" or "internal_id"
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, elementId = null, elementWithTargetTypes = null, fromId = null, fromTypes = null, toId = null, toTypes = null, isTo = false } = options;
+  const { types = [], field = null } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
-  const roleFilter = { query_string: { query: fromId || !isTo ? '*_to' : '*_from', fields: ['connections.role'] } };
-  let typesFilters = null;
-  if (fromTypes && fromTypes.length > 0) {
-    typesFilters = [];
-    for (let index = 0; index < fromTypes.length; index += 1) {
-      typesFilters.push({
-        match_phrase: { 'connections.types': fromTypes[index] },
-      });
-    }
-  } else if (toTypes && toTypes.length > 0) {
-    typesFilters = [];
-    for (let index = 0; index < toTypes.length; index += 1) {
-      typesFilters.push({
-        match_phrase: { 'connections.types': toTypes[index] },
-      });
-    }
-  }
+  const mustNested = body.query.bool.must.filter((m) => m.nested?.path === 'connections').map((m) => m.nested.query);
   body.size = MAX_SEARCH_AGGREGATION_SIZE;
   body.aggs = {
     connections: {
@@ -1431,7 +1415,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
         filtered: {
           filter: {
             bool: {
-              must: typesFilters && !elementId ? roleFilter : [],
+              must: mustNested,
             },
           },
           aggs: {
@@ -1463,52 +1447,12 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
-      let targetId = null;
-      if (elementId) { targetId = elementId; } else if (fromId) { targetId = fromId; } else if (toId) { targetId = toId; }
-      let targetTypes = [];
-      if (elementWithTargetTypes) { targetTypes = elementWithTargetTypes; } else if (fromTypes) { targetTypes = fromTypes; } else if (toTypes) { targetTypes = toTypes; }
-      if (field === 'internal_id') {
-        const filterTarget = (argKey, argTargetId) => {
-          if (Array.isArray(argTargetId)) {
-            return !argTargetId.includes(argKey);
-          }
-          return argKey !== argTargetId;
-        };
-        const { buckets } = data.aggregations.connections.filtered.genres;
-        const filteredBuckets = R.filter((b) => filterTarget(b.key, targetId), buckets);
-        return R.map((b) => ({ label: b.key, value: b.parent.weight.value }), filteredBuckets);
-      }
-      let targetType = null;
-      if (elementId) {
-        const elementEntity = await elLoadById(context, user, elementId);
-        targetType = elementEntity.entity_type;
-      } else if (fromId) {
-        const fromEntity = await elLoadById(context, user, fromId);
-        targetType = fromEntity.entity_type;
-      } else if (toId) {
-        const toEntity = await elLoadById(context, user, toId);
-        targetType = toEntity.entity_type;
-      }
-      const filterTarget = (argInternalId, argTargetId, argsTypes) => {
-        if (Array.isArray(argTargetId)) {
-          return !argTargetId.includes(argInternalId) && !R.includes(targetType, argsTypes);
-        }
-        return argInternalId !== argTargetId && !R.includes(targetType, argsTypes);
-      };
-      const resultTypes = R.pipe(
-        R.map((h) => h._source.connections),
-        R.flatten(),
-        // eslint-disable-next-line no-nested-ternary
-        R.filter((c) => filterTarget(targetId, c.internal_id, c.types)),
-        R.filter((c) => targetTypes.length === 0 || R.includes(R.head(targetTypes), c.types)),
-        R.map((e) => e.types),
-        R.flatten(),
-        R.uniq(),
-        R.filter((f) => !isAbstract(f)),
-        R.map((u) => u.toLowerCase())
-      )(data.hits.hits);
       const { buckets } = data.aggregations.connections.filtered.genres;
-      const filteredBuckets = R.filter((b) => R.includes(b.key, resultTypes), buckets);
+      if (field === 'internal_id') {
+        return buckets.map((b) => ({ label: b.key, value: b.parent.weight.value }));
+      }
+      // entity_type
+      const filteredBuckets = buckets.filter((b) => !(isAbstract(pascalize(b.key)) || isAbstract(b.key)));
       return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
     })
     .catch((e) => {

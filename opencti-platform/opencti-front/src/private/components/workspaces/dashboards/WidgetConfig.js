@@ -59,6 +59,7 @@ import { truncate } from '../../../../utils/String';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { ignoredAttributesInDashboards } from '../../../../utils/Entity';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -84,13 +85,22 @@ const useStyles = makeStyles((theme) => ({
   dialog: {
     height: 600,
   },
-  step: {
+  step_entity: {
     position: 'relative',
     width: '100%',
     margin: '0 0 20px 0',
     padding: 15,
     verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.background.accent}`,
+    border: `1px solid ${theme.palette.secondary.main}`,
+    borderRadius: 5,
+  },
+  step_relationship: {
+    position: 'relative',
+    width: '100%',
+    margin: '0 0 20px 0',
+    padding: 15,
+    verticalAlign: 'middle',
+    border: `1px solid ${theme.palette.primary.main}`,
     borderRadius: 5,
   },
   formControl: {
@@ -300,38 +310,24 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   const [stepIndex, setStepIndex] = useState(widget?.dataSelection ? 2 : 0);
   const [type, setType] = useState(widget?.type ?? null);
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
-  const [dataSelection, setDataSelection] = useState(
-    widget?.dataSelection ?? [
-      {
-        label: '',
-        attribute: 'entity_type',
-        date_attribute: 'created_at',
-        perspective: null,
-        isTo: false,
-        filters: {},
-        dynamicFrom: {},
-        dynamicTo: {},
-      },
-    ],
-  );
+  const initialSelection = {
+    label: '',
+    attribute: 'entity_type',
+    date_attribute: 'created_at',
+    perspective: null,
+    isTo: false,
+    filters: {},
+    dynamicFrom: {},
+    dynamicTo: {},
+  };
+  const [dataSelection, setDataSelection] = useState(widget?.dataSelection ?? [initialSelection]);
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
   const handleClose = () => {
     if (!widget) {
       setStepIndex(0);
       setType(null);
       setPerspective(null);
-      setDataSelection([
-        {
-          label: '',
-          attribute: 'entity_type',
-          date_attribute: 'created_at',
-          isTo: false,
-          perspective: null,
-          filters: {},
-          dynamicFrom: {},
-          dynamicTo: {},
-        },
-      ]);
+      setDataSelection([initialSelection]);
       setParameters({});
     } else {
       setStepIndex(2);
@@ -409,12 +405,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     setDataSelection(newDataSelection);
   };
   const isDataSelectionFiltersValid = () => {
-    for (const n of dataSelection) {
-      if (n.label.length === 0) {
-        return false;
-      }
-    }
-    return true;
+    return dataSelection.length > 0;
   };
   const isDataSelectionAttributesValid = () => {
     for (const n of dataSelection) {
@@ -719,8 +710,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         {Array(dataSelection.length)
           .fill(0)
           .map((_, i) => {
+            const style = dataSelection[i].perspective === 'entities' ? 'step_entity' : 'step_relationship';
             return (
-              <div key={i} className={classes.step}>
+              <div key={i} className={classes[style]}>
                 <IconButton
                   disabled={dataSelection.length === 1}
                   aria-label="Delete"
@@ -734,11 +726,10 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   <TextField
                     style={{ flex: 1 }}
                     variant="standard"
-                    label={t('Label')}
+                    label={`${t('Label')} (${dataSelection[i].perspective})`}
                     fullWidth={true}
                     value={dataSelection[i].label}
-                    onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)
-                    }
+                    onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment
@@ -764,14 +755,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             }
                             noDirectFilters={true}
                           />
-                          {(dataSelection[i].perspective ?? perspective)
-                            === 'relationships' && (
-                            <Filters
-                              availableFilterKeys={entitiesFilters}
-                              availableEntityTypes={[
-                                'Stix-Domain-Object',
-                                'Stix-Cyber-Observable',
-                              ]}
+                          {(dataSelection[i].perspective ?? perspective) === 'relationships' && (
+                            <Filters availableFilterKeys={entitiesFilters}
+                              availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
                               handleAddFilter={(key, id, value) => handleAddDataValidationDynamicFrom(
                                 i,
                                 key,
@@ -783,14 +769,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                               type="from"
                             />
                           )}
-                          {(dataSelection[i].perspective ?? perspective)
-                            === 'relationships' && (
-                            <Filters
-                              availableFilterKeys={entitiesFilters}
-                              availableEntityTypes={[
-                                'Stix-Domain-Object',
-                                'Stix-Cyber-Observable',
-                              ]}
+                          {(dataSelection[i].perspective ?? perspective) === 'relationships' && (
+                            <Filters availableFilterKeys={entitiesFilters}
+                              availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
                               handleAddFilter={(key, id, value) => handleAddDataValidationDynamicTo(
                                 i,
                                 key,
@@ -960,10 +941,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           <div className={classes.add}>
             <Button
               variant="contained"
-              disabled={
-                !isDataSelectionFiltersValid()
-                || getCurrentDataSelectionLimit() === dataSelection.length
-              }
+              disabled={getCurrentDataSelectionLimit() === dataSelection.length}
               color="secondary"
               size="small"
               onClick={() => handleAddDataSelection('entities')}
@@ -976,31 +954,22 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         {perspective === 'relationships' && (
           <div className={classes.add}>
             <Button
-              style={{ marginRight: 20 }}
-              variant="contained"
-              disabled={
-                !isDataSelectionFiltersValid()
-                || getCurrentDataSelectionLimit() === dataSelection.length
-              }
-              color="secondary"
-              size="small"
-              onClick={() => handleAddDataSelection('entities')}
-              classes={{ root: classes.buttonAdd }}
-            >
-              <AddOutlined fontSize="small" /> {t('Entities')}
+                style={{ marginRight: 20 }}
+                variant="contained"
+                disabled={getCurrentDataSelectionLimit() === dataSelection.length}
+                size="small"
+                onClick={() => handleAddDataSelection('relationships')}
+                classes={{ root: classes.buttonAdd }}>
+              <AddOutlined fontSize="small" /> {t('Relationships')}
             </Button>
             <Button
               variant="contained"
-              disabled={
-                !isDataSelectionFiltersValid()
-                || getCurrentDataSelectionLimit() === dataSelection.length
-              }
+              disabled={getCurrentDataSelectionLimit() === dataSelection.length}
               color="secondary"
               size="small"
-              onClick={() => handleAddDataSelection('relationships')}
-              classes={{ root: classes.buttonAdd }}
-            >
-              <AddOutlined fontSize="small" /> {t('Relationships')}
+              onClick={() => handleAddDataSelection('entities')}
+              classes={{ root: classes.buttonAdd }}>
+              <AddOutlined fontSize="small" /> {t('Entities')}
             </Button>
           </div>
         )}
@@ -1051,16 +1020,16 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             </Select>
           </FormControl>
         )}
-        <div style={{ marginTop: 20 }}>
+        <div>
           {Array(dataSelection.length)
             .fill(0)
             .map((_, i) => {
               return (
-                <div key={i} className={classes.step}>
+                <div key={i} style={{ marginTop: 20 }}>
                   <div style={{ display: 'flex', width: '100%' }}>
                     <FormControl fullWidth={true} style={{ flex: 1 }}>
                       <InputLabel id="relative" variant="standard" size="small">
-                        {dataSelection[i].label}
+                        {isNotEmptyField(dataSelection[i].label) ? dataSelection[i].label : 'Unspecified'}
                       </InputLabel>
                       <Select
                         variant="standard"
@@ -1091,18 +1060,13 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     </FormControl>
                   </div>
                   {getCurrentAvailableParameters().includes('attribute') && (
-                    <div
-                      style={{ display: 'flex', width: '100%', marginTop: 20 }}
-                    >
+                    <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
                       {dataSelection[i].perspective === 'relationships' && (
-                        <FormControl
-                          className={classes.formControl}
-                          fullWidth={true}
+                        <FormControl className={classes.formControl} fullWidth={true}
                           style={{
                             flex: 1,
                             marginRight: 20,
-                          }}
-                        >
+                          }}>
                           <InputLabel variant="standard">
                             {t('Attribute')}
                           </InputLabel>
@@ -1128,13 +1092,10 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       )}
                       {dataSelection[i].perspective === 'entities'
                         && getCurrentSelectedEntityTypes(i).length > 0 && (
-                          <FormControl
-                            className={classes.formControl}
-                            fullWidth={true}
+                          <FormControl className={classes.formControl} fullWidth={true}
                             style={{
                               flex: 1,
-                            }}
-                          >
+                            }}>
                             <InputLabel variant="standard">
                               {t('Attribute')}
                             </InputLabel>

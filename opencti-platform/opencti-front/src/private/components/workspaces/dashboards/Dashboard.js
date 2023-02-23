@@ -70,6 +70,7 @@ import StixCoreRelationshipsTreeMap from '../../common/stix_core_relationships/S
 import StixCoreRelationshipsMap from '../../common/stix_core_relationships/StixCoreRelationshipsMap';
 import StixDomainObjectBookmarksList from '../../common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixCoreObjectsMultiHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
+import { ErrorBoundary, SimpleError } from '../../Error';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -799,17 +800,12 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     }
   };
   return (
-    <div
-      className={classes.container}
-      id="container"
-      style={{
-        paddingBottom: noToolbar ? 0 : 50,
-        marginTop: noToolbar ? -20 : 0,
-      }}
-    >
+    <div className={classes.container} id="container" style={{
+      paddingBottom: noToolbar ? 0 : 50,
+      marginTop: noToolbar ? -20 : 0,
+    }}>
       {!noToolbar && (
-        <WorkspaceHeader
-          workspace={workspace}
+        <WorkspaceHeader workspace={workspace}
           config={manifest.config}
           handleDateChange={handleDateChange}
           variant="dashboard"
@@ -818,34 +814,50 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       <Security
         needs={[EXPLORE_EXUPDATE]}
         placeholder={
-          <ResponsiveGridLayout
-            className="layout"
+          <ResponsiveGridLayout className="layout"
             margin={[20, 20]}
             rowHeight={50}
-            breakpoints={{
-              lg: 1200,
-              md: 1200,
-              sm: 1200,
-              xs: 1200,
-              xxs: 1200,
-            }}
-            cols={{
-              lg: 30,
-              md: 30,
-              sm: 30,
-              xs: 30,
-              xxs: 30,
-            }}
+            breakpoints={{ lg: 1200, md: 1200, sm: 1200, xs: 1200, xxs: 1200 }}
+            cols={{ lg: 30, md: 30, sm: 30, xs: 30, xxs: 30 }}
             isDraggable={false}
-            isResizable={false}
-          >
+            isResizable={false}>
             {R.values(manifest.widgets).map((widget) => (
-              <Paper
-                key={widget.id}
-                data-grid={widget.layout}
-                classes={{ root: classes.paper }}
-                variant="outlined"
-              >
+              <Paper key={widget.id} data-grid={widget.layout} classes={{ root: classes.paper }} variant="outlined">
+                <ErrorBoundary display={<div style={{ paddingTop: 28 }}><SimpleError /></div>}>
+                  {widget.perspective === 'global'
+                    && renderGlobalVisualization(widget, manifest.config)}
+                  {widget.perspective === 'threat'
+                    && renderThreatVisualization(widget, manifest.config)}
+                  {widget.perspective === 'entity'
+                    && renderEntityVisualization(widget, manifest.config)}
+                  {widget.perspective === 'entities'
+                    && renderEntitiesVisualization(widget, manifest.config)}
+                  {widget.perspective === 'relationships'
+                    && renderRelationshipsVisualization(widget, manifest.config)}
+                </ErrorBoundary>
+              </Paper>
+            ))}
+          </ResponsiveGridLayout>
+        }>
+        <ResponsiveGridLayout className="layout"
+          margin={[20, 20]}
+          rowHeight={50}
+          breakpoints={{ lg: 1200, md: 1200, sm: 1200, xs: 1200, xxs: 1200 }}
+          cols={{ lg: 30, md: 30, sm: 30, xs: 30, xxs: 30 }}
+          isDraggable={!noToolbar}
+          isResizable={!noToolbar}
+          onLayoutChange={noToolbar ? () => true : onLayoutChange}
+          draggableCancel=".noDrag">
+          {R.values(manifest.widgets).map((widget) => (
+            <Paper key={widget.id} data-grid={widget.layout} classes={{ root: classes.paper }} variant="outlined">
+              {!noToolbar && (
+                <WidgetPopover widget={widget}
+                  onUpdate={handleUpdateWidget}
+                  onDuplicate={handleDuplicateWidget}
+                  onDelete={() => handleDeleteWidget(widget.id)}
+                />
+              )}
+              <ErrorBoundary display={<div style={{ paddingTop: 28 }}><SimpleError /></div>}>
                 {widget.perspective === 'global'
                   && renderGlobalVisualization(widget, manifest.config)}
                 {widget.perspective === 'threat'
@@ -856,59 +868,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                   && renderEntitiesVisualization(widget, manifest.config)}
                 {widget.perspective === 'relationships'
                   && renderRelationshipsVisualization(widget, manifest.config)}
-              </Paper>
-            ))}
-          </ResponsiveGridLayout>
-        }
-      >
-        <ResponsiveGridLayout
-          className="layout"
-          margin={[20, 20]}
-          rowHeight={50}
-          breakpoints={{
-            lg: 1200,
-            md: 1200,
-            sm: 1200,
-            xs: 1200,
-            xxs: 1200,
-          }}
-          cols={{
-            lg: 30,
-            md: 30,
-            sm: 30,
-            xs: 30,
-            xxs: 30,
-          }}
-          isDraggable={!noToolbar}
-          isResizable={!noToolbar}
-          onLayoutChange={noToolbar ? () => true : onLayoutChange}
-          draggableCancel=".noDrag"
-        >
-          {R.values(manifest.widgets).map((widget) => (
-            <Paper
-              key={widget.id}
-              data-grid={widget.layout}
-              classes={{ root: classes.paper }}
-              variant="outlined"
-            >
-              {!noToolbar && (
-                <WidgetPopover
-                  widget={widget}
-                  onUpdate={handleUpdateWidget}
-                  onDuplicate={handleDuplicateWidget}
-                  onDelete={() => handleDeleteWidget(widget.id)}
-                />
-              )}
-              {widget.perspective === 'global'
-                && renderGlobalVisualization(widget, manifest.config)}
-              {widget.perspective === 'threat'
-                && renderThreatVisualization(widget, manifest.config)}
-              {widget.perspective === 'entity'
-                && renderEntityVisualization(widget, manifest.config)}
-              {widget.perspective === 'entities'
-                && renderEntitiesVisualization(widget, manifest.config)}
-              {widget.perspective === 'relationships'
-                && renderRelationshipsVisualization(widget, manifest.config)}
+              </ErrorBoundary>
             </Paper>
           ))}
         </ResponsiveGridLayout>
