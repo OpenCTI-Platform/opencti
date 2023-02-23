@@ -10,6 +10,8 @@ import {
 import { DatabaseError } from '../config/errors';
 import { isStixMetaObject } from './stixMetaObject';
 import {
+  STIX_TYPE_SIGHTING,
+  STIX_TYPE_RELATION,
   ABSTRACT_BASIC_OBJECT,
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_INTERNAL_OBJECT,
@@ -35,7 +37,6 @@ import { isBasicRelationship, isStixRelationship } from './stixRelationship';
 import { isInternalRelationship } from './internalRelationship';
 import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject';
 import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
-import { STIX_TYPE_SIGHTING, STIX_TYPE_RELATION } from '../database/stix';
 
 export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 export const isInternalId = (id) => validator.isUUID(id);
@@ -142,4 +143,8 @@ export const getParentTypes = (type) => {
     }
   }
   throw DatabaseError(`Type ${type} not supported`);
+};
+
+export const getEntityTypes = (entityType) => {
+  return [entityType, ...getParentTypes(entityType)];
 };

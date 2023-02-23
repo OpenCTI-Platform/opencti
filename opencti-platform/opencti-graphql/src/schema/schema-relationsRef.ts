@@ -36,8 +36,11 @@ export const schemaRelationsRefDefinition = {
     });
   },
 
-  getRelationsRef(entityType: string): RelationRefDefinition[] {
-    return this.relationsRef[entityType] ?? [];
+  getRelationsRef(entityTypes: string | string[]): RelationRefDefinition[] {
+    if (Array.isArray(entityTypes)) {
+      return entityTypes.map((entityType) => this.relationsRef[entityType] ?? []).flat();
+    }
+    return this.relationsRef[entityTypes] ?? [];
   },
 
   registerChecker(databaseName: string, checker: Checker) {

@@ -88,6 +88,7 @@ import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
+import { getEntityTypes } from '../schema/schemaUtils';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -120,8 +121,6 @@ type RelationType = 'builtin' | 'new' | 'extended';
 export const REL_BUILT_IN: RelationType = 'builtin';
 export const REL_NEW: RelationType = 'new';
 export const REL_EXTENDED: RelationType = 'extended';
-export const STIX_TYPE_RELATION = 'relationship';
-export const STIX_TYPE_SIGHTING = 'sighting';
 export type RelationDefinition = { name: string; type: RelationType };
 type RelationshipMappings = { [k: `${string}_${string}`]: Array<RelationDefinition>; };
 
@@ -1066,7 +1065,8 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
 };
 
 export const checkStixCyberObservableRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
-  const targetRelations = schemaRelationsRefDefinition.getRelationsRef(fromType).map((ref) => ref.inputName);
+  const targetRelations = schemaRelationsRefDefinition.getRelationsRef(getEntityTypes(fromType))
+    .map((ref) => ref.inputName);
   return R.includes(relationshipType, targetRelations);
 };
 

@@ -6,7 +6,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
 import { getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { getParentTypes } from '../schema/schemaUtils';
+import { getEntityTypes } from '../schema/schemaUtils';
 import type { RelationRefDefinition } from '../schema/relationRef-definition';
 
 interface MandatoryAttribute {
@@ -32,14 +32,7 @@ export const queryMandatoryAttributes = async (context: AuthContext, subTypeId: 
     });
 
   // From schema relations ref
-  const types = getParentTypes(subTypeId);
-  types.push(subTypeId);
-
-  const relationsRef: RelationRefDefinition[] = [];
-  types.forEach((type) => {
-    relationsRef.push(...schemaRelationsRefDefinition.getRelationsRef(type) ?? []);
-  });
-
+  const relationsRef: RelationRefDefinition[] = schemaRelationsRefDefinition.getRelationsRef(getEntityTypes(subTypeId));
   relationsRef.forEach((rel) => {
     if (rel.mandatoryType === 'external') {
       mandatoryAttributes.push({ name: rel.inputName, builtIn: true, mandatory: true, label: rel.label });

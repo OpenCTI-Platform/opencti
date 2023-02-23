@@ -17,7 +17,7 @@ import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { getParentTypes } from '../../schema/schemaUtils';
+import { getEntityTypes } from '../../schema/schemaUtils';
 import type { RelationRefDefinition } from '../../schema/relationRef-definition';
 
 export type typeAvailableSetting = boolean | string;
@@ -102,14 +102,7 @@ const customizableAttributesValidation = (targetType: string, input: BasicStoreE
       .map((attr) => attr.name);
 
     // From schema relations ref
-    const types = getParentTypes(targetType);
-    types.push(targetType);
-
-    const relationsRef: RelationRefDefinition[] = [];
-    types.forEach((type) => {
-      relationsRef.push(...schemaRelationsRefDefinition.getRelationsRef(type) ?? []);
-    });
-
+    const relationsRef: RelationRefDefinition[] = schemaRelationsRefDefinition.getRelationsRef(getEntityTypes(targetType));
     customizableMandatoryAttributeNames.push(...relationsRef.map((rel) => rel.inputName));
 
     attributesConfiguration.forEach((attr) => {
