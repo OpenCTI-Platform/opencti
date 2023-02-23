@@ -21,9 +21,11 @@ export const instanceMetaRefsExtractor = (relationshipType: string, isInferred: 
   return anyData[field] ?? [];
 };
 
+const RELATIONS_STIX_ATTRIBUTES = ['source_ref', 'target_ref', 'sighting_of_ref', 'where_sighted_refs'];
+const STIX_REFS = [...schemaRelationsRefDefinition.getStixNames(), ...RELATIONS_STIX_ATTRIBUTES];
 // eslint-disable-next-line
 export const stixRefsExtractor = (data: any, idGenerator: (key: string, data: unknown) => string) => {
-  return schemaRelationsRefDefinition.getStixNames().map((key) => {
+  return STIX_REFS.map((key) => {
     // stix embedding (label, external ref, kill chain)
     if (key === 'external_references' && data[key]) {
       // eslint-disable-next-line
