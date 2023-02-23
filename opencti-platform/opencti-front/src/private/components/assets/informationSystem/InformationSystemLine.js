@@ -8,11 +8,13 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
+import CheckIcon from '@material-ui/icons/Check';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   item: {
@@ -97,18 +99,21 @@ class InformationSystemLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.risks.width }}
               >
+              {node.risk_count && node.risk_count}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.severity.width }}
               >
-                {node.software_identifier && node.software_identifier}
+                {node?.risk_level && <RiskLevel
+                  risk={node?.top_risk_severity}
+                />}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.critical_system.width }}
               >
-                {node.vendor_name && node.vendor_name}
+                {node.critical_system_designation && <CheckIcon />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -119,13 +124,13 @@ class InformationSystemLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.privacy_sensitive.width }}
               >
-                {node.asset_type && <ItemIcon type={node.asset_type} />}
+                {node.privacy_designation && <CheckIcon />}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.status.width }}
               >
-                {node.version && node.version}
+                {node.operational_status && node.operational_status}
               </div>
               <div
                 className={classes.bodyItem}
@@ -141,7 +146,7 @@ class InformationSystemLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.date_created.width }}
               >
-                {node.software_identifier && node.software_identifier}
+                {node.created && node.created}
               </div>
             </div>
           }
@@ -165,6 +170,17 @@ const InformationSystemLineFragment = createFragmentContainer(InformationSystemL
     fragment InformationSystemLine_node on InformationSystem {
       id
       short_name
+      critical_system_designation
+      risk_count
+      security_sensitivity_level
+      privacy_designation
+      operational_status
+      created
+      top_risk_severity
+      labels {
+        id
+        name
+      }
     }
   `,
 });

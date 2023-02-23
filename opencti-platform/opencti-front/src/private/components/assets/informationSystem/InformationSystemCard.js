@@ -265,6 +265,17 @@ const InformationSystemCardFragment = createFragmentContainer(
       fragment InformationSystemCard_node on InformationSystem {
         id
         short_name
+        critical_system_designation
+        risk_count
+        security_sensitivity_level
+        privacy_designation
+        operational_status
+        created
+        top_risk_severity
+        labels {
+          id
+          name
+        }
       }
     `,
   },
