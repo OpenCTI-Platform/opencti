@@ -5,6 +5,10 @@ import BaseSchema, { AnySchema } from 'yup/lib/schema';
 import useAuth from './useAuth';
 import { entitySettingsFragment } from '../../private/components/settings/sub_types/EntitySetting';
 import { EntitySettingConnection_entitySettings$data, EntitySettingConnection_entitySettings$key } from '../../private/components/settings/sub_types/__generated__/EntitySettingConnection_entitySettings.graphql';
+import { useFormatter } from '../../components/i18n';
+import {
+  AttributeConfiguration,
+} from '../../private/components/settings/sub_types/EntitySettingAttributesConfiguration';
 
 export type EntitySetting = EntitySettingConnection_entitySettings$data['edges'][0]['node'];
 
@@ -34,9 +38,7 @@ export const useIsEnforceReference = (id: string): boolean => {
 };
 
 const useAttributesConfiguration = (id: string): AttributeConfiguration[] | null => {
-  const entitySetting = useEntitySettings().edges.map((edgeNode) => edgeNode.node)
-    .map((node) => useFragment(entitySettingFragment, node) as EntitySetting_entitySetting$data)
-    .find((node) => id === node.target_type && node.attributes_configuration !== null);
+  const entitySetting = useEntitySettings(id)[0];
 
   if (!entitySetting || !entitySetting.attributes_configuration) {
     return null;
