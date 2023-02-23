@@ -20,6 +20,7 @@ import InformationSystemLines, {
 import InformationSystemFormCreation from './informationSystem/InformationSystemFormCreation';
 import InformationSystemGraphCreation from './informationSystem/InformationSystemGraphCreation';
 import InformationSystemDeletion from './informationSystem/InformationSystemDeletion';
+import InformationSystemEdition from './informationSystem/InformationSystemEdition';
 import { isUniqFilter } from '../common/lists/Filters';
 import { toastGenericError } from '../../../utils/bakedToast';
 
@@ -42,6 +43,8 @@ class InformationSystems extends Component {
       selectedElements: null,
       selectAll: false,
       InfoSystemCreation: '',
+      displayEdit: false,
+      selectedInfoSystemId: '',
     };
   }
 
@@ -111,11 +114,11 @@ class InformationSystems extends Component {
   }
 
   handleDisplayEdit(selectedElements) {
-    const softwareId = Object.entries(selectedElements)[0][1].id;
-    this.props.history.push({
-      pathname: `/defender HQ/assets/information_systems/${softwareId}`,
-      openEdit: true,
-    });
+    let infoSystemId = '';
+    if (selectedElements) {
+      infoSystemId = (Object.entries(selectedElements)[0][1])?.id;
+    }
+    this.setState({ displayEdit: !this.state.displayEdit, selectedInfoSystemId: infoSystemId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -417,6 +420,14 @@ class InformationSystems extends Component {
           InfoSystemCreation={InfoSystemCreation}
           handleInformationSystemCreation={this.handleInformationSystemCreation.bind(this)}
         />
+        {this.state.selectedInfoSystemId && (
+          <InformationSystemEdition
+            displayEdit={this.state.displayEdit}
+            history={this.props.history}
+            informationSystemId={this.state.selectedInfoSystemId}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          />
+        )}
       </div>
     );
   }

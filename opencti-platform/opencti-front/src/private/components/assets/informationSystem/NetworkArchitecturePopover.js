@@ -100,7 +100,7 @@ class NetworkArchitectureComponent extends Component {
     } = this.props;
     return (
         <>
-        <Dialog open={this.props.openView} keepMounted={true}>
+        <Dialog open={this.props.openView} keepMounted={false}>
           <DialogTitle classes={{ root: classes.dialogTitle }}>
             {t('Network Architecture')}
           </DialogTitle>

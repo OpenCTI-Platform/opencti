@@ -1,7 +1,9 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose } from 'ramda';
+import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -18,6 +20,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import HyperLinkField from '../../common/form/HyperLinkField';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
   menuItem: {
@@ -106,24 +109,26 @@ class AuthorizationBoundaryEdition extends Component {
     const {
       t,
       classes,
+      refreshQuery,
       informationSystem,
     } = this.props;
+    const authorizationBoundary = pathOr([], ['authorization_boundary'], informationSystem);
     const initialValues = R.pipe(
-      R.assoc('name', informationSystem?.name || ''),
-      R.assoc('description', informationSystem?.description || ''),
+      R.assoc('name', authorizationBoundary?.name || ''),
+      R.assoc('description', authorizationBoundary?.description || ''),
       R.pick([
         'name',
         'description',
       ]),
-    )(informationSystem);
+    )(authorizationBoundary);
     return (
       <>
         <Dialog open={this.props.openEdit} keepMounted={true}>
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-            // onSubmit={this.onSubmit.bind(this)}
-            // onReset={this.onReset.bind(this)}
+          // onSubmit={this.onSubmit.bind(this)}
+          // onReset={this.onReset.bind(this)}
           >
             {({
               isSubmitting,
@@ -135,6 +140,11 @@ class AuthorizationBoundaryEdition extends Component {
                 </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <Typography>
+                        {t("Identifies a description of this system's authorization boundary, optionally supplemented by diagrams that illustrate the authorization boundary.")}
+                      </Typography>
+                    </Grid>
                     <Grid item={true} xs={12}>
                       <div className={classes.textBase}>
                         <Typography variant="h3"
@@ -172,6 +182,15 @@ class AuthorizationBoundaryEdition extends Component {
                         title={'Diagram(s)'}
                         setFieldValue={setFieldValue}
                         link='/defender HQ/assets/devices'
+                      />
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <CyioCoreObjectExternalReferences
+                        externalReferences={authorizationBoundary.links}
+                        cyioCoreObjectId={authorizationBoundary.id}
+                        fieldName='links'
+                        refreshQuery={refreshQuery}
+                        typename={authorizationBoundary.__typename}
                       />
                     </Grid>
                   </Grid>
@@ -248,7 +267,34 @@ AuthorizationBoundaryEdition.propTypes = {
 const AuthorizationBoundaryEditionPopover = createFragmentContainer(AuthorizationBoundaryEdition, {
   informationSystem: graphql`
     fragment AuthorizationBoundaryEditionPopover_information on InformationSystem {
+      __typename
       id
+      authorization_boundary {
+        id
+        entity_type
+        description
+        diagrams {
+          id
+          entity_type
+          created
+          modified
+          description
+          caption
+          diagram_link
+        }
+        links {
+          id
+          entity_type
+          created
+          modified
+          source_name
+          description
+          url
+          external_id
+          reference_purpose
+          media_type
+        }
+      }
     }
   `,
 });

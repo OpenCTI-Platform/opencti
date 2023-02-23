@@ -119,7 +119,7 @@ class NetworkArchitectureComponent extends Component {
     )(informationSystem);
     return (
       <>
-      <Dialog open={this.props.openEdit} keepMounted={true}>
+      <Dialog open={this.props.openEdit} keepMounted={false}>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}

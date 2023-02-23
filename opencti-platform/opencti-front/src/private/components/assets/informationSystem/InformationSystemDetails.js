@@ -367,6 +367,7 @@ class InformationSystemDetailsComponent extends Component {
                 && this.state.modal === 'authorizationBoundary' && (
                   <AuthorizationBoundaryPopover
                     openView={this.state.openView}
+                    informationSystem={informationSystem}
                     handleCloseView={this.handleCloseView.bind(this)}
                   />
               )}

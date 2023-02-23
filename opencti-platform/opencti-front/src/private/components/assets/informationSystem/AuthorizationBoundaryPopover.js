@@ -1,6 +1,13 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  map,
+  pipe,
+  pathOr,
+  compose,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -17,10 +24,6 @@ import inject18n from '../../../../components/i18n';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
-  root: {
-    minWidth: '600px',
-    minHeight: '700px',
-  },
   dialogTitle: {
     padding: '24px 0 16px 24px',
   },
@@ -29,7 +32,6 @@ const styles = (theme) => ({
     marginBottom: '24px',
     overflowY: 'auto',
     overflowX: 'hidden',
-    minWidth: '580px',
     minHeight: '550px',
   },
   dialogClosebutton: {
@@ -49,11 +51,6 @@ const styles = (theme) => ({
     alignItems: 'center',
     marginBottom: 5,
   },
-  popoverDialog: {
-    fontSize: '18px',
-    lineHeight: '24px',
-    color: theme.palette.header.text,
-  },
   scrollBg: {
     background: theme.palette.header.background,
     width: '100%',
@@ -70,6 +67,8 @@ const styles = (theme) => ({
     overflowY: 'scroll',
   },
   scrollObj: {
+    display: 'grid',
+    gridTemplateColumns: '40% 1fr',
     color: theme.palette.header.text,
     fontFamily: 'sans-serif',
     padding: '0px',
@@ -85,99 +84,123 @@ class AuthorizationBoundaryComponent extends Component {
     };
   }
 
-  handleCancelOpenClick() {
-    this.setState({ close: true });
-  }
-
-  handleCancelCloseClick() {
-    this.setState({ close: false });
-  }
-
-  handleCloseMain() {
-    this.setState({ close: false });
-    this.props.handleCloseConnection();
-  }
-
   render() {
     const {
       t,
       classes,
+      refreshQuery,
+      informationSystem,
     } = this.props;
+    const diagramData = pipe(
+      pathOr([], ['authorization_boundary', 'diagrams']),
+      map((n) => ({
+        caption: n.caption,
+        diagram_link: n.diagram_link,
+      })),
+    )(informationSystem);
     return (
-        <Dialog open={this.props.openView} keepMounted={true}>
-          <DialogTitle classes={{ root: classes.dialogTitle }}>
-            {t('Authorization Boundary')}
-          </DialogTitle>
-          <DialogContent classes={{ root: classes.dialogContent }}>
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12}>
-                <div className={classes.textBase}>
-                  <Typography
-                    variant='h3'
-                    color='textSecondary'
-                    gutterBottom={true}
-                    style={{ margin: 0 }}
-                  >
-                    {t('Description')}
-                  </Typography>
-                  <Tooltip title={t('Description')}>
-                    <Information
-                      style={{ marginLeft: '5px' }}
-                      fontSize='inherit'
-                      color='disabled'
-                    />
-                  </Tooltip>
-                </div>
-                <div className='clearfix' />
-              </Grid>
-              <Grid item={true} xs={12}>
-                <div className={classes.textBase}>
-                  <Typography
-                    variant='h3'
-                    color='textSecondary'
-                    gutterBottom={true}
-                    style={{ margin: 0 }}
-                  >
-                    {t('Diagram(s)')}
-                  </Typography>
-                  <Tooltip title={t('Diagram(s)')}>
-                    <Information
-                      style={{ marginLeft: '5px' }}
-                      fontSize='inherit'
-                      color='disabled'
-                    />
-                  </Tooltip>
-                </div>
-                <div className='clearfix' />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {/* Content here */}
-                    </div>
+      <Dialog
+        open={this.props.openView}
+        keepMounted={false}
+      >
+        <DialogTitle classes={{ root: classes.dialogTitle }}>
+          {t('Authorization Boundary')}
+        </DialogTitle>
+        <DialogContent classes={{ root: classes.dialogContent }}>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <Typography>
+                {t("Identifies a description of this system's authorization boundary, optionally supplemented by diagrams that illustrate the authorization boundary.")}
+              </Typography>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant='h3'
+                  color='textSecondary'
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t('Description')}
+                </Typography>
+                <Tooltip title={t('Description')}>
+                  <Information
+                    style={{ marginLeft: '5px' }}
+                    fontSize='inherit'
+                    color='disabled'
+                  />
+                </Tooltip>
+              </div>
+              <div className='clearfix' />
+              <Typography>
+                {informationSystem.authorization_boundary && t(informationSystem.authorization_boundary.description)}
+              </Typography>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant='h3'
+                  color='textSecondary'
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t('Diagram(s)')}
+                </Typography>
+                <Tooltip title={t('Diagram(s)')}>
+                  <Information
+                    style={{ marginLeft: '5px' }}
+                    fontSize='inherit'
+                    color='disabled'
+                  />
+                </Tooltip>
+              </div>
+              <div className='clearfix' />
+              <div style={{ display: 'grid', gridTemplateColumns: '40% 1fr', padding: '10px' }}>
+                <Typography>
+                  Caption
+                </Typography>
+                <Typography>
+                  Diagram Link
+                </Typography>
+              </div>
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    {diagramData.length && diagramData.map((diagram) => (
+                      <>
+                        <Typography variant='h3' color='inherit'>
+                          {diagram.caption && t(diagram.caption)}
+                        </Typography>
+                        <Typography variant='h3' color='inherit'>
+                          {diagram.diagram_link && t(diagram.diagram_link)}
+                        </Typography>
+                      </>
+                    ))}
                   </div>
                 </div>
-              </Grid>
-              <Grid item={true} xs={12}>
-                <CyioCoreObjectExternalReferences
-                    typename={''}
-                    externalReferences={[]}
-                    fieldName='external_references'
-                    cyioCoreObjectId={''}
-                    refreshQuery={{}}
-                  />
-              </Grid>
+              </div>
             </Grid>
-          </DialogContent>
-          <DialogActions classes={{ root: classes.dialogClosebutton }}>
-            <Button
-              variant='outlined'
-              onClick={this.props.handleCloseView}
-              classes={{ root: classes.buttonPopover }}
-            >
-              {t('Cancel')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+            <Grid item={true} xs={12}>
+              <CyioCoreObjectExternalReferences
+                externalReferences={informationSystem.links}
+                cyioCoreObjectId={informationSystem.id}
+                fieldName='links'
+                refreshQuery={refreshQuery}
+                typename={informationSystem.__typename}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions classes={{ root: classes.dialogClosebutton }}>
+          <Button
+            variant='outlined'
+            onClick={this.props.handleCloseView}
+            classes={{ root: classes.buttonPopover }}
+          >
+            {t('Cancel')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     );
   }
 }
@@ -187,15 +210,40 @@ AuthorizationBoundaryComponent.propTypes = {
   fldt: PropTypes.func,
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
-  dataSource: PropTypes.object,
-  openConnection: PropTypes.bool,
-  handleCloseConnection: PropTypes.func,
+  informationSystem: PropTypes.object,
 };
 
 const AuthorizationBoundaryPopover = createFragmentContainer(AuthorizationBoundaryComponent, {
   informationSystem: graphql`
     fragment AuthorizationBoundaryPopover_information on InformationSystem {
+      __typename
       id
+       authorization_boundary {
+        id
+        entity_type
+        description
+        diagrams {
+          id
+          entity_type
+          created
+          modified
+          description
+          caption
+          diagram_link
+        }
+        links {
+          id
+          entity_type
+          created
+          modified
+          source_name
+          description
+          url
+          external_id
+          reference_purpose
+          media_type
+        }
+      }
     }
   `,
 });

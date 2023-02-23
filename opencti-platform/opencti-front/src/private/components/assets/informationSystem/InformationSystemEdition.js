@@ -1,93 +1,82 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { withStyles } from '@material-ui/core/styles/index';
+import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
+import { toastGenericError } from '../../../../utils/bakedToast';
 import InformationSystemEditionContainer from './InformationSystemEditionContainer';
-import { informationSystemEditionOverviewFocus } from './InformationSystemEditionOverview';
-import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
+  container: {
+    margin: 0,
   },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 export const informationSystemEditionQuery = graphql`
-  query InformationSystemEditionContainerQuery($id: ID!) {
-    softwareAsset(id: $id) {
-      ...InformationSystemEditionContainer
+  query InformationSystemEditionQuery($id: ID!) {
+    informationSystem(id: $id) {
+      __typename
+      id
+      short_name
+      system_name
+      description
+      deployment_model
+      cloud_service_model
+      identity_assurance_level
+      federation_assurance_level
+      authenticator_assurance_level
     }
-    # settings {
-    #   platform_enable_reference
-    # }
   }
 `;
 
 class InformationSystemEdition extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    commitMutation({
-      mutation: informationSystemEditionOverviewFocus,
-      variables: {
-        id: this.props.informationSystemId,
-        input: { focusOn: '' },
-      },
-    });
-    this.setState({ open: false });
+    this.state = {
+      anchorEl: null,
+    };
   }
 
   render() {
     const {
-      informationSystemId,
-      history,
+      classes, displayEdit, handleDisplayEdit, history, informationSystemId,
     } = this.props;
     return (
-      <div>
+      <div className={classes.container}>
         <QueryRenderer
           query={informationSystemEditionQuery}
           variables={{ id: informationSystemId }}
-          render={({ props, retry }) => {
+          render={({ error, props, retry }) => {
+            if (error) {
+              toastGenericError('Failed to edit Task');
+            }
             if (props) {
               return (
                 <InformationSystemEditionContainer
-                  software={props.softwareAsset}
-                  // enableReferences={props.settings.platform_enable_reference?.includes(
-                  //   'Software',
-                  // )}
+                  displayEdit={displayEdit}
                   history={history}
+                  informationSystem={props.informationSystem}
                   refreshQuery={retry}
-                  handleClose={this.handleClose.bind(this)}
+                  handleDisplayEdit={handleDisplayEdit}
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <></>;
           }}
         />
       </div>
@@ -97,12 +86,14 @@ class InformationSystemEdition extends Component {
 
 InformationSystemEdition.propTypes = {
   informationSystemId: PropTypes.string,
+  displayEdit: PropTypes.bool,
+  handleDisplayEdit: PropTypes.func,
   classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
+  withStyles(styles),
 )(InformationSystemEdition);

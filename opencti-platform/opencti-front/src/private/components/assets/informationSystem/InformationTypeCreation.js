@@ -202,7 +202,7 @@ class InformationTypeCreation extends Component {
       <>
         <Dialog
           open={openInformationType}
-          keepMounted={true}
+          keepMounted={false}
           maxWidth='md'
           className={classes.dialogMain}
         >
