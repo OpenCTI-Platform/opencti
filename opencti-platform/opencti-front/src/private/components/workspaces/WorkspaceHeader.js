@@ -190,7 +190,7 @@ const WorkspaceHeader = ({ workspace, config, variant, adjust, handleDateChange 
                 <InputLabel id="relative">{t('Relative time')}</InputLabel>
                 <Select labelId="relative"
                   value={relativeDate ?? relativeDate}
-                  onChange={handleDateChange.bind(this, 'relativeDate')}
+                  onChange={(value) => handleDateChange('relativeDate', value)}
                   label={t('Relative time')}>
                   <MenuItem value="none">{t('None')}</MenuItem>
                   <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
@@ -209,7 +209,7 @@ const WorkspaceHeader = ({ workspace, config, variant, adjust, handleDateChange 
                 clearable={true}
                 disableFuture={true}
                 disabled={!!relativeDate}
-                onChange={handleDateChange.bind(this, 'startDate')}
+                onChange={(value) => handleDateChange('startDate', value)}
                 renderInput={(params) => (
                   <MUITextField
                     style={{ marginRight: 20 }}
@@ -226,7 +226,7 @@ const WorkspaceHeader = ({ workspace, config, variant, adjust, handleDateChange 
                 clearable={true}
                 disabled={!!relativeDate}
                 disableFuture={true}
-                onChange={handleDateChange.bind(this, 'endDate')}
+                onChange={(value) => handleDateChange('endDate', value)}
                 renderInput={(params) => (
                   <MUITextField variant="outlined" size="small" {...params} />
                 )}
