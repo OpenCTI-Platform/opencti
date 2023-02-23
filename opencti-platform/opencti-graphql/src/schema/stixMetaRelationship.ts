@@ -1,10 +1,5 @@
 import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER,
   INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
@@ -31,23 +26,8 @@ import {
   xOpenctiStixIds
 } from './attribute-definition';
 import { schemaAttributesDefinition } from './schema-attributes';
-import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CAMPAIGN,
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INDICATOR,
-  ENTITY_TYPE_INFRASTRUCTURE,
-  ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
-  ENTITY_TYPE_TOOL,
   isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation
@@ -60,12 +40,6 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION
 } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
-import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
-import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
-import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrativeArea/administrativeArea-types';
-import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
-import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
 import type { RelationRefDefinition } from './relationRef-definition';
 
 export const RELATION_CREATED_BY = 'created-by';
@@ -82,7 +56,7 @@ export const RELATION_OBJECT_ASSIGNEE = 'object-assignee';
 
 // EXTERNAL
 
-const createdBy: RelationRefDefinition = {
+export const createdBy: RelationRefDefinition = {
   inputName: INPUT_CREATED_BY,
   databaseName: RELATION_CREATED_BY,
   stixName: 'created_by_ref',
@@ -92,7 +66,7 @@ const createdBy: RelationRefDefinition = {
   label: 'Author'
 };
 
-const objectMarking: RelationRefDefinition = {
+export const objectMarking: RelationRefDefinition = {
   inputName: INPUT_MARKINGS,
   databaseName: RELATION_OBJECT_MARKING,
   stixName: 'object_marking_refs',
@@ -102,7 +76,7 @@ const objectMarking: RelationRefDefinition = {
   label: 'Markings'
 };
 
-const objects: RelationRefDefinition = {
+export const objects: RelationRefDefinition = {
   inputName: INPUT_OBJECTS,
   databaseName: RELATION_OBJECT,
   stixName: 'object_refs',
@@ -111,7 +85,7 @@ const objects: RelationRefDefinition = {
   checker: (fromType,) => isStixDomainObjectContainer(fromType)
 };
 
-const objectOrganization: RelationRefDefinition = { // Not in STANDARD
+export const objectOrganization: RelationRefDefinition = { // Not in STANDARD
   inputName: INPUT_GRANTED_REFS,
   databaseName: RELATION_GRANTED_TO,
   stixName: 'granted_refs',
@@ -121,7 +95,7 @@ const objectOrganization: RelationRefDefinition = { // Not in STANDARD
     || isStixDomainObjectLocation(fromType)) && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType
 };
 
-const objectAssignee: RelationRefDefinition = { // Not in STANDARD
+export const objectAssignee: RelationRefDefinition = { // Not in STANDARD
   inputName: INPUT_ASSIGNEE,
   databaseName: RELATION_OBJECT_ASSIGNEE,
   stixName: 'object_assignee_refs',
@@ -142,7 +116,7 @@ const RELATIONS_REF_EXTERNAL: RelationRefDefinition[] = [
 
 // INTERNAL
 
-const objectLabel: RelationRefDefinition = {
+export const objectLabel: RelationRefDefinition = {
   inputName: INPUT_LABELS,
   databaseName: RELATION_OBJECT_LABEL,
   stixName: 'labels',
@@ -152,7 +126,7 @@ const objectLabel: RelationRefDefinition = {
   label: 'Labels'
 };
 
-const externalReferences: RelationRefDefinition = {
+export const externalReferences: RelationRefDefinition = {
   inputName: INPUT_EXTERNAL_REFS,
   databaseName: RELATION_EXTERNAL_REFERENCE,
   stixName: 'external_references',
@@ -161,7 +135,7 @@ const externalReferences: RelationRefDefinition = {
   checker: (fromType, toType) => toType === ENTITY_TYPE_EXTERNAL_REFERENCE,
   label: 'External references'
 };
-const killChainPhases: RelationRefDefinition = {
+export const killChainPhases: RelationRefDefinition = {
   inputName: INPUT_KILLCHAIN,
   databaseName: RELATION_KILL_CHAIN_PHASE,
   stixName: 'kill_chain_phases',
@@ -176,39 +150,6 @@ const RELATIONS_REF_INTERNAL: RelationRefDefinition[] = [
   externalReferences,
   killChainPhases,
 ];
-
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences]);
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CYBER_OBSERVABLE, [objectMarking]);
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_RELATIONSHIP, [createdBy, objectMarking, objectLabel, externalReferences, killChainPhases]);
-
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER, [objects]);
-
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_ATTACK_PATTERN, [killChainPhases, objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INDICATOR, [killChainPhases]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INFRASTRUCTURE, [killChainPhases, objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [killChainPhases, objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_TOOL, [killChainPhases]);
-
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CAMPAIGN, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_REPORT, [objectAssignee, objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INTRUSION_SET, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_THREAT_ACTOR, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INCIDENT, [objectAssignee, objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_CASE, [objectAssignee, objectOrganization]);
-
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_NOTE, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OPINION, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_COURSE_OF_ACTION, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CORE_RELATIONSHIP, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(STIX_SIGHTING_RELATIONSHIP, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CHANNEL, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_DATA_SOURCE, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_DATA_COMPONENT, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_EVENT, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_GROUPING, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_NARRATIVE, [objectOrganization]);
 
 // -- TYPES --
 

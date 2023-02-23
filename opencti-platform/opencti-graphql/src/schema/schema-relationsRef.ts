@@ -1,4 +1,5 @@
 import type { Checker, RelationRefDefinition } from './relationRef-definition';
+import { getEntityTypes } from './schemaUtils';
 
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, RelationRefDefinition[]>,
@@ -36,11 +37,9 @@ export const schemaRelationsRefDefinition = {
     });
   },
 
-  getRelationsRef(entityTypes: string | string[]): RelationRefDefinition[] {
-    if (Array.isArray(entityTypes)) {
-      return entityTypes.map((entityType) => this.relationsRef[entityType] ?? []).flat();
-    }
-    return this.relationsRef[entityTypes] ?? [];
+  getRelationsRef(entityType: string): RelationRefDefinition[] {
+    const entityTypes = getEntityTypes(entityType);
+    return entityTypes.map((type) => this.relationsRef[type] ?? []).flat();
   },
 
   registerChecker(databaseName: string, checker: Checker) {

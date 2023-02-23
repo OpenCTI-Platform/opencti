@@ -12,3 +12,8 @@ import './administrativeArea/administrativeArea';
 import './case/case';
 import './entitySetting/entitySetting';
 // endregion
+
+// region static registration ref
+import './relationsRef/stixCyberObservableRelationship-registrationRef';
+import './relationsRef/stixMetaRelationship-registrationRefs';
+// endregion

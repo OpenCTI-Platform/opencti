@@ -16,24 +16,7 @@ import {
   xOpenctiStixIds
 } from './attribute-definition';
 import { schemaAttributesDefinition } from './schema-attributes';
-import { schemaRelationsRefDefinition } from './schema-relationsRef';
-import {
-  ENTITY_DIRECTORY,
-  ENTITY_DOMAIN_NAME,
-  ENTITY_EMAIL_ADDR,
-  ENTITY_EMAIL_MESSAGE,
-  ENTITY_EMAIL_MIME_PART_TYPE,
-  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  ENTITY_IPV4_ADDR,
-  ENTITY_IPV6_ADDR,
-  ENTITY_NETWORK_TRAFFIC,
-  ENTITY_PROCESS,
-  ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
-} from './stixCyberObservable';
 import type { RelationRefDefinition } from './relationRef-definition';
-import { ENTITY_TYPE_MALWARE } from './stixDomainObject';
 
 // Inputs
 export const INPUT_OPERATING_SYSTEM = 'operatingSystems';
@@ -98,14 +81,14 @@ export const RELATION_SERVICE_DLL = 'service-dll';
 
 // -- RELATIONS REF ---
 
-const operatingSystems: RelationRefDefinition = {
+export const operatingSystems: RelationRefDefinition = {
   inputName: INPUT_OPERATING_SYSTEM,
   databaseName: RELATION_OPERATING_SYSTEM,
   stixName: 'operating_system_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const sample: RelationRefDefinition = {
+export const sample: RelationRefDefinition = {
   inputName: INPUT_SAMPLE,
   databaseName: RELATION_SAMPLE,
   stixName: 'sample_ref',
@@ -113,189 +96,189 @@ const sample: RelationRefDefinition = {
   multiple: false,
 };
 
-const contains: RelationRefDefinition = {
+export const contains: RelationRefDefinition = {
   inputName: INPUT_CONTAINS,
   databaseName: RELATION_CONTAINS,
   stixName: 'contains_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const resolvesTo: RelationRefDefinition = {
+export const resolvesTo: RelationRefDefinition = {
   inputName: INPUT_RESOLVES_TO,
   databaseName: RELATION_RESOLVES_TO,
   stixName: 'resolves_to_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const belongsTo: RelationRefDefinition = {
+export const belongsTo: RelationRefDefinition = {
   inputName: INPUT_BELONGS_TO,
   databaseName: RELATION_BELONGS_TO,
   stixName: 'belongs_to_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const from: RelationRefDefinition = {
+export const from: RelationRefDefinition = {
   inputName: INPUT_FROM,
   databaseName: RELATION_FROM,
   stixName: 'from_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const sender: RelationRefDefinition = {
+export const sender: RelationRefDefinition = {
   inputName: INPUT_SENDER,
   databaseName: RELATION_SENDER,
   stixName: 'sender_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const to: RelationRefDefinition = {
+export const to: RelationRefDefinition = {
   inputName: INPUT_TO,
   databaseName: RELATION_TO,
   stixName: 'to_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const cc: RelationRefDefinition = {
+export const cc: RelationRefDefinition = {
   inputName: INPUT_CC,
   databaseName: RELATION_CC,
   stixName: 'cc_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const bcc: RelationRefDefinition = {
+export const bcc: RelationRefDefinition = {
   inputName: INPUT_BCC,
   databaseName: RELATION_BCC,
   stixName: 'bcc_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const rawEmail: RelationRefDefinition = {
+export const rawEmail: RelationRefDefinition = {
   inputName: INPUT_RAW_EMAIL,
   databaseName: RELATION_RAW_EMAIL,
   stixName: 'raw_email_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const bodyRaw: RelationRefDefinition = {
+export const bodyRaw: RelationRefDefinition = {
   inputName: INPUT_BODY_RAW,
   databaseName: RELATION_BODY_RAW,
   stixName: 'body_raw_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const parentDirectory: RelationRefDefinition = {
+export const parentDirectory: RelationRefDefinition = {
   inputName: INPUT_PARENT_DIRECTORY,
   databaseName: RELATION_PARENT_DIRECTORY,
   stixName: 'parent_directory_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const obsContent: RelationRefDefinition = {
+export const obsContent: RelationRefDefinition = {
   inputName: INPUT_CONTENT,
   databaseName: RELATION_CONTENT,
   stixName: 'content_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const src: RelationRefDefinition = {
+export const src: RelationRefDefinition = {
   inputName: INPUT_SRC,
   databaseName: RELATION_SRC,
   stixName: 'src_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const dst: RelationRefDefinition = {
+export const dst: RelationRefDefinition = {
   inputName: INPUT_DST,
   databaseName: RELATION_DST,
   stixName: 'dst_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const srcPayload: RelationRefDefinition = {
+export const srcPayload: RelationRefDefinition = {
   inputName: INPUT_SRC_PAYLOAD,
   databaseName: RELATION_SRC_PAYLOAD,
   stixName: 'src_payload_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const dstPayload: RelationRefDefinition = {
+export const dstPayload: RelationRefDefinition = {
   inputName: INPUT_DST_PAYLOAD,
   databaseName: RELATION_DST_PAYLOAD,
   stixName: 'dst_payload_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const encapsulates: RelationRefDefinition = {
+export const encapsulates: RelationRefDefinition = {
   inputName: INPUT_ENCAPSULATES,
   databaseName: RELATION_ENCAPSULATES,
   stixName: 'encapsulates_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const encapsulatedBy: RelationRefDefinition = {
+export const encapsulatedBy: RelationRefDefinition = {
   inputName: INPUT_ENCAPSULATED_BY,
   databaseName: RELATION_ENCAPSULATED_BY,
   stixName: 'encapsulated_by_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const openedConnections: RelationRefDefinition = {
+export const openedConnections: RelationRefDefinition = {
   inputName: INPUT_OPENED_CONNECTION,
   databaseName: RELATION_OPENED_CONNECTION,
   stixName: 'opened_connection_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const creatorUser: RelationRefDefinition = {
+export const creatorUser: RelationRefDefinition = {
   inputName: INPUT_CREATOR_USER,
   databaseName: RELATION_CREATOR_USER,
   stixName: 'creator_user_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const image: RelationRefDefinition = {
+export const image: RelationRefDefinition = {
   inputName: INPUT_IMAGE,
   databaseName: RELATION_IMAGE,
   stixName: 'image_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const parent: RelationRefDefinition = {
+export const parent: RelationRefDefinition = {
   inputName: INPUT_PARENT,
   databaseName: RELATION_PARENT,
   stixName: 'parent_ref',
   mandatoryType: 'no',
   multiple: false,
 };
-const child: RelationRefDefinition = {
+export const child: RelationRefDefinition = {
   inputName: INPUT_CHILD,
   databaseName: RELATION_CHILD,
   stixName: 'child_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const bodyMultipart: RelationRefDefinition = {
+export const bodyMultipart: RelationRefDefinition = {
   inputName: INPUT_BODY_MULTIPART,
   databaseName: RELATION_BODY_MULTIPART,
   stixName: 'body_multipart',
   mandatoryType: 'no',
   multiple: true,
 };
-const values: RelationRefDefinition = {
+export const values: RelationRefDefinition = {
   inputName: INPUT_VALUES,
   databaseName: RELATION_VALUES,
   stixName: 'values_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const xOpenctiLinkedTo: RelationRefDefinition = {
+export const xOpenctiLinkedTo: RelationRefDefinition = {
   inputName: INPUT_LINKED,
   databaseName: RELATION_LINKED,
   stixName: 'x_opencti_linked_to_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-const serviceDlls: RelationRefDefinition = {
+export const serviceDlls: RelationRefDefinition = {
   inputName: INPUT_SERVICE_DLL,
   databaseName: RELATION_SERVICE_DLL,
   stixName: 'service_dll_refs',
@@ -334,22 +317,6 @@ export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS: RelationRefDefinition[] = [
   xOpenctiLinkedTo,
   serviceDlls
 ];
-
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, [xOpenctiLinkedTo]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DIRECTORY, [contains]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_STIX_FILE, [contains, parentDirectory, obsContent, bodyRaw]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DOMAIN_NAME, [resolvesTo, to]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_IPV4_ADDR, [resolvesTo, belongsTo]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_IPV6_ADDR, [resolvesTo, belongsTo]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MESSAGE, [from, sender, to, cc, bcc, rawEmail, bodyRaw, bodyMultipart]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_ADDR, [belongsTo]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MIME_PART_TYPE, [bodyMultipart]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_NETWORK_TRAFFIC, [src, dst, srcPayload, dstPayload, encapsulates, encapsulatedBy]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PROCESS, [openedConnections, creatorUser, image, parent, child, serviceDlls]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_KEY, [values, creatorUser]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_VALUE_TYPE, [values]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_ARTIFACT, [rawEmail, bodyRaw, obsContent]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [sample, operatingSystems]);
 
 // -- TYPES --
 

@@ -91,10 +91,7 @@ import {
   storeMergeEvent,
   storeUpdateEvent,
 } from './redis';
-import {
-  cleanStixIds,
-  STIX_SPEC_VERSION,
-} from './stix';
+import { cleanStixIds, STIX_SPEC_VERSION, } from './stix';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -116,7 +113,7 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX,
 } from '../schema/general';
-import { getEntityTypes, getParentTypes, isAnId } from '../schema/schemaUtils';
+import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { INPUT_FROM, isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
   RELATION_CREATED_BY,
@@ -2370,7 +2367,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   const buildInstanceRelTo = (to, relType) => buildInnerRelation(element, to, relType);
   // region generic elements
   // -- Upsert multiple refs for other stix elements
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(getEntityTypes(type))
+  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(type)
     .map((ref) => ref.inputName);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];

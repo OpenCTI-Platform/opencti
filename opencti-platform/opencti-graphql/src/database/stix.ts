@@ -88,7 +88,6 @@ import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
-import { getEntityTypes } from '../schema/schemaUtils';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -1065,7 +1064,7 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
 };
 
 export const checkStixCyberObservableRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
-  const targetRelations = schemaRelationsRefDefinition.getRelationsRef(getEntityTypes(fromType))
+  const targetRelations = schemaRelationsRefDefinition.getRelationsRef(fromType)
     .map((ref) => ref.inputName);
   return R.includes(relationshipType, targetRelations);
 };
